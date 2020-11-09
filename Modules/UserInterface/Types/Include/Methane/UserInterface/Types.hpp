@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,8 +23,10 @@ Methane user interface types root header.
 
 #pragma once
 
+#include <Methane/Graphics/Point.hpp>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Color.hpp>
+#include <Methane/Checks.hpp>
 
 namespace Methane::UserInterface
 {
@@ -40,9 +42,12 @@ using FloatPoint   = Graphics::FloatPoint;
 using Color3f      = Graphics::Color3f;
 using Color4f      = Graphics::Color4f;
 
+template<typename T>
+using Point2T      = Data::PointT<T, 2>;
+
 enum class Units : uint8_t
 {
-    Pixels = 0u,
+    Pixels = 0U,
     Dots,
 };
 
@@ -52,6 +57,7 @@ inline std::string UnitsToString(Units units) noexcept
     {
     case Units::Pixels: return "pixels";
     case Units::Dots:   return "dots";
+    default:            return "";
     }
 }
 
@@ -71,9 +77,6 @@ struct UnitType : BaseType
     operator std::string() const                                            { return BaseType::operator std::string() + " in " + UnitsToString(units); }
     bool operator==(const UnitType& other) const noexcept                   { return BaseType::operator==(other) && units == other.units; }
     bool operator!=(const UnitType& other) const noexcept                   { return BaseType::operator!=(other) || units != other.units; }
-
-protected:
-    inline void CheckUnitsCompatibility(const UnitType& other) const { if (units != other.units) throw std::invalid_argument("Incompatible size units."); }
 };
 
 struct UnitSize : UnitType<FrameSize>
@@ -90,10 +93,10 @@ struct UnitSize : UnitType<FrameSize>
     bool operator>=(const UnitSize& other) const noexcept                  { return FrameSize::operator>=(other) && units == other.units; }
     bool operator>(const UnitSize& other) const noexcept                   { return FrameSize::operator>(other)  && units == other.units; }
 
-    UnitSize operator+(const UnitSize& other) const                        { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator+(other), units); }
-    UnitSize operator-(const UnitSize& other) const                        { CheckUnitsCompatibility(other); return UnitSize(FrameSize::operator-(other), units); }
-    UnitSize& operator+=(const UnitSize& other)                            { CheckUnitsCompatibility(other); FrameSize::operator+=(other); return *this; }
-    UnitSize& operator-=(const UnitSize& other)                            { CheckUnitsCompatibility(other); FrameSize::operator-=(other); return *this; }
+    UnitSize operator+(const UnitSize& other) const                        { META_CHECK_ARG_EQUAL(other.units, units); return UnitSize(FrameSize::operator+(other), units); }
+    UnitSize operator-(const UnitSize& other) const                        { META_CHECK_ARG_EQUAL(other.units, units); return UnitSize(FrameSize::operator-(other), units); }
+    UnitSize& operator+=(const UnitSize& other)                            { META_CHECK_ARG_EQUAL(other.units, units); FrameSize::operator+=(other); return *this; }
+    UnitSize& operator-=(const UnitSize& other)                            { META_CHECK_ARG_EQUAL(other.units, units); FrameSize::operator-=(other); return *this; }
 
     template<typename M> UnitSize operator*(M multiplier) const noexcept                    { return UnitSize(FrameSize::operator*(multiplier), units); }
     template<typename M> UnitSize operator/(M divisor) const noexcept                       { return UnitSize(FrameSize::operator/(divisor), units); }
@@ -127,10 +130,10 @@ struct UnitPoint : UnitType<FramePoint>
     bool operator>=(const UnitPoint& other) const noexcept                 { return static_cast<const FramePoint&>(*this) >= other && units == other.units; }
     bool operator>(const UnitPoint& other) const noexcept                  { return static_cast<const FramePoint&>(*this) >  other && units == other.units; }
 
-    UnitPoint operator+(const UnitPoint& other) const                      { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) + other, units); }
-    UnitPoint operator-(const UnitPoint& other) const                      { CheckUnitsCompatibility(other); return UnitPoint(static_cast<const FramePoint&>(*this) - other, units); }
-    UnitPoint& operator+=(const UnitPoint& other)                          { CheckUnitsCompatibility(other); FramePoint::operator+=(other); return *this; }
-    UnitPoint& operator-=(const UnitPoint& other)                          { CheckUnitsCompatibility(other); FramePoint::operator-=(other); return *this; }
+    UnitPoint operator+(const UnitPoint& other) const                      { META_CHECK_ARG_EQUAL(other.units, units); return UnitPoint(static_cast<const FramePoint&>(*this) + other, units); }
+    UnitPoint operator-(const UnitPoint& other) const                      { META_CHECK_ARG_EQUAL(other.units, units); return UnitPoint(static_cast<const FramePoint&>(*this) - other, units); }
+    UnitPoint& operator+=(const UnitPoint& other)                          { META_CHECK_ARG_EQUAL(other.units, units); FramePoint::operator+=(other); return *this; }
+    UnitPoint& operator-=(const UnitPoint& other)                          { META_CHECK_ARG_EQUAL(other.units, units); FramePoint::operator-=(other); return *this; }
 
     template<typename M> UnitPoint  operator*(M multiplier) const noexcept                  { return UnitPoint(FramePoint::operator*(multiplier), units); }
     template<typename M> UnitPoint  operator/(M divisor) const noexcept                     { return UnitPoint(FramePoint::operator/(divisor), units); }

@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -37,7 +37,7 @@ class FenceBase
     , public ObjectBase
 {
 public:
-    FenceBase(CommandQueueBase& command_queue);
+    explicit FenceBase(CommandQueueBase& command_queue);
 
     // Fence overrides
     void Signal() override;
@@ -52,7 +52,7 @@ protected:
 
 private:
     CommandQueueBase& m_command_queue;
-    uint64_t          m_value = 0u;
+    uint64_t          m_value = 0U;
 };
 
 } // namespace Methane::Graphics

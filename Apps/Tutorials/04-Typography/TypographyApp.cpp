@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,12 +43,12 @@ constexpr int32_t g_top_text_pos_in_dots     = 110;
 constexpr size_t  g_text_blocks_count        = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
-    { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20u }, { 1.f,  1.f,  0.5f } },
-    { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20u }, { 1.f,  0.3f, 0.1f } },
-    { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20u }, { 0.5f, 1.f,  0.5f } }
+    { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20U }, { 1.F,  1.F,  0.5F } },
+    { { "Japanese",     "Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf", 20U }, { 1.F,  0.3F, 0.1F } },
+    { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20U }, { 0.5F, 1.F,  0.5F } }
 } };
 
-static const gfx::Color3f g_misc_font_color { 1.f, 1.f, 1.f };
+static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
 static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
@@ -103,7 +103,7 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
             frame_size_in_dots.width - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
             ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
-            : 0u                                                                        // other text blocks have calculated height
+            : 0U                                                                        // other text blocks have calculated height
         },
         gui::Units::Dots
     );
@@ -177,11 +177,11 @@ void TypographyApp::Init()
                     gui::UnitRect
                     {
                         { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                        { frame_width_without_margins, 0u /* calculated height */ },
+                        { frame_width_without_margins, 0U /* calculated height */ },
                         gui::Units::Dots
                     },
                     m_settings.text_layout,
-                    gfx::Color4f(font_settings.color, 1.f),
+                    gfx::Color4f(font_settings.color, 1.F),
                     m_settings.is_incremental_text_update
                 }
             )
@@ -216,8 +216,8 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
             font.GetSettings().description.name + " Font Atlas",
             gui::UnitSize(static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions), gui::Units::Pixels),
             gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitPoint(16u, 16u, gui::Units::Dots),
-            gui::Color4f(font_color, 0.5f),
+            gui::UnitPoint(16U, 16U, gui::Units::Dots),
+            gui::Color4f(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
     );
@@ -286,10 +286,10 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     gui::UnitPoint badge_margins(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
-        assert(badge_atlas_ptr);
+        META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions), gui::Units::Pixels));
         badge_atlas_ptr->FrameResize(gui::UnitSize(frame_size, gui::Units::Pixels), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0u, gui::Units::Dots);
+        badge_margins += gui::UnitPoint(atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U, gui::Units::Dots);
     }
 }
 

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -34,7 +34,7 @@ class IcosahedronMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    explicit IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t subdivisions_count = 0, bool spherify = false)
+    explicit IcosahedronMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.F, uint32_t subdivisions_count = 0, bool spherify = false)
         : BaseMeshT(Mesh::Type::Icosahedron, vertex_layout)
         , m_radius(radius)
     {
@@ -44,12 +44,9 @@ public:
         const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
         const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
 
-        if (has_colors)
-        {
-            throw std::invalid_argument("Colored vertices are not supported for icosahedron mesh.");
-        }
+        META_CHECK_ARG_FALSE_DESCR(has_colors, "colored vertices are not supported by icosahedron mesh");
 
-        const float a = (radius + std::sqrt(radius * 5.f)) / 2.f;
+        const float a = (radius + std::sqrt(radius * 5.F)) / 2.F;
         const float b = radius;
         const std::array<Mesh::Position, 12> vertex_positions{ {
             {-b,  a,  0 },
@@ -85,11 +82,11 @@ public:
                 Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction = cml::normalize(vertex_position);
 
-                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.f * cml::constants<float>::pi()) + 0.5f;
-                assert(0.f <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.f);
+                vertex_texcoord[0] = std::atan2(vertex_direction[2], vertex_direction[0]) / (2.F * cml::constants<float>::pi()) + 0.5F;
+                assert(0.F <= vertex_texcoord[0] && vertex_texcoord[0] <= 1.F);
 
-                vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5f;
-                assert(0.f <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.f);
+                vertex_texcoord[1] = std::asin(vertex_direction[1]) / cml::constants<float>::pi() + 0.5F;
+                assert(0.F <= vertex_texcoord[1] && vertex_texcoord[1] <= 1.F);
             }
         }
 
@@ -132,8 +129,8 @@ public:
     void Subdivide()
     {
         META_FUNCTION_TASK();
-        if (BaseMeshT::m_indices.size() % 3 != 0)
-            throw std::logic_error("Icosahedron indices count should be a multiple of three representing triangles list.");
+        META_CHECK_ARG_DESCR(BaseMeshT::m_indices.size(), BaseMeshT::m_indices.size() % 3 == 0,
+                             "icosahedron indices count should be a multiple of three representing triangles list");
 
         Mesh::Indices new_indices;
         new_indices.reserve(BaseMeshT::m_indices.size() * 4);
@@ -167,7 +164,6 @@ public:
     void Spherify()
     {
         META_FUNCTION_TASK();
-
         const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
 
         for(VType& vertex : BaseMeshT::m_vertices)

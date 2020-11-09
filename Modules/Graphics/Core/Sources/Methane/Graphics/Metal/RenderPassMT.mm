@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,6 +27,7 @@ Metal implementation of the render pass interface.
 #include "TypesMT.hh"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -40,8 +41,8 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
         case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
         case RenderPass::Attachment::StoreAction::Store:      return MTLStoreActionStore;
         case RenderPass::Attachment::StoreAction::Resolve:    return MTLStoreActionMultisampleResolve;
+        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(store_action, MTLStoreActionUnknown);
     }
-    return MTLStoreActionUnknown;
 }
 
 static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
@@ -53,8 +54,8 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
         case RenderPass::Attachment::LoadAction::DontCare:    return MTLLoadActionDontCare;
         case RenderPass::Attachment::LoadAction::Load:        return MTLLoadActionLoad;
         case RenderPass::Attachment::LoadAction::Clear:       return MTLLoadActionClear;
+        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
-    return MTLLoadActionDontCare;
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
@@ -88,12 +89,9 @@ void RenderPassMT::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
-
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
         TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
+
         if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
         {
             color_texture.UpdateFrameBuffer();

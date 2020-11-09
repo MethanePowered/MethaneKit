@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -49,10 +49,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None            = 0u,
-            DepthEnabled    = 1u << 0u,
-            DepthReversed   = 1u << 1u,
-            All             = ~0u,
+            None            = 0U,
+            DepthEnabled    = 1U << 0U,
+            DepthReversed   = 1U << 1U,
+            All             = ~0U,
         };
 
         Options() = delete;
@@ -65,7 +65,7 @@ public:
         float                          scale;
         ImageLoader::Options::Mask     image_options  = ImageLoader::Options::None;
         SkyBox::Options::Mask          render_options = SkyBox::Options::None;
-        float                          lod_bias = 0.f;
+        float                          lod_bias = 0.F;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms
@@ -89,7 +89,7 @@ private:
         };
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, BaseMesh<Vertex> mesh);
+    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     Settings                      m_settings;
     RenderContext&                m_context;

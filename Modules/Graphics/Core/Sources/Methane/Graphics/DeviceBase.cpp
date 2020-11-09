@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,14 +24,14 @@ Base implementation of the device interface.
 #include "DeviceBase.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-std::string Device::Feature::ToString(Value feature) noexcept
+std::string Device::Feature::ToString(Value feature)
 {
     META_FUNCTION_TASK();
     switch(feature)
@@ -40,11 +40,11 @@ std::string Device::Feature::ToString(Value feature) noexcept
     case Value::All:                        return "All";
     case Value::BasicRendering:             return "Basic Rendering";
     case Value::TextureAndSamplerArrays:    return "Texture and Sampler Arrays";
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(feature, "");
     }
-    return "";
 }
 
-std::string Device::Feature::ToString(Mask features) noexcept
+std::string Device::Feature::ToString(Mask features)
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
@@ -71,13 +71,10 @@ DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter
     META_FUNCTION_TASK();
 }
 
-std::string DeviceBase::ToString() const noexcept
+std::string DeviceBase::ToString() const
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "GPU \"" << GetAdapterName();
-    //ss << "\" with features: " + Feature::ToString(m_supported_features);
-    return ss.str();
+    return fmt::format("GPU \"{}\"", GetAdapterName());
 }
 
 void DeviceBase::OnRemovalRequested()
@@ -92,7 +89,7 @@ void DeviceBase::OnRemoved()
     Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
 }
 
-void SystemBase::RequestRemoveDevice(Device& device)
+void SystemBase::RequestRemoveDevice(Device& device) const
 {
     META_FUNCTION_TASK();
     static_cast<DeviceBase&>(device).OnRemovalRequested();
@@ -101,6 +98,15 @@ void SystemBase::RequestRemoveDevice(Device& device)
 void SystemBase::RemoveDevice(Device& device)
 {
     META_FUNCTION_TASK();
+    const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+        [&device](const Ptr<Device>& device_ptr)
+        { return std::addressof(device) == std::addressof(*device_ptr); }
+    );
+    if (device_it == m_devices.end())
+        return;
+
+    Ptr<Device> device_ptr = *device_it;
+    m_devices.erase(device_it);
     static_cast<DeviceBase&>(device).OnRemoved();
 }
 
@@ -131,15 +137,14 @@ Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
     return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Device>();
 }
 
-std::string SystemBase::ToString() const noexcept
+std::string SystemBase::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "Available graphics devices:" << std::endl;
     for(const Ptr<Device>& device_ptr : m_devices)
     {
-        assert(device_ptr);
-        if (!device_ptr) continue;
+        META_CHECK_ARG_NOT_NULL(device_ptr);
         ss << "  - " << device_ptr->ToString() << ";" << std::endl;
     }
     return ss.str();

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,15 +25,14 @@ DirectX 12 implementation of the descriptor heap wrapper.
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) noexcept
+static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -42,9 +41,8 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type) n
     case DescriptorHeap::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     case DescriptorHeap::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     case DescriptorHeap::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     }
-    return D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
 }
 
 Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
@@ -71,18 +69,19 @@ DescriptorHeapDX::~DescriptorHeapDX()
     META_FUNCTION_TASK();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_descriptor_heap);
-    assert(descriptor_index < GetAllocatedSize());
+    META_CHECK_ARG_NOT_NULL(m_cp_descriptor_heap);
+    META_CHECK_ARG_LESS(descriptor_index, GetAllocatedSize());
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const noexcept
+D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_descriptor_heap);
+    META_CHECK_ARG_NOT_NULL(m_cp_descriptor_heap);
+    META_CHECK_ARG_LESS(descriptor_index, GetAllocatedSize());
     return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_cp_descriptor_heap->GetGPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
@@ -96,7 +95,7 @@ void DescriptorHeapDX::Allocate()
         return;
 
     const wrl::ComPtr<ID3D12Device>&  cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
+    META_CHECK_ARG_NOT_NULL(cp_device);
 
     const bool is_shader_visible_heap = GetSettings().shader_visible;
     wrl::ComPtr<ID3D12DescriptorHeap> cp_old_descriptor_heap = m_cp_descriptor_heap;

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -110,14 +110,14 @@ struct Modifier
     using Mask = uint32_t;
     enum Value : Mask
     {
-        None     = 0u,
-        Shift    = 1u << 0u,
-        Control  = 1u << 1u,
-        Alt      = 1u << 2u,
-        Super    = 1u << 3u,
-        CapsLock = 1u << 4u,
-        NumLock  = 1u << 5u,
-        All      = ~0u,
+        None     = 0U,
+        Shift    = 1U << 0U,
+        Control  = 1U << 1U,
+        Alt      = 1U << 2U,
+        Super    = 1U << 3U,
+        CapsLock = 1U << 4U,
+        NumLock  = 1U << 5U,
+        All      = ~0U,
     };
 
     using Values = std::array<Value, 6>;
@@ -132,7 +132,7 @@ struct Modifier
 
 enum class KeyType : uint32_t
 {
-    Common = 0u,
+    Common = 0U,
     Modifier,
 };
 
@@ -148,7 +148,7 @@ public:
     Key             GetKey() const noexcept         { return m_key; }
     Modifier::Mask  GetModifiers() const noexcept   { return m_modifiers; }
     Modifier::Value GetModifierKey() const noexcept;
-    std::string     ToString() const noexcept;
+    std::string     ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
     static Key            GetKeyByNativeCode(const NativeKey& native_key);
@@ -161,7 +161,7 @@ private:
 
 enum class KeyState : uint8_t
 {
-    Released = 0u,
+    Released = 0U,
     Pressed,
 };
 
@@ -175,10 +175,10 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None      = 0u,
-            KeyStates = 1u << 0u,
-            Modifiers = 1u << 1u,
-            All       = ~0u,
+            None      = 0U,
+            KeyStates = 1U << 0U,
+            Modifiers = 1U << 1U,
+            All       = ~0U,
         };
 
         using Values = std::array<Value, 2>;
@@ -192,7 +192,7 @@ public:
     };
 
     State() noexcept = default;
-    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None) noexcept;
+    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
     State(const State& other) noexcept;
 
     State& operator=(const State& other) noexcept;
@@ -203,10 +203,10 @@ public:
     operator std::string() const                            { return ToString(); }
     operator bool() const noexcept;
 
-    KeyType SetKey(Key key, KeyState state) noexcept;
+    KeyType SetKey(Key key, KeyState state);
     void    SetModifiersMask(Modifier::Mask mask) noexcept  { m_modifiers_mask = mask; }
-    void    PressKey(Key key) noexcept                      { SetKey(key, KeyState::Pressed); }
-    void    ReleaseKey(Key key) noexcept                    { SetKey(key, KeyState::Released); }
+    void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
+    void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
 
     Keys             GetPressedKeys() const noexcept;
     const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }

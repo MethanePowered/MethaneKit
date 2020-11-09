@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,6 +26,7 @@ Singleton data provider of files on disk.
 #include "Provider.h"
 
 #include <Methane/Platform/Utils.h>
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <string>
@@ -58,10 +59,8 @@ public:
 
         const std::string file_path = GetFullFilePath(path);
         std::ifstream fs(file_path, std::ios::binary);
-        if (!fs.good())
-        {
-            throw std::invalid_argument("File path does not exist: " + file_path);
-        }
+        META_CHECK_ARG_DESCR(path, fs.good(), "File path does not exist '{}'", file_path);
+
         return Data::Chunk(Data::Bytes(std::istreambuf_iterator<char>(fs), {}));
     }
 

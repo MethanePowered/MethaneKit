@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -41,8 +41,8 @@ public:
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // Buffer interface
-    const Settings& GetSettings() const noexcept override       { return m_settings; }
-    uint32_t GetFormattedItemsCount() const noexcept override;
+    const Settings& GetSettings() const noexcept final       { return m_settings; }
+    uint32_t GetFormattedItemsCount() const noexcept final;
 
     Ptr<BufferBase> GetBufferPtr()                              { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
     std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
@@ -56,13 +56,13 @@ class BufferSetBase
     , public ObjectBase
 {
 public:
-    BufferSetBase(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 
     // Buffers interface
-    Buffer::Type        GetType() const noexcept override  { return m_buffers_type; }
-    Data::Size          GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<Buffer>& GetRefs() const noexcept override  { return m_refs; }
-    Buffer&             operator[](Data::Index index) const override;
+    Buffer::Type        GetType() const noexcept final  { return m_buffers_type; }
+    Data::Size          GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<Buffer>& GetRefs() const noexcept final  { return m_refs; }
+    Buffer&             operator[](Data::Index index) const final;
 
     const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 

@@ -1,20 +1,30 @@
 # Methane Kit CI configuration for Sonar Cloud static code analysis on MacOS/Linux platform
 # https://aka.ms/yaml
 
-steps:
+parameters:
+  - name: extraInitSteps
+    type: stepList
+    default: [ ]
+  - name: extraScanSteps
+    type: stepList
+    default: []
 
+steps:
   - script: |
       mkdir -p $(buildDir)
     displayName: 'Make build directories for $(platform) $(configuration)'
+
+  - ${{ each step in parameters.extraInitSteps }}:
+    - ${{ step }}
 
   - task: CMake@1
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
     inputs:
       workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
 
   - script: |
-      curl '$(sonarBuildWrapperUrl)' --output build-wrapper.zip
+      curl '$(sonar.BuildWrapperUrl)' --output build-wrapper.zip
       unzip build-wrapper.zip
     workingDirectory: $(buildDir)
     displayName: 'Download and unpack Sonar Build-Wrapper'
@@ -22,30 +32,45 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonarProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
-      path: $(sonarCacheDir)
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(Agent.OS)"'
+      path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
     displayName: 'Prepare Sonar Cloud Scanner'
     inputs:
-      SonarCloud: 'Evgeny Gorodetsky Sonar Cloud'
-      organization: 'egorodet-github'
+      SonarCloud: $(sonar.CloudName)
+      organization: $(sonar.Organization)
       scannerMode: 'CLI'
       configMode: 'manual'
-      cliProjectKey: $(sonarProjectKey)
-      cliProjectVersion: $(productFullVersion)
-      cliSources: 'Apps,Modules'
+      cliProjectKey: $(sonar.ProjectKey)
+      cliProjectVersion: $(product.Version.Full)
+      cliSources: $(sonar.Sources)
       extraProperties: |
-        sonar.branch.name=$(Build.SourceBranchName)
+        sonar.tests=$(sonar.Tests)
         sonar.cfamily.build-wrapper-output=$(buildDir)/BuildWrapperOutput
-        sonar.cfamily.cache.path=$(sonarCacheDir)
+        sonar.cfamily.cache.path=$(sonar.CacheDir)
         sonar.cfamily.cache.enabled=true
         sonar.cfamily.threads=4
+        sonar.testExecutionReportPaths=$(installDir)/Tests/Results/MethaneDataEventsTest.xml,$(installDir)/Tests/Results/MethaneDataRangeSetTest.xml,$(installDir)/Tests/Results/MethanePlatformInputTest.xml,$(installDir)/Tests/Results/MethaneGraphicsCameraTest.xml
+        sonar.coverageReportPaths=$(installDir)/Tests/Coverage/Report/SonarQube.xml
 
   - script: |
-      $(sonarBuildWrapperExe) --out-dir BuildWrapperOutput $(sonarBuildCommand)
+      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
     workingDirectory: $(buildDir)
     displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+
+  - ${{ each step in parameters.extraScanSteps }}:
+    - ${{ step }}
+
+  - task: reportgenerator@4
+    displayName: 'Generate SonarCube report with code coverage'
+    condition: ne(variables.coverageReports, '')
+    inputs:
+      reports: $(coverageReports)
+      targetdir: '$(installDir)/Tests/Coverage/Report'
+      reporttypes: 'SonarQube'
+      title: 'Methane Tests Code Coverage on $(platform)'
+      tag: '$(product.Version.Full)'
 
   - task: SonarCloudAnalyze@1
     displayName: 'Analyze built sources with Sonar Scanner'

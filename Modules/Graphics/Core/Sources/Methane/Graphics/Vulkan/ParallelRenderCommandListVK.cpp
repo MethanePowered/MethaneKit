@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,8 +27,7 @@ Vulkan implementation of the render command list interface.
 #include "ContextVK.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -52,18 +51,17 @@ void ParallelRenderCommandListVK::SetName(const std::string& name)
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
-    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    
-    assert(!IsCommitted());
+    META_CHECK_ARG_FALSE(IsCommitted());
     ParallelRenderCommandListBase::Commit();
 }
 

@@ -21,7 +21,12 @@ endif()
 enable_testing()
 
 # Build configuration
-option(METHANE_RUN_TESTS_DURING_BUILD   "Run tests during build" ON)
+option(METHANE_APPS_BUILD_ENABLED       "Enable applications build" ON)
+option(METHANE_TESTS_BUILD_ENABLED      "Enable tests build" ON)
+option(METHANE_CHECKS_ENABLED           "Enable runtime checks of input arguments" ON)
+option(METHANE_RUN_TESTS_DURING_BUILD   "Enable test auto-run after module build" ON)
+option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build speedup for some modules" ON)
+option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
 option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
 
@@ -47,7 +52,8 @@ set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeModules"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/Catch2/single_include/cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeExtraModules"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/Catch2/contrib"
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
 
@@ -57,6 +63,7 @@ include(ParseAndAddCatchTests)
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
+set(CMAKE_DISABLE_PRECOMPILE_HEADERS OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -101,7 +108,7 @@ if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
     string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         # Enable multi-threaded build with MSVC
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
@@ -174,8 +181,38 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
+if (METHANE_APPS_BUILD_ENABLED)
+    message(STATUS "Methane applications build is enabled")
+endif()
+
+if (METHANE_TESTS_BUILD_ENABLED)
+    message(STATUS "Methane tests build is enabled")
+endif()
+
+if (METHANE_CHECKS_ENABLED)
+    message(STATUS "Methane runtime checks of input arguments are enabled")
+    target_compile_definitions(MethaneBuildOptions INTERFACE METHANE_CHECKS_ENABLED)
+endif()
+
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
+endif()
+
+if (METHANE_CODE_COVERAGE_ENABLED)
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        message(STATUS "Methane code coverage is enabled with Clang compiler")
+        target_compile_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate -fcoverage-mapping)
+        target_link_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate)
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        message(STATUS "Methane code coverage is enabled with GCC compiler")
+        target_compile_options(MethaneBuildOptions INTERFACE -coverage)
+        target_link_options(MethaneBuildOptions INTERFACE -coverage)
+    else()
+        message(STATUS "Methane code coverage is unavailable with ${CMAKE_CXX_COMPILER_ID} compiler")
+    endif()
+
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)
@@ -241,4 +278,11 @@ set(CMAKE_DISABLE_FIND_PACKAGE_Perl TRUE)
 
 add_subdirectory(Externals)
 add_subdirectory(Modules)
-add_subdirectory(Apps)
+
+if (METHANE_APPS_BUILD_ENABLED)
+    add_subdirectory(Apps)
+endif()
+
+if (METHANE_TESTS_BUILD_ENABLED)
+    add_subdirectory(Tests)
+endif()

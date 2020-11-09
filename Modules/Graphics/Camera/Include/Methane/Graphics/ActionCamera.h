@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -112,8 +112,8 @@ public:
     void OnKeyReleased(KeyboardAction keyboard_action);
     void DoKeyboardAction(KeyboardAction keyboard_action) noexcept;
 
-    static std::string GetActionName(MouseAction mouse_action) noexcept;
-    static std::string GetActionName(KeyboardAction keyboard_action) noexcept;
+    static std::string GetActionName(MouseAction mouse_action);
+    static std::string GetActionName(KeyboardAction keyboard_action);
 
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
@@ -138,9 +138,9 @@ protected:
 private:
     Data::AnimationsPool&    m_animations;
     uint32_t                 m_zoom_steps_count             = 3;
-    DistanceRange            m_zoom_distance_range          = DistanceRange(1.f, 1000.f);
-    float                    m_move_distance_per_second     = 5.f;
-    float                    m_rotate_angle_per_second      = 15.f;
+    DistanceRange            m_zoom_distance_range          = DistanceRange(1.F, 1000.F);
+    float                    m_move_distance_per_second     = 5.F;
+    float                    m_rotate_angle_per_second      = 15.F;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
     Vector3f                 m_mouse_pressed_in_world       { };

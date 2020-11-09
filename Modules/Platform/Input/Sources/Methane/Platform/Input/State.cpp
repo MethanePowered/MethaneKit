@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,8 +23,7 @@ limitations under the License.
 
 #include <Methane/Platform/Input/State.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Platform::Input
 {
@@ -85,7 +84,7 @@ void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
 
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetKey(key, key_state);
     Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
 
@@ -99,7 +98,7 @@ void State::OnModifiersChanged(Keyboard::Modifier::Mask modifiers_mask)
 {
     META_FUNCTION_TASK();
 
-    Keyboard::State prev_keyboard_state(m_keyboard_state);
+    Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetModifiersMask(modifiers_mask);
     Keyboard::State::Property::Mask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
     

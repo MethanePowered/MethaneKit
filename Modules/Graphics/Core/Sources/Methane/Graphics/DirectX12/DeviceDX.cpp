@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,9 +23,10 @@ DirectX 12 implementation of the device interface.
 
 #include "DeviceDX.h"
 
-#include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
@@ -35,9 +36,7 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
-// NOTE: Adapters change handling breaks many frame capture tools,
-//       like VS or RenderDoc, so it's disabled for now
-//#define ADAPTERS_CHANGE_HANDLING
+
 
 namespace Methane::Graphics
 {
@@ -117,7 +116,7 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
     else
     {
         assert(0);
-        META_LOG("GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it.");
+        META_LOG("WARNING: GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it");
     }
 #endif
 
@@ -171,7 +170,7 @@ void SystemDX::Initialize()
 #endif
 
     ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_cp_factory)));
-    assert(!!m_cp_factory);
+    META_CHECK_ARG_NOT_NULL(m_cp_factory);
 
     RegisterAdapterChangeEvent();
 }
@@ -191,7 +190,7 @@ void SystemDX::RegisterAdapterChangeEvent()
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    assert(!!cp_factory7);
+    META_CHECK_ARG_NOT_NULL(cp_factory7);
     ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
 #endif
 }
@@ -206,7 +205,7 @@ void SystemDX::UnregisterAdapterChangeEvent()
         !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
 
-    assert(!!cp_factory7);
+    META_CHECK_ARG_NOT_NULL(cp_factory7);
     ThrowIfFailed(cp_factory7->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
     m_adapter_change_registration_cookie = 0;
 
@@ -235,7 +234,7 @@ void SystemDX::CheckForChanges()
 
     for (const Ptr<Device>& prev_device_ptr : prev_devices)
     {
-        assert(!!prev_device_ptr);
+        META_CHECK_ARG_NOT_NULL(prev_device_ptr);
         DeviceDX& prev_device = static_cast<DeviceDX&>(*prev_device_ptr);
         auto device_it = std::find_if(devices.begin(), devices.end(),
                                       [prev_device](const Ptr<Device>& device_ptr)
@@ -255,7 +254,7 @@ void SystemDX::CheckForChanges()
 const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
 {
     META_FUNCTION_TASK();
-    assert(m_cp_factory);
+    META_CHECK_ARG_NOT_NULL(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
     SetGpuSupportedFeatures(supported_features);
@@ -264,9 +263,7 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_f
     IDXGIAdapter1* p_adapter = nullptr;
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
     {
-        assert(p_adapter);
-        if (!p_adapter)
-            continue;
+        META_CHECK_ARG_NOT_NULL(p_adapter);
 
         // Don't select the Basic Render Driver adapter.
         // If you want a software adapter, pass in "/warp" on the command line.
@@ -301,14 +298,14 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
 }
 
-void SystemDX::ReportLiveObjects()
+void SystemDX::ReportLiveObjects() const
 {
     META_FUNCTION_TASK();
 #ifdef _DEBUG
     wrl::ComPtr<IDXGIDebug1> dxgi_debug;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))
     {
-        assert(!!dxgi_debug);
+        META_CHECK_ARG_NOT_NULL(dxgi_debug);
         dxgi_debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
     }
 #endif

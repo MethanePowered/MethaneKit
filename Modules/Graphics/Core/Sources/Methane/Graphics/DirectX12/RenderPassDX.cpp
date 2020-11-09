@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,14 +27,13 @@ DirectX 12 implementation of the render pass interface.
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Graphics/TextureBase.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -64,8 +63,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
 
     if (attachment.store_action == Attachment::StoreAction::Resolve)
     {
-        throw std::logic_error("Resolve parameters initialization is not implemented yet.");
-        // TODO: ending.Resolve = { ... }
+        META_FUNCTION_NOT_IMPLEMENTED_DESCR("Resolve parameters initialization is not implemented yet");
     }
 }
 
@@ -76,19 +74,16 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        if (!color_attachment.texture_ptr)
-        {
-            throw std::invalid_argument("Can not clear render target attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_ptr, "can not clear render target attachment without texture");
 
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_ptr->GetSettings().pixel_format);
-        const float clear_color_components[4]{
-            color_attachment.clear_color.GetR(),
-            color_attachment.clear_color.GetG(),
-            color_attachment.clear_color.GetB(),
-            color_attachment.clear_color.GetA()
+        const std::array<float, 4> clear_color_components{
+            color_attachment.clear_color.GetRf(),
+            color_attachment.clear_color.GetGf(),
+            color_attachment.clear_color.GetBf(),
+            color_attachment.clear_color.GetAf()
         };
-        beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components);
+        beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
     }
 }
 
@@ -109,44 +104,39 @@ RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
     META_FUNCTION_TASK();
-    if (!depth_attachment.texture_ptr)
-    {
-        throw std::invalid_argument("Depth attachment should point to the depth-stencil texture.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(depth_attachment.texture_ptr, "depth attachment should point to the depth-stencil texture");
 
     const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.texture_ptr->GetSettings().pixel_format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
 }
 
-D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept
+D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action)
 {
     META_FUNCTION_TASK();
-
     switch (load_action)
     {
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
     }
-    return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
 }
 
-D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept
+D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action)
 {
     META_FUNCTION_TASK();
-
     switch (store_action)
     {
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
+    default:                                 META_UNEXPECTED_ENUM_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
     }
-    return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS;
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_ptr))
-    , clear_color{ color_attach.clear_color.GetR(), color_attach.clear_color.GetG(), color_attach.clear_color.GetB(), color_attach.clear_color.GetA() }
+    , clear_color{ color_attach.clear_color.GetRf(), color_attach.clear_color.GetGf(), color_attach.clear_color.GetBf(), color_attach.clear_color.GetAf() }
 {
     META_FUNCTION_TASK();
 }
@@ -159,7 +149,6 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     , stencil_value(stencil_attach.clear_value)
 {
     META_FUNCTION_TASK();
-
     if (depth_cleared)
     {
         clear_flags = stencil_cleared ? D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL
@@ -171,19 +160,17 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access) noexcept
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access)
 {
     META_FUNCTION_TASK();
-
     switch (access)
     {
     case RenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
     case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                  assert(0);
+    default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
-    return DescriptorHeap::Type::Undefined;
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
@@ -211,8 +198,8 @@ RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
 bool RenderPassDX::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-
     const bool settings_changed = RenderPassBase::Update(settings);
+
     if (settings_changed)
     {
         m_native_descriptor_heaps.clear();
@@ -293,17 +280,15 @@ void RenderPassDX::UpdateNativeClearDesc()
         if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
             continue;
 
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not clear render target attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not clear render target attachment without texture");
         m_rt_clear_infos.emplace_back(color_attach);
     }
 
     m_ds_clear_info = DSClearInfo(settings.depth_attachment, settings.stencil_attachment);
 }
 
-void RenderPassDX::ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& do_action) const
+template<typename FuncType>
+void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
@@ -338,7 +323,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
 
     RenderPassBase::Begin(command_list);
 
-    RenderCommandListDX& command_list_dx = static_cast<RenderCommandListDX&>(command_list);
+    const auto& command_list_dx = static_cast<const RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     SetNativeDescriptorHeaps(command_list_dx);
@@ -366,7 +351,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
         // Clear render targets
         for (const RenderPassDX::RTClearInfo& rt_clear : m_rt_clear_infos)
         {
-            d3d12_command_list.ClearRenderTargetView(rt_clear.cpu_handle, rt_clear.clear_color, 0, nullptr);
+            d3d12_command_list.ClearRenderTargetView(rt_clear.cpu_handle, rt_clear.clear_color.data(), 0, nullptr);
         }
 
         // Clear depth-stencil buffer
@@ -384,7 +369,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
     if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
         ID3D12GraphicsCommandList4* p_dx_command_list_4 = static_cast<RenderCommandListDX&>(command_list).GetNativeCommandList4();
-        assert(!!p_dx_command_list_4);
+        META_CHECK_ARG_NOT_NULL(p_dx_command_list_4);
         p_dx_command_list_4->EndRenderPass();
     }
 
@@ -397,7 +382,7 @@ void RenderPassDX::SetNativeRenderPassUsage(bool use_native_render_pass)
     m_is_native_render_pass_available = use_native_render_pass;
 }
 
-void RenderPassDX::SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const
+void RenderPassDX::SetNativeDescriptorHeaps(const RenderCommandListDX& dx_command_list) const
 {
     META_FUNCTION_TASK();
     const std::vector<ID3D12DescriptorHeap*>& descriptor_heaps = GetNativeDescriptorHeaps();
@@ -407,7 +392,7 @@ void RenderPassDX::SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list
     dx_command_list.GetNativeCommandList().SetDescriptorHeaps(static_cast<UINT>(descriptor_heaps.size()), descriptor_heaps.data());
 }
 
-void RenderPassDX::SetNativeRenderTargets(RenderCommandListDX& dx_command_list)
+void RenderPassDX::SetNativeRenderTargets(const RenderCommandListDX& dx_command_list) const
 {
     META_FUNCTION_TASK();
     const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& rt_cpu_handles = GetNativeRenderTargetCPUHandles();
@@ -437,12 +422,8 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
-
-        TextureBase& rt_texture = static_cast<TextureBase&>(*color_attach.texture_ptr);
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
+        const auto& rt_texture = static_cast<const TextureBase&>(*color_attach.texture_ptr);
         m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
 
@@ -459,7 +440,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     if (!settings.depth_attachment.texture_ptr)
         return nullptr;
 
-    TextureBase& depth_texture = static_cast<TextureBase&>(*settings.depth_attachment.texture_ptr);
+    const auto& depth_texture = static_cast<const TextureBase&>(*settings.depth_attachment.texture_ptr);
     m_native_ds_cpu_handle = depth_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     return &m_native_ds_cpu_handle;
 }

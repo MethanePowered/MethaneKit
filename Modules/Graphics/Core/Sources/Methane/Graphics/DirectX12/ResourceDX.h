@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -45,9 +45,9 @@ public:
     class BarriersDX : public Barriers
     {
     public:
-        BarriersDX(const Set& barriers);
+        explicit BarriersDX(const Set& barriers);
 
-        bool Add(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
 
         const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
@@ -60,6 +60,7 @@ public:
     public:
         explicit LocationDX(const Location& location);
         explicit LocationDX(const LocationDX& location);
+        ~LocationDX() = default;
 
         LocationDX& operator=(const LocationDX& other);
 
@@ -88,9 +89,9 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage::Value usage) const noexcept     { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept;
 
-    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state) noexcept;
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier) noexcept  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
-    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change) noexcept;
+    static D3D12_RESOURCE_STATES        GetNativeResourceState(State resource_state);
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
+    static D3D12_RESOURCE_BARRIER       GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
 protected:
     IContextDX& GetContextDX() noexcept;

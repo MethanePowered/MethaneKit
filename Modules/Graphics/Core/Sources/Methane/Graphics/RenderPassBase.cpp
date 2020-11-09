@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,8 +26,7 @@ Base implementation of the render pass interface.
 #include "RenderCommandListBase.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -35,7 +34,7 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return texture_ptr   == other.texture_ptr &&
+    return texture_ptr  == other.texture_ptr &&
            level        == other.level &&
            slice        == other.slice &&
            depth_plane  == other.depth_plane &&
@@ -121,36 +120,27 @@ void RenderPassBase::ReleaseAttachmentTextures()
 void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-    if (m_is_begun)
-    {
-        throw std::logic_error("Can not begin pass which was begun already and was not ended.");
-    }
+    META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
-    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite,
-                        m_begin_transition_barriers_ptr, render_command_list);
-
+    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
     m_is_begun = true;
 }
 
 void RenderPassBase::End(RenderCommandListBase& render_command_list)
 {
     META_FUNCTION_TASK();
-    if (!m_is_begun)
-    {
-        throw std::logic_error("Can not end render pass, which was not begun.");
-    }
+    META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
     if (m_settings.is_final_pass)
     {
-        SetAttachmentStates(ResourceBase::State::Present, { },
-                            m_end_transition_barriers_ptr, render_command_list);
+        SetAttachmentStates(ResourceBase::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
     }
-
     m_is_begun = false;
 }
 
-void RenderPassBase::InitAttachmentStates()
+void RenderPassBase::InitAttachmentStates() const
 {
+    META_FUNCTION_TASK();
     Ptr<ResourceBase::Barriers> transition_barriers_ptr;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
@@ -162,7 +152,7 @@ void RenderPassBase::InitAttachmentStates()
 void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                                          const std::optional<ResourceBase::State>& depth_state,
                                          Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
-                                         RenderCommandListBase& render_command_list)
+                                         RenderCommandListBase& render_command_list) const
 {
     META_FUNCTION_TASK();
     bool attachment_states_changed = false;
@@ -199,10 +189,7 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
         m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.texture_ptr));
     }
     return m_color_attachment_textures;
@@ -228,10 +215,7 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        if (!color_attach.texture_ptr)
-        {
-            throw std::invalid_argument("Can not use color attachment without texture.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
 
         Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_ptr);
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)

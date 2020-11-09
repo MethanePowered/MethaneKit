@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -42,6 +42,8 @@ struct Fence : virtual Object
     virtual void WaitOnGpu(CommandQueue& wait_on_command_queue) = 0;
     virtual void FlushOnCpu() = 0;
     virtual void FlushOnGpu(CommandQueue& wait_on_command_queue) = 0;
+
+    virtual ~Fence() = default;
 };
 
 } // namespace Methane::Graphics

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -36,7 +36,7 @@ class BlitCommandListVK final
     , public BlitCommandList
 {
 public:
-    BlitCommandListVK(CommandQueueBase& command_queue);
+    explicit BlitCommandListVK(CommandQueueBase& command_queue);
 
     // CommandList interface
     void PushDebugGroup(DebugGroup& debug_group) override;

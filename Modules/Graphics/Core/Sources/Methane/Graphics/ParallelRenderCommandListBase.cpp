@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -34,7 +34,6 @@ Base implementation of the parallel render command list interface.
 #include <Methane/Data/Math.hpp>
 
 #include <taskflow/taskflow.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -51,18 +50,18 @@ ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& c
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enabled) noexcept
+void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enabled)
 {
     META_FUNCTION_TASK();
     m_is_validation_enabled = is_validation_enabled;
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetValidationEnabled(m_is_validation_enabled);
     }
 }
 
-void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListBase::Reset();
@@ -77,12 +76,12 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
     }
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
-    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](const int command_list_index)
+    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](size_t command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
-        assert(render_command_list_ptr);
-        render_command_list_ptr->Reset(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        render_command_list_ptr->ResetWithState(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
     };
 
 #ifdef _WIN32
@@ -91,7 +90,7 @@ void ParallelRenderCommandListBase::Reset(const Ptr<RenderState>& render_state_p
                                  Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
-    for(size_t command_list_index = 0u; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+    for(size_t command_list_index = 0U; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
         reset_command_list_fn(command_list_index);
 #endif
 }
@@ -101,7 +100,7 @@ void ParallelRenderCommandListBase::Commit()
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->Commit();
     }
 
@@ -113,7 +112,7 @@ void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetViewState(view_state);
     }
 }
@@ -121,7 +120,7 @@ void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
 void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 {
     META_FUNCTION_TASK();
-    uint32_t initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
+    const auto initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
         m_parallel_command_lists.resize(count);
@@ -145,8 +144,8 @@ void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandL
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_command_list_ptr);
-        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
         thread_render_command_list.Execute(frame_index);
     }
 
@@ -158,8 +157,8 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_command_list_ptr);
-        RenderCommandListBase& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
         thread_render_command_list.Complete(frame_index);
     }
 
@@ -177,7 +176,7 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
     uint32_t render_cmd_list_index = 0;
     for(const Ptr<RenderCommandList>& render_cmd_list_ptr : m_parallel_command_lists)
     {
-        assert(!!render_cmd_list_ptr);
+        META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
         render_cmd_list_ptr->SetName(GetThreadCommandListName(name, render_cmd_list_index));
         render_cmd_list_index++;
     }
@@ -186,7 +185,7 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
 RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
-    assert(!!m_render_pass_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
     return static_cast<RenderPassBase&>(*m_render_pass_ptr);
 }
 

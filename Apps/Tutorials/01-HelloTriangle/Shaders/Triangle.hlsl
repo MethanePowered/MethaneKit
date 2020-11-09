@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -36,8 +36,8 @@ struct PSInput
 PSInput TriangleVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 1.f);
-    output.color    = float4(input.color, 1.f);
+    output.position = float4(input.position, 1.F);
+    output.color    = float4(input.color, 1.F);
     return output;
 }
 

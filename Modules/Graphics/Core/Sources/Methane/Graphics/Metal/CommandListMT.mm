@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -29,26 +29,26 @@ Metal command lists sequence implementation
 namespace Methane::Graphics
 {
 
-Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(std::string name)
+Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListDebugGroupMT>(std::move(name));
+    return std::make_shared<CommandListDebugGroupMT>(name);
 }
 
-CommandListDebugGroupMT::CommandListDebugGroupMT(std::string name)
+CommandListDebugGroupMT::CommandListDebugGroupMT(const std::string& name)
     : CommandListBase::DebugGroupBase(std::move(name))
     , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(ObjectBase::GetName()))
 {
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(Refs<CommandList> command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetMT>(std::move(command_list_refs));
+    return std::make_shared<CommandListSetMT>(command_list_refs);
 }
 
-CommandListSetMT::CommandListSetMT(Refs<CommandList> command_list_refs)
+CommandListSetMT::CommandListSetMT(const Refs<CommandList>& command_list_refs)
     : CommandListSetBase(std::move(command_list_refs))
 {
     META_FUNCTION_TASK();

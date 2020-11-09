@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,6 +26,7 @@ DirectX 12 implementation of the program interface.
 #include <Methane/Graphics/ProgramBase.h>
 
 #include "ShaderDX.h"
+#include "ProgramBindingsDX.h"
 
 #include <wrl.h>
 #include <d3d12.h>

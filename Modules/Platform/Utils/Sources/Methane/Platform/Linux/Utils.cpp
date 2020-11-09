@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,8 +23,8 @@ MacOS platform utility functions.
 
 #include <Methane/Platform/MacOS/Utils.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
-#include <cassert>
 #include <stdexcept>
 
 namespace Methane::Platform
@@ -38,20 +38,17 @@ void PrintToDebugOutput(__attribute__((unused)) const std::string& msg)
 
 std::string GetExecutableDir()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 std::string GetExecutableFileName()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 std::string GetResourceDir()
 {
-    META_FUNCTION_TASK();
-    throw std::runtime_error("Method is not implemented yet.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
 }
 
 } // namespace Methane::Platform

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,7 +43,7 @@ public:
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
     Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
-    std::string         ToString() const noexcept override;
+    std::string         ToString() const override;
 
     Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
 
@@ -66,13 +66,13 @@ public:
     Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
     Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
     Ptr<Device>           GetSoftwareGpuDevice() const override;
-    std::string           ToString() const noexcept override;
+    std::string           ToString() const override;
 
 protected:
     void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
-    void ClearDevices()                     { m_devices.clear(); }
-    void AddDevice(Ptr<Device>&& device_ptr) { m_devices.emplace_back(std::move(device_ptr)); }
-    void RequestRemoveDevice(Device& device);
+    void ClearDevices() { m_devices.clear(); }
+    void AddDevice(const Ptr<Device>& device_ptr) { m_devices.emplace_back(device_ptr); }
+    void RequestRemoveDevice(Device& device) const;
     void RemoveDevice(Device& device);
 
 private:

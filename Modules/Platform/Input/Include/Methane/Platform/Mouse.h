@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -78,10 +78,10 @@ using Scroll = Data::Point2f;
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
-    const float min_scroll_delta = 0.00001f;
+    const float min_scroll_delta = 0.00001F;
     return std::fabs(scroll_delta.GetY()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY())
                                                              : (std::fabs(scroll_delta.GetX()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
-                                                             : MouseButtonAndDelta(Button::Unknown, 0.f ) );
+                                                             : MouseButtonAndDelta(Button::Unknown, 0.F ) );
 }
 
 class State
@@ -92,12 +92,12 @@ public:
         using Mask = uint32_t;
         enum Value : Mask
         {
-            None        = 0u,
-            Buttons     = 1u << 0u,
-            Position    = 1u << 1u,
-            Scroll      = 1u << 2u,
-            InWindow    = 1u << 3u,
-            All         = ~0u,
+            None        = 0U,
+            Buttons     = 1U << 0U,
+            Position    = 1U << 1U,
+            Scroll      = 1U << 2U,
+            InWindow    = 1U << 3U,
+            All         = ~0U,
         };
 
         using Values = std::array<Value, 4>;

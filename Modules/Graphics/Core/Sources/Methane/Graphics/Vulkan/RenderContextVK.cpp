@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -102,13 +102,13 @@ bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 float RenderContextVK::GetContentScalingFactor() const
 {
     META_FUNCTION_TASK();
-    return 1.f;
+    return 1.F;
 }
 
 uint32_t RenderContextVK::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
-    return 96u;
+    return 96U;
 }
 
 CommandQueueVK& RenderContextVK::GetRenderCommandQueueVK()

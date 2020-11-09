@@ -46,5 +46,3 @@ install(TARGETS ${TARGET}
         DESTINATION ${INCLUDE_DIR}
         COMPONENT Development
 )
-
-add_subdirectory(Test)

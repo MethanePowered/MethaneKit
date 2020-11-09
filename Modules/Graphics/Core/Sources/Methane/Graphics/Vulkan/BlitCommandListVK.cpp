@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,8 +25,7 @@ Vulkan implementation of the blit command list interface.
 #include "CommandQueueVK.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -70,8 +69,7 @@ void BlitCommandListVK::PopDebugGroup()
 void BlitCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    
-    assert(!IsCommitted());
+    META_CHECK_ARG_FALSE(IsCommitted());
     CommandListBase::Commit();
 }
 

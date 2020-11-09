@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,11 +24,14 @@ Base implementation of the resource interface.
 #include "ResourceBase.h"
 #include "TextureBase.h"
 #include "ContextBase.h"
+#include "CoreFormatters.hpp"
 
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
-#include <cassert>
+#include <fmt/format.h>
+
 #include <sstream>
 #include <utility>
 #include <algorithm>
@@ -36,7 +39,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::Barrier::Id::Id(Type type, Resource& resource)
+ResourceBase::Barrier::Id::Id(Type type, const Resource& resource)
     : type(type)
     , resource(resource)
 {
@@ -97,7 +100,7 @@ ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
     META_FUNCTION_TASK();
 }
 
-ResourceBase::Barrier::Barrier(Type type, Resource& resource, State state_before, State state_after)
+ResourceBase::Barrier::Barrier(Type type, const Resource& resource, State state_before, State state_after)
     : Barrier(Id(type, resource), StateChange(state_before, state_after))
 {
     META_FUNCTION_TASK();
@@ -125,13 +128,8 @@ bool ResourceBase::Barrier::operator!=(const Barrier& other) const noexcept
 ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "Resource \"" << id.resource.GetName()
-       << "\" " << GetTypeName(id.type)
-       << " barrier from " << GetStateName(state_change.before)
-       << " to " << GetStateName(state_change.after)
-       << " state";
-    return ss.str();
+    return fmt::format("Resource '{}' {} barrier from {} to {} state",
+                       id.resource.GetName(), GetTypeName(id.type), GetStateName(state_change.before), GetStateName(state_change.after));
 }
 
 std::string ResourceBase::Barrier::GetTypeName(Type type)
@@ -140,16 +138,15 @@ std::string ResourceBase::Barrier::GetTypeName(Type type)
     switch(type)
     {
     case Type::Transition: return "Transition";
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "");
     }
-    assert(0);
-    return "";
 }
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<Resource>& resources, State state_before, State state_after)
+Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after)
 {
     META_FUNCTION_TASK();
     std::set<Barrier> resource_barriers;
-    for (const Ref<Resource>& resource_ref : resources)
+    for (const Ref<const Resource>& resource_ref : resources)
     {
         resource_barriers.emplace(Barrier{
             ResourceBase::Barrier::Type::Transition,
@@ -185,7 +182,7 @@ ResourceBase::Barriers::Set ResourceBase::Barriers::GetSet() const noexcept
     return barriers;
 }
 
-bool ResourceBase::Barriers::Has(Barrier::Type type, Resource& resource, State before, State after)
+bool ResourceBase::Barriers::Has(Barrier::Type type, const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
     const auto barrier_it = m_barriers_map.find(Barrier::Id(type, resource));
@@ -195,25 +192,25 @@ bool ResourceBase::Barriers::Has(Barrier::Type type, Resource& resource, State b
     return barrier_it->second == Barrier::StateChange(before, after);
 }
 
-bool ResourceBase::Barriers::HasTransition(Resource& resource, State before, State after)
+bool ResourceBase::Barriers::HasTransition(const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
     return Has(Barrier::Type::Transition, resource, before, after);
 }
 
-bool ResourceBase::Barriers::Add(Barrier::Type type, Resource& resource, State before, State after)
+bool ResourceBase::Barriers::Add(Barrier::Type type, const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
-    return Add(Barrier::Id(type, resource), Barrier::StateChange(before, after));
+    return AddStateChange(Barrier::Id(type, resource), Barrier::StateChange(before, after));
 }
 
-bool ResourceBase::Barriers::AddTransition(Resource& resource, State before, State after)
+bool ResourceBase::Barriers::AddTransition(const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
-    return Add(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
+    return AddStateChange(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
 }
 
-bool ResourceBase::Barriers::Add(const Barrier::Id& id, const Barrier::StateChange& state_change)
+bool ResourceBase::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     const auto emplace_result = m_barriers_map.emplace(id, state_change);
@@ -245,11 +242,10 @@ Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
     : m_resource_ptr(std::move(resource_ptr))
     , m_offset(offset)
 {
-    if (!m_resource_ptr)
-        throw std::invalid_argument("Can not create Resource Location for an empty resource.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not create resource location for an empty resource");
 }
 
-std::string Resource::GetTypeName(Type type) noexcept
+std::string Resource::GetTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -257,12 +253,11 @@ std::string Resource::GetTypeName(Type type) noexcept
     case Resource::Type::Buffer:  return "Buffer";
     case Resource::Type::Texture: return "Texture";
     case Resource::Type::Sampler: return "Sampler";
-    default:                      assert(0);
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
     }
-    return "Unknown";
 }
 
-std::string Resource::Usage::ToString(Usage::Value usage) noexcept
+std::string Resource::Usage::ToString(Usage::Value usage)
 {
     META_FUNCTION_TASK();
     switch (usage)
@@ -272,12 +267,11 @@ std::string Resource::Usage::ToString(Usage::Value usage) noexcept
     case Resource::Usage::RenderTarget: return "Render Target";
     case Resource::Usage::ReadBack:     return "Read Back";
     case Resource::Usage::Addressable:  return "Addressable";
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(usage, "Unknown");
     }
-    return "Unknown";
 }
 
-std::string Resource::Usage::ToString(Usage::Mask usage_mask) noexcept
+std::string Resource::Usage::ToString(Usage::Mask usage_mask)
 {
     META_FUNCTION_TASK();
 
@@ -352,8 +346,9 @@ Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Dat
     , mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
-    if (depth == 0 || array_size == 0 || mip_levels_count == 0)
-        throw std::invalid_argument("Subresource count can not be zero.");
+    META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
+    META_CHECK_ARG_NOT_ZERO_DESCR(array_size, "subresource count can not be zero");
+    META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
 Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
@@ -362,11 +357,11 @@ Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
     return depth * array_size * mip_levels_count;
 }
 
-void Resource::SubResource::Count::operator+=(const Index& index) noexcept
+void Resource::SubResource::Count::operator+=(const Index& other) noexcept
 {
-    depth            = std::max(depth,            index.depth_slice + 1u);
-    array_size       = std::max(array_size,       index.array_index + 1u);
-    mip_levels_count = std::max(mip_levels_count, index.mip_level   + 1u);
+    depth            = std::max(depth,            other.depth_slice + 1U);
+    array_size       = std::max(array_size,       other.array_index + 1U);
+    mip_levels_count = std::max(mip_levels_count, other.mip_level   + 1U);
 }
 
 bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
@@ -388,14 +383,16 @@ bool Resource::SubResource::Count::operator>=(const Count& other) const noexcept
     return GetRawCount() >= other.GetRawCount();
 }
 
+Resource::SubResource::Count::operator Resource::SubResource::Index() const noexcept
+{
+    META_FUNCTION_TASK();
+    return Resource::SubResource::Index(*this);
+}
+
 Resource::SubResource::Count::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "count(d:" << std::to_string(depth)
-       <<     ", a:" << std::to_string(array_size)
-       <<     ", m:" << std::to_string(mip_levels_count) << ")";
-    return ss.str();
+    return fmt::format("count(d:{}, a:{}, m:{})", depth, array_size, mip_levels_count);
 }
 
 Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
@@ -409,14 +406,20 @@ Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_i
 Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
 {
     META_FUNCTION_TASK();
-    const Data::Size raw_count = count.GetRawCount();
-    if (raw_index >= raw_count)
-        throw std::invalid_argument("Subresource raw index (" + std::to_string(raw_index) + " ) is out of range (count: " + std::to_string(raw_count) + ").");
+    META_CHECK_ARG_LESS(raw_index, count.GetRawCount());
 
     const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
     depth_slice = array_and_depth_index % count.depth;
     array_index = array_and_depth_index / count.depth;
     mip_level   = raw_index % count.mip_levels_count;
+}
+
+Resource::SubResource::Index::Index(const Resource::SubResource::Count& count)
+    : depth_slice(count.depth)
+    , array_index(count.array_size)
+    , mip_level(count.mip_levels_count)
+{
+    META_FUNCTION_TASK();
 }
 
 Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
@@ -439,34 +442,36 @@ bool Resource::SubResource::Index::operator<(const Index& other) const noexcept
            std::tie(other.depth_slice, other.array_index, other.mip_level);
 }
 
-bool Resource::SubResource::Index::operator<(const Count& count) const noexcept
+bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator<(other);
+}
+
+bool Resource::SubResource::Index::operator<(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(count.depth, count.array_size, count.mip_levels_count);
+           std::tie(other.depth, other.array_size, other.mip_levels_count);
 }
 
-bool Resource::SubResource::Index::operator>=(const Count& count) const noexcept
+bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return !operator<(count);
+    return !operator<(other);
 }
 
 Resource::SubResource::Index::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    ss << "index(d:" << std::to_string(depth_slice)
-       <<     ", a:" << std::to_string(array_index)
-       <<     ", m:" << std::to_string(mip_level) << ")";
-    return ss.str();
+    return fmt::format("index(d:{}, a:{}, m:{})", depth_slice, array_index, mip_level);
 }
 
-ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, DescriptorByUsage descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
-    , m_descriptor_by_usage(std::move(descriptor_by_usage))
+    , m_descriptor_by_usage(descriptor_by_usage)
 {
     META_FUNCTION_TASK();
 
@@ -509,37 +514,26 @@ void ResourceBase::InitializeDefaultDescriptors()
 const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) const
 {
     META_FUNCTION_TASK();
-
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    if (descriptor_by_usage_it == m_descriptor_by_usage.end())
-    {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not support \"" + Usage::ToString(usage) + "\" usage");
-    }
+    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                         "resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage));
     return descriptor_by_usage_it->second;
 }
 
 void ResourceBase::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");
 
-    if (sub_resources.empty())
-    {
-        throw std::invalid_argument("Can not set buffer data from empty sub-resources.");
-    }
-
-    Data::Size sub_resources_data_size = 0u;
+    Data::Size sub_resources_data_size = 0U;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (!sub_resource.p_data || !sub_resource.size)
-        {
-            throw std::invalid_argument("Can not set empty subresource data to buffer.");
-        }
+        META_CHECK_ARG_NAME_DESCR("sub_resource", sub_resource.p_data && sub_resource.size, "can not set empty subresource data to buffer");
         sub_resources_data_size += sub_resource.size;
+
         if (m_sub_resource_count_constant)
         {
-            if (sub_resource.index >= m_sub_resource_count)
-                throw std::invalid_argument("Subresource " + static_cast<std::string>(sub_resource.index) +
-                                            " exceeds available subresources range " + static_cast<std::string>(m_sub_resource_count));
+            META_CHECK_ARG_LESS(sub_resource.index, m_sub_resource_count);
         }
         else
         {
@@ -548,12 +542,9 @@ void ResourceBase::SetData(const SubResources& sub_resources)
     }
 
     const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
-    if (sub_resources_data_size > reserved_data_size)
-    {
-        throw std::runtime_error("Can not set more data (" + std::to_string(sub_resources_data_size) +
-                                 ") than allocated buffer size (" + std::to_string(reserved_data_size) + ").");
-    }
+    META_UNUSED(reserved_data_size);
 
+    META_CHECK_ARG_LESS_DESCR(sub_resources_data_size, reserved_data_size + 1, "can not set more data than allocated buffer size");
     m_initialized_data_size = sub_resources_data_size;
 
     if (!m_sub_resource_count_constant)
@@ -564,8 +555,7 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
 Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
 {
-    META_FUNCTION_TASK();
-    throw std::logic_error("Reading data is not allowed for this type of resource.");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(Resource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
 Context& ResourceBase::GetContext() noexcept
@@ -584,44 +574,36 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
 DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
 {
     META_FUNCTION_TASK();
-
     switch (resource_usage)
     {
     case Resource::Usage::ShaderRead:
-    {
         return (m_type == Type::Sampler)
                 ? DescriptorHeap::Type::Samplers
                 : DescriptorHeap::Type::ShaderResources;
-    }
+
     case Resource::Usage::ShaderWrite:
     case Resource::Usage::RenderTarget:
         return (m_type == Type::Texture && static_cast<const TextureBase&>(*this).GetSettings().type == Texture::Type::DepthStencilBuffer)
                 ? DescriptorHeap::Type::DepthStencil
                 : DescriptorHeap::Type::RenderTargets;
-    case Resource::Usage::Unknown:
-        return DescriptorHeap::Type::Undefined;
+
     default:
-        throw std::runtime_error("Resource usage value (" + std::to_string(static_cast<uint32_t>(resource_usage)) + ") does not map to descriptor heap.");
+        META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined, "resource usage does not map to descriptor heap");
     }
 }
 
 const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usage) const
 {
     META_FUNCTION_TASK();
-
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    if (descriptor_by_usage_it == m_descriptor_by_usage.end())
-    {
-        throw std::runtime_error("Resource \"" + GetName() + "\" does not have descriptor for usage \"" + Usage::ToString(usage) + "\"");
-    }
-
+    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                         "Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage));
     return descriptor_by_usage_it->second;
 }
 
 DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 {
     META_FUNCTION_TASK();
-
     DescriptorHeap::Types heap_types;
     for (auto usage_and_descriptor : m_descriptor_by_usage)
     {
@@ -633,18 +615,14 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
-
     if (m_state == state)
         return false;
 
-    META_LOG("Resource \"" + GetName() + "\" state changed from " + GetStateName(m_state) + " to " + GetStateName(state));
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), GetStateName(m_state), GetStateName(state));
 
     if (m_state != State::Common)
     {
-        if (state == State::Common)
-        {
-            throw std::logic_error("Resource can not be transitioned to \"Common\" state.");
-        }
+        META_CHECK_ARG_NOT_EQUAL_DESCR(state, State::Common, "resource can not be transitioned to 'Common' state");
         if (!out_barriers || !out_barriers->HasTransition(*this, m_state, state))
         {
             out_barriers = Barriers::Create();
@@ -674,68 +652,56 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 
     const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(m_sub_resource_count);
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
+    META_UNUSED(sub_resource_data_size);
 
     if (sub_resource.data_range)
     {
-        if (sub_resource.size != sub_resource.data_range->GetLength())
-            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
-                                        " data size ("                          + std::to_string(sub_resource.size) +
-                                        ") differs from length of data range "  + static_cast<std::string>(*sub_resource.data_range));
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource.data_range->GetLength(),
+                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.index);
 
-        if (sub_resource.size > sub_resource_data_size)
-            throw std::out_of_range("Specified sub-resource "                   + static_cast<std::string>(sub_resource.index) +
-                                    " data size ("                              + std::to_string(sub_resource.size) +
-                                    ") is greater than maximum size ("          + std::to_string(sub_resource_data_size) + ")");
+        META_CHECK_ARG_LESS_DESCR(sub_resource.size, sub_resource_data_size + 1,
+                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.index);
     }
     else
     {
-        if (sub_resource.size != sub_resource_data_size)
-            throw std::invalid_argument("Specified sub-resource "               + static_cast<std::string>(sub_resource.index) +
-                                        " data size ("                          + std::to_string(sub_resource.size) +
-                                        ") should be equal to full size ("      + std::to_string(sub_resource_data_size) +
-                                        ") when data range is not specified.");
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource_data_size,
+                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index);
     }
 }
 
 void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const
 {
     META_FUNCTION_TASK();
-    if (sub_resource_index >= m_sub_resource_count)
-        throw std::invalid_argument("Specified sub-resource "   + static_cast<std::string>(sub_resource_index) +
-                                    " is out of range "         + static_cast<std::string>(m_sub_resource_count));
-
+    META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
     if (!sub_resource_data_range)
         return;
 
-    if (sub_resource_data_range && sub_resource_data_range->IsEmpty())
-        throw std::invalid_argument("Specified sub-resource data range can not be empty.");
-
+    META_CHECK_ARG_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), "sub-resource {} data range can not be empty", sub_resource_index);
     const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
-    assert(sub_resource_raw_index < m_sub_resource_sizes.size());
+    META_CHECK_ARG_LESS(sub_resource_raw_index, m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
-    if (sub_resource_data_range->GetEnd() > sub_resource_data_size)
-        throw std::out_of_range("Specified data range "      + static_cast<std::string>(*sub_resource_data_range) +
-                                "is out of data bounds [0, " + std::to_string(sub_resource_data_size) +
-                                ") for subresource "         + static_cast<std::string>(sub_resource_index));
+    META_UNUSED(sub_resource_data_size);
+    META_CHECK_ARG_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, "sub-resource index {}", sub_resource_index);
 }
 
 Data::Size ResourceBase::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const
 {
     META_FUNCTION_TASK();
     static const SubResource::Index s_zero_index;
-    static const SubResource::Count s_one_count;
-    if (subresource_index == s_zero_index && m_sub_resource_count == s_one_count)
-        return GetDataSize();
+    META_CHECK_ARG_EQUAL_DESCR(subresource_index, s_zero_index, "subresource size is undefined, must be provided by super class override");
 
-    throw std::invalid_argument("Subresource size is undefined, must be provided by super class override.");
+    static const SubResource::Count s_one_count;
+    META_CHECK_ARG_EQUAL_DESCR(m_sub_resource_count, s_one_count, "subresource size is undefined, must be provided by super class override");
+
+    return GetDataSize();
 }
 
 void ResourceBase::FillSubresourceSizes()
 {
     META_FUNCTION_TASK();
     const Data::Size curr_subresource_raw_count = m_sub_resource_count.GetRawCount();
-    const Data::Size prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
+    const auto       prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
     if (curr_subresource_raw_count == prev_subresource_raw_count)
         return;
 
@@ -770,9 +736,8 @@ std::string ResourceBase::GetStateName(State state)
     case State::GenericRead:             return "GenericRead";
     case State::Present:                 return "Present";
     case State::Predication:             return "Predication";
+    default:                             META_UNEXPECTED_ENUM_ARG_RETURN(state, "");
     }
-    assert(0);
-    return "";
 }
 
 } // namespace Methane::Graphics

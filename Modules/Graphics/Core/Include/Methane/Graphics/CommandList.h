@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -41,14 +41,14 @@ struct CommandList : virtual Object
 {
     enum class Type : uint32_t
     {
-        Blit = 0u,
+        Blit = 0U,
         Render,
         ParallelRender,
     };
 
     enum State : uint32_t
     {
-        Pending = 0u,
+        Pending = 0U,
         Encoding,
         Committed,
         Executing,
@@ -56,9 +56,9 @@ struct CommandList : virtual Object
 
     struct DebugGroup : virtual Object
     {
-        static Ptr<DebugGroup> Create(std::string name);
+        static Ptr<DebugGroup> Create(const std::string& name);
 
-        virtual DebugGroup& AddSubGroup(Data::Index id, std::string name) = 0;
+        virtual DebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
         virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
         virtual bool        HasSubGroups() const noexcept = 0;
 
@@ -76,7 +76,7 @@ struct CommandList : virtual Object
     virtual void  SetProgramBindings(ProgramBindings& program_bindings,
                                      ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  Commit() = 0;
-    virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0u) = 0;
+    virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
     virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
 
@@ -85,7 +85,7 @@ struct CommandList : virtual Object
 
 struct CommandListSet
 {
-    static Ptr<CommandListSet> Create(Refs<CommandList> command_list_refs);
+    static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs);
 
     virtual Data::Size               GetCount() const noexcept = 0;
     virtual const Refs<CommandList>& GetRefs() const noexcept = 0;

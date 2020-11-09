@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,6 +28,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -48,6 +49,18 @@ struct ScreenQuadVertex
     };
 };
 
+static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shader::MacroDefinitions& macro_definitions)
+{
+    META_FUNCTION_TASK();
+    std::stringstream quad_name_ss;
+    quad_name_ss << "Screen-Quad";
+    if (settings.alpha_blending_enabled)
+        quad_name_ss << " with Alpha-Blending";
+    if (!macro_definitions.empty())
+        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(macro_definitions);
+    return quad_name_ss.str();
+}
+
 ScreenQuad::ScreenQuad(RenderContext& context, Settings settings)
     : ScreenQuad(context, nullptr, settings)
 {
@@ -59,10 +72,12 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
     , m_texture_ptr(std::move(texture_ptr))
 {
     META_FUNCTION_TASK();
-    if (m_settings.texture_mode != TextureMode::Disabled && !m_texture_ptr)
-        throw std::invalid_argument("Screen-quad texture can not be empty when quad texturing is enabled.");
+    if (m_settings.texture_mode != TextureMode::Disabled)
+    {
+        META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "screen-quad texture can not be empty when quad texturing is enabled");
+    }
 
-    static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.f, 2.f);
+    static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const RenderContext::Settings&          context_settings              = context.GetSettings();
     const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentDescriptions           program_argument_descriptions = {
@@ -75,15 +90,9 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
     }
 
-    std::stringstream quad_name_ss;
-    quad_name_ss << "Screen-Quad";
-    if (m_settings.alpha_blending_enabled)
-        quad_name_ss << " with Alpha-Blending";
-    if (!ps_macro_definitions.empty())
-        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(ps_macro_definitions);
-
-    const std::string s_state_name = quad_name_ss.str() + " Render State";
-    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(s_state_name));
+    const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
+    const std::string state_name = fmt::format("{} Render State", quad_name);
+    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(state_name));
     if (!m_render_state_ptr)
     {
         RenderState::Settings state_settings;
@@ -110,7 +119,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
                 context_settings.depth_stencil_format
             }
         );
-        state_settings.program_ptr->SetName(quad_name_ss.str() + " Shading");
+        state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -121,7 +130,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Setting
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
 
         m_render_state_ptr = RenderState::Create(context, state_settings);
-        m_render_state_ptr->SetName(s_state_name);
+        m_render_state_ptr->SetName(state_name);
 
         m_context.GetObjectsRegistry().AddGraphicsObject(*m_render_state_ptr);
     }
@@ -238,35 +247,31 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
 {
     META_FUNCTION_TASK();
-    if (m_settings.texture_mode == TextureMode::Disabled)
-        throw std::logic_error("Can not set texture of screen quad with Disabled texture mode.");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
+    META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "can not set null texture to screen quad");
 
     if (m_texture_ptr.get() == texture_ptr.get())
         return;
 
-    if (!texture_ptr)
-        throw std::invalid_argument("Can not set null texture to screen quad.");
-
     m_texture_ptr = texture_ptr;
 
     const Ptr<ProgramBindings::ArgumentBinding>& texture_binding_ptr = m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" });
-    if (!texture_binding_ptr)
-        throw std::logic_error("Can not find screen quad texture argument binding.");
+    META_CHECK_ARG_NOT_NULL_DESCR(texture_binding_ptr, "can not find screen quad texture argument binding");
 
     texture_binding_ptr->SetResourceLocations({ { m_texture_ptr } });
 }
 
-const Texture& ScreenQuad::GetTexture() const noexcept
+const Texture& ScreenQuad::GetTexture() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_texture_ptr);
+    META_CHECK_ARG_NOT_NULL(m_texture_ptr);
     return *m_texture_ptr;
 }
 
 void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
-    cmd_list.Reset(m_render_state_ptr, p_debug_group);
+    cmd_list.ResetWithState(m_render_state_ptr, p_debug_group);
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(*m_const_program_bindings_ptr);
     cmd_list.SetVertexBuffers(*m_vertex_buffer_set_ptr);
@@ -307,6 +312,9 @@ Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode 
         macro_definitions.emplace_back("RMASK", "r");
         macro_definitions.emplace_back("WMASK", "a");
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(texture_mode);
     };
 
     return macro_definitions;

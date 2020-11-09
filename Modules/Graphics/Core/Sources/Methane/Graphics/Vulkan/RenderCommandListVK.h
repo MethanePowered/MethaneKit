@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -38,7 +38,7 @@ class RenderCommandListVK final : public RenderCommandListBase
 {
 public:
     RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
     void PushDebugGroup(DebugGroup& debug_group) override;
@@ -50,7 +50,7 @@ public:
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
-    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
     void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class CommandListDebugGroupMT : public CommandListBase::DebugGroupBase
 {
 public:
-    CommandListDebugGroupMT(std::string name);
+    explicit CommandListDebugGroupMT(const std::string& name);
 
     NSString* _Nonnull GetNSName() const noexcept { return m_ns_name; }
 
@@ -44,7 +44,7 @@ private:
 class CommandListSetMT final : public CommandListSetBase
 {
 public:
-    CommandListSetMT(Refs<CommandList> command_list_refs);
+    explicit CommandListSetMT(const Refs<CommandList>& command_list_refs);
 };
 
 } // namespace Methane::Graphics

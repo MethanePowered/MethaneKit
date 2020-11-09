@@ -11,6 +11,21 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -22,6 +37,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -73,6 +93,21 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -84,6 +119,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -135,6 +175,21 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -146,6 +201,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -197,6 +257,21 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -208,6 +283,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -259,6 +339,21 @@
             "ctestCommandArgs": "",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -270,6 +365,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -321,6 +421,21 @@
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -332,6 +447,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -383,6 +503,21 @@
             "inheritEnvironments": [ "clang_cl_x64" ],
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -395,6 +530,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -450,6 +590,21 @@
             "inheritEnvironments": [ "clang_cl_x64" ],
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -461,6 +616,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -517,6 +677,21 @@
             "inheritEnvironments": [ "clang_cl_x64" ],
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -528,6 +703,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -588,6 +768,21 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -600,6 +795,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -654,6 +854,21 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -666,6 +881,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -720,6 +940,21 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -732,6 +967,11 @@
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
                     "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
                     "type": "BOOL"
                 },
                 {
@@ -786,6 +1026,21 @@
             "addressSanitizerRuntimeFlags": "detect_leaks=0",
             "variables": [
                 {
+                    "name": "METHANE_APPS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TESTS_BUILD_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CHECKS_ENABLED",
+                    "value": "true",
+                    "type": "BOOL"
+                },
+                {
                     "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
                     "value": "True",
                     "type": "BOOL"
@@ -797,6 +1052,11 @@
                 },
                 {
                     "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },

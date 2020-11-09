@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class PerlinNoise
 {
 public:
-    PerlinNoise(float persistence = 0.5f, size_t octaves_count = 4);
+    PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
     
     float operator()(Vector2f pos) const;
     float operator()(Vector3f pos) const;

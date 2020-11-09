@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,8 +23,9 @@ Metal implementation of the device interface.
 
 #include "DeviceMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <algorithm>
 
@@ -104,8 +105,7 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
     else
     {
         const Ptr<Device>& device_ptr = FindMetalDevice(mtl_device);
-        if (!device_ptr)
-            throw std::logic_error("No device object found");
+        META_CHECK_ARG_NOT_NULL_DESCR(device_ptr, "no device object found");
 
         if (device_notification == MTLDeviceRemovalRequestedNotification)
             RequestRemoveDevice(*device_ptr);
@@ -131,8 +131,7 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
     const auto device_it = std::find_if(devices.begin(), devices.end(),
                                         [mtl_device](const Ptr<Device>& device_ptr)
                                         {
-                                            assert(!!device_ptr);
-                                            if (!device_ptr) return false;
+                                            META_CHECK_ARG_NOT_NULL(device_ptr);
                                             DeviceMT& metal_device = static_cast<DeviceMT&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });

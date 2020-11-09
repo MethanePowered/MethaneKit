@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,23 +27,16 @@ Base implementation of the command list interface.
 #include "ResourceBase.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason
 //#define METHANE_DEBUG_GROUP_FRAMES_ENABLED
-#ifndef METHANE_DEBUG_GROUP_FRAMES_ENABLED
-#undef META_CPU_FRAME_START
-#define META_CPU_FRAME_START(name)
-#undef META_CPU_FRAME_END
-#define META_CPU_FRAME_END(name)
-#endif
 
 namespace Methane::Graphics
 {
 
-std::string CommandListBase::GetTypeName(Type type) noexcept
+std::string CommandListBase::GetTypeName(Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -51,11 +44,11 @@ std::string CommandListBase::GetTypeName(Type type) noexcept
     case CommandList::Type::Blit:           return "Blit";
     case CommandList::Type::Render:         return "Render";
     case CommandList::Type::ParallelRender: return "ParallelRender";
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(type, "Undefined");
     }
-    return "Undefined";
 }
 
-std::string CommandListBase::GetStateName(State state) noexcept
+std::string CommandListBase::GetStateName(State state)
 {
     META_FUNCTION_TASK();
     switch (state)
@@ -64,17 +57,22 @@ std::string CommandListBase::GetStateName(State state) noexcept
     case State::Encoding:  return "Encoding";
     case State::Committed: return "Committed";
     case State::Executing: return "Executing";
+    default:               META_UNEXPECTED_ENUM_ARG_RETURN(state, "Undefined");
     }
-    return "Undefined";
 }
 
-CommandListBase::DebugGroupBase::DebugGroupBase(std::string name)
-    : ObjectBase(std::move(name))
+CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
+    : ObjectBase(name)
 {
     META_FUNCTION_TASK();
 }
 
-CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, std::string name)
+void CommandListBase::DebugGroupBase::SetName(const std::string&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Debug Group can not be renamed");
+}
+
+CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())
@@ -82,7 +80,7 @@ CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Inde
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(std::move(name));
+    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(name);
     m_sub_groups[id] = sub_group_ptr;
     return *sub_group_ptr;
 }
@@ -101,14 +99,14 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 {
     META_FUNCTION_TASK();
     TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was created.");
+    META_LOG("{} Command list '{}' was created", GetTypeName(), GetName());
     META_UNUSED(m_tracy_gpu_scope); // silence unused member warning on MacOS when Tracy GPU profiling
 }
 
 CommandListBase::~CommandListBase()
 {
     META_FUNCTION_TASK();
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was destroyed.");
+    META_LOG("{} Command list '{}' was destroyed", GetTypeName(), GetName());
 }
 
 void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
@@ -116,8 +114,10 @@ void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
     META_FUNCTION_TASK();
     VerifyEncodingState();
 
+#ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_START(debug_group.GetName().c_str());
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" PUSH debug group \"" + debug_group.GetName() + "\"");
+#endif
+    META_LOG("{} Command list '{}' PUSH debug group '{}'", GetTypeName(), GetName(), debug_group.GetName());
 
     PushOpenDebugGroup(debug_group);
 }
@@ -127,11 +127,14 @@ void CommandListBase::PopDebugGroup()
     META_FUNCTION_TASK();
     if (m_open_debug_groups.empty())
     {
-        throw std::underflow_error("Can not pop debug group, since no debug groups were pushed.");
+        throw std::underflow_error("Can not pop debug group, since no debug groups were pushed");
     }
 
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" POP debug group \"" + GetTopOpenDebugGroup()->GetName() + "\"");
+    META_LOG("{} Command list '{}' POP debug group '{}'", GetTypeName(), GetName(), GetTopOpenDebugGroup()->GetName());
+#ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().c_str());
+#endif
+
     m_open_debug_groups.pop();
 }
 
@@ -139,10 +142,9 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
-    if (m_state == State::Committed || m_state == State::Executing)
-        throw std::logic_error("Can not reset command list in committed or executing state.");
 
-    META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" RESET for commands encoding.");
+    META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
+    META_LOG("{} Command list '{}' RESET commands encoding", GetTypeName(), GetName());
 
     SetCommandListStateNoLock(State::Encoding);
 
@@ -168,12 +170,12 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     if (m_command_state.program_bindings_ptr.get() == &program_bindings)
         return;
 
-    ProgramBindingsBase& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
+    auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);
 
     Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
     m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
-    RetainResource(std::move(program_bindings_object_ptr));
+    RetainResource(program_bindings_object_ptr);
 }
 
 void CommandListBase::Commit()
@@ -181,11 +183,12 @@ void CommandListBase::Commit()
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Encoding)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in \"" + GetStateName(m_state) + "\" state can not be committed. Only command lists in \"Encoding\" state can be committed.");
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
+                               "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" COMMIT on frame " + std::to_string(GetCurrentFrameIndex()));
+    META_LOG("{} Command list '{}' COMMIT on frame {}", GetTypeName(), GetName(), GetCurrentFrameIndex());
 
     m_committed_frame_index = GetCurrentFrameIndex();
 
@@ -205,9 +208,9 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     if (is_completed())
         return;
 
-    META_LOG("WAIT for completion of " + GetTypeName(m_type) + " Command list \"" + GetName() + "\".");
+    META_LOG("{} Command list '{}' WAITING for completion", GetTypeName(), GetName());
 
-    if (timeout_ms == 0u)
+    if (timeout_ms == 0U)
     {
         m_state_change_condition_var.wait(pending_state_lock, is_completed);
     }
@@ -222,13 +225,15 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
     META_FUNCTION_TASK();
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
-    if (m_state != State::Committed)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be executed. Only Committed command lists can be executed.");
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Committed,
+                               "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
 
-    if (m_committed_frame_index != frame_index)
-        throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be executed on frame " + std::to_string(frame_index));
+    META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
+                               "{} command list '{}' committed on frame {} can not be executed on frame {}",
+                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
 
-    META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" EXECUTE on frame " + std::to_string(frame_index));
+    META_LOG("{} Command list '{}' EXECUTE on frame {}", GetTypeName(), GetName(), frame_index);
 
     m_completed_callback = completed_callback;
 
@@ -238,25 +243,29 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
 void CommandListBase::Complete(uint32_t frame_index)
 {
     META_FUNCTION_TASK();
-    {
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
-
-        if (m_state != State::Executing)
-            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" in " + GetStateName(m_state) + " state can not be completed. Only Executing command lists can be completed.");
-
-        if (m_committed_frame_index != frame_index)
-            throw std::logic_error(GetTypeName() + " Command list \"" + GetName() + "\" committed on frame " + std::to_string(m_committed_frame_index) + " can not be completed on frame " + std::to_string(frame_index));
-
-        SetCommandListStateNoLock(State::Pending);
-        ResetCommandState();
-
-        TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
-        META_LOG(GetTypeName() + " Command list \"" + GetName() + "\" was COMPLETED on frame " + std::to_string(frame_index) +
-                 ", GPU time range: " + static_cast<std::string>(GetGpuTimeRange(true)));
-    }
+    CompleteInternal(frame_index);
 
     if (m_completed_callback)
         m_completed_callback(*this);
+}
+
+void CommandListBase::CompleteInternal(uint32_t frame_index)
+{
+    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Executing,
+                               "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
+                               GetTypeName(), GetName(), GetStateName(m_state));
+
+    META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
+                               "{} command list '{}' committed on frame {} can not be completed on frame {}",
+                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
+
+    SetCommandListStateNoLock(State::Pending);
+    ResetCommandState();
+
+    TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
+    META_LOG("{} Command list '{}' was COMPLETED on frame {} with GPU timings {}", GetTypeName(), GetName(), frame_index, static_cast<std::string>(GetGpuTimeRange(true)));
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -293,7 +302,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     if (m_state == state)
         return;
 
-    META_LOG(GetTypeName(m_type) + " Command list \"" + GetName() + "\" change state from " + GetStateName(m_state) + " to " + GetStateName(state));
+    META_LOG("{} Command list '{}' change state from {} to {}", GetTypeName(), GetName(), GetStateName(m_state), GetStateName(state));
 
     m_state = state;
     m_state_change_condition_var.notify_one();
@@ -302,7 +311,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 CommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
-    assert(!!m_command_queue_ptr);
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return static_cast<CommandQueueBase&>(*m_command_queue_ptr);
 }
 
@@ -319,38 +328,34 @@ void CommandListBase::ResetCommandState()
     m_command_state.retained_resources.clear();
 }
 
-CommandQueueBase& CommandListBase::GetCommandQueueBase() noexcept
+CommandQueueBase& CommandListBase::GetCommandQueueBase()
 {
     META_FUNCTION_TASK();
     return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
 }
 
-const CommandQueueBase& CommandListBase::GetCommandQueueBase() const noexcept
+const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_command_queue_ptr);
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
 }
 
-CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
-    : m_refs(std::move(command_list_refs))
+CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs)
+    : m_refs(command_list_refs)
 {
     META_FUNCTION_TASK();
-    if (m_refs.empty())
-    {
-        throw std::invalid_argument("Creating of empty command lists sequence is not allowed.");
-    }
+    META_CHECK_ARG_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
 
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
-    CommandQueue& command_queue = m_refs.front().get().GetCommandQueue();
+
     for(const Ref<CommandList>& command_list_ref : m_refs)
     {
-        CommandListBase& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
-        if (std::addressof(command_list_base.GetCommandQueue()) != std::addressof(command_queue))
-        {
-            throw std::invalid_argument("All command lists in sequence must be created in one command queue.");
-        }
+        auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
+        META_CHECK_ARG_NAME_DESCR("command_list_refs",
+                                  std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
+                                  "all command lists in set must be created in one command queue");
 
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
@@ -360,9 +365,7 @@ CommandListSetBase::CommandListSetBase(Refs<CommandList> command_list_refs)
 CommandList& CommandListSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    if (index > m_refs.size())
-        throw std::out_of_range("Command list index " + std::to_string(index) +
-                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
+    META_CHECK_ARG_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }
@@ -377,7 +380,7 @@ void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::Com
     }
 }
 
-void CommandListSetBase::Complete() noexcept
+void CommandListSetBase::Complete() const
 {
     META_FUNCTION_TASK();
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
@@ -386,26 +389,14 @@ void CommandListSetBase::Complete() noexcept
         if (command_list.GetState() != CommandListBase::State::Executing)
             continue;
 
-        try
-        {
-            command_list_ref.get().Complete(m_executing_on_frame_index);
-        }
-        catch(std::exception& ex)
-        {
-            META_UNUSED(ex);
-            META_LOG(std::string("Failed to complete command list execution, exception occurred: ") + ex.what());
-            assert(false);
-        }
+        command_list.Complete(m_executing_on_frame_index);
     }
 }
 
 const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index) const
 {
     META_FUNCTION_TASK();
-    if (index > m_base_refs.size())
-        throw std::out_of_range("Command list index " + std::to_string(index) +
-                                " is out of collection range (size = " + std::to_string(m_refs.size()) + ").");
-
+    META_CHECK_ARG_LESS(index, m_base_refs.size());
     return m_base_refs[index].get();
 }
 

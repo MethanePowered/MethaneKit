@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -42,7 +42,7 @@ class Container
     , public Data::Emitter<IContainerCallback>
 {
 public:
-    Container(Context& ui_context, const UnitRect& ui_rect = {}, Ptrs<Item> children = {});
+    Container(Context& ui_context, const UnitRect& ui_rect = {}, const Ptrs<Item>& children = {});
 
     const Ptrs<Item>& GetChildren() const noexcept { return m_children; }
 

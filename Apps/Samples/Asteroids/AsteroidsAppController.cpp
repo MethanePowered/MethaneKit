@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,6 +25,7 @@ Asteroids application controller.
 #include "AsteroidsApp.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Samples
 {
@@ -68,15 +69,15 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         break;
 
     case AsteroidsAppAction::IncreaseMeshLodComplexity:
-        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.f);
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() / 2.F);
         break;
 
     case AsteroidsAppAction::DecreaseMeshLodComplexity:
-        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.f);
+        m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.F);
         break;
         
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -91,9 +92,8 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
     case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
     case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
-    default: assert(0);
+    default:                                            META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
-    return "";
 }
 
 Platform::Input::IHelpProvider::HelpLines AsteroidsAppController::GetHelp() const

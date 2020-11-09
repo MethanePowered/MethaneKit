@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -66,7 +66,7 @@ struct Buffer : virtual Resource
 
     // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
-    static std::string GetBufferTypeName(Type type) noexcept;
+    static std::string GetBufferTypeName(Type type);
 
     // Buffer interface
     virtual const Settings& GetSettings() const noexcept = 0;
@@ -75,8 +75,8 @@ struct Buffer : virtual Resource
 
 struct BufferSet
 {
-    static Ptr<BufferSet> Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
-    static Ptr<BufferSet> CreateVertexBuffers(Refs<Buffer> buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, std::move(buffer_refs)); }
+    static Ptr<BufferSet> Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    static Ptr<BufferSet> CreateVertexBuffers(const Refs<Buffer>& buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, buffer_refs); }
 
     virtual Buffer::Type        GetType() const noexcept = 0;
     virtual Data::Size          GetCount() const noexcept = 0;

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -34,26 +34,16 @@ class SphereMesh : public BaseMesh<VType>
 public:
     using BaseMeshT = BaseMesh<VType>;
 
-    explicit SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.f, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
+    explicit SphereMesh(const Mesh::VertexLayout& vertex_layout, float radius = 1.F, uint32_t lat_lines_count = 10, uint32_t long_lines_count = 16)
         : BaseMeshT(Mesh::Type::Sphere, vertex_layout)
         , m_radius(radius)
         , m_lat_lines_count(lat_lines_count)
         , m_long_lines_count(long_lines_count)
     {
         META_FUNCTION_TASK();
-
-        if (Mesh::HasVertexField(Mesh::VertexField::Color))
-        {
-            throw std::invalid_argument("Colored vertices are not supported for sphere mesh.");
-        }
-        if (m_lat_lines_count < 3)
-        {
-            throw std::invalid_argument("Latitude lines count should not be less than 3.");
-        }
-        if (m_long_lines_count < 3)
-        {
-            throw std::invalid_argument("Longitude lines count should not be less than 3.");
-        }
+        META_CHECK_ARG_NAME_DESCR("vertex_layout", !Mesh::HasVertexField(Mesh::VertexField::Color), "colored vertices are not supported by sphere mesh");
+        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(m_lat_lines_count,  3, "latitude lines count should not be less than 3");
+        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(m_long_lines_count, 3, "longitude lines count should not be less than 3");
 
         GenerateSphereVertices();
         GenerateSphereIndices();
@@ -87,21 +77,21 @@ private:
             Mesh::Position& first_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Position);
             Mesh::Position& last_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Position);
 
-            first_vertex_position = Mesh::Position(0.f, m_radius, 0.f);
-            last_vertex_position = Mesh::Position(0.f, -m_radius, 0.f);
+            first_vertex_position = Mesh::Position(0.F, m_radius, 0.F);
+            last_vertex_position = Mesh::Position(0.F, -m_radius, 0.F);
 
             if (has_normals)
             {
                 Mesh::Normal& first_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Normal);
                 Mesh::Normal& last_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Normal);
 
-                first_vertex_normal = Mesh::Normal(0.f, 1.f, 0.f);
-                last_vertex_normal = Mesh::Normal(0.f, -1.f, 0.f);
+                first_vertex_normal = Mesh::Normal(0.F, 1.F, 0.F);
+                last_vertex_normal = Mesh::Normal(0.F, -1.F, 0.F);
             }
         }
 
-        const float texcoord_long_spacing = 1.f / (actual_long_lines_count - 1);
-        const float texcoord_lat_spacing  = 1.f / (m_lat_lines_count + 1);
+        const float texcoord_long_spacing = 1.F / (actual_long_lines_count - 1);
+        const float texcoord_lat_spacing  = 1.F / (m_lat_lines_count + 1);
 
         Matrix33f pitch_step_matrix{ }, yaw_step_matrix{ };
         cml::matrix_rotation_world_x(pitch_step_matrix, -cml::constants<float>::pi() / (m_lat_lines_count - 1));
@@ -129,12 +119,12 @@ private:
                 VType& vertex = BaseMeshT::m_vertices[vertex_index];
                 {
                     Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                    vertex_position = Mesh::Position(0.f, m_radius, 0.f) * rotation_matrix;
+                    vertex_position = Mesh::Position(0.F, m_radius, 0.F) * rotation_matrix;
                 }
                 if (has_normals)
                 {
                     Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-                    vertex_normal = Mesh::Normal(0.f, 1.f, 0.f) * rotation_matrix;
+                    vertex_normal = Mesh::Normal(0.F, 1.F, 0.F) * rotation_matrix;
                 }
                 if (has_texcoord)
                 {

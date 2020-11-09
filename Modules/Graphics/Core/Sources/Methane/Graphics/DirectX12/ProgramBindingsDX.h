@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -70,8 +70,13 @@ public:
             uint32_t             count     = 0;
         };
 
-        ArgumentBindingDX(const ContextBase& context, SettingsDX settings);
+        ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
+        ArgumentBindingDX(ArgumentBindingDX&&) noexcept = default;
+        ~ArgumentBindingDX() override = default;
+
+        ArgumentBindingDX& operator=(const ArgumentBindingDX&) = delete;
+        ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
@@ -89,13 +94,12 @@ public:
         const SettingsDX                   m_settings_dx;
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation  = nullptr;
+        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
         ResourceDX::LocationsDX            m_resource_locations_dx;
     };
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
-    ~ProgramBindingsDX() override;
 
     void Initialize();
 
@@ -103,15 +107,15 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
-    void Apply(ICommandListDX& command_list_dx, ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
+    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
 
 private:
     struct RootParameterBinding
     {
         ArgumentBindingDX&          argument_binding;
-        uint32_t                    root_parameter_index = 0u;
+        uint32_t                    root_parameter_index = 0U;
         D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      {  };
-        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0u;
+        D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0U;
     };
 
     struct ResourceState
@@ -120,8 +124,8 @@ private:
         ResourceBase::State   state;
     };
 
-    using ArgumentBindingFunc = std::function<void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
-    void ForEachArgumentBinding(const ArgumentBindingFunc& argument_binding_function) const;
+    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
+    void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();

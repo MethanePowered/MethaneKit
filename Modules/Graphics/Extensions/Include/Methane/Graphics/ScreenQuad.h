@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -45,7 +45,7 @@ class ScreenQuad
 public:
     enum class TextureMode : uint32_t
     {
-        Disabled = 0u,
+        Disabled = 0U,
         RgbaFloat,
         RFloatToAlpha,
     };
@@ -55,7 +55,7 @@ public:
         const std::string name;
         FrameRect         screen_rect;
         bool              alpha_blending_enabled = false;
-        Color4f           blend_color            { 1.f, 1.f, 1.f, 1.f };
+        Color4f           blend_color            { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
@@ -69,7 +69,7 @@ public:
 
     const Settings& GetSettings() const noexcept { return m_settings; }
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
-    const Texture&  GetTexture() const noexcept;
+    const Texture&  GetTexture() const;
 
     void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 

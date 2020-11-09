@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -63,12 +63,6 @@ void SamplerVK::SetName(const std::string& name)
 void SamplerVK::ResetSamplerState()
 {
     META_FUNCTION_TASK();
-}
-
-IContextVK& SamplerVK::GetContextVK() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContextBase());
 }
 
 } // namespace Methane::Graphics

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,8 +25,9 @@ Metal implementation of the command queue interface.
 #include "DeviceMT.hh"
 #include "RenderContextMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <QuartzCore/CABase.h>
 
@@ -61,10 +62,10 @@ CommandQueueMT::~CommandQueueMT()
 void CommandQueueMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
 
     CommandQueueBase::SetName(name);
 
-    assert(m_mtl_command_queue != nil);
     m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
@@ -78,10 +79,7 @@ RenderContextMT& CommandQueueMT::GetRenderContextMT()
 {
     META_FUNCTION_TASK();
     ContextBase& context = GetContext();
-    if (context.GetType() != Context::Type::Render)
-    {
-        throw std::runtime_error("Incompatible context type.");
-    }
+    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Context::Type::Render, "incompatible context type");
     return static_cast<RenderContextMT&>(context);
 }
 

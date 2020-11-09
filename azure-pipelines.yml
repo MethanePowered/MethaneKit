@@ -33,11 +33,18 @@ resources:
 
 variables:
 
-  productMajorVersion: 0
-  productMinorVersion: 5
+  product.Version.Major: 0
+  product.Version.Minor: 5
+  product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(Build.BuildNumber)'
 
-  buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(productMajorVersion)
-    -DMETHANE_VERSION_MINOR=$(productMinorVersion)
+  sonar.CloudName: 'Evgeny Gorodetsky Sonar Cloud'
+  sonar.Organization: 'egorodet-github'
+  sonar.Sources: 'Apps,Modules'
+  sonar.Tests: 'Tests'
+  sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
+
+  buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
+    -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
     -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
@@ -64,6 +71,11 @@ variables:
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=ON
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=ON'
 
+  buildScanCmakeFlags: '-DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=ON
+    -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF
+    -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF'
+
 jobs:
 
 - job: Windows_x64
@@ -72,16 +84,15 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    platform: 'Win64'
+    platform: 'x64'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
-    buildName: '$(platform)-$(configuration)'
+    cmakeFlags: $(buildReleaseCmakeFlags)
+    buildName: 'Win64-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -92,16 +103,15 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    platform: 'Win64'
+    platform: 'x64'
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -A x64 $(buildProfilingCmakeFlags)
-    buildName: '$(platform)-$(configuration)-Profiling'
+    cmakeFlags: $(buildProfilingCmakeFlags)
+    buildName: 'Win64-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -115,13 +125,12 @@ jobs:
     platform: 'Win32'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -A Win32 $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags)
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -135,13 +144,12 @@ jobs:
     platform: 'Win32'
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -A Win32 $(buildProfilingCmakeFlags)
+    cmakeFlags: $(buildProfilingCmakeFlags)
     buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -153,19 +161,19 @@ jobs:
 
   variables:
     platform: 'x64'
-    configuration: 'Release'
+    configuration: 'Debug'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -A x64 $(buildReleaseCmakeFlags)
-    buildName: '$(platform)-$(configuration)-SonarScan'
+    cmakeFlags: $(buildScanCmakeFlags)
+    buildName: 'Win64-$(configuration)-SonarScan'
     buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
     vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
-    sonarCacheDir: '$(Pipeline.Workspace)\WindowsSonarCache'
-    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
-    sonarBuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
-    sonarBuildCommand: MSBuild.exe MethaneKit.sln /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
-    sonarProjectKey: 'egorodet_MethaneKit_Windows'
+    sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
+    sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
+    sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
+    sonar.BuildCommand: MSBuild.exe INSTALL.vcxproj /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
 
   steps:
     - template: Build/Windows/AzureSonarScan.yml
@@ -173,7 +181,7 @@ jobs:
 - job: MacOS
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
@@ -185,7 +193,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -193,7 +200,7 @@ jobs:
 - job: MacOS_Profiling
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
@@ -205,7 +212,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -213,25 +219,52 @@ jobs:
 - job: MacOS_Sonar_Scan
 
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
 
   variables:
     platform: 'MacOS'
-    configuration: 'Release'
+    configuration: 'Debug'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
     rootDir: '../../../..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
-    sonarCacheDir: '$(Pipeline.Workspace)/MacSonarCache'
-    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
-    sonarBuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
-    sonarBuildCommand: xcodebuild -project MethaneKit.xcodeproj -configuration $(configuration) clean build
-    sonarProjectKey: 'egorodet_MethaneKit_MacOS'
+    coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
+    sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
+    sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
+    sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
+    sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -target install -configuration $(configuration) clean build
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
+      parameters:
+        extraScanSteps:
+          - bash: |
+              result_ext='.xml'
+              prof_data_ext='.profdata'
+              prof_raw_ext='.profraw'
+              lcov_ext='.lcov'
+              echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
+              mkdir Results
+              mkdir Coverage
+              for test_exe in *Test
+              do
+                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+                echo  - $test_exe - completed with $? exit status
+                if [ ! -f default.profraw ]; then
+                  continue
+                fi
+                mv default.profraw "$test_exe$prof_raw_ext"
+                xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
+                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+                echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
+              done
+              echo List of generated coverage files in directory $PWD/Coverage
+              ls -la ./Coverage
+            workingDirectory: '$(installDir)/Tests'
+            displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
 - job: Ubuntu
 
@@ -248,7 +281,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -260,18 +292,41 @@ jobs:
 
   variables:
     platform: 'Ubuntu'
-    configuration: 'Release'
+    configuration: 'Debug'
     generatorName: '"Unix Makefiles"'
-    cmakeFlags: $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags)
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
     rootDir: '../../../..'
-    productFullVersion: '$(productMajorVersion).$(productMinorVersion).$(Build.BuildNumber)'
-    sonarCacheDir: '$(Pipeline.Workspace)/LinuxSonarCache'
-    sonarBuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
-    sonarBuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
-    sonarBuildCommand: make clean all
-    sonarProjectKey: 'egorodet_MethaneKit_Linux'
+    coverageReports: '$(buildDir)/MethaneTestCoverage.info'
+    sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
+    sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
+    sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
+    sonar.BuildCommand: make install
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
+      parameters:
+        extraInitSteps:
+          - bash: |
+              sudo apt-get update
+              sudo apt-get install lcov
+            displayName: 'Install prerequisite packages on Linux'
+        extraScanSteps:
+          - bash: |
+              result_ext='.xml'
+              echo Running unit-tests in directory $PWD
+              mkdir Results
+              for test_exe in *Test
+              do
+                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+                echo  - $test_exe - completed with $? exit status
+              done
+            workingDirectory: '$(installDir)/Tests'
+            displayName: 'Run all unit-tests from install directory'
+          - bash: |
+              make MethaneTestCoverage
+            workingDirectory: '$(buildDir)'
+            displayName: 'Collect tests code coverage using ctest and gcov/lcov on Linux'

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,6 +31,7 @@ Vulkan implementation of the render state interface.
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -78,7 +79,7 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
 
-    RenderCommandListVK& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+    auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
     META_UNUSED(vulkan_command_list);
 }
 
@@ -103,10 +104,7 @@ RenderStateVK::~RenderStateVK()
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!settings.program_ptr)
-    {
-        throw std::invalid_argument("Can not create state with empty program.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
 
     RenderStateBase::Reset(settings);
     ResetNativeState();

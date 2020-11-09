@@ -251,6 +251,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ResourceManager.cpp
     ${SOURCES_DIR}/QueryBuffer.h
     ${SOURCES_DIR}/QueryBuffer.cpp
+    ${SOURCES_DIR}/CoreFormatters.hpp
 )
 
 add_library(${TARGET} STATIC
@@ -300,7 +301,7 @@ set_target_properties(${TARGET}
         FOLDER Modules/Graphics
         PUBLIC_HEADER "${HEADERS}"
         PREREQUISITE_MODULES "DirectXCompiler"
-        UNITY_BUILD ON
+        UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 6
 )
 

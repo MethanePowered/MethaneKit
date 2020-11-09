@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,10 +23,9 @@ Abstract mesh class
 
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
-
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -39,17 +38,17 @@ const Mesh::VertexFieldSizes Mesh::g_vertex_field_sizes {{
 }};
 
 const Mesh::Positions2D Mesh::g_face_positions_2d { // Quad vertices in clockwise order
-    { -0.5f, -0.5f },
-    { -0.5f,  0.5f },
-    {  0.5f,  0.5f },
-    {  0.5f, -0.5f }
+    { -0.5F, -0.5F },
+    { -0.5F,  0.5F },
+    {  0.5F,  0.5F },
+    {  0.5F, -0.5F }
 };
 
 const Mesh::TexCoords   Mesh::g_face_texcoords{ // Quad texture-coords for the vertices above
-    { 0.0f, 1.0f },
-    { 0.0f, 0.0f },
-    { 1.0f, 0.0f },
-    { 1.0f, 1.0f },
+    { 0.0F, 1.0F },
+    { 0.0F, 0.0F },
+    { 1.0F, 0.0F },
+    { 1.0F, 1.0F },
 };
 
 const Mesh::Indices     Mesh::g_face_indices{ // Face indices in quad to form two triangles in clockwise order
@@ -57,12 +56,12 @@ const Mesh::Indices     Mesh::g_face_indices{ // Face indices in quad to form tw
 };
 
 const Mesh::Colors      Mesh::g_colors{
-    { 1.0f, 0.0f, 0.0f, 1.0f },
-    { 0.0f, 1.0f, 0.0f, 1.0f },
-    { 0.0f, 0.0f, 1.0f, 1.0f },
-    { 1.0f, 0.0f, 1.0f, 1.0f },
-    { 1.0f, 1.0f, 0.0f, 1.0f },
-    { 0.0f, 1.0f, 1.0f, 1.0f },
+    { 1.0F, 0.0F, 0.0F, 1.0F },
+    { 0.0F, 1.0F, 0.0F, 1.0F },
+    { 0.0F, 0.0F, 1.0F, 1.0F },
+    { 1.0F, 0.0F, 1.0F, 1.0F },
+    { 1.0F, 1.0F, 0.0F, 1.0F },
+    { 0.0F, 1.0F, 1.0F, 1.0F },
 };
 
 std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
@@ -75,10 +74,15 @@ std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_fiel
     case VertexField::Normal:   return "NORMAL";
     case VertexField::TexCoord: return "TEXCOORD";
     case VertexField::Color:    return "COLOR";
-    default:                    assert(0);
+    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(vertex_field, "");
     }
+}
 
-    return "";
+Mesh::VertexLayout::IncompatibleException::IncompatibleException(VertexField missing_field)
+    : std::logic_error(fmt::format("Mesh vertex layout is incompatible, field {} is missing.", VertexLayout::GetSemanticByVertexField(missing_field)))
+    , m_missing_field(missing_field)
+{
+    META_FUNCTION_TASK();
 }
 
 std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
@@ -115,10 +119,8 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
         field_offsets[vertex_field_index] = static_cast<int32_t>(current_offset);
         current_offset += g_vertex_field_sizes[vertex_field_index];
     }
-    if (field_offsets[static_cast<size_t>(VertexField::Position)] < 0)
-    {
-        throw std::invalid_argument("Position field must be specified in vertex layout");
-    }
+
+    META_CHECK_ARG_NAME_DESCR("vertex_layout", field_offsets[static_cast<size_t>(VertexField::Position)] >= 0, "position field must be specified in vertex layout");
     return field_offsets;
 }
 
@@ -141,10 +143,7 @@ Mesh::Mesh(Type type, const VertexLayout& vertex_layout)
     , m_vertex_size(GetVertexSize(m_vertex_layout))
 {
     META_FUNCTION_TASK();
-    if (!Mesh::HasVertexField(Mesh::VertexField::Position))
-    {
-        throw std::invalid_argument("Vertex positions must be available in mesh layout.");
-    }
+    CheckLayoutHasVertexField(VertexField::Position);
 }
 
 bool Mesh::HasVertexField(VertexField field) const noexcept
@@ -152,7 +151,15 @@ bool Mesh::HasVertexField(VertexField field) const noexcept
     META_FUNCTION_TASK();
     return m_vertex_field_offsets[static_cast<size_t>(field)] >= 0;
 }
-    
+
+void Mesh::CheckLayoutHasVertexField(VertexField field) const
+{
+    META_FUNCTION_TASK();
+    if (!HasVertexField(field))
+        throw VertexLayout::IncompatibleException(field);
+}
+
+
 Mesh::Edge::Edge(Mesh::Index v1_index, Mesh::Index v2_index)
     : first_index( v1_index < v2_index ? v1_index : v2_index)
     , second_index(v1_index < v2_index ? v2_index : v1_index)

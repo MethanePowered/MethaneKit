@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,7 +28,6 @@ Event emitter base template class implementation.
 #include <Methane/Instrumentation.h>
 
 #include <set>
-#include <cassert>
 
 namespace Methane::Data
 {
@@ -98,7 +97,6 @@ public:
             return;
         }
 
-        assert(*connected_receiver_it);
         if (m_is_emitting)
         {
             // Modification of connected receivers collection is prohibited during emit cycle, so we just clear the reference instead of erasing from collection

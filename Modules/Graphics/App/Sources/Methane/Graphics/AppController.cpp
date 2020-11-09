@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,8 +24,7 @@ Base graphics application controller
 #include <Methane/Graphics/AppController.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -56,7 +55,8 @@ void AppController::OnKeyboardStateAction(AppAction action)
         m_application.SetAnimationsEnabled(!m_application.GetGraphicsAppSettings().animations_enabled);
         break;
 
-    default: assert(0);
+    default:
+        META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -67,9 +67,8 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     {
     case AppAction::None:             return "none";
     case AppAction::SwitchAnimations: return "switch animations on/off";
-    default: assert(0);
+    default:                          META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
-    return "";
 }
 
 Platform::Input::IHelpProvider::HelpLines AppController::GetHelp() const

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -53,28 +53,28 @@ public:
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept;
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
 
 protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
 
     inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
-    { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.f; }
+    { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.F; }
 
     inline bool          IsExternalViewCamera() const noexcept  { return m_p_view_camera; }
     inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir) noexcept;
-    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation) noexcept;
-    void RotateInView(const Vector3f& view_axis, float angle_rad) noexcept { RotateInView(view_axis, angle_rad, GetOrientation()); }
+    void ApplyLookDirection(const Vector3f& look_dir);
+    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
+    void RotateInView(const Vector3f& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
 
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
     const Camera* m_p_view_camera;
     Pivot         m_pivot;
-    float         m_radius_ratio              = 0.9f;
+    float         m_radius_ratio              = 0.9F;
     Vector3f      m_mouse_pressed_on_sphere   { };
     Orientation   m_mouse_pressed_orientation { };
 };

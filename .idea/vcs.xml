@@ -11,11 +11,10 @@
     <mapping directory="$PROJECT_DIR$/Externals/CMRC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMakeModules" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Catch2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/DirectXLibraries" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/DirectXTex" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/FMT" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/FreeType2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/IttApi" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/Nowide" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/TaskFlow" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy" vcs="Git" />

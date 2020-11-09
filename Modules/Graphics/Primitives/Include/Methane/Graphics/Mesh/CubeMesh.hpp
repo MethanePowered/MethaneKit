@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -36,16 +36,16 @@ class CubeMesh : public QuadMesh<VType>
     using QuadMeshT = QuadMesh<VType>;
 
 public:
-    explicit CubeMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.f, float height = 1.f, float depth = 1.f)
-        : QuadMeshT(vertex_layout, width, height, depth / 2.f, 0, QuadMeshT::FaceType::XY, Mesh::Type::Box)
+    explicit CubeMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.F, float height = 1.F, float depth = 1.F)
+        : QuadMeshT(vertex_layout, width, height, depth / 2.F, 0, QuadMeshT::FaceType::XY, Mesh::Type::Box)
         , m_depth(depth)
     {
         META_FUNCTION_TASK();
-        AddFace(QuadMeshT(vertex_layout, width,  height, -depth  / 2.f, 1, QuadMeshT::FaceType::XY));
-        AddFace(QuadMeshT(vertex_layout, width,  depth,   height / 2.f, 2, QuadMeshT::FaceType::XZ));
-        AddFace(QuadMeshT(vertex_layout, width,  depth,  -height / 2.f, 3, QuadMeshT::FaceType::XZ));
-        AddFace(QuadMeshT(vertex_layout, height, depth,   width  / 2.f, 4, QuadMeshT::FaceType::YZ));
-        AddFace(QuadMeshT(vertex_layout, height, depth,  -width  / 2.f, 5, QuadMeshT::FaceType::YZ));
+        AddFace(QuadMeshT(vertex_layout, width,  height, -depth  / 2.F, 1, QuadMeshT::FaceType::XY));
+        AddFace(QuadMeshT(vertex_layout, width,  depth,   height / 2.F, 2, QuadMeshT::FaceType::XZ));
+        AddFace(QuadMeshT(vertex_layout, width,  depth,  -height / 2.F, 3, QuadMeshT::FaceType::XZ));
+        AddFace(QuadMeshT(vertex_layout, height, depth,   width  / 2.F, 4, QuadMeshT::FaceType::YZ));
+        AddFace(QuadMeshT(vertex_layout, height, depth,  -width  / 2.F, 5, QuadMeshT::FaceType::YZ));
     }
 
     float GetDepth() const noexcept { return m_depth; }

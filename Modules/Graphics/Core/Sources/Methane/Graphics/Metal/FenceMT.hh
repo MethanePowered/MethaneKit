@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -39,8 +39,8 @@ class CommandQueueMT;
 class FenceMT final : public FenceBase
 {
 public:
-    FenceMT(CommandQueueBase& command_queue);
-    ~FenceMT();
+    explicit FenceMT(CommandQueueBase& command_queue);
+    ~FenceMT() override;
 
     // Fence overrides
     void Signal() override;
@@ -48,7 +48,7 @@ public:
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
     // Object override
-    void SetName(const std::string& name) noexcept override;
+    void SetName(const std::string& name) override;
 
 private:
     CommandQueueMT& GetCommandQueueMT();

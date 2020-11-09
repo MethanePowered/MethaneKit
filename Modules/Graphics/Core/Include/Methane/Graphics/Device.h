@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -54,17 +54,17 @@ struct Device
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Unknown                 = 0u,
-            BasicRendering          = 1u << 0u,
-            TextureAndSamplerArrays = 1u << 1u,
-            All                     = ~0u,
+            Unknown                 = 0U,
+            BasicRendering          = 1U << 0U,
+            TextureAndSamplerArrays = 1U << 1U,
+            All                     = ~0U,
         };
 
         using Values = std::array<Value, 2>;
         static constexpr const Values values{ BasicRendering, TextureAndSamplerArrays };
         
-        static std::string ToString(Value feature) noexcept;
-        static std::string ToString(Mask features) noexcept;
+        static std::string ToString(Value feature);
+        static std::string ToString(Mask features);
 
         Feature()  = delete;
         ~Feature() = delete;
@@ -73,7 +73,7 @@ struct Device
     virtual const std::string& GetAdapterName() const noexcept = 0;
     virtual bool               IsSoftwareAdapter() const noexcept = 0;
     virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
-    virtual std::string        ToString() const noexcept = 0;
+    virtual std::string        ToString() const = 0;
 };
 
 struct System
@@ -86,7 +86,7 @@ struct System
     virtual Ptr<Device>           GetNextGpuDevice(const Device& device) const = 0;
     virtual Ptr<Device>           GetSoftwareGpuDevice() const = 0;
     virtual Device::Feature::Mask GetGpuSupportedFeatures() const = 0;
-    virtual std::string           ToString() const noexcept = 0;
+    virtual std::string           ToString() const = 0;
     
     virtual ~System() = default;
 };

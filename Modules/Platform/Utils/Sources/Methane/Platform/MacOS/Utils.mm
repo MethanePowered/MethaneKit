@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,10 +23,9 @@ MacOS platform utility functions.
 
 #include <Methane/Platform/MacOS/Utils.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #import <AppKit/AppKit.h>
-
-#include <cassert>
 
 namespace Methane::Platform
 {

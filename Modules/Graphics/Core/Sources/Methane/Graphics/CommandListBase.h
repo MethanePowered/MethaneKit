@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,10 +31,9 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
-#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <stack>
-#include <set>
 #include <mutex>
 #include <condition_variable>
 
@@ -62,13 +61,13 @@ public:
         , public ObjectBase
     {
     public:
-        DebugGroupBase(std::string name);
+        explicit DebugGroupBase(const std::string& name);
 
         // Object overrides
-        void SetName(const std::string&) override { throw std::logic_error("Debug Group can not be renamed"); }
+        void SetName(const std::string&) override;
 
         // DebugGroup interface
-        DebugGroup& AddSubGroup(Data::Index id, std::string name) final;
+        DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
         DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
         bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 
@@ -87,26 +86,26 @@ public:
     void  Reset(DebugGroup* p_debug_group = nullptr) override;
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
     void  Commit() override;
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0u) override;
-    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0u, 0u }; }
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
+    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
     virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
-    virtual void Complete(uint32_t frame_index); // Called from another thread, which is tracking GPU execution
+    virtual void Complete(uint32_t frame_index); // Called from command queue thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    CommandQueueBase&               GetCommandQueueBase() noexcept;
-    const CommandQueueBase&         GetCommandQueueBase() const noexcept;
+    CommandQueueBase&               GetCommandQueueBase();
+    const CommandQueueBase&         GetCommandQueueBase() const;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
 
-    inline void RetainResource(Ptr<ObjectBase>&& resource_ptr) { if (resource_ptr) m_command_state.retained_resources.emplace_back(std::move(resource_ptr)); }
-    inline void RetainResource(ObjectBase& resource)          { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
+    inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
@@ -133,15 +132,18 @@ protected:
 
     inline void VerifyEncodingState() const
     {
-        if (m_state != State::Encoding)
-            throw std::logic_error(GetTypeName() + " Command list encoding is not possible in \"" + GetStateName(m_state) + "\" state.");
+        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
+                                   "{} command list '{}' encoding is not possible in '{}' state",
+                                   GetTypeName(), GetName(), GetStateName(m_state));
     }
 
-    static std::string GetTypeName(Type type) noexcept;
-    static std::string GetStateName(State state) noexcept;
+    static std::string GetTypeName(Type type);
+    static std::string GetStateName(State state);
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
+
+    void CompleteInternal(uint32_t frame_index);
 
     const Type                  m_type;
     Ptr<CommandQueue>           m_command_queue_ptr;
@@ -164,7 +166,7 @@ class CommandListSetBase
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    CommandListSetBase(Refs<CommandList> command_list_refs);
+    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs);
 
     // CommandListSet overrides
     Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
@@ -174,20 +176,20 @@ public:
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
     
-    void Complete() noexcept;
+    void Complete() const;
 
     Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
     const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
     Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
     const CommandListBase&       GetCommandListBase(Data::Index index) const;
-    CommandQueueBase&            GetCommandQueueBase() noexcept             { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase&      GetCommandQueueBase() const noexcept       { return m_base_refs.back().get().GetCommandQueueBase(); }
+    CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
+    const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
     Refs<CommandList>      m_refs;
     Refs<CommandListBase>  m_base_refs;
     Ptrs<CommandListBase>  m_base_ptrs;
-    Data::Index            m_executing_on_frame_index = 0u;
+    Data::Index            m_executing_on_frame_index = 0U;
 };
 
 } // namespace Methane::Graphics

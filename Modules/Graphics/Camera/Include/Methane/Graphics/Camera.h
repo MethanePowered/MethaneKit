@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -72,7 +72,7 @@ public:
     inline Vector3f GetLookDirection() const noexcept                       { return GetLookDirection(m_current_orientation); }
 
     const Matrix44f& GetViewMatrix() const noexcept;
-    const Matrix44f& GetProjMatrix() const noexcept;
+    const Matrix44f& GetProjMatrix() const;
     const Matrix44f& GetViewProjMatrix() const noexcept;
 
     Vector2f TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
@@ -94,10 +94,10 @@ protected:
     Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
     void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
     void GetViewMatrix(Matrix44f& out_view) const noexcept { return GetViewMatrix(out_view, m_current_orientation); }
-    void GetProjMatrix(Matrix44f& out_proj) const noexcept;
+    void GetProjMatrix(Matrix44f& out_proj) const;
 
-    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.f), orientation).subvector(3); }
-    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.f), orientation).subvector(3); }
+    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).subvector(3); }
+    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).subvector(3); }
     Vector4f TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept;
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
@@ -105,10 +105,10 @@ private:
     const cml::AxisOrientation m_axis_orientation;
 
     Projection        m_projection            = Projection::Perspective;
-    Data::FloatSize   m_screen_size           { 1.f, 1.f };
-    float             m_aspect_ratio          = 1.0f;
-    Parameters        m_parameters            { 0.01f, 125.f, 90.f };
-    Orientation       m_default_orientation   { { 15.0f, 15.0f, -15.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } };
+    Data::FloatSize   m_screen_size           { 1.F, 1.F };
+    float             m_aspect_ratio          = 1.0F;
+    Parameters        m_parameters            { 0.01F, 125.F, 90.F };
+    Orientation       m_default_orientation   { { 15.0F, 15.0F, -15.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } };
     Orientation       m_current_orientation   { };
 
     mutable Matrix44f m_current_view_matrix;

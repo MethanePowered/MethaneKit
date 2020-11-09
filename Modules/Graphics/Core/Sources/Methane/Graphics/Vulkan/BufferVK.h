@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -45,7 +45,7 @@ public:
 class BufferSetVK final : public BufferSetBase
 {
 public:
-    BufferSetVK(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 };
 
 } // namespace Methane::Graphics

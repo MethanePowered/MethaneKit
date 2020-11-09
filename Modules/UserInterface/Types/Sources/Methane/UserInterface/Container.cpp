@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,7 +28,7 @@ Methane user interface container of items.
 namespace Methane::UserInterface
 {
 
-Container::Container(Context& ui_context, const UnitRect& ui_rect, Ptrs<Item> children)
+Container::Container(Context& ui_context, const UnitRect& ui_rect, const Ptrs<Item>& children)
     : Item(ui_context, ui_rect)
     , m_children(children)
 {
@@ -72,7 +72,7 @@ bool Container::SetRect(const UnitRect& ui_rect)
     const UnitPoint& panel_origin_px = GetRectInPixels().GetUnitOrigin();
     for (const Ptr<Item>& child_item_ptr : GetChildren())
     {
-        assert(child_item_ptr);
+        META_CHECK_ARG_NOT_NULL(child_item_ptr);
         child_item_ptr->SetOrigin(panel_origin_px + child_item_ptr->GetRelOriginInPixels());
     }
 

@@ -133,7 +133,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
     echo ----------
     echo Building with Sonar Scanner wrapper...
     if ! "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
-        xcodebuild -project "$BUILD_DIR/MethaneKit.xcodeproj" -configuration Release; then
+        xcodebuild -project "$BUILD_DIR/MethaneKit.xcodeproj" -configuration Debug; then
         echo "Sonar-scanner CMake generation failed."
         exit 1
     fi

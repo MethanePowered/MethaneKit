@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="projectSettings">
+    <option name="alternativeWorkingDirPath" value="" />
+    <option name="localAnalysisScripName" value="&lt;NO LOCAL ANALYSIS&gt;" />
+    <option name="resources">
+      <list>
+        <Resource>
+          <option name="key" value="egorodet_MethaneKit_Windows" />
+          <option name="name" value="MethaneKit for Windows" />
+          <option name="qualifier" value="TRK" />
+        </Resource>
+      </list>
+    </option>
+    <option name="serverName" value="Egorodet Sonar Cloud" />
+    <option name="useAlternativeWorkingDir" value="false" />
+    <option name="workingDirSelection" value="&lt;PROJECT&gt;" />
+  </component>
+</project>

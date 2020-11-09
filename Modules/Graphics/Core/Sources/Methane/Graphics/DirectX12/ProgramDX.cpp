@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -29,22 +29,26 @@ DirectX 12 implementation of the program interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 
 #include <d3dx12.h>
-#include <D3Dcompiler.h>
+#include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>
-#include <cassert>
 #include <iomanip>
 
 namespace Methane::Graphics
 {
 
-static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+struct DescriptorOffsets
+{
+    uint32_t constant_offset = 0;
+    uint32_t mutable_offset = 0;
+};
+
+static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
-
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
@@ -68,9 +72,8 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
         return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
     }
-    return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 }
 
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
@@ -82,7 +85,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
         return DescriptorHeap::Type::ShaderResources;
 }
 
-static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type) noexcept
+static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
@@ -90,10 +93,36 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
     case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
     case Shader::Type::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
     case Shader::Type::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                   assert(0);
+    default:                   META_UNEXPECTED_ENUM_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
-    return D3D12_SHADER_VISIBILITY_ALL;
 };
+
+static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptor_ranges, std::vector<CD3DX12_ROOT_PARAMETER1>& root_parameters,
+                                          std::map<DescriptorHeap::Type, DescriptorOffsets>& descriptor_offset_by_heap_type,
+                                          ProgramBindingsDX::ArgumentBindingDX& argument_binding,
+                                          const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& bind_settings,
+                                          const D3D12_SHADER_VISIBILITY& shader_visibility)
+{
+    const D3D12_DESCRIPTOR_RANGE_TYPE  range_type             = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);
+    const D3D12_DESCRIPTOR_RANGE_FLAGS descriptor_range_flags = bind_settings.argument.IsConstant()
+                                                              ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
+                                                              : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+    const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags            = range_type == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER
+                                                              ? D3D12_DESCRIPTOR_RANGE_FLAG_NONE
+                                                              : descriptor_range_flags;
+
+    descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
+    root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
+
+    const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
+    DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
+    uint32_t& descriptor_offset = argument_binding.GetSettings().argument.IsConstant()
+                                ? descriptor_offsets.constant_offset
+                                : descriptor_offsets.mutable_offset;
+    argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
+
+    descriptor_offset += bind_settings.resource_count;
+}
 
 Ptr<Program> Program::Create(Context& context, const Settings& settings)
 {
@@ -106,7 +135,6 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
     META_FUNCTION_TASK();
-
     InitArgumentBindings(settings.argument_descriptions);
     InitRootSignature();
 }
@@ -114,23 +142,15 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
 void ProgramDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     ObjectBase::SetName(name);
 
-    assert(!!m_cp_root_signature);
+    META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
     m_cp_root_signature->SetName(nowide::widen(name).c_str());
 }
 
 void ProgramDX::InitRootSignature()
 {
     META_FUNCTION_TASK();
-
-    struct DescriptorOffsets
-    {
-        uint32_t constant_offset = 0;
-        uint32_t mutable_offset = 0;
-    };
-
     using ArgumentBindingDX = ProgramBindingsDX::ArgumentBindingDX;
 
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
@@ -143,9 +163,10 @@ void ProgramDX::InitRootSignature()
     std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
     for (auto& argument_and_binding : binding_by_argument)
     {
-        assert(!!argument_and_binding.second);
+        META_CHECK_ARG_NOT_NULL(argument_and_binding.second);
+
         const Argument&                    shader_argument = argument_and_binding.first;
-        ArgumentBindingDX&                argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
+        auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
         const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
 
@@ -155,26 +176,8 @@ void ProgramDX::InitRootSignature()
         switch (bind_settings.type)
         {
         case ArgumentBindingDX::Type::DescriptorTable:
-        {
-            const D3D12_DESCRIPTOR_RANGE_TYPE  range_type  = GetDescriptorRangeTypeByShaderInputType(bind_settings.input_type);
-            const D3D12_DESCRIPTOR_RANGE_FLAGS range_flags = (range_type == D3D12_DESCRIPTOR_RANGE_TYPE::D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-                                                           ? D3D12_DESCRIPTOR_RANGE_FLAG_NONE
-                                                           : (bind_settings.argument.IsConstant()
-                                                               ? D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC
-                                                               : D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
-            
-            descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
-            root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
-
-            const DescriptorHeap::Type  heap_type = GetDescriptorHeapTypeByRangeType(range_type);
-            DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-            uint32_t& descriptor_offset = argument_binding.GetSettings().argument.IsConstant()
-                                        ? descriptor_offsets.constant_offset
-                                        : descriptor_offsets.mutable_offset;
-            argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
-
-            descriptor_offset += bind_settings.resource_count;
-        } break;
+            InitArgumentAsDescriptorTable(descriptor_ranges, root_parameters, descriptor_offset_by_heap_type, argument_binding, bind_settings, shader_visibility);
+            break;
 
         case ArgumentBindingDX::Type::ConstantBufferView:
             root_parameters.back().InitAsConstantBufferView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
@@ -183,6 +186,9 @@ void ProgramDX::InitRootSignature()
         case ArgumentBindingDX::Type::ShaderResourceView:
             root_parameters.back().InitAsShaderResourceView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
+
+        default:
+            META_UNEXPECTED_ENUM_ARG(bind_settings.type);
         }
     }
 

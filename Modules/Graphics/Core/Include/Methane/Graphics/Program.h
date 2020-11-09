@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -65,15 +65,28 @@ struct Program : virtual Object
 
     struct Argument
     {
+        class NotFoundException : public std::invalid_argument
+        {
+        public:
+            NotFoundException(const Program& program, const Argument& argument);
+
+            const Program&  GetProgram() const noexcept  { return m_program; }
+            const Argument& GetArgument() const noexcept { return *m_argument_ptr; }
+
+        private:
+            const Program& m_program;
+            const UniquePtr<Argument> m_argument_ptr;
+        };
+
         struct Modifiers
         {
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None        = 0u,
-                Constant    = 1u << 0u,
-                Addressable = 1u << 1u,
-                All         = ~0u,
+                None        = 0U,
+                Constant    = 1U << 0U,
+                Addressable = 1U << 1U,
+                All         = ~0U,
             };
 
             Modifiers() = delete;
@@ -83,10 +96,12 @@ struct Program : virtual Object
         const std::string  name;
         const size_t       hash;
 
-        Argument(Shader::Type shader_type, std::string argument_name);
+        Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
         Argument(const Argument& argument) = default;
+        Argument(Argument&& argument) noexcept = default;
 
-        bool operator==(const Argument& other) const;
+        bool operator==(const Argument& other) const noexcept;
+        explicit operator std::string() const noexcept;
 
         struct Hash
         {
@@ -100,11 +115,12 @@ struct Program : virtual Object
     {
         const Modifiers::Mask modifiers;
 
-        ArgumentDesc(Shader::Type shader_type, std::string argument_name,
-                     Modifiers::Mask modifiers_mask = Modifiers::None);
+        ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
+                     Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const Argument& argument,
-                     Modifiers::Mask modifiers_mask = Modifiers::None);
+                     Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
+        ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
         inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
         inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }

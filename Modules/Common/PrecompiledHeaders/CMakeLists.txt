@@ -16,10 +16,12 @@ if (WIN32)
 endif()
 
 set(PRECOMPILED_HEADERS ${PRECOMPILED_HEADERS}
-    # Methane instrumentation headers
+    # Common Methane headers
+    $<TARGET_PROPERTY:MethanePrimitives,SOURCE_DIR>/Include/Methane/Checks.hpp
     $<TARGET_PROPERTY:MethaneInstrumentation,SOURCE_DIR>/Include/Methane/Instrumentation.h
 
-    # nowide
+    # Common External headers
+    <fmt/format.h>
     <nowide/convert.hpp>
 
     # types
@@ -57,7 +59,10 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneBuildOptions
+        MethanePrimitives
         MethaneInstrumentation
+        fmt
+        nowide
 )
 
 target_precompile_headers(${TARGET}

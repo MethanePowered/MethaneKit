@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,6 +24,7 @@ DirectX 12 fence wrapper.
 #include "FenceBase.h"
 #include "CommandQueueBase.h"
 
+#include <Methane/Exceptions.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -38,7 +39,7 @@ FenceBase::FenceBase(CommandQueueBase& command_queue)
 void FenceBase::Signal()
 {
     META_FUNCTION_TASK();
-    META_LOG("GPU SIGNAL fence \"" + GetName() + "\" with value " + std::to_string(m_value + 1));
+    META_LOG("Fence '{}' SIGNAL from GPU with value {}", GetName(), m_value + 1);
 
     m_value++;
 }
@@ -46,16 +47,16 @@ void FenceBase::Signal()
 void FenceBase::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    META_LOG("CPU WAIT fence \"" + GetName() + "\" with value " + std::to_string(m_value));
+    META_LOG("Fence '{}' WAIT on CPU with value {}", GetName(), m_value);
 }
 
 void FenceBase::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
-    META_LOG("GPU WAIT fence \"" + GetName() + "\" on command queue \"" + wait_on_command_queue.GetName() + "\" with value " + std::to_string(m_value));
-
-    if (std::addressof(wait_on_command_queue) == std::addressof(m_command_queue))
-        throw std::invalid_argument("Fence can not be waited on GPU at the same command queue where it was signalled.");
+    META_UNUSED(wait_on_command_queue);
+    META_CHECK_ARG_NAME_DESCR("wait_on_command_queue", std::addressof(wait_on_command_queue) != std::addressof(m_command_queue),
+                              "fence can not be waited on GPU at the same command queue where it was signalled");
+    META_LOG("Fence '{}' WAIT on GPU command queue '{}' with value {}", GetName(), wait_on_command_queue.GetName(), m_value);
 }
 
 void FenceBase::FlushOnCpu()

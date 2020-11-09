@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -70,14 +70,8 @@ public:
                                         static_cast<Methane::Data::Size>(res_file.cend() - res_file.cbegin()));
         }
 
-        if (FileProvider::HasData(path))
-        {
-            return FileProvider::GetData(path);
-        }
-        else
-        {
-            throw std::invalid_argument("Invalid resource path: " + path);
-        }
+        META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), "invalid resource path '{}'", path);
+        return FileProvider::GetData(path);
     }
 
 protected:

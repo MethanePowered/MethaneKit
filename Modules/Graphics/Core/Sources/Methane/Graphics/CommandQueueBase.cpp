@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,8 +26,6 @@ Base implementation of the command queue interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <cassert>
-
 namespace Methane::Graphics
 {
 
@@ -47,15 +45,15 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
 {
     META_FUNCTION_TASK();
     const uint32_t frame_index = GetCurrentFrameBufferIndex();
-    META_LOG("Command queue \"" + GetName() + "\" is executing on frame " + std::to_string(frame_index));
+    META_LOG("Command queue '{}' is executing on frame {}", GetName(), frame_index);
 
     static_cast<CommandListSetBase&>(command_lists).Execute(frame_index, completed_callback);
 }
 
-Tracy::GpuContext& CommandQueueBase::GetTracyContext() noexcept
+Tracy::GpuContext& CommandQueueBase::GetTracyContext()
 {
     META_FUNCTION_TASK();
-    assert(m_tracy_gpu_context_ptr);
+    META_CHECK_ARG_NOT_NULL(m_tracy_gpu_context_ptr);
     return *m_tracy_gpu_context_ptr;
 }
 
@@ -70,7 +68,7 @@ uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
     META_FUNCTION_TASK();
     return m_context.GetType() == Context::Type::Render
          ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
-         : 0u;
+         : 0U;
 }
 
 } // namespace Methane::Graphics

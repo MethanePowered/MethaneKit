@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -57,6 +57,8 @@ public:
         };
 
         Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+        Query(const Query&) = delete;
+        Query(Query&&) = delete;
         virtual ~Query();
 
         virtual void Begin();
@@ -95,7 +97,7 @@ public:
     CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
     Context&          GetContext() noexcept          { return m_context; }
 
-    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetTypeName(Type type);
 
 protected:
     QueryBuffer(CommandQueueBase& command_queue, Type type,

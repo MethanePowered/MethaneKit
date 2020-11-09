@@ -68,6 +68,22 @@ target_include_directories(${TARGET}
         Include
 )
 
+# Disable GCC/Clang warnings produced by external code from 'stb_image.h'
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(${SOURCES_DIR}/ImageLoader.cpp
+        PROPERTIES
+            COMPILE_FLAGS "-Wno-sign-compare -Wno-unused-but-set-variable"
+    )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+    CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set_source_files_properties(${SOURCES_DIR}/ImageLoader.cpp
+        PROPERTIES
+        COMPILE_FLAGS "-Wno-sign-compare"
+    )
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

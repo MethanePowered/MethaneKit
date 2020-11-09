@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,10 +27,9 @@ DirectX 12 fence implementation.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -52,7 +51,7 @@ FenceDX::FenceDX(CommandQueueBase& command_queue)
     }
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
-    assert(!!cp_device);
+    META_CHECK_ARG_NOT_NULL(cp_device);
 
     ThrowIfFailed(cp_device->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)), cp_device.Get());
 }
@@ -68,7 +67,7 @@ void FenceDX::Signal()
     META_FUNCTION_TASK();
     FenceBase::Signal();
 
-    assert(!!m_cp_fence);
+    META_CHECK_ARG_NOT_NULL(m_cp_fence);
     CommandQueueDX& command_queue = GetCommandQueueDX();
     ThrowIfFailed(command_queue.GetNativeCommandQueue().Signal(m_cp_fence.Get(), GetValue()),
                   command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
@@ -79,17 +78,17 @@ void FenceDX::WaitOnCpu()
     META_FUNCTION_TASK();
     FenceBase::WaitOnCpu();
 
-    assert(!!m_cp_fence);
-    assert(!!m_event);
+    META_CHECK_ARG_NOT_NULL(m_cp_fence);
+    META_CHECK_ARG_NOT_NULL(m_event);
     if (m_cp_fence->GetCompletedValue() < GetValue())
     {
-        META_LOG("SLEEP on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
+        META_LOG("Fence '{}' SLEEP with value {}", GetName(), GetValue());
 
         ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
                       GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
         WaitForSingleObjectEx(m_event, INFINITE, FALSE);
 
-        META_LOG("AWAKE on fence \"" + GetName() + "\" with value " + std::to_string(GetValue()));
+        META_LOG("Fence '{}' AWAKE with value {}", GetName(), GetValue());
     }
 }
 
@@ -98,22 +97,22 @@ void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
 
-    assert(!!m_cp_fence);
-    CommandQueueDX& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
+    META_CHECK_ARG_NOT_NULL(m_cp_fence);
+    auto& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
     ID3D12CommandQueue& native_wait_on_command_queue = dx_wait_on_command_queue.GetNativeCommandQueue();
     ThrowIfFailed(native_wait_on_command_queue.Wait(m_cp_fence.Get(), GetValue()),
                   dx_wait_on_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 }
 
-void FenceDX::SetName(const std::string& name) noexcept
+void FenceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)
         return;
 
-   ObjectBase::SetName(name);
+    ObjectBase::SetName(name);
 
-    assert(!!m_cp_fence);
+    META_CHECK_ARG_NOT_NULL(m_cp_fence);
     m_cp_fence->SetName(nowide::widen(name).c_str());
 }
 

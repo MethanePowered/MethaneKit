@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -56,7 +56,7 @@ public:
                 FrameSize(),                            // - frame_size placeholder: set in InitContext
                 PixelFormat::BGRA8Unorm,                // - color_format
                 PixelFormat::Unknown,                   // - depth_stencil_format
-                Color4f(0.0f, 0.2f, 0.4f, 1.0f),        // - clear_color
+                Color4f(0.0F, 0.2F, 0.4F, 1.0F),        // - clear_color
             }
         })
     { }
@@ -72,9 +72,9 @@ public:
 
         struct Vertex { Vector3f position; Vector3f color; };
         const std::array<Vertex, 3> triangle_vertices{ {
-            { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
-            { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
+            { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
+            { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
+            { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
@@ -127,7 +127,7 @@ public:
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->Reset(m_render_state_ptr);
+        frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);

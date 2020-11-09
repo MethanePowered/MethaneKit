@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -117,8 +117,8 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
                                     const UnitPoint& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
-    if (frame_size.units != badge_size.units || badge_size.units != badge_margins.units)
-        throw std::invalid_argument("Units of all sizes must be equal.");
+    META_CHECK_ARG_DESCR(frame_size.units, frame_size.units == badge_size.units && badge_size.units == badge_margins.units,
+                         "frame size, badge size and margins units must be equal");
 
     switch(frame_corner)
     {
@@ -137,9 +137,10 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
             badge_size,
             frame_size.units
         );
-    }
 
-    return UnitRect();
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(frame_corner, UnitRect());
+    }
 }
 
 } // namespace Methane::UserInterface

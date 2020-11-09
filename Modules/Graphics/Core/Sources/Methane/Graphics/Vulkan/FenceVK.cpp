@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -80,7 +80,7 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
     // TODO: wait on GPU for native fence object
 }
 
-void FenceVK::SetName(const std::string& name) noexcept
+void FenceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (ObjectBase::GetName() == name)

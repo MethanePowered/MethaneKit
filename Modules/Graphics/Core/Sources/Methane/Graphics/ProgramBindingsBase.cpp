@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,18 +23,35 @@ Base implementation of the program bindings interface.
 
 #include "ProgramBindingsBase.h"
 #include "ContextBase.h"
+#include "CoreFormatters.hpp"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
+#include <fmt/ranges.h>
 #include <cassert>
 
 namespace Methane::Graphics
 {
 
-ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, Settings settings)
+ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException()
+    : std::logic_error("Can not modify constant program argument binding.")
+{
+    META_FUNCTION_TASK();
+}
+
+ProgramBindings::UnboundArgumentsException::UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments)
+    : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
+    , m_program(program)
+    , m_unbound_arguments(unbound_arguments)
+{
+    META_FUNCTION_TASK();
+}
+
+ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase& context, const Settings& settings)
     : m_context(context)
-    , m_settings(std::move(settings))
+    , m_settings(settings)
 {
     META_FUNCTION_TASK();
 }
@@ -46,29 +63,27 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
         return;
 
     if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
-        throw std::logic_error("Can not modify constant program argument binding.");
+        throw ConstantModificationException();
 
-    if (resource_locations.empty())
-        throw std::invalid_argument("Can not set empty resources for resource binding.");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(resource_locations, "can not set empty resources for resource binding");
 
     const bool        is_addressable_binding = m_settings.argument.IsAddressable();
     const Resource::Type bound_resource_type = m_settings.resource_type;
+    META_UNUSED(is_addressable_binding);
+    META_UNUSED(bound_resource_type);
 
     for (const Resource::Location& resource_location : resource_locations)
     {
-        if (resource_location.GetResource().GetResourceType() != bound_resource_type)
-        {
-            throw std::invalid_argument("Incompatible resource type \"" + Resource::GetTypeName(resource_location.GetResource().GetResourceType()) +
-                                        "\" is bound to argument \"" + m_settings.argument.name +
-                                        "\" of type \"" + Resource::GetTypeName(bound_resource_type) + "\".");
-        }
+        META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
+                                  "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
+                                  Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
+                                  m_settings.argument.name, Resource::GetTypeName(bound_resource_type));
 
         const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
-        if (static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) != is_addressable_binding)
-            throw std::invalid_argument("Resource addressable usage flag does not match with resource binding state.");
-
-        if (!is_addressable_binding && resource_location.GetOffset() > 0)
-            throw std::invalid_argument("Can not set resource location with non-zero offset to non-addressable resource binding.");
+        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+                             "resource addressable usage flag does not match with resource binding state");
+        META_CHECK_ARG_NAME_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
+                                  "can not set resource location with non-zero offset to non-addressable resource binding");
     }
 
     m_resource_locations = resource_locations;
@@ -115,11 +130,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
     : m_program_ptr(program_ptr)
 {
     META_FUNCTION_TASK();
-
-    if (!m_program_ptr)
-    {
-        throw std::runtime_error("Can not create resource bindings for an empty program.");
-    }
+    META_CHECK_ARG_NOT_ZERO(program_ptr);
 
     ReserveDescriptorHeapRanges();
     SetResourcesForArguments(resource_locations_by_argument);
@@ -127,7 +138,8 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : m_program_ptr(other_program_bindings.m_program_ptr)
+    : ObjectBase(other_program_bindings)
+    , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
@@ -176,14 +188,14 @@ ProgramBindingsBase::~ProgramBindingsBase()
 const Program& ProgramBindingsBase::GetProgram() const
 {
     META_FUNCTION_TASK();
-    assert(!!m_program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
 Program& ProgramBindingsBase::GetProgram()
 {
     META_FUNCTION_TASK();
-    assert(!!m_program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
@@ -197,20 +209,18 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         uint32_t mutable_count = 0;
     };
 
-    assert(!!m_program_ptr);
-    const ProgramBase& program = static_cast<const ProgramBase&>(GetProgram());
+    META_CHECK_ARG_NOT_NULL(m_program_ptr);
+    const auto& program = static_cast<const ProgramBase&>(GetProgram());
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
     for (const auto& binding_by_argument : program.GetArgumentBindings())
     {
-        if (!binding_by_argument.second)
-        {
-            throw std::runtime_error("No resource binding is set for an argument \"" + binding_by_argument.first.name + "\" of shader.");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(binding_by_argument.second,
+                                      "no resource binding is set for an argument '{}' of shader", binding_by_argument.first.name);
 
-        const ArgumentBindingBase&       argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
-        const ArgumentBinding::Settings& binding_settings = argument_binding.GetSettings();
+        const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        const auto& binding_settings = argument_binding.GetSettings();
         m_arguments.insert(binding_by_argument.first);
 
         auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
@@ -268,15 +278,12 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         if (descriptors.mutable_count > 0)
         {
             heap_reservation.mutable_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
-            if (!heap_reservation.mutable_range)
-            {
-                throw std::runtime_error("Failed to reserve mutable descriptor heap range. Descriptor heap is not big enough.");
-            }
+            META_CHECK_ARG_NOT_ZERO_DESCR(heap_reservation.mutable_range, "failed to reserve mutable descriptor heap range, descriptor heap is not big enough");
         }
     }
 }
 
-void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
+void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const
 {
     META_FUNCTION_TASK();
 
@@ -286,15 +293,10 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
         const Ptr<ArgumentBinding>& binding_ptr = Get(argument);
         if (!binding_ptr)
         {
-#ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            const Program::Argument all_shaders_argument(Shader::Type::All, argument.name);
-            const bool all_shaders_argument_found = !!Get(all_shaders_argument);
-            throw std::runtime_error("Program \"" + m_program_ptr->GetName() +
-                                     "\" does not have argument \"" + argument.name +
-                                     "\" of " + Shader::GetTypeName(argument.shader_type) + " shader." +
-                                     (all_shaders_argument_found ? " Instead this argument is used in All shaders." : "") );
-#else
+#ifdef PROGRAM_IGNORE_MISSING_ARGUMENTS
             continue;
+#else
+            throw Program::Argument::NotFoundException(*m_program_ptr, argument);
 #endif
         }
         binding_ptr->SetResourceLocations(argument_and_resource_locations.second);
@@ -311,44 +313,29 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
          ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
 }
 
-bool ProgramBindingsBase::AllArgumentsAreBoundToResources(std::string& missing_args) const
+Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
 {
     META_FUNCTION_TASK();
-
-    std::stringstream log_ss;
-    bool all_arguments_are_bound_to_resources = true;
+    Program::Arguments unbound_arguments;
     for (const auto& binding_by_argument : m_binding_by_argument)
     {
-        const Resource::Locations& resource_locations = binding_by_argument.second->GetResourceLocations();
-        if (resource_locations.empty())
+        if (binding_by_argument.second->GetResourceLocations().empty())
         {
-            log_ss << std::endl 
-                   << "   - Program \"" << m_program_ptr->GetName()
-                   << "\" argument \"" << binding_by_argument.first.name
-                   << "\" of " << Shader::GetTypeName(binding_by_argument.first.shader_type)
-                   << " shader is not bound to any resource." ;
-            all_arguments_are_bound_to_resources = false;
+            unbound_arguments.insert(binding_by_argument.first);
         }
     }
-
-    if (!all_arguments_are_bound_to_resources)
-    {
-        missing_args = log_ss.str();
-        META_LOG(missing_args);
-    }
-    return all_arguments_are_bound_to_resources;
+    return unbound_arguments;
 }
 
-void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
+void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
 {
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-    std::string missing_args;
-    if (!AllArgumentsAreBoundToResources(missing_args))
+    Program::Arguments unbound_arguments = GetUnboundArguments();
+    if (!unbound_arguments.empty())
     {
-        throw std::runtime_error("Some arguments of program \"" + m_program_ptr->GetName() +
-                                 "\" are not bound to any resource:\n" + missing_args);
+        throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
 #endif
 }
@@ -356,7 +343,7 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources()
 const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
 {
     META_FUNCTION_TASK();
-    assert(heap_type != DescriptorHeap::Type::Undefined);
+    META_CHECK_ARG_NOT_EQUAL(heap_type, DescriptorHeap::Type::Undefined);
     return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
 }
 

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,8 +25,7 @@ MacOS application delegate implementation.
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 using namespace Methane;
 using namespace Methane::Platform;
@@ -53,72 +52,72 @@ using namespace Methane::Platform;
 - (void) windowDidEnterFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
-    
-    assert(!!m_p_app);
+
     m_p_app->SetFullScreen(true);
 }
 
 - (void) windowDidExitFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
-    
-    assert(!!m_p_app);
+
     m_p_app->SetFullScreen(false);
 }
 
 - (void) windowDidMiniaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
-    
-    assert(!!m_p_app);
+
     m_p_app->Resize(m_p_app->GetFrameSize(), true);
 }
 
 - (void) windowDidDeminiaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
-    
-    assert(!!m_p_app);
+
     m_p_app->Resize(m_p_app->GetFrameSize(), false);
 }
 
 - (void) windowWillStartLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
 
-    assert(!!m_p_app);
     m_p_app->StartResizing();
 }
 
 - (void) windowDidEndLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
 
-    assert(!!m_p_app);
     m_p_app->EndResizing();
 }
 
 - (void) windowDidBecomeKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
 
-    assert(!!m_p_app);
     m_p_app->SetKeyboardFocus(true);
 }
 
 - (void) windowDidResignKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(notification)
 
-    assert(!!m_p_app);
     m_p_app->SetKeyboardFocus(false);
 }
 

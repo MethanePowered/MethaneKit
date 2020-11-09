@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -61,7 +61,7 @@ SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0f);
+    const float4 position = float4(input.position, 1.0F);
 
     PSInput output;
     output.position       = mul(g_uniforms.mvp_matrix, position);

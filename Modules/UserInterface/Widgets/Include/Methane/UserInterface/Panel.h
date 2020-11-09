@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,7 +43,7 @@ public:
     struct Settings
     {
         std::string  name;
-        gfx::Color4f background_color { 0.f, 0.f, 0.f, 0.66f };
+        gfx::Color4f background_color { 0.F, 0.F, 0.F, 0.66F };
     };
 
     Panel(Context& ui_context, const UnitRect& rect, Settings settings);

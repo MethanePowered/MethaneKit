@@ -11,7 +11,7 @@ steps:
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
     inputs:
       workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '-G $(generatorName) -A $(platform) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
 
   - task: CMake@1
     displayName: 'Build with $(generatorName) for $(platform) $(configuration)'
@@ -33,7 +33,7 @@ steps:
 
   - script: |
       copy $(rootDir)\README.md README.md
-      echo Methane Kit v. $(productFullVersion), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
+      echo Methane Kit v. $(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
     workingDirectory: '$(installDir)'
     displayName: 'Copy ReadMe and write build information'
 

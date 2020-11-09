@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -35,7 +35,7 @@ public:
     class BarriersMT : public Barriers
     {
     public:
-        BarriersMT(const Set& barriers) : Barriers(barriers) {}
+        explicit BarriersMT(const Set& barriers) : Barriers(barriers) {}
     };
 
     ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

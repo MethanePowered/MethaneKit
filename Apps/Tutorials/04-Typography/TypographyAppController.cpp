@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,6 +23,8 @@ Typography application controller.
 
 #include "TypographyAppController.h"
 #include "TypographyApp.h"
+
+#include <Methane/Checks.hpp>
 
 namespace Methane::Tutorials
 {
@@ -83,7 +85,7 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
         break;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -99,9 +101,8 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     case TypographyAppAction::SwitchTypingDirection:         return "switch typing direction";
     case TypographyAppAction::SpeedupTyping:                 return "speedup typing";
     case TypographyAppAction::SlowdownTyping:                return "slowdown typing";
-    default: assert(0);
+    default:                                                 META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
-    return "";
 }
 
 Platform::Input::IHelpProvider::HelpLines TypographyAppController::GetHelp() const

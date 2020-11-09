@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -186,7 +186,7 @@ bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
 bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
-    frame_buffers_count = std::min(std::max(2u, frame_buffers_count), 3u); // Metal supports only 2 or 3 drawable buffers
+    frame_buffers_count = std::min(std::max(2U, frame_buffers_count), 3U); // Metal supports only 2 or 3 drawable buffers
     if (ContextMT<RenderContextBase>::SetFrameBuffersCount(frame_buffers_count))
     {
         m_app_view.drawableCount = frame_buffers_count;
@@ -204,7 +204,7 @@ float RenderContextMT::GetContentScalingFactor() const
 uint32_t RenderContextMT::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
-    return 72u * GetContentScalingFactor();
+    return 72U * GetContentScalingFactor();
 }
 
 CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()

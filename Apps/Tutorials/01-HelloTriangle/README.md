@@ -55,7 +55,7 @@ public:
                 FrameSize(),                     // - frame_size placeholder: set in InitContext
                 PixelFormat::BGRA8Unorm,         // - color_format
                 PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0f, 0.2f, 0.4f, 1.0f), // - clear_color
+                Color4f(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
             }
         })
     { }
@@ -106,9 +106,9 @@ public:
 
         struct Vertex { Vector3f position; Vector3f color; };
         const std::array<Vertex, 3> triangle_vertices{ {
-            { { 0.0f,   0.5f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f,  -0.5f,  0.0f }, { 0.0f, 1.0f, 0.0f } },
-            { { -0.5f, -0.5f,  0.0f }, { 0.0f, 0.0f, 1.0f } },
+            { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
+            { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
+            { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
         } };
 
         const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
@@ -194,7 +194,7 @@ class HelloTriangleApp final : public GraphicsApp
             return false;
 
         HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->Reset(m_render_state_ptr);
+        frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
@@ -240,8 +240,8 @@ struct PSInput
 PSInput TriangleVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 1.f);
-    output.color    = float4(input.color, 1.f);
+    output.position = float4(input.position, 1.F);
+    output.color    = float4(input.color, 1.F);
     return output;
 }
 

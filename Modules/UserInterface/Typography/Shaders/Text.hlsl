@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -51,7 +51,7 @@ SamplerState              g_sampler   : register(s0);
 PSInput TextVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(mul(g_uniforms.vp_matrix, float4(input.position, 1.f, 1.f)).xy, 0.f, 1.f);
+    output.position = float4(mul(g_uniforms.vp_matrix, float4(input.position, 1.F, 1.F)).xy, 0.F, 1.F);
     output.texcoord = input.texcoord;
     return output;
 }

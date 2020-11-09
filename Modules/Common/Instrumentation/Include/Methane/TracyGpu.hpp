@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,6 +28,8 @@ Tracy GPU instrumentation helpers
 #include <client/TracyProfiler.hpp>
 #include <client/TracyCallstack.hpp>
 #endif
+
+#include <Methane/Checks.hpp>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -60,7 +62,7 @@ public:
         Type      type            = Type::Undefined;
         Timestamp gpu_timestamp   = 0;
         Timestamp cpu_timestamp   = 0;
-        float     gpu_time_period = 1.f; // number of nanoseconds required for a timestamp query to be incremented by 1
+        float     gpu_time_period = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
         bool      is_thread_local = false;
 
 #ifdef TRACY_GPU_ENABLE
@@ -71,7 +73,7 @@ public:
             , cpu_timestamp(gpu_timestamp)
         { }
 
-        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.f, bool is_thread_local = false)
+        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
             , cpu_timestamp(tracy::Profiler::GetTime())
@@ -82,10 +84,22 @@ public:
 #else // TRACY_GPU_ENABLE
 
         Settings() = default;
-        explicit Settings(Type) { }
-        Settings(Type, Timestamp) { }
-        Settings(Type, Timestamp, float) { }
-        Settings(Type, Timestamp, float, bool) { }
+        explicit Settings(Type)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp, float)
+        {
+            // Intentionally unimplemented: stub
+        }
+        Settings(Type, Timestamp, float, bool)
+        {
+            // Intentionally unimplemented: stub
+        }
 
 #endif // TRACY_GPU_ENABLE
     };
@@ -100,8 +114,8 @@ public:
         case Type::Vulkan:    return tracy::GpuContextType::Vulkan;
         case Type::Metal:     return tracy::GpuContextType::Invalid;
         case Type::Undefined: return tracy::GpuContextType::Invalid;
+        default:              META_UNEXPECTED_ENUM_ARG_RETURN(type, tracy::GpuContextType::Invalid);
         }
-        return tracy::GpuContextType::Invalid;
     }
 
     explicit GpuContext(const Settings& settings)
@@ -147,7 +161,7 @@ private:
 
     const uint8_t               m_id;
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
-    QueryId                     m_query_id    = 0u;
+    QueryId                     m_query_id    = 0U;
     TracyLockable(std::mutex,   m_query_mutex);
 
 #else // TRACY_GPU_ENABLE
@@ -206,9 +220,7 @@ public:
         if (!m_is_active)
             return;
 
-        if (m_state != State::Begun)
-            throw std::logic_error("GPU scope can end only from begun state.");
-
+        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
         m_end_query_id = m_context.NextQueryId();
 
@@ -226,13 +238,9 @@ public:
         if (!m_is_active)
             return;
 
-        if (m_state != State::Ended)
-            throw std::logic_error("GPU scope can be completed only from ended state.");
-
+        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
+        META_CHECK_ARG_RANGE_DESCR(gpu_begin_timestamp, 0, gpu_end_timestamp + 1, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
-
-        if (gpu_begin_timestamp < 0 || gpu_begin_timestamp > gpu_end_timestamp)
-            throw std::logic_error("GPU begin timestamp should be less or equal to end timestamp and both should be positive.");
 
         auto begin_item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&begin_item->hdr.type, tracy::QueueType::GpuTime);
@@ -254,9 +262,9 @@ public:
 private:
     GpuContext& m_context;
     State       m_state           = State::Completed;
-    ThreadId    m_begin_thread_id = 0u;
-    QueryId     m_begin_query_id  = 0u;
-    QueryId     m_end_query_id    = 0u;
+    ThreadId    m_begin_thread_id = 0U;
+    QueryId     m_begin_query_id  = 0U;
+    QueryId     m_end_query_id    = 0U;
     bool        m_is_active       = true;
 };
 
@@ -296,11 +304,23 @@ private:
 
 #else // TRACY_GPU_ENABLE
 
-    explicit GpuScope(GpuContext&) { }
+    explicit GpuScope(const GpuContext&)
+    {
+        // Intentionally unimplemented: stub
+    }
 
-    inline void Begin(const void*, int) { }
-    inline void End() { }
-    inline void Complete(Timestamp, Timestamp) { }
+    inline void Begin(const char*, int) const
+    {
+        // Intentionally unimplemented: stub
+    }
+    inline void End() const
+    {
+        // Intentionally unimplemented: stub
+    }
+    inline void Complete(Timestamp, Timestamp) const
+    {
+        // Intentionally unimplemented: stub
+    }
 };
 
 } // namespace Methane::Tracy
@@ -310,7 +330,7 @@ struct SourceLocationStub { };
 #define TRACE_SOURCE_LOCATION_TYPE SourceLocationStub
 #define CREATE_TRACY_SOURCE_LOCATION(name) new TRACE_SOURCE_LOCATION_TYPE{}
 #define STATIC_TRACY_SOURCE_LOCATION(variable, name)
-#define TRACY_GPU_SCOPE_TYPE void*
+#define TRACY_GPU_SCOPE_TYPE char*
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)

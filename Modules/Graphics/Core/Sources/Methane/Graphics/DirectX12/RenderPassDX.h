@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -53,8 +53,8 @@ public:
     // Allows to disable native D3D12 render-pass feature usage,
     // but enabling does not guarantee that it will be used (it depends on OS version and API availability)
     void SetNativeRenderPassUsage(bool use_native_render_pass);
-    void SetNativeDescriptorHeaps(RenderCommandListDX& dx_command_list) const;
-    void SetNativeRenderTargets(RenderCommandListDX& dx_command_list);
+    void SetNativeDescriptorHeaps(const RenderCommandListDX& dx_command_list) const;
+    void SetNativeRenderTargets(const RenderCommandListDX& dx_command_list) const;
 
     const std::vector<ID3D12DescriptorHeap*>&       GetNativeDescriptorHeaps() const;
     const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetNativeRenderTargetCPUHandles() const;
@@ -67,23 +67,23 @@ private:
         D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
         D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
-        AccessDesc(const Attachment& attachment);
-        AccessDesc(const ColorAttachment& color_attachment);
+        explicit AccessDesc(const Attachment& attachment);
+        explicit AccessDesc(const ColorAttachment& color_attachment);
         AccessDesc(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment);
         AccessDesc(const StencilAttachment& stencil_attachment, const DepthAttachment& depth_attachment);
 
         void InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment);
 
-        static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action) noexcept;
-        static D3D12_RENDER_PASS_ENDING_ACCESS_TYPE    GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action) noexcept;
+        static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action);
+        static D3D12_RENDER_PASS_ENDING_ACCESS_TYPE    GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action);
     };
 
     struct RTClearInfo
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle     { };
-        float                       clear_color[4] { };
+        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle  { };
+        std::array<float, 4>        clear_color { };
 
-        RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
+        explicit RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
     };
 
     struct DSClearInfo
@@ -91,7 +91,7 @@ private:
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle      { };
         D3D12_CLEAR_FLAGS           clear_flags     { };
         bool                        depth_cleared   = false;
-        FLOAT                       depth_value     = 1.f;
+        FLOAT                       depth_value     = 1.F;
         bool                        stencil_cleared = false;
         UINT8                       stencil_value   = 0;
 
@@ -102,7 +102,8 @@ private:
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
 
-    void ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>&) const;
+    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
 
     // IDescriptorHeapCallback implementation
     void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;

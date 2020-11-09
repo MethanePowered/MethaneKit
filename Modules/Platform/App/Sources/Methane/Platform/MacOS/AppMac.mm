@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,6 +24,7 @@ MacOS application implementation.
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
@@ -36,6 +37,7 @@ NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
         case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
         case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
+        default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, NSAlertStyleInformational);
     }
 }
 
@@ -58,17 +60,11 @@ AppMac::~AppMac()
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
 {
     META_FUNCTION_TASK();
-    AppView app_view = GetView();
-    if (app_view.p_native_view == nil)
-    {
-        throw std::runtime_error("Native app view can not be null.");
-    }
 
-    if (m_ns_window == nil)
-    {
-        throw std::runtime_error("NS Window was not set.");
-    }
-    
+    AppView app_view = GetView();
+    META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
+    META_CHECK_ARG_NOT_NULL(m_ns_window);
+
     [m_ns_window.contentView addSubview: app_view.p_native_view];
 }
 
@@ -123,7 +119,8 @@ void AppMac::SetWindow(NSWindow* ns_window)
 void AppMac::ShowAlert(const Message& msg)
 {
     META_FUNCTION_TASK();
-    assert(m_ns_app_delegate);
+    META_CHECK_ARG_NOT_NULL(m_ns_app_delegate);
+
     [m_ns_app_delegate alert: ConvertToNsType<std::string, NSString*>(msg.title)
              withInformation: ConvertToNsType<std::string, NSString*>(msg.information)
                     andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];

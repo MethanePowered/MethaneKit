@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,8 +26,7 @@ Base implementation of the texture interface.
 #include "RenderContextBase.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -37,12 +36,13 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     META_FUNCTION_TASK();
 
     Settings settings;
+    if (dimensions.height == 1)
+        settings.dimension_type = array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray;
+    else if (dimensions.depth == 1)
+        settings.dimension_type = array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray;
+    else
+        settings.dimension_type = DimensionType::Tex3D;
     settings.type           = Type::Texture;
-    settings.dimension_type = dimensions.height == 1
-                            ? (array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray)
-                            : (dimensions.depth == 1
-                                ? (array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray)
-                                : DimensionType::Tex3D);
     settings.dimensions     = dimensions;
     settings.array_length   = array_length;
     settings.pixel_format   = pixel_format;
@@ -101,26 +101,16 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-
-    if (m_settings.usage_mask == TextureBase::Usage::Unknown)
-    {
-        throw std::invalid_argument("Can not create texture with \"Unknown\" usage mask.");
-    }
-    if (m_settings.pixel_format == PixelFormat::Unknown)
-    {
-        throw std::invalid_argument("Can not create texture with \"Unknown\" pixel format.");
-    }
-    if (!m_settings.array_length)
-    {
-        throw std::invalid_argument("Array length should be greater than zero.");
-    }
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
     SetSubResourceCount(
         SubResource::Count(
             settings.dimensions.depth,
             settings.array_length,
-            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1u
+            settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1U
         )
     );
 }
@@ -128,55 +118,36 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
 void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped)
 {
     META_FUNCTION_TASK();
-
-    if (!dimensions.width || !dimensions.height || !dimensions.depth)
-    {
-        throw std::invalid_argument("All dimension sizes should be greater than zero.");
-    }
+    META_UNUSED(mipmapped);
+    META_CHECK_ARG_NOT_ZERO_DESCR(dimensions, "all dimension sizes should be greater than zero");
 
     switch (dimension_type)
     {
     case DimensionType::Cube:
     case DimensionType::CubeArray:
-        if (dimensions.width != dimensions.height)
-        {
-            throw std::invalid_argument("Cube texture must have equal width and height dimensions.");
-        }
-        if (dimensions.depth != 6)
-        {
-            throw std::invalid_argument("Cube texture depth must be equal to 6.");
-        }
+        META_CHECK_ARG_DESCR(dimensions, dimensions.width == dimensions.height && dimensions.depth == 6, "cube texture must have equal width and height dimensions and depth equal to 6");
         [[fallthrough]];
     case DimensionType::Tex3D:
-        if (mipmapped && dimensions.depth % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but depth is not.");
-        }
+        META_CHECK_ARG_DESCR(dimensions.depth, !mipmapped || !(dimensions.depth % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");
         [[fallthrough]];
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
-        if (mipmapped && dimensions.height % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but height is not.");
-        }
+        META_CHECK_ARG_DESCR(dimensions.height, !mipmapped || !(dimensions.height % 2), "all dimensions of the mip-mapped texture should be a power of 2, but height is not");
         [[fallthrough]];
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
-        if (mipmapped && dimensions.width % 2)
-        {
-            throw std::invalid_argument("All dimensions of the mip-mapped texture should be a power of 2, but width is not.");
-        }
-        [[fallthrough]];
+        META_CHECK_ARG_DESCR(dimensions.width, !mipmapped || !(dimensions.width % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
+        break;
     default:
-        return;
+        META_UNEXPECTED_ENUM_ARG(dimension_type);
     }
 }
 
 Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
     META_FUNCTION_TASK();
-    return 1u + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
+    return 1U + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
@@ -193,7 +164,7 @@ Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& s
     ValidateSubResource(sub_resource_index);
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
-    if (sub_resource_index.mip_level == 0u)
+    if (sub_resource_index.mip_level == 0U)
     {
         return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
     }

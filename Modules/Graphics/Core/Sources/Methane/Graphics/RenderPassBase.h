@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -62,11 +62,11 @@ protected:
     const RenderContextBase&  GetRenderContext() const  { return m_render_context; }
 
 private:
-    void InitAttachmentStates();
+    void InitAttachmentStates() const;
     void SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
                              const std::optional<ResourceBase::State>& depth_state,
                              Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
-                             RenderCommandListBase& render_command_list);
+                             RenderCommandListBase& render_command_list) const;
 
     RenderContextBase&          m_render_context;
     Settings                    m_settings;

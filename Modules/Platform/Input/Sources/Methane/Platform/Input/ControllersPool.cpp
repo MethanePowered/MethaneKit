@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,8 +23,7 @@ A pool of input controllers for user actions handling in separate application co
 
 #include <Methane/Platform/Input/ControllersPool.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Platform::Input
 {
@@ -34,11 +33,11 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
-    META_LOG(std::string("Mouse (button): ") + state_change.current.ToString());
+    META_LOG("Mouse button: {}", state_change.current.ToString());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -51,11 +50,11 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
-    META_LOG(std::string("Mouse (position): ") + state_change.current.ToString());
+    META_LOG("Mouse position: {}", state_change.current.ToString());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -68,12 +67,11 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
-    META_LOG(std::string("Mouse (scroll): ") + state_change.current.ToString() +
-             ", scroll delta: " + std::to_string(mouse_scroll_delta.GetX()) + " x " + std::to_string(mouse_scroll_delta.GetY()));
+    META_LOG("Mouse scroll: {}, scroll delta: ({} x {})", state_change.current.ToString(), mouse_scroll_delta.GetX(), mouse_scroll_delta.GetY());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -86,11 +84,11 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Mouse-State", state_change.current.ToString());
-    META_LOG(std::string("Mouse (in-window): ") + state_change.current.ToString());
+    META_LOG("Mouse in-window: {}", state_change.current.ToString());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -103,11 +101,11 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
-    META_LOG(std::string("Keyboard (key): ") + state_change.current.ToString());
+    META_LOG("Keyboard key: {}", state_change.current.ToString());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -120,11 +118,11 @@ void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, con
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
     ITT_MARKER_ARG("Keyboard-State", state_change.current.ToString());
-    META_LOG(std::string("Keyboard (modifiers): ") + state_change.current.ToString());
+    META_LOG("Keyboard modifiers: {}", state_change.current.ToString());
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -139,7 +137,7 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     HelpLines all_help_lines;
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 

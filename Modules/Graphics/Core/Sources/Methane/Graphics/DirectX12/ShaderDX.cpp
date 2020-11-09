@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,15 +28,16 @@ DirectX 12 implementation of the shader interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Data/Provider.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-#include <D3Dcompiler.h>
+#include <d3dcompiler.h>
+
 #include <nowide/convert.hpp>
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -50,14 +51,13 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
     case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
-    default:                throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
+    default: META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(input_type, Resource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 
-static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noexcept
+static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
-
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:                       return "CBuffer";
@@ -72,15 +72,13 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type) noex
     case D3D_SIT_UAV_APPEND_STRUCTURED:         return "UAV Append Structured";
     case D3D_SIT_UAV_CONSUME_STRUCTURED:        return "UAV Consume Structured";
     case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER: return "UAV RW Structured with Counter";
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(input_type, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
+static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension)
 {
     META_FUNCTION_TASK();
-
     switch (srv_dimension)
     {
     case D3D_SRV_DIMENSION_UNKNOWN:             return "Unknown";
@@ -95,15 +93,13 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension) noexcept
     case D3D_SRV_DIMENSION_TEXTURECUBE:         return "Texture Cube";
     case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:    return "Texture Cube Array";
     case D3D_SRV_DIMENSION_BUFFEREX:            return "Buffer EX";
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(srv_dimension, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexcept
+static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
 {
     META_FUNCTION_TASK();
-
     switch (return_type)
     {
     case D3D_RETURN_TYPE_UNORM:         return "UNorm";
@@ -114,14 +110,13 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type) noexc
     case D3D_RETURN_TYPE_MIXED:         return "Mixed";
     case D3D_RETURN_TYPE_DOUBLE:        return "Double";
     case D3D_RETURN_TYPE_CONTINUED:     return "Continued";
+    default:                            return "Undefined";
     }
-    return "Undefined";
 }
 
-static std::string GetValueTypeName(D3D_NAME value_type) noexcept
+static std::string GetValueTypeName(D3D_NAME value_type)
 {
     META_FUNCTION_TASK();
-
     switch (value_type)
     {
     case D3D_NAME_UNDEFINED:                        return "Undefined";
@@ -149,38 +144,33 @@ static std::string GetValueTypeName(D3D_NAME value_type) noexcept
     case D3D_NAME_DEPTH_LESS_EQUAL:                 return "Depth Less Equal";
     case D3D_NAME_STENCIL_REF:                      return "Stencil Ref";
     case D3D_NAME_INNER_COVERAGE:                   return "Inner Coverage";
-    default:                                        assert(0);
+    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(value_type, "Unknown");
     }
-    return "Unknown";
 }
 
-static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type) noexcept
+static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type)
 {
     META_FUNCTION_TASK();
-
     switch (component_type)
     {
     case D3D_REGISTER_COMPONENT_UNKNOWN:    return "Unknown";
     case D3D_REGISTER_COMPONENT_UINT32:     return "UInt32";
     case D3D_REGISTER_COMPONENT_SINT32:     return "SInt32";
     case D3D_REGISTER_COMPONENT_FLOAT32:    return "Float32";
-    default:                                assert(0);
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(component_type, "Unknown");
     }
-    return "Unknown";
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type) noexcept
+static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type)
 {
     META_FUNCTION_TASK();
-
     switch (step_type)
     {
     case StepType::PerVertex:     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     case StepType::PerInstance:   return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                      assert(0);
+    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
     }
-    return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 }
 
 Ptr<Shader> Shader::Create(Type type, Context& context, const Settings& settings)
@@ -232,21 +222,21 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
         m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
     }
 
-    assert(!!m_byte_code_chunk_ptr);
+    META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->p_data, m_byte_code_chunk_ptr->size, IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
     ShaderBase::ArgumentBindings argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
 #endif
@@ -261,9 +251,11 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
                                                   ? Program::ArgumentDesc(shader_argument)
                                                   : *argument_desc_it;
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
+                                                  ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
+                                                  : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
         const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type = argument_desc.IsAddressable()
-                                                  ? binding_desc.Type == D3D_SIT_CBUFFER ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
-                                                                                         : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView
+                                                  ? dx_addressable_binding_type
                                                   : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
         argument_bindings.push_back(std::make_shared<ProgramBindingsDX::ArgumentBindingDX>(
@@ -282,7 +274,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
             }
         ));
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
         log_ss << "  - Argument \"" << binding_desc.Name
                << "\" binding "     << resource_index
                << ": type="         << GetShaderInputTypeName(binding_desc.Type)
@@ -302,22 +294,19 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 #endif
     }
 
-#ifdef _DEBUG
     META_LOG(log_ss.str());
-#endif
-
     return argument_bindings;
 }
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(const ProgramDX& program) const
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << std::endl << GetTypeName() << " shader input parameters:" << std::endl;
 #endif
@@ -329,7 +318,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
         m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
 
-#ifdef _DEBUG
+#ifdef METHANE_LOGGING_ENABLED
         log_ss  << "  - Parameter "     << param_index
                 << ": semantic_name=\"" << param_desc.SemanticName << "\""
                 << ", semantic_index="  << param_desc.SemanticIndex
@@ -343,12 +332,10 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 
         const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
-        if (buffer_index > input_buffer_layouts.size())
-        {
-            throw std::invalid_argument("Provided description of program input layout has insufficient buffers count (" + std::to_string(input_buffer_layouts.size()) +
-                                        "), while shader requires buffer at index " + std::to_string(buffer_index) + ".");
-        }
 
+        META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
+                                  "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
+                                  input_buffer_layouts.size(), buffer_index);
         const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())
@@ -362,7 +349,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         element_desc.SemanticIndex            = param_desc.SemanticIndex;
         element_desc.InputSlot                = buffer_index;
         element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
-        element_desc.InstanceDataStepRate     = 0; // FIXME: input_buffer_layout.step_rate;
+        element_desc.InstanceDataStepRate     = 0; // FIXME: use input_buffer_layout.step_rate
         element_desc.Format                   = TypeConverterDX::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
         element_desc.AlignedByteOffset        = buffer_byte_offset;
 
@@ -370,10 +357,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         buffer_byte_offset += element_byte_size;
     }
 
-#ifdef _DEBUG
     META_LOG(log_ss.str().c_str());
-#endif
-
     return dx_input_layout;
 }
 

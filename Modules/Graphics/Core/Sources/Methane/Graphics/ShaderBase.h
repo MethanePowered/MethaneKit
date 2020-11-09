@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -51,8 +51,8 @@ public:
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
     virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
 
-    Ptr<ShaderBase> GetPtr()                     { return shared_from_this(); }
-    std::string     GetTypeName() const noexcept { return Shader::GetTypeName(m_type); }
+    Ptr<ShaderBase> GetPtr()                { return shared_from_this(); }
+    std::string     GetTypeName() const     { return Shader::GetTypeName(m_type); }
 
 protected:
     ContextBase&        GetContext()        { return m_context; }

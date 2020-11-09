@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -33,8 +33,8 @@ class CommandQueueVK;
 class FenceVK final : public FenceBase
 {
 public:
-    FenceVK(CommandQueueBase& command_queue);
-    ~FenceVK();
+    explicit FenceVK(CommandQueueBase& command_queue);
+    ~FenceVK() override;
 
     // Fence overrides
     void Signal() override;
@@ -42,7 +42,7 @@ public:
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
     // Object override
-    void SetName(const std::string& name) noexcept override;
+    void SetName(const std::string& name) override;
 
 private:
     CommandQueueVK& GetCommandQueueVK();

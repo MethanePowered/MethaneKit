@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -303,8 +303,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
         return false;
     }
 
-    if (!m_ui_context_ptr)
-        throw std::logic_error("Help text can not be initialized without render context.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "help text can not be initialized without render context");
 
     if (!item.panel_ptr)
     {
@@ -376,7 +375,7 @@ void AppBase::UpdateParametersTextPosition()
     m_parameters.panel_ptr->SetRect(UnitRect(
         FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
                    m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),
-        parameters_text_size + text_margins_size * 2u,
+        parameters_text_size + text_margins_size * 2U,
         Units::Pixels
     ));
 }
@@ -387,9 +386,7 @@ Font& AppBase::GetMainFont()
     if (m_main_font_ptr)
         return *m_main_font_ptr;
 
-    if (!m_ui_context_ptr)
-        throw std::logic_error("Main font can not be initialized without render context.");
-
+    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
     m_main_font_ptr = Font::Library::Get().GetFont(
         Data::FontProvider::Get(),
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }

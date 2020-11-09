@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -38,8 +38,13 @@ class CommandQueueDX;
 class FenceDX final : public FenceBase
 {
 public:
-    FenceDX(CommandQueueBase& command_queue);
-    ~FenceDX();
+    explicit FenceDX(CommandQueueBase& command_queue);
+    FenceDX(const FenceDX&) = delete;
+    FenceDX(FenceDX&&) noexcept = default;
+    ~FenceDX() override;
+
+    FenceDX& operator=(const FenceDX&) = delete;
+    FenceDX& operator=(FenceDX&&) noexcept = default;
 
     // Fence overrides
     void Signal() override;
@@ -47,7 +52,7 @@ public:
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
     // Object override
-    void SetName(const std::string& name) noexcept override;
+    void SetName(const std::string& name) override;
 
 private:
     CommandQueueDX& GetCommandQueueDX();

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,8 +30,7 @@ Metal implementation of the buffer interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -42,9 +41,8 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
     {
     case Buffer::StorageMode::Managed: return MTLResourceStorageModeManaged;
     case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
-    assert(0);
-    return MTLResourceStorageModeShared;
 }
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
@@ -65,14 +63,14 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 {
     META_FUNCTION_TASK();
     const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0u, PixelFormat::Unknown, Buffer::StorageMode::Managed };
+    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -94,7 +92,6 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 void BufferMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetName(name);
 
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
@@ -103,25 +100,25 @@ void BufferMT::SetName(const std::string& name)
 void BufferMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetData(sub_resources);
 
     switch(GetSettings().storage_mode)
     {
     case Buffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
     case Buffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
+    default: META_UNEXPECTED_ENUM_ARG(GetSettings().storage_mode);
     }
 }
 
 void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    assert(GetSettings().storage_mode == Buffer::StorageMode::Managed);
-    assert(m_mtl_buffer != nil);
-    assert(m_mtl_buffer.storageMode == MTLStorageModeManaged);
+    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Managed);
+    META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
+    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModeManaged);
 
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
-    assert(p_resource_data != nullptr);
+    META_CHECK_ARG_NOT_NULL(p_resource_data);
 
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
@@ -139,9 +136,9 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    assert(GetSettings().storage_mode == Buffer::StorageMode::Private);
-    assert(m_mtl_buffer != nil);
-    assert(m_mtl_buffer.storageMode == MTLStorageModePrivate);
+    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Private);
+    META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
+    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
     id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
 
@@ -149,7 +146,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    assert(mtl_blit_encoder != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
@@ -180,15 +177,15 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
+Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BufferSetMT>(buffers_type, std::move(buffer_refs));
+    return std::make_shared<BufferSetMT>(buffers_type, buffer_refs);
 }
 
-BufferSetMT::BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs)
-    : BufferSetBase(buffers_type, std::move(buffer_refs))
-    , m_mtl_buffer_offsets(GetCount(), 0u)
+BufferSetMT::BufferSetMT(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+    : BufferSetBase(buffers_type, buffer_refs)
+    , m_mtl_buffer_offsets(GetCount(), 0U)
 {
     META_FUNCTION_TASK();
     const Refs<Buffer>& refs = GetRefs();

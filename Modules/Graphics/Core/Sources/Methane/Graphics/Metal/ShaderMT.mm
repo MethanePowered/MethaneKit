@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,6 +31,7 @@ Metal implementation of the shader interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <regex>
 
@@ -46,6 +47,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
         case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
         case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
+        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(step_type, MTLVertexStepFunctionPerVertex);
     }
 }
 
@@ -57,7 +59,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
     case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
     case MTLArgumentTypeTexture:    return Resource::Type::Texture;
     case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
-    default:                        throw std::invalid_argument("Unable to determine resource type by DX shader input type.");
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, Resource::Type::Buffer);
     }
 }
 
@@ -72,9 +74,8 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexce
         case MTLArgumentTypeThreadgroupMemory:  return "Thread-group Memory";
         case MTLArgumentTypeTexture:            return "Texture";
         case MTLArgumentTypeSampler:            return "Sampler";
-        default:                                assert(0);
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, "Unknown");
     }
-    return "Unknown";
 }
 
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
@@ -85,9 +86,8 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) 
         case MTLArgumentAccessReadOnly:     return "R";
         case MTLArgumentAccessReadWrite:    return "RW";
         case MTLArgumentAccessWriteOnly:    return "W";
-        default:                            assert(0);
+        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_access, "Unknown");
     }
-    return "Unknown";
 }
 #endif
 
@@ -103,24 +103,18 @@ ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Setting
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     META_FUNCTION_TASK();
-
-    if (m_mtl_function == nil)
-    {
-        throw std::runtime_error("Failed to initialize Metal shader function by name '" + GetCompiledEntryFunctionName() + "'");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
 ShaderMT::~ShaderMT()
 {
     META_FUNCTION_TASK();
-
     [m_mtl_function release];
 }
 
 ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
 {
     META_FUNCTION_TASK();
-
     ArgumentBindings argument_bindings;
     if (m_mtl_arguments == nil)
         return argument_bindings;
@@ -212,7 +206,7 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     }
     
     const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
-    assert(input_buffer_byte_offsets.size() == input_buffer_layouts.size());
+    META_CHECK_ARG_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
     for(uint32_t buffer_index = 0; buffer_index < input_buffer_layouts.size(); ++buffer_index)
     {
         const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];

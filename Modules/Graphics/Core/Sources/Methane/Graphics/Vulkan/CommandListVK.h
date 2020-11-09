@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -34,7 +34,7 @@ namespace CommandListVK
 class DebugGroupVK : public CommandListBase::DebugGroupBase
 {
 public:
-    DebugGroupVK(std::string name);
+    explicit DebugGroupVK(const std::string& name);
 };
 
 } // namespace CommandListVK
@@ -42,7 +42,7 @@ public:
 class CommandListSetVK final : public CommandListSetBase
 {
 public:
-    CommandListSetVK(Refs<CommandList> command_list_refs);
+    explicit CommandListSetVK(const Refs<CommandList>& command_list_refs);
 };
 
 } // namespace Methane::Graphics

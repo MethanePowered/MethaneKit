@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -63,11 +63,14 @@ public:
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
     IContextDX&             GetContextDX() noexcept;
-    ID3D12CommandQueue&     GetNativeCommandQueue() noexcept;
+    ID3D12CommandQueue&     GetNativeCommandQueue();
     TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
 
 private:
     void WaitForExecution() noexcept;
+
+    const Ptr<CommandListSetDX>& GetNextExecutingCommandListSet() const;
+    void CompleteCommandListSetExecution(CommandListSetDX& executing_command_list_set);
 
     wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
     std::queue<Ptr<CommandListSetDX>> m_executing_command_lists;
@@ -78,6 +81,7 @@ private:
     std::thread                       m_execution_waiting_thread;
     std::exception_ptr                m_execution_waiting_exception_ptr;
     Ptr<TimestampQueryBuffer>         m_timestamp_query_buffer_ptr;
+    std::atomic<bool>                 m_name_changed{ false };
 };
 
 } // namespace Methane::Graphics

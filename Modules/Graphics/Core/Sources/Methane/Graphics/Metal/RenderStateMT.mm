@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,6 +30,7 @@ Metal implementation of the render state interface.
 
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -37,7 +38,6 @@ namespace Methane::Graphics
 static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
 {
     META_FUNCTION_TASK();
-
     using RasterizerCullMode = RenderState::Rasterizer::CullMode;
 
     switch(cull_mode)
@@ -45,31 +45,29 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
         case RasterizerCullMode::None:  return MTLCullModeNone;
         case RasterizerCullMode::Back:  return MTLCullModeBack;
         case RasterizerCullMode::Front: return MTLCullModeFront;
+        default:                        META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, MTLCullModeNone);
     }
-    return MTLCullModeNone;
 }
 
 static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     META_FUNCTION_TASK();
-
     using RasterizerFillMode = RenderState::Rasterizer::FillMode;
 
     switch(fill_mode)
     {
         case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
         case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
+        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
-    return MTLTriangleFillModeFill;
 }
     
 static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
 {
     META_FUNCTION_TASK();
-
     using ColorChannel = RenderState::Blending::ColorChannel;
 
-    MTLColorWriteMask mtl_color_write_mask = 0u;
+    MTLColorWriteMask mtl_color_write_mask = 0U;
     if (rt_write_mask & ColorChannel::Red)
         mtl_color_write_mask |= MTLColorWriteMaskRed;
     if (rt_write_mask & ColorChannel::Green)
@@ -84,7 +82,6 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-
     using BlendOp = RenderState::Blending::Operation;
 
     switch(blend_operation)
@@ -94,14 +91,13 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
     }
-    return MTLBlendOperationAdd;
 }
 
 static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-
     using BlendFactor = RenderState::Blending::Factor;
     
     switch (blend_factor)
@@ -125,14 +121,13 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, MTLBlendFactorZero);
     }
-    return MTLBlendFactorZero;
 }
 
 static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
 {
     META_FUNCTION_TASK();
-
     using StencilOperation = RenderState::Stencil::Operation;
 
     switch(operation)
@@ -145,8 +140,8 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
         case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, MTLStencilOperationKeep);
     }
-    return MTLStencilOperationKeep;
 }
 
 static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clockwise) noexcept
@@ -296,11 +291,8 @@ RenderStateMT::~RenderStateMT()
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!settings.program_ptr)
-    {
-        throw std::invalid_argument("Can not create state with empty program.");
-    }
-    
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
+
     RenderStateBase::Reset(settings);
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
@@ -389,10 +381,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state
     if (state_groups & Group::BlendingColor)
     {
         const Settings& settings = GetSettings();
-        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetR()
-                                    green:settings.blending_color.GetG()
-                                     blue:settings.blending_color.GetB()
-                                    alpha:settings.blending_color.GetA()];
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()
+                                    green:settings.blending_color.GetGf()
+                                     blue:settings.blending_color.GetBf()
+                                    alpha:settings.blending_color.GetAf()];
     }
 }
 
@@ -424,11 +416,9 @@ void RenderStateMT::InitializeNativePipelineState()
     
     NSError* ns_error = nil;
     m_mtl_pipeline_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
-    if (!m_mtl_pipeline_state)
-    {
-        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]);
-        throw std::runtime_error("Failed to create Metal pipeline state: " + error_msg);
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
+                                  "failed to create Metal pipeline state: {}",
+                                  MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
 }
 
 void RenderStateMT::InitializeNativeDepthStencilState()
@@ -436,13 +426,10 @@ void RenderStateMT::InitializeNativeDepthStencilState()
     META_FUNCTION_TASK();
     if (m_mtl_depth_state)
         return;
-    
-    assert(m_mtl_depth_stencil_state_desc != nil);
+
+    META_CHECK_ARG_NOT_NULL(m_mtl_depth_stencil_state_desc);
     m_mtl_depth_state = [GetRenderContextMT().GetDeviceMT().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-    if (!m_mtl_depth_state)
-    {
-        throw std::runtime_error("Failed to create Metal depth state.");
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth state");
 }
 
 id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()

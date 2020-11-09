@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -51,10 +51,10 @@ public:
         std::string                     texture_path;
         gfx::Vector3f                   position;
         float                           scale;
-        float                           spin_velocity_rps   = 0.3f; // (rps = radians per second)
+        float                           spin_velocity_rps   = 0.3F; // (rps = radians per second)
         bool                            depth_reversed      = false;
         gfx::ImageLoader::Options::Mask image_options       = gfx::ImageLoader::Options::None;
-        float                           lod_bias            = 0.f;
+        float                           lod_bias            = 0.F;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms
@@ -87,7 +87,7 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh);
+    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

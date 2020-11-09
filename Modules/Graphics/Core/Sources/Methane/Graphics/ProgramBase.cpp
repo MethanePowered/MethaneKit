@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,40 +23,45 @@ Base implementation of the program interface.
 
 #include "ProgramBase.h"
 #include "ContextBase.h"
+#include "CoreFormatters.hpp"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
-
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
 static const std::hash<std::string> g_argument_name_hash;
 
-Program::Argument::Argument(Shader::Type shader_type, std::string argument_name)
+Program::Argument::Argument(Shader::Type shader_type, const std::string& argument_name) noexcept
     : shader_type(shader_type)
-    , name(std::move(argument_name))
+    , name(argument_name)
     , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     META_FUNCTION_TASK();
 }
 
-bool Program::Argument::operator==(const Argument& other) const
+bool Program::Argument::operator==(const Argument& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(hash, shader_type, name) ==
            std::tie(other.hash, other.shader_type, other.name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, std::string argument_name, Modifiers::Mask modifiers)
+Program::Argument::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    return fmt::format("{} {}", Shader::GetTypeName(shader_type), name);
+}
+
+Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers::Mask modifiers) noexcept
     : Argument(shader_type, argument_name)
     , modifiers(modifiers)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers)
+Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers) noexcept
     : Argument(argument)
     , modifiers(modifiers)
 {
@@ -75,18 +80,22 @@ Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(c
     return argument_descriptions.find(all_shaders_argument);
 }
 
+Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
+    : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
+                                        program.GetName(), argument.name, Shader::GetTypeName(argument.shader_type)))
+    , m_program(program)
+    , m_argument_ptr(std::make_unique<Program::Argument>(argument))
+{
+    META_FUNCTION_TASK();
+}
+
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     META_FUNCTION_TASK();
-
     ProgramBase::ShadersByType shaders_by_type;
     for (const Ptr<Shader>& shader_ptr : shaders)
     {
-        if (!shader_ptr)
-        {
-            throw std::runtime_error("Can not use empty shader pointer for program creation.");
-        }
-        
+        META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "can not use empty shader pointer for program creation");
         shaders_by_type[static_cast<size_t>(shader_ptr->GetType())] = shader_ptr;
     }
     return shaders_by_type;
@@ -95,15 +104,10 @@ ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& 
 Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
 {
     META_FUNCTION_TASK();
-
     Shader::Types shader_types;
     for (const Ptr<Shader>& shader_ptr : shaders)
     {
-        if (!shader_ptr)
-        {
-            throw std::runtime_error("Can not use empty shader pointer for program creation.");
-        }
-        
+        META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "can not use empty shader pointer for program creation");
         shader_types.insert(shader_ptr->GetType());
     }
     return shader_types;
@@ -123,9 +127,9 @@ ProgramBase::~ProgramBase()
     META_FUNCTION_TASK();
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
+    for (const auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
     {
-        DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
+        const DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
         if (heap_reservation.range.IsEmpty())
             continue;
 
@@ -143,22 +147,14 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
     m_binding_by_argument.clear();
     for (const Ptr<Shader>& shader_ptr : m_settings.shaders)
     {
-        if (!shader_ptr)
-        {
-            throw std::runtime_error("Empty shader pointer in program is not allowed.");
-        }
-        
+        META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "empty shader pointer in program is not allowed");
         const Shader::Type shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
         
         const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_descriptions);
         for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binging_ptr : argument_bindings)
         {
-            if (!argument_binging_ptr)
-            {
-                throw std::runtime_error("Empty resource binding provided by shader.");
-            }
-
+            META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
             m_binding_by_argument.emplace(shader_argument, argument_binging_ptr);
             shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
@@ -178,10 +174,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         {
             const Argument argument{ shader_type, argument_name };
             auto binding_by_argument_it = m_binding_by_argument.find(argument);
-            if (binding_by_argument_it == m_binding_by_argument.end())
-            {
-                throw std::runtime_error("Resource binding was not provided for " + Shader::GetTypeName(shader_type) + " shader argument \"" + argument_name + "\"");
-            }
+            META_CHECK_ARG_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(), "Resource binding was not initialized for for argument");
             if (!argument_binding_ptr)
             {
                 argument_binding_ptr = binding_by_argument_it->second;
@@ -189,10 +182,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
             m_binding_by_argument.erase(binding_by_argument_it);
         }
 
-        if (!argument_binding_ptr)
-        {
-            throw std::runtime_error("Failed to create resource binding for argument \"" + argument_name + "\".");
-        }
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
         m_binding_by_argument.emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
 }
@@ -200,7 +190,6 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
 const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length)
 {
     META_FUNCTION_TASK();
-
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
@@ -208,41 +197,29 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
     if (constant_descriptor_range_by_heap_type_it != m_constant_descriptor_range_by_heap_type.end())
     {
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
-        if (std::addressof(heap_reservation.heap.get()) != std::addressof(heap))
-        {
-            throw std::runtime_error("Constant descriptor range was previously reserved for the program on a different descriptor heap of the same type.");
-        }
-        if (heap_reservation.range.GetLength() != range_length)
-        {
-            throw std::runtime_error("Constant descriptor range previously reserved for the program differs in length from requested reservation.");
-        }
+        META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
+                                  "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
+        META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
+                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
         return heap_reservation.range;
     }
 
     DescriptorHeap::Range const_desc_range = heap.ReserveRange(range_length);
-    if (!const_desc_range)
-    {
-        throw std::runtime_error("Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
-    }
+    META_CHECK_ARG_NOT_ZERO_DESCR(const_desc_range, "Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
     return m_constant_descriptor_range_by_heap_type.emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
 }
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
-
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);
-    if (!shader_ptr)
-    {
-        throw std::runtime_error(Shader::GetTypeName(shader_type) + "shader was not found in program \"" + GetName() + "\".");
-    }
+    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", Shader::GetTypeName(shader_type), GetName());
     return *shader_ptr;
 }
 
 uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const
 {
     META_FUNCTION_TASK();
-
     for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
     {
         const InputBufferLayout& input_buffer_layout = m_settings.input_buffer_layouts[buffer_index];
@@ -250,8 +227,10 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
         if (argument_it != input_buffer_layout.argument_semantics.end())
             return static_cast<uint32_t>(buffer_index);
     }
-
-    throw std::runtime_error("Input argument with semantic \"" + argument_semantic + "\" was not found for program \"" + GetName() + "\"");
+    META_INVALID_ARG_DESCR(argument_semantic, "input argument with semantic name was not found for program '{}'", GetName());
+#ifndef METHANE_CHECKS_ENABLED
+    return 0;
+#endif
 }
 
 } // namespace Methane::Graphics

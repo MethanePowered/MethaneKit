@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -41,7 +41,7 @@ public:
         YZ,
     };
 
-    explicit QuadMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.f, float height = 1.f, float depth_pos = 0.f, size_t color_index = 0, FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
+    explicit QuadMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.F, float height = 1.F, float depth_pos = 0.F, size_t color_index = 0, FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
         : BaseMeshT(type, vertex_layout)
         , m_width(width)
         , m_height(height)
@@ -64,17 +64,19 @@ public:
                 case FaceType::XY: vertex_position = Mesh::Position(pos_2d[0] * m_width, pos_2d[1] * m_height, m_depth_pos); break;
                 case FaceType::XZ: vertex_position = Mesh::Position(pos_2d[0] * m_width, m_depth_pos, pos_2d[1] * m_height); break;
                 case FaceType::YZ: vertex_position = Mesh::Position(m_depth_pos, pos_2d[1] * m_width, pos_2d[0] * m_height); break;
+                default:           META_UNEXPECTED_ENUM_ARG(face_type);
                 }
             }
             if (has_normals)
             {
                 Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-                const float depth_norm = m_depth_pos ? m_depth_pos / std::abs(m_depth_pos) : 1.f;
+                const float depth_norm = m_depth_pos ? m_depth_pos / std::abs(m_depth_pos) : 1.F;
                 switch (face_type)
                 {
-                case FaceType::XY: vertex_normal = Mesh::Normal(0.f, 0.f, depth_norm); break;
-                case FaceType::XZ: vertex_normal = Mesh::Normal(0.f, depth_norm, 0.f); break;
-                case FaceType::YZ: vertex_normal = Mesh::Normal(depth_norm, 0.f, 0.f); break;
+                case FaceType::XY: vertex_normal = Mesh::Normal(0.F, 0.F, depth_norm); break;
+                case FaceType::XZ: vertex_normal = Mesh::Normal(0.F, depth_norm, 0.F); break;
+                case FaceType::YZ: vertex_normal = Mesh::Normal(depth_norm, 0.F, 0.F); break;
+                default:           META_UNEXPECTED_ENUM_ARG(face_type);
                 }
             }
             if (has_colors)

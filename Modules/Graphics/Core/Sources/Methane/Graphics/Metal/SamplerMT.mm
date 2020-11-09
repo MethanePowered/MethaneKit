@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -36,7 +36,6 @@ namespace Methane::Graphics
 static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
 {
     META_FUNCTION_TASK();
-
     using AddressMode = SamplerBase::Address::Mode;
 
     switch(address_mode)
@@ -46,26 +45,26 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Addres
         case AddressMode::ClampToBorderColor:   return MTLSamplerAddressModeClampToBorderColor;
         case AddressMode::Repeat:               return MTLSamplerAddressModeRepeat;
         case AddressMode::RepeatMirror:         return MTLSamplerAddressModeMirrorRepeat;
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
     }
 }
 
 static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter) noexcept
 {
     META_FUNCTION_TASK();
-
     using MinMagFilter = SamplerBase::Filter::MinMag;
 
     switch(min_mag_filter)
     {
         case MinMagFilter::Nearest:             return MTLSamplerMinMagFilterNearest;
         case MinMagFilter::Linear:              return MTLSamplerMinMagFilterLinear;
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
     }
 }
 
 static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter) noexcept
 {
     META_FUNCTION_TASK();
-
     using MipFilter = SamplerBase::Filter::Mip;
 
     switch(mip_filter)
@@ -73,13 +72,13 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mi
         case MipFilter::NotMipmapped:           return MTLSamplerMipFilterNotMipmapped;
         case MipFilter::Nearest:                return MTLSamplerMipFilterNearest;
         case MipFilter::Linear:                 return MTLSamplerMipFilterLinear;
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
     }
 }
 
 static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color) noexcept
 {
     META_FUNCTION_TASK();
-
     using BorderColor = SamplerBase::BorderColor;
 
     switch(border_color)
@@ -87,6 +86,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
         case BorderColor::TransparentBlack:     return MTLSamplerBorderColorTransparentBlack;
         case BorderColor::OpaqueBlack:          return MTLSamplerBorderColorOpaqueBlack;
         case BorderColor::OpaqueWhite:          return MTLSamplerBorderColorOpaqueWhite;
+        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
     }
 }
 
@@ -133,10 +133,10 @@ SamplerMT::~SamplerMT()
 void SamplerMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
 
     SamplerBase::SetName(name);
 
-    assert(m_mtl_sampler_desc != nil);
     m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
 
     ResetSamplerState();
@@ -145,13 +145,12 @@ void SamplerMT::SetName(const std::string& name)
 void SamplerMT::ResetSamplerState()
 {
     META_FUNCTION_TASK();
-
     if (m_mtl_sampler_state)
     {
         [m_mtl_sampler_state release];
     }
-    
-    assert(m_mtl_sampler_desc);
+
+    META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }
 

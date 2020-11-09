@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -46,20 +46,20 @@ public:
 
     // ParallelRenderCommandList interface
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) noexcept override;
-    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void SetValidationEnabled(bool is_validation_enabled) override;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
     void SetViewState(ViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { throw std::logic_error("Can not set resource barriers on parallel render command list."); }
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
     void Complete(uint32_t frame_index) override;
 
     // CommandList interface
-    void PushDebugGroup(DebugGroup&) override   { throw std::logic_error("Can not use debug groups on parallel render command list."); }
-    void PopDebugGroup() override               { throw std::logic_error("Can not use debug groups on parallel render command list."); }
+    void PushDebugGroup(DebugGroup&) override   { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
+    void PopDebugGroup() override               { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
     // Object interface

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -71,7 +71,7 @@ public:
         void* p_memory = nullptr;
         const int error = posix_memalign(&p_memory, N, allocate_size);
         if (error)
-            throw std::runtime_error("Failed to allocate aligned memory! posix_memalign error: " + std::to_string(error));
+            throw std::bad_alloc();
         return static_cast<pointer>(p_memory);
 #endif
     }

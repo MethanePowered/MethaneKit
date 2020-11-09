@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -51,7 +51,7 @@ public:
         if (@available(macOS 10.15.4, *))
         {
             [drawable addPresentedHandler:^(id<MTLDrawable> mtl_drawable) {
-                META_LOG("Metal Drawable (" + std::to_string(mtl_drawable.drawableID) + ") was presented at " + std::to_string(mtl_drawable.presentedTime) + " sec.");
+                META_LOG("Metal Drawable ({}) was presented at {} sec.", mtl_drawable.drawableID, mtl_drawable.presentedTime);
                 const Methane::Data::Timestamp presented_timestamp = Methane::Data::ConvertTimeSecondsToNanoseconds(mtl_drawable.presentedTime);
                 TRACY_GPU_SCOPE_COMPLETE(m_present_scope, Methane::Data::TimeRange(presented_timestamp, presented_timestamp));
                 std::lock_guard<std::mutex> lock(scope_set_mutex);
@@ -440,9 +440,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         return;
     
     bool delegate_can_draw_in_view = [self.delegate respondsToSelector:@selector(drawInView:)];
-    assert(delegate_can_draw_in_view);
-    if (!delegate_can_draw_in_view)
-        return;
+    META_CHECK_ARG_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
 
     m_current_drawable = nil;
     [self.delegate drawInView:self];

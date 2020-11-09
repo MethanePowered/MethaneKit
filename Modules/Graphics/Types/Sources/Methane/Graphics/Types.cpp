@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,8 +26,7 @@ Methane graphics type functions implementation.
 #include <Methane/Graphics/Volume.hpp>
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -52,7 +51,7 @@ ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     return ScissorRect {
-        ScissorRect::Point(0u, 0u),
+        ScissorRect::Point(0U, 0U),
         ScissorRect::Size(frame_size.width, frame_size.height)
     };
 }
@@ -75,10 +74,9 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
     };
 }
 
-Data::Size GetPixelSize(PixelFormat pixel_format) noexcept
+Data::Size GetPixelSize(PixelFormat pixel_format)
 {
     META_FUNCTION_TASK();
-
     switch(pixel_format)
     {
     case PixelFormat::RGBA8:
@@ -107,10 +105,8 @@ Data::Size GetPixelSize(PixelFormat pixel_format) noexcept
         return 1;
 
     default:
-        assert(0);
+        META_UNEXPECTED_ENUM_ARG_RETURN(pixel_format, 0);
     }
-
-    return 0;
 }
 
 bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept

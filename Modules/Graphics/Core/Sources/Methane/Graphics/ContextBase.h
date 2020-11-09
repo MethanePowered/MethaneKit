@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -57,19 +57,19 @@ public:
     ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
 
     // Context interface
-    Type             GetType() const noexcept override                       { return m_type; }
-    tf::Executor&    GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    Object::Registry&   GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
-    void             RequestDeferredAction(DeferredAction action) const noexcept override;
-    void             CompleteInitialization() override;
-    bool             IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
-    void             WaitForGpu(WaitFor wait_for) override;
-    void             Reset(Device& device) override;
-    void             Reset() override;
-    CommandQueue&    GetUploadCommandQueue() override;
-    BlitCommandList& GetUploadCommandList() override;
-    CommandListSet&  GetUploadCommandListSet() override;
-    Device&          GetDevice() override;
+    Type              GetType() const noexcept override                       { return m_type; }
+    tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
+    Object::Registry& GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
+    void              RequestDeferredAction(DeferredAction action) const noexcept override;
+    void              CompleteInitialization() override;
+    bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
+    void              WaitForGpu(WaitFor wait_for) override;
+    void              Reset(Device& device) override;
+    void              Reset() override;
+    CommandQueue&     GetUploadCommandQueue() override;
+    BlitCommandList&  GetUploadCommandList() override;
+    CommandListSet&   GetUploadCommandListSet() override;
+    Device&           GetDevice() override;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
@@ -82,17 +82,17 @@ public:
     ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
     const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     CommandQueueBase&       GetUploadCommandQueueBase();
-    DeviceBase&             GetDeviceBase() noexcept;
-    const DeviceBase&       GetDeviceBase() const noexcept;
+    DeviceBase&             GetDeviceBase();
+    const DeviceBase&       GetDeviceBase() const;
 
 protected:
     void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
-    Fence& GetUploadFence() const noexcept;
+    Fence& GetUploadFence() const;
 
     // ContextBase interface
     virtual bool UploadResources();
-    virtual void OnGpuWaitStart(WaitFor) {}
+    virtual void OnGpuWaitStart(WaitFor);
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:

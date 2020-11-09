@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,14 +30,14 @@ DirectX 12 implementation of the render state interface.
 #include "TextureDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
-#include <D3Dcompiler.h>
+#include <d3dcompiler.h>
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -62,9 +62,8 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
     {
     case RasterizerFillMode::Solid:     return D3D12_FILL_MODE_SOLID;
     case RasterizerFillMode::Wireframe: return D3D12_FILL_MODE_WIREFRAME;
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
     }
-    return D3D12_FILL_MODE_SOLID;
 }
 
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
@@ -77,9 +76,8 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     case RasterizerCullMode::None:      return D3D12_CULL_MODE_NONE;
     case RasterizerCullMode::Front:     return D3D12_CULL_MODE_FRONT;
     case RasterizerCullMode::Back:      return D3D12_CULL_MODE_BACK;
-    default:                            assert(0);
+    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
     }
-    return D3D12_CULL_MODE_NONE;
 }
 
 static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
@@ -111,9 +109,8 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
     case BlendOp::ReverseSubtract:  return D3D12_BLEND_OP_REV_SUBTRACT;
     case BlendOp::Minimum:          return D3D12_BLEND_OP_MIN;
     case BlendOp::Maximum:          return D3D12_BLEND_OP_MAX;
-    default:                        assert(0);
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
     }
-    return D3D12_BLEND_OP_ADD;
 }
 
 static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
@@ -142,9 +139,8 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
     case BlendFactor::OneMinusSource1Color:     return D3D12_BLEND_INV_SRC1_COLOR;
     case BlendFactor::Source1Alpha:             return D3D12_BLEND_SRC1_ALPHA;
     case BlendFactor::OneMinusSource1Alpha:     return D3D12_BLEND_INV_SRC1_ALPHA;
-    default:                                    assert(0);
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, D3D12_BLEND_ZERO);
     }
-    return D3D12_BLEND_ZERO;
 }
 
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
@@ -162,9 +158,8 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
     case StencilOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
     case StencilOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
     case StencilOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
-    default:                                assert(0);
+    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
-    return D3D12_STENCIL_OP_KEEP;
 }
 
 static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
@@ -268,7 +263,7 @@ bool ViewStateDX::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewStateDX::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-    RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
+    const auto& dx_render_command_list = static_cast<const RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
     d3d12_command_list.RSSetViewports(static_cast<UINT>(m_dx_viewports.size()), m_dx_viewports.data());
@@ -293,54 +288,54 @@ void RenderStateDX::Reset(const Settings& settings)
     META_FUNCTION_TASK();
     RenderStateBase::Reset(settings);
 
-    ProgramDX&         dx_program               = RenderStateDX::GetProgramDX();
-    Program::Settings  program_settings         = dx_program.GetSettings();
+    const ProgramDX&   dx_program       = RenderStateDX::GetProgramDX();
+    Program::Settings  program_settings = dx_program.GetSettings();
 
     // Set Rasterizer state descriptor
     CD3DX12_RASTERIZER_DESC rasterizer_desc(D3D12_DEFAULT);
-    rasterizer_desc.FillMode                    = ConvertRasterizerFillModeToD3D12(settings.rasterizer.fill_mode);
-    rasterizer_desc.CullMode                    = ConvertRasterizerCullModeToD3D12(settings.rasterizer.cull_mode);
-    rasterizer_desc.FrontCounterClockwise       = settings.rasterizer.is_front_counter_clockwise;
-    rasterizer_desc.MultisampleEnable           = settings.rasterizer.sample_count > 1;
-    rasterizer_desc.ForcedSampleCount           = !settings.depth.enabled && !settings.stencil.enabled ? settings.rasterizer.sample_count : 0;
+    rasterizer_desc.FillMode              = ConvertRasterizerFillModeToD3D12(settings.rasterizer.fill_mode);
+    rasterizer_desc.CullMode              = ConvertRasterizerCullModeToD3D12(settings.rasterizer.cull_mode);
+    rasterizer_desc.FrontCounterClockwise = settings.rasterizer.is_front_counter_clockwise;
+    rasterizer_desc.MultisampleEnable     = settings.rasterizer.sample_count > 1;
+    rasterizer_desc.ForcedSampleCount     = !settings.depth.enabled && !settings.stencil.enabled ? settings.rasterizer.sample_count : 0;
 
     // Set Blending state descriptor
-    CD3DX12_BLEND_DESC                          blend_desc(D3D12_DEFAULT);
-    blend_desc.AlphaToCoverageEnable            = settings.rasterizer.alpha_to_coverage_enabled;
-    blend_desc.IndependentBlendEnable           = settings.blending.is_independent;
+    CD3DX12_BLEND_DESC blend_desc(D3D12_DEFAULT);
+    blend_desc.AlphaToCoverageEnable  = settings.rasterizer.alpha_to_coverage_enabled;
+    blend_desc.IndependentBlendEnable = settings.blending.is_independent;
 
     uint32_t rt_index = 0;
     for (const Blending::RenderTarget& render_target : settings.blending.render_targets)
     {
         // Set render target blending descriptor
         D3D12_RENDER_TARGET_BLEND_DESC& rt_blend_desc = blend_desc.RenderTarget[rt_index++];
-        rt_blend_desc.BlendEnable               = render_target.blend_enabled;
-        rt_blend_desc.RenderTargetWriteMask     = ConvertRenderTargetWriteMaskToD3D12(render_target.write_mask);
-        rt_blend_desc.BlendOp                   = ConvertBlendingOperationToD3D12(render_target.rgb_blend_op);
-        rt_blend_desc.BlendOpAlpha              = ConvertBlendingOperationToD3D12(render_target.alpha_blend_op);
-        rt_blend_desc.SrcBlend                  = ConvertBlendingFactorToD3D12(render_target.source_rgb_blend_factor);
-        rt_blend_desc.SrcBlendAlpha             = ConvertBlendingFactorToD3D12(render_target.source_alpha_blend_factor);
-        rt_blend_desc.DestBlend                 = ConvertBlendingFactorToD3D12(render_target.dest_rgb_blend_factor);
-        rt_blend_desc.DestBlendAlpha            = ConvertBlendingFactorToD3D12(render_target.dest_alpha_blend_factor);
+        rt_blend_desc.BlendEnable           = render_target.blend_enabled;
+        rt_blend_desc.RenderTargetWriteMask = ConvertRenderTargetWriteMaskToD3D12(render_target.write_mask);
+        rt_blend_desc.BlendOp               = ConvertBlendingOperationToD3D12(render_target.rgb_blend_op);
+        rt_blend_desc.BlendOpAlpha          = ConvertBlendingOperationToD3D12(render_target.alpha_blend_op);
+        rt_blend_desc.SrcBlend              = ConvertBlendingFactorToD3D12(render_target.source_rgb_blend_factor);
+        rt_blend_desc.SrcBlendAlpha         = ConvertBlendingFactorToD3D12(render_target.source_alpha_blend_factor);
+        rt_blend_desc.DestBlend             = ConvertBlendingFactorToD3D12(render_target.dest_rgb_blend_factor);
+        rt_blend_desc.DestBlendAlpha        = ConvertBlendingFactorToD3D12(render_target.dest_alpha_blend_factor);
     }
 
     // Set blending factor
-    assert(settings.blending_color.size() <= 4);
+    META_CHECK_ARG_LESS(settings.blending_color.size(), 5);
     for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(settings.blending_color.size()); ++component_index)
     {
         m_blend_factor[component_index] = settings.blending_color[component_index];
     }
 
     // Set depth and stencil state descriptor
-    CD3DX12_DEPTH_STENCIL_DESC                  depth_stencil_desc(D3D12_DEFAULT);
-    depth_stencil_desc.DepthEnable              = settings.depth.enabled;
-    depth_stencil_desc.DepthWriteMask           = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    depth_stencil_desc.DepthFunc                = TypeConverterDX::CompareFunctionToD3D(settings.depth.compare);
-    depth_stencil_desc.StencilEnable            = settings.stencil.enabled;
-    depth_stencil_desc.StencilReadMask          = settings.stencil.read_mask;
-    depth_stencil_desc.StencilWriteMask         = settings.stencil.write_mask;
-    depth_stencil_desc.FrontFace                = ConvertStencilFaceOperationsToD3D12(settings.stencil.front_face);
-    depth_stencil_desc.BackFace                 = ConvertStencilFaceOperationsToD3D12(settings.stencil.back_face);
+    CD3DX12_DEPTH_STENCIL_DESC depth_stencil_desc(D3D12_DEFAULT);
+    depth_stencil_desc.DepthEnable      = settings.depth.enabled;
+    depth_stencil_desc.DepthWriteMask   = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    depth_stencil_desc.DepthFunc        = TypeConverterDX::CompareFunctionToD3D(settings.depth.compare);
+    depth_stencil_desc.StencilEnable    = settings.stencil.enabled;
+    depth_stencil_desc.StencilReadMask  = settings.stencil.read_mask;
+    depth_stencil_desc.StencilWriteMask = settings.stencil.write_mask;
+    depth_stencil_desc.FrontFace        = ConvertStencilFaceOperationsToD3D12(settings.stencil.front_face);
+    depth_stencil_desc.BackFace         = ConvertStencilFaceOperationsToD3D12(settings.stencil.back_face);
 
     // Set pipeline state descriptor for program
     m_pipeline_state_desc.InputLayout           = dx_program.GetNativeInputLayoutDesc();
@@ -355,11 +350,7 @@ void RenderStateDX::Reset(const Settings& settings)
     m_pipeline_state_desc.SampleDesc.Count      = settings.rasterizer.sample_count;
 
     // Set RTV, DSV formats for pipeline state
-    if (program_settings.color_formats.size() > g_max_rtv_count)
-    {
-        throw std::runtime_error("Number of color attachments (" + std::to_string(program_settings.color_formats.size()) +
-                                 ") exceeds maximum RTV count in DirectX (" + std::to_string(g_max_rtv_count) + ")");
-    }
+    META_CHECK_ARG_LESS_DESCR(program_settings.color_formats.size(), g_max_rtv_count + 1, "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : program_settings.color_formats)
@@ -375,8 +366,7 @@ void RenderStateDX::Reset(const Settings& settings)
 void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
 {
     META_FUNCTION_TASK();
-
-    RenderCommandListDX& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
+    const auto& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
     if (state_groups & Group::Program    ||
@@ -391,7 +381,7 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state
 
     if (state_groups & Group::BlendingColor)
     {
-        d3d12_command_list.OMSetBlendFactor(m_blend_factor);
+        d3d12_command_list.OMSetBlendFactor(m_blend_factor.data());
     }
 }
 

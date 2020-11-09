@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -35,31 +35,31 @@ struct IContextVK;
 class ViewStateVK final : public ViewStateBase
 {
 public:
-    ViewStateVK(const Settings& settings);
+    explicit ViewStateVK(const Settings& settings);
 
     // ViewState overrides
-    bool Reset(const Settings& settings) override;
-    bool SetViewports(const Viewports& viewports) override;
-    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+    bool Reset(const Settings& settings) final;
+    bool SetViewports(const Viewports& viewports) final;
+    bool SetScissorRects(const ScissorRects& scissor_rects) final;
 
     // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list) final;
 };
 
 class RenderStateVK final : public RenderStateBase
 {
 public:
     RenderStateVK(RenderContextBase& context, const Settings& settings);
-    ~RenderStateVK() override;
+    ~RenderStateVK() final;
     
     // RenderState interface
-    void Reset(const Settings& settings) override;
+    void Reset(const Settings& settings) final;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 
 protected:
     IContextVK& GetContextVK() noexcept;

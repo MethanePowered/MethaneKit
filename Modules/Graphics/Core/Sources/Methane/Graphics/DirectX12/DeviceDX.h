@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -32,6 +32,9 @@ DirectX 12 implementation of the device interface.
 
 #include <optional>
 
+// NOTE: Adapters change handling breaks many frame capture tools, like VS or RenderDoc, so it's disabled for now
+//#define ADAPTERS_CHANGE_HANDLING
+
 namespace Methane::Graphics
 {
 
@@ -43,6 +46,7 @@ public:
     static Device::Feature::Mask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    DeviceDX(const DeviceDX& device) noexcept = default;
     ~DeviceDX() override;
 
     // Object interface
@@ -54,7 +58,7 @@ public:
     const wrl::ComPtr<ID3D12Device>&    GetNativeDevice() const;
     void ReleaseNativeDevice();
 
-protected:
+private:
     const wrl::ComPtr<IDXGIAdapter>     m_cp_adapter;
     const D3D_FEATURE_LEVEL             m_feature_level;
     mutable NativeFeatureOptions5       m_feature_options_5;
@@ -67,14 +71,19 @@ public:
     static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
 
     SystemDX();
+    SystemDX(const SystemDX&) = delete;
+    SystemDX(SystemDX&&) = delete;
     ~SystemDX() override;
+
+    SystemDX& operator=(const SystemDX&) = delete;
+    SystemDX& operator=(SystemDX&&) = delete;
 
     // System interface
     void  CheckForChanges() override;
     const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
-    const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() { return m_cp_factory; }
-    void ReportLiveObjects();
+    const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
+    void ReportLiveObjects() const;
 
 private:
     void Initialize();
@@ -83,8 +92,10 @@ private:
     void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     wrl::ComPtr<IDXGIFactory5> m_cp_factory;
+#ifdef ADAPTERS_CHANGE_HANDLING
     HANDLE                     m_adapter_change_event = NULL;
     DWORD                      m_adapter_change_registration_cookie = 0;
+#endif
 };
 
 } // namespace Methane::Graphics

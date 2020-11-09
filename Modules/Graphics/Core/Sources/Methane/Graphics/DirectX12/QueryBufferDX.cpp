@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,8 +31,9 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/QueryBuffer.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -51,23 +52,22 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
     //D3D12_QUERY_TYPE_OCCLUSION
     //D3D12_QUERY_TYPE_BINARY_OCCLUSION
     //D3D12_QUERY_TYPE_PIPELINE_STATISTICS
-    default: assert(0);
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(query_buffer_type, D3D12_QUERY_TYPE_TIMESTAMP);
     }
-    return D3D12_QUERY_TYPE_TIMESTAMP;
 }
 
 static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type)
 {
     META_FUNCTION_TASK();
-    switch(query_buffer_type)
+    switch (query_buffer_type)
     {
     case QueryBuffer::Type::Timestamp: return D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     //D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
     //D3D12_QUERY_HEAP_TYPE_OCCLUSION
     //D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS
-    default: assert(0);
+    default:
+        META_UNEXPECTED_ENUM_ARG_RETURN(query_buffer_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
     }
-    return D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 }
 
 QueryBufferDX::QueryDX::QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
@@ -100,7 +100,7 @@ void QueryBufferDX::QueryDX::ResolveData()
     m_native_command_list.ResolveQueryData(
         &query_buffer_dx.GetNativeQueryHeap(),
         m_native_query_type,
-        GetIndex(), 1u,
+        GetIndex(), 1U,
         query_buffer_dx.GetResultResourceDX().GetNativeResource(),
         GetDataRange().GetStart()
     );
@@ -109,12 +109,9 @@ void QueryBufferDX::QueryDX::ResolveData()
 Resource::SubResource QueryBufferDX::QueryDX::GetData()
 {
     META_FUNCTION_TASK();
-    if (GetState() != Query::State::Resolved)
-        throw std::logic_error("Query data can not be retrieved for unresolved query.");
-
-    if (GetCommandList().GetState() != CommandListBase::State::Pending)
-        throw std::logic_error("Query data can be retrieved only when command list is in Pending/Completed state.");
-
+    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
+    // FIXME: META_CHECK_ARG_EQUAL_DESCR(GetState(), Query::State::Resolved, "query data can not be retrieved for unresolved query")
+    assert(GetState() == Query::State::Resolved);
     return GetQueryBufferDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
 }
 
@@ -144,34 +141,33 @@ CommandQueueDX& QueryBufferDX::GetCommandQueueDX() noexcept
 static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
-    Frequency gpu_frequency = 0u;
+    Frequency gpu_frequency = 0U;
     ThrowIfFailed(native_command_queue.GetTimestampFrequency(&gpu_frequency), &native_device);
     return gpu_frequency;
 }
 
-static std::pair<Timestamp, TimeDelta> GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
+static GpuTimeCalibration GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
 {
     META_FUNCTION_TASK();
-    UINT64 gpu_timestamp = 0u;
-    UINT64 cpu_timestamp = 0u;
+    UINT64 gpu_timestamp = 0U;
+    UINT64 cpu_timestamp = 0U;
     ThrowIfFailed(native_command_queue.GetClockCalibration(&gpu_timestamp, &cpu_timestamp), &native_device);
     return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
 }
 
-static Data::Size GetTimestampResultBufferSize(const Context& context, uint32_t max_timestamps_per_frame)
+static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     const uint32_t frames_count = context.GetType() == Context::Type::Render
-                                  ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
-                                  : 1u;
-    return frames_count * max_timestamps_per_frame * sizeof(Timestamp);
+                                ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
+                                : 1U;
+    return frames_count * max_timestamps_per_frame;
 }
 
 TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
-    : QueryBufferDX(command_queue, Type::Timestamp, 1u << 15u,
-                    GetTimestampResultBufferSize(command_queue.GetContext(), max_timestamps_per_frame),
+    : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U,
+                    GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
-    , m_max_timestamps_per_frame(max_timestamps_per_frame)
     , m_gpu_frequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
     , m_gpu_time_calibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
 {
@@ -206,16 +202,15 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetGpuTimestamp()
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
-    if (query_data.size < sizeof(Timestamp))
-        throw std::runtime_error("Query data size is less than expected for timestamp.");
-
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.size, sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_ARG_NOT_NULL(query_data.p_data);
     return *reinterpret_cast<const Timestamp*>(query_data.p_data);
 }
 
 Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetCpuNanoseconds()
 {
     META_FUNCTION_TASK();
-    TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
+    const TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
     const Timestamp gpu_timestamp = TimestampQueryDX::GetGpuTimestamp();
     return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
 }

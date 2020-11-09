@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -38,6 +38,7 @@ Methane text rendering primitive.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
 
@@ -349,7 +350,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     if (!frame_resources.IsInitialized())
         return;
 
-    cmd_list.Reset(m_render_state_ptr, p_debug_group);
+    cmd_list.ResetWithState(m_render_state_ptr, p_debug_group);
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
@@ -398,11 +399,10 @@ void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, co
     if (m_program_bindings_ptr)
         return;
 
-    if (!const_buffer_ptr || !atlas_sampler_ptr)
-        throw std::invalid_argument("Can not create text program bindings. Font atlas sampler or constant buffer is not initialized.");
-
-    if (!m_atlas_texture_ptr || !m_uniforms_buffer_ptr)
-        throw std::logic_error("Can not create text program bindings. Font atlas texture or uniforms buffer is not initialized.");
+    META_CHECK_ARG_NOT_NULL(const_buffer_ptr);
+    META_CHECK_ARG_NOT_NULL(atlas_sampler_ptr);
+    META_CHECK_ARG_NOT_NULL(m_atlas_texture_ptr);
+    META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
     m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
         { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_uniforms_buffer_ptr } } },
@@ -414,25 +414,22 @@ void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, co
 
 gfx::BufferSet& Text::FrameResources::GetVertexBufferSet() const
 {
-    if (!m_vertex_buffer_set_ptr)
-        throw std::logic_error("Text vertex buffers are not initialized.");
-
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(m_vertex_buffer_set_ptr, "text vertex buffers are not initialized");
     return *m_vertex_buffer_set_ptr;
 }
 
 gfx::Buffer& Text::FrameResources::GetIndexBuffer() const
 {
-    if (!m_index_buffer_ptr)
-        throw std::logic_error("Text index buffer are not initialized.");
-
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(m_index_buffer_ptr, "text index buffer are not initialized");
     return *m_index_buffer_ptr;
 }
 
 gfx::ProgramBindings& Text::FrameResources::GetProgramBindings() const
 {
-    if (!m_program_bindings_ptr)
-        throw std::logic_error("Text program bindings are not initialized.");
-
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(m_program_bindings_ptr, "text program bindings are not initialized");
     return *m_program_bindings_ptr;
 }
 
@@ -465,13 +462,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
 
     // Update vertex buffer
     const Data::Size vertices_data_size = text_mesh.GetVerticesDataSize();
-    assert(vertices_data_size);
-    if (!vertices_data_size)
-    {
-        m_index_buffer_ptr.reset();
-        m_vertex_buffer_set_ptr.reset();
-        return;
-    }
+    META_CHECK_ARG_NOT_ZERO(vertices_data_size);
     
     if (!m_vertex_buffer_set_ptr || (*m_vertex_buffer_set_ptr)[0].GetDataSize() < vertices_data_size)
     {
@@ -483,18 +474,13 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     (*m_vertex_buffer_set_ptr)[0].SetData({
         gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, vertices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
     });
 
     // Update index buffer
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
-    assert(indices_data_size);
-    if (!indices_data_size)
-    {
-        m_index_buffer_ptr.reset();
-        return;
-    }
+    META_CHECK_ARG_NOT_ZERO(indices_data_size);
 
     if (!m_index_buffer_ptr || m_index_buffer_ptr->GetDataSize() < indices_data_size)
     {
@@ -506,7 +492,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     m_index_buffer_ptr->SetData({
         gfx::Resource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0u, indices_data_size)
+            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
     });
 
@@ -516,15 +502,15 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
 void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name)
 {
     META_FUNCTION_TASK();
+
     const gfx::FrameSize& content_size = text_mesh.GetContentSize();
-    if (!content_size)
-        throw std::logic_error("Text uniforms buffer can not be updated when one of content size dimensions is zero.");
+    META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
     gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.f / content_size.width, 2.f / content_size.height);
+    cml::matrix_scale_2D(scale_text_matrix, 2.F / static_cast<float>(content_size.width), 2.F / static_cast<float>(content_size.height));
 
     gfx::Matrix44f translate_text_matrix;
-    cml::matrix_translation_2D(translate_text_matrix, -1.f, 1.f);
+    cml::matrix_translation_2D(translate_text_matrix, -1.F, 1.F);
 
     Uniforms uniforms{
         scale_text_matrix * translate_text_matrix
@@ -550,21 +536,16 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
 void Text::InitializeFrameResources()
 {
     META_FUNCTION_TASK();
-    if (!m_frame_resources.empty())
-        throw std::logic_error("Frame resources have been already initialized.");
-
-    if (!m_render_state_ptr)
-        throw std::logic_error("Text render state is not initialized.");
-
-    if (!m_text_mesh_ptr)
-        throw std::logic_error("Text mesh is not initialized.");
+    META_CHECK_ARG_NAME_DESCR("m_frame_resources", m_frame_resources.empty(), "frame resources have been initialized already");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_render_state_ptr, "text render state is not initialized");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
     gfx::RenderContext& render_context = GetUIContext().GetRenderContext();
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     m_frame_resources.reserve(frame_buffers_count);
 
     const Ptr<gfx::Texture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
-    for(uint32_t frame_buffer_index = 0u; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
+    for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
             *m_render_state_ptr, render_context, m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
@@ -577,9 +558,7 @@ Text::FrameResources& Text::GetCurrentFrameResources()
 {
     META_FUNCTION_TASK();
     const uint32_t frame_index = GetUIContext().GetRenderContext().GetFrameBufferIndex();
-    if (frame_index >= m_frame_resources.size())
-        throw std::logic_error("No resources available for current frame buffer index.");
-
+    META_CHECK_ARG_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
     return m_frame_resources[frame_index];
 }
 
@@ -648,15 +627,11 @@ void Text::UpdateConstantsBuffer()
 FrameRect Text::GetAlignedViewportRect()
 {
     META_FUNCTION_TASK();
-    if (!m_text_mesh_ptr)
-        throw std::logic_error("Text mesh must be initialized.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
 
     FrameSize content_size = m_text_mesh_ptr->GetContentSize();
-    if (!content_size)
-        throw std::logic_error("All dimension of text content size should be non-zero.");
-
-    if (!m_frame_rect.size)
-        throw std::logic_error("All dimension of frame size should be non-zero.");
+    META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "all dimension of text content size should be non-zero");
+    META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_rect.size, "all dimension of frame size should be non-zero");
 
     // Position viewport rect inside frame rect based on text alignment
     FrameRect viewport_rect(m_frame_rect.origin, content_size);
@@ -665,7 +640,8 @@ FrameRect Text::GetAlignedViewportRect()
     {
         // Apply vertical offset to make top of content match the rect top coordinate
         const uint32_t content_top_offset = m_text_mesh_ptr->GetContentTopOffset();
-        assert(content_top_offset <= content_size.height);
+        META_CHECK_ARG_LESS(content_top_offset, content_size.height + 1);
+
         content_size.height -= content_top_offset;
         viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
     }
@@ -677,6 +653,7 @@ FrameRect Text::GetAlignedViewportRect()
         case HorizontalAlignment::Left:   break;
         case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
         case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
+        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.horizontal_alignment);
         }
     }
     if (content_size.height != m_frame_rect.size.height)
@@ -686,6 +663,7 @@ FrameRect Text::GetAlignedViewportRect()
         case VerticalAlignment::Top:      break;
         case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
         case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
+        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.vertical_alignment);
         }
     }
 
@@ -704,7 +682,7 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
     m_is_viewport_dirty = false;
 }
 
-std::string Text::GetWrapName(Wrap wrap) noexcept
+std::string Text::GetWrapName(Wrap wrap)
 {
     META_FUNCTION_TASK();
     switch (wrap)
@@ -712,11 +690,11 @@ std::string Text::GetWrapName(Wrap wrap) noexcept
     case Wrap::None:     return "No Wrap";
     case Wrap::Anywhere: return "Wrap Anywhere";
     case Wrap::Word:     return "Wrap Words";
+    default:             META_UNEXPECTED_ENUM_ARG_RETURN(wrap, "Undefined Wrap");
     }
-    return "Undefined Wrap";
 }
 
-std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept
+std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment)
 {
     META_FUNCTION_TASK();
     switch(alignment)
@@ -724,11 +702,11 @@ std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment) noex
     case HorizontalAlignment::Left:   return "Left";
     case HorizontalAlignment::Right:  return "Right";
     case HorizontalAlignment::Center: return "Center";
+    default:                          META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined horizontal alignment");
     }
-    return "Undefined Alignment";
 }
 
-std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment) noexcept
+std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment)
 {
     META_FUNCTION_TASK();
     switch(alignment)
@@ -736,8 +714,8 @@ std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment) noexcept
     case VerticalAlignment::Top:    return "Top";
     case VerticalAlignment::Bottom: return "Bottom";
     case VerticalAlignment::Center: return "Center";
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined vertical alignment");
     }
-    return "Undefined Alignment";
 }
 
 } // namespace Methane::Graphics

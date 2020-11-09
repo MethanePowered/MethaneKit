@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,6 +31,7 @@ Font atlas textures generation and fonts library management classes.
 #include <map>
 #include <string>
 #include <cctype>
+#include <stdexcept>
 
 namespace Methane::Graphics
 {
@@ -60,6 +61,10 @@ struct IFontCallback
     virtual ~IFontCallback() = default;
 };
 
+#ifndef FT_Error
+typedef int FT_Error;
+#endif
+
 class Font
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
@@ -78,6 +83,17 @@ public:
         Description    description;
         uint32_t       resolution_dpi;
         std::u32string characters;
+    };
+
+    class FreeTypeError : public std::runtime_error
+    {
+    public:
+        explicit FreeTypeError(FT_Error error);
+
+        FT_Error GetError() const noexcept { return m_error; }
+
+    private:
+        const FT_Error m_error;
     };
 
     class Library
@@ -124,9 +140,9 @@ public:
             using Mask = uint8_t;
             enum Value : Mask
             {
-                Unknown    = 0u,
-                Whitespace = 1u << 0u,
-                LineBreak  = 1u << 1u,
+                Unknown    = 0U,
+                Whitespace = 1U << 0U,
+                LineBreak  = 1U << 1U,
             };
 
             static Mask Get(Code code);
@@ -148,13 +164,13 @@ public:
 
         bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
-        operator bool() const noexcept                        { return m_code != 0u; }
+        explicit operator bool() const noexcept               { return m_code != 0U; }
 
         void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
 
     private:
-        const Code       m_code = 0u;
+        const Code       m_code = 0U;
         const Type::Mask m_type_mask = Type::Value::Unknown;
         gfx::FrameRect   m_rect;
         gfx::Point2i     m_offset;

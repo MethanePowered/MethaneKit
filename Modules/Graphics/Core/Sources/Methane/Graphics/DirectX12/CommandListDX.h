@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -44,7 +44,7 @@ struct ICommandListDX
     class DebugGroupDX : public CommandListBase::DebugGroupBase
     {
     public:
-        DebugGroupDX(std::string name);
+        explicit DebugGroupDX(const std::string& name);
 
         const std::wstring& GetWideName() const noexcept { return m_wide_name; }
 
@@ -63,7 +63,7 @@ struct ICommandListDX
 class CommandListSetDX final : public CommandListSetBase
 {
 public:
-    CommandListSetDX(Refs<CommandList> command_list_refs);
+    explicit CommandListSetDX(const Refs<CommandList>& command_list_refs);
 
     // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;

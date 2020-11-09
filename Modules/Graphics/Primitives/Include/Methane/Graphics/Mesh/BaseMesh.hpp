@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,6 +25,7 @@ Base mesh implementation with customizable vertex types
 
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cassert>
 #include <cml/mathlib/mathlib.h>
@@ -42,10 +43,7 @@ public:
         : Mesh(type, vertex_layout)
     {
         META_FUNCTION_TASK();
-        if (sizeof(VType) != m_vertex_size)
-        {
-            throw std::invalid_argument("Size of vertex structure differs from vertex size calculated by vertex layout.");
-        }
+        META_CHECK_ARG_EQUAL_DESCR(m_vertex_size, sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }
@@ -86,7 +84,7 @@ protected:
         const Mesh::Position& v1_position = GetVertexField<Mesh::Position>(v1,    Mesh::VertexField::Position);
         const Mesh::Position& v2_position = GetVertexField<Mesh::Position>(v2,    Mesh::VertexField::Position);
         Mesh::Position&    v_mid_position = GetVertexField<Mesh::Position>(v_mid, Mesh::VertexField::Position);
-        v_mid_position = (v1_position + v2_position) / 2.f;
+        v_mid_position = (v1_position + v2_position) / 2.F;
 
         if (Mesh::HasVertexField(Mesh::VertexField::Normal))
         {
@@ -101,7 +99,7 @@ protected:
             const Mesh::Color& v1_color = GetVertexField<Mesh::Color>(v1,    Mesh::VertexField::Color);
             const Mesh::Color& v2_color = GetVertexField<Mesh::Color>(v2,    Mesh::VertexField::Color);
             Mesh::Color&    v_mid_color = GetVertexField<Mesh::Color>(v_mid, Mesh::VertexField::Color);
-            v_mid_color = (v1_color + v2_color) / 2.f;
+            v_mid_color = (v1_color + v2_color) / 2.F;
         }
 
         if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
@@ -109,7 +107,7 @@ protected:
             const Mesh::TexCoord& v1_texcoord = GetVertexField<Mesh::TexCoord>(v1,    Mesh::VertexField::TexCoord);
             const Mesh::TexCoord& v2_texcoord = GetVertexField<Mesh::TexCoord>(v2,    Mesh::VertexField::TexCoord);
             Mesh::TexCoord&    v_mid_texcoord = GetVertexField<Mesh::TexCoord>(v_mid, Mesh::VertexField::TexCoord);
-            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.f;
+            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.F;
         }
 
         const Mesh::Index v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
@@ -121,16 +119,14 @@ protected:
     void ComputeAverageNormals()
     {
         META_FUNCTION_TASK();
-        if (!Mesh::HasVertexField(Mesh::VertexField::Normal))
-            throw std::logic_error("Mesh should contain normals.");
-
-        if (BaseMesh::m_indices.size() % 3 != 0)
-            throw std::logic_error("Mesh indices count should be a multiple of three representing triangles list.");
+        CheckLayoutHasVertexField(VertexField::Normal);
+        META_CHECK_ARG_DESCR(BaseMesh::m_indices.size(), BaseMesh::m_indices.size() % 3 == 0,
+                             "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
         {
             Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-            vertex_normal = { 0.f, 0.f, 0.f };
+            vertex_normal = { 0.F, 0.F, 0.F };
         }
 
         const size_t triangles_count = BaseMesh::m_indices.size() / 3;
@@ -171,10 +167,8 @@ protected:
         for(size_t index = 0; index < m_indices.size(); ++index)
         {
             const Index vertex_index = m_indices[index];
-            if (vertex_index >= m_vertices.size())
-                throw std::logic_error("Mesh index buffer value " + std::to_string(vertex_index) +
-                                       " at position " + std::to_string(index) +
-                                       " is out of vertex buffer size " + std::to_string(m_vertices.size()));
+            META_CHECK_ARG_LESS_DESCR(vertex_index, m_vertices.size(),
+                                      "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
         }
     }
 

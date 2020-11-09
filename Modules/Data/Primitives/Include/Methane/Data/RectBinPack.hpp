@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -25,8 +25,6 @@ Rectangle bin packing algorithm implementation.
 #include <Methane/Data/Point.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
 
 namespace Methane::Data
 {
@@ -56,8 +54,10 @@ public:
         if (!m_root_bin.TryPack(rect, m_rect_margins))
             return false;
 
-        assert(rect.GetLeft() >= 0 && static_cast<uint32_t>(rect.GetRight()) <= m_root_bin.GetRect().size.width);
-        assert(rect.GetTop() >= 0  && static_cast<uint32_t>(rect.GetBottom()) <= m_root_bin.GetRect().size.height);
+        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetLeft(), 0);
+        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetTop(), 0);
+        META_CHECK_ARG_LESS(rect.GetRight(), m_root_bin.GetRect().size.width + 1);
+        META_CHECK_ARG_LESS(rect.GetBottom(), m_root_bin.GetRect().size.height + 1);
         return true;
     }
 

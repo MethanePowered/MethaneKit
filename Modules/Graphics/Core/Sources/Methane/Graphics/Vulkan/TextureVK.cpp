@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,6 +27,7 @@ Vulkan implementation of the texture interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <algorithm>
 
@@ -104,11 +105,7 @@ void TextureVK::SetData(const SubResources& sub_resources)
 void TextureVK::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-
-    if (GetSettings().type != Texture::Type::FrameBuffer)
-    {
-        throw std::logic_error("Unable to update frame buffer on non-FB texture.");
-    }
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Texture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
 }
 
 void TextureVK::GenerateMipLevels()

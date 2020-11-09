@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,8 +30,7 @@ Vulkan implementation of the render command list interface.
 #include "BufferVK.h"
 
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -60,12 +59,12 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListVK::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListVK::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     RenderCommandListBase::ResetCommandState();
-    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    RenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 void RenderCommandListVK::SetName(const std::string& name)
@@ -103,7 +102,7 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 {
     META_FUNCTION_TASK();
     
-    const BufferVK& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
+    const auto& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
     if (index_count == 0)
     {
         index_count = vulkan_index_buffer.GetFormattedItemsCount();
@@ -122,7 +121,7 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
 void RenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
-    assert(!IsCommitted());
+    META_CHECK_ARG_FALSE(IsCommitted());
     RenderCommandListBase::Commit();
 }
 

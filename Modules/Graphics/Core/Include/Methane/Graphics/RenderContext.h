@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -49,11 +49,11 @@ struct RenderContext : virtual Context
         PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
         std::optional<Color4f>      clear_color;
         std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3u;
+        uint32_t                    frame_buffers_count     = 3U;
         bool                        vsync_enabled           = true;
         bool                        is_full_screen          = false;
         bool                        is_emulated_render_pass = false; // Windows only
-        uint32_t                    unsync_max_fps          = 1000u; // MacOS only
+        uint32_t                    unsync_max_fps          = 1000U; // MacOS only
     };
 
     // Create RenderContext instance

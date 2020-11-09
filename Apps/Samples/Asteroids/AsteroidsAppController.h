@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -33,7 +33,7 @@ class AsteroidsApp;
 
 enum class AsteroidsAppAction : uint32_t
 {
-    None = 0u,
+    None = 0U,
 
     IncreaseComplexity,
     DecreaseComplexity,

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -28,31 +28,32 @@ Metal implementation of the program bindings interface.
 #include "RenderCommandListMT.hh"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
 template<typename TMetalResource>
-static void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept;
+static void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset);
 
 template<typename TMetalResource>
-static void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<TMetalResource>& mtl_buffer, uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets) noexcept;
+static void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<TMetalResource>& mtl_buffer, uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets);
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset) noexcept
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
-        default:                    assert(0);
+        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<>
 void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLBuffer>>& mtl_buffers,
-                      uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets) noexcept
+                      uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets)
 {
     META_FUNCTION_TASK();
     const NSRange args_range = NSMakeRange(arg_index, mtl_buffers.size());
@@ -60,25 +61,25 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data()   offsets:buffer_offsets.data() withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffers:mtl_buffers.data() offsets:buffer_offsets.data() withRange:args_range]; break;
-    default:                    assert(0);
+    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLTexture>& mtl_texture, uint32_t arg_index, Data::Size) noexcept
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLTexture>& mtl_texture, uint32_t arg_index, Data::Size)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index]; break;
-        default:                    assert(0);
+        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<>
 void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLTexture>>& mtl_textures,
-                      uint32_t arg_index, const std::vector<NSUInteger>&) noexcept
+                       uint32_t arg_index, const std::vector<NSUInteger>&)
 {
     META_FUNCTION_TASK();
     const NSRange args_range = NSMakeRange(arg_index, mtl_textures.size());
@@ -86,25 +87,25 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTextures:mtl_textures.data()   withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTextures:mtl_textures.data() withRange:args_range]; break;
-    default:                    assert(0);
+    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size) noexcept
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerState:mtl_sampler atIndex:arg_index]; break;
-        default: assert(0);
+        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<>
 void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLSamplerState>>& mtl_samplers,
-                      uint32_t arg_index, const std::vector<NSUInteger>&) noexcept
+                      uint32_t arg_index, const std::vector<NSUInteger>&)
 {
     META_FUNCTION_TASK();
     const NSRange args_range = NSMakeRange(arg_index, mtl_samplers.size());
@@ -112,17 +113,17 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerStates:mtl_samplers.data()   withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerStates:mtl_samplers.data() withRange:args_range]; break;
-    default:                    assert(0);
+    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
     }
 }
 
 template<typename TMetalResource>
 static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                                    const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
-                                   const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>()) noexcept
+                                   const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {
     META_FUNCTION_TASK();
-    assert(!mtl_resources.empty());
+    META_CHECK_ARG_NOT_EMPTY(mtl_resources);
 
     if (shader_type == Shader::Type::All)
     {
@@ -174,7 +175,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
     return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
 }
 
-ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, SettingsMT settings)
+ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings)
     : ArgumentBindingBase(context, settings)
     , m_settings_mt(std::move(settings))
 {
@@ -216,6 +217,8 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
             m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
         }
         break;
+
+    default: META_UNEXPECTED_ENUM_ARG(m_settings_mt.resource_type);
     }
 }
 
@@ -263,6 +266,8 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask
             case Resource::Type::Sampler:
                 SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
+
+            default: META_UNEXPECTED_ENUM_ARG(metal_argument_binding.GetSettingsMT().resource_type);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,11 +24,10 @@ Windows application implementation.
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <windowsx.h>
 #include <nowide/convert.hpp>
-
-#include <cassert>
 
 namespace Methane::Platform
 {
@@ -46,8 +45,8 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
     case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
     case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
+    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, 0);
     }
-    return 0;
 }
 
 AppWin::AppWin(const AppBase::Settings& settings)
@@ -114,26 +113,12 @@ int AppWin::Run(const RunArgs& args)
         ScheduleAlert();
     }
 
-    bool init_failed = false;
-#ifndef _DEBUG
-    try
+    // Application Initialization
+    bool init_success = InitContextWithErrorHandling(m_env, frame_size);
+    if (init_success)
     {
-#endif
-        InitContext(m_env, frame_size);
-        Init();
-#ifndef _DEBUG
+        init_success = InitWithErrorHandling();
     }
-    catch (std::exception& e)
-    {
-        init_failed = true;
-        Alert({ Message::Type::Error, "Application Initialization Error", e.what() });
-    }
-    catch (...)
-    {
-        init_failed = true;
-        Alert({ Message::Type::Error, "Application Initialization Error", "Unknown exception occurred." });
-    }
-#endif
 
     // Main message loop
     MSG msg{};
@@ -149,25 +134,10 @@ int AppWin::Run(const RunArgs& args)
                 break;
         }
 
-        if (init_failed || !m_is_message_processing)
+        if (!init_success || !m_is_message_processing)
             continue;
 
-#ifndef _DEBUG
-        try
-        {
-#endif
-            UpdateAndRender();
-#ifndef _DEBUG
-        }
-        catch (std::exception& e)
-        {
-            Alert({ Message::Type::Error, "Application Render Error", e.what() });
-        }
-        catch (...)
-        {
-            Alert({ Message::Type::Error, "Application Render Error", "Unknown exception occurred." });
-        }
-#endif
+        UpdateAndRenderWithErrorHandling();
     }
 
     // Return this part of the WM_QUIT message to Windows.
@@ -233,7 +203,7 @@ void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
 
     if (IsResizing())
     {
-        UpdateAndRender();
+        UpdateAndRenderWithErrorHandling();
     }
 }
 
@@ -292,18 +262,18 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
     {
         // HACK: Release both Shift keys on Shift up event, as when both
         //       are pressed the first release does not emit any event
-        ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::LeftShift, key_state);
-        ProcessInput(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::RightShift, key_state);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::LeftShift, key_state);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::RightShift, key_state);
     }
     else if (w_param == VK_SNAPSHOT)
     {
         // HACK: Key down is not reported for the Print Screen key
-        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Pressed);
-        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Released);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Pressed);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Released);
     }
     else
     {
-        ProcessInput(&Input::IActionController::OnKeyboardChanged, key, key_state);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
     }
 }
 
@@ -334,7 +304,7 @@ LRESULT AppWin::OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_p
     }
 
     m_mouse_state.SetButton(button, button_state);
-    ProcessInput(&Input::IActionController::OnMouseButtonChanged, button, button_state);
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 
     if (m_mouse_state.GetPressedButtons().empty())
     {
@@ -355,7 +325,7 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
     const int x = GET_X_LPARAM(l_param);
     const int y = GET_Y_LPARAM(l_param);
 
-    ProcessInput(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ x, y });
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ x, y });
 
     if (!GetInputState().GetMouseState().IsInWindow())
     {
@@ -367,7 +337,7 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
         tme.hwndTrack = m_env.window_handle;
         TrackMouseEvent(&tme);
 
-        ProcessInput(&Input::IActionController::OnMouseInWindowChanged, true);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseInWindowChanged, true);
     }
 
     return 0;
@@ -382,13 +352,13 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
     if (is_vertical_scroll)
     {
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.f, wheel_delta });
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.F, wheel_delta });
     }
     else
     {
         // NOTE: The X-axis is inverted for consistency with macOS and X11
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInput(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.f });
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.F });
     }
 
     return 0;
@@ -397,7 +367,7 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
 LRESULT AppWin::OnWindowMouseLeave()
 {
     META_FUNCTION_TASK();
-    ProcessInput(&Input::IActionController::OnMouseInWindowChanged, false);
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMouseInWindowChanged, false);
     return 0;
 }
 
@@ -453,6 +423,8 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         case WM_MOUSEWHEEL:     return p_app->OnWindowMouseWheelEvent(true, w_param, l_param);
         case WM_MOUSEHWHEEL:    return p_app->OnWindowMouseWheelEvent(false, w_param, l_param);
         case WM_MOUSELEAVE:     return p_app->OnWindowMouseLeave();
+
+        default: break;
         }
 #ifndef _DEBUG
     }
@@ -496,8 +468,7 @@ void AppWin::ScheduleAlert()
         return;
 
     const BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
-    if (!post_result)
-        throw std::runtime_error("Failed to post window message.");
+    META_CHECK_ARG_TRUE_DESCR(post_result, "failed to post window message");
 }
 
 void AppWin::SetWindowTitle(const std::string& title_text)
@@ -507,8 +478,7 @@ void AppWin::SetWindowTitle(const std::string& title_text)
         return;
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
-    if (!set_result)
-        throw std::runtime_error("Failed to set window title.");
+    META_CHECK_ARG_TRUE_DESCR(set_result, "failed to update window title");
 }
 
 bool AppWin::SetFullScreen(bool is_full_screen)
@@ -517,7 +487,7 @@ bool AppWin::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
-    assert(!!m_env.window_handle);
+    META_CHECK_ARG_NOT_NULL(m_env.window_handle);
     
     RECT            window_rect{};
     int32_t         window_style    = WS_OVERLAPPEDWINDOW;

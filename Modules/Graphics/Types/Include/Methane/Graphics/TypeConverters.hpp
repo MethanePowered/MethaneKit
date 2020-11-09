@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,17 +43,4 @@ inline PixelFormat GetIndexFormat(uint16_t) noexcept { return PixelFormat::R16Ui
 template<>
 inline PixelFormat GetIndexFormat(int16_t) noexcept  { return PixelFormat::R16Sint; }
 
-template<typename T, int vector_size>
-inline std::string VectorToString(const cml::vector<T, cml::fixed<vector_size>>& v)
-{
-    std::string str = "V(";
-    for (int i = 0; i < vector_size; ++i)
-    {
-        str += std::to_string(v[i]);
-        if (i < vector_size - 1)
-            str += ", ";
-    }
-    return str + ")";
-}
-
-}
+} // namespace Methane::Graphics

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -54,7 +54,7 @@ public:
 
     Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
     ContextBase&          GetContext() const noexcept   { return m_context; }
-    Tracy::GpuContext&    GetTracyContext() noexcept;
+    Tracy::GpuContext&    GetTracyContext();
 
 protected:
     void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);

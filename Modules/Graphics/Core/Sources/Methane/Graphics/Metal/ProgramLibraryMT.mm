@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,6 +27,7 @@ Wrapper of the Metal program library.
 #include <Methane/Platform/Utils.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -42,11 +43,10 @@ ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& li
                     : [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&m_ns_error])
 {
     META_FUNCTION_TASK();
-    if (!m_mtl_library)
-    {
-        const std::string error_msg = MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]);
-        throw std::runtime_error("Failed to create " + (library_name.empty() ? std::string("default") : library_name) + " Metal library: " + error_msg);
-    }
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
+                                  "Failed to create {} Metal library: {}",
+                                  library_name.empty() ? std::string("default") : library_name,
+                                  MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]));
 }
 
 ProgramLibraryMT::~ProgramLibraryMT()

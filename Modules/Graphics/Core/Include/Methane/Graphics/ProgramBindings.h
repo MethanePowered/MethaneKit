@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,6 +30,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace Methane::Graphics
 {
@@ -44,6 +45,12 @@ struct ProgramBindings
             Program::ArgumentDesc argument;
             Resource::Type        resource_type;
             uint32_t              resource_count = 1;
+        };
+
+        class ConstantModificationException : public std::logic_error
+        {
+        public:
+            ConstantModificationException();
         };
 
         // ArgumentBinding interface
@@ -61,17 +68,30 @@ struct ProgramBindings
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Indifferent    = 0u,        // All bindings will be applied indifferently of the previous binding values
-            ConstantOnce   = 1u << 0,   // Constant program arguments will be applied only once for each command list
-            ChangesOnly    = 1u << 1,   // Only changed program argument values will be applied in command sequence
-            StateBarriers  = 1u << 2,   // Resource state barriers will be automatically evaluated and set for command list
-            AllIncremental = ~0u        // All binding values will be applied incrementally along with resource state barriers
+            Indifferent    = 0U,        // All bindings will be applied indifferently of the previous binding values
+            ConstantOnce   = 1U << 0,   // Constant program arguments will be applied only once for each command list
+            ChangesOnly    = 1U << 1,   // Only changed program argument values will be applied in command sequence
+            StateBarriers  = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
+            AllIncremental = ~0U        // All binding values will be applied incrementally along with resource state barriers
         };
 
         ApplyBehavior() = delete;
     };
 
     using ResourceLocationsByArgument = std::unordered_map<Program::Argument, Resource::Locations, Program::Argument::Hash>;
+
+    class UnboundArgumentsException: public std::runtime_error
+    {
+    public:
+        UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
+
+        const Program& GetProgram() const noexcept { return m_program; }
+        const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+
+    private:
+        const Program& m_program;
+        const Program::Arguments m_unbound_arguments;
+    };
 
     // Create ProgramBindings instance
     static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);

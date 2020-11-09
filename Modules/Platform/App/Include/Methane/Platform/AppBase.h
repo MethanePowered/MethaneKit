@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,6 +31,7 @@ Base application interface and platform-independent implementation.
 
 #include <CLI/App.hpp>
 
+#include <fmt/format.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -102,8 +103,15 @@ public:
     virtual void ShowParameters() { }
     virtual void Close() = 0;
 
-    void UpdateAndRender();
-    bool HasError() const;
+    bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
+    { return ExecuteWithErrorHandling("Render Context Initialization", *this, &AppBase::InitContext, env, frame_size); }
+
+    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", *this, &AppBase::Init); }
+    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", *this, &AppBase::UpdateAndRender); }
+
+    template<typename FuncType, typename... ArgTypes>
+    void ProcessInputWithErrorHandling(FuncType&& func_ptr, ArgTypes&&... args)
+    { ExecuteWithErrorHandling("Application Input", m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
 
     tf::Executor&           GetParallelExecutor() const;
     const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
@@ -112,28 +120,7 @@ public:
     bool                    IsMinimized() const noexcept            { return m_is_minimized; }
     bool                    IsResizing() const noexcept             { return m_is_resizing; }
     bool                    HasKeyboardFocus() const noexcept       { return m_has_keyboard_focus; }
-
-    template<typename FuncType, typename... ArgTypes>
-    void ProcessInput(FuncType&& func_ptr, ArgTypes&&... args)
-    {
-        META_FUNCTION_TASK();
-#ifndef _DEBUG
-        try
-        {
-#endif
-            (m_input_state.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
-#ifndef _DEBUG
-        }
-        catch (std::exception& e)
-        {
-            Alert({ Message::Type::Error, "Application Input Error", e.what() });
-        }
-        catch (...)
-        {
-            Alert({ Message::Type::Error, "Application Input Error", "Unknown exception occurred." });
-        }
-#endif
-    }
+    bool                    HasError() const noexcept;
 
 protected:
     // AppBase interface
@@ -149,6 +136,38 @@ protected:
     Ptr<Message> m_deferred_message_ptr;
 
 private:
+    bool UpdateAndRender();
+
+    template<typename ObjectType, typename FuncType, typename... ArgTypes>
+    bool ExecuteWithErrorHandling(const char* stage_name, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
+#ifdef _DEBUG
+        const
+#endif
+    {
+        // We do not catch exceptions in Debug build to let them be handled by the Debugger
+#ifndef _DEBUG
+        try
+        {
+#else
+        META_UNUSED(stage_name);
+#endif
+            (obj.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+#ifndef _DEBUG
+        }
+        catch (std::exception& e)
+        {
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() });
+            return false;
+        }
+        catch (...)
+        {
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." });
+            return false;
+        }
+#endif
+        return true;
+    }
+
     Settings        m_settings;
     Data::FrameRect m_window_bounds;
     Data::FrameSize m_frame_size;

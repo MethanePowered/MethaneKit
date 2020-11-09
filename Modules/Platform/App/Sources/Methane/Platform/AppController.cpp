@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,8 +24,7 @@ Base application controller providing commands like app close and help.
 #include <Methane/Platform/AppController.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
-
-#include <cassert>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Platform
 {
@@ -54,7 +53,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
     case AppAction::ShowParameters:      m_application.ShowParameters(); break;
     case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
     case AppAction::CloseApp:            m_application.Close(); break;
-    default: assert(0);
+    default:                             META_UNEXPECTED_ENUM_ARG(action);
     }
 }
 
@@ -69,7 +68,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     case AppAction::ShowParameters:      return "show application parameters";
     case AppAction::SwitchFullScreen:    return "switch full-screen mode";
     case AppAction::CloseApp:            return "close the application";
-    default: assert(0);                  return "";
+    default:                             META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
     }
 }
 

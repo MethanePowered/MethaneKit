@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -82,12 +82,15 @@ protected:
     virtual uint32_t GetNextFrameBufferIndex();
 
 private:
+    void WaitForGpuRenderComplete();
+    void WaitForGpuFramePresented();
+
     Settings            m_settings;
     Ptr<CommandQueue>   m_render_cmd_queue_ptr;
     Ptrs<Fence>         m_frame_fences;
     Ptr<Fence>          m_render_fence_ptr;
-    uint32_t            m_frame_buffer_index = 0u;
-    uint32_t            m_frame_index = 0u;
+    uint32_t            m_frame_buffer_index = 0U;
+    uint32_t            m_frame_index = 0U;
     bool                m_is_frame_buffer_in_use = true;
     FpsCounter          m_fps_counter;
 };

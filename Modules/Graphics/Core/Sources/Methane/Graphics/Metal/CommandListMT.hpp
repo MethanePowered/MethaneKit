@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -29,6 +29,7 @@ Metal base template implementation of the command list interface.
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #import <Metal/Metal.h>
 
@@ -63,7 +64,7 @@ public:
 
         CommandListBaseT::PushDebugGroup(debug_group);
 
-        assert(m_mtl_cmd_encoder != nil);
+        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_encoder);
         [m_mtl_cmd_encoder pushDebugGroup:static_cast<CommandListDebugGroupMT&>(debug_group).GetNSName()];
     }
 
@@ -74,15 +75,15 @@ public:
 
         CommandListBaseT::PopDebugGroup();
 
-        assert(m_mtl_cmd_encoder != nil);
+        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_encoder);
         [m_mtl_cmd_encoder popDebugGroup];
     }
 
     void Commit() override
     {
         META_FUNCTION_TASK();
+        META_CHECK_ARG_FALSE(CommandListBaseT::IsCommitted());
 
-        assert(!CommandListBaseT::IsCommitted());
         CommandListBaseT::Commit();
 
         std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
@@ -104,8 +105,8 @@ public:
     {
         META_FUNCTION_TASK();
         META_UNUSED(in_cpu_nanoseconds);
-        if (CommandListBaseT::GetState() != CommandListBase::State::Pending)
-            throw std::logic_error("Can not get GPU time range of executing or not committed command list.");
+        META_CHECK_ARG_EQUAL_DESCR(CommandListBaseT::GetState(), CommandListBase::State::Pending,
+                                   "can not get GPU time range of executing or not committed command list");
 
         if (!m_mtl_cmd_buffer)
             return Data::TimeRange();
@@ -113,7 +114,7 @@ public:
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
         if (@available(macOS 10.15, *))
         {
-            assert(m_mtl_cmd_buffer.status == MTLCommandBufferStatusCompleted);
+            META_CHECK_ARG_EQUAL(m_mtl_cmd_buffer.status, MTLCommandBufferStatusCompleted);
             return Data::TimeRange(
                 Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUStartTime),
                 Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUEndTime)
@@ -186,12 +187,12 @@ protected:
             return m_mtl_cmd_buffer;
 
         id<MTLCommandQueue>& mtl_command_queue = GetCommandQueueMT().GetNativeCommandQueue();
-        assert(mtl_command_queue != nil);
+        META_CHECK_ARG_NOT_NULL(mtl_command_queue);
 
         m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];
         m_mtl_cmd_buffer.label = m_ns_name;
-        
-        assert(m_mtl_cmd_buffer != nil);
+
+        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_buffer);
         [m_mtl_cmd_buffer retain];
         
         return m_mtl_cmd_buffer;
@@ -200,8 +201,8 @@ protected:
     void InitializeCommandEncoder(const MTLCommandEncoderId& mtl_cmd_encoder)
     {
         META_FUNCTION_TASK();
-        assert(m_mtl_cmd_encoder == nil);
-        assert(mtl_cmd_encoder != nil);
+        META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+
         m_mtl_cmd_encoder = mtl_cmd_encoder;
         m_mtl_cmd_encoder.label = m_ns_name;
         [m_mtl_cmd_encoder retain];

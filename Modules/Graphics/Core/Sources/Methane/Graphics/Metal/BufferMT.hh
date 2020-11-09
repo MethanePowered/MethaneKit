@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -54,7 +54,7 @@ private:
 class BufferSetMT final : public BufferSetBase
 {
 public:
-    BufferSetMT(Buffer::Type buffers_type, Refs<Buffer> buffer_refs);
+    BufferSetMT(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
 
     const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
     const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }

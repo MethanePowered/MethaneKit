@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,11 +26,11 @@ Metal implementation of the texture interface.
 #include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <algorithm>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -50,6 +50,7 @@ static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type
     case Texture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
     case Texture::DimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
+    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
@@ -60,17 +61,17 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     {
     case Texture::DimensionType::Tex1D:
     case Texture::DimensionType::Tex1DArray:
-            return MTLRegionMake1D(0, dimensions.width);
+             return MTLRegionMake1D(0, dimensions.width);
     case Texture::DimensionType::Tex2D:
     case Texture::DimensionType::Tex2DArray:
     case Texture::DimensionType::Tex2DMultisample:
     case Texture::DimensionType::Cube:
     case Texture::DimensionType::CubeArray:
-            return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
+             return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
-            return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLRegion{});
     }
-    return {};
 }
 
 Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -116,24 +117,21 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 }
 
 void TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     TextureBase::SetName(name);
-
     m_mtl_texture.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
 void TextureMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    assert(m_mtl_texture != nil);
-    assert(m_mtl_texture.storageMode == MTLStorageModePrivate);
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
+    META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
     TextureBase::SetData(sub_resources);
 
@@ -143,7 +141,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    assert(mtl_blit_encoder != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
@@ -194,19 +192,13 @@ void TextureMT::SetData(const SubResources& sub_resources)
 void TextureMT::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-
-    if (GetSettings().type != Texture::Type::FrameBuffer)
-    {
-        throw std::logic_error("Unable to update frame buffer on non-FB texture.");
-    }
-
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Texture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
 MTLTextureUsage TextureMT::GetNativeTextureUsage()
 {
     META_FUNCTION_TASK();
-
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
@@ -261,6 +253,8 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().mip_levels_count;
         break;
+
+    default: META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
     }
 
     if (!mtl_tex_desc)
@@ -281,8 +275,8 @@ void TextureMT::GenerateMipLevels()
     blit_command_list.Reset(s_debug_group.get());
     
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    assert(mtl_blit_encoder != nil);
-    assert(m_mtl_texture != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
 
@@ -292,8 +286,7 @@ void TextureMT::GenerateMipLevels()
 RenderContextMT& TextureMT::GetRenderContextMT()
 {
     META_FUNCTION_TASK();
-    if (GetContextBase().GetType() != Context::Type::Render)
-        throw std::runtime_error("Incompatible context type.");
+    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
     return static_cast<RenderContextMT&>(GetContextMT());
 }
 

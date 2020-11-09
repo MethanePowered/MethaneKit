@@ -147,15 +147,15 @@ TexturedCubeApp::TexturedCubeApp()
         "Methane tutorial of textured cube rendering")
     , m_shader_constants(                               // Shader constants:
         {                                               // ================
-            gfx::Color4f(1.f, 1.f, 0.74f, 1.f),         // - light_color
-            700.f,                                      // - light_power
-            0.04f,                                      // - light_ambient_factor
-            30.f                                        // - light_specular_factor
+            gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
+            700.F,                                      // - light_power
+            0.04F,                                      // - light_ambient_factor
+            30.F                                        // - light_specular_factor
         })
-    , m_cube_scale(15.f)
+    , m_cube_scale(15.F)
 {
-    m_shader_uniforms.light_position = gfx::Vector3f(0.f, 20.f, -25.f);
-    m_camera.ResetOrientation({ { 13.0f, 13.0f, -13.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } });
+    m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
+    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -414,9 +414,9 @@ This function rotates light position and camera in opposite directions.
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
     gfx::Matrix33f light_rotate_matrix;
-    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.f * delta_seconds / 4.f));
+    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.F * delta_seconds / 4.F));
     m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
-    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.f / 8.f));
+    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;
 }
 ```
@@ -436,7 +436,7 @@ bool TexturedCubeApp::Update()
 
     m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
     m_shader_uniforms.model_matrix   = model_matrix;
-    m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.f);
+    m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.F);
     
     return true;
 }
@@ -467,7 +467,7 @@ bool TexturedCubeApp::Render()
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
@@ -542,7 +542,7 @@ SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0f);
+    const float4 position = float4(input.position, 1.0F);
 
     PSInput output;
     output.position       = mul(g_uniforms.mvp_matrix, position);

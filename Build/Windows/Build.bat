@@ -104,7 +104,7 @@ IF %IS_ANALYZE_BUILD% EQU 1 (
     ECHO ----------
     ECHO Building with %CMAKE_GENERATOR% and SonarScanner build wrapper...
     "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
-         cmake --build . --config %BUILD_TYPE%
+         cmake --build . --config Debug
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     ECHO ----------

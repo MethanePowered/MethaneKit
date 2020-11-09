@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -31,7 +31,6 @@ DirectX 12 implementation of the parallel render command list interface.
 #include <Methane/Instrumentation.h>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -64,13 +63,13 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_beginning_command_list.Reset(Ptr<RenderState>(), p_debug_group); // begins render pass
+    m_beginning_command_list.ResetWithState(Ptr<RenderState>(), p_debug_group); // begins render pass
     m_ending_command_list.ResetNative();                               // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
@@ -84,11 +83,11 @@ void ParallelRenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr
     {
         // Initialize native pipeline state before resetting per-thread command lists
         // to allow parallel reset of all CLs at once with using native pipeline state for each reset
-        RenderStateDX& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
+        auto& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
         dx_render_state.InitializeNativePipelineState();
     }
 
-    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
@@ -146,8 +145,8 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
 
     for (const Ptr<RenderCommandList>& command_list_ptr : parallel_command_lists)
     {
-        assert(!!command_list_ptr);
-        RenderCommandListDX& dx_command_list = static_cast<RenderCommandListDX&>(*command_list_ptr);
+        META_CHECK_ARG_NOT_NULL(command_list_ptr);
+        const auto& dx_command_list = static_cast<const RenderCommandListDX&>(*command_list_ptr);
         dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
     }
 

@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -54,7 +54,7 @@ public:
         struct Timing
         {
             TimeDuration duration;
-            uint32_t     count    = 0u;
+            uint32_t     count    = 0U;
         };
 
         static Aggregator& Get();
@@ -77,7 +77,7 @@ public:
         using ScopeTimings  = std::vector<Timing>; // index == ScopeId
         using ScopeCounters = std::vector<ITT_COUNTER_TYPE(uint64_t)>; // index == ScopeId
 
-        ScopeId       m_new_scope_id = 0u;
+        ScopeId       m_new_scope_id = 0U;
         ScopeIdByName m_scope_id_by_name;
         ScopeTimings  m_timing_by_scope_id;
         ScopeCounters m_counters_by_scope_id;

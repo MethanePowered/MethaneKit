@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,40 +30,40 @@ namespace Methane::Graphics
 
 PerlinNoise::PerlinNoise(float persistence, size_t octaves_count)
     : m_weights(GetWeights(persistence, octaves_count))
-    , m_norm_multiplier(0.5f / GetWeightsSum(m_weights))
+    , m_norm_multiplier(0.5F / GetWeightsSum(m_weights))
 { }
 
 float PerlinNoise::operator()(Vector2f pos) const
 {
-    float noise = 0.0f;
+    float noise = 0.0F;
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
-    return noise * m_norm_multiplier + 0.5f;
+    return noise * m_norm_multiplier + 0.5F;
 }
 
 float PerlinNoise::operator()(Vector3f pos) const
 {
-    float noise = 0.0f;
+    float noise = 0.0F;
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1], pos[2]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
-    return noise * m_norm_multiplier + 0.5f;
+    return noise * m_norm_multiplier + 0.5F;
 }
 
 float PerlinNoise::operator()(Vector4f pos) const
 {
-    float noise = 0.f;
+    float noise = 0.F;
     for (const float weight : m_weights)
     {
         noise += weight * SimplexNoise1234::noise(pos[0], pos[1], pos[2], pos[3]);
-        pos *= 2.f;
+        pos *= 2.F;
     }
-    return noise * m_norm_multiplier + 0.5f;
+    return noise * m_norm_multiplier + 0.5F;
 }
 
 PerlinNoise::Weights PerlinNoise::GetWeights(float persistence, size_t octaves_count)
@@ -80,7 +80,7 @@ PerlinNoise::Weights PerlinNoise::GetWeights(float persistence, size_t octaves_c
 
 float PerlinNoise::GetWeightsSum(const PerlinNoise::Weights& weights)
 {
-    float weights_sum = 0.f;
+    float weights_sum = 0.F;
     for(float weight : weights)
     {
         weights_sum += weight;

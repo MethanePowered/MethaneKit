@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -29,7 +29,6 @@ Methane kit interfaces: all headers under one umbrella.
 #include <Methane/Graphics/Core.h>
 #include <Methane/Graphics/Extensions.h>
 #include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/Primitives.h>
 
 // Methane User Interface Headers
 

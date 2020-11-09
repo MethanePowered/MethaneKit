@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -52,9 +52,9 @@ void HelloTriangleApp::Init()
     };
 
     const std::array<Vertex, 3> triangle_vertices{ {
-        { {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-        { {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-        { { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+        { {  0.0F,  0.5F, 0.0F }, { 1.0F, 0.0F, 0.0F } },
+        { {  0.5F, -0.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } },
+        { { -0.5F, -0.5F, 0.0F }, { 0.0F, 0.0F, 1.0F } },
     } };
 
     // Create vertex buffer with triangle data
@@ -113,10 +113,10 @@ bool HelloTriangleApp::Render()
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
     HelloTriangleFrame& frame = GetCurrentFrame();
-    frame.render_cmd_list_ptr->Reset(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3u);
+    frame.render_cmd_list_ptr->Draw(gfx::RenderCommandList::Primitive::Triangle, 3U);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

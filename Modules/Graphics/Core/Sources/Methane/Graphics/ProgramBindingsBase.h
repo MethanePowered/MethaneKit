@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -50,7 +50,7 @@ public:
     public:
         static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
 
-        ArgumentBindingBase(const ContextBase& context, Settings settings);
+        ArgumentBindingBase(const ContextBase& context, const Settings& settings);
         ArgumentBindingBase(const ArgumentBindingBase& other) = default;
 
         // ArgumentBinding interface
@@ -74,8 +74,12 @@ public:
     };
 
     ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {});
+    ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
     ~ProgramBindingsBase() override;
+
+    ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
+    ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
     const Program::Arguments& GetArguments() const  { return m_arguments; }
     const Program&            GetProgram() const;
@@ -87,13 +91,13 @@ public:
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
-    bool AllArgumentsAreBoundToResources(std::string& missing_args) const;
+    Program::Arguments GetUnboundArguments() const;
 
 protected:
     Program& GetProgram();
     void ReserveDescriptorHeapRanges();
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
-    void VerifyAllArgumentsAreBoundToResources();
+    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
+    void VerifyAllArgumentsAreBoundToResources() const;
 
     using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
     const BindingByArgument& GetArgumentBindings() const { return m_binding_by_argument; }

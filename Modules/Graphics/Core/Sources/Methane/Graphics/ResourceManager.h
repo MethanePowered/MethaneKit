@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -50,7 +50,7 @@ public:
         DescriptorHeapSizeByType shader_visible_heap_sizes;
     };
 
-    ResourceManager(ContextBase& context);
+    explicit ResourceManager(ContextBase& context);
     ~ResourceManager() = default;
 
     void Initialize(const Settings& settings);
@@ -61,7 +61,6 @@ public:
     bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
 
     void AddProgramBindings(ProgramBindings& program_bindings);
-    void RemoveProgramBindings(ProgramBindings&);
 
     uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
     const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
@@ -71,7 +70,8 @@ public:
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
 
 private:
-    void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
+    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    void ForEachDescriptorHeap(FuncType process_heap) const;
 
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 

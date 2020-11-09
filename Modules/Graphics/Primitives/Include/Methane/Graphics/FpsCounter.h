@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -37,27 +37,27 @@ public:
     class FrameTiming
     {
     public:
-        FrameTiming() = default;
-        FrameTiming(const FrameTiming&) = default;
-        FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec);
+        FrameTiming() noexcept = default;
+        FrameTiming(const FrameTiming&) noexcept = default;
+        FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec) noexcept;
 
-        double GetTotalTimeSec() const    { return m_total_time_sec; }
-        double GetPresentTimeSec() const  { return m_present_time_sec; }
-        double GetGpuWaitTimeSec() const  { return m_gpu_wait_time_sec; }
-        double GetCpuTimeSec() const      { return m_total_time_sec - m_present_time_sec - m_gpu_wait_time_sec; }
+        double GetTotalTimeSec() const noexcept   { return m_total_time_sec; }
+        double GetPresentTimeSec() const noexcept { return m_present_time_sec; }
+        double GetGpuWaitTimeSec() const noexcept { return m_gpu_wait_time_sec; }
+        double GetCpuTimeSec() const noexcept     { return m_total_time_sec - m_present_time_sec - m_gpu_wait_time_sec; }
 
-        double GetTotalTimeMSec() const   { return m_total_time_sec * 1000.0; }
-        double GetPresentTimeMSec() const { return m_present_time_sec * 1000.0; }
-        double GetGpuWaitTimeMSec() const { return m_gpu_wait_time_sec * 1000.0; }
-        double GetCpuTimeMSec() const     { return GetCpuTimeSec() * 1000.0; }
+        double GetTotalTimeMSec() const noexcept  { return m_total_time_sec * 1000.0; }
+        double GetPresentTimeMSec() const noexcept{ return m_present_time_sec * 1000.0; }
+        double GetGpuWaitTimeMSec() const noexcept{ return m_gpu_wait_time_sec * 1000.0; }
+        double GetCpuTimeMSec() const noexcept    { return GetCpuTimeSec() * 1000.0; }
 
-        double GetCpuTimePercent() const  { return 100.0 * GetCpuTimeSec() / GetTotalTimeSec(); }
+        double GetCpuTimePercent() const noexcept { return 100.0 * GetCpuTimeSec() / GetTotalTimeSec(); }
 
-        FrameTiming& operator=(const FrameTiming& other) = default;
-        FrameTiming& operator+=(const FrameTiming& other);
-        FrameTiming& operator-=(const FrameTiming& other);
-        FrameTiming  operator/(double divisor) const;
-        FrameTiming  operator*(double multiplier) const;
+        FrameTiming& operator=(const FrameTiming& other) noexcept = default;
+        FrameTiming& operator+=(const FrameTiming& other) noexcept;
+        FrameTiming& operator-=(const FrameTiming& other) noexcept;
+        FrameTiming  operator/(double divisor) const noexcept;
+        FrameTiming  operator*(double multiplier) const noexcept;
 
     private:
         double m_total_time_sec    = 0.0;
@@ -66,19 +66,21 @@ public:
     };
 
     FpsCounter() = default;
-    FpsCounter(uint32_t averaged_timings_count) : m_averaged_timings_count(averaged_timings_count) {}
+    FpsCounter(uint32_t averaged_timings_count) noexcept : m_averaged_timings_count(averaged_timings_count) { }
 
-    void Reset(uint32_t averaged_timings_count);
-    void OnGpuFramePresentWait();
-    void OnGpuFramePresented();
-    void OnCpuFrameReadyToPresent();
-    void OnCpuFramePresented();
+    void Reset(uint32_t averaged_timings_count) noexcept;
+    void OnGpuFramePresentWait() noexcept    { m_present_timer.Reset(); }
+    void OnCpuFrameReadyToPresent() noexcept { m_present_timer.Reset(); }
+    void OnGpuFramePresented() noexcept      { m_present_on_gpu_wait_time_sec = m_present_timer.GetElapsedSecondsD(); }
+    void OnCpuFramePresented() noexcept;
 
     uint32_t    GetAveragedTimingsCount() const noexcept { return static_cast<uint32_t>(m_frame_timings.size()); }
     FrameTiming GetAverageFrameTiming() const noexcept;
     uint32_t    GetFramesPerSecond() const noexcept;
 
 private:
+    void ResetPresentTimer() noexcept;
+
     Timer                   m_frame_timer;
     Timer                   m_present_timer;
     double                  m_present_on_gpu_wait_time_sec = 0.0;

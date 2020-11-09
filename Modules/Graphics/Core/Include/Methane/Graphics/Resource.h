@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -30,6 +30,8 @@ Methane resource interface: base class of all GPU resources.
 #include <Methane/Data/Range.hpp>
 #include <Methane/Graphics/Types.h>
 
+#include <fmt/format.h>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -46,7 +48,7 @@ struct Resource : virtual Object
 {
     enum class Type : uint32_t
     {
-        Buffer = 0u,
+        Buffer = 0U,
         Texture,
         Sampler,
     };
@@ -56,15 +58,15 @@ struct Resource : virtual Object
         using Mask = uint32_t;
         enum Value : Mask
         {
-            Unknown      = 0u,
+            Unknown      = 0U,
             // Primary usages
-            ShaderRead   = 1u << 0u,
-            ShaderWrite  = 1u << 1u,
-            RenderTarget = 1u << 2u,
-            ReadBack     = 1u << 3u,
+            ShaderRead   = 1U << 0U,
+            ShaderWrite  = 1U << 1U,
+            RenderTarget = 1U << 2U,
+            ReadBack     = 1U << 3U,
             // Secondary usages
-            Addressable  = 1u << 4u,
-            All          = ~0u,
+            Addressable  = 1U << 4U,
+            All          = ~0U,
         };
 
         using BaseValues = std::array<Value, 4>;
@@ -73,8 +75,8 @@ struct Resource : virtual Object
         using Values = std::array<Value, 5>;
         static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };
 
-        static std::string ToString(Usage::Value usage) noexcept;
-        static std::string ToString(Usage::Mask usage_mask) noexcept;
+        static std::string ToString(Usage::Value usage);
+        static std::string ToString(Usage::Mask usage_mask);
 
         Usage() = delete;
     };
@@ -92,7 +94,7 @@ struct Resource : virtual Object
     class Location
     {
     public:
-        Location(Ptr<Resource> resource_ptr, Data::Size offset = 0u);
+        Location(Ptr<Resource> resource_ptr, Data::Size offset = 0U);
 
         bool operator==(const Location& other) const noexcept;
 
@@ -128,14 +130,16 @@ struct Resource : virtual Object
             Data::Size array_size;
             Data::Size mip_levels_count;
 
-            explicit Count(Data::Size array_size  = 1u, Data::Size depth  = 1u, Data::Size mip_levels_count = 1u);
+            explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
             Data::Size GetRawCount() const noexcept;
 
-            void operator+=(const Index& index) noexcept;
-            bool operator==(const Count& index) const noexcept;
-            bool operator<(const Count& index) const noexcept;
-            bool operator>=(const Count& index) const noexcept;
-            operator std::string() const noexcept;
+            void operator+=(const Index& other) noexcept;
+            bool operator==(const Count& other) const noexcept;
+            bool operator!=(const Count& other) const noexcept { return !operator==(other); }
+            bool operator<(const Count& other) const noexcept;
+            bool operator>=(const Count& other) const noexcept;
+            explicit operator Index() const noexcept;
+            explicit operator std::string() const noexcept;
         };
 
         struct Index
@@ -144,15 +148,18 @@ struct Resource : virtual Object
             Data::Index array_index;
             Data::Index mip_level;
 
-            explicit Index(Data::Index depth_slice  = 0u, Data::Index array_index  = 0u, Data::Index mip_level = 0u) noexcept;
+            explicit Index(Data::Index depth_slice  = 0U, Data::Index array_index  = 0U, Data::Index mip_level = 0U) noexcept;
             Index(Data::Index raw_index, const Count& count);
+            explicit Index(const Count& count);
             Data::Index GetRawIndex(const Count& count) const noexcept;
 
-            bool operator==(const Index& index) const noexcept;
-            bool operator<(const Index& index) const noexcept;
-            bool operator<(const Count& index) const noexcept;
-            bool operator>=(const Count& index) const noexcept;
-            operator std::string() const noexcept;
+            bool operator==(const Index& other) const noexcept;
+            bool operator!=(const Index& other) const noexcept { return !operator==(other); }
+            bool operator<(const Index& other) const noexcept;
+            bool operator>=(const Index& other) const noexcept;
+            bool operator<(const Count& other) const noexcept;
+            bool operator>=(const Count& other) const noexcept;
+            explicit operator std::string() const noexcept;
         };
 
         Index index;
@@ -168,7 +175,7 @@ struct Resource : virtual Object
     using SubResources = std::vector<SubResource>;
 
     // Auxiliary functions
-    static std::string GetTypeName(Type type) noexcept;
+    static std::string GetTypeName(Type type);
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
@@ -184,3 +191,4 @@ struct Resource : virtual Object
 };
 
 } // namespace Methane::Graphics
+

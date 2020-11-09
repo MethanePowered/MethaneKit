@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -65,9 +65,9 @@ using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;
 using Frequency = Data::Frequency;
 
-enum class PixelFormat
+enum class PixelFormat : uint32_t
 {
-    Unknown,
+    Unknown = 0U,
     RGBA8,
     RGBA8Unorm,
     RGBA8Unorm_sRGB,
@@ -91,7 +91,7 @@ enum class PixelFormat
 
 using PixelFormats = std::vector<PixelFormat>;
 
-Data::Size GetPixelSize(PixelFormat pixel_format) noexcept;
+Data::Size GetPixelSize(PixelFormat pixel_format);
 bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept;
 
 enum class Compare : uint32_t

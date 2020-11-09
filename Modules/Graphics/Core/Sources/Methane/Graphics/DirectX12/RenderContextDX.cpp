@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -26,12 +26,12 @@ DirectX 12 implementation of the render context interface.
 #include "CommandQueueDX.h"
 #include "TypesDX.h"
 
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Checks.hpp>
 
-#include <shellscalingapi.h>
+#include <ShellScalingApi.h>
 #include <nowide/convert.hpp>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -57,33 +57,32 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
 
     switch (device_scale_factor)
     {
-    case SCALE_100_PERCENT: return 1.0f;
-    case SCALE_120_PERCENT: return 1.2f;
-    case SCALE_125_PERCENT: return 1.25f;
-    case SCALE_140_PERCENT: return 1.4f;
-    case SCALE_150_PERCENT: return 1.5f;
-    case SCALE_160_PERCENT: return 1.6f;
-    case SCALE_175_PERCENT: return 1.75f;
-    case SCALE_180_PERCENT: return 1.8f;
-    case SCALE_200_PERCENT: return 2.f;
-    case SCALE_225_PERCENT: return 2.25f;
-    case SCALE_250_PERCENT: return 2.5f;
-    case SCALE_300_PERCENT: return 3.f;
-    case SCALE_350_PERCENT: return 3.5f;
-    case SCALE_400_PERCENT: return 4.f;
-    case SCALE_450_PERCENT: return 4.5f;
-    case SCALE_500_PERCENT: return 5.f;
-    default:                assert(0);
+    case DEVICE_SCALE_FACTOR_INVALID: return 1.0F;
+    case SCALE_100_PERCENT:           return 1.0F;
+    case SCALE_120_PERCENT:           return 1.2F;
+    case SCALE_125_PERCENT:           return 1.25F;
+    case SCALE_140_PERCENT:           return 1.4F;
+    case SCALE_150_PERCENT:           return 1.5F;
+    case SCALE_160_PERCENT:           return 1.6F;
+    case SCALE_175_PERCENT:           return 1.75F;
+    case SCALE_180_PERCENT:           return 1.8F;
+    case SCALE_200_PERCENT:           return 2.F;
+    case SCALE_225_PERCENT:           return 2.25F;
+    case SCALE_250_PERCENT:           return 2.5F;
+    case SCALE_300_PERCENT:           return 3.F;
+    case SCALE_350_PERCENT:           return 3.5F;
+    case SCALE_400_PERCENT:           return 4.F;
+    case SCALE_450_PERCENT:           return 4.5F;
+    case SCALE_500_PERCENT:           return 5.F;
+    default: META_UNEXPECTED_ENUM_ARG_RETURN(device_scale_factor, 1.F);
     }
-
-    return 1.f;
 }
 
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
-    DeviceBase& device_base = static_cast<DeviceBase&>(device);
-    Ptr<RenderContextDX> render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
+    auto& device_base = static_cast<DeviceBase&>(device);
+    const auto render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
     render_context_ptr->Initialize(device_base, true);
     return render_context_ptr;
 }
@@ -120,6 +119,9 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
     case WaitFor::ResourcesUploaded:
         GetUploadCommandQueueDX().CompleteExecution();
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(wait_for);
     }
 }
 
@@ -159,7 +161,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     swap_chain_desc.SampleDesc.Count      = 1;
 
     const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
-    assert(!!cp_dxgi_factory);
+    META_CHECK_ARG_NOT_NULL(cp_dxgi_factory);
 
     BOOL present_tearing_support = FALSE;
     ID3D12Device* p_native_device = GetDeviceDX().GetNativeDevice().Get();
@@ -172,7 +174,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain), p_native_device);
-    assert(!!cp_swap_chain);
+    META_CHECK_ARG_NOT_NULL(cp_swap_chain);
 
     if (settings.is_full_screen)
     {
@@ -218,7 +220,7 @@ void RenderContextDX::Present()
     const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
-    assert(m_cp_swap_chain);
+    META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
                   GetDeviceDX().GetNativeDevice().Get());
 
@@ -239,9 +241,9 @@ uint32_t RenderContextDX::GetFontResolutionDpi() const
 {
     const HDC window_device_context = GetDC(m_platform_env.window_handle);
     const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
-    // We assume that horizontal and vertical font resolutions are equal
-    assert(dpi_y > 0);
-    assert(dpi_y == GetDeviceCaps(window_device_context, LOGPIXELSX));
+    META_CHECK_ARG_GREATER_OR_EQUAL(dpi_y, 1);
+    META_CHECK_ARG_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
+                               "we assume that horizontal and vertical font resolutions are equal");
     return dpi_y;
 }
 
@@ -254,7 +256,7 @@ CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
 uint32_t RenderContextDX::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    assert(!!m_cp_swap_chain);
+    META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);
     return m_cp_swap_chain->GetCurrentBackBufferIndex();
 }
 

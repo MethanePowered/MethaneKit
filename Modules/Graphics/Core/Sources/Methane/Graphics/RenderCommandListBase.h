@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -50,11 +50,11 @@ public:
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None          = 0u,
-                PrimitiveType = 1u << 0u,
-                IndexBuffer   = 1u << 1u,
-                VertexBuffers = 1u << 2u,
-                All           = ~0u,
+                None          = 0U,
+                PrimitiveType = 1U << 0U,
+                IndexBuffer   = 1U << 1U,
+                VertexBuffers = 1U << 2U,
+                All           = ~0U,
             };
 
             Changes() = delete;
@@ -71,15 +71,15 @@ public:
     };
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
     
     using CommandListBase::Reset;
 
     // RenderCommandList interface
     bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) noexcept override { m_is_validation_enabled = is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) override { m_is_validation_enabled = is_validation_enabled; }
     RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
-    void Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
     void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
     void SetViewState(ViewState& view_state) override;
     void SetVertexBuffers(BufferSet& vertex_buffers) override;
@@ -95,16 +95,16 @@ protected:
     // CommandListBase overrides
     void ResetCommandState() override;
 
-    DrawingState&                      GetDrawingState()              { return m_drawing_state; }
-    const DrawingState&                GetDrawingState() const        { return m_drawing_state; }
-    bool                               IsParallel() const             { return m_is_parallel; }
-    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() { return m_parallel_render_command_list_wptr.lock(); }
+    DrawingState&                      GetDrawingState()                    { return m_drawing_state; }
+    const DrawingState&                GetDrawingState() const              { return m_drawing_state; }
+    bool                               IsParallel() const                   { return m_is_parallel; }
+    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() const { return m_parallel_render_command_list_wptr.lock(); }
 
     inline void UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer = nullptr);
-    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0);
+    inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0) const;
 
 private:
-    const bool                             m_is_parallel;
+    const bool                             m_is_parallel = false;
     const Ptr<RenderPassBase>              m_render_pass_ptr;
     WeakPtr<ParallelRenderCommandListBase> m_parallel_render_command_list_wptr;
     DrawingState                           m_drawing_state;

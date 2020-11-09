@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -84,7 +84,7 @@ public:
         const uint32_t       texture_index;
         const Colors         colors;
         const gfx::Matrix44f scale_translate_matrix;
-        const gfx::Point3f   spin_axis;
+        const gfx::Vector3f  spin_axis;
         const float          scale;
         const float          orbit_speed;
         const float          spin_speed;
@@ -95,9 +95,9 @@ public:
     struct TextureNoiseParameters
     {
         uint32_t random_seed = 0;
-        float    persistence = 0.9f;
-        float    scale       = 0.5f;
-        float    strength    = 1.5f;
+        float    persistence = 0.9F;
+        float    scale       = 0.5F;
+        float    strength    = 1.5F;
     };
 
     explicit Asteroid(gfx::RenderContext& context);
@@ -105,7 +105,7 @@ public:
     static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
     static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
 
-    static constexpr size_t color_schema_size = 6u;
+    static constexpr size_t color_schema_size = 6U;
     static Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     static Colors GetAsteroidIceColors(uint32_t deep_color_index, uint32_t shallow_color_index);
     static Colors GetAsteroidLodColors(uint32_t lod_index);

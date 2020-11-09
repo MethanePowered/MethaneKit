@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -23,10 +23,10 @@ Platform abstraction of keyboard events.
 
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <map>
 #include <sstream>
-#include <cassert>
 
 namespace Methane::Platform::Keyboard
 {
@@ -86,7 +86,7 @@ Modifier::Value KeyConverter::GetModifierKey() const noexcept
     }
 }
 
-std::string KeyConverter::ToString() const noexcept
+std::string KeyConverter::ToString() const
 {
     META_FUNCTION_TASK();
     static const std::map<Key, std::string> s_name_by_key =
@@ -226,18 +226,14 @@ std::string KeyConverter::ToString() const noexcept
     };
 
     auto key_and_name_it = s_name_by_key.find(m_key);
-    if (key_and_name_it == s_name_by_key.end())
-    {
-        assert(0);
-        return "";
-    }
+    META_CHECK_ARG_DESCR(m_key, key_and_name_it != s_name_by_key.end(), "key name was not found");
 
     return m_modifiers == Modifier::Value::None
            ? key_and_name_it->second
            : Modifier::ToString(m_modifiers) + g_keys_separator + key_and_name_it->second;
 };
 
-State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask) noexcept
+State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
     : m_modifiers_mask(modifiers_mask)
 {
     META_FUNCTION_TASK();
@@ -303,7 +299,7 @@ State::Property::Mask State::GetDiff(const State& other) const noexcept
     return properties_diff_mask;
 }
 
-KeyType State::SetKey(Key key, KeyState state) noexcept
+KeyType State::SetKey(Key key, KeyState state)
 {
     META_FUNCTION_TASK();
     if (key == Key::Unknown)
@@ -318,11 +314,8 @@ KeyType State::SetKey(Key key, KeyState state) noexcept
     else
     {
         const size_t key_index = static_cast<size_t>(key);
-        assert(key_index < m_key_states.size());
-        if (key_index < m_key_states.size())
-        {
-            m_key_states[key_index] = state;
-        }
+        META_CHECK_ARG_LESS(key_index, m_key_states.size());
+        m_key_states[key_index] = state;
         return KeyType::Modifier;
     }
 }
@@ -394,8 +387,8 @@ std::string Modifier::ToString(Value modifier)
 #else
         case Super:     return "Super";
 #endif
+        default:        return "Undefined";
     }
-    return "Undefined";
 }
 
 std::string Modifier::ToString(Modifier::Mask modifiers_mask)
@@ -427,8 +420,8 @@ std::string State::Property::ToString(State::Property::Value property_value)
     case KeyStates: return "KeyStates";
     case Modifiers: return "Modifiers";
     case None:      return "None";
+    default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
     }
-    return "Undefined";
 }
 
 std::string State::Property::ToString(State::Property::Mask properties_mask)

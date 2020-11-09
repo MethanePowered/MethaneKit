@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -54,15 +54,15 @@ public:
         if (adjust_indices)
         {
             const Data::Size vertex_count = BaseMeshT::GetVertexCount();
-            assert(vertex_count <= std::numeric_limits<Mesh::Index>::max());
+            META_CHECK_ARG_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
 
             const Mesh::Index index_offset = static_cast<Mesh::Index>(vertex_count);
             std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
                            [index_offset](const Mesh::Index& index)
-                               {
-                                   assert(static_cast<Data::Size>(index_offset) + index <= std::numeric_limits<Mesh::Index>::max());
-                                   return static_cast<Mesh::Index>(index_offset + index);
-                               });
+                           {
+                               META_CHECK_ARG_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);
+                               return static_cast<Mesh::Index>(index_offset + index);
+                           });
         }
         else
         {
@@ -77,8 +77,7 @@ public:
     const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
         META_FUNCTION_TASK();
-        if (subset_index >= m_subsets.size())
-            throw std::invalid_argument("Sub mesh index is out of bounds.");
+        META_CHECK_ARG_LESS(subset_index, m_subsets.size());
 
         return m_subsets[subset_index];
     }

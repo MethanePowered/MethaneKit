@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -104,10 +104,10 @@ private:
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
-    const float                       m_scene_scale;
+    const float                       m_scene_scale = 15.F;
     const Constants                   m_scene_constants;
     AsteroidsArray::Settings          m_asteroids_array_settings;
-    uint32_t                          m_asteroids_complexity          = 0u;
+    uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;
     SceneUniforms                     m_scene_uniforms{ };
     gfx::Resource::SubResources       m_scene_uniforms_subresources{

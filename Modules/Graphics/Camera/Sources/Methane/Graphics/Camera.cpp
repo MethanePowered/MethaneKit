@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -22,12 +22,11 @@ Camera helper implementation allowing to generate view and projection matrices.
 ******************************************************************************/
 
 #include <Methane/Graphics/Camera.h>
-
-#include <Methane/Graphics/TypeConverters.hpp>
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
-#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -62,7 +61,7 @@ void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) 
     cml::matrix_look_at(out_view, orientation.eye, orientation.aim, orientation.up, m_axis_orientation);
 }
 
-void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
+void Camera::GetProjMatrix(Matrix44f& out_proj) const
 {
     META_FUNCTION_TASK();
     switch (m_projection)
@@ -70,9 +69,13 @@ void Camera::GetProjMatrix(Matrix44f& out_proj) const noexcept
     case Projection::Perspective:
         cml::matrix_perspective_yfov(out_proj, GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
+
     case Projection::Orthogonal:
         cml::matrix_orthographic(out_proj, m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
         break;
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(m_projection);
     }
 }
 
@@ -87,7 +90,7 @@ const Matrix44f& Camera::GetViewMatrix() const noexcept
     return m_current_view_matrix;
 }
 
-const Matrix44f& Camera::GetProjMatrix() const noexcept
+const Matrix44f& Camera::GetProjMatrix() const
 {
     META_FUNCTION_TASK();
     if (!m_is_current_proj_matrix_dirty)
@@ -111,14 +114,14 @@ const Matrix44f& Camera::GetViewProjMatrix() const noexcept
 Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return { 2.f * screen_pos.GetX() / m_screen_size.width  - 1.f,
-           -(2.f * screen_pos.GetY() / m_screen_size.height - 1.f) };
+    return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.width  - 1.F,
+           -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.height - 1.F) };
 }
 
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.f, 1.f)).subvector(3);
+    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.F, 1.F)).subvector(3);
 }
 
 Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
@@ -142,8 +145,8 @@ Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientatio
 float Camera::GetFovAngleY() const noexcept
 {
     META_FUNCTION_TASK();
-    float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0f;
-    if (m_aspect_ratio != 0.f && m_aspect_ratio < 1.0f)
+    float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0F;
+    if (m_aspect_ratio != 0.F && m_aspect_ratio < 1.0F)
     {
         fov_angle_y /= m_aspect_ratio;
     }
@@ -152,12 +155,8 @@ float Camera::GetFovAngleY() const noexcept
 
 std::string Camera::GetOrientationString() const
 {
-    std::stringstream ss;
-    ss << "Camera orientation:"
-       << std::endl << "  - eye: " << VectorToString(m_current_orientation.eye)
-       << std::endl << "  - aim: " << VectorToString(m_current_orientation.aim)
-       << std::endl << "  - up:  " << VectorToString(m_current_orientation.up);
-    return ss.str();
+    return fmt::format("Camera orientation:\n  - eye: {}\n  - aim: {}\n  - up:  {}",
+                       m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up);
 }
 
 } // namespace Methane::Graphics

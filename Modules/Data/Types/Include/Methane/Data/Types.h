@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -34,7 +34,7 @@ namespace Methane::Data
 
 enum class MemoryState : uint32_t
 {
-    Reserved = 0,
+    Reserved = 0U,
     Initialized,
 };
 

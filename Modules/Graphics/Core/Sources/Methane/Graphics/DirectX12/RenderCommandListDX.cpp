@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -32,15 +32,14 @@ DirectX 12 implementation of the render command list interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/Primitives.h>
+#include <Methane/Graphics/Windows/ErrorHandling.h>
 
 #include <d3dx12.h>
-#include <cassert>
 
 namespace Methane::Graphics
 {
 
-static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive) noexcept
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive)
 {
     META_FUNCTION_TASK();
     switch (primitive)
@@ -50,9 +49,8 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     case RenderCommandList::Primitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case RenderCommandList::Primitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     case RenderCommandList::Primitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                                           assert(0);
+    default:                                           META_UNEXPECTED_ENUM_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
-    return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
@@ -82,10 +80,10 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
 void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
 {
     META_FUNCTION_TASK();
-    if (!IsCommitted())
+    if (!IsNativeCommitted())
         return;
 
-    SetCommitted(false);
+    SetNativeCommitted(false);
     SetCommandListState(CommandList::State::Encoding);
 
     ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? static_cast<RenderStateDX&>(*render_state_ptr).GetNativePipelineState().Get() : nullptr;
@@ -109,13 +107,13 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
                                       | RenderState::Group::DepthStencil;
 }
 
-void RenderCommandListDX::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     ResetNative(render_state_ptr);
 
-    RenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    RenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 
     RenderPassDX& pass_dx = GetPassDX();
     if (IsParallel())

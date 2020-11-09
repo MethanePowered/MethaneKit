@@ -7,6 +7,8 @@ get_module_dirs("Methane")
 set(HEADERS
     ${INCLUDE_DIR}/Version.h
     ${INCLUDE_DIR}/Memory.hpp
+    ${INCLUDE_DIR}/Exceptions.hpp
+    ${INCLUDE_DIR}/Checks.hpp
     ${INCLUDE_DIR}/Timer.hpp
 )
 
@@ -29,6 +31,8 @@ target_include_directories(${TARGET}
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 
 target_link_libraries(${TARGET}
+    PUBLIC
+        fmt
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledHeaders

@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -27,6 +27,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Platform/Input/Controller.h>
 #include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 #include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
@@ -35,7 +36,6 @@ Base application interface and platform-independent implementation.
 #include <sstream>
 #include <vector>
 #include <cstdlib>
-#include <cassert>
 
 namespace Methane::Platform
 {
@@ -48,7 +48,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
-    add_option("-w,--width",  m_settings.width,  "Window width in pixels or as ratio of desktop width", true);
+    add_option("-w,--width", m_settings.width, "Window width in pixels or as ratio of desktop width", true);
     add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
     add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode", true);
 
@@ -69,7 +69,7 @@ int AppBase::Run(const RunArgs& args)
     {
         parse(args.cmd_arg_count, args.cmd_arg_values);
     }
-    catch(const CLI::CallForHelp&)
+    catch (const CLI::CallForHelp&)
     {
         Alert(Message{
             Message::Type::Information,
@@ -77,7 +77,7 @@ int AppBase::Run(const RunArgs& args)
             help()
         }, true);
     }
-    catch(const CLI::ParseError& e)
+    catch (const CLI::ParseError& e)
     {
         Alert(Message{
             Message::Type::Error,
@@ -105,28 +105,28 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 void AppBase::StartResizing()
 {
     META_FUNCTION_TASK();
-    assert(!m_is_resizing);
+    META_CHECK_ARG_FALSE(m_is_resizing);
     m_is_resizing = true;
 }
 
 void AppBase::EndResizing()
 {
     META_FUNCTION_TASK();
-    assert(m_is_resizing);
+    META_CHECK_ARG_TRUE(m_is_resizing);
     m_is_resizing = false;
 }
-    
+
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
 {
     META_FUNCTION_TASK();
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
-    
+
     m_is_minimized = is_minimized;
     if (!m_is_minimized)
     {
         m_frame_size = frame_size;
     }
-    
+
     return m_initialized && is_resizing;
 }
 
@@ -148,18 +148,7 @@ void AppBase::ShowAlert(const Message&)
     m_input_state.ReleaseAllKeys();
 }
 
-void AppBase::UpdateAndRender()
-{
-    META_FUNCTION_TASK();
-    // Do not render if error has occurred and is being displayed in message box
-    if (HasError())
-        return;
-
-    Update();
-    Render();
-}
-
-bool AppBase::HasError() const
+bool AppBase::HasError() const noexcept
 {
     META_FUNCTION_TASK();
     return m_deferred_message_ptr ? m_deferred_message_ptr->type == Message::Type::Error : false;
@@ -208,7 +197,7 @@ std::string AppBase::GetControlsHelp()
 
     for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
     {
-        assert(!!controller_ptr);
+        META_CHECK_ARG_NOT_NULL(controller_ptr);
         if (!controller_ptr) continue;
 
         const Input::IHelpProvider::HelpLines help_lines = controller_ptr->GetHelp();
@@ -286,6 +275,17 @@ void AppBase::ShowCommandLineHelp()
         "Application Command-Line Help",
         GetCommandLineHelp()
     });
+}
+
+bool AppBase::UpdateAndRender()
+{
+    META_FUNCTION_TASK();
+    if (HasError())
+        return false;
+
+    Update();
+    Render();
+    return true;
 }
 
 } // namespace Methane::Platform

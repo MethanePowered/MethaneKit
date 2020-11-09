@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -87,6 +87,17 @@ public:
     class VertexLayout : public std::vector<VertexField>
     {
     public:
+        class IncompatibleException : public std::logic_error
+        {
+        public:
+            explicit IncompatibleException(VertexField missing_field);
+
+            VertexField GetMissingField() const noexcept { return m_missing_field; }
+
+        private:
+            const VertexField m_missing_field;
+        };
+
         using std::vector<VertexField>::vector;
 
         std::vector<std::string> GetSemantics() const;
@@ -119,6 +130,7 @@ protected:
     using VertexFieldSizes   = std::array<Data::Size,  static_cast<size_t>(VertexField::Count)>;
 
     bool HasVertexField(VertexField field) const noexcept;
+    void CheckLayoutHasVertexField(VertexField field) const;
 
     static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
     static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;

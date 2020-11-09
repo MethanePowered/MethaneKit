@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -33,12 +33,12 @@ namespace Methane::Samples
 {
 
 Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
-    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.f, 32, 32))
+    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, gfx::BaseMesh<Vertex> mesh)
+Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")
@@ -97,8 +97,8 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
 {
     META_FUNCTION_TASK();
 
-    assert(!!m_render_state_ptr);
-    assert(!!m_render_state_ptr->GetSettings().program_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
+    META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr            } } },
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
@@ -117,7 +117,7 @@ bool Planet::Update(double elapsed_seconds, double)
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms{};
-    uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.f);
+    uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.F);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = model_scale_matrix * model_rotation_matrix * model_translate_matrix;
     uniforms.mvp_matrix     = uniforms.model_matrix * m_settings.view_camera.GetViewProjMatrix();
@@ -131,15 +131,15 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
 
-    assert(!!buffer_bindings.uniforms_buffer_ptr);
-    assert(buffer_bindings.uniforms_buffer_ptr->GetDataSize() >= sizeof(Uniforms));
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.Reset(m_render_state_ptr, s_debug_group.get());
+    cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
     
-    assert(!buffer_bindings.program_bindings_per_instance.empty());
-    assert(!!buffer_bindings.program_bindings_per_instance[0]);
+    META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_per_instance[0]);
     m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
 }
 

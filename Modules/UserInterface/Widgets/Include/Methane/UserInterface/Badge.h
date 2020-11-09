@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -42,7 +42,7 @@ class Badge
 public:
     enum class FrameCorner : uint32_t
     {
-        TopLeft = 0u,
+        TopLeft = 0U,
         TopRight,
         BottomRight,
         BottomLeft
@@ -51,10 +51,10 @@ public:
     struct Settings
     {
         const std::string name         = "Badge";
-        UnitSize          size         { 96u, 128u, Units::Dots };
+        UnitSize          size         { 96U, 128U, Units::Dots };
         FrameCorner       corner       = FrameCorner::TopRight;
         UnitPoint         margins      { 16, 16, Units::Dots };
-        Color4f           blend_color  { 1.f, 1.f, 1.f, 1.f };
+        Color4f           blend_color  { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode = TextureMode::RgbaFloat;
     };
 

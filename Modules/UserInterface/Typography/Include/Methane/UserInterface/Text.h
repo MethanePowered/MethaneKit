@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -55,21 +55,21 @@ class Text
 public:
     enum class Wrap : uint32_t
     {
-        None = 0u,
+        None = 0U,
         Anywhere,
         Word
     };
 
     enum class HorizontalAlignment : uint32_t
     {
-        Left = 0u,
+        Left = 0U,
         Right,
         Center
     };
 
     enum class VerticalAlignment : uint32_t
     {
-        Top = 0u,
+        Top = 0U,
         Bottom,
         Center
     };
@@ -94,12 +94,12 @@ public:
         StringType        text;
         UnitRect          rect;
         Layout            layout;
-        Color4f           color                { 1.f, 1.f, 1.f, 1.f };
+        Color4f           color                { 1.F, 1.F, 1.F, 1.F };
         bool              incremental_update   = true;
         bool              adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
-        Data::Size        mesh_buffers_reservation_multiplier = 2u;
+        Data::Size        mesh_buffers_reservation_multiplier = 2U;
     };
 
     using SettingsUtf8  = Settings<std::string>;
@@ -130,9 +130,9 @@ public:
     void Update(const gfx::FrameSize& render_attachment_size);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
-    static std::string GetWrapName(Wrap wrap) noexcept;
-    static std::string GetHorizontalAlignmentName(HorizontalAlignment alignment) noexcept;
-    static std::string GetVerticalAlignmentName(VerticalAlignment alignment) noexcept;
+    static std::string GetWrapName(Wrap wrap);
+    static std::string GetHorizontalAlignmentName(HorizontalAlignment alignment);
+    static std::string GetVerticalAlignmentName(VerticalAlignment alignment);
 
 protected:
     // IFontCallback interface
@@ -151,11 +151,11 @@ private:
             using Mask = uint32_t;
             enum Value : Mask
             {
-                None         = 0u,
-                Mesh         = 1u << 0u,
-                Uniforms     = 1u << 1u,
-                Atlas        = 1u << 2u,
-                All          = ~0u,
+                None         = 0U,
+                Mesh         = 1U << 0U,
+                Uniforms     = 1U << 1U,
+                Atlas        = 1U << 2U,
+                All          = ~0U,
             };
         };
 

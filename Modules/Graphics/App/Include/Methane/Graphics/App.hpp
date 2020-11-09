@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,12 +43,13 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
 #include <vector>
 #include <sstream>
 #include <memory>
 #include <thread>
-#include <cassert>
 
 namespace Methane::Graphics
 {
@@ -119,14 +120,14 @@ public:
     {
         META_FUNCTION_TASK();
         const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
-        assert(!devices.empty());
+        META_CHECK_ARG_NOT_EMPTY(devices);
 
         Ptr<Device> device_ptr = m_settings.default_device_index < 0
                       ? System::Get().GetSoftwareGpuDevice()
                       : (static_cast<size_t>(m_settings.default_device_index) < devices.size()
                            ? devices[m_settings.default_device_index]
                            : devices.front());
-        assert(device_ptr);
+        META_CHECK_ARG_NOT_NULL(device_ptr);
         
         // Create render context of the current window size
         m_initial_context_settings.frame_size = frame_size;
@@ -149,7 +150,7 @@ public:
             SetAnimationsEnabled(false);
         }
 
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
 
         // Create depth texture for FB rendering
@@ -199,7 +200,7 @@ public:
                     },
                     context_settings.clear_depth_stencil
                         ? context_settings.clear_depth_stencil->first
-                        : 1.f
+                        : 1.F
                 ),
                 RenderPass::StencilAttachment(),
                 m_settings.screen_pass_access,
@@ -251,7 +252,7 @@ public:
         m_depth_texture_ptr.reset();
 
         // Resize render context
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         m_context_ptr->Resize(frame_size);
 
         // Restore depth texture with new size
@@ -302,7 +303,6 @@ public:
     bool Render() override
     {
         META_FUNCTION_TASK();
-        
         if (IsMinimized())
         {
             // No need to render frames while window is minimized.
@@ -311,11 +311,7 @@ public:
             return false;
         }
 
-        if (!m_context_ptr)
-        {
-            throw std::runtime_error("RenderContext is not initialized before rendering.");
-        }
-
+        META_CHECK_ARG_NOT_NULL_DESCR(m_context_ptr, "RenderContext is not initialized before rendering.");
         if (!m_context_ptr->ReadyToRender())
             return false;
 
@@ -392,7 +388,7 @@ protected:
             return;
         }
 
-        assert(m_context_ptr);
+        META_CHECK_ARG_NOT_NULL(m_context_ptr);
         if (!m_context_ptr)
             return;
 
@@ -400,20 +396,14 @@ protected:
         const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
         const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
         const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
+        const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  F1 - help",
+                                              GetPlatformAppSettings().name,
+                                              average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
+                                              context_settings.frame_size.width, context_settings.frame_size.height,
+                                              context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
+                                              m_context_ptr->GetDevice().GetAdapterName());
 
-        std::stringstream title_ss;
-        title_ss.precision(2);
-        title_ss << GetPlatformAppSettings().name
-                 << "        "    << average_fps
-                 << " FPS, "      << std::fixed << average_frame_timing.GetTotalTimeMSec()
-                 << " ms, "       << std::fixed << average_frame_timing.GetCpuTimePercent() << "% cpu"
-                 << "  |  "       << context_settings.frame_size.width << " x " << context_settings.frame_size.height
-                 << "  |  "       << std::to_string(context_settings.frame_buffers_count) << " FB"
-                 << "  |  VSync " << (context_settings.vsync_enabled ? "ON" : "OFF")
-                 << "  |  "       << m_context_ptr->GetDevice().GetAdapterName()
-                 << "  |  F1 - help";
-
-        SetWindowTitle(title_ss.str());
+        SetWindowTitle(title);
     }
 
     void CompleteInitialization()
@@ -457,7 +447,7 @@ protected:
     {
         META_FUNCTION_TASK();
         const uint32_t frame_index = m_context_ptr->GetFrameBufferIndex();
-        assert(frame_index < m_frames.size());
+        META_CHECK_ARG_LESS(frame_index, m_frames.size());
         return m_frames[frame_index];
     }
 
@@ -473,9 +463,7 @@ protected:
     static std::string IndexedName(const std::string& base_name, uint32_t index)
     {
         META_FUNCTION_TASK();
-        std::stringstream ss;
-        ss << base_name << " " << std::to_string(index);
-        return ss.str();
+        return fmt::format("{} {}", base_name, index);
     }
 
     ImageLoader&          GetImageLoader() noexcept             { return m_image_loader; }

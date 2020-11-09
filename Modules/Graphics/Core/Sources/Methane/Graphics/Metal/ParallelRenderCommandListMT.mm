@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -43,19 +43,20 @@ ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& comma
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListMT::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())
     {
-        ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+        ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
         return;
     }
 
     // NOTE: If command buffer was not created for current frame yet,
     // then render pass descriptor should be reset with new frame drawable
     MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!IsCommandBufferInitialized());
-    assert(mtl_render_pass != nil);
+    META_CHECK_ARG_NOT_NULL(mtl_render_pass);
+
     id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]);
     
@@ -64,7 +65,7 @@ void ParallelRenderCommandListMT::Reset(const Ptr<RenderState>& render_state_ptr
         static_cast<RenderStateMT&>(*render_state_ptr).InitializeNativeStates();
     }
 
-    ParallelRenderCommandListBase::Reset(render_state_ptr, p_debug_group);
+    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
 }
 
 RenderPassMT& ParallelRenderCommandListMT::GetRenderPassMT()

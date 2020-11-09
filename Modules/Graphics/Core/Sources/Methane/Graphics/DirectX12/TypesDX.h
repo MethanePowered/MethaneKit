@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -44,10 +44,10 @@ public:
         ViewWrite
     };
 
-    static D3D12_COMPARISON_FUNC            CompareFunctionToD3D(Compare compare_func) noexcept;
-    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format) noexcept;
-    static DXGI_FORMAT                      PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type) noexcept;
-    static DXGI_FORMAT                      ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size) noexcept;
+    static D3D12_COMPARISON_FUNC CompareFunctionToD3D(Compare compare_func);
+    static DXGI_FORMAT PixelFormatToDxgi(const PixelFormat& pixel_format);
+    static DXGI_FORMAT PixelFormatToDxgi(const PixelFormat& pixel_format, ResourceFormatType format_type);
+    static DXGI_FORMAT ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size);
 
 private:
     TypeConverterDX() = default;

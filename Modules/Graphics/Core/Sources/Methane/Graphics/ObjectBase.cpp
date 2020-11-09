@@ -2,7 +2,7 @@
 
 Copyright 2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -24,22 +24,27 @@ Base implementation of the named object interface.
 #include "ObjectBase.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <stdexcept>
 
 namespace Methane::Graphics
 {
 
+ObjectBase::RegistryBase::NameConflictException::NameConflictException(const std::string& name)
+    : std::invalid_argument(fmt::format("Can not add graphics object with name {} to the registry because another object with the same name is already registered.", name))
+{
+    META_FUNCTION_TASK();
+}
+
 void ObjectBase::RegistryBase::AddGraphicsObject(Object& object)
 {
     META_FUNCTION_TASK();
-    if (object.GetName().empty())
-        throw std::logic_error("Can not add graphics object without name to the objects registry.");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
 
     const auto add_result = m_object_by_name.emplace(object.GetName(), object.GetPtr());
     if (!add_result.second && !add_result.first->second.expired() && add_result.first->second.lock().get() != std::addressof(object))
-        throw std::logic_error("Can not add graphics object with name " + object.GetName() +
-                               " to the objects registry because another object with the same name is already registered.");
+        throw NameConflictException(object.GetName());
 
     add_result.first->second = object.GetPtr();
 }

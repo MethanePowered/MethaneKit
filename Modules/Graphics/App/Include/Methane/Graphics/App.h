@@ -2,7 +2,7 @@
 
 Copyright 2019-2020 Evgeny Gorodetskiy
 
-Licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
@@ -32,7 +32,7 @@ struct IApp
 {
     struct Settings
     {
-        uint32_t screen_pass_access         = 0u;   // Graphics::RenderPass::Access::Mask
+        uint32_t screen_pass_access         = 0U;   // Graphics::RenderPass::Access::Mask
         bool     animations_enabled         = true;
         bool     show_hud_in_window_title   = true;
         int32_t  default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
