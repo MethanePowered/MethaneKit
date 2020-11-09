@@ -287,7 +287,8 @@ void RenderPassDX::UpdateNativeClearDesc()
     m_ds_clear_info = DSClearInfo(settings.depth_attachment, settings.stencil_attachment);
 }
 
-void RenderPassDX::ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& do_action) const
+template<typename FuncType>
+void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();

@@ -124,8 +124,8 @@ private:
         ResourceBase::State   state;
     };
 
-    using ArgumentBindingFunc = std::function<void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)>;
-    void ForEachArgumentBinding(const ArgumentBindingFunc& argument_binding_function) const;
+    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
+    void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();

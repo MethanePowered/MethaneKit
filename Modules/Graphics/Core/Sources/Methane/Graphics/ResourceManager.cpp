@@ -242,7 +242,8 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
     return max_descriptor_heap_sizes;
 }
 
-void ResourceManager::ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const
+template<typename FuncType>
+void ResourceManager::ForEachDescriptorHeap(FuncType process_heap) const
 {
     META_FUNCTION_TASK();
     for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)

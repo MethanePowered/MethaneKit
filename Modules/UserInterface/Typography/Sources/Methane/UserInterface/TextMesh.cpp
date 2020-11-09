@@ -40,11 +40,10 @@ enum class CharAction
     Stop,
 };
 
-using ProcessFontCharAtPosition = const std::function<CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)>;
-
-static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
-                                        TextMesh::CharPositions& char_positions, uint32_t frame_width, Text::Wrap wrap,
-                                        const ProcessFontCharAtPosition& process_char_at_position)
+template<typename FuncType> // function CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
+void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, size_t begin_index, size_t end_index,
+                                 TextMesh::CharPositions& char_positions, uint32_t frame_width, Text::Wrap wrap,
+                                 FuncType process_char_at_position)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(char_positions);
@@ -105,39 +104,46 @@ static void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_char
     }
 }
 
+template<typename FuncType> // function CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
 static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMesh::CharPositions& char_positions,
-                                 uint32_t frame_width, Text::Wrap wrap, const ProcessFontCharAtPosition& process_char_at_position)
+                                 uint32_t frame_width, Text::Wrap wrap, FuncType process_char_at_position)
 {
     META_FUNCTION_TASK();
     const Font::Chars text_chars = font.GetTextChars(text);
-    const ProcessFontCharAtPosition& word_wrap_char_at_position = // word wrap mode processor
-        [&](const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index) -> CharAction
-        {
-            if (text_char.IsWhiteSpace())
+    if (wrap == Text::Wrap::Word && frame_width)
+    {
+        ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_positions, frame_width, wrap,
+            [&](const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index) -> CharAction
             {
-                // Word wrap prediction: check if next word fits in given frame width
-                bool word_wrap_required = false;
-                const size_t start_chars_count = char_positions.size();
-                char_positions.emplace_back(cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY());
-                ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), char_positions, frame_width, Text::Wrap::Anywhere,
-                                            [&word_wrap_required, &cur_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
-                    {
-                        // Word has ended if whitespace character is received or line break character was passed
-                        if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
-                            return CharAction::Stop;
+                if (text_char.IsWhiteSpace())
+                {
+                    // Word wrap prediction: check if next word fits in given frame width
+                    bool word_wrap_required = false;
+                    const size_t start_chars_count = char_positions.size();
+                    char_positions.emplace_back(cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY());
+                    ForEachTextCharacterInRange(font, text_chars, char_index + 1, text_chars.size(), char_positions, frame_width, Text::Wrap::Anywhere,
+                                                [&word_wrap_required, &cur_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
+                                                    {
+                                                        // Word has ended if whitespace character is received or line break character was passed
+                                                        if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
+                                                            return CharAction::Stop;
 
-                        word_wrap_required = char_pos.GetY() > cur_char_pos.GetY();
-                        return word_wrap_required ? CharAction::Stop : CharAction::Continue;
-                    }
-                );
-                char_positions.erase(char_positions.begin() + start_chars_count, char_positions.end());
-                if (word_wrap_required)
-                    return CharAction::Wrap;
+                                                        word_wrap_required = char_pos.GetY() > cur_char_pos.GetY();
+                                                        return word_wrap_required ? CharAction::Stop : CharAction::Continue;
+                                                    }
+                    );
+                    char_positions.erase(char_positions.begin() + start_chars_count, char_positions.end());
+                    if (word_wrap_required)
+                        return CharAction::Wrap;
+                }
+                return process_char_at_position(text_char, cur_char_pos, char_index);
             }
-            return process_char_at_position(text_char, cur_char_pos, char_index);
-        };
-    ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_positions, frame_width, wrap,
-                                wrap == Text::Wrap::Word && frame_width ? word_wrap_char_at_position : process_char_at_position);
+        );
+    }
+    else
+    {
+        ForEachTextCharacterInRange(font, text_chars, 0, text_chars.size(), char_positions, frame_width, wrap, process_char_at_position);
+    }
 }
 
 TextMesh::CharPosition::CharPosition(CoordinateType x, CoordinateType y, bool is_line_start)

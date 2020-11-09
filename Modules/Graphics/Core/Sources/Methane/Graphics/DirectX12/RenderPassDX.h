@@ -102,7 +102,8 @@ private:
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
 
-    void ForEachAccessibleDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>&) const;
+    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
 
     // IDescriptorHeapCallback implementation
     void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;

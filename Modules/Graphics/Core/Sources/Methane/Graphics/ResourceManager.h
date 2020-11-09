@@ -70,7 +70,8 @@ public:
     DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
 
 private:
-    void ForEachDescriptorHeap(const std::function<void(DescriptorHeap& descriptor_heap)>& process_heap) const;
+    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    void ForEachDescriptorHeap(FuncType process_heap) const;
 
     using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
 

@@ -239,7 +239,8 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     }
 }
 
-void ProgramBindingsDX::ForEachArgumentBinding(const ArgumentBindingFunc& argument_binding_function) const
+template<typename FuncType>
+void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_function) const
 {
     META_FUNCTION_TASK();
     for (auto& binding_by_argument : GetArgumentBindings())
