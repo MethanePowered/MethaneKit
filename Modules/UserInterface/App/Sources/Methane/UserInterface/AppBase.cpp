@@ -78,7 +78,7 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(render_context);
@@ -115,7 +115,7 @@ void AppBase::Init(gfx::RenderContext& render_context, const gfx::FrameSize& fra
     }
 }
 
-void AppBase::Release()
+void AppBase::ReleaseUI()
 {
     META_FUNCTION_TASK();
     m_logo_badge_ptr.reset();
@@ -127,7 +127,7 @@ void AppBase::Release()
     m_ui_context_ptr.reset();
 }
 
-bool AppBase::Resize(const gfx::FrameSize& frame_size, bool)
+bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
 {
     META_FUNCTION_TASK();
     const UnitSize frame_size_px(frame_size, Units::Pixels);
@@ -145,7 +145,7 @@ bool AppBase::Resize(const gfx::FrameSize& frame_size, bool)
     return true;
 }
 
-bool AppBase::Update()
+bool AppBase::UpdateUI()
 {
     META_FUNCTION_TASK();
     if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
@@ -173,7 +173,7 @@ void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
         m_logo_badge_ptr->Draw(cmd_list, s_debug_group.get());
 }
 
-void AppBase::TextItem::Update(const FrameSize& frame_size)
+void AppBase::TextItem::Update(const FrameSize& frame_size) const
 {
     META_FUNCTION_TASK();
     if (text_ptr)
@@ -182,7 +182,7 @@ void AppBase::TextItem::Update(const FrameSize& frame_size)
     }
 }
 
-void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
+void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)

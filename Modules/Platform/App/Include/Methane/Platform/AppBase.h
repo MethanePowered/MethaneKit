@@ -81,7 +81,7 @@ public:
         std::string information;
     };
 
-    AppBase(const Settings& settings);
+    explicit AppBase(const Settings& settings);
     ~AppBase() override;
 
     // AppBase interface
@@ -127,8 +127,8 @@ protected:
     virtual AppView GetView() const = 0;
     virtual void ShowAlert(const Message& msg);
 
-    std::string GetControlsHelp();
-    std::string GetCommandLineHelp() { return CLI::App::help(); }
+    std::string GetControlsHelp() const;
+    std::string GetCommandLineHelp() const { return CLI::App::help(); }
 
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }

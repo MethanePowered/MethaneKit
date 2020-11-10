@@ -28,6 +28,8 @@ Methane user interface types root header.
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
+
 namespace Methane::UserInterface
 {
 
@@ -72,9 +74,9 @@ struct UnitType : BaseType
     UnitType(const BaseType& size, Units units) noexcept : BaseType(size), units(units) { }
 
     template<typename... BaseArgs>
-    UnitType(Units units, BaseArgs... base_args) noexcept : BaseType(base_args...), units(units) { }
+    UnitType(Units units, BaseArgs... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { }
 
-    operator std::string() const                                            { return BaseType::operator std::string() + " in " + UnitsToString(units); }
+    explicit operator std::string() const                                   { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), UnitsToString(units)); }
     bool operator==(const UnitType& other) const noexcept                   { return BaseType::operator==(other) && units == other.units; }
     bool operator!=(const UnitType& other) const noexcept                   { return BaseType::operator!=(other) || units != other.units; }
 };

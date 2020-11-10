@@ -111,7 +111,7 @@ public:
     {
         // WARNING: Don't forget to make the following call in the derived Application class
         // Wait for GPU rendering is completed to release resources
-        // m_context_ptr->WaitForGpu(RenderContext::WaitFor::RenderComplete);
+        // m_context_ptr->WaitForGpu(RenderContext::WaitFor::RenderComplete)
         META_FUNCTION_TASK();
     }
 

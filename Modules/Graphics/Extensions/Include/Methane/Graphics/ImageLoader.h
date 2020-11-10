@@ -57,8 +57,8 @@ public:
         uint32_t    channels_count;
         Data::Chunk pixels;
 
-        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels);
-        ImageData(ImageData&& other);
+        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept;
+        ImageData(ImageData&& other) noexcept;
         ~ImageData();
     };
 
@@ -76,7 +76,7 @@ public:
 
     using CubeFaceResources = std::array<std::string, static_cast<size_t>(CubeFace::Count)>;
 
-    ImageLoader(Data::Provider& data_provider);
+    explicit ImageLoader(Data::Provider& data_provider);
 
     ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
 

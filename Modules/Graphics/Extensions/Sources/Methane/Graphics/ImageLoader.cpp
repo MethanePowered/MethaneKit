@@ -51,7 +51,7 @@ static PixelFormat GetDefaultImageFormat(bool srgb)
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
 }
 
-ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels)
+ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept
     : dimensions(in_dimensions)
     , channels_count(in_channels_count)
     , pixels(std::move(in_pixels))
@@ -59,7 +59,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_c
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData::ImageData(ImageData&& other)
+ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
     : dimensions(std::move(other.dimensions))
     , channels_count(other.channels_count)
     , pixels(std::move(other.pixels))

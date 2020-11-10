@@ -62,7 +62,7 @@ public:
         // Update parameters since they could change after parsing command line arguments
         UpdateParametersText();
         GraphicsApp::Init();
-        AppBase::Init(GraphicsApp::GetRenderContext(), GraphicsApp::GetFrameSize());
+        AppBase::InitUI(GraphicsApp::GetRenderContext(), GraphicsApp::GetFrameSize());
     }
 
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override
@@ -71,7 +71,7 @@ public:
         if (!GraphicsApp::Resize(frame_size, is_minimized))
             return false;
         
-        AppBase::Resize(frame_size, is_minimized);
+        AppBase::ResizeUI(frame_size, is_minimized);
         return true;
     }
     
@@ -81,7 +81,7 @@ public:
         if (!GraphicsApp::Update())
             return false;
 
-        AppBase::Update();
+        AppBase::UpdateUI();
         return true;
     }
 
@@ -149,7 +149,7 @@ protected:
     void OnContextReleased(gfx::Context& context) override
     {
         META_FUNCTION_TASK();
-        AppBase::Release();
+        AppBase::ReleaseUI();
         GraphicsApp::OnContextReleased(context);
     }
 };

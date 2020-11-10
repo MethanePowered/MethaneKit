@@ -41,13 +41,13 @@ class Context;
 class AppBase
 {
 public:
-    AppBase(const IApp::Settings& ui_app_settings);
+    explicit AppBase(const IApp::Settings& ui_app_settings);
     ~AppBase();
 
-    void Init(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size);
-    void Release();
-    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized);
-    bool Update();
+    void InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size);
+    void ReleaseUI();
+    bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
+    bool UpdateUI();
     void RenderOverlay(gfx::RenderCommandList& cmd_list);
 
     bool SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode);
@@ -77,8 +77,8 @@ private:
         Ptr<Panel>  panel_ptr;
         Ptr<Text>   text_ptr;
 
-        void Update(const FrameSize& frame_size);
-        void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group);
+        void Update(const FrameSize& frame_size) const;
+        void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const;
         void Reset(bool forget_text_string);
     };
 

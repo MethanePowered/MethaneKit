@@ -187,7 +187,7 @@ bool AppBase::SetKeyboardFocus(bool has_keyboard_focus)
     return true;
 }
 
-std::string AppBase::GetControlsHelp()
+std::string AppBase::GetControlsHelp() const
 {
     META_FUNCTION_TASK();
 

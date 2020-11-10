@@ -10,9 +10,19 @@
           <option name="name" value="MethaneKit for Windows" />
           <option name="qualifier" value="TRK" />
         </Resource>
+        <Resource>
+          <option name="key" value="egorodet_MethaneKit_Windows" />
+          <option name="name" value="MethaneKit for Windows" />
+          <option name="qualifier" value="TRK" />
+        </Resource>
+        <Resource>
+          <option name="key" value="egorodet_MethaneKit_Linux" />
+          <option name="name" value="MethaneKit for Linux" />
+          <option name="qualifier" value="TRK" />
+        </Resource>
       </list>
     </option>
-    <option name="serverName" value="Egorodet Sonar Cloud" />
+    <option name="serverName" value="&lt;NO SONAR&gt;" />
     <option name="useAlternativeWorkingDir" value="false" />
     <option name="workingDirSelection" value="&lt;PROJECT&gt;" />
   </component>
