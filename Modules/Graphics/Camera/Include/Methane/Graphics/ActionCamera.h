@@ -103,7 +103,7 @@ public:
 
     // Mouse action handlers
     void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept;
+    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
     void OnMouseReleased(const Data::Point2i&) noexcept;
     void OnMouseScrolled(float scroll_delta);
 
@@ -120,8 +120,8 @@ protected:
 
     void Move(const Vector3f& move_vector) noexcept;
     void Zoom(float zoom_factor) noexcept;
-    
-    inline double GetAccelerationFactor(double elapsed_seconds) noexcept { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
+
+    inline double GetAccelerationFactor(double elapsed_seconds) const noexcept { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
     
     void StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis,
                            double duration_sec = std::numeric_limits<double>::max());

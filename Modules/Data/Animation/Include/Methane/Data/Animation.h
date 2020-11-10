@@ -38,8 +38,13 @@ public:
         Completed,
     };
 
-    Animation(double duration_sec = std::numeric_limits<double>::max());
+    explicit Animation(double duration_sec = std::numeric_limits<double>::max()) noexcept;
+    Animation(const Animation&) = delete;
+    Animation(Animation&&) = default;
     virtual ~Animation();
+
+    Animation& operator=(const Animation&) = delete;
+    Animation& operator=(Animation&&) = default;
 
     State  GetState() const noexcept             { return m_state; }
     double GetDuration() const noexcept          { return m_duration_sec; }

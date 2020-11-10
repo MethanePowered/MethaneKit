@@ -107,6 +107,9 @@ public:
         AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
     }
 
+    App(const App&) = delete;
+    App(App&&) = delete;
+
     ~App() override
     {
         // WARNING: Don't forget to make the following call in the derived Application class
@@ -114,6 +117,9 @@ public:
         // m_context_ptr->WaitForGpu(RenderContext::WaitFor::RenderComplete)
         META_FUNCTION_TASK();
     }
+
+    App& operator=(const App&) = delete;
+    App& operator=(App&&) = delete;
 
     // Platform::App interface
     void InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size) override

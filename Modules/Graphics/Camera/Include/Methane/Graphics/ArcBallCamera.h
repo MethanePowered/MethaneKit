@@ -52,8 +52,8 @@ public:
     inline float GetRadiusInPixels() const noexcept             { return GetRadiusInPixels(GetScreenSize()); }
 
     // Mouse action handlers
-    void OnMousePressed(const Data::Point2i& mouse_screen_pos) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
+    void MousePress(const Data::Point2i& mouse_screen_pos) noexcept;
+    void MouseDrag(const Data::Point2i& mouse_screen_pos);
 
 protected:
     Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;

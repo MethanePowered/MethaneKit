@@ -30,7 +30,7 @@ Pool of animations for centralized updating, adding and removing in application.
 namespace Methane::Data
 {
 
-Animation::Animation(double duration_sec)
+Animation::Animation(double duration_sec) noexcept
     : Timer()
     , m_duration_sec(duration_sec)
 {

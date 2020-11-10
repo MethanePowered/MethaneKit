@@ -52,15 +52,14 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOr
     META_FUNCTION_TASK();
 }
 
-void ArcBallCamera::OnMousePressed(const Point2i& mouse_screen_pos) noexcept
+void ArcBallCamera::MousePress(const Point2i& mouse_screen_pos) noexcept
 {
     META_FUNCTION_TASK();
-    
     m_mouse_pressed_orientation = GetOrientation();
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
-void ArcBallCamera::OnMouseDragged(const Point2i& mouse_screen_pos)
+void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
 

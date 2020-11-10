@@ -38,7 +38,7 @@ class AnimationsPool : public Animations
 {
 public:
     void Update();
-    void DryUpdate();
+    void DryUpdate() const;
     void Pause();
     void Resume();
 

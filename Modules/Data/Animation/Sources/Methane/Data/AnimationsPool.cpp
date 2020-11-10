@@ -45,7 +45,7 @@ void AnimationsPool::Update()
     std::vector<size_t> completed_animation_indices;
     for (size_t animation_index = 0; animation_index < size(); ++animation_index)
     {
-        Ptr<Animation>& animation_ptr = (*this)[animation_index];
+        const Ptr<Animation>& animation_ptr = (*this)[animation_index];
         if (!animation_ptr || !animation_ptr->Update())
         {
             completed_animation_indices.push_back(animation_index);
@@ -60,7 +60,7 @@ void AnimationsPool::Update()
     }
 }
 
-void AnimationsPool::DryUpdate()
+void AnimationsPool::DryUpdate() const
 {
     META_FUNCTION_TASK();
     for(const Ptr<Animation>& animation_ptr : *this)

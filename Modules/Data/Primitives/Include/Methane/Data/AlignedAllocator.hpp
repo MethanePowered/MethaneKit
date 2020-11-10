@@ -57,7 +57,7 @@ public:
     AlignedAllocator() = default;
 
     template <typename T2>
-    AlignedAllocator(const AlignedAllocator<T2, N>&) noexcept { }
+    explicit AlignedAllocator(const AlignedAllocator<T2, N>&) noexcept { }
 
     static pointer address(reference r)             { return &r; }
     static const_pointer address(const_reference r) { return &r; }
@@ -76,23 +76,23 @@ public:
 #endif
     }
 
-    void deallocate(pointer p, size_type)
+    void deallocate(pointer p, size_type) const
     {
 #ifdef WIN32
-        _aligned_free(p);
+        _aligned_free(p); // NOSONAR
 #else
-        free(p);
+        free(p); // NOSONAR
 #endif
     }
 
-    void construct(pointer p, const value_type& value)
+    void construct(pointer p, const value_type& value) const
     {
-        new(p) value_type(value);
+        new(p) value_type(value); // NOSONAR
     }
 
-    void destroy(pointer p)
+    void destroy(pointer p) const
     {
-        p->~value_type();
+        p->~value_type(); // NOSONAR
     }
 
     size_type max_size() const noexcept

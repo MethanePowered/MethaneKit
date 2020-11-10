@@ -54,7 +54,7 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
     switch (m_mouse_action)
     {
     case MouseAction::Rotate:
-        ArcBallCamera::OnMousePressed(mouse_screen_pos);
+        ArcBallCamera::MousePress(mouse_screen_pos);
         break;
 
     case MouseAction::Move:
@@ -66,13 +66,13 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
     }
 }
 
-void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos) noexcept
+void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
     switch (m_mouse_action)
     {
     case MouseAction::Rotate:
-        ArcBallCamera::OnMouseDragged(mouse_screen_pos);
+        ArcBallCamera::MouseDrag(mouse_screen_pos);
         break;
 
     case MouseAction::Move:
