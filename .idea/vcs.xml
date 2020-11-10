@@ -18,5 +18,7 @@
     <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/TaskFlow" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg/downloads/git-tmp" vcs="Git" />
   </component>
 </project>
