@@ -152,7 +152,7 @@ struct UnitRect : UnitType<FrameRect>
 {
     using UnitType<FrameRect>::UnitType;
     explicit UnitRect(const UnitPoint& origin, const Size = {}) noexcept : UnitType<FrameRect>(origin.units, origin, Size{}) { }
-    UnitRect(Point origin, Size size, Units units) noexcept : UnitType<FrameRect>(units, origin, size) { }
+    UnitRect(const Point& origin, const Size& size, Units units) noexcept : UnitType<FrameRect>(units, origin, size) { }
 
     using UnitType<FrameRect>::operator==;
     using UnitType<FrameRect>::operator!=;
