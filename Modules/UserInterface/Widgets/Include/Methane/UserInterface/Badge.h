@@ -51,9 +51,9 @@ public:
     struct Settings
     {
         const std::string name         = "Badge";
-        UnitSize          size         { 96U, 128U, Units::Dots };
+        UnitSize          size         { Units::Dots, 96U, 128U };
         FrameCorner       corner       = FrameCorner::TopRight;
-        UnitPoint         margins      { 16, 16, Units::Dots };
+        UnitPoint         margins      { Units::Dots, 16, 16 };
         Color4f           blend_color  { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode = TextureMode::RgbaFloat;
     };

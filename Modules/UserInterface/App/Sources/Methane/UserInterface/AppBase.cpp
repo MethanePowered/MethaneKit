@@ -82,7 +82,7 @@ void AppBase::InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& f
 {
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(render_context);
-    m_frame_size    = UnitSize(frame_size, Units::Pixels);
+    m_frame_size    = UnitSize(Units::Pixels, frame_size);
     m_text_margins  = m_ui_context_ptr->ConvertToPixels(m_app_settings.text_margins);
 
     // Create Methane logo badge
@@ -130,7 +130,7 @@ void AppBase::ReleaseUI()
 bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
 {
     META_FUNCTION_TASK();
-    const UnitSize frame_size_px(frame_size, Units::Pixels);
+    const UnitSize frame_size_px(Units::Pixels, frame_size);
     if (m_frame_size == frame_size_px)
         return false;
 
@@ -346,9 +346,9 @@ void AppBase::UpdateHelpTextPosition()
     // Help text columns are located in bottom-left corner
     const FrameSize& first_text_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
+        Units::Pixels,
         FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
-        first_text_size + m_text_margins * 2,
-        Units::Pixels
+        first_text_size + m_text_margins * 2
     ));
 
     if (!m_help_columns.second.panel_ptr)
@@ -357,9 +357,9 @@ void AppBase::UpdateHelpTextPosition()
     const FrameSize& second_text_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
     const UnitRect&  first_panel_rect = m_help_columns.first.panel_ptr->GetRectInPixels();
     m_help_columns.second.panel_ptr->SetRect(UnitRect(
+        Units::Pixels,
         FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
-        second_text_size + m_text_margins * 2,
-        Units::Pixels
+        second_text_size + m_text_margins * 2
     ));
 }
 
@@ -373,10 +373,10 @@ void AppBase::UpdateParametersTextPosition()
     const FrameSize  text_margins_size(m_text_margins);
     const FrameSize& parameters_text_size = m_parameters.text_ptr->GetRectInPixels().size;
     m_parameters.panel_ptr->SetRect(UnitRect(
+        Units::Pixels,
         FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
                    m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),
-        parameters_text_size + text_margins_size * 2U,
-        Units::Pixels
+        parameters_text_size + text_margins_size * 2U
     ));
 }
 

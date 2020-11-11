@@ -49,8 +49,8 @@ public:
     {
         Font::Description         major_font          { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24U };
         Font::Description         minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
-        UnitPoint                 position            { 20, 20, Units::Dots };
-        UnitSize                  text_margins        { 16, 8,  Units::Dots };
+        UnitPoint                 position            { Units::Dots, 20, 20 };
+        UnitSize                  text_margins        { Units::Dots, 16, 8  };
         Color4f                   text_color          { 1.F,  1.F,  1.F,  1.F   };
         Color4f                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
         Color4f                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };

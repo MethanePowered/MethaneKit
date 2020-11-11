@@ -90,7 +90,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "FPS",
                 "000 FPS",
-                UnitRect{ { }, { 0U, GetFpsTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetFpsTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
@@ -100,7 +100,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "Frame Time",
                 "00.00 ms",
-                UnitRect{ { }, { 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
@@ -110,7 +110,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "CPU Time",
                 "00.00% cpu",
-                UnitRect{ { }, { 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
@@ -120,7 +120,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "GPU",
                 "Graphics Adapter",
-                UnitRect{ { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
@@ -130,7 +130,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "Help",
                 m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
-                UnitRect{ { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.help_color
             }
@@ -140,7 +140,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "Frame Buffers",
                 "0000 x 0000   3 FB",
-                UnitRect{ { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
@@ -150,7 +150,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             {
                 "VSync",
                 "VSync ON",
-                UnitRect{ { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) }, Units::Dots },
+                UnitRect{ Units::Dots, { }, { 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.on_color
             }
@@ -237,7 +237,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
     const FrameSize vsync_size         = m_text_blocks[TextBlock::VSync]->GetRectInDots().size;
     const uint32_t  left_column_width  = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
 
-    UnitPoint position(text_margins_in_dots.width, text_margins_in_dots.height, Units::Dots);
+    UnitPoint position(Units::Dots, text_margins_in_dots.width, text_margins_in_dots.height);
     m_text_blocks[TextBlock::HelpKey]->SetRelOrigin(position);
 
     position.SetY(position.GetY() + help_size.height + text_margins_in_dots.height);
@@ -267,12 +267,12 @@ void HeadsUpDisplay::LayoutTextBlocks()
     m_text_blocks[TextBlock::Fps]->SetRelOrigin(position);
 
     Panel::SetRect(UnitRect{
+        Units::Dots,
         m_settings.position,
         {
             right_bottom_position.GetX() + right_column_width + text_margins_in_dots.width,
             right_bottom_position.GetY() + vsync_size.height + text_margins_in_dots.height
-        },
-        Units::Dots
+        }
     });
 }
 

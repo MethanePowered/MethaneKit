@@ -52,8 +52,8 @@ public:
     uint32_t  GetFontResolutionDpi() const noexcept                     { return m_font_resolution_dpi; }
     const FrameSize& GetFrameSize() const noexcept;
 
-    UnitSize  GetFrameSizeInPixels() const noexcept                     { return UnitSize(GetFrameSize(), Units::Pixels); }
-    UnitSize  GetFrameSizeInDots() const noexcept                       { return UnitSize(GetFrameSize() / m_dots_to_pixels_factor, Units::Dots); }
+    UnitSize  GetFrameSizeInPixels() const noexcept                     { return UnitSize(Units::Pixels, GetFrameSize()); }
+    UnitSize  GetFrameSizeInDots() const noexcept                       { return UnitSize(Units::Dots, GetFrameSize() / m_dots_to_pixels_factor); }
     UnitSize  GetFrameSizeInUnits(Units units) const noexcept;
 
     UnitPoint ConvertToPixels(const FloatPoint& point) const noexcept;

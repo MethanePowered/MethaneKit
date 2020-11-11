@@ -89,14 +89,14 @@ bool Item::SetOrigin(const UnitPoint& origin)
 {
     META_FUNCTION_TASK();
     assert(m_abs_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_ui_context.ConvertToPixels(origin), m_abs_rect_px.size, m_abs_rect_px.units));
+    return SetRect(UnitRect(m_abs_rect_px.units, m_ui_context.ConvertToPixels(origin), m_abs_rect_px.size));
 }
 
 bool Item::SetSize(const UnitSize& size)
 {
     META_FUNCTION_TASK();
     assert(m_abs_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_abs_rect_px.origin, m_ui_context.ConvertToPixels(size), m_abs_rect_px.units));
+    return SetRect(UnitRect(m_abs_rect_px.units, m_abs_rect_px.origin, m_ui_context.ConvertToPixels(size)));
 }
 
 } // namespace Methane::UserInterface

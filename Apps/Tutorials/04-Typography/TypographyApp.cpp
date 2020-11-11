@@ -95,6 +95,7 @@ static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_ac
 static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical_pos_in_dots, const gfx::FrameSize& frame_size_in_dots)
 {
     return gui::UnitRect(
+        gui::Units::Dots,
         {
             g_margin_size_in_dots,
             vertical_pos_in_dots
@@ -104,8 +105,7 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
             block_index == g_text_blocks_count - 1
             ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
             : 0U                                                                        // other text blocks have calculated height
-        },
-        gui::Units::Dots
+        }
     );
 }
 
@@ -117,7 +117,7 @@ TypographyApp::TypographyApp()
     , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
     m_displayed_text_lengths[0] = 1;
-    GetHeadsUpDisplaySettings().position = gui::UnitPoint(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
+    GetHeadsUpDisplaySettings().position = gui::UnitPoint(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
 
     gui::Font::Library::Get().Connect(*this);
     AddInputControllers({
@@ -176,9 +176,9 @@ void TypographyApp::Init()
                     displayed_text_block,
                     gui::UnitRect
                     {
+                        gui::Units::Dots,
                         { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                        { frame_width_without_margins, 0U /* calculated height */ },
-                        gui::Units::Dots
+                        { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
                     gfx::Color4f(font_settings.color, 1.F),
@@ -214,9 +214,9 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<g
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
-            gui::UnitSize(static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions), gui::Units::Pixels),
+            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
             gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitPoint(16U, 16U, gui::Units::Dots),
+            gui::UnitPoint(gui::Units::Dots, 16U, 16U),
             gui::Color4f(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
@@ -283,13 +283,13 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     );
 
     // Layout badges in a row one after another with a margin spacing
-    gui::UnitPoint badge_margins(g_margin_size_in_dots, g_margin_size_in_dots, gui::Units::Dots);
+    gui::UnitPoint badge_margins(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
-        const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions), gui::Units::Pixels));
-        badge_atlas_ptr->FrameResize(gui::UnitSize(frame_size, gui::Units::Pixels), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U, gui::Units::Dots);
+        const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
+        badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
+        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U);
     }
 }
 
@@ -542,7 +542,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
         {
             Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
             badge_ptr->SetTexture(new_atlas_texture_ptr);
-            badge_ptr->SetSize(gui::UnitSize(static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions), gui::Units::Pixels));
+            badge_ptr->SetSize(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions)));
         }
     }
     else if (font_atlas_badge_ptr_it != m_font_atlas_badges.end())
