@@ -125,6 +125,7 @@ public:
     explicit Face(Data::Chunk&& font_data)
         : m_font_data(std::move(font_data))
         , m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), m_font_data))
+        , m_ft_face_rec(GetFaceRec())
         , m_has_kerning(static_cast<bool>(FT_HAS_KERNING(m_ft_face)))
     {
         META_FUNCTION_TASK();
@@ -157,21 +158,22 @@ public:
         META_CHECK_ARG_NOT_ZERO_DESCR(char_index, "unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code));
 
         ThrowFreeTypeError(FT_Load_Glyph(m_ft_face, char_index, FT_LOAD_RENDER));
+        META_CHECK_ARG_NOT_NULL_DESCR(m_ft_face_rec.glyph, "glyph should not be null after loading from font face");
 
         FT_Glyph ft_glyph = nullptr;
-        ThrowFreeTypeError(FT_Get_Glyph(m_ft_face->glyph, &ft_glyph));
+        ThrowFreeTypeError(FT_Get_Glyph(m_ft_face_rec.glyph, &ft_glyph));
 
         // All glyph metrics are multiplied by 64, so we reverse them back
         return Char(char_code,
             {
                 gfx::Point2i(),
-                gfx::FrameSize(static_cast<uint32_t>(m_ft_face->glyph->metrics.width  / g_ft_dots_in_pixel),
-                               static_cast<uint32_t>(m_ft_face->glyph->metrics.height / g_ft_dots_in_pixel))
+                gfx::FrameSize(static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.width  / g_ft_dots_in_pixel),
+                               static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.height / g_ft_dots_in_pixel))
             },
-            gfx::Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
-                        -static_cast<int32_t>(m_ft_face->glyph->metrics.horiBearingY  / g_ft_dots_in_pixel)),
-            gfx::Point2i(static_cast<int32_t>(m_ft_face->glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
-                         static_cast<int32_t>(m_ft_face->glyph->metrics.vertAdvance   / g_ft_dots_in_pixel)),
+            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
+                        -static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingY  / g_ft_dots_in_pixel)),
+            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
+                         static_cast<int32_t>(m_ft_face_rec.glyph->metrics.vertAdvance   / g_ft_dots_in_pixel)),
             std::make_unique<Char::Glyph>(ft_glyph, char_index)
         );
     }
@@ -190,10 +192,18 @@ public:
         return gfx::FramePoint(static_cast<int>(kerning_vec.x >> 6), 0);
     }
 
-    uint32_t GetLineHeight() const noexcept
+    uint32_t GetLineHeight() const
     {
         META_FUNCTION_TASK();
-        return m_ft_face->size->metrics.height / g_ft_dots_in_pixel;
+        META_CHECK_ARG_NOT_NULL(m_ft_face_rec.size);
+        return m_ft_face_rec.size->metrics.height / g_ft_dots_in_pixel;
+    }
+
+    const FT_FaceRec& GetFaceRec() const
+    {
+        META_FUNCTION_TASK();
+        META_CHECK_ARG_NOT_NULL(m_ft_face);
+        return *m_ft_face;
     }
 
 private:
@@ -203,7 +213,7 @@ private:
         FT_Face ft_face = nullptr;
 
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
-            static_cast<const FT_Byte*>(font_data.p_data),
+            font_data.p_data,
             static_cast<FT_Long>(font_data.size), 0,
             &ft_face));
 
@@ -212,6 +222,7 @@ private:
 
     const Data::Chunk m_font_data;
     const FT_Face     m_ft_face = nullptr;
+    const FT_FaceRec& m_ft_face_rec;
     const bool        m_has_kerning;
 };
 

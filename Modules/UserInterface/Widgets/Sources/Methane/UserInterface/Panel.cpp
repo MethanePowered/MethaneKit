@@ -36,7 +36,7 @@ Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
         ScreenQuad::Settings
         {
             settings.name,
-            ui_context.ConvertToPixels(ui_rect),
+            ui_context.ConvertToPixels(ui_rect).AsRect(),
             true, // alpha_blending_enabled
             settings.background_color,
             TextureMode::Disabled

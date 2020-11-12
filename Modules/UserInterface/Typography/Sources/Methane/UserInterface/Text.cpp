@@ -85,7 +85,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     UpdateTextMesh();
     UpdateConstantsBuffer();
 
-    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect;
+    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsRect();
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
 
     static const std::string s_state_name = "Text Render State";
@@ -283,7 +283,7 @@ void Text::SetLayout(const Layout& layout)
     UpdateTextMesh();
 
     m_is_viewport_dirty = true;
-    Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
+    Item::SetRect(UnitRect(Units::Pixels, m_frame_rect));
 }
 
 void Text::SetWrap(Wrap wrap)

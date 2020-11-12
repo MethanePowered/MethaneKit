@@ -70,9 +70,9 @@ struct UnitType : BaseType
 
     using BaseType::BaseType;
 
-    explicit UnitType(const BaseType& base) noexcept : BaseType(base), units(Units::Pixels) { }
+    explicit UnitType(const BaseType& base) noexcept     : BaseType(base), units(Units::Pixels) { }
     UnitType(Units units, const BaseType& base) noexcept : BaseType(base), units(units) { }
-    UnitType(Units units, BaseType&& base) noexcept : BaseType(std::move(base)), units(units) { }
+    UnitType(Units units, BaseType&& base) noexcept      : BaseType(std::move(base)), units(units) { }
 
     template<typename... BaseArgs>
     UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { }
@@ -86,6 +86,9 @@ struct UnitSize : UnitType<FrameSize>
 {
     using UnitType<FrameSize>::UnitType;
     UnitSize(Units units, DimensionType w, DimensionType h) noexcept : UnitType<FrameSize>(units, w, h) { }
+
+    FrameSize&       AsSize() noexcept       { return static_cast<FrameSize&>(*this); }
+    const FrameSize& AsSize() const noexcept { return static_cast<const FrameSize&>(*this); }
 
     using FrameSize::operator bool;
     using UnitType<FrameSize>::operator==;
@@ -125,6 +128,9 @@ struct UnitPoint : UnitType<FramePoint>
     UnitPoint(Units units, CoordinateType x, CoordinateType y) noexcept : UnitType<FramePoint>(units, x, y) { }
     explicit UnitPoint(const UnitSize& size) noexcept : UnitPoint(size.units, size.width, size.height) { }
 
+    FramePoint&       AsPoint() noexcept       { return static_cast<FramePoint&>(*this); }
+    const FramePoint& AsPoint() const noexcept { return static_cast<const FramePoint&>(*this); }
+
     using UnitType<FramePoint>::operator==;
     using UnitType<FramePoint>::operator!=;
 
@@ -152,14 +158,17 @@ struct UnitPoint : UnitType<FramePoint>
 struct UnitRect : UnitType<FrameRect>
 {
     using UnitType<FrameRect>::UnitType;
-    explicit UnitRect(const UnitPoint& origin, const Size = {}) noexcept : UnitType<FrameRect>(origin.units, origin, Size{}) { }
+    explicit UnitRect(const UnitPoint& origin, const UnitSize& size = {}) : UnitType<FrameRect>(origin.units, origin.AsPoint(), size.AsSize()) { META_CHECK_ARG_EQUAL(origin.units, size.units); }
     UnitRect(Units units, const Point& origin, const Size& size) noexcept : UnitType<FrameRect>(units, origin, size) { }
+
+    FrameRect&       AsRect() noexcept          { return static_cast<FrameRect&>(*this); }
+    const FrameRect& AsRect() const noexcept    { return static_cast<const FrameRect&>(*this); }
+
+    UnitPoint GetUnitOrigin() const noexcept    { return UnitPoint(units, origin); }
+    UnitSize  GetUnitSize() const noexcept      { return UnitSize(units, size); }
 
     using UnitType<FrameRect>::operator==;
     using UnitType<FrameRect>::operator!=;
-
-    UnitPoint GetUnitOrigin() const noexcept { return UnitPoint(units, origin); }
-    UnitSize  GetUnitSize() const noexcept   { return UnitSize(units, size); }
 
     template<typename M> UnitRect operator*(M multiplier) const noexcept    { return UnitRect(units, FrameRect::operator*(multiplier)); }
     template<typename M> UnitRect operator/(M divisor) const noexcept       { return UnitRect(units, FrameRect::operator/(divisor)); }
