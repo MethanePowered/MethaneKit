@@ -53,9 +53,13 @@ public:
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4, void>>
     PointT(T x, T y, T z, T w) : m_vector(x, y, z, w) { }
 
-    explicit PointT(const VectorType& vector) : m_vector(vector) { }
+    explicit PointT(const VectorType& vector) noexcept : m_vector(vector) { }
+    explicit PointT(VectorType&& vector) noexcept : m_vector(std::move(vector)) { }
 
-    template<typename V>
+    PointT(const PointType& other) noexcept : m_vector(other.m_vector) { }
+    PointT(PointType&& other) noexcept : m_vector(std::move(other.m_vector)) { }
+
+    template<typename V, typename = std::enable_if_t<!std::is_same_v<std::decay<V>, PointType>, void>>
     explicit PointT(const PointT<V, vector_size>& other) : m_vector(other.AsVector()) { }
 
     VectorType& AsVector() noexcept               { return m_vector; }
@@ -83,6 +87,9 @@ public:
     T GetLengthSquared() const noexcept { return m_vector.length_squared(); }
 
     PointType& Normalize() noexcept { m_vector.normalize(); return *this; }
+
+    PointType& operator=(const PointType& other) noexcept  { m_vector = other.m_vector; return *this; }
+    PointType& operator=(PointType&& other) noexcept       { m_vector = std::move(other.m_vector); return *this; }
 
     bool operator==(const PointType& other) const noexcept { return m_vector == other.AsVector(); }
     bool operator!=(const PointType& other) const noexcept { return m_vector != other.AsVector(); }
