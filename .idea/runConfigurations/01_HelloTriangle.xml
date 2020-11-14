@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="01-HelloTriangle" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneHelloTriangle" CONFIG_NAME="Debug-WSL" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneHelloTriangle">
+  <configuration default="false" name="01-HelloTriangle" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneHelloTriangle" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneHelloTriangle">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
