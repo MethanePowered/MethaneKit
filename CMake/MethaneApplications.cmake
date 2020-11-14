@@ -79,7 +79,7 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         set(METHANE_APP_BUNDLE_VERSION "${BUILD_NUMBER}")
         set(METHANE_APP_BUNDLE_ICON ${ICON_FILE})
         set(METHANE_APP_BUNDLE_GUI_IDENTIFIER "")
-        set(MACOSX_DEPLOYMENT_TARGET "10.13")
+        set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
         configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
 
         add_executable(${TARGET} MACOSX_BUNDLE
