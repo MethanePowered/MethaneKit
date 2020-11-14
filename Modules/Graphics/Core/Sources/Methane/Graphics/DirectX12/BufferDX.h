@@ -24,6 +24,7 @@ DirectX 12 implementation of the buffer interface.
 #pragma once
 
 #include "BlitCommandListDX.h"
+#include "ResourceDX.hpp"
 
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/DescriptorHeap.h>
@@ -37,11 +38,11 @@ namespace Methane::Graphics
 {
 
 template<typename TViewNative, typename... ExtraViewArgs>
-class BufferDX final : public BufferBase
+class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
-        : BufferBase(context, settings, descriptor_by_usage)
+        : ResourceDX<BufferBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
 

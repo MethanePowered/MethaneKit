@@ -23,6 +23,8 @@ DirectX 12 implementation of the texture interface.
 
 #pragma once
 
+#include "ResourceDX.hpp"
+
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Types.h>
@@ -44,11 +46,11 @@ namespace Methane::Graphics
 class ContextBase;
 
 template<typename... ExtraArgs>
-class TextureDX : public TextureBase
+class TextureDX : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
-        : TextureBase(context, settings, descriptor_by_usage)
+        : ResourceDX<TextureBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
         InitializeDefaultDescriptors();
@@ -68,7 +70,7 @@ private:
 struct ImageTextureArg { };
 
 template<>
-class TextureDX<ImageTextureArg> : public TextureBase
+class TextureDX<ImageTextureArg> : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
@@ -90,7 +92,7 @@ private:
 };
 
 template<>
-class TextureDX<const std::optional<DepthStencil>&> : public TextureBase
+class TextureDX<const std::optional<DepthStencil>&> : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);

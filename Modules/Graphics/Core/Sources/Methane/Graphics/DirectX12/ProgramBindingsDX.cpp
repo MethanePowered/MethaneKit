@@ -106,7 +106,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         if (!p_dx_descriptor_heap)
             continue;
 
-        const ResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
+        const IResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
                                    DescriptorHeap::GetTypeName(descriptor_heap_type), m_settings_dx.argument.name,
@@ -320,7 +320,7 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
             });
         }
 
-        for (const ResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+        for (const IResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
         {
             if (binding_settings.type == DXBindingType::ConstantBufferView ||
                 binding_settings.type == DXBindingType::ShaderResourceView)
@@ -418,12 +418,12 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
                                      "descriptor range offset is out of reserved descriptor range bounds");
 
         uint32_t resource_index = 0;
-        for (const ResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+        for (const IResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
         {
-            const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetUsedDescriptorHeapTypes();
+            const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
             META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
                                  "can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
-                                 resource_location_dx.GetResourceDX().GetUsageNames(), dx_descriptor_heap.GetTypeName());
+                                 Resource::Usage::ToString(resource_location_dx.GetResourceDX().GetUsageMask()), dx_descriptor_heap.GetTypeName());
 
             const uint32_t descriptor_index = descriptor_range_start + descriptor_range.offset + resource_index;
             META_LOG("  - Resource '{}' range [{}, {}), descriptor {}", resource_location_dx.GetResourceDX().GetName(),

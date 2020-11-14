@@ -24,6 +24,7 @@ DirectX 12 implementation of the render pass interface.
 #include "RenderPassDX.h"
 #include "DescriptorHeapDX.h"
 #include "RenderCommandListDX.h"
+#include "ResourceDX.hpp"
 #include "DeviceDX.h"
 #include "TypesDX.h"
 
@@ -41,7 +42,7 @@ namespace Methane::Graphics
 inline D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Ptr<Texture>& texture_ptr)
 {
     return texture_ptr
-         ? static_cast<TextureBase&>(*texture_ptr).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
+         ? static_cast<ResourceDX<TextureBase>&>(*texture_ptr).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
          : D3D12_CPU_DESCRIPTOR_HANDLE();
 }
 
@@ -423,7 +424,7 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
-        const auto& rt_texture = static_cast<const TextureBase&>(*color_attach.texture_ptr);
+        const auto& rt_texture = static_cast<const ResourceDX<TextureBase>&>(*color_attach.texture_ptr);
         m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
 
@@ -440,7 +441,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     if (!settings.depth_attachment.texture_ptr)
         return nullptr;
 
-    const auto& depth_texture = static_cast<const TextureBase&>(*settings.depth_attachment.texture_ptr);
+    const auto& depth_texture = static_cast<const ResourceDX<TextureBase>&>(*settings.depth_attachment.texture_ptr);
     m_native_ds_cpu_handle = depth_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     return &m_native_ds_cpu_handle;
 }

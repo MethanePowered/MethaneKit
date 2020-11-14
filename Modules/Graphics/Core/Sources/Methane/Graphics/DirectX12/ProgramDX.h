@@ -37,7 +37,7 @@ namespace Methane::Graphics
 {
 
 struct IContextDX;
-class ResourceDX;
+struct IResourceDX;
 
 namespace wrl = Microsoft::WRL;
 

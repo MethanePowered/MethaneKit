@@ -26,7 +26,6 @@ DirectX 12 implementation of the program bindings interface.
 #include "ResourceDX.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
-//#include <Methane/Graphics/ResourceBase.h>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -36,7 +35,6 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-class ResourceDX;
 class RenderCommandListDX;
 struct ICommandListDX;
 
@@ -84,7 +82,7 @@ public:
         const SettingsDX&                   GetSettingsDX() const noexcept            { return m_settings_dx; }
         uint32_t                            GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
         const DescriptorRange&              GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const ResourceDX::LocationsDX&      GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        const IResourceDX::LocationsDX&      GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
@@ -95,7 +93,7 @@ public:
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
         const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
-        ResourceDX::LocationsDX            m_resource_locations_dx;
+        IResourceDX::LocationsDX m_resource_locations_dx;
     };
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);

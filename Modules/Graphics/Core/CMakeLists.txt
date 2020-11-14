@@ -26,6 +26,7 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp

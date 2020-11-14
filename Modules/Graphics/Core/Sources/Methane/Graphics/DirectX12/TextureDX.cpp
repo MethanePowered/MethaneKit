@@ -126,7 +126,7 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 
 DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                                        const std::optional<DepthStencil>& clear_depth_stencil)
-    : TextureBase(render_context, settings, descriptor_by_usage)
+    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
 
@@ -211,7 +211,7 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
 }
 
 ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
-    : TextureBase(render_context, settings, descriptor_by_usage)
+    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetUsageMask(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");

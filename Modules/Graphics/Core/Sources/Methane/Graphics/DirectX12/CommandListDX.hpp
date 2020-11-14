@@ -133,7 +133,7 @@ public:
         META_LOG("Command list '{}' set resource barriers:\n{}", GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
-        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const ResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
+        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const IResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
     }
 

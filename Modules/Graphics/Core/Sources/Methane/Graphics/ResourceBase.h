@@ -36,6 +36,13 @@ namespace Methane::Graphics
 
 class ContextBase;
 
+struct IResourceBase
+{
+    virtual DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept = 0;
+
+    virtual ~IResourceBase() = default;
+};
+
 class ResourceBase
     : public virtual Resource
     , public ObjectBase

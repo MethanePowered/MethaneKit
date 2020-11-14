@@ -23,6 +23,8 @@ DirectX 12 implementation of the sampler interface.
 
 #pragma once
 
+#include "ResourceDX.hpp"
+
 #include <Methane/Graphics/SamplerBase.h>
 
 #include <wrl.h>
@@ -35,7 +37,7 @@ namespace wrl = Microsoft::WRL;
 
 class ContextBase;
 
-class SamplerDX final : public SamplerBase
+class SamplerDX final : public ResourceDX<SamplerBase>
 {
 public:
     SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
