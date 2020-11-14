@@ -65,7 +65,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
 
 #ifndef NDEBUG
 
-static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexcept
+static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
     switch(mtl_arg_type)
@@ -78,7 +78,7 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type) noexce
     }
 }
 
-static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access) noexcept
+static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 {
     META_FUNCTION_TASK();
     switch(mtl_arg_access)
