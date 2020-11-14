@@ -152,7 +152,7 @@ void RenderContextMT::Present()
     ContextMT<RenderContextBase>::Present();
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
-    mtl_cmd_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(GetName() + " Present Command");
+    mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
         dispatch_semaphore_signal(m_dispatch_semaphore);

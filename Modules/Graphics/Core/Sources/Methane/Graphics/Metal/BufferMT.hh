@@ -23,6 +23,8 @@ Metal implementation of the buffer interface.
 
 #pragma once
 
+#include "ResourceMT.hh"
+
 #include <Methane/Graphics/BufferBase.h>
 
 #import <Metal/Metal.h>
@@ -30,7 +32,7 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferMT final : public BufferBase
+class BufferMT final : public ResourceMT<BufferBase>
 {
 public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

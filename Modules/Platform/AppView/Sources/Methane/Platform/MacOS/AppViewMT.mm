@@ -215,10 +215,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         if (!p_weak_view.redrawing)
             return;
 
-        @autoreleasepool
-        {
-            [p_weak_view redraw];
-        }
+        [p_weak_view redraw];
     });
     dispatch_resume(m_display_source);
 
@@ -306,6 +303,9 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
 - (void) resizeDrawable
 {
     META_FUNCTION_TASK();
+    if (![self.delegate respondsToSelector:@selector(appView:drawableSizeWillChange:)])
+        return;
+
     CGFloat scale = self.window ? self.window.screen.backingScaleFactor
                                 : [NSScreen mainScreen].backingScaleFactor;
 
@@ -313,11 +313,11 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     drawable_size.width  *= scale;
     drawable_size.height *= scale;
 
-    self.metalLayer.drawableSize = drawable_size;
-    m_current_drawable = nil;
-
-    if ([self.delegate respondsToSelector:@selector(appView:drawableSizeWillChange:)])
+    @autoreleasepool
     {
+        self.metalLayer.drawableSize = drawable_size;
+        m_current_drawable = nil;
+
         [self.delegate appView: self drawableSizeWillChange: drawable_size];
     }
 }
@@ -442,9 +442,12 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     bool delegate_can_draw_in_view = [self.delegate respondsToSelector:@selector(drawInView:)];
     META_CHECK_ARG_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
 
-    m_current_drawable = nil;
-    [self.delegate drawInView:self];
-    m_current_drawable = nil;
+    @autoreleasepool
+    {
+        m_current_drawable = nil;
+        [self.delegate drawInView:self];
+        m_current_drawable = nil;
+    }
 }
 
 - (void) windowWillClose:(NSNotification*)notification

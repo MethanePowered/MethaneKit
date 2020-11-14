@@ -23,6 +23,8 @@ Metal implementation of the texture interface.
 
 #pragma once
 
+#include "ResourceMT.hh"
+
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/Types.h>
 
@@ -33,7 +35,7 @@ namespace Methane::Graphics
 
 class RenderContextMT;
 
-class TextureMT final : public TextureBase
+class TextureMT final : public ResourceMT<TextureBase>
 {
 public:
     TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

@@ -54,6 +54,7 @@ public:
     ~CommandListMT() override
     {
         [m_mtl_cmd_encoder release];
+        [m_ns_name release];
     }
 
     // CommandList interface

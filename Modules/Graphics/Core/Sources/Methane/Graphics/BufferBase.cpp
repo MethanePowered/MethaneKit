@@ -32,7 +32,7 @@ namespace Methane::Graphics
 {
 
 BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
+    : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

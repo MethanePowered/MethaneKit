@@ -23,7 +23,7 @@ Base implementation of the buffer interface.
 
 #pragma once
 
-#include "Native/ResourceNT.h"
+#include "ResourceBase.h"
 
 #include <Methane/Graphics/Buffer.h>
 
@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 class BufferBase
     : public Buffer
-    , public ResourceNT
+    , public ResourceBase
 {
 public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

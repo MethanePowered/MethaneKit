@@ -22,26 +22,69 @@ Metal implementation of the resource interface.
 ******************************************************************************/
 #pragma once
 
+#include "DeviceMT.hh"
+
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Instrumentation.h>
+
+#include <vector>
 
 namespace Methane::Graphics
 {
 
 struct IContextMT;
 
-class ResourceMT : public ResourceBase
+class ResourceBarriersMT : public ResourceBase::Barriers
 {
 public:
-    class BarriersMT : public Barriers
-    {
-    public:
-        explicit BarriersMT(const Set& barriers) : Barriers(barriers) {}
-    };
+    explicit ResourceBarriersMT(const Set& barriers) : Barriers(barriers) {}
+};
 
-    ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+class ResourceMT : public ReourceBaseType
+{
+public:
+    template<typename SettingsType>
+    ResourceMT(ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
+        : ReourceBaseType(context, settings, descriptor_by_usage)
+    {
+        META_FUNCTION_TASK();
+    }
 
 protected:
-    IContextMT& GetContextMT() noexcept;
+    IContextMT& GetContextMT() noexcept
+    {
+        META_FUNCTION_TASK();
+        return static_cast<IContextMT&>(ResourceBase::GetContextBase());
+    }
+
+    const id<MTLBuffer>& GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
+    {
+        META_FUNCTION_TASK();
+        const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(ResourceBase::GetSubresourceCount());
+        m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
+
+        id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
+        if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.size)
+        {
+            id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
+            mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
+                                                                    length:sub_resource.size
+                                                                   options:MTLResourceStorageModeShared];
+            [mtl_upload_subresource_buffer setPurgeableState:MTLPurgeableStateVolatile];
+        }
+        else
+        {
+            Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
+            META_CHECK_ARG_NOT_NULL(p_resource_data);
+            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data);
+        }
+        return mtl_upload_subresource_buffer;
+    }
+
+private:
+    std::vector<id<MTLBuffer>> m_upload_subresource_buffers;
 };
 
 } // namespace Methane::Graphics

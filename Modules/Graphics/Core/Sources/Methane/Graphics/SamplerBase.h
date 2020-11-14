@@ -23,9 +23,9 @@ Base implementation of the sampler interface.
 
 #pragma once
 
-#include <Methane/Graphics/Sampler.h>
+#include "ResourceBase.h"
 
-#include "Native/ResourceNT.h"
+#include <Methane/Graphics/Sampler.h>
 
 namespace Methane::Graphics
 {
@@ -34,7 +34,7 @@ class ContextBase;
 
 class SamplerBase
     : public Sampler
-    , public ResourceNT
+    , public ResourceBase
 {
 public:
     SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);

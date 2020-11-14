@@ -23,6 +23,8 @@ Metal implementation of the sampler interface.
 
 #pragma once
 
+#include "ResourceMT.hh"
+
 #include <Methane/Graphics/SamplerBase.h>
 
 #import <Metal/Metal.h>
@@ -32,7 +34,7 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class SamplerMT final : public SamplerBase
+class SamplerMT final : public ResourceMT<SamplerBase>
 {
 public:
     SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);

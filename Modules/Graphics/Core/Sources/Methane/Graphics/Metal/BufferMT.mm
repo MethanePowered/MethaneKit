@@ -81,7 +81,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : BufferBase(context, settings, descriptor_by_usage)
+    : ResourceMT<BufferBase>(context, settings, descriptor_by_usage)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {
@@ -140,8 +140,6 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
-    id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
-
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.RetainResource(*this);
 
@@ -151,15 +149,10 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        // Create temporary buffer with shared storage mode for sub-resource data upload to private buffer on GPU
-        id <MTLBuffer> mtl_sub_resource_upload_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
-                                                                                length:sub_resource.size
-                                                                               options:MTLResourceStorageModeShared];
-
         if (sub_resource.data_range)
             data_offset = sub_resource.data_range->GetStart();
 
-        [mtl_blit_encoder copyFromBuffer:mtl_sub_resource_upload_buffer
+        [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
                             sourceOffset:0
                                 toBuffer:m_mtl_buffer
                        destinationOffset:data_offset
@@ -167,7 +160,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
 
         data_offset += sub_resource.size;
     }
-
+    
     GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
