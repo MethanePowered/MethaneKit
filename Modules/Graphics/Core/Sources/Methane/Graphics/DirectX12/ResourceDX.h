@@ -40,12 +40,12 @@ public:
     using Barriers = ResourceBase::Barriers;
     using State    = ResourceBase::State;
 
-    class BarriersDX : public Barriers
+    class BarriersDX final : public Barriers
     {
     public:
         explicit BarriersDX(const Set& barriers);
 
-        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) final;
 
         const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
@@ -53,7 +53,7 @@ public:
         std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
     };
 
-    class LocationDX : public Location
+    class LocationDX final : public Location
     {
     public:
         explicit LocationDX(const Location& location);

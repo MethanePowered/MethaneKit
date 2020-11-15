@@ -31,7 +31,7 @@ namespace Methane::Graphics
 namespace CommandListVK
 {
 
-class DebugGroupVK : public CommandListBase::DebugGroupBase
+class DebugGroupVK final : public CommandListBase::DebugGroupBase
 {
 public:
     explicit DebugGroupVK(const std::string& name);

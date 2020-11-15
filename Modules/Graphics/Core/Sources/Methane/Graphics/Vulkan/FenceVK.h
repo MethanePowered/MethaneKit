@@ -34,15 +34,15 @@ class FenceVK final : public FenceBase
 {
 public:
     explicit FenceVK(CommandQueueBase& command_queue);
-    ~FenceVK() override;
+    ~FenceVK() final;
 
     // Fence overrides
-    void Signal() override;
-    void WaitOnCpu() override;
-    void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
+    void Signal() final;
+    void WaitOnCpu() final;
+    void WaitOnGpu(CommandQueue& wait_on_command_queue) final;
 
     // Object override
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 
 private:
     CommandQueueVK& GetCommandQueueVK();

@@ -34,10 +34,10 @@ class SamplerVK final : public SamplerBase
 {
 public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~SamplerVK() override;
+    ~SamplerVK() final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
     
 protected:
     void ResetSamplerState();

@@ -71,13 +71,13 @@ public:
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
         ArgumentBindingDX(ArgumentBindingDX&&) noexcept = default;
-        ~ArgumentBindingDX() override = default;
+        ~ArgumentBindingDX() final = default;
 
         ArgumentBindingDX& operator=(const ArgumentBindingDX&) = delete;
         ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        void SetResourceLocations(const Resource::Locations& resource_locations) final;
 
         const SettingsDX&                   GetSettingsDX() const noexcept            { return m_settings_dx; }
         uint32_t                            GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
@@ -102,8 +102,8 @@ public:
     void Initialize();
 
     // ProgramBindings interface
-    void CompleteInitialization() override;
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void CompleteInitialization() final;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
 

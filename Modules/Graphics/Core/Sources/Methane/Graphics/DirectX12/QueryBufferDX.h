@@ -46,10 +46,10 @@ public:
         QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
 
         // Query overrides
-        void Begin() override;
-        void End() override;
-        void ResolveData() override;
-        Resource::SubResource GetData() override;
+        void Begin() final;
+        void End() final;
+        void ResolveData() final;
+        Resource::SubResource GetData() final;
 
     protected:
         QueryBufferDX& GetQueryBufferDX() noexcept  { return static_cast<QueryBufferDX&>(GetQueryBuffer()); }
@@ -86,7 +86,7 @@ class TimestampQueryBufferDX final
     , public TimestampQueryBuffer
 {
 public:
-    class TimestampQueryDX
+    class TimestampQueryDX final
         : public QueryDX
         , public TimestampQuery
     {
@@ -94,10 +94,10 @@ public:
         TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
 
         // TimestampQuery overrides
-        void InsertTimestamp() override;
-        void ResolveTimestamp() override;
-        Timestamp GetGpuTimestamp() override;
-        Timestamp GetCpuNanoseconds() override;
+        void InsertTimestamp() final;
+        void ResolveTimestamp() final;
+        Timestamp GetGpuTimestamp() final;
+        Timestamp GetCpuNanoseconds() final;
 
     private:
         TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept { return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer()); }
@@ -106,7 +106,7 @@ public:
     TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryBuffer interface
-    Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
+    Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) final;
 
     Frequency GetGpuFrequency() const noexcept  { return m_gpu_frequency; }
     TimeDelta GetGpuTimeOffset() const noexcept { return m_gpu_time_calibration.second; }

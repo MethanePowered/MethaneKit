@@ -47,7 +47,7 @@ public:
     ProgramDX(ContextBase& context, const Settings& settings);
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 
     ShaderDX& GetVertexShaderDX() noexcept;
     ShaderDX& GetPixelShaderDX() noexcept;

@@ -78,10 +78,10 @@ public:
 
     // IContextDX interface
 
-    const DeviceDX& GetDeviceDX() const noexcept override       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
-    CommandQueueDX& GetUploadCommandQueueDX() noexcept override { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
+    const DeviceDX& GetDeviceDX() const noexcept final       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
+    CommandQueueDX& GetUploadCommandQueueDX() noexcept final { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
 
-    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) override
+    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) final
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());

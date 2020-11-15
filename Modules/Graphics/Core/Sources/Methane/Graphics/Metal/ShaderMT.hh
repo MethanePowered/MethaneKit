@@ -37,10 +37,10 @@ class ShaderMT final : public ShaderBase
 {
 public:
     ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings);
-    ~ShaderMT() override;
+    ~ShaderMT() final;
     
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const final;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;

@@ -46,7 +46,7 @@ namespace Methane::Graphics
 class ContextBase;
 
 template<typename... ExtraArgs>
-class TextureDX : public ResourceDX<TextureBase>
+class TextureDX final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
@@ -70,7 +70,7 @@ private:
 struct ImageTextureArg { };
 
 template<>
-class TextureDX<ImageTextureArg> : public ResourceDX<TextureBase>
+class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
@@ -92,7 +92,7 @@ private:
 };
 
 template<>
-class TextureDX<const std::optional<DepthStencil>&> : public ResourceDX<TextureBase>
+class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);

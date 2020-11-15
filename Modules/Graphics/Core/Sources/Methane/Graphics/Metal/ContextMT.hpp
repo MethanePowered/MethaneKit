@@ -50,26 +50,26 @@ public:
         META_FUNCTION_TASK();
     }
 
-    ~ContextMT()
+    ~ContextMT() override
     {
         [m_ns_name release];
     }
 
     // IContextMT overrides
 
-    DeviceMT& GetDeviceMT() noexcept override
+    DeviceMT& GetDeviceMT() noexcept final
     {
         META_FUNCTION_TASK();
         return static_cast<DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueMT& GetUploadCommandQueueMT() noexcept override
+    CommandQueueMT& GetUploadCommandQueueMT() noexcept final
     {
         META_FUNCTION_TASK();
         return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());
     }
 
-    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override
+    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) final
     {
         META_FUNCTION_TASK();
         const auto library_by_name_it = m_library_by_name.find(library_name);

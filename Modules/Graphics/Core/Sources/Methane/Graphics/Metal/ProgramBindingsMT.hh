@@ -45,7 +45,7 @@ public:
         ArgumentBindingMT(const ArgumentBindingMT& other) = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        void SetResourceLocations(const Resource::Locations& resource_locations) final;
 
         const SettingsMT&                       GetSettingsMT() const noexcept { return m_settings_mt; }
         const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
@@ -65,10 +65,10 @@ public:
     ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
     // ProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
 
     // ProgramBindingsBase interface
-    void CompleteInitialization() override { }
+    void CompleteInitialization() final { }
 };
 
 } // namespace Methane::Graphics

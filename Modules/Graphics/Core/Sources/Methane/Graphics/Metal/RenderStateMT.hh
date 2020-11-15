@@ -40,12 +40,12 @@ public:
     explicit ViewStateMT(const Settings& settings);
 
     // ViewState overrides
-    bool Reset(const Settings& settings) override;
-    bool SetViewports(const Viewports& viewports) override;
-    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+    bool Reset(const Settings& settings) final;
+    bool SetViewports(const Viewports& viewports) final;
+    bool SetScissorRects(const ScissorRects& scissor_rects) final;
 
     // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    void Apply(RenderCommandListBase& command_list) final;
 
 private:
     std::vector<MTLViewport>    m_mtl_viewports;
@@ -56,16 +56,16 @@ class RenderStateMT final : public RenderStateBase
 {
 public:
     RenderStateMT(RenderContextBase& context, const Settings& settings);
-    ~RenderStateMT() override;
+    ~RenderStateMT() final;
     
     // RenderState interface
-    void Reset(const Settings& settings) override;
+    void Reset(const Settings& settings) final;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
     
     void InitializeNativeStates();
     void InitializeNativePipelineState();

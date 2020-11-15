@@ -41,18 +41,18 @@ public:
     explicit FenceDX(CommandQueueBase& command_queue);
     FenceDX(const FenceDX&) = delete;
     FenceDX(FenceDX&&) noexcept = default;
-    ~FenceDX() override;
+    ~FenceDX() final;
 
     FenceDX& operator=(const FenceDX&) = delete;
     FenceDX& operator=(FenceDX&&) noexcept = default;
 
     // Fence overrides
-    void Signal() override;
-    void WaitOnCpu() override;
-    void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
+    void Signal() final;
+    void WaitOnCpu() final;
+    void WaitOnGpu(CommandQueue& wait_on_command_queue) final;
 
     // Object override
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 
 private:
     CommandQueueDX& GetCommandQueueDX();

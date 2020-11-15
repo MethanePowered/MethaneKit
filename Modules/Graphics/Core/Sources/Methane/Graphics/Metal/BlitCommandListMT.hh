@@ -43,7 +43,7 @@ public:
     BlitCommandListMT(CommandQueueBase& command_queue);
 
     // CommandList interface
-    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) override;
+    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) final;
 };
 
 } // namespace Methane::Graphics

@@ -33,13 +33,13 @@ class BufferVK final : public BufferBase
 {
 public:
     BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    ~BufferVK() override;
+    ~BufferVK() final;
 
     // Resource interface
-    void SetData(const SubResources& sub_resources) override;
+    void SetData(const SubResources& sub_resources) final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
 };
 
 class BufferSetVK final : public BufferSetBase

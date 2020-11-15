@@ -35,7 +35,7 @@ class ProgramVK final : public ProgramBase
 {
 public:
     ProgramVK(ContextBase& context, const Settings& settings);
-    ~ProgramVK() override;
+    ~ProgramVK() final;
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 

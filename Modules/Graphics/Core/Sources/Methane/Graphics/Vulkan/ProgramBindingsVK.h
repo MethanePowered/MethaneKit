@@ -42,7 +42,7 @@ public:
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        void SetResourceLocations(const Resource::Locations& resource_locations) final;
 
         const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
 
@@ -54,10 +54,10 @@ public:
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
     // ProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
     
     // ProgramBindingsBase interface
-    void CompleteInitialization() override { }
+    void CompleteInitialization() final { }
 };
 
 } // namespace Methane::Graphics

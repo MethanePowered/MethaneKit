@@ -32,16 +32,16 @@ class DeviceVK final : public DeviceBase
 {
 public:
     DeviceVK();
-    ~DeviceVK() override;
+    ~DeviceVK() final;
 };
 
 class SystemVK final : public SystemBase
 {
 public:
-    ~SystemVK() override;
+    ~SystemVK() final;
     
-    void           CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    void           CheckForChanges() final {}
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) final;
 };
 
 } // namespace Methane::Graphics

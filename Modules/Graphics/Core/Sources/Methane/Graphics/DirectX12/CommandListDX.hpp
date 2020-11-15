@@ -139,7 +139,7 @@ public:
 
     // CommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) override
+    void Reset(CommandList::DebugGroup* p_debug_group) final
     {
         META_FUNCTION_TASK();
         if (!m_is_native_committed)
@@ -188,7 +188,7 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) override
+    void SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
 

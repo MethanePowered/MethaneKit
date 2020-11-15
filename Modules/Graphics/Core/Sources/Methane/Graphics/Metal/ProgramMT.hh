@@ -37,7 +37,7 @@ class ProgramMT final : public ProgramBase
 {
 public:
     ProgramMT(ContextBase& context, const Settings& settings);
-    ~ProgramMT() override;
+    ~ProgramMT() final;
 
     ShaderMT& GetShaderMT(Shader::Type shader_type) noexcept;
     

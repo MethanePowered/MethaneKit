@@ -39,16 +39,16 @@ public:
     explicit RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
-    void Commit() override;
+    void Commit() final;
 
     // RenderCommandList interface
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
-    void SetVertexBuffers(BufferSet& vertex_buffers) override;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) final;
+    void SetVertexBuffers(BufferSet& vertex_buffers) final;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex, 
-                     uint32_t instance_count, uint32_t start_instance) override;
+                     uint32_t instance_count, uint32_t start_instance) final;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count, uint32_t start_instance) override;
+              uint32_t instance_count, uint32_t start_instance) final;
 
     void ResetNative(const Ptr<RenderState>& render_state_ptr = Ptr<RenderState>());
 

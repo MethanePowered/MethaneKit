@@ -41,7 +41,7 @@ class CommandQueueDX;
 
 struct ICommandListDX
 {
-    class DebugGroupDX : public CommandListBase::DebugGroupBase
+    class DebugGroupDX final : public CommandListBase::DebugGroupBase
     {
     public:
         explicit DebugGroupDX(const std::string& name);

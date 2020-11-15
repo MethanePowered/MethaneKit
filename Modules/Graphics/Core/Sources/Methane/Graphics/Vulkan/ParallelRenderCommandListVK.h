@@ -38,16 +38,16 @@ public:
     ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) final;
 
     // CommandList interface
-    void Commit() override;
+    void Commit() final;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
+    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) final;
 
     // Object interface
-    void SetName(const std::string& label) override;
+    void SetName(const std::string& label) final;
 
 protected:
     CommandQueueVK& GetCommandQueueVK() noexcept;

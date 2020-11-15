@@ -38,10 +38,10 @@ public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    void SetData(const SubResources& sub_resources) override;
+    void SetData(const SubResources& sub_resources) final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;

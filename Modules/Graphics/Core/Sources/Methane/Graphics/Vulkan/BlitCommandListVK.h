@@ -39,19 +39,19 @@ public:
     explicit BlitCommandListVK(CommandQueueBase& command_queue);
 
     // CommandList interface
-    void PushDebugGroup(DebugGroup& debug_group) override;
-    void PopDebugGroup() override;
-    void Commit() override;
+    void PushDebugGroup(DebugGroup& debug_group) final;
+    void PopDebugGroup() final;
+    void Commit() final;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
+    void SetResourceBarriers(const ResourceBase::Barriers&) final { }
+    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) final;
 
     // BlitCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
+    void Reset(DebugGroup* p_debug_group = nullptr) final;
 
     // Object interface
-    void SetName(const std::string& label) override;
+    void SetName(const std::string& label) final;
 
 private:
     void InitializeCommandBuffer();

@@ -36,7 +36,7 @@ public:
     static Device::Feature::Mask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
     DeviceMT(const id<MTLDevice>& mtl_device);
-    ~DeviceMT() override;
+    ~DeviceMT() final;
     
     id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
 
@@ -47,10 +47,10 @@ private:
 class SystemMT final : public SystemBase
 {
 public:
-    ~SystemMT() override;
+    ~SystemMT() final;
     
-    void           CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    void           CheckForChanges() final {}
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) final;
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);

@@ -39,8 +39,7 @@ namespace Methane::Graphics
 {
 
 template<typename MTLCommandEncoderId, class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
-class CommandListMT
-    : public CommandListBaseT
+class CommandListMT : public CommandListBaseT
 {
 public:
     template<typename... ConstructArgs>
@@ -102,7 +101,7 @@ public:
         [m_mtl_cmd_buffer enqueue];
     }
 
-    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const final
     {
         META_FUNCTION_TASK();
         META_UNUSED(in_cpu_nanoseconds);

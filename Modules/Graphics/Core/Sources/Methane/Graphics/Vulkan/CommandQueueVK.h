@@ -35,10 +35,10 @@ class CommandQueueVK final : public CommandQueueBase
 {
 public:
     CommandQueueVK(ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueVK() override;
+    ~CommandQueueVK() final;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    void SetName(const std::string& name) final;
     
     IContextVK& GetContextVK() noexcept;
 

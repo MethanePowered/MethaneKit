@@ -40,12 +40,12 @@ class FenceMT final : public FenceBase
 {
 public:
     explicit FenceMT(CommandQueueBase& command_queue);
-    ~FenceMT() override;
+    ~FenceMT() final;
 
     // Fence overrides
-    void Signal() override;
-    void WaitOnCpu() override;
-    void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
+    void Signal() final;
+    void WaitOnCpu() final;
+    void WaitOnGpu(CommandQueue& wait_on_command_queue) final;
 
     // Object override
     void SetName(const std::string& name) override;
