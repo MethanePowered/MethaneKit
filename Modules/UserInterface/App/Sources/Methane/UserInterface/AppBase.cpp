@@ -206,7 +206,7 @@ void AppBase::TextItem::Reset(bool forget_text_string)
         text_str.clear();
 }
 
-bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
+bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
 {
     META_FUNCTION_TASK();
     if (m_app_settings.heads_up_display_mode == heads_up_display_mode)

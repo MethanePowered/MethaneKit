@@ -277,6 +277,13 @@ void AppBase::ShowCommandLineHelp()
     });
 }
 
+const AppBase::Message& AppBase::GetDeferredMessage() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_deferred_message_ptr);
+    return *m_deferred_message_ptr;
+}
+
 bool AppBase::UpdateAndRender()
 {
     META_FUNCTION_TASK();

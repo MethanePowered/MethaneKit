@@ -38,7 +38,7 @@ struct IApp
         int32_t  default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
     };
 
-    virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
+    virtual const Settings& GetGraphicsAppSettings() const noexcept = 0;
     virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;
 
     virtual ~IApp() = default;

@@ -133,7 +133,8 @@ protected:
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }
 
-    Ptr<Message> m_deferred_message_ptr;
+    bool HasDeferredMessage() const noexcept { return !!m_deferred_message_ptr; }
+    const Message& GetDeferredMessage() const;
 
 private:
     bool UpdateAndRender();
@@ -171,6 +172,7 @@ private:
     Settings        m_settings;
     Data::FrameRect m_window_bounds;
     Data::FrameSize m_frame_size;
+    Ptr<Message>    m_deferred_message_ptr;
     bool            m_is_minimized = false;
     bool            m_initialized = false;
     bool            m_is_resizing = false;

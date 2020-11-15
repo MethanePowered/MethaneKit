@@ -39,7 +39,7 @@ namespace gfx = Methane::Graphics;
 template<typename FrameT>
 class App
     : public Graphics::App<FrameT, IApp>
-    , protected AppBase
+    , public AppBase
 {
 public:
     using GraphicsApp = Graphics::App<FrameT, IApp>;
@@ -87,18 +87,18 @@ public:
 
     // UserInterface::IApp interface
 
-    const IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return AppBase::GetAppSettings(); }
+    const IApp::Settings& GetUserInterfaceAppSettings() const noexcept { return AppBase::GetAppSettings(); }
 
-    bool SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode) override
+    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode)
     {
         META_FUNCTION_TASK();
         if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
             return false;
 
-        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::IApp::HeadsUpDisplayMode::WindowTitle);
         GraphicsApp::GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
-        return AppBase::SetHeadsUpDisplayMode(heads_up_display_mode);
+        return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }
 
     bool SetAnimationsEnabled(bool animations_enabled) override
@@ -120,7 +120,7 @@ public:
             SetParametersText(GetParametersString());
     }
 
-    std::string GetParametersString() override { return ""; }
+    virtual std::string GetParametersString() { return ""; }
 
 protected:
     void UpdateParametersText()
@@ -145,7 +145,7 @@ protected:
             SetHelpText("");
     }
 
-    // IContextCallback implementation
+    // IContextCallback override
     void OnContextReleased(gfx::Context& context) override
     {
         META_FUNCTION_TASK();
