@@ -88,11 +88,11 @@ void AppMac::Alert(const Message& msg, bool deferred)
     if (deferred)
     {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (!m_deferred_message_ptr)
+            if (!HasDeferredMessage())
                 return;
             
-            ShowAlert(*m_deferred_message_ptr);
-            m_deferred_message_ptr.reset();
+            ShowAlert(GetDeferredMessage());
+            ResetDeferredMessage();
         });
     }
     else

@@ -166,6 +166,7 @@ void AppWin::OnWindowAlert()
         return;
 
     ShowAlert(GetDeferredMessage());
+    ResetDeferredMessage();
 }
 
 LRESULT AppWin::OnWindowDestroy()

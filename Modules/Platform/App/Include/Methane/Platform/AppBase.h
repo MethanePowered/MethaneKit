@@ -135,6 +135,7 @@ protected:
 
     bool HasDeferredMessage() const noexcept { return !!m_deferred_message_ptr; }
     const Message& GetDeferredMessage() const;
+    void ResetDeferredMessage() noexcept { m_deferred_message_ptr.reset(); }
 
 private:
     bool UpdateAndRender();
