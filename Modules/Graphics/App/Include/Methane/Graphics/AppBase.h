@@ -70,7 +70,7 @@ public:
     bool Render() override;
     bool SetFullScreen(bool is_full_screen) override;
 
-    void SetShowHudInWindowTitle(bool show_hud_in_window_title) noexcept;
+    void SetShowHudInWindowTitle(bool show_hud_in_window_title);
 
 protected:
     struct ResourceRestoreInfo
@@ -86,7 +86,7 @@ protected:
         { }
     };
 
-    Ptr<RenderPass> CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture);
+    Ptr<RenderPass> CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture) const;
     ResourceRestoreInfo ReleaseDepthTexture();
     void RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info);
 
@@ -94,7 +94,7 @@ protected:
     bool SetBaseAnimationsEnabled(bool animations_enabled);
 
     void UpdateWindowTitle();
-    void CompleteInitialization();
+    void CompleteInitialization() const;
 
     // Platform::AppBase interface
     Platform::AppView GetView() const override { return m_context_ptr->GetAppView(); }
@@ -104,16 +104,16 @@ protected:
     void OnContextCompletingInitialization(Context&) override { /* no event handling logic is needed here */ }
     void OnContextInitialized(Context&) override;
 
-    const RenderContext::Settings& GetInitialContextSettings() const    { return m_initial_context_settings; }
-    bool                           IsRenderContextInitialized()         { return !!m_context_ptr; }
-    const Ptr<RenderContext>&      GetRenderContextPtr() const noexcept { return m_context_ptr; }
-    RenderContext&                 GetRenderContext() const             { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
-    const Ptr<ViewState>&          GetViewStatePtr() const noexcept     { return m_view_state_ptr; }
-    ViewState&                     GetViewState()                       { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
-    FrameSize                      GetFrameSizeInDots() const noexcept  { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
-    ImageLoader&                   GetImageLoader() noexcept            { return m_image_loader; }
-    Data::AnimationsPool&          GetAnimations() noexcept             { return m_animations; }
-    const Ptr<Texture>&            GetDepthTexturePtr() const noexcept  { return m_depth_texture_ptr; }
+    const RenderContext::Settings& GetInitialContextSettings() const noexcept  { return m_initial_context_settings; }
+    bool                           IsRenderContextInitialized() const noexcept { return !!m_context_ptr; }
+    const Ptr<RenderContext>&      GetRenderContextPtr() const noexcept        { return m_context_ptr; }
+    RenderContext&                 GetRenderContext() const                    { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
+    const Ptr<ViewState>&          GetViewStatePtr() const noexcept            { return m_view_state_ptr; }
+    ViewState&                     GetViewState()                              { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
+    FrameSize                      GetFrameSizeInDots() const noexcept         { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
+    ImageLoader&                   GetImageLoader() noexcept                   { return m_image_loader; }
+    Data::AnimationsPool&          GetAnimations() noexcept                    { return m_animations; }
+    const Ptr<Texture>&            GetDepthTexturePtr() const noexcept         { return m_depth_texture_ptr; }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index);
 

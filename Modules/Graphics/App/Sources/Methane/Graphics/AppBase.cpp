@@ -60,11 +60,13 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
     META_CHECK_ARG_NOT_EMPTY(devices);
 
-    Ptr<Device> device_ptr = m_settings.default_device_index < 0
-                             ? System::Get().GetSoftwareGpuDevice()
-                             : (static_cast<size_t>(m_settings.default_device_index) < devices.size()
-                                ? devices[m_settings.default_device_index]
-                                : devices.front());
+    Ptr<Device> device_ptr;
+    if (m_settings.default_device_index < 0)
+        device_ptr = System::Get().GetSoftwareGpuDevice();
+    else
+        device_ptr = static_cast<size_t>(m_settings.default_device_index) < devices.size()
+                   ? devices[m_settings.default_device_index]
+                   : devices.front();
     META_CHECK_ARG_NOT_NULL(device_ptr);
 
     // Create render context of the current window size
@@ -211,7 +213,7 @@ bool AppBase::SetBaseAnimationsEnabled(bool animations_enabled)
     return true;
 }
 
-void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title) noexcept
+void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
 {
     META_FUNCTION_TASK();
     if (m_settings.show_hud_in_window_title == show_hud_in_window_title)
@@ -221,11 +223,13 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title) noexcept
     UpdateWindowTitle();
 }
 
-Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture)
+Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(frame_buffer_texture);
+
     const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
+
     return RenderPass::Create(*m_context_ptr, {
         {
             RenderPass::ColorAttachment(
@@ -287,9 +291,6 @@ void AppBase::UpdateWindowTitle()
     }
 
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    if (!m_context_ptr)
-        return;
-
     const RenderContext::Settings& context_settings      = m_context_ptr->GetSettings();
     const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
     const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
@@ -304,7 +305,7 @@ void AppBase::UpdateWindowTitle()
     SetWindowTitle(title);
 }
 
-void AppBase::CompleteInitialization()
+void AppBase::CompleteInitialization() const
 {
     m_context_ptr->CompleteInitialization();
 }
