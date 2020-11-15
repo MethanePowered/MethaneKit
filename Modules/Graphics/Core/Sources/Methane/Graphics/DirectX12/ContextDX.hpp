@@ -23,9 +23,9 @@ DirectX 12 base template implementation of the context interface.
 
 #pragma once
 
-#include <Methane/Graphics/ContextBase.h>
 #include "FenceDX.h"
 #include "DeviceDX.h"
+#include "ContextDX.h"
 #include "CommandQueueDX.h"
 
 #include <Methane/Graphics/ContextBase.h>

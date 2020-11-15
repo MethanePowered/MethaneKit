@@ -23,6 +23,8 @@ Vulkan implementation of the sampler interface.
 
 #pragma once
 
+#include "ResourceVK.h"
+
 #include <Methane/Graphics/SamplerBase.h>
 
 namespace Methane::Graphics
@@ -30,7 +32,7 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class SamplerVK final : public SamplerBase
+class SamplerVK final : public ResourceVK<SamplerBase>
 {
 public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);

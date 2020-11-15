@@ -33,19 +33,7 @@ namespace Methane::Graphics
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceVK::BarriersVK>(barriers);
-}
-
-ResourceVK::ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(type, usage_mask, context, descriptor_by_usage)
-{
-    META_FUNCTION_TASK();
-}
-
-IContextVK& ResourceVK::GetContextVK() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContextBase());
+    return std::make_shared<ResourceBarriersVK>(barriers);
 }
 
 } // namespace Methane::Graphics

@@ -23,12 +23,14 @@ Vulkan implementation of the texture interface.
 
 #pragma once
 
+#include "ResourceVK.h"
+
 #include <Methane/Graphics/TextureBase.h>
 
 namespace Methane::Graphics
 {
 
-class TextureVK final : public TextureBase
+class TextureVK final : public ResourceVK<TextureBase>
 {
 public:
     TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

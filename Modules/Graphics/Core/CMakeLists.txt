@@ -194,18 +194,6 @@ set(SOURCES ${PLATFORM_SOURCES}
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
-    ${SOURCES_DIR}/Native/RenderContextNT.h
-    ${SOURCES_DIR}/Native/ShaderNT.h
-    ${SOURCES_DIR}/Native/ProgramNT.h
-    ${SOURCES_DIR}/Native/RenderStateNT.h
-    ${SOURCES_DIR}/Native/ResourceNT.h
-    ${SOURCES_DIR}/Native/DescriptorHeapNT.h
-    ${SOURCES_DIR}/Native/BufferNT.h
-    ${SOURCES_DIR}/Native/TextureNT.h
-    ${SOURCES_DIR}/Native/SamplerNT.h
-    ${SOURCES_DIR}/Native/RenderPassNT.h
-    ${SOURCES_DIR}/Native/CommandQueueNT.h
-    ${SOURCES_DIR}/Native/RenderCommandListNT.h
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h

@@ -57,10 +57,7 @@ public:
     {
     public:
         explicit LocationDX(const Location& location);
-        explicit LocationDX(const LocationDX& location);
         ~LocationDX() = default;
-
-        LocationDX& operator=(const LocationDX& other);
 
         IResourceDX&              GetResourceDX() const noexcept       { return m_resource_dx.get(); }
         D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }

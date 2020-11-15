@@ -63,26 +63,11 @@ bool IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrie
     return changed;
 }
 
-
 IResourceDX::LocationDX::LocationDX(const Location& location)
     : Location(location)
     , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
 {
     META_FUNCTION_TASK();
-}
-
-IResourceDX::LocationDX::LocationDX(const LocationDX& location)
-    : Location(location)
-    , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
-{
-    META_FUNCTION_TASK();
-}
-
-IResourceDX::LocationDX& IResourceDX::LocationDX::operator=(const LocationDX& other)
-{
-    Location::operator=(other);
-    m_resource_dx = dynamic_cast<IResourceDX&>(GetResource());
-    return *this;
 }
 
 D3D12_RESOURCE_STATES IResourceDX::GetNativeResourceState(State resource_state)
