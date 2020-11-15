@@ -75,11 +75,11 @@ struct UnitType : BaseType
     UnitType(Units units, BaseType&& base) noexcept      : BaseType(std::move(base)), units(units) { }
 
     template<typename... BaseArgs>
-    UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { }
+    UnitType(Units units, const BaseArgs&... base_args) noexcept : BaseType(base_args...), units(units) { }
 
-    explicit operator std::string() const                  { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), UnitsToString(units)); }
-    bool operator==(const UnitType& other) const noexcept  { return BaseType::operator==(other) && units == other.units; }
-    bool operator!=(const UnitType& other) const noexcept  { return BaseType::operator!=(other) || units != other.units; }
+    bool operator==(const UnitType& other) const noexcept                  { return BaseType::operator==(other) && units == other.units; }
+    bool operator!=(const UnitType& other) const noexcept                  { return BaseType::operator!=(other) || units != other.units; }
+    explicit operator std::string() const                                  { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), UnitsToString(units)); }
 };
 
 struct UnitSize : UnitType<FrameSize>

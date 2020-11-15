@@ -348,7 +348,7 @@ void AppBase::UpdateHelpTextPosition()
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
         FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
-        first_text_size + m_text_margins * 2
+        first_text_size + static_cast<FrameSize>(m_text_margins * 2)
     ));
 
     if (!m_help_columns.second.panel_ptr)
@@ -359,7 +359,7 @@ void AppBase::UpdateHelpTextPosition()
     m_help_columns.second.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
         FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
-        second_text_size + m_text_margins * 2
+        second_text_size + static_cast<FrameSize>(m_text_margins * 2)
     ));
 }
 

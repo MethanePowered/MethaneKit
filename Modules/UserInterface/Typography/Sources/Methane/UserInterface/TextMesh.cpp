@@ -25,6 +25,7 @@ Methane text mesh generation helper.
 
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
+#include <Methane/Data/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

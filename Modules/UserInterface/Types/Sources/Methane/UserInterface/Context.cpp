@@ -68,7 +68,7 @@ UnitPoint Context::ConvertToDots(const FloatPoint& point) const noexcept
 UnitSize Context::ConvertToPixels(const FloatSize& fsize) const noexcept
 {
     META_FUNCTION_TASK();
-    return UnitPoint(GetFrameSizeInPixels() * fsize);
+    return UnitSize(GetFrameSizeInPixels() * fsize);
 }
 
 UnitSize Context::ConvertToDots(const FloatSize& fsize) const noexcept
@@ -165,7 +165,7 @@ UnitSize Context::ConvertToUnits(const FrameSize& size_px, Units units) const no
     {
     case Units::Pixels: return UnitSize(units, size_px);
     case Units::Dots:   return ConvertToDots(size_px);
-    default:            return UnitPoint();
+    default:            return UnitSize();
     }
 }
 

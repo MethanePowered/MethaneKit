@@ -45,7 +45,7 @@ struct RectSize
     static RectSize<D> Max() noexcept { return RectSize(std::numeric_limits<D>::max(), std::numeric_limits<D>::max()); }
 
     template<typename V>
-    RectSize(const Point2T<V>& point) noexcept : width(static_cast<D>(point.GetX())), height(static_cast<D>(point.GetY())) { }
+    explicit RectSize(const Point2T<V>& point) noexcept : width(static_cast<D>(point.GetX())), height(static_cast<D>(point.GetY())) { }
 
     template<typename V>
     RectSize(const RectSize<V>& other) noexcept
@@ -154,7 +154,7 @@ struct RectSize
         return *this;
     }
 
-    operator bool() const noexcept
+    explicit operator bool() const noexcept
     { return width && height; }
 
     template<typename V>
@@ -164,7 +164,7 @@ struct RectSize
     D GetPixelsCount() const noexcept { return width * height; }
     D GetLongestSide() const noexcept { return std::max(width, height); }
 
-    operator std::string() const
+    explicit operator std::string() const
     { return fmt::format("Sz({} x {})", width, height); }
 };
 
@@ -202,7 +202,7 @@ struct Rect
     Rect<T, D>& operator/=(M divisor) noexcept
     { origin /= divisor; size /= divisor; return *this; }
 
-    operator std::string() const
+    explicit operator std::string() const
     { return fmt::format("Rt[{} + {}]", origin, size); }
 
     T GetLeft() const   { return origin.GetX(); }
@@ -213,8 +213,8 @@ struct Rect
     using Point = Point2T<T>;
     using Size  = RectSize<D>;
 
-    explicit Rect(Size size) noexcept : size(std::move(size)) { }
-    Rect(Point origin, Size size) noexcept : origin(std::move(origin)), size(std::move(size)) { }
+    explicit Rect(const Size& size) noexcept : size(size) { }
+    Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
     Rect(const Rect&) noexcept = default;
     Rect() noexcept = default;
 
