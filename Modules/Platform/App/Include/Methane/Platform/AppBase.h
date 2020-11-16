@@ -100,7 +100,7 @@ public:
     virtual bool SetKeyboardFocus(bool has_keyboard_focus);
     virtual void ShowControlsHelp();
     virtual void ShowCommandLineHelp();
-    virtual void ShowParameters() { }
+    virtual void ShowParameters() { /* no parameters are displayed by default, but can be overridden */ }
     virtual void Close() = 0;
 
     bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)

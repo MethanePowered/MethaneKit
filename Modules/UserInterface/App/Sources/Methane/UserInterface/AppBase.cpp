@@ -145,7 +145,7 @@ bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
     return true;
 }
 
-bool AppBase::UpdateUI()
+bool AppBase::UpdateUI() const
 {
     META_FUNCTION_TASK();
     if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
@@ -157,7 +157,7 @@ bool AppBase::UpdateUI()
     return true;
 }
 
-void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
+void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
@@ -337,7 +337,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
     return true;
 }
 
-void AppBase::UpdateHelpTextPosition()
+void AppBase::UpdateHelpTextPosition() const
 {
     META_FUNCTION_TASK();
     if (!m_help_columns.first.panel_ptr)
@@ -363,7 +363,7 @@ void AppBase::UpdateHelpTextPosition()
     ));
 }
 
-void AppBase::UpdateParametersTextPosition()
+void AppBase::UpdateParametersTextPosition() const
 {
     META_FUNCTION_TASK();
     if (!m_parameters.text_ptr)

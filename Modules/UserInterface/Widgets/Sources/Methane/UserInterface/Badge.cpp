@@ -33,12 +33,12 @@ Badge widget displaying texture in specific corner of the screen.
 namespace Methane::UserInterface
 {
 
-Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings)
+Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings)
     : Badge(ui_context, gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(), image_path), settings)
 {
 }
 
-Badge::Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, Settings settings)
+Badge::Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, const Settings& settings)
     : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeInPixels(), settings))
     , ScreenQuad(ui_context.GetRenderContext(), std::move(texture_ptr),
         ScreenQuad::Settings
@@ -84,7 +84,7 @@ void Badge::SetCorner(FrameCorner frame_corner)
     SetRect(GetBadgeRectInFrame());
 }
 
-void Badge::SetMargins(UnitPoint& margins)
+void Badge::SetMargins(const UnitPoint& margins)
 {
     META_FUNCTION_TASK();
     if (m_settings.margins == margins)
@@ -105,7 +105,7 @@ bool Badge::SetRect(const UnitRect& ui_rect)
     return true;
 }
 
-UnitRect Badge::GetBadgeRectInFrame(Context& ui_context, const UnitSize& frame_size, const Settings& settings)
+UnitRect Badge::GetBadgeRectInFrame(const Context& ui_context, const UnitSize& frame_size, const Settings& settings)
 {
     return GetBadgeRectInFrame(frame_size,
                                ui_context.ConvertToUnits(settings.size,    frame_size.units),

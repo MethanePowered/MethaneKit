@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/AppResourceProviders.hpp
+FILE: Methane/Graphics/AppResourceProviders.h
 Application resource providers for Shaders, Textures and Fonts
 either stored in embedded application resources of on file system.
 
@@ -24,83 +24,6 @@ either stored in embedded application resources of on file system.
 
 #pragma once
 
-// ========== Shader Resources ==========
-
-#ifdef SHADER_RESOURCES_NAMESPACE
-
-#ifdef RESOURCE_NAMESPACE
-#undef RESOURCE_NAMESPACE
-#endif
-
-#define RESOURCE_NAMESPACE SHADER_RESOURCES_NAMESPACE
-#include "ResourceProvider.hpp"
-
-namespace Methane::Data
-{
-using ShaderProvider = SHADER_RESOURCES_NAMESPACE::ResourceProvider;
-}
-
-#else // ifdef SHADER_RESOURCES_NAMESPACE
-
-#include "FileProvider.hpp"
-
-namespace Methane::Data
-{
-    using ShaderProvider = FileProvider;
-}
-
-#endif // ifdef SHADER_RESOURCES_NAMESPACE
-
-// ========== Texture Resources ==========
-
-#ifdef TEXTURE_RESOURCES_NAMESPACE
-
-#ifdef RESOURCE_NAMESPACE
-#undef RESOURCE_NAMESPACE
-#endif
-
-#define RESOURCE_NAMESPACE TEXTURE_RESOURCES_NAMESPACE
-#include "ResourceProvider.hpp"
-
-namespace Methane::Data
-{
-using TextureProvider = TEXTURE_RESOURCES_NAMESPACE::ResourceProvider;
-}
-
-#else // ifdef TEXTURE_RESOURCES_NAMESPACE
-
-#include "FileProvider.hpp"
-
-namespace Methane::Data
-{
-    using TextureProvider = FileProvider;
-}
-
-#endif // ifdef TEXTURE_RESOURCES_NAMESPACE
-
-// ========== Font Resources ==========
-
-#ifdef FONT_RESOURCES_NAMESPACE
-
-#ifdef RESOURCE_NAMESPACE
-#undef RESOURCE_NAMESPACE
-#endif
-
-#define RESOURCE_NAMESPACE FONT_RESOURCES_NAMESPACE
-#include "ResourceProvider.hpp"
-
-namespace Methane::Data
-{
-using FontProvider = FONT_RESOURCES_NAMESPACE::ResourceProvider;
-}
-
-#else // ifdef FONT_RESOURCES_NAMESPACE
-
-#include "FileProvider.hpp"
-
-namespace Methane::Data
-{
-    using FontProvider = FileProvider;
-}
-
-#endif // ifdef FONT_RESOURCES_NAMESPACE
+#include "AppShadersProvider.h"
+#include "AppTexturesProvider.h"
+#include "AppFontsProvider.h"

@@ -68,10 +68,10 @@ public:
     public:
         UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
 
-        uint32_t GetInstanceCount() const       { return m_instance_count; }
-        uint32_t GetSubdivisionsCount() const   { return m_subdivisions_count; }
+        uint32_t GetInstanceCount() const noexcept      { return m_instance_count; }
+        uint32_t GetSubdivisionsCount() const noexcept  { return m_subdivisions_count; }
 
-        uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index);
+        uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const;
         uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
         const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
 
@@ -96,8 +96,8 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::RenderContext& context, Settings settings);
-    AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state);
+    AsteroidsArray(gfx::RenderContext& context, const Settings& settings);
+    AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state);
 
     const Settings& GetSettings() const         { return m_settings; }
     const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
@@ -108,8 +108,8 @@ public:
                                                      const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr);
 
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
-    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
     bool  IsMeshLodColoringEnabled() const                           { return m_mesh_lod_coloring_enabled; }
     void  SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }

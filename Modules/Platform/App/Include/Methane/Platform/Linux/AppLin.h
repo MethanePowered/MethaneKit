@@ -36,7 +36,7 @@ namespace Methane::Platform
 class AppLin : public AppBase
 {
 public:
-    AppLin(const Settings& settings);
+    explicit AppLin(const Settings& settings);
 
     // AppBase interface
     int Run(const RunArgs& args) override;
@@ -49,6 +49,7 @@ protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
+private:
     AppEnvironment m_env;
 };
 

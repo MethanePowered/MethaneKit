@@ -74,11 +74,6 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, const Descrip
     InitializeDefaultDescriptors();
 }
 
-BufferVK::~BufferVK()
-{
-    META_FUNCTION_TASK();
-}
-
 void BufferVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

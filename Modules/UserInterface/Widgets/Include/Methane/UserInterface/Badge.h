@@ -58,12 +58,12 @@ public:
         TextureMode       texture_mode = TextureMode::RgbaFloat;
     };
 
-    Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, Settings settings);
-    Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, Settings settings);
+    Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings);
+    Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, const Settings& settings);
 
     void FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badge_size = {}, std::optional<UnitPoint> margins = {});
     void SetCorner(FrameCorner frame_corner);
-    void SetMargins(UnitPoint& margins);
+    void SetMargins(const UnitPoint& margins);
 
 private:
     // Item overrides
@@ -71,7 +71,7 @@ private:
     using Item::SetOrigin;
 
     UnitRect GetBadgeRectInFrame() { return GetBadgeRectInFrame(GetUIContext(), m_frame_size, m_settings); }
-    static UnitRect GetBadgeRectInFrame(Context& ui_context, const UnitSize& frame_size, const Settings& settings);
+    static UnitRect GetBadgeRectInFrame(const Context& ui_context, const UnitSize& frame_size, const Settings& settings);
     static UnitRect GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& badge_size,
                                         const UnitPoint& badge_margins, Badge::FrameCorner frame_corner);
 

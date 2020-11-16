@@ -68,7 +68,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
 
         tf::Taskflow task_flow;
         task_flow.for_each_index_guided(0, static_cast<int>(m_instance_count), 1,
-            [&](const int)
+            [this, &rng, &data_mutex, &base_mesh](const int)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng());
@@ -83,7 +83,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
     }
 }
 
-uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index)
+uint32_t AsteroidsArray::UberMesh::GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(instance_index, m_instance_count);
@@ -127,10 +127,10 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
     task_flow.for_each_guided(texture_array_subresources.begin(), texture_array_subresources.end(),
-        [&](gfx::Resource::SubResources& sub_resources)
+        [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
-                static_cast<uint32_t>(rng()),
+                rng(),
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
                 1.5F
@@ -207,15 +207,15 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings)
     : AsteroidsArray(context, settings, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, ContentState& state)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
-    , m_settings(std::move(settings))
+    , m_settings(settings)
     , m_content_state_ptr(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0U)
     , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
@@ -274,7 +274,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, Settings settings, C
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
-        m_unique_textures.back()->SetName("Asteroid Texture " + std::to_string(texture_index++));
+        m_unique_textures.back()->SetName(fmt::format("Asteroid Texture {:d}", texture_index++));
     }
 
     // Distribute textures between unique mesh subsets
@@ -321,7 +321,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
 
     tf::Taskflow task_flow;
     task_flow.for_each_index_guided(1, static_cast<int>(m_settings.instance_count), 1,
-        [&](const int asteroid_index)
+        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr](const int asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
@@ -353,7 +353,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
     tf::Taskflow update_task_flow;
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
-        [this, &view_proj_matrix, elapsed_radians, &eye_position](Asteroid::Parameters& asteroid_parameters)
+        [this, &view_proj_matrix, elapsed_radians, &eye_position](const Asteroid::Parameters& asteroid_parameters)
         {
             META_FUNCTION_TASK();
 
@@ -402,7 +402,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     return true;
 }
 
-void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Draw");
@@ -420,7 +420,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, gfx::MeshBufferBindi
                       gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
 }
 
-void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");

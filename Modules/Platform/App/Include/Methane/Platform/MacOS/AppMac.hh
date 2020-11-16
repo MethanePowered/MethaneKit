@@ -49,7 +49,7 @@ namespace Methane::Platform
 class AppMac : public AppBase
 {
 public:
-    AppMac(const AppBase::Settings& settings);
+    explicit AppMac(const AppBase::Settings& settings);
     ~AppMac() override;
 
     // AppBase interface
@@ -68,6 +68,7 @@ protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
+private:
     NSApplicationType*  m_ns_app;
     AppDelegateType*    m_ns_app_delegate;
     NSWindowType*       m_ns_window;

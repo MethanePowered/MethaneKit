@@ -9,6 +9,9 @@ set(HEADERS
     ${INCLUDE_DIR}/FileProvider.hpp
     ${INCLUDE_DIR}/ResourceProvider.hpp
     ${INCLUDE_DIR}/AppResourceProviders.h
+    ${INCLUDE_DIR}/AppShadersProvider.h
+    ${INCLUDE_DIR}/AppTexturesProvider.h
+    ${INCLUDE_DIR}/AppFontsProvider.h
 )
 
 set(SOURCES

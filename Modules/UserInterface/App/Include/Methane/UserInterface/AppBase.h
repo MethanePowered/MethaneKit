@@ -52,8 +52,8 @@ protected:
     void InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size);
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
-    bool UpdateUI();
-    void RenderOverlay(gfx::RenderCommandList& cmd_list);
+    bool UpdateUI() const;
+    void RenderOverlay(gfx::RenderCommandList& cmd_list) const;
 
     bool SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode);
     bool SetHelpText(const std::string& help_str);
@@ -61,7 +61,7 @@ protected:
 
     bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
     bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
-    void GetParametersText(const std::string& parameters_str);
+    void GetParametersText(const std::string& parameters_str) const;
     Font& GetMainFont();
 
     const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
@@ -87,8 +87,8 @@ private:
     };
 
     bool UpdateTextItem(TextItem& item);
-    void UpdateHelpTextPosition();
-    void UpdateParametersTextPosition();
+    void UpdateHelpTextPosition() const;
+    void UpdateParametersTextPosition() const;
 
     UniquePtr<Context>             m_ui_context_ptr;
     IApp::Settings                 m_app_settings;

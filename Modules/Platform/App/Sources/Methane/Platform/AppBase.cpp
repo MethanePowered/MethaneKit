@@ -40,6 +40,49 @@ Base application interface and platform-independent implementation.
 namespace Methane::Platform
 {
 
+static bool WriteControllerHeaderToHelpStream(std::stringstream& help_stream, const Input::Controller& controller, bool is_first_controller)
+{
+    if (!is_first_controller)
+        help_stream << std::endl;
+
+    if (!controller.GetControllerName().empty())
+    {
+        if (!is_first_controller)
+            help_stream << std::endl;
+
+        help_stream << controller.GetControllerName();
+        return true;
+    }
+
+    return false;
+}
+
+static void WriteKeyDescriptionToHelpStream(std::stringstream& help_stream, const std::string& single_offset, const std::string& controller_offset,
+                                            bool first_line, bool& header_present, const Input::IHelpProvider::KeyDescription& key_description)
+{
+    if (key_description.first.empty())
+    {
+        help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
+        header_present = true;
+        return;
+    }
+
+    if (first_line && !header_present)
+    {
+        help_stream << std::endl;
+    }
+    help_stream << std::endl << controller_offset;
+    if (header_present)
+    {
+        help_stream << single_offset;
+    }
+    help_stream << key_description.first;
+    if (!key_description.second.empty())
+    {
+        help_stream << " - " << key_description.second;
+    }
+}
+
 AppBase::AppBase(const AppBase::Settings& settings)
     : CLI::App(settings.name, GetExecutableFileName())
     , m_settings(settings)
@@ -190,61 +233,29 @@ bool AppBase::SetKeyboardFocus(bool has_keyboard_focus)
 std::string AppBase::GetControlsHelp() const
 {
     META_FUNCTION_TASK();
-
     std::stringstream help_stream;
     std::string single_offset = "    ";
-    bool is_first_controller = true;
+    bool is_first_controller  = true;
 
     for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
     {
         META_CHECK_ARG_NOT_NULL(controller_ptr);
-        if (!controller_ptr) continue;
+        if (!controller_ptr)
+            continue;
 
         const Input::IHelpProvider::HelpLines help_lines = controller_ptr->GetHelp();
-        if (help_lines.empty()) continue;
+        if (help_lines.empty())
+            continue;
 
-        if (!is_first_controller)
-            help_stream << std::endl;
-
-        std::string controller_offset;
-        if (!controller_ptr->GetControllerName().empty())
-        {
-            if (!is_first_controller)
-                help_stream << std::endl;
-
-            help_stream << controller_ptr->GetControllerName();
-            controller_offset = single_offset;
-        }
-
+        const std::string controller_offset = WriteControllerHeaderToHelpStream(help_stream, *controller_ptr, is_first_controller) ? single_offset : "";
         is_first_controller = false;
 
         bool first_line = true;
         bool header_present = false;
         for (const Input::IHelpProvider::KeyDescription& key_description : help_lines)
         {
-            if (key_description.first.empty())
-            {
-                help_stream << std::endl << std::endl << controller_offset << key_description.second << ":";
-                header_present = true;
-            }
-            else
-            {
-                if (first_line && !header_present)
-                {
-                    help_stream << std::endl;
-                }
-                help_stream << std::endl << controller_offset;
-                if (header_present)
-                {
-                    help_stream << single_offset;
-                }
-                help_stream << key_description.first;
-                if (!key_description.second.empty())
-                {
-                    help_stream << " - " << key_description.second;
-                }
-            }
-            first_line = false;
+            WriteKeyDescriptionToHelpStream(help_stream, single_offset, controller_offset, first_line, header_present, key_description);
+            first_line  = false;
         }
     }
 

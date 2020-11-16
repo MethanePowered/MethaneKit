@@ -16,35 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/TextureVK.h
-Vulkan implementation of the texture interface.
+FILE: Methane/Graphics/AppShadersProvider.h
+Application Shader resources provider
+either stored in embedded application resources of on file system.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ResourceVK.h"
+#ifdef SHADER_RESOURCES_NAMESPACE
 
-#include <Methane/Graphics/TextureBase.h>
+#ifdef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE
+#endif
 
-namespace Methane::Graphics
+#define RESOURCE_NAMESPACE SHADER_RESOURCES_NAMESPACE
+#include "ResourceProvider.hpp"
+
+namespace Methane::Data
 {
+using ShaderProvider = SHADER_RESOURCES_NAMESPACE::ResourceProvider;
+}
 
-class TextureVK final : public ResourceVK<TextureBase>
+#else // ifdef SHADER_RESOURCES_NAMESPACE
+
+#include "FileProvider.hpp"
+
+namespace Methane::Data
 {
-public:
-    TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+using ShaderProvider = FileProvider;
+}
 
-    // Resource interface
-    void SetData(const SubResources& sub_resources) final;
-
-    // Object interface
-    void SetName(const std::string& name) final;
-
-    void UpdateFrameBuffer();
-
-protected:
-    void GenerateMipLevels();
-};
-
-} // namespace Methane::Graphics
+#endif // ifdef SHADER_RESOURCES_NAMESPACE

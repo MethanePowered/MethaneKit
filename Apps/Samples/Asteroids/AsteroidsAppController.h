@@ -58,7 +58,7 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AsteroidsAppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AsteroidsAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AsteroidsAppAction action) override;
     std::string GetKeyboardActionName(AsteroidsAppAction action) const override;
 

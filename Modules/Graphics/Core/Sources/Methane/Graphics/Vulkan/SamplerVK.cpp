@@ -46,11 +46,6 @@ SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const Descr
     ResetSamplerState();
 }
 
-SamplerVK::~SamplerVK()
-{
-    META_FUNCTION_TASK();
-}
-
 void SamplerVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

@@ -102,13 +102,6 @@ AsteroidsApp::AsteroidsApp()
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
-    , m_scene_constants(                                // Shader constants:
-        {                                               // ================
-            gfx::Color4f(1.F, 1.F, 1.F, 1.F),           // - light_color
-            3.0F,                                       // - light_power
-            0.05F,                                      // - light_ambient_factor
-            30.F                                        // - light_specular_factor
-        })
     , m_asteroids_array_settings(                       // Asteroids array settings:
         {                                               // ================
             m_view_camera,                              // - view_camera
@@ -127,8 +120,7 @@ AsteroidsApp::AsteroidsApp()
             true,                                       // - textures_array_enabled
             true                                        // - depth_reversed
         })
-    , m_asteroids_complexity(static_cast<uint32_t>(GetDefaultComplexity()))
-    , m_is_parallel_rendering_enabled(true)
+    , m_asteroids_complexity(GetDefaultComplexity())
 {
     META_FUNCTION_TASK();
 
@@ -319,7 +311,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         return false;
     
     // Update frame buffer and depth textures in initial & final render passes
-    for (AsteroidsFrame& frame : GetFrames())
+    for (const AsteroidsFrame& frame : GetFrames())
     {
         META_CHECK_ARG_NOT_NULL(frame.initial_screen_pass_ptr);
         gfx::RenderPass::Settings initial_pass_settings         = frame.initial_screen_pass_ptr->GetSettings();
@@ -355,7 +347,7 @@ bool AsteroidsApp::Update()
     return true;
 }
 
-bool AsteroidsApp::Animate(double elapsed_seconds, double delta_seconds)
+bool AsteroidsApp::Animate(double elapsed_seconds, double delta_seconds) const
 {
     META_FUNCTION_TASK();
     bool update_result = m_planet_ptr->Update(elapsed_seconds, delta_seconds);
@@ -492,7 +484,7 @@ std::string AsteroidsApp::GetParametersString()
     return ss.str();
 }
 
-Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(AsteroidsFrame& frame)
+Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(const AsteroidsFrame& frame) const
 {
     return gfx::CommandListSet::Create({
         m_is_parallel_rendering_enabled

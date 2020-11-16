@@ -72,7 +72,7 @@ protected:
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
-    const Camera* m_p_view_camera;
+    const Camera* m_p_view_camera             = nullptr;
     Pivot         m_pivot;
     float         m_radius_ratio              = 0.9F;
     Vector3f      m_mouse_pressed_on_sphere   { };

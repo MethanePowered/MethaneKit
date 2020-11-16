@@ -36,7 +36,6 @@ class SamplerVK final : public ResourceVK<SamplerBase>
 {
 public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~SamplerVK() final;
 
     // Object interface
     void SetName(const std::string& name) final;

@@ -38,7 +38,6 @@ static inline float UnitSign(float x)   { return x / std::fabs(x); }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
     : Camera(axis_orientation)
-    , m_p_view_camera(nullptr)
     , m_pivot(pivot)
 {
     META_FUNCTION_TASK();
@@ -105,10 +104,10 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     float z_sign = 1.F;
     if (!is_primary && inside_sphere && screen_radius > sphere_radius)
     {
-        const uint32_t radius_mult = static_cast<uint32_t>(std::floor(screen_radius / sphere_radius));
+        const auto radius_mult = static_cast<uint32_t>(std::floor(screen_radius / sphere_radius));
         if (radius_mult < 2)
         {
-            const float vector_radius = sphere_radius * (radius_mult + 1) - screen_radius;
+            const float vector_radius = sphere_radius * static_cast<float>(radius_mult + 1) - screen_radius;
             screen_point = screen_point.Normalize() * vector_radius;
             z_sign       = std::pow(-1.F, static_cast<float>(radius_mult));
         }

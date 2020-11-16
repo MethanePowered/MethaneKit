@@ -34,7 +34,7 @@ constexpr bool g_is_apple = true;
 constexpr bool g_is_apple = false;
 #endif
 
-inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
+inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
                                                     std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
 {
     using Stencil = Graphics::Stencil;
@@ -42,7 +42,7 @@ inline Graphics::AppSettings GetGraphicsAppSettings(std::string app_name, bool a
     return Graphics::AppSettings
     {                                                               // =========================
         Platform::App::Settings {                                   // platform_app:
-            std::move(app_name),                                    //   - name
+            app_name,                                               //   - name
             0.8, 0.8,                                               //   - width, height
             false,                                                  //   - is_full_screen
         },                                                          // =========================

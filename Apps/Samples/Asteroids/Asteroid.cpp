@@ -88,8 +88,9 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     m_depth_range[0] = std::numeric_limits<float>::max();
     m_depth_range[1] = std::numeric_limits<float>::min();
 
-    for (Vertex& vertex : m_vertices)
+    for (size_t vertex_index = 0; vertex_index < GetVertexCount(); ++vertex_index)
     {
+        Vertex& vertex = GetMutableVertex(vertex_index);
         vertex.position *= perlin_noise(gfx::Vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
 
         const float vertex_depth = vertex.position.length();
@@ -244,14 +245,14 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
 
     for (size_t row = 0; row < dimensions.height; ++row)
     {
-        uint32_t* row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride);
+        auto row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride);
         
         for (size_t col = 0; col < dimensions.width; ++col)
         {
-            const gfx::Vector3f noise_coordinates(noise_scale * row, noise_scale * col, random_seed);
+            const gfx::Vector3f noise_coordinates(noise_scale * static_cast<float>(row), noise_scale * static_cast<float>(col), random_seed);
             const float         noise_intensity = std::max(0.0F, std::min(1.0F, (perlin_noise(noise_coordinates) - 0.5F) * noise_strength + 0.5F));
 
-            uint8_t* texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
+            auto texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
             for (size_t channel = 0; channel < 3; ++channel)
             {
                 texel_data[channel] = static_cast<uint8_t>(255.F * noise_intensity);

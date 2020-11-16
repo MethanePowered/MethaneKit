@@ -65,13 +65,8 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
         break;
 
     case AppContextAction::SwitchDevice:
-    {
-        const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
-        if (next_device_ptr)
-        {
-            m_context.Reset(*next_device_ptr);
-        }
-    } break;
+        ResetContextWithNextDevice();
+        break;
 
     default: META_UNEXPECTED_ENUM_ARG(action);
     }
@@ -95,6 +90,16 @@ Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 {
     META_FUNCTION_TASK();
     return GetKeyboardHelp();
+}
+
+void AppContextController::ResetContextWithNextDevice()
+{
+    META_FUNCTION_TASK();
+    const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+    if (next_device_ptr)
+    {
+        m_context.Reset(*next_device_ptr);
+    }
 }
 
 } // namespace Methane::Graphics

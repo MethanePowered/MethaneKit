@@ -78,11 +78,6 @@ TextureVK::TextureVK(ContextBase& context, const Settings& settings, const Descr
     InitializeDefaultDescriptors();
 }
 
-TextureVK::~TextureVK()
-{
-    META_FUNCTION_TASK();
-}
-
 void TextureVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

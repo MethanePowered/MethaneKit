@@ -65,9 +65,11 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppContextAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AppContextAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
+
+    void ResetContextWithNextDevice();
 
     RenderContext& m_context;
 };
