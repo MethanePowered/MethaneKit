@@ -120,7 +120,7 @@ protected:
     {
         META_FUNCTION_TASK();
         CheckLayoutHasVertexField(VertexField::Normal);
-        META_CHECK_ARG_DESCR(BaseMesh::GetIndexCount(), BaseMesh::m_indices.size() % 3 == 0,
+        META_CHECK_ARG_DESCR(BaseMesh::GetIndexCount(), BaseMesh::GetIndexCount() % 3 == 0,
                              "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
