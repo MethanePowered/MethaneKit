@@ -160,7 +160,6 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
-            -Wno-deprecated-copy
         )
 
     endif()

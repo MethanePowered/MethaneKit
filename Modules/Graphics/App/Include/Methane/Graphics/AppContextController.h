@@ -69,6 +69,7 @@ protected:
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
 
+private:
     void ResetContextWithNextDevice();
 
     RenderContext& m_context;

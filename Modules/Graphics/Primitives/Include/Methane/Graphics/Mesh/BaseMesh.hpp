@@ -129,8 +129,8 @@ protected:
             vertex_normal = { 0.F, 0.F, 0.F };
         }
 
-        const size_t triangles_count = BaseMesh::GetIndexCount() / 3;
-        for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
+        const Data::Size triangles_count = BaseMesh::GetIndexCount() / 3;
+        for (Data::Index triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
         {
             VType& v1 = GetMutableVertex(GetIndex(triangle_index * 3));
             VType& v2 = GetMutableVertex(GetIndex(triangle_index * 3 + 1));

@@ -69,7 +69,6 @@ struct UnitType : BaseType
     Units units = Units::Pixels;
 
     using BaseType::BaseType;
-
     explicit UnitType(const BaseType& base) noexcept     : BaseType(base), units(Units::Pixels) { }
     UnitType(Units units, const BaseType& base) noexcept : BaseType(base), units(units) { }
     UnitType(Units units, BaseType&& base) noexcept      : BaseType(std::move(base)), units(units) { }

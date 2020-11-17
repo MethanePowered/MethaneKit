@@ -155,7 +155,7 @@ TextMesh::CharPosition::CharPosition(CoordinateType x, CoordinateType y, bool is
 
 TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& frame_size)
     : m_font(font)
-    , m_layout(std::move(layout))
+    , m_layout(layout)
     , m_frame_size(frame_size)
 {
     META_FUNCTION_TASK();

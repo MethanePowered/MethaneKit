@@ -62,6 +62,7 @@ protected:
     void        OnKeyboardStateAction(AsteroidsAppAction action) override;
     std::string GetKeyboardActionName(AsteroidsAppAction action) const override;
 
+private:
     AsteroidsApp& m_asteroids_app;
 };
 

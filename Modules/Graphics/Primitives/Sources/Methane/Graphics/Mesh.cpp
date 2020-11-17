@@ -31,9 +31,9 @@ Abstract mesh class
 namespace Methane::Graphics
 {
 
-static constexpr size_t g_face_positions_count = 4;
-static constexpr size_t g_face_indices_count = 6;
-static constexpr size_t g_colors_count = 6;
+static constexpr Data::Size g_face_positions_count = 4;
+static constexpr Data::Size g_face_indices_count = 6;
+static constexpr Data::Size g_colors_count = 6;
 
 Data::Size Mesh::GetVertexFieldSize(size_t vertex_field_index)
 {
@@ -58,7 +58,7 @@ const Mesh::Position2D& Mesh::GetFacePosition2D(size_t index)
     return s_face_positions_2d[index];
 }
 
-size_t Mesh::GetFacePositionCount() noexcept
+Data::Size Mesh::GetFacePositionCount() noexcept
 {
     return g_face_positions_count;
 }
@@ -75,7 +75,7 @@ const Mesh::TexCoord& Mesh::GetFaceTexCoord(size_t index)
     return s_face_texcoords[index];
 }
 
-size_t Mesh::GetColorsCount() noexcept
+Data::Size Mesh::GetColorsCount() noexcept
 {
     return g_colors_count;
 }
@@ -93,7 +93,7 @@ const Mesh::Color& Mesh::GetColor(size_t index)
     return s_colors[index];
 }
 
-Data::Index Mesh::GetFaceIndex(size_t index)
+Mesh::Index Mesh::GetFaceIndex(size_t index)
 {
     // Face indices in quad to form two triangles in clockwise order
     static const std::array<Index, 6> s_face_indices{
@@ -102,7 +102,7 @@ Data::Index Mesh::GetFaceIndex(size_t index)
     return s_face_indices[index];
 }
 
-size_t Mesh::GetFaceIndicesCount() noexcept
+Data::Size Mesh::GetFaceIndicesCount() noexcept
 {
     return g_face_indices_count;
 }

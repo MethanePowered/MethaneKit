@@ -130,7 +130,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
         [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
-                rng(),
+                static_cast<uint32_t>(rng()),
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
                 1.5F
@@ -297,7 +297,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
-                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr)
+                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");

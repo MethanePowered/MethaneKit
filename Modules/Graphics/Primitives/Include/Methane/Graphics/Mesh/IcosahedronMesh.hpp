@@ -138,8 +138,8 @@ public:
 
         typename BaseMeshT::EdgeMidpoints edge_midpoints;
 
-        const size_t triangles_count = Mesh::GetIndexCount() / 3;
-        for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
+        const Data::Size triangles_count = Mesh::GetIndexCount() / 3;
+        for (Data::Index triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
         {
             const Mesh::Index vi1 = Mesh::GetIndex(triangle_index * 3);
             const Mesh::Index vi2 = Mesh::GetIndex(triangle_index * 3 + 1);

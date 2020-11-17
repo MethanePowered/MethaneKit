@@ -41,7 +41,9 @@ public:
         YZ,
     };
 
-    explicit QuadMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.F, float height = 1.F, float depth_pos = 0.F, size_t color_index = 0, FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
+    explicit QuadMesh(const Mesh::VertexLayout& vertex_layout,
+                      float width = 1.F, float height = 1.F, float depth_pos = 0.F, size_t color_index = 0,
+                      FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
         : BaseMeshT(type, vertex_layout)
         , m_width(width)
         , m_height(height)

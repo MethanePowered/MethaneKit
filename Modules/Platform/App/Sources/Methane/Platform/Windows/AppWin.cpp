@@ -34,8 +34,8 @@ namespace Methane::Platform
 
 constexpr auto WM_ALERT = WM_USER + 1;
 
-static const wchar_t const* g_window_class = L"MethaneWindowClass";
-static const wchar_t const* g_window_icon  = L"IDI_APP_ICON";
+static const wchar_t* const g_window_class = L"MethaneWindowClass";
+static const wchar_t* const g_window_icon  = L"IDI_APP_ICON";
 
 static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 {

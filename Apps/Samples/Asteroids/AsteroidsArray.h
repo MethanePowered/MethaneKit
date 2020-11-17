@@ -105,7 +105,7 @@ public:
 
     Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                      const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
-                                                     const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr);
+                                                     const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr) const;
 
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);

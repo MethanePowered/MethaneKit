@@ -108,13 +108,13 @@ public:
 
     Mesh(Type type, const VertexLayout& vertex_layout);
 
-    Type                GetType() const noexcept            { return m_type; }
-    const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
-    Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
-    const Indices&      GetIndices() const noexcept         { return m_indices; }
-    Index               GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
-    Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
-    Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    Type                GetType() const noexcept               { return m_type; }
+    const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
+    Data::Size          GetVertexSize() const noexcept         { return m_vertex_size; }
+    const Indices&      GetIndices() const noexcept            { return m_indices; }
+    Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
+    Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
+    Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
     struct Edge
@@ -145,12 +145,12 @@ protected:
     static Data::Size         GetVertexFieldSize(VertexField vertex_field)   { return GetVertexFieldSize(static_cast<size_t>(vertex_field)); }
     static Data::Size         GetVertexFieldSize(size_t vertex_field_index);
     static const Position2D&  GetFacePosition2D(size_t index);
-    static size_t             GetFacePositionCount() noexcept;
+    static Data::Size         GetFacePositionCount() noexcept;
     static const TexCoord&    GetFaceTexCoord(size_t index);
-    static Data::Index        GetFaceIndex(size_t index);
-    static size_t             GetFaceIndicesCount() noexcept;
+    static Mesh::Index        GetFaceIndex(size_t index);
+    static Data::Size         GetFaceIndicesCount() noexcept;
     static const Color&       GetColor(size_t index);
-    static size_t             GetColorsCount() noexcept;
+    static Data::Size         GetColorsCount() noexcept;
 
 private:
     const Type                  m_type;

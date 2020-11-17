@@ -50,7 +50,7 @@ Badge::Badge(Context& ui_context, Ptr<gfx::Texture> texture_ptr, const Settings&
             settings.texture_mode,
         }
     )
-    , m_settings(std::move(settings))
+    , m_settings(settings)
     , m_frame_size(ui_context.GetFrameSizeInPixels())
 {
     META_FUNCTION_TASK();
