@@ -63,10 +63,10 @@ public:
             {-a,  0,  b },
         } };
 
-        BaseMeshT::m_vertices.resize(vertex_positions.size());
+        BaseMeshT::ResizeVertices(vertex_positions.size());
         for(size_t vertex_index = 0; vertex_index < vertex_positions.size(); ++vertex_index)
         {
-            VType& vertex = BaseMeshT::m_vertices[vertex_index];
+            VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
 
             Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = vertex_positions[vertex_index];
@@ -90,28 +90,28 @@ public:
             }
         }
 
-        BaseMeshT::m_indices = {
-            5,  0,  11,
-            1,  0,  5,
-            7,  0,  1,
-            10, 0,  7,
-            11, 0,  10,
-            9,  1,  5,
-            4,  5,  11,
-            2,  11, 10,
-            6,  10, 7,
-            8,  7,  1,
-            4,  3,  9,
-            2,  3,  4,
-            6,  3,  2,
-            8,  3,  6,
-            9,  3,  8,
-            5,  4,  9,
-            11, 2,  4,
-            10, 6,  2,
-            7,  8,  6,
-            1,  9,  8,
-        };
+        Mesh::SetIndices({
+                             5, 0, 11,
+                             1, 0, 5,
+                             7, 0, 1,
+                             10, 0, 7,
+                             11, 0, 10,
+                             9, 1, 5,
+                             4, 5, 11,
+                             2, 11, 10,
+                             6, 10, 7,
+                             8, 7, 1,
+                             4, 3, 9,
+                             2, 3, 4,
+                             6, 3, 2,
+                             8, 3, 6,
+                             9, 3, 8,
+                             5, 4, 9,
+                             11, 2, 4,
+                             10, 6, 2,
+                             7, 8, 6,
+                             1, 9, 8,
+                         });
 
         for(uint32_t subdivision = 0; subdivision < subdivisions_count; ++subdivision)
         {
@@ -129,21 +129,21 @@ public:
     void Subdivide()
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(BaseMeshT::m_indices.size(), BaseMeshT::m_indices.size() % 3 == 0,
+        META_CHECK_ARG_DESCR(Mesh::GetIndexCount(), Mesh::GetIndexCount() % 3 == 0,
                              "icosahedron indices count should be a multiple of three representing triangles list");
 
         Mesh::Indices new_indices;
-        new_indices.reserve(BaseMeshT::m_indices.size() * 4);
-        BaseMeshT::m_vertices.reserve(BaseMeshT::m_vertices.size() * 2);
+        new_indices.reserve(Mesh::GetIndexCount() * 4);
+        BaseMeshT::ReserveVertices(BaseMeshT::GetVertexCount() * 2);
 
         typename BaseMeshT::EdgeMidpoints edge_midpoints;
 
-        const size_t triangles_count = BaseMeshT::m_indices.size() / 3;
+        const size_t triangles_count = Mesh::GetIndexCount() / 3;
         for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
         {
-            const Mesh::Index vi1 = BaseMeshT::m_indices[triangle_index * 3];
-            const Mesh::Index vi2 = BaseMeshT::m_indices[triangle_index * 3 + 1];
-            const Mesh::Index vi3 = BaseMeshT::m_indices[triangle_index * 3 + 2];
+            const Mesh::Index vi1 = Mesh::GetIndex(triangle_index * 3);
+            const Mesh::Index vi2 = Mesh::GetIndex(triangle_index * 3 + 1);
+            const Mesh::Index vi3 = Mesh::GetIndex(triangle_index * 3 + 2);
 
             const Mesh::Index vm1 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi1, vi2), edge_midpoints);
             const Mesh::Index vm2 = BaseMeshT::AddEdgeMidpoint(Mesh::Edge(vi2, vi3), edge_midpoints);
@@ -158,7 +158,7 @@ public:
             new_indices.insert(new_indices.end(), indices.begin(), indices.end());
         }
 
-        std::swap(BaseMeshT::m_indices, new_indices);
+        BaseMeshT::SwapIndices(new_indices);
     }
 
     void Spherify()
@@ -166,8 +166,9 @@ public:
         META_FUNCTION_TASK();
         const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
 
-        for(VType& vertex : BaseMeshT::m_vertices)
+        for(size_t vertex_index = 0; vertex_index < BaseMeshT::GetVertexCount(); ++vertex_index)
         {
+            VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
             Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
             vertex_position = cml::normalize(vertex_position) * m_radius;
 
@@ -179,7 +180,7 @@ public:
         }
     }
 
-protected:
+private:
     const float m_radius;
 };
 
