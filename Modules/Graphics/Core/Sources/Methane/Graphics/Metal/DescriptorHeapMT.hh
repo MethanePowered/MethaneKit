@@ -32,7 +32,7 @@ class DescriptorHeapMT final : public DescriptorHeap
 {
 public:
     DescriptorHeapMT(ContextBase& context, const Settings& settings);
-    ~DescriptorHeapMT() final;
+    ~DescriptorHeapMT() override;
 };
 
 } // namespace Methane::Graphics

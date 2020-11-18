@@ -38,7 +38,7 @@ public:
     SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
     
 protected:
     void ResetSamplerState();

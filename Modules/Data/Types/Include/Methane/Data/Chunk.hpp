@@ -44,7 +44,7 @@ struct Chunk
 
     explicit Chunk(Bytes&& in_data) noexcept
         : data(std::move(in_data))
-        , p_data(static_cast<ConstRawPtr>(data.data()))
+        , p_data(data.data())
         , size(static_cast<Size>(data.size()))
     { }
 
@@ -53,6 +53,8 @@ struct Chunk
         , p_data(data.empty() ? other.p_data : data.data())
         , size(data.empty() ? other.size : static_cast<Size>(data.size()))
     { }
+
+    ~Chunk() = default;
 
 protected:
     explicit Chunk(const Chunk& other) noexcept

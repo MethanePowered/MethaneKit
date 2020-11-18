@@ -69,7 +69,7 @@ public:
         return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());
     }
 
-    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) final
+    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override
     {
         META_FUNCTION_TASK();
         const auto library_by_name_it = m_library_by_name.find(library_name);

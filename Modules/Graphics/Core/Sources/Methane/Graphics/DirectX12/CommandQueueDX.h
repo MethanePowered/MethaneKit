@@ -52,13 +52,13 @@ class CommandQueueDX final : public CommandQueueBase
 {
 public:
     CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueDX() final;
+    ~CommandQueueDX() override;
 
     // CommandQueue interface
-    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) final;
+    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 

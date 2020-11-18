@@ -41,25 +41,25 @@ public:
     explicit RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface
-    void PushDebugGroup(DebugGroup& debug_group) final;
-    void PopDebugGroup() final;
-    void Commit() final;
+    void PushDebugGroup(DebugGroup& debug_group) override;
+    void PopDebugGroup() override;
+    void Commit() override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) final { }
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) final;
+    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) final;
-    void SetVertexBuffers(BufferSet& vertex_buffers) final;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive, Buffer& index_buffer,
                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                     uint32_t instance_count, uint32_t start_instance) final;
+                     uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count, uint32_t start_instance) final;
+              uint32_t instance_count, uint32_t start_instance) override;
 
     // Object interface
-    void SetName(const std::string& label) final;
+    void SetName(const std::string& label) override;
 
 protected:
     CommandQueueVK& GetCommandQueueVK() noexcept;

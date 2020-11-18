@@ -38,7 +38,7 @@ public:
     RenderPassMT(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    bool Update(const Settings& settings) final;
+    bool Update(const Settings& settings) override;
     
     void Reset();
     

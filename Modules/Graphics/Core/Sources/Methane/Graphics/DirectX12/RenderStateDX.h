@@ -44,12 +44,12 @@ public:
     explicit ViewStateDX(const Settings& settings);
 
     // ViewState overrides
-    bool Reset(const Settings& settings) final;
-    bool SetViewports(const Viewports& viewports) final;
-    bool SetScissorRects(const ScissorRects& scissor_rects) final;
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
     // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) final;
+    void Apply(RenderCommandListBase& command_list) override;
 
 private:
     std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
@@ -62,13 +62,13 @@ public:
     RenderStateDX(RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
-    void Reset(const Settings& settings) final;
+    void Reset(const Settings& settings) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) final;
+    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();

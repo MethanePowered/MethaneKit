@@ -65,7 +65,7 @@ public:
     }
 
     // Object overrides
-    void SetName(const std::string& name) final
+    void SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
         BufferBase::SetName(name);
@@ -77,7 +77,7 @@ public:
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) final
+    void SetData(const SubResources& sub_resources) override
     {
         META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
@@ -137,7 +137,7 @@ public:
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
 
-    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) final
+    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() & Usage::ReadBack,

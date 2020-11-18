@@ -58,7 +58,7 @@ public:
     }
 
     // Resource interface
-    void SetData(const SubResources&) final
+    void SetData(const SubResources&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("setting texture data is allowed for image textures only");
     }
@@ -76,10 +76,10 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Object overrides
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) final;
+    void SetData(const SubResources& sub_resources) override;
 
 private:
     using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
@@ -98,7 +98,7 @@ public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
 
     // Resource overrides
-    void SetData(const SubResources&) final
+    void SetData(const SubResources&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth stencil texture does not allow to set data");
     }

@@ -53,7 +53,7 @@ public:
         float fov_deg;
     };
 
-    Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    explicit Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
 
     inline void Resize(const Data::FloatSize& screen_size) noexcept         { m_screen_size = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
     inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }

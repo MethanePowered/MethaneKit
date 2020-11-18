@@ -37,10 +37,10 @@ class CommandQueueMT final : public CommandQueueBase
 {
 public:
     CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueMT() final;
+    ~CommandQueueMT() override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
     
     IContextMT& GetContextMT() noexcept;
     RenderContextMT& GetRenderContextMT();

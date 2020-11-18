@@ -41,19 +41,19 @@ public:
     ~RenderContextDX() override;
 
     // Context interface
-    void WaitForGpu(WaitFor wait_for) final;
+    void WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface
-    bool ReadyToRender() const final { return true; }
-    void Resize(const FrameSize& frame_size) final;
-    void Present() final;
-    Platform::AppView GetAppView() const final { return { nullptr }; }
-    float GetContentScalingFactor() const final;
-    uint32_t GetFontResolutionDpi() const final;
+    bool ReadyToRender() const override { return true; }
+    void Resize(const FrameSize& frame_size) override;
+    void Present() override;
+    Platform::AppView GetAppView() const override { return { nullptr }; }
+    float GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) final;
-    void Release() final;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
+    void Release() override;
 
     CommandQueueDX& GetRenderCommandQueueDX();
 
@@ -63,7 +63,7 @@ protected:
     inline uint32_t GetPresentVSyncInterval() const { return GetSettings().vsync_enabled ? 1 : 0; }
 
     // RenderContextBase overrides
-    uint32_t GetNextFrameBufferIndex() final;
+    uint32_t GetNextFrameBufferIndex() override;
 
 private:
     const Platform::AppEnvironment m_platform_env;

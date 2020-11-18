@@ -44,11 +44,11 @@ public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
-    bool Update(const Settings& settings) final;
+    bool Update(const Settings& settings) override;
 
     // RenderPassBase interface
-    void Begin(RenderCommandListBase& command_list) final;
-    void End(RenderCommandListBase& command_list) final;
+    void Begin(RenderCommandListBase& command_list) override;
+    void End(RenderCommandListBase& command_list) override;
 
     // Allows to disable native D3D12 render-pass feature usage,
     // but enabling does not guarantee that it will be used (it depends on OS version and API availability)
@@ -106,7 +106,7 @@ private:
     void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
 
     // IDescriptorHeapCallback implementation
-    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) final;
+    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;
 
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;

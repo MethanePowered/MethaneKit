@@ -47,10 +47,10 @@ public:
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
     DeviceDX(const DeviceDX& device) noexcept = default;
-    ~DeviceDX() final;
+    ~DeviceDX() override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     using NativeFeatureOptions5 = std::optional<D3D12_FEATURE_DATA_D3D12_OPTIONS5>;
     const NativeFeatureOptions5&        GetNativeFeatureOptions5() const { return m_feature_options_5; }
@@ -73,14 +73,14 @@ public:
     SystemDX();
     SystemDX(const SystemDX&) = delete;
     SystemDX(SystemDX&&) = delete;
-    ~SystemDX() final;
+    ~SystemDX() override;
 
     SystemDX& operator=(const SystemDX&) = delete;
     SystemDX& operator=(SystemDX&&) = delete;
 
     // System interface
-    void  CheckForChanges() final;
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) final;
+    void  CheckForChanges() override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
 
     const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const;

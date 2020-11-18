@@ -38,10 +38,10 @@ class SamplerMT final : public ResourceMT<SamplerBase>
 {
 public:
     SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~SamplerMT() final;
+    ~SamplerMT() override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 

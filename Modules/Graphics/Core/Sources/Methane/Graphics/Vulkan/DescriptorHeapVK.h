@@ -34,7 +34,7 @@ class DescriptorHeapVK final : public DescriptorHeap
 {
 public:
     DescriptorHeapVK(ContextBase& context, const Settings& settings);
-    ~DescriptorHeapVK() final;
+    ~DescriptorHeapVK() override;
 };
 
 } // namespace Methane::Graphics

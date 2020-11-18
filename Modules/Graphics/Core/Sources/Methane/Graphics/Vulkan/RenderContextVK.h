@@ -35,24 +35,24 @@ class RenderContextVK final : public ContextVK<RenderContextBase>
 {
 public:
     RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
-    ~RenderContextVK() final;
+    ~RenderContextVK() override;
 
     // Context interface
-    void  WaitForGpu(Context::WaitFor wait_for) final;
+    void  WaitForGpu(Context::WaitFor wait_for) override;
 
     // RenderContext interface
-    bool     ReadyToRender() const final;
-    void     Resize(const FrameSize& frame_size) final;
-    void     Present() final;
-    bool     SetVSyncEnabled(bool vsync_enabled) final;
-    bool     SetFrameBuffersCount(uint32_t frame_buffers_count) final;
-    float    GetContentScalingFactor() const final;
-    uint32_t GetFontResolutionDpi() const final;
-    Platform::AppView GetAppView() const final { return { }; }
+    bool     ReadyToRender() const override;
+    void     Resize(const FrameSize& frame_size) override;
+    void     Present() override;
+    bool     SetVSyncEnabled(bool vsync_enabled) override;
+    bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    float    GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
+    Platform::AppView GetAppView() const override { return { }; }
 
     // ContextBase overrides
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) final;
-    void Release() final;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
+    void Release() override;
 
     CommandQueueVK& GetRenderCommandQueueVK();
 };

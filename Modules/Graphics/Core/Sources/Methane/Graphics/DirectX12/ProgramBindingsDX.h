@@ -71,18 +71,18 @@ public:
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
         ArgumentBindingDX(const ArgumentBindingDX& other);
         ArgumentBindingDX(ArgumentBindingDX&&) noexcept = default;
-        ~ArgumentBindingDX() final = default;
+        ~ArgumentBindingDX() override = default;
 
         ArgumentBindingDX& operator=(const ArgumentBindingDX&) = delete;
         ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) final;
+        void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const SettingsDX&                   GetSettingsDX() const noexcept            { return m_settings_dx; }
-        uint32_t                            GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
-        const DescriptorRange&              GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const IResourceDX::LocationsDX&      GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        const SettingsDX&               GetSettingsDX() const noexcept            { return m_settings_dx; }
+        uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
+        const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
+        const IResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
@@ -93,7 +93,7 @@ public:
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
         const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
-        IResourceDX::LocationsDX m_resource_locations_dx;
+        IResourceDX::LocationsDX           m_resource_locations_dx;
     };
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
@@ -102,7 +102,7 @@ public:
     void Initialize();
 
     // ProgramBindings interface
-    void CompleteInitialization() final;
+    void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;

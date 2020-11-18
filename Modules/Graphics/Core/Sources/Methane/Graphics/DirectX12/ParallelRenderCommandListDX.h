@@ -39,17 +39,17 @@ public:
     ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) final;
+    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
 
     // CommandList interface
-    void Commit() final;
+    void Commit() override;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_indexc, const CompletedCallback& completed_callback = {}) final;
-    void Complete(uint32_t frame_index) final;
+    void Execute(uint32_t frame_indexc, const CompletedCallback& completed_callback = {}) override;
+    void Complete(uint32_t frame_index) override;
 
     // Object interface
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;

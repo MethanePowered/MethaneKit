@@ -38,7 +38,7 @@ class ShaderVK final : public ShaderBase
 {
 public:
     ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings);
-    ~ShaderVK() final;
+    ~ShaderVK() override;
     
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const final;

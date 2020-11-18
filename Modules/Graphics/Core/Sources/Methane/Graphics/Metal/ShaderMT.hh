@@ -37,7 +37,7 @@ class ShaderMT final : public ShaderBase
 {
 public:
     ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings);
-    ~ShaderMT() final;
+    ~ShaderMT() override;
     
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const final;

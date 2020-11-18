@@ -89,7 +89,7 @@ public:
 
     const IApp::Settings& GetUserInterfaceAppSettings() const noexcept final { return AppBase::GetAppSettings(); }
 
-    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) final
+    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) override
     {
         META_FUNCTION_TASK();
         if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
@@ -101,7 +101,7 @@ public:
         return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }
 
-    bool SetAnimationsEnabled(bool animations_enabled) final
+    bool SetAnimationsEnabled(bool animations_enabled) override
     {
         META_FUNCTION_TASK();
         if (!GraphicsApp::SetAnimationsEnabled(animations_enabled))
@@ -111,7 +111,7 @@ public:
         return true;
     }
 
-    void ShowParameters() final
+    void ShowParameters() override
     {
         META_FUNCTION_TASK();
         if (IsParametersTextDisplayed())

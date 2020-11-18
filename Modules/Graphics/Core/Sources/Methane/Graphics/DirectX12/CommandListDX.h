@@ -66,7 +66,7 @@ public:
     explicit CommandListSetDX(const Refs<CommandList>& command_list_refs);
 
     // CommandListSetBase interface
-    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) final;
+    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
 
     void WaitUntilCompleted() noexcept;
 
