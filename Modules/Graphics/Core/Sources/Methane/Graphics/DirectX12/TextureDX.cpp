@@ -363,11 +363,11 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         META_CHECK_ARG_LESS(sub_resource_raw_index, dx_sub_resources.size());
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
-        dx_sub_resource.pData      = sub_resource.p_data;
+        dx_sub_resource.pData      = sub_resource.GetDataPtr();
         dx_sub_resource.RowPitch   = settings.dimensions.width  * pixel_size;
         dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
 
-        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.size, dx_sub_resource.SlicePitch,
+        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
                                               "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
     }
 

@@ -59,6 +59,7 @@ public:
 
         ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept;
         ImageData(ImageData&& other) noexcept;
+        ImageData(const ImageData& other) noexcept = delete;
         ~ImageData();
     };
 

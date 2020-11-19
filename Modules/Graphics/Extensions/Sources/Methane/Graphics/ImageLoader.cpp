@@ -72,10 +72,10 @@ ImageLoader::ImageData::~ImageData()
     META_FUNCTION_TASK();
 
 #ifndef USE_OPEN_IMAGE_IO
-    if (pixels.data.empty() && pixels.p_data)
+    if (!pixels.IsDataStored() && !pixels.IsEmptyOrNull())
     {
         // We assume that image data was loaded with STB load call and was not copied to container, so it must be freed
-        stbi_image_free(const_cast<Data::RawPtr>(pixels.p_data));
+        stbi_image_free(const_cast<Data::RawPtr>(pixels.GetDataPtr()));
     }
 #endif
 }
@@ -95,7 +95,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #ifdef USE_OPEN_IMAGE_IO
 
 #if 0
-    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(raw_image_data.p_data), raw_image_data.size);
+    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(raw_image_data.GetDataPtr()), raw_image_data.size);
     OIIO::ImageSpec init_spec;
     init_spec.attribute("oiio:ioproxy", OIIO::TypeDesc::PTR, &image_reader);
     OIIO::ImageBuf image_buf(init_spec);
@@ -124,8 +124,8 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
 #else
     int image_width = 0, image_height = 0, image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<stbi_uc const*>(raw_image_data.p_data),
-                                                  static_cast<int>(raw_image_data.size),
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<stbi_uc const*>(raw_image_data.GetDataPtr()),
+                                                  static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));
 
@@ -161,7 +161,7 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
     Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
-    texture_ptr->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
+    texture_ptr->SetData({ { image_data.pixels.GetDataPtr(), image_data.pixels.GetDataSize() } });
 
     return texture_ptr;
 }
@@ -205,9 +205,9 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     face_resources.reserve(face_images_data.size());
     for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions, face_image_data.second.dimensions, "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.dimensions,     "all face image of cube texture must have equal dimensions");
         META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.channels_count, "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size, Resource::SubResource::Index(face_image_data.first));
+        face_resources.emplace_back(face_image_data.second.pixels.GetDataPtr(), face_image_data.second.pixels.GetDataSize(), Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture

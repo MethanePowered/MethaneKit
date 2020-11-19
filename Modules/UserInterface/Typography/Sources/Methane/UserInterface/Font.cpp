@@ -213,8 +213,8 @@ private:
         FT_Face ft_face = nullptr;
 
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
-            font_data.p_data,
-            static_cast<FT_Long>(font_data.size), 0,
+            font_data.GetDataPtr(),
+            static_cast<FT_Long>(font_data.GetDataSize()), 0,
             &ft_face));
 
         return ft_face;

@@ -89,7 +89,7 @@ public:
 
     const IApp::Settings& GetUserInterfaceAppSettings() const noexcept final { return AppBase::GetAppSettings(); }
 
-    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) override
+    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) final
     {
         META_FUNCTION_TASK();
         if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
@@ -101,7 +101,7 @@ public:
         return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }
 
-    bool SetAnimationsEnabled(bool animations_enabled) override
+    bool SetAnimationsEnabled(bool animations_enabled) final
     {
         META_FUNCTION_TASK();
         if (!GraphicsApp::SetAnimationsEnabled(animations_enabled))
@@ -111,7 +111,7 @@ public:
         return true;
     }
 
-    void ShowParameters() override
+    void ShowParameters() final
     {
         META_FUNCTION_TASK();
         if (IsParametersTextDisplayed())
@@ -131,14 +131,14 @@ protected:
     }
 
     // Platform::AppBase overrides
-    void ShowControlsHelp() override
+    void ShowControlsHelp() final
     {
         META_FUNCTION_TASK();
         if (!SetHelpText(Platform::AppBase::GetControlsHelp()))
             SetHelpText("");
     }
 
-    void ShowCommandLineHelp() override
+    void ShowCommandLineHelp() final
     {
         META_FUNCTION_TASK();
         if (!SetHelpText(Platform::AppBase::GetCommandLineHelp()))

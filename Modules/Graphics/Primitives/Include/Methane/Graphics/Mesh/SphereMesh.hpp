@@ -172,7 +172,7 @@ private:
             index_offset += 3;
         }
 
-        const uint32_t vertices_count         = static_cast<uint32_t>(BaseMeshT::GetVertexCount());
+        const auto     vertices_count         = static_cast<uint32_t>(BaseMeshT::GetVertexCount());
         const uint32_t index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
         const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count : m_long_lines_count - 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;

@@ -39,7 +39,7 @@ static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
     std::vector<size_t> line_break_positions;
     for (size_t line_break_pos = text_str.find('\n', 0);
                 line_break_pos != std::string::npos;
-                line_break_pos = text_str.find('\n', line_break_positions.back() + 1))
+                line_break_pos = text_str.find('\n', line_break_pos + 1))
     {
         line_break_positions.emplace_back(line_break_pos);
     }

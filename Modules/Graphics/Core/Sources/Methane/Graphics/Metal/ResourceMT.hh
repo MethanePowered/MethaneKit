@@ -66,11 +66,11 @@ protected:
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
-        if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.size)
+        if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.GetDataSize())
         {
             id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
-            mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
-                                                                    length:sub_resource.size
+            mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
+                                                                    length:sub_resource.GetDataSize()
                                                                    options:MTLResourceStorageModeShared];
             [mtl_upload_subresource_buffer setPurgeableState:MTLPurgeableStateVolatile];
         }
@@ -78,7 +78,7 @@ protected:
         {
             Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
             META_CHECK_ARG_NOT_NULL(p_resource_data);
-            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data);
+            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data);
         }
         return mtl_upload_subresource_buffer;
     }

@@ -22,7 +22,7 @@
         </Resource>
       </list>
     </option>
-    <option name="serverName" value="Egorodet Sonar Cloud" />
+    <option name="serverName" value="sonarcloud.io" />
     <option name="useAlternativeWorkingDir" value="false" />
     <option name="workingDirSelection" value="&lt;PROJECT&gt;" />
   </component>

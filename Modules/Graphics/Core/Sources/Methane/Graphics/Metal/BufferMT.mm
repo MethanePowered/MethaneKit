@@ -126,10 +126,10 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
         if (sub_resource.data_range)
             data_offset = sub_resource.data_range->GetStart();
 
-        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data + data_offset);
+        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data + data_offset);
 
-        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.size)];
-        data_offset += sub_resource.size;
+        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.GetDataSize())];
+        data_offset += sub_resource.GetDataSize();
     }
 }
 
@@ -156,9 +156,9 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
                             sourceOffset:0
                                 toBuffer:m_mtl_buffer
                        destinationOffset:data_offset
-                                    size:sub_resource.size];
+                                    size:sub_resource.GetDataSize()];
 
-        data_offset += sub_resource.size;
+        data_offset += sub_resource.GetDataSize();
     }
     
     GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);

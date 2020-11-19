@@ -528,8 +528,8 @@ void ResourceBase::SetData(const SubResources& sub_resources)
     Data::Size sub_resources_data_size = 0U;
     for(const SubResource& sub_resource : sub_resources)
     {
-        META_CHECK_ARG_NAME_DESCR("sub_resource", sub_resource.p_data && sub_resource.size, "can not set empty subresource data to buffer");
-        sub_resources_data_size += sub_resource.size;
+        META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
+        sub_resources_data_size += sub_resource.GetDataSize();
 
         if (m_sub_resource_count_constant)
         {
@@ -656,15 +656,15 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 
     if (sub_resource.data_range)
     {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource.data_range->GetLength(),
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.data_range->GetLength(),
                                    "sub-resource {} data size should be equal to the length of data range", sub_resource.index);
 
-        META_CHECK_ARG_LESS_DESCR(sub_resource.size, sub_resource_data_size + 1,
+        META_CHECK_ARG_LESS_DESCR(sub_resource.GetDataSize(), sub_resource_data_size + 1,
                                   "sub-resource {} data size should be less or equal than full resource size", sub_resource.index);
     }
     else
     {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource_data_size,
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
                                    "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index);
     }
 }

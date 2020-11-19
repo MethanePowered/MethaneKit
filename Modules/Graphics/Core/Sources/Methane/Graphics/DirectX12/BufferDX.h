@@ -99,8 +99,8 @@ public:
             );
 
             META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-            stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.size);
-            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, target_data_it);
+            stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
             if (sub_resource.data_range)
             {

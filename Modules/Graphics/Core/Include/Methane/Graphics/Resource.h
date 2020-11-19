@@ -165,7 +165,6 @@ struct Resource : virtual Object
         Index index;
         std::optional<BytesRange> data_range;
 
-        SubResource() noexcept = default;
         explicit SubResource(SubResource&& other) noexcept;
         explicit SubResource(const SubResource& other) noexcept;
         explicit SubResource(Data::Bytes&& data, Index index = Index(), std::optional<BytesRange> data_range = {}) noexcept;
