@@ -51,16 +51,23 @@ public:
         Options() = delete;
     };
 
-    struct ImageData
+    class ImageData
     {
-        Dimensions  dimensions;
-        uint32_t    channels_count;
-        Data::Chunk pixels;
-
-        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept;
+    public:
+        ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept;
         ImageData(ImageData&& other) noexcept;
         ImageData(const ImageData& other) noexcept = delete;
         ~ImageData();
+
+        const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
+        uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
+        const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
+
+    private:
+        Dimensions  m_dimensions;
+        uint32_t    m_channels_count;
+        Data::Chunk m_pixels;
+        const bool  m_pixels_release_required;
     };
 
     enum class CubeFace : size_t

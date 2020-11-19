@@ -51,18 +51,20 @@ static PixelFormat GetDefaultImageFormat(bool srgb)
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
 }
 
-ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept
-    : dimensions(in_dimensions)
-    , channels_count(in_channels_count)
-    , pixels(std::move(in_pixels))
+ImageLoader::ImageData::ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept
+    : m_dimensions(dimensions)
+    , m_channels_count(channels_count)
+    , m_pixels(std::move(pixels))
+    , m_pixels_release_required(!m_pixels.IsDataStored() && !m_pixels.IsEmptyOrNull())
 {
     META_FUNCTION_TASK();
 }
 
 ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
-    : dimensions(std::move(other.dimensions))
-    , channels_count(other.channels_count)
-    , pixels(std::move(other.pixels))
+    : m_dimensions(std::move(other.m_dimensions))
+    , m_channels_count(other.m_channels_count)
+    , m_pixels(std::move(other.m_pixels))
+    , m_pixels_release_required(other.m_pixels_release_required)
 {
     META_FUNCTION_TASK();
 }
@@ -72,10 +74,10 @@ ImageLoader::ImageData::~ImageData()
     META_FUNCTION_TASK();
 
 #ifndef USE_OPEN_IMAGE_IO
-    if (!pixels.IsDataStored() && !pixels.IsEmptyOrNull())
+    if (m_pixels_release_required)
     {
         // We assume that image data was loaded with STB load call and was not copied to container, so it must be freed
-        stbi_image_free(const_cast<Data::RawPtr>(pixels.GetDataPtr()));
+        stbi_image_free(const_cast<Data::RawPtr>(m_pixels.GetDataPtr()));
     }
 #endif
 }
@@ -160,8 +162,8 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
-    texture_ptr->SetData({ { image_data.pixels.GetDataPtr(), image_data.pixels.GetDataSize() } });
+    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, options & Options::Mipmapped);
+    texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
 
     return texture_ptr;
 }
@@ -197,17 +199,17 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     // Verify cube textures
 
     META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
-    const Dimensions face_dimensions     = face_images_data.front().second.dimensions;
-    const uint32_t   face_channels_count = face_images_data.front().second.channels_count;
+    const Dimensions face_dimensions     = face_images_data.front().second.GetDimensions();
+    const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
     META_CHECK_ARG_EQUAL_DESCR(face_dimensions.width, face_dimensions.height, "all images of cube texture faces must have equal width and height");
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
     for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.dimensions,     "all face image of cube texture must have equal dimensions");
-        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.channels_count, "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(face_image_data.second.pixels.GetDataPtr(), face_image_data.second.pixels.GetDataSize(), Resource::SubResource::Index(face_image_data.first));
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),     "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.GetChannelsCount(), "all face image of cube texture must have equal channels count");
+        face_resources.emplace_back(face_image_data.second.GetPixels().GetDataPtr(), face_image_data.second.GetPixels().GetDataSize(), Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture

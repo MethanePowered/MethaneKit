@@ -223,7 +223,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     }
 
     META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
-    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->p_data, m_byte_code_chunk_ptr->size, IID_PPV_ARGS(&m_cp_reflection)));
+    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
 ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const

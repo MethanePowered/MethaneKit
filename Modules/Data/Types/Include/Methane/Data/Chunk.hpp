@@ -67,7 +67,7 @@ protected:
 private:
     // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
     // returned with chunk (when m_data_storage is loaded from file, for example)
-    const Bytes m_data_storage;
+    Bytes       m_data_storage;
     ConstRawPtr m_data_ptr  = nullptr;
     const Size  m_data_size = 0U;
 };
