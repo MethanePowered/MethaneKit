@@ -50,7 +50,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
     const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const ShaderDX&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())
-        : CD3DX12_SHADER_BYTECODE(NULL, 0);
+        : CD3DX12_SHADER_BYTECODE(nullptr, 0);
 }
 
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)

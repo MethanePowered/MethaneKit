@@ -38,19 +38,27 @@ struct RectSize
     D width = 0;
     D height = 0;
 
-    RectSize() noexcept = default;
-    RectSize(const RectSize& size) noexcept = default;
-    RectSize(D w, D h) noexcept : width(w), height(h) { }
-
     static RectSize<D> Max() noexcept { return RectSize(std::numeric_limits<D>::max(), std::numeric_limits<D>::max()); }
 
+    RectSize() noexcept = default;
+    RectSize(D w, D h) noexcept : width(w), height(h) { }
+
     template<typename V>
-    explicit RectSize(const Point2T<V>& point) noexcept : width(static_cast<D>(point.GetX())), height(static_cast<D>(point.GetY())) { }
+    explicit RectSize(const Point2T<V>& point) noexcept
+        : width(static_cast<D>(point.GetX()))
+        , height(static_cast<D>(point.GetY()))
+    { }
 
     template<typename V>
     RectSize(const RectSize<V>& other) noexcept
         : RectSize(static_cast<D>(other.width), static_cast<D>(other.height))
     { }
+
+    RectSize(const RectSize&) noexcept = default;
+    RectSize(RectSize&&) noexcept = default;
+
+    RectSize& operator=(const RectSize&) noexcept = default;
+    RectSize& operator=(RectSize&&) noexcept = default;
 
     bool operator==(const RectSize& other) const noexcept
     { return std::tie(width, height) == std::tie(other.width, other.height); }
@@ -176,6 +184,27 @@ struct Rect
     using CoordinateType = T;
     using DimensionType  = D;
 
+    using Point = Point2T<T>;
+    using Size  = RectSize<D>;
+
+    Point origin;
+    Size  size;
+
+    Rect() noexcept = default;
+    explicit Rect(const Size& size) noexcept : size(size) { }
+    Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
+
+    Rect(const Rect&) noexcept = default;
+    Rect(Rect&&) noexcept = default;
+
+    Rect& operator=(const Rect&) noexcept = default;
+    Rect& operator=(Rect&&) noexcept = default;
+
+    T GetLeft() const   { return origin.GetX(); }
+    T GetRight() const  { return origin.GetX() + size.width; }
+    T GetTop() const    { return origin.GetY(); }
+    T GetBottom() const { return origin.GetY() + size.height; }
+
     template<typename U>
     operator Rect<U, U>() const
     { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::RectSize>(size) }; }
@@ -204,22 +233,6 @@ struct Rect
 
     explicit operator std::string() const
     { return fmt::format("Rt[{} + {}]", origin, size); }
-
-    T GetLeft() const   { return origin.GetX(); }
-    T GetRight() const  { return origin.GetX() + size.width; }
-    T GetTop() const    { return origin.GetY(); }
-    T GetBottom() const { return origin.GetY() + size.height; }
-
-    using Point = Point2T<T>;
-    using Size  = RectSize<D>;
-
-    explicit Rect(const Size& size) noexcept : size(size) { }
-    Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
-    Rect(const Rect&) noexcept = default;
-    Rect() noexcept = default;
-
-    Point origin;
-    Size  size;
 };
 
 using FrameRect    = Rect<int32_t, uint32_t>;

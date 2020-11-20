@@ -39,7 +39,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::Barrier::Id::Id(Type type, const Resource& resource)
+ResourceBase::Barrier::Id::Id(Type type, const Resource& resource) noexcept
     : type(type)
     , resource(resource)
 {
@@ -68,7 +68,7 @@ bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
     return !operator==(other);
 }
 
-ResourceBase::Barrier::StateChange::StateChange(State before, State after)
+ResourceBase::Barrier::StateChange::StateChange(State before, State after) noexcept
     : before(before)
     , after(after)
 {

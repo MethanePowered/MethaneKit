@@ -43,6 +43,12 @@ struct Volume
         explicit Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
         Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
 
+        Size(const Size&) noexcept = default;
+        Size(Size&&) noexcept = default;
+
+        Size& operator=(const Size&) noexcept = default;
+        Size& operator=(Size&&) noexcept = default;
+
         bool operator==(const Size& other) const noexcept
         { return RectSize::operator==(other) && depth == other.depth; }
 

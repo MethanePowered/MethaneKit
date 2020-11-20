@@ -45,7 +45,7 @@ public:
     public:
         explicit BarriersDX(const Set& barriers);
 
-        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) final;
+        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
 
         const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
@@ -82,7 +82,7 @@ public:
     virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
     virtual DescriptorHeap::Types               GetDescriptorHeapTypes() const noexcept = 0;
 
-    virtual ~IResourceDX() = default;
+    ~IResourceDX() override = default;
 };
 
 } // namespace Methane::Graphics

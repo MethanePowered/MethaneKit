@@ -82,7 +82,12 @@ public:
             const Type      type;
             const Resource& resource;
 
-            Id(Type type, const Resource& resource);
+            Id(Type type, const Resource& resource) noexcept;
+            Id(const Id& id) noexcept = default;
+            Id(Id&& id) noexcept = default;
+
+            Id& operator=(const Id&) noexcept = default;
+            Id& operator=(Id&&) noexcept = default;
 
             bool operator<(const Id& other) const noexcept;
             bool operator==(const Id& other) const noexcept;
@@ -94,7 +99,12 @@ public:
             State before;
             State after;
 
-            StateChange(State before, State after);
+            StateChange(State before, State after) noexcept;
+            StateChange(const StateChange& id) noexcept = default;
+            StateChange(StateChange&& id) noexcept = default;
+
+            StateChange& operator=(const StateChange&) noexcept = default;
+            StateChange& operator=(StateChange&&) noexcept = default;
 
             bool operator<(const StateChange& other) const noexcept;
             bool operator==(const StateChange& other) const noexcept;

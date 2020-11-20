@@ -131,6 +131,12 @@ struct Resource : virtual Object
             Data::Size mip_levels_count;
 
             explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
+            Count(const Count&) noexcept = default;
+            Count(Count&&) noexcept = default;
+
+            Count& operator=(const Count&) noexcept = default;
+            Count& operator=(Count&&) noexcept = default;
+
             Data::Size GetRawCount() const noexcept;
 
             void operator+=(const Index& other) noexcept;
@@ -151,6 +157,12 @@ struct Resource : virtual Object
             explicit Index(Data::Index depth_slice  = 0U, Data::Index array_index  = 0U, Data::Index mip_level = 0U) noexcept;
             Index(Data::Index raw_index, const Count& count);
             explicit Index(const Count& count);
+            Index(const Index&) noexcept = default;
+            Index(Index&&) noexcept = default;
+
+            Index& operator=(const Index&) noexcept = default;
+            Index& operator=(Index&&) noexcept = default;
+
             Data::Index GetRawIndex(const Count& count) const noexcept;
 
             bool operator==(const Index& other) const noexcept;

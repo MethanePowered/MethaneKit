@@ -67,9 +67,9 @@ protected:
 private:
     // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
     // returned with chunk (when m_data_storage is loaded from file, for example)
-    Bytes       m_data_storage;
-    ConstRawPtr m_data_ptr  = nullptr;
-    const Size  m_data_size = 0U;
+    Bytes             m_data_storage;
+    const ConstRawPtr m_data_ptr  = nullptr;
+    const Size        m_data_size = 0U;
 };
 
 } // namespace Methane::Data

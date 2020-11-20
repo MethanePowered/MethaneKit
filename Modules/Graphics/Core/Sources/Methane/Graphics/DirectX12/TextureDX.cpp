@@ -339,7 +339,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     srv_desc.Format                  = tex_desc.Format;
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-    return { std::move(tex_desc), std::move(srv_desc) };
+    return { tex_desc, srv_desc };
 }
 
 void ImageTextureDX::SetData(const SubResources& sub_resources)

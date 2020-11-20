@@ -69,7 +69,7 @@ int AppWin::Run(const RunArgs& args)
     window_class.style          = CS_HREDRAW | CS_VREDRAW;
     window_class.lpfnWndProc    = WindowProc;
     window_class.hInstance      = GetModuleHandle(nullptr);
-    window_class.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    window_class.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     window_class.lpszClassName  = g_window_class;
     window_class.hIcon          = LoadIcon(window_class.hInstance, g_window_icon);
 
@@ -95,7 +95,7 @@ int AppWin::Run(const RunArgs& args)
                                       static_cast<uint32_t>(window_rect.bottom - window_rect.top));
 
     // Create the window and store a handle to it.
-    m_env.window_handle = CreateWindowEx(NULL,
+    m_env.window_handle = CreateWindowEx(0,
         g_window_class,
         nowide::widen(app_settings.name).c_str(),
         WS_OVERLAPPEDWINDOW,
@@ -103,8 +103,8 @@ int AppWin::Run(const RunArgs& args)
         (desktop_height - window_size.height) / 2,
         window_size.width,
         window_size.height,
-        NULL, // No parent window
-        NULL, // No menus
+        nullptr, // No parent window
+        nullptr, // No menus
         window_class.hInstance,
         this);
 
@@ -128,7 +128,7 @@ int AppWin::Run(const RunArgs& args)
     while (m_is_message_processing)
     {
         // Process any messages in the queue.
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);

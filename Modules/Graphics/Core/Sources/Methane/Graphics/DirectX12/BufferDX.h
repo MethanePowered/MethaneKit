@@ -173,10 +173,9 @@ public:
 
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 
-protected:
+private:
     void InitializeView(ExtraViewArgs...);
 
-private:
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
     TViewNative                 m_buffer_view;
 

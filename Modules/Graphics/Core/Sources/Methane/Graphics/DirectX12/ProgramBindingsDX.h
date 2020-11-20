@@ -103,7 +103,7 @@ public:
 
     // ProgramBindings interface
     void CompleteInitialization() override;
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const;
 
@@ -124,12 +124,14 @@ private:
 
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
-    void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, RootParameterBinding root_parameter_binding);
+    void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, const RootParameterBinding& root_parameter_binding);
     void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
+    void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
     bool ApplyResourceStates(bool apply_constant_resource_states) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
+    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
     RootParameterBindings m_constant_root_parameter_bindings;

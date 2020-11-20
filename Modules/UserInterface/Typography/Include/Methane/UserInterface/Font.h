@@ -151,7 +151,7 @@ public:
         };
 
         Char() = default;
-        Char(Code code);
+        explicit Char(Code code);
         Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
         Code                  GetCode() const noexcept        { return m_code; }
@@ -160,7 +160,7 @@ public:
         const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
         const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
-        const gfx::FrameSize  GetVisualSize() const noexcept  { return m_visual_size; }
+        const gfx::FrameSize& GetVisualSize() const noexcept  { return m_visual_size; }
 
         bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
