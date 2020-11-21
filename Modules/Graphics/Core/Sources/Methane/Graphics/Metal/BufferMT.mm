@@ -123,8 +123,8 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (sub_resource.data_range)
-            data_offset = sub_resource.data_range->GetStart();
+        if (sub_resource.HasDataRange())
+            data_offset = sub_resource.GetDataRange().GetStart();
 
         std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data + data_offset);
 
@@ -149,8 +149,8 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (sub_resource.data_range)
-            data_offset = sub_resource.data_range->GetStart();
+        if (sub_resource.HasDataRange())
+            data_offset = sub_resource.GetDataRange().GetStart();
 
         [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
                             sourceOffset:0

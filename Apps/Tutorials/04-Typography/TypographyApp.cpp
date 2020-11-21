@@ -38,9 +38,9 @@ struct FontSettings
     gfx::Color3f           color;
 };
 
-constexpr int32_t g_margin_size_in_dots      = 32;
-constexpr int32_t g_top_text_pos_in_dots     = 110;
-constexpr size_t  g_text_blocks_count        = 3;
+constexpr int32_t g_margin_size_in_dots  = 32;
+constexpr int32_t g_top_text_pos_in_dots = 110;
+constexpr size_t  g_text_blocks_count    = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
     { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20U }, { 1.F,  1.F,  0.5F } },
@@ -49,7 +49,7 @@ static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
 } };
 
 static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
-static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
+static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },
@@ -109,14 +109,29 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
     );
 }
 
+inline Timer::TimeDuration UpdateTextRect(gui::Text& text, const gui::UnitRect& text_block_rect)
+{
+    Methane::ScopeTimer scope_timer("Text update");
+    text.SetRect(text_block_rect);
+    return scope_timer.GetElapsedDuration();
+}
+
+inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string displayed_text, const gui::UnitRect& text_block_rect)
+{
+    Methane::ScopeTimer scope_timer("Text update");
+    text.SetTextInScreenRect(displayed_text, text_block_rect);
+    return scope_timer.GetElapsedDuration();
+}
+
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Typography", true /* animations */, false /* depth */),
         { gui::IApp::HeadsUpDisplayMode::UserInterface, true },
         "Dynamic text rendering and fonts management tutorial.")
-    , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
+    m_displayed_text_lengths.resize(g_text_blocks_count, 0);
     m_displayed_text_lengths[0] = 1;
+
     GetHeadsUpDisplaySettings().position = gui::UnitPoint(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
 
     gui::Font::Library::Get().Connect(*this);
@@ -203,7 +218,7 @@ void TypographyApp::Init()
     CompleteInitialization();
 }
 
-Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gui::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
@@ -289,7 +304,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U);
+        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + g_margin_size_in_dots, 0U);
     }
 }
 
@@ -306,11 +321,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     {
         const Ptr<gui::Text>& text_ptr = m_texts[block_index];
         const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
-        {
-            Methane::ScopeTimer scope_timer("Text update");
-            text_ptr->SetRect(text_block_rect);
-            m_text_update_duration = scope_timer.GetElapsedDuration();
-        }
+        m_text_update_duration = UpdateTextRect(*text_ptr, text_block_rect);
         vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.height + g_margin_size_in_dots;
     }
 
@@ -370,11 +381,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 
         const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
         const gui::UnitRect  text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
-        {
-            Methane::ScopeTimer scope_timer("Text update");
-            text_ptr->SetTextInScreenRect(displayed_text, text_block_rect);
-            m_text_update_duration = scope_timer.GetElapsedDuration();
-        }
+        m_text_update_duration = UpdateText(*text_ptr, displayed_text, text_block_rect);
         vertical_text_pos_in_dots = text_ptr->GetRectInDots().GetBottom() + g_margin_size_in_dots;
     }
 
@@ -403,7 +410,7 @@ bool TypographyApp::Update()
         return false;
 
     // Update text block resources
-    for(Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::Text>& text_ptr : m_texts)
     {
         text_ptr->Update(GetFrameSize());
     }
@@ -416,11 +423,11 @@ bool TypographyApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    TypographyFrame& frame = GetCurrentFrame();
+    const TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
     META_DEBUG_GROUP_CREATE_VAR(s_text_debug_group, "Text Blocks Rendering");
-    for(Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::Text>& text_ptr : m_texts)
     {
         text_ptr->Draw(*frame.render_cmd_list_ptr, s_text_debug_group.get());
     }
@@ -540,7 +547,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
         }
         else
         {
-            Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
+            const Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
             badge_ptr->SetTexture(new_atlas_texture_ptr);
             badge_ptr->SetSize(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions)));
         }

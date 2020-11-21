@@ -56,7 +56,7 @@ public:
             const Data::Size vertex_count = BaseMeshT::GetVertexCount();
             META_CHECK_ARG_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
 
-            const Mesh::Index index_offset = static_cast<Mesh::Index>(vertex_count);
+            const auto index_offset = static_cast<Mesh::Index>(vertex_count);
             std::transform(sub_indices.begin(), sub_indices.end(), BaseMeshT::GetIndicesBackInserter(),
                            [index_offset](const Mesh::Index& index)
                            {

@@ -28,6 +28,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include <Methane/Data/Receiver.hpp>
 
 #include <map>
+#include <vector>
 
 namespace Methane::Tutorials
 {
@@ -84,7 +85,7 @@ protected:
 
     // IFontLibraryCallback implementation
     void OnFontAdded(gui::Font& font) override;
-    void OnFontRemoved(gui::Font&) override { }
+    void OnFontRemoved(gui::Font&) override { /* not handled in this controller */ }
 
     // IFontCallback implementation
     void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
@@ -94,7 +95,7 @@ private:
     bool Animate(double elapsed_seconds, double delta_seconds);
     void ResetAnimation();
 
-    Ptr<gui::Badge> CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr);
+    Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr);
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 

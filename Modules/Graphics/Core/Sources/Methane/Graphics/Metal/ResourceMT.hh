@@ -62,7 +62,7 @@ protected:
     const id<MTLBuffer>& GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
-        const Data::Index sub_resource_raw_index = sub_resource.m_index.GetRawIndex(ResourceBase::GetSubresourceCount());
+        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ResourceBase::GetSubresourceCount());
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];

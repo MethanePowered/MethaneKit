@@ -69,7 +69,7 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     case Texture::DimensionType::CubeArray:
              return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
-             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.m_depth);
+             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
     default: META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLRegion{});
     }
 }
@@ -153,13 +153,13 @@ void TextureMT::SetData(const SubResources& sub_resources)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
-                slice = sub_resource.m_index.array_index;
+                slice = sub_resource.GetIndex().GetArrayIndex();
                 break;
             case Texture::DimensionType::Cube:
-                slice = sub_resource.m_index.depth_slice;
+                slice = sub_resource.GetIndex().GetDepthSlice();
                 break;
             case Texture::DimensionType::CubeArray:
-                slice = sub_resource.m_index.depth_slice + sub_resource.m_index.array_index * 6;
+                slice = sub_resource.GetIndex().GetDepthSlice() + sub_resource.GetIndex().GetArrayIndex() * 6;
                 break;
             default:
                 slice = 0;
@@ -172,7 +172,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
                               sourceSize:texture_region.size
                                toTexture:m_mtl_texture
                         destinationSlice:slice
-                        destinationLevel:sub_resource.m_index.mip_level
+                        destinationLevel:sub_resource.GetIndex().GetMipLevel()
                        destinationOrigin:texture_region.origin];
     }
 
@@ -268,7 +268,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.height             = settings.dimensions.height;
         mtl_tex_desc.depth              = settings.dimensions.depth;
         mtl_tex_desc.arrayLength        = settings.array_length;
-        mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().mip_levels_count;
+        mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;
 
     default: META_UNEXPECTED_ENUM_ARG(settings.dimension_type);

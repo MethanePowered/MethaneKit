@@ -59,7 +59,7 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(TypographyAppAction action) override;
     std::string GetKeyboardActionName(TypographyAppAction action) const override;
 
