@@ -127,10 +127,11 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
                     const size_t start_chars_count = char_positions.size();
                     char_positions.emplace_back(cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY());
                     ForEachTextCharacterInRange(font, text_chars, { char_index + 1, text_chars.size() }, char_positions, frame_width, Text::Wrap::Anywhere,
-                        [&word_wrap_required, &cur_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index)
+                        [&word_wrap_required, &cur_char_pos, &text_chars]
+                        (const Font::Char& inner_text_char, const gfx::FramePoint& char_pos, size_t inner_char_index)
                         {
                             // Word has ended if whitespace character is received or line break character was passed
-                            if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
+                            if (inner_text_char.IsWhiteSpace() || (inner_char_index && text_chars[inner_char_index - 1].get().IsLineBreak()))
                                 return CharAction::Stop;
 
                             word_wrap_required = char_pos.GetY() > cur_char_pos.GetY();

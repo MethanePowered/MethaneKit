@@ -96,10 +96,12 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
 {
     return gui::UnitRect(
         gui::Units::Dots,
+        gfx::Point2i
         {
             g_margin_size_in_dots,
             vertical_pos_in_dots
         },
+        gfx::FrameSize
         {
             frame_size_in_dots.width - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
@@ -116,7 +118,7 @@ inline Timer::TimeDuration UpdateTextRect(gui::Text& text, const gui::UnitRect& 
     return scope_timer.GetElapsedDuration();
 }
 
-inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string displayed_text, const gui::UnitRect& text_block_rect)
+inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& displayed_text, const gui::UnitRect& text_block_rect)
 {
     Methane::ScopeTimer scope_timer("Text update");
     text.SetTextInScreenRect(displayed_text, text_block_rect);
@@ -192,8 +194,8 @@ void TypographyApp::Init()
                     gui::UnitRect
                     {
                         gui::Units::Dots,
-                        { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                        { frame_width_without_margins, 0U /* calculated height */ }
+                        gfx::Point2i { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
                     gfx::Color4f(font_settings.color, 1.F),

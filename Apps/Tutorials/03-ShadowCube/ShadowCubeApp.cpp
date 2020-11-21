@@ -411,7 +411,7 @@ bool ShadowCubeApp::Render()
         return false;
 
     // Upload uniform buffers to GPU
-    ShadowCubeFrame& frame = GetCurrentFrame();
+    const ShadowCubeFrame& frame = GetCurrentFrame();
     frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
     frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
     frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
@@ -429,7 +429,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources)
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 

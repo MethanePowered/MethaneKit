@@ -224,7 +224,7 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    TexturedCubeFrame& frame = GetCurrentFrame();
+    const TexturedCubeFrame& frame = GetCurrentFrame();
     frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering

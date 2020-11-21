@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Point2D.hpp
+FILE: Methane/Data/Point.hpp
 2D Point type based on cml::vector
 
 ******************************************************************************/

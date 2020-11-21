@@ -158,7 +158,6 @@ struct UnitRect : UnitType<FrameRect>
 {
     using UnitType<FrameRect>::UnitType;
     explicit UnitRect(const UnitPoint& origin, const Size& size = {}) noexcept : UnitType<FrameRect>(origin.units, origin.AsPoint(), size) { }
-    UnitRect(Units units, const Point& origin, const Size& size) noexcept : UnitType<FrameRect>(units, origin, size) { }
 
     FrameRect&       AsRect() noexcept          { return static_cast<FrameRect&>(*this); }
     const FrameRect& AsRect() const noexcept    { return static_cast<const FrameRect&>(*this); }

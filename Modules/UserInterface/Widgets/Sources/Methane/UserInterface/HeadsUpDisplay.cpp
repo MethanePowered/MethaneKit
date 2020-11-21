@@ -269,6 +269,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
     Panel::SetRect(UnitRect{
         Units::Dots,
         m_settings.position,
+        gfx::FrameSize
         {
             right_bottom_position.GetX() + right_column_width + text_margins_in_dots.width,
             right_bottom_position.GetY() + vsync_size.height + text_margins_in_dots.height

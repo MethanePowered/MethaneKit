@@ -125,7 +125,7 @@ private:
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderScene(const RenderPass& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources);
+    void RenderScene(const RenderPass& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
 
     const float                 m_scene_scale;
     const Constants             m_scene_constants;
