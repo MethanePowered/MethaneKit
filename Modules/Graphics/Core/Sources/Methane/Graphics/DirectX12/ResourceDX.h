@@ -69,7 +69,7 @@ public:
     using LocationsDX = std::vector<LocationDX>;
 
     static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
-    static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.id, resource_barrier.state_change); }
+    static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange()); }
     static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
     virtual ID3D12Resource&                     GetNativeResourceRef() const = 0;

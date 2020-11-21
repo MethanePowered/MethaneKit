@@ -70,18 +70,17 @@ public:
         Predication,
     };
 
-    struct Barrier
+    class Barrier
     {
+    public:
         enum class Type
         {
             Transition,
         };
 
-        struct Id
+        class Id
         {
-            const Type      type;
-            const Resource& resource;
-
+        public:
             Id(Type type, const Resource& resource) noexcept;
             Id(const Id& id) noexcept = default;
             Id(Id&& id) noexcept = default;
@@ -92,13 +91,18 @@ public:
             bool operator<(const Id& other) const noexcept;
             bool operator==(const Id& other) const noexcept;
             bool operator!=(const Id& other) const noexcept;
+
+            Type            GetType() const noexcept     { return m_type; }
+            const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
+
+        private:
+            Type                m_type;
+            Ref<const Resource> m_resource_ref;
         };
 
-        struct StateChange
+        class StateChange
         {
-            State before;
-            State after;
-
+        public:
             StateChange(State before, State after) noexcept;
             StateChange(const StateChange& id) noexcept = default;
             StateChange(StateChange&& id) noexcept = default;
@@ -109,10 +113,14 @@ public:
             bool operator<(const StateChange& other) const noexcept;
             bool operator==(const StateChange& other) const noexcept;
             bool operator!=(const StateChange& other) const noexcept;
-        };
 
-        Id          id;
-        StateChange state_change;
+            State GetStateBefore() const noexcept { return m_before; }
+            State GetStateAfter() const noexcept  { return m_after; }
+
+        private:
+            State m_before;
+            State m_after;
+        };
 
         Barrier(Id id, StateChange state_change);
         Barrier(Type type, const Resource& resource, State state_before, State state_after);
@@ -123,6 +131,13 @@ public:
         explicit operator std::string() const noexcept;
 
         static std::string GetTypeName(Type type);
+
+        const Id&          GetId() const noexcept          { return m_id; }
+        const StateChange& GetStateChange() const noexcept { return m_state_change; }
+
+    private:
+        Id          m_id;
+        StateChange m_state_change;
     };
 
     class Barriers

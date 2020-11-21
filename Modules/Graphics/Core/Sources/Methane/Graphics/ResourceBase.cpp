@@ -40,8 +40,8 @@ namespace Methane::Graphics
 {
 
 ResourceBase::Barrier::Id::Id(Type type, const Resource& resource) noexcept
-    : type(type)
-    , resource(resource)
+    : m_type(type)
+    , m_resource_ref(resource)
 {
     META_FUNCTION_TASK();
 }
@@ -49,17 +49,17 @@ ResourceBase::Barrier::Id::Id(Type type, const Resource& resource) noexcept
 bool ResourceBase::Barrier::Id::operator<(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Resource* p_this_resource  = std::addressof(resource);
-    const Resource* p_other_resource = std::addressof(other.resource);
-    return std::tie(type, p_this_resource) < std::tie(other.type, p_other_resource);
+    const Resource* p_this_resource  = std::addressof(m_resource_ref.get());
+    const Resource* p_other_resource = std::addressof(other.GetResource());
+    return std::tie(m_type, p_this_resource) < std::tie(other.m_type, p_other_resource);
 }
 
 bool ResourceBase::Barrier::Id::operator==(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Resource* p_this_resource  = std::addressof(resource);
-    const Resource* p_other_resource = std::addressof(other.resource);
-    return std::tie(type, p_this_resource) == std::tie(other.type, p_other_resource);
+    const Resource* p_this_resource  = std::addressof(m_resource_ref.get());
+    const Resource* p_other_resource = std::addressof(other.GetResource());
+    return std::tie(m_type, p_this_resource) == std::tie(other.m_type, p_other_resource);
 }
 
 bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
@@ -69,8 +69,8 @@ bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
 }
 
 ResourceBase::Barrier::StateChange::StateChange(State before, State after) noexcept
-    : before(before)
-    , after(after)
+    : m_before(before)
+    , m_after(after)
 {
     META_FUNCTION_TASK();
 }
@@ -78,13 +78,13 @@ ResourceBase::Barrier::StateChange::StateChange(State before, State after) noexc
 bool ResourceBase::Barrier::StateChange::operator<(const StateChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(before, after) < std::tie(other.before, other.after);
+    return std::tie(m_before, m_after) < std::tie(other.m_before, other.m_after);
 }
 
 bool ResourceBase::Barrier::StateChange::operator==(const StateChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(before, after) == std::tie(other.before, other.after);
+    return std::tie(m_before, m_after) == std::tie(other.m_before, other.m_after);
 }
 
 bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) const noexcept
@@ -94,8 +94,8 @@ bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) co
 }
 
 ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
-    : id(std::move(id))
-    , state_change(std::move(state_change))
+    : m_id(std::move(id))
+    , m_state_change(std::move(state_change))
 {
     META_FUNCTION_TASK();
 }
@@ -110,13 +110,13 @@ ResourceBase::Barrier::Barrier(Type type, const Resource& resource, State state_
 bool ResourceBase::Barrier::operator<(const Barrier& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(id, state_change) < std::tie(other.id, other.state_change);
+    return std::tie(m_id, m_state_change) < std::tie(other.m_id, other.m_state_change);
 }
 
 bool ResourceBase::Barrier::operator==(const Barrier& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(id, state_change) == std::tie(other.id, other.state_change);
+    return std::tie(m_id, m_state_change) == std::tie(other.m_id, other.m_state_change);
 }
 
 bool ResourceBase::Barrier::operator!=(const Barrier& other) const noexcept
@@ -129,7 +129,7 @@ ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("Resource '{}' {} barrier from {} to {} state",
-                       id.resource.GetName(), GetTypeName(id.type), GetStateName(state_change.before), GetStateName(state_change.after));
+                       m_id.GetResource().GetName(), GetTypeName(m_id.GetType()), GetStateName(m_state_change.GetStateBefore()), GetStateName(m_state_change.GetStateAfter()));
 }
 
 std::string ResourceBase::Barrier::GetTypeName(Type type)
@@ -164,7 +164,7 @@ ResourceBase::Barriers::Barriers(const Set& barriers)
     std::transform(barriers.begin(), barriers.end(), std::inserter(m_barriers_map, m_barriers_map.begin()),
         [](const Barrier& barrier)
         {
-            return std::pair<Barrier::Id, Barrier::StateChange>{ barrier.id, barrier.state_change };
+            return std::pair<Barrier::Id, Barrier::StateChange>{ barrier.GetId(), barrier.GetStateChange() };
         }
     );
 }

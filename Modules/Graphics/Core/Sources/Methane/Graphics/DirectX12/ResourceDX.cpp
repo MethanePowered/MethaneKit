@@ -104,9 +104,9 @@ D3D12_RESOURCE_BARRIER IResourceDX::GetNativeResourceBarrier(const Barrier::Id& 
     {
     case Barrier::Type::Transition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
-            dynamic_cast<const IResourceDX&>(id.resource).GetNativeResource(),
-            GetNativeResourceState(state_change.before),
-            GetNativeResourceState(state_change.after)
+            dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource(),
+            GetNativeResourceState(state_change.GetStateBefore()),
+            GetNativeResourceState(state_change.GetStateAfter())
         );
 
     default:
