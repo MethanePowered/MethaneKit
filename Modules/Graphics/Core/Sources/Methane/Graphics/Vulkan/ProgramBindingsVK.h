@@ -54,10 +54,10 @@ public:
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
     // ProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const final;
+    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
     
     // ProgramBindingsBase interface
-    void CompleteInitialization() override { }
+    void CompleteInitialization() override { /* not implemented yet */ }
 };
 
 } // namespace Methane::Graphics

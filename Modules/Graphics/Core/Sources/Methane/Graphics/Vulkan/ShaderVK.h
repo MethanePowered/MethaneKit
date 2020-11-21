@@ -41,9 +41,9 @@ public:
     ~ShaderVK() override;
     
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const final;
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
 
-protected:
+private:
     IContextVK& GetContextVK() noexcept;
 };
 

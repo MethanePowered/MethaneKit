@@ -93,9 +93,9 @@ bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) co
     return !operator==(other);
 }
 
-ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
-    : m_id(std::move(id))
-    , m_state_change(std::move(state_change))
+ResourceBase::Barrier::Barrier(const Id& id, const StateChange& state_change)
+    : m_id(id)
+    , m_state_change(state_change)
 {
     META_FUNCTION_TASK();
 }
@@ -310,40 +310,40 @@ bool Resource::Location::operator==(const Location& other) const noexcept
 
 Resource::SubResource::SubResource(SubResource&& other) noexcept
     : Data::Chunk(std::move(static_cast<Data::Chunk&&>(other)))
-    , index(std::move(other.index))
-    , data_range(std::move(other.data_range))
+    , m_index(std::move(other.m_index))
+    , m_data_range(std::move(other.m_data_range))
 {
     META_FUNCTION_TASK();
 }
 
 Resource::SubResource::SubResource(const SubResource& other) noexcept
     : Data::Chunk(other)
-    , index(other.index)
-    , data_range(other.data_range)
+    , m_index(other.m_index)
+    , m_data_range(other.m_data_range)
 {
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::Bytes&& data, Index index, std::optional<BytesRange> data_range) noexcept
+Resource::SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
-    , index(std::move(index))
-    , data_range(std::move(data_range))
+    , m_index(index)
+    , m_data_range(std::move(data_range))
 {
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index, std::optional<BytesRange> data_range) noexcept
+Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(p_data, size)
-    , index(std::move(index))
-    , data_range(std::move(data_range))
+    , m_index(index)
+    , m_data_range(std::move(data_range))
 {
     META_FUNCTION_TASK();
 }
 
 Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
-    : depth(depth)
-    , array_size(array_size)
-    , mip_levels_count(mip_levels_count)
+    : m_depth(depth)
+    , m_array_size(array_size)
+    , m_mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
@@ -351,24 +351,19 @@ Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Dat
     META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
-Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
-{
-    META_FUNCTION_TASK();
-    return depth * array_size * mip_levels_count;
-}
-
 void Resource::SubResource::Count::operator+=(const Index& other) noexcept
 {
-    depth            = std::max(depth,            other.depth_slice + 1U);
-    array_size       = std::max(array_size,       other.array_index + 1U);
-    mip_levels_count = std::max(mip_levels_count, other.mip_level   + 1U);
+    META_FUNCTION_TASK();
+    m_depth            = std::max(m_depth,            other.GetDepthSlice() + 1U);
+    m_array_size       = std::max(m_array_size,       other.GetArrayIndex() + 1U);
+    m_mip_levels_count = std::max(m_mip_levels_count, other.GetMipLevel()   + 1U);
 }
 
 bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth, array_size, mip_levels_count) ==
-           std::tie(other.depth, other.array_size, other.mip_levels_count);
+    return std::tie(m_depth, m_array_size, m_mip_levels_count) ==
+           std::tie(other.m_depth, other.m_array_size, other.m_mip_levels_count);
 }
 
 bool Resource::SubResource::Count::operator<(const Count& other) const noexcept
@@ -392,13 +387,13 @@ Resource::SubResource::Count::operator Resource::SubResource::Index() const noex
 Resource::SubResource::Count::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("count(d:{}, a:{}, m:{})", depth, array_size, mip_levels_count);
+    return fmt::format("count(d:{}, a:{}, m:{})", m_depth, m_array_size, m_mip_levels_count);
 }
 
 Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
-    : depth_slice(depth_slice)
-    , array_index(array_index)
-    , mip_level(mip_level)
+    : m_depth_slice(depth_slice)
+    , m_array_index(array_index)
+    , m_mip_level(mip_level)
 {
     META_FUNCTION_TASK();
 }
@@ -408,38 +403,32 @@ Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(raw_index, count.GetRawCount());
 
-    const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
-    depth_slice = array_and_depth_index % count.depth;
-    array_index = array_and_depth_index / count.depth;
-    mip_level   = raw_index % count.mip_levels_count;
+    const uint32_t array_and_depth_index = raw_index / count.GetMipLevelsCount();
+    m_depth_slice = array_and_depth_index % count.GetDepth();
+    m_array_index = array_and_depth_index / count.GetDepth();
+    m_mip_level   = raw_index % count.GetMipLevelsCount();
 }
 
 Resource::SubResource::Index::Index(const Resource::SubResource::Count& count)
-    : depth_slice(count.depth)
-    , array_index(count.array_size)
-    , mip_level(count.mip_levels_count)
+    : m_depth_slice(count.GetDepth())
+    , m_array_index(count.GetArraySize())
+    , m_mip_level(count.GetMipLevelsCount())
 {
     META_FUNCTION_TASK();
-}
-
-Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
-{
-    META_FUNCTION_TASK();
-    return (array_index * count.depth + depth_slice) * count.mip_levels_count + mip_level;
 }
 
 bool Resource::SubResource::Index::operator==(const Index& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) ==
-           std::tie(other.depth_slice, other.array_index, other.mip_level);
+    return std::tie(m_depth_slice, m_array_index, m_mip_level) ==
+           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
 bool Resource::SubResource::Index::operator<(const Index& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(other.depth_slice, other.array_index, other.mip_level);
+    return std::tie(m_depth_slice, m_array_index, m_mip_level) <
+           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
 bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
@@ -451,8 +440,9 @@ bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
 bool Resource::SubResource::Index::operator<(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(other.depth, other.array_size, other.mip_levels_count);
+    return m_depth_slice < other.GetDepth() &&
+           m_array_index < other.GetArraySize() &&
+           m_mip_level   < other.GetMipLevelsCount();
 }
 
 bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
@@ -464,7 +454,7 @@ bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
 Resource::SubResource::Index::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("index(d:{}, a:{}, m:{})", depth_slice, array_index, mip_level);
+    return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
 ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
@@ -533,11 +523,11 @@ void ResourceBase::SetData(const SubResources& sub_resources)
 
         if (m_sub_resource_count_constant)
         {
-            META_CHECK_ARG_LESS(sub_resource.index, m_sub_resource_count);
+            META_CHECK_ARG_LESS(sub_resource.GetIndex(), m_sub_resource_count);
         }
         else
         {
-            m_sub_resource_count += sub_resource.index;
+            m_sub_resource_count += sub_resource.GetIndex();
         }
     }
 
@@ -567,7 +557,7 @@ Context& ResourceBase::GetContext() noexcept
 Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource_index);
+    META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
@@ -648,24 +638,23 @@ void ResourceBase::SetSubResourceCount(const SubResource::Count& sub_resource_co
 void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource.index, sub_resource.data_range);
+    ValidateSubResource(sub_resource.GetIndex(), sub_resource.GetDataRangeOptional());
 
-    const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(m_sub_resource_count);
+    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(m_sub_resource_count);
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
     META_UNUSED(sub_resource_data_size);
 
-    if (sub_resource.data_range)
+    if (sub_resource.HasDataRange())
     {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.data_range->GetLength(),
-                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.index);
-
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
+                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
         META_CHECK_ARG_LESS_DESCR(sub_resource.GetDataSize(), sub_resource_data_size + 1,
-                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.index);
+                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
     }
     else
     {
         META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
-                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index);
+                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.GetIndex());
     }
 }
 

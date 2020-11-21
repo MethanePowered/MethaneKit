@@ -62,7 +62,7 @@ struct IFontCallback
 };
 
 #ifndef FT_Error
-typedef int FT_Error;
+using FT_Error = int;
 #endif
 
 class Font
@@ -188,7 +188,7 @@ public:
     static std::u32string GetAlphabetFromText(const std::string& text);
     static std::u32string GetAlphabetFromText(const std::u32string& text);
 
-    ~Font();
+    ~Font() override;
 
     Ptr<Font>       GetPtr()            { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }

@@ -43,7 +43,7 @@ public:
 
     void UpdateFrameBuffer();
 
-protected:
+private:
     void GenerateMipLevels();
 };
 

@@ -69,7 +69,7 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     case Texture::DimensionType::CubeArray:
              return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
-             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.m_depth);
     default: META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLRegion{});
     }
 }
@@ -153,13 +153,13 @@ void TextureMT::SetData(const SubResources& sub_resources)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
-                slice = sub_resource.index.array_index;
+                slice = sub_resource.m_index.array_index;
                 break;
             case Texture::DimensionType::Cube:
-                slice = sub_resource.index.depth_slice;
+                slice = sub_resource.m_index.depth_slice;
                 break;
             case Texture::DimensionType::CubeArray:
-                slice = sub_resource.index.depth_slice + sub_resource.index.array_index * 6;
+                slice = sub_resource.m_index.depth_slice + sub_resource.m_index.array_index * 6;
                 break;
             default:
                 slice = 0;
@@ -172,7 +172,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
                               sourceSize:texture_region.size
                                toTexture:m_mtl_texture
                         destinationSlice:slice
-                        destinationLevel:sub_resource.index.mip_level
+                        destinationLevel:sub_resource.m_index.mip_level
                        destinationOrigin:texture_region.origin];
     }
 

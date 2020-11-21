@@ -410,7 +410,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
     ForEachArgumentBinding(std::bind(&ProgramBindingsDX::CopyDescriptorsToGpuForArgument, this, cp_d3d12_device, std::placeholders::_1, std::placeholders::_2));
 }
 
-void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const
 {
     META_FUNCTION_TASK();
     if (!p_heap_reservation)

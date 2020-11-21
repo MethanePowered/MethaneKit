@@ -24,6 +24,7 @@ Base implementation of the render context interface.
 #include "RenderContextBase.h"
 #include "DeviceBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 

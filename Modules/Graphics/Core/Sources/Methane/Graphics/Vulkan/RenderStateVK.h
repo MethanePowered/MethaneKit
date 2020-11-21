@@ -61,7 +61,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-protected:
+private:
     IContextVK& GetContextVK() noexcept;
     
     void ResetNativeState();

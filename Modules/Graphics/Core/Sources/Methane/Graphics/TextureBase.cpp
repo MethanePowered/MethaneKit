@@ -25,6 +25,7 @@ Base implementation of the texture interface.
 #include "DescriptorHeap.h"
 #include "RenderContextBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -161,15 +162,15 @@ Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource_index);
+    ValidateSubResource(sub_resource_index, {});
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
-    if (sub_resource_index.mip_level == 0U)
+    if (sub_resource_index.GetMipLevel() == 0U)
     {
         return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
     }
 
-    const double mip_divider = std::pow(2.0, sub_resource_index.mip_level);
+    const double mip_divider = std::pow(2.0, sub_resource_index.GetMipLevel());
     const Data::FrameSize mip_frame_size(
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))

@@ -27,97 +27,103 @@ FILE: Methane/Graphics/Volume.hpp
 
 #include <Methane/Data/Rect.hpp>
 
+#include <fmt/format.h>
+#include <sstream>
+
 namespace Methane::Graphics
 {
+
+template<typename D>
+using RectSize = Data::RectSize<D>;
+
+template<typename D>
+struct VolumeSize : RectSize<D>
+{
+    D depth = 1;
+
+    VolumeSize() = default;
+    explicit VolumeSize(const RectSize<D>& rect_size, D d = 1) : RectSize<D>(rect_size), depth(d) { }
+    VolumeSize(D w, D h, D d = 1) : RectSize<D>(w, h), depth(d) { }
+
+    bool operator==(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator==(other) && depth == other.depth; }
+
+    bool operator!=(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator!=(other) || depth != other.depth; }
+
+    bool operator<=(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator<=(other) && depth <= other.depth; }
+
+    bool operator<(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator<(other) && depth < other.depth; }
+
+    bool operator>=(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator>=(other) && depth >= other.depth; }
+
+    bool operator>(const VolumeSize& other) const noexcept
+    { return RectSize<D>::operator>(other) && depth > other.depth; }
+
+    VolumeSize operator+(const VolumeSize& other) const noexcept
+    { return VolumeSize(RectSize<D>::operator+(other), depth + other.depth); }
+
+    VolumeSize operator-(const VolumeSize& other) const noexcept
+    { return VolumeSize(RectSize<D>::operator-(other), depth - other.depth); }
+
+    template<typename M>
+    VolumeSize operator*(M multiplier) const noexcept
+    { return VolumeSize(RectSize<D>::operator*(multiplier), static_cast<D>(static_cast<M>(depth) * multiplier)); }
+
+    template<typename M>
+    VolumeSize operator/(M divisor) const noexcept
+    { return VolumeSize(RectSize<D>::operator/(divisor), static_cast<D>(static_cast<M>(depth) / divisor)); }
+
+    VolumeSize& operator+=(const VolumeSize& other) noexcept
+    { depth += other.depth; return RectSize<D>::operator+=(other); }
+
+    VolumeSize& operator-=(const VolumeSize& other) noexcept
+    { depth -= other.depth; return RectSize<D>::operator-=(other); }
+
+    template<typename M>
+    VolumeSize& operator*=(M multiplier) noexcept
+    {
+        depth = static_cast<D>(static_cast<M>(depth) * multiplier);
+        return RectSize<D>::operator*=(multiplier);
+    }
+
+    template<typename M>
+    VolumeSize& operator/=(M divisor) noexcept
+    {
+        depth = static_cast<D>(static_cast<M>(depth) / divisor);
+        return RectSize<D>::operator/=(divisor);
+    }
+
+    explicit operator bool() const noexcept
+    { return depth && RectSize<D>::operator bool(); }
+
+    D GetPixelsCount() const noexcept { return depth * RectSize<D>::GetPixelsCount(); }
+    D GetLongestSide() const noexcept { return std::max(depth, RectSize<D>::GetLongestSide()); }
+
+    explicit operator std::string() const
+    {
+        std::stringstream ss;
+        ss << "Sz(" << std::to_string(RectSize<D>::width);
+        if (RectSize<D>::height != 1 || depth != 1)
+            ss << " x " << std::to_string(RectSize<D>::height);
+        if (depth != 1)
+            ss << " x " << std::to_string(depth);
+        ss << ")";
+        return ss.str();
+    }
+};
 
 template<typename T, typename D>
 struct Volume
 {
-    struct Size : Rect<T, D>::Size
-    {
-        using RectSize = typename Rect<T, D>::Size;
+    using Point = Point3T<T>;
+    using Size  = VolumeSize<D>;
 
-        D depth = 1;
-
-        Size() = default;
-        explicit Size(const typename Rect<T, D>::Size& rect_size, D d = 1) : Rect<T, D>::Size(rect_size), depth(d) { }
-        Size(D w, D h, D d = 1) : Rect<T, D>::Size(w, h), depth(d) { }
-
-        Size(const Size&) noexcept = default;
-        Size(Size&&) noexcept = default;
-
-        Size& operator=(const Size&) noexcept = default;
-        Size& operator=(Size&&) noexcept = default;
-
-        bool operator==(const Size& other) const noexcept
-        { return RectSize::operator==(other) && depth == other.depth; }
-
-        bool operator!=(const Size& other) const noexcept
-        { return RectSize::operator!=(other) || depth != other.depth; }
-
-        bool operator<=(const Size& other) const noexcept
-        { return RectSize::operator<=(other) && depth <= other.depth; }
-
-        bool operator<(const Size& other) const noexcept
-        { return RectSize::operator<(other) && depth < other.depth; }
-
-        bool operator>=(const Size& other) const noexcept
-        { return RectSize::operator>=(other) && depth >= other.depth; }
-
-        bool operator>(const Size& other) const noexcept
-        { return RectSize::operator>(other) && depth > other.depth; }
-
-        Size operator+(const Size& other) const noexcept
-        { return Size(RectSize::operator+(other), depth + other.depth); }
-
-        Size operator-(const Size& other) const noexcept
-        { return Size(RectSize::operator-(other), depth - other.depth); }
-
-        template<typename M>
-        Size operator*(M multiplier) const noexcept
-        { return Size(RectSize::operator*(multiplier), static_cast<D>(static_cast<M>(depth) * multiplier)); }
-
-        template<typename M>
-        Size operator/(M divisor) const noexcept
-        { return Size(RectSize::operator/(divisor), static_cast<D>(static_cast<M>(depth) / divisor)); }
-
-        Size& operator+=(const Size& other) noexcept
-        { depth += other.depth; return RectSize::operator+=(other); }
-
-        Size& operator-=(const Size& other) noexcept
-        { depth -= other.depth; return RectSize::operator-=(other); }
-
-        template<typename M>
-        Size& operator*=(M multiplier) noexcept
-        {
-            depth = static_cast<D>(static_cast<M>(depth) * multiplier);
-            return RectSize::operator*=(multiplier);
-        }
-
-        template<typename M>
-        Size& operator/=(M divisor) noexcept
-        {
-            depth = static_cast<D>(static_cast<M>(depth) / divisor);
-            return RectSize::operator/=(divisor);
-        }
-
-        operator bool() const noexcept
-        { return depth && RectSize::operator bool(); }
-
-        D GetPixelsCount() const noexcept { return depth * Rect<T, D>::Size::GetPixelsCount(); }
-        D GetLongestSide() const noexcept { return std::max(depth, Rect<T, D>::Size::GetLongestSide()); }
-
-        operator std::string() const
-        {
-            std::string result = "Sz(" + std::to_string(Rect<T, D>::Size::width);
-            if (Rect<T, D>::Size::height != 1 || depth != 1)
-                result += " x " + std::to_string(Rect<T, D>::Size::height);
-            if (depth != 1)
-                result += " x " + std::to_string(depth);
-            result += ")";
-            return result;
-        }
-    };
+    Point origin;
+    Size  size;
 
     bool operator==(const Volume& other) const noexcept
     { return std::tie(origin, size) == std::tie(other.origin, other.size); }
@@ -141,16 +147,11 @@ struct Volume
     Rect<T, D>& operator/=(M divisor) noexcept
     { origin /= divisor; size /= divisor; return *this; }
 
-    operator std::string() const
-    { return std::string("Vm[") + origin + " + " + size + "]"; }
-
-    using Point = Point3T<T>;
-
-    Point origin;
-    Size  size;
+    explicit operator std::string() const
+    { return fmt::format("Vm[{}, {}]", origin, size); }
 };
 
-using Dimensions = Volume<int32_t, uint32_t>::Size;
+using Dimensions = VolumeSize<uint32_t>;
 
 using Viewport  = Volume<double, double>;
 using Viewports = std::vector<Viewport>;

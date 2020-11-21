@@ -89,6 +89,12 @@ public:
         FT_Done_FreeType(m_ft_library);
     }
 
+    Impl(const Impl&) noexcept = delete;
+    Impl(Impl&&) noexcept = delete;
+
+    Impl& operator=(const Impl&) noexcept = delete;
+    Impl& operator=(Impl&&) noexcept = delete;
+
     FT_Library GetFTLib() const { return m_ft_library; }
 
 private:
@@ -110,6 +116,12 @@ public:
         META_FUNCTION_TASK();
         FT_Done_Glyph(m_ft_glyph);
     }
+
+    Glyph(const Glyph&) noexcept = delete;
+    Glyph(Glyph&&) noexcept = delete;
+
+    Glyph& operator=(const Glyph&) noexcept = delete;
+    Glyph& operator=(Glyph&&) noexcept = delete;
 
     FT_Glyph GetFTGlyph() const   { return m_ft_glyph; }
     uint32_t GetFaceIndex() const { return m_face_index; }
@@ -136,6 +148,12 @@ public:
         META_FUNCTION_TASK();
         FT_Done_Face(m_ft_face);
     }
+
+    Face(const Face&) noexcept = delete;
+    Face(Face&&) noexcept = delete;
+
+    Face& operator=(const Face&) noexcept = delete;
+    Face& operator=(Face&&) noexcept = delete;
 
     void SetSize(uint32_t font_size_pt, uint32_t resolution_dpi)
     {

@@ -23,6 +23,7 @@ by decoding them from popular image formats.
 ******************************************************************************/
 
 #include <Methane/Graphics/ImageLoader.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
@@ -61,7 +62,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& dimensions, uint32_t channel
 }
 
 ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
-    : m_dimensions(std::move(other.m_dimensions))
+    : m_dimensions(other.m_dimensions)
     , m_channels_count(other.m_channels_count)
     , m_pixels(std::move(other.m_pixels))
     , m_pixels_release_required(other.m_pixels_release_required)

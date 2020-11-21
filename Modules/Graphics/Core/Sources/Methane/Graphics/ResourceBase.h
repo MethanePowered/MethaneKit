@@ -83,10 +83,8 @@ public:
         public:
             Id(Type type, const Resource& resource) noexcept;
             Id(const Id& id) noexcept = default;
-            Id(Id&& id) noexcept = default;
 
             Id& operator=(const Id&) noexcept = default;
-            Id& operator=(Id&&) noexcept = default;
 
             bool operator<(const Id& other) const noexcept;
             bool operator==(const Id& other) const noexcept;
@@ -105,10 +103,8 @@ public:
         public:
             StateChange(State before, State after) noexcept;
             StateChange(const StateChange& id) noexcept = default;
-            StateChange(StateChange&& id) noexcept = default;
 
             StateChange& operator=(const StateChange&) noexcept = default;
-            StateChange& operator=(StateChange&&) noexcept = default;
 
             bool operator<(const StateChange& other) const noexcept;
             bool operator==(const StateChange& other) const noexcept;
@@ -122,9 +118,11 @@ public:
             State m_after;
         };
 
-        Barrier(Id id, StateChange state_change);
+        Barrier(const Id& id, const StateChange& state_change);
         Barrier(Type type, const Resource& resource, State state_before, State state_after);
+        Barrier(const Barrier&) = default;
 
+        Barrier& operator=(const Barrier& barrier) noexcept = default;
         bool operator<(const Barrier& other) const noexcept;
         bool operator==(const Barrier& other) const noexcept;
         bool operator!=(const Barrier& other) const noexcept;
@@ -203,7 +201,7 @@ protected:
     Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;
-    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range = {}) const;
+    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
 
     virtual Data::Size   CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 

@@ -90,7 +90,7 @@ public:
             ValidateSubResource(sub_resource);
 
             // Using zero range, since we're not going to read this resource on CPU
-            const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(GetSubresourceCount());
+            const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(GetSubresourceCount());
             Data::RawPtr p_sub_resource_data = nullptr;
             ThrowIfFailed(
                 d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
@@ -102,9 +102,9 @@ public:
             stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
             std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
-            if (sub_resource.data_range)
+            if (sub_resource.HasDataRange())
             {
-                const CD3DX12_RANGE write_range(sub_resource.data_range->GetStart(), sub_resource.data_range->GetEnd());
+                const CD3DX12_RANGE write_range(sub_resource.GetDataRange().GetStart(), sub_resource.GetDataRange().GetEnd());
                 d3d12_resource.Unmap(sub_resource_raw_index, &write_range);
             }
             else
