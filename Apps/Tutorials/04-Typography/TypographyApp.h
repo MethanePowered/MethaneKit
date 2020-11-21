@@ -48,8 +48,8 @@ using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
 class TypographyApp final
     : public UserInterfaceApp
-    , protected Data::Receiver<gui::IFontLibraryCallback>
-    , protected Data::Receiver<gui::IFontCallback>
+    , private Data::Receiver<gui::IFontLibraryCallback>
+    , private Data::Receiver<gui::IFontCallback>
 {
 public:
     struct Settings
@@ -79,7 +79,7 @@ public:
 
     const Settings& GetSettings() const noexcept { return m_settings; }
 
-protected:
+private:
     // IContextCallback overrides
     void OnContextReleased(gfx::Context& context) override;
 
@@ -91,7 +91,6 @@ protected:
     void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(gui::Font& font) override;
 
-private:
     bool Animate(double elapsed_seconds, double delta_seconds);
     void ResetAnimation();
 

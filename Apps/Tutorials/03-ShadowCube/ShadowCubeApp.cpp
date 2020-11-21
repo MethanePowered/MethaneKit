@@ -351,11 +351,14 @@ bool ShadowCubeApp::Update()
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
     
     // Prepare shadow transform matrix
-    static const gfx::Matrix44f s_shadow_transform_matrix = ([]() -> gfx::Matrix44f
+    static const gfx::Matrix44f s_shadow_transform_matrix = ([]()
     {
-        gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
+        gfx::Matrix44f shadow_scale_matrix;
         cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
+
+        gfx::Matrix44f shadow_translate_matrix;
         cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
+
         return shadow_scale_matrix * shadow_translate_matrix;
     })();
 
@@ -426,7 +429,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources)
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources)
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 

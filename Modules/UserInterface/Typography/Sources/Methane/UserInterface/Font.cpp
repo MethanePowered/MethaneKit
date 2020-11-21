@@ -589,7 +589,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
     // Sort chars by decreasing of glyph pixels count from largest to smallest
     std::sort(font_chars.begin(), font_chars.end(),
-        [](const Ref<Char>& left, const Ref<Char>& right) -> bool
+        [](const Ref<Char>& left, const Ref<Char>& right)
         { return left.get() > right.get(); }
     );
 

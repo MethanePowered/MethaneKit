@@ -44,7 +44,7 @@ enum class CharAction
 using IndexRange = std::pair<size_t, size_t>;
 
 template<typename FuncType> // function CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
-void ForEachTextCharacterInRange(Font& font, const Font::Chars& text_chars, const IndexRange& index_range,
+void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars, const IndexRange& index_range,
                                  TextMesh::CharPositions& char_positions, uint32_t frame_width, Text::Wrap wrap,
                                  FuncType process_char_at_position)
 {
@@ -118,7 +118,7 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
     {
         ForEachTextCharacterInRange(font, text_chars, text_range, char_positions, frame_width, wrap,
             [&font, &text_chars, &char_positions, &frame_width, &process_char_at_position]
-            (const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index) -> CharAction
+            (const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index)
             {
                 if (text_char.IsWhiteSpace())
                 {
@@ -127,7 +127,7 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
                     const size_t start_chars_count = char_positions.size();
                     char_positions.emplace_back(cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY());
                     ForEachTextCharacterInRange(font, text_chars, { char_index + 1, text_chars.size() }, char_positions, frame_width, Text::Wrap::Anywhere,
-                        [&word_wrap_required, &cur_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index) -> CharAction
+                        [&word_wrap_required, &cur_char_pos, &text_chars](const Font::Char& text_char, const gfx::FramePoint& char_pos, size_t char_index)
                         {
                             // Word has ended if whitespace character is received or line break character was passed
                             if (text_char.IsWhiteSpace() || (char_index && text_chars[char_index - 1].get().IsLineBreak()))
@@ -317,12 +317,10 @@ void TextMesh::AppendChars(std::u32string added_text)
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
     ForEachTextCharacter(added_text, m_font, m_char_positions, m_frame_size.width, m_layout.wrap,
-                         [&](const Font::Char& font_char, const TextMesh::CharPosition& char_pos, size_t char_index) -> CharAction
+        [this, init_text_length, &atlas_size](const Font::Char& font_char, const TextMesh::CharPosition& char_pos, size_t char_index)
         {
             if (font_char.IsWhiteSpace())
-            {
                 m_last_whitespace_index = init_text_length + char_index;
-            }
 
             if (font_char.IsWhiteSpace() || font_char.IsLineBreak())
             {

@@ -310,7 +310,7 @@ bool Resource::Location::operator==(const Location& other) const noexcept
 
 Resource::SubResource::SubResource(SubResource&& other) noexcept
     : Data::Chunk(std::move(static_cast<Data::Chunk&&>(other)))
-    , m_index(std::move(other.m_index))
+    , m_index(other.m_index)
     , m_data_range(std::move(other.m_data_range))
 {
     META_FUNCTION_TASK();

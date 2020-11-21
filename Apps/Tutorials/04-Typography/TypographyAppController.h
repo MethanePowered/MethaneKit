@@ -63,6 +63,7 @@ protected:
     void        OnKeyboardStateAction(TypographyAppAction action) override;
     std::string GetKeyboardActionName(TypographyAppAction action) const override;
 
+private:
     TypographyApp& m_typography_app;
 };
 
