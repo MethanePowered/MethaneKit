@@ -31,6 +31,8 @@ Metal implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -106,10 +108,12 @@ void RenderCommandListMT::ResetWithState(const Ptr<RenderState>& render_state_pt
 void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
     DrawingState& drawing_state = GetDrawingState();
-    if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers))
+    if (!magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
