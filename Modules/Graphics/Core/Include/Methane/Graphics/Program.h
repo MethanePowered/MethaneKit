@@ -78,18 +78,12 @@ struct Program : virtual Object
             const UniquePtr<Argument> m_argument_ptr;
         };
 
-        struct Modifiers
+        enum class Modifiers : uint32_t
         {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                None        = 0U,
-                Constant    = 1U << 0U,
-                Addressable = 1U << 1U,
-                All         = ~0U,
-            };
-
-            Modifiers() = delete;
+            None        = 0U,
+            Constant    = 1U << 0U,
+            Addressable = 1U << 1U,
+            All         = ~0U
         };
 
         const Shader::Type shader_type;
@@ -113,17 +107,17 @@ struct Program : virtual Object
 
     struct ArgumentDesc : Argument
     {
-        const Modifiers::Mask modifiers;
+        const Modifiers modifiers;
 
         ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
-                     Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
+                     Modifiers modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const Argument& argument,
-                     Modifiers::Mask modifiers_mask = Modifiers::None) noexcept;
+                     Modifiers modifiers_mask = Modifiers::None) noexcept;
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
         ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
-        inline bool IsConstant() const    { return modifiers & Modifiers::Constant; }
-        inline bool IsAddressable() const { return modifiers & Modifiers::Addressable; }
+        inline bool IsConstant() const    { return static_cast<uint32_t>(modifiers) & static_cast<uint32_t>(Modifiers::Constant); }
+        inline bool IsAddressable() const { return static_cast<uint32_t>(modifiers) & static_cast<uint32_t>(Modifiers::Addressable); }
     };
 
     using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;

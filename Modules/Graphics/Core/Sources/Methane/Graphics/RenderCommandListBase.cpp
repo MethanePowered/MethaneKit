@@ -32,6 +32,8 @@ Base implementation of the render command list interface.
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -65,14 +67,15 @@ void RenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_
     }
 }
 
-void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups)
+void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     VerifyEncodingState();
 
     const bool         render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    RenderState::Group::Mask changed_states = m_drawing_state.render_state_ptr ? RenderState::Group::None : RenderState::Group::All;
+    RenderState::Groups changed_states = m_drawing_state.render_state_ptr ? RenderState::Groups::None : RenderState::Groups::All;
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
         changed_states = RenderState::Settings::Compare(render_state.GetSettings(),
@@ -125,6 +128,7 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     if (drawing_state.vertex_buffer_set_ptr.get() == std::addressof(vertex_buffers))
         return;
 
+    using namespace magic_enum::bitwise_operators;
     Ptr<ObjectBase> vertex_buffer_set_object_ptr = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
     drawing_state.vertex_buffer_set_ptr = std::static_pointer_cast<BufferSetBase>(vertex_buffer_set_object_ptr);
     drawing_state.changes |= DrawingState::Changes::VertexBuffers;
@@ -183,14 +187,16 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.vertex_buffer_set_ptr.reset();
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.opt_primitive_type.reset();
-    m_drawing_state.p_view_state    = nullptr;
-    m_drawing_state.render_state_groups = RenderState::Group::None;
+    m_drawing_state.p_view_state = nullptr;
+    m_drawing_state.render_state_groups = RenderState::Groups::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 
 void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     DrawingState& drawing_state = GetDrawingState();
 
     if (p_index_buffer && (!drawing_state.index_buffer_ptr || drawing_state.index_buffer_ptr.get() != p_index_buffer))

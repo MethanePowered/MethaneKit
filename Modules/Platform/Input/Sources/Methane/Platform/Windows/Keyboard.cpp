@@ -203,15 +203,15 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }
 
-Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
     switch (native_key.w_param)
     {
-    case VK_CONTROL: return Modifier::Value::Control;
-    case VK_SHIFT:   return Modifier::Value::Shift;
-    case VK_CAPITAL: return Modifier::Value::CapsLock;
-    default:         return Modifier::Value::None;
+    case VK_CONTROL: return Modifiers::Control;
+    case VK_SHIFT:   return Modifiers::Shift;
+    case VK_CAPITAL: return Modifiers::CapsLock;
+    default:         return Modifiers::None;
     }
 }
 

@@ -113,7 +113,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
     }
 }
 
-void ControllersPool::OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change)
+void ControllersPool::OnModifiersChanged(Keyboard::Modifiers modifiers, const Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();

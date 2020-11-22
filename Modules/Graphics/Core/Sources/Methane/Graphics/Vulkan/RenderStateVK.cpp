@@ -110,7 +110,7 @@ void RenderStateVK::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Group::Mask /*state_groups*/)
+void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
 }

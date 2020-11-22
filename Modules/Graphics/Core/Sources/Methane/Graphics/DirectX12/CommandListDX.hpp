@@ -158,7 +158,7 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) final
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
     {
         META_FUNCTION_TASK();
         CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();

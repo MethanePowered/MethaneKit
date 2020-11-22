@@ -34,6 +34,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Checks.hpp>
 
 #include <d3dx12.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -109,8 +110,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         const IResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
-                                   DescriptorHeap::GetTypeName(descriptor_heap_type), m_settings_dx.argument.name,
-                                   Shader::GetTypeName(m_settings_dx.argument.shader_type));
+                                   magic_enum::flags::enum_name(descriptor_heap_type), m_settings_dx.argument.name,
+                                   magic_enum::flags::enum_name(m_settings_dx.argument.shader_type));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         cp_native_device->CopyDescriptorsSimple(
@@ -132,9 +133,12 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRa
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
     META_CHECK_ARG_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
                                "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
-                               DescriptorHeap::GetTypeName(descriptor_range.heap_type), DescriptorHeap::GetTypeName(expected_heap_type));
+                               magic_enum::flags::enum_name(descriptor_range.heap_type),
+                               magic_enum::flags::enum_name(expected_heap_type));
     META_CHECK_ARG_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
-                              "descriptor range size {} will not fit bound shader resources count {}", descriptor_range.count, m_settings_dx.resource_count);
+                              "descriptor range size {} will not fit bound shader resources count {}",
+                              descriptor_range.count, m_settings_dx.resource_count);
+
     m_descriptor_range = descriptor_range;
 }
 
@@ -143,7 +147,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const De
     META_FUNCTION_TASK();
     META_CHECK_ARG_NAME_DESCR("p_reservation",
                               !p_reservation || (p_reservation->heap.get().IsShaderVisible() && p_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type),
-                              "argument binding reservation must be made in shader visible descriptor heap of type '{}'", DescriptorHeap::GetTypeName(m_descriptor_range.heap_type));
+                              "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
+                              magic_enum::flags::enum_name(m_descriptor_range.heap_type));
     m_p_descriptor_heap_reservation = p_reservation;
 }
 
@@ -200,20 +205,23 @@ void ProgramBindingsDX::CompleteInitialization()
     UpdateRootParameterBindings();
 }
 
-void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     Apply(dynamic_cast<ICommandListDX&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
 }
 
-void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
-    const bool apply_constant_resource_bindings = apply_behavior & ~ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
+    const bool apply_constant_resource_bindings   = !magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
+                                                    std::addressof(*this) != p_applied_program_bindings;
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     // Set resource transition barriers before applying resource bindings
-    if (apply_behavior & ApplyBehavior::StateBarriers && ApplyResourceStates(apply_constant_resource_bindings) &&
+    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers) &&
+        ApplyResourceStates(apply_constant_resource_bindings) &&
         m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
     {
         command_list_dx.SetResourceBarriersDX(*m_resource_transition_barriers_ptr);
@@ -231,8 +239,8 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
 
     for(const RootParameterBinding& root_parameter_binding : m_variadic_root_parameter_bindings)
     {
-        if (apply_behavior & ApplyBehavior::ChangesOnly && p_applied_program_bindings &&
-            root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
+        if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly) &&
+            p_applied_program_bindings && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
             continue;
 
         ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
@@ -434,7 +442,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
         const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
         META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
                              "can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
-                             Resource::Usage::ToString(resource_location_dx.GetResourceDX().GetUsageMask()), dx_descriptor_heap.GetTypeName());
+                             magic_enum::flags::enum_name(resource_location_dx.GetResourceDX().GetUsage()),
+                             magic_enum::flags::enum_name(dx_descriptor_heap.GetSettings().type));
 
         const uint32_t descriptor_index = descriptor_range_start + descriptor_range.offset + resource_index;
         META_LOG("  - Resource '{}' range [{}, {}), descriptor {}", resource_location_dx.GetResourceDX().GetName(),

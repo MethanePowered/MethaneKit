@@ -26,6 +26,8 @@ Base implementation of the render state interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -161,37 +163,38 @@ bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
     return !operator==(other);
 }
 
-RenderState::Group::Mask RenderState::Settings::Compare(const Settings& left, const Settings& right, Group::Mask compare_groups) noexcept
+RenderState::Groups RenderState::Settings::Compare(const Settings& left, const Settings& right, Groups compare_groups) noexcept
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
     
-    Group::Mask changed_state_groups = Group::None;
+    Groups changed_state_groups = Groups::None;
     
-    if (compare_groups & Group::Program &&
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::Program) &&
         left.program_ptr.get() != right.program_ptr.get())
     {
-        changed_state_groups |= Group::Program;
+        changed_state_groups |= Groups::Program;
     }
-    if (compare_groups & Group::Rasterizer &&
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::Rasterizer) &&
         left.rasterizer != right.rasterizer)
     {
-        changed_state_groups |= Group::Rasterizer;
+        changed_state_groups |= Groups::Rasterizer;
     }
-    if (compare_groups & Group::Blending &&
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::Blending) &&
         left.blending != right.blending)
     {
-        changed_state_groups |= Group::Blending;
+        changed_state_groups |= Groups::Blending;
     }
-    if (compare_groups & Group::BlendingColor &&
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::BlendingColor) &&
         left.blending_color != right.blending_color)
     {
-        changed_state_groups |= Group::BlendingColor;
+        changed_state_groups |= Groups::BlendingColor;
     }
-    if (compare_groups & Group::DepthStencil && (
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::DepthStencil) && (
         left.depth   != right.depth ||
         left.stencil != right.stencil))
     {
-        changed_state_groups |= Group::DepthStencil;
+        changed_state_groups |= Groups::DepthStencil;
     }
     
     return changed_state_groups;

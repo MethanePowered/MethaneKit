@@ -157,28 +157,28 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }
 
-Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
-    Modifier::Mask modifiers_mask = Modifier::Value::None;
+    Modifiers modifiers_mask = Modifiers::None;
     
     if (native_key.flags & NSEventModifierFlagShift)
-        modifiers_mask |= Modifier::Value::Shift;
+        modifiers_mask |= Modifiers::Shift;
     
     if (native_key.flags & NSEventModifierFlagControl)
-        modifiers_mask |= Modifier::Value::Control;
+        modifiers_mask |= Modifiers::Control;
     
     if (native_key.flags & NSEventModifierFlagOption)
-        modifiers_mask |= Modifier::Value::Alt;
+        modifiers_mask |= Modifiers::Alt;
     
     if (native_key.flags & NSEventModifierFlagCommand)
-        modifiers_mask |= Modifier::Value::Super;
+        modifiers_mask |= Modifiers::Super;
     
     if (native_key.flags & NSEventModifierFlagCapsLock)
-        modifiers_mask |= Modifier::Value::CapsLock;
+        modifiers_mask |= Modifiers::CapsLock;
     
     if (native_key.flags & NSEventModifierFlagNumericPad)
-        modifiers_mask |= Modifier::Value::NumLock;
+        modifiers_mask |= Modifiers::NumLock;
     
     return modifiers_mask;
 }

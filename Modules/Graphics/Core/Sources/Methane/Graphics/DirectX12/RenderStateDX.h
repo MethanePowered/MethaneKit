@@ -65,7 +65,7 @@ public:
     void Reset(const Settings& settings) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Group::Mask state_groups) override;
+    void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
 
     // Object interface
     void SetName(const std::string& name) override;

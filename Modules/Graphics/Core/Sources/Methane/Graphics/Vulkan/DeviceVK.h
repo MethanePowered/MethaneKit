@@ -41,7 +41,7 @@ public:
     ~SystemVK() override;
     
     void           CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
 };
 
 } // namespace Methane::Graphics

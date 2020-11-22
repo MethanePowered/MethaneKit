@@ -25,6 +25,8 @@ Platform abstraction of keyboard events.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
+#include <magic_enum.hpp>
 #include <map>
 #include <sstream>
 
@@ -41,7 +43,7 @@ KeyConverter::KeyConverter(Key key)
     META_FUNCTION_TASK();
 }
 
-KeyConverter::KeyConverter(Key key, Modifier::Mask modifiers)
+KeyConverter::KeyConverter(Key key, Modifiers modifiers)
     : m_key(key)
     , m_modifiers(modifiers)
 {
@@ -55,34 +57,34 @@ KeyConverter::KeyConverter(const NativeKey& native_key)
     META_FUNCTION_TASK();
 }
 
-Modifier::Value KeyConverter::GetModifierKey() const noexcept
+Modifiers KeyConverter::GetModifierKey() const noexcept
 {
     META_FUNCTION_TASK();
     switch (m_key)
     {
     case Key::LeftShift:
     case Key::RightShift:
-        return Modifier::Shift;
+        return Modifiers::Shift;
 
     case Key::LeftControl:
     case Key::RightControl:
-        return Modifier::Control;
+        return Modifiers::Control;
 
     case Key::LeftAlt:
     case Key::RightAlt:
-        return Modifier::Alt;
+        return Modifiers::Alt;
 
     case Key::LeftSuper:
     case Key::RightSuper:
-        return Modifier::Super;
+        return Modifiers::Super;
 
     case Key::CapsLock:
-        return Modifier::CapsLock;
+        return Modifiers::CapsLock;
     case Key::NumLock:
-        return Modifier::NumLock;
+        return Modifiers::NumLock;
 
     default:
-        return Modifier::None;
+        return Modifiers::None;
     }
 }
 
@@ -228,12 +230,12 @@ std::string KeyConverter::ToString() const
     auto key_and_name_it = s_name_by_key.find(m_key);
     META_CHECK_ARG_DESCR(m_key, key_and_name_it != s_name_by_key.end(), "key name was not found");
 
-    return m_modifiers == Modifier::Value::None
+    return m_modifiers == Modifiers::None
            ? key_and_name_it->second
-           : Modifier::ToString(m_modifiers) + g_keys_separator + key_and_name_it->second;
+           : fmt::format("{}{}{}", magic_enum::enum_name(m_modifiers), g_keys_separator, key_and_name_it->second);
 };
 
-State::State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask)
+State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
     : m_modifiers_mask(modifiers_mask)
 {
     META_FUNCTION_TASK();
@@ -285,16 +287,18 @@ State::operator bool() const noexcept
     return operator!=(s_empty_state);
 }
 
-State::Property::Mask State::GetDiff(const State& other) const noexcept
+State::Properties State::GetDiff(const State& other) const noexcept
 {
     META_FUNCTION_TASK();
-    State::Property::Mask properties_diff_mask = State::Property::None;
+    using namespace magic_enum::bitwise_operators;
+
+    State::Properties properties_diff_mask = State::Properties::None;
 
     if (m_key_states != other.m_key_states)
-        properties_diff_mask |= State::Property::KeyStates;
+        properties_diff_mask |= State::Properties::KeyStates;
 
     if (m_modifiers_mask != other.m_modifiers_mask)
-        properties_diff_mask |= State::Property::Modifiers;
+        properties_diff_mask |= State::Properties::Modifiers;
 
     return properties_diff_mask;
 }
@@ -305,8 +309,8 @@ KeyType State::SetKey(Key key, KeyState state)
     if (key == Key::Unknown)
         return KeyType::Common;
 
-    const Modifier::Value key_modifier = KeyConverter(key).GetModifierKey();
-    if (key_modifier != Modifier::Value::None)
+    const Modifiers key_modifier = KeyConverter(key).GetModifierKey();
+    if (key_modifier != Modifiers::None)
     {
         UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
         return KeyType::Common;
@@ -320,9 +324,11 @@ KeyType State::SetKey(Key key, KeyState state)
     }
 }
 
-void State::UpdateModifiersMask(Modifier::Value modifier, bool add_modifier) noexcept
+void State::UpdateModifiersMask(Modifiers modifier, bool add_modifier) noexcept
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     if (add_modifier)
         m_modifiers_mask |= modifier;
     else
@@ -370,88 +376,14 @@ Keys StateExt::GetAllPressedKeys() const
     return all_pressed_keys;
 }
 
-std::string Modifier::ToString(Value modifier)
-{
-    META_FUNCTION_TASK();
-    switch(modifier)
-    {
-        case None:      return "None";
-        case Shift:     return "Shift";
-        case Control:   return "Control";
-        case Alt:       return "Alt";
-        case CapsLock:  return "CapsLock";
-        case NumLock:   return "NumLock";
-        case All:       return "All";
-#ifdef __APPLE__
-        case Super:     return "Command";
-#else
-        case Super:     return "Super";
-#endif
-        default:        return "Undefined";
-    }
-}
-
-std::string Modifier::ToString(Modifier::Mask modifiers_mask)
-{
-    META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool first_modifier = true;
-    for(Value modifier : values)
-    {
-        if (modifiers_mask & modifier)
-        {
-            if (!first_modifier)
-            {
-                ss << g_keys_separator;
-            }
-            ss << ToString(modifier);
-            first_modifier = false;
-        }
-    }
-    return ss.str();
-}
-
-std::string State::Property::ToString(State::Property::Value property_value)
-{
-    META_FUNCTION_TASK();
-    switch (property_value)
-    {
-    case All:       return "All";
-    case KeyStates: return "KeyStates";
-    case Modifiers: return "Modifiers";
-    case None:      return "None";
-    default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
-    }
-}
-
-std::string State::Property::ToString(State::Property::Mask properties_mask)
-{
-    META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool first_property = true;
-    for (Value property_value : values)
-    {
-        if (!(properties_mask & property_value))
-            continue;
-
-        if (!first_property)
-        {
-            ss << g_properties_separator;
-        }
-        ss << ToString(property_value);
-        first_property = false;
-    }
-    return ss.str();
-}
-
 std::string State::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    const std::string modifiers_str = Modifier::ToString(m_modifiers_mask);
-    if (!modifiers_str.empty())
+    const bool has_modifiers = m_modifiers_mask != Modifiers::None;
+    if (has_modifiers)
     {
-        ss << modifiers_str;
+        ss << magic_enum::enum_name(m_modifiers_mask);
     }
     
     bool is_first_key = true;
@@ -460,7 +392,7 @@ std::string State::ToString() const
         if (m_key_states[key_index] != KeyState::Pressed)
             continue;
         
-        if (!is_first_key || !modifiers_str.empty())
+        if (!is_first_key || has_modifiers)
         {
             ss << g_keys_separator;
         }

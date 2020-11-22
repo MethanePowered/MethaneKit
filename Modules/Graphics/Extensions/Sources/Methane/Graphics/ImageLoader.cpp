@@ -29,6 +29,7 @@ by decoding them from popular image formats.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <taskflow/taskflow.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
@@ -157,22 +158,22 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options)
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
-    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, options & Options::Mipmapped);
+    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
 
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options)
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options)
 {
     META_FUNCTION_TASK();
-
     const uint32_t desired_channels_count = 4;
 
     // Load face image data in parallel
@@ -198,7 +199,6 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     context.GetParallelExecutor().run(load_task_flow).get();
 
     // Verify cube textures
-
     META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
     const Dimensions face_dimensions     = face_images_data.front().second.GetDimensions();
     const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
@@ -208,15 +208,15 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     face_resources.reserve(face_images_data.size());
     for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),     "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),    "all face image of cube texture must have equal dimensions");
         META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.GetChannelsCount(), "all face image of cube texture must have equal channels count");
         face_resources.emplace_back(face_image_data.second.GetPixels().GetDataPtr(), face_image_data.second.GetPixels().GetDataSize(), Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture
-
-    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, options & Options::Mipmapped);
+    using namespace magic_enum::bitwise_operators;
+    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetData(face_resources);
 
     return texture_ptr;

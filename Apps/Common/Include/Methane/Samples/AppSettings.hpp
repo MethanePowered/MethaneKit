@@ -25,6 +25,8 @@ Common application settings for Methane samples and tutorials.
 
 #include <Methane/Graphics/App.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Samples
 {
 
@@ -37,6 +39,7 @@ constexpr bool g_is_apple = false;
 inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
                                                     std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
 {
+    using namespace magic_enum::bitwise_operators;
     using Stencil = Graphics::Stencil;
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
     return Graphics::AppSettings

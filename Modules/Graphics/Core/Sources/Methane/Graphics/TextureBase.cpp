@@ -32,7 +32,7 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
+Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
 {
     META_FUNCTION_TASK();
 
@@ -53,7 +53,7 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     return settings;
 }
 
-Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage)
+Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage)
 {
     META_FUNCTION_TASK();
 
@@ -83,7 +83,7 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
     return settings;
 }
 
-Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask)
+Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask)
 {
     META_FUNCTION_TASK();
 
@@ -102,7 +102,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::None, "can not create texture with 'Unknown' usage mask");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 

@@ -28,6 +28,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Tutorials
 {
@@ -94,8 +95,9 @@ void ShadowCubeApp::Init()
     const gfx::QuadMesh<Vertex>   floor_mesh(mesh_layout, 7.F, 7.F, 0.F, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
-    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
-                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+    using namespace magic_enum::bitwise_operators;
+    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
+                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
 
     m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), cube_mesh, "Cube");
     m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options));
@@ -180,7 +182,8 @@ void ShadowCubeApp::Init()
     m_final_pass.view_state_ptr = GetViewStatePtr();
 
     // ========= Shadow Pass objects =========
-    
+
+    using namespace magic_enum::bitwise_operators;
     gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,

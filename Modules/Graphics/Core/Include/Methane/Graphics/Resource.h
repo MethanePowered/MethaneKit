@@ -46,40 +46,26 @@ class DescriptorHeap;
 
 struct Resource : virtual Object
 {
-    enum class Type : uint32_t
+    enum class Type
     {
-        Buffer = 0U,
+        Buffer,
         Texture,
         Sampler,
     };
 
-    struct Usage
+    enum class Usage : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            Unknown      = 0U,
-            // Primary usages
-            ShaderRead   = 1U << 0U,
-            ShaderWrite  = 1U << 1U,
-            RenderTarget = 1U << 2U,
-            ReadBack     = 1U << 3U,
-            // Secondary usages
-            Addressable  = 1U << 4U,
-            All          = ~0U,
-        };
-
-        using BaseValues = std::array<Value, 4>;
-        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget };
-
-        using Values = std::array<Value, 5>;
-        static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };
-
-        static std::string ToString(Usage::Value usage);
-        static std::string ToString(Usage::Mask usage_mask);
-
-        Usage() = delete;
+        None         = 0U,
+        // Primary usages
+        ShaderRead   = 1U << 0U,
+        ShaderWrite  = 1U << 1U,
+        RenderTarget = 1U << 2U,
+        ReadBack     = 1U << 3U,
+        // Secondary usages
+        Addressable  = 1U << 4U,
     };
+
+    static constexpr Usage s_secondary_usage_mask = Usage::Addressable;
 
     struct Descriptor
     {
@@ -89,7 +75,7 @@ struct Resource : virtual Object
         Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
     };
 
-    using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
+    using DescriptorByUsage = std::map<Usage, Descriptor>;
     
     class Location
     {
@@ -202,9 +188,6 @@ struct Resource : virtual Object
 
     using SubResources = std::vector<SubResource>;
 
-    // Auxiliary functions
-    static std::string GetTypeName(Type type);
-
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
     virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
@@ -212,9 +195,9 @@ struct Resource : virtual Object
     virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
-    virtual Usage::Mask               GetUsageMask() const noexcept = 0;
+    virtual Usage                     GetUsage() const noexcept = 0;
     virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
-    virtual const Descriptor&         GetDescriptor(Usage::Value usage) const = 0;
+    virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
     virtual Context&                  GetContext() noexcept = 0;
 };
 

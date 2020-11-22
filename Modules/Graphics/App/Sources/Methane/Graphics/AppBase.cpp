@@ -236,29 +236,29 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
                 {
                     frame_buffer_texture, 0, 0, 0,
                     context_settings.clear_color.has_value()
-                    ? RenderPass::Attachment::LoadAction::Clear
-                    : RenderPass::Attachment::LoadAction::DontCare,
+                        ? RenderPass::Attachment::LoadAction::Clear
+                        : RenderPass::Attachment::LoadAction::DontCare,
                     RenderPass::Attachment::StoreAction::Store,
                 },
                 context_settings.clear_color
-                ? *context_settings.clear_color
-                : Color4f()
+                    ? *context_settings.clear_color
+                    : Color4f()
             )
         },
         RenderPass::DepthAttachment(
             {
                 m_depth_texture_ptr, 0, 0, 0,
                 context_settings.clear_depth_stencil.has_value()
-                ? RenderPass::Attachment::LoadAction::Clear
-                : RenderPass::Attachment::LoadAction::DontCare,
+                    ? RenderPass::Attachment::LoadAction::Clear
+                    : RenderPass::Attachment::LoadAction::DontCare,
                 RenderPass::Attachment::StoreAction::DontCare,
             },
             context_settings.clear_depth_stencil
-            ? context_settings.clear_depth_stencil->first
-            : 1.F
+                ? context_settings.clear_depth_stencil->first
+                : 1.F
         ),
         RenderPass::StencilAttachment(),
-        m_settings.screen_pass_access,
+        static_cast<RenderPass::Access>(m_settings.screen_pass_access),
         true // final render pass
     });
 }

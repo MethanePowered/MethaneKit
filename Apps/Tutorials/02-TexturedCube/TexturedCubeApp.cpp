@@ -27,6 +27,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
+#include <magic_enum.hpp>
 #include <cml/mathlib/mathlib.h>
 
 namespace Methane::Tutorials
@@ -120,8 +121,9 @@ void TexturedCubeApp::Init()
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
-    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
-                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+    using namespace magic_enum::bitwise_operators;
+    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
+                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
     m_cube_texture_ptr->SetName("Cube Texture 2D Image");
 

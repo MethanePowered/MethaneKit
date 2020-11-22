@@ -63,19 +63,13 @@ struct ProgramBindings
 
     using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ProgramBindings::ArgumentBinding>, Program::Argument::Hash>;
 
-    struct ApplyBehavior
+    enum class ApplyBehavior : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            Indifferent    = 0U,        // All bindings will be applied indifferently of the previous binding values
-            ConstantOnce   = 1U << 0,   // Constant program arguments will be applied only once for each command list
-            ChangesOnly    = 1U << 1,   // Only changed program argument values will be applied in command sequence
-            StateBarriers  = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
-            AllIncremental = ~0U        // All binding values will be applied incrementally along with resource state barriers
-        };
-
-        ApplyBehavior() = delete;
+        Indifferent    = 0U,        // All bindings will be applied indifferently of the previous binding values
+        ConstantOnce   = 1U << 0,   // Constant program arguments will be applied only once for each command list
+        ChangesOnly    = 1U << 1,   // Only changed program argument values will be applied in command sequence
+        StateBarriers  = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
+        AllIncremental = ~0U        // All binding values will be applied incrementally along with resource state barriers
     };
 
     using ResourceLocationsByArgument = std::unordered_map<Program::Argument, Resource::Locations, Program::Argument::Hash>;

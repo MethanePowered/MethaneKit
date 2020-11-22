@@ -89,7 +89,7 @@ public:
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;
-    virtual void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior = ApplyBehavior::AllIncremental) const = 0;
+    virtual void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
     Program::Arguments GetUnboundArguments() const;
 

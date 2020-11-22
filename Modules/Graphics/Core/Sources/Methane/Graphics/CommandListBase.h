@@ -84,7 +84,7 @@ public:
     void  PushDebugGroup(DebugGroup& debug_group) override;
     void  PopDebugGroup() override;
     void  Reset(DebugGroup* p_debug_group = nullptr) override;
-    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }

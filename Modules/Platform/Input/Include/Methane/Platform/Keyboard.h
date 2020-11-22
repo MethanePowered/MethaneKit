@@ -105,29 +105,16 @@ constexpr Key g_key_right_ctrl = Key::RightControl;
 
 using Keys = std::set<Key>;
 
-struct Modifier
+enum class Modifiers : uint32_t
 {
-    using Mask = uint32_t;
-    enum Value : Mask
-    {
-        None     = 0U,
-        Shift    = 1U << 0U,
-        Control  = 1U << 1U,
-        Alt      = 1U << 2U,
-        Super    = 1U << 3U,
-        CapsLock = 1U << 4U,
-        NumLock  = 1U << 5U,
-        All      = ~0U,
-    };
-
-    using Values = std::array<Value, 6>;
-    static constexpr const Values values{ Shift, Control, Alt, Super, CapsLock, NumLock };
-
-    static std::string ToString(Value modifier);
-    static std::string ToString(Mask modifiers_mask);
-
-    Modifier() = delete;
-    ~Modifier() = delete;
+    None     = 0U,
+    Shift    = 1U << 0U,
+    Control  = 1U << 1U,
+    Alt      = 1U << 2U,
+    Super    = 1U << 3U,
+    CapsLock = 1U << 4U,
+    NumLock  = 1U << 5U,
+    All      = ~0U
 };
 
 enum class KeyType : uint32_t
@@ -142,21 +129,21 @@ class KeyConverter
 {
 public:
     KeyConverter(Key key);
-    KeyConverter(Key key, Modifier::Mask modifiers);
+    KeyConverter(Key key, Modifiers modifiers);
     KeyConverter(const NativeKey& native_key);
     
-    Key             GetKey() const noexcept         { return m_key; }
-    Modifier::Mask  GetModifiers() const noexcept   { return m_modifiers; }
-    Modifier::Value GetModifierKey() const noexcept;
-    std::string     ToString() const;
+    Key         GetKey() const noexcept         { return m_key; }
+    Modifiers   GetModifiers() const noexcept   { return m_modifiers; }
+    Modifiers   GetModifierKey() const noexcept;
+    std::string ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
-    static Key            GetKeyByNativeCode(const NativeKey& native_key);
-    static Modifier::Mask GetModifiersByNativeCode(const NativeKey& native_key);
+    static Key       GetKeyByNativeCode(const NativeKey& native_key);
+    static Modifiers GetModifiersByNativeCode(const NativeKey& native_key);
     
 private:
-    const Key            m_key;
-    const Modifier::Mask m_modifiers;
+    const Key       m_key;
+    const Modifiers m_modifiers;
 };
 
 enum class KeyState : uint8_t
@@ -170,29 +157,16 @@ using KeyStates = std::array<KeyState, static_cast<size_t>(Key::Count)>;
 class State
 {
 public:
-    struct Property
+    enum class Properties : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None      = 0U,
-            KeyStates = 1U << 0U,
-            Modifiers = 1U << 1U,
-            All       = ~0U,
-        };
-
-        using Values = std::array<Value, 2>;
-        static constexpr const Values values{ KeyStates, Modifiers };
-
-        static std::string ToString(Value modifier);
-        static std::string ToString(Mask modifiers_mask);
-
-        Property() = delete;
-        ~Property() = delete;
+        None      = 0U,
+        KeyStates = 1U << 0U,
+        Modifiers = 1U << 1U,
+        All       = ~0U
     };
 
     State() noexcept = default;
-    State(std::initializer_list<Key> pressed_keys, Modifier::Mask modifiers_mask = Modifier::Value::None);
+    State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
     State(const State& other) noexcept;
 
     State& operator=(const State& other) noexcept;
@@ -200,25 +174,25 @@ public:
     bool   operator==(const State& other) const noexcept;
     bool   operator!=(const State& other) const noexcept    { return !operator==(other); }
     const  KeyState& operator[](Key key) const noexcept     { return m_key_states[static_cast<size_t>(key)]; }
-    operator std::string() const                            { return ToString(); }
-    operator bool() const noexcept;
+    explicit operator std::string() const                   { return ToString(); }
+    explicit operator bool() const noexcept;
 
     KeyType SetKey(Key key, KeyState state);
-    void    SetModifiersMask(Modifier::Mask mask) noexcept  { m_modifiers_mask = mask; }
+    void    SetModifiersMask(Modifiers mask) noexcept  { m_modifiers_mask = mask; }
     void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
     void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
 
     Keys             GetPressedKeys() const noexcept;
     const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
-    Modifier::Mask   GetModifiersMask() const noexcept      { return m_modifiers_mask; }
-    Property::Mask   GetDiff(const State& other) const noexcept;
+    Modifiers   GetModifiersMask() const noexcept      { return m_modifiers_mask; }
+    Properties       GetDiff(const State& other) const noexcept;
     std::string      ToString() const;
 
 private:
-    void UpdateModifiersMask(Modifier::Value modifier_value, bool add_modifier) noexcept;
+    void UpdateModifiersMask(Modifiers modifier_value, bool add_modifier) noexcept;
 
-    KeyStates       m_key_states{};
-    Modifier::Mask  m_modifiers_mask = Modifier::None;
+    KeyStates m_key_states{};
+    Modifiers m_modifiers_mask = Modifiers::None;
 };
 
 inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
@@ -245,7 +219,7 @@ private:
 
 struct StateChange
 {
-    StateChange(const State& in_current, const State& in_previous, State::Property::Mask in_changed_properties)
+    StateChange(const State& in_current, const State& in_previous, State::Properties in_changed_properties)
         : current(in_current)
         , previous(in_previous)
         , changed_properties(in_changed_properties)
@@ -253,7 +227,7 @@ struct StateChange
 
     const State& current;
     const State& previous;
-    const State::Property::Mask changed_properties;
+    const State::Properties changed_properties;
 };
 
 } // namespace Methane::Platform::Keyboard

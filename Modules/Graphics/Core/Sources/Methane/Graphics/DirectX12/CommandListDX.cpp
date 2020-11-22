@@ -28,6 +28,7 @@ DirectX 12 command lists collection implementation
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <nowide/convert.hpp>
 
 namespace Methane::Graphics

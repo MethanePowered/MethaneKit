@@ -264,6 +264,8 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
         MethanePrecompiledExtraHeaders
         TaskFlow
+        nowide
+        magic_enum
         ${PLATFORM_LIBRARIES}
 )
 

@@ -96,21 +96,14 @@ struct RenderPass : virtual Object
         bool operator==(const StencilAttachment& other) const;
     };
 
-    struct Access
+    enum class Access : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None            = 0U,
-            ShaderResources = 1U << 0U,
-            Samplers        = 1U << 1U,
-            RenderTargets   = 1U << 2U,
-            DepthStencil    = 1U << 3U,
-            All             = ~0U,
-        };
-
-        using Values = std::array<Value, 4>;
-        static constexpr Values values{ ShaderResources, Samplers, RenderTargets, DepthStencil };
+        None            = 0U,
+        ShaderResources = 1U << 0U,
+        Samplers        = 1U << 1U,
+        RenderTargets   = 1U << 2U,
+        DepthStencil    = 1U << 3U,
+        All             = ~0U,
     };
 
     struct Settings
@@ -118,7 +111,7 @@ struct RenderPass : virtual Object
         ColorAttachments   color_attachments;
         DepthAttachment    depth_attachment;
         StencilAttachment  stencil_attachment;
-        Access::Mask       shader_access_mask = Access::None;
+        Access             shader_access_mask = Access::None;
         bool               is_final_pass = true;
 
         bool operator==(const Settings& other) const;

@@ -37,18 +37,12 @@ namespace Methane::Graphics
 class ImageLoader final
 {
 public:
-    struct Options
+    enum class Options : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None            = 0U,
-            Mipmapped       = 1U << 0U,
-            SrgbColorSpace  = 1U << 1U,
-            All             = ~0U,
-        };
-
-        Options() = delete;
+        None            = 0U,
+        Mipmapped       = 1U << 0U,
+        SrgbColorSpace  = 1U << 1U,
+        All             = ~0U
     };
 
     class ImageData
@@ -77,19 +71,17 @@ public:
         PositiveY,
         NegativeY,
         PositiveZ,
-        NegativeZ,
-
-        Count
+        NegativeZ
     };
 
-    using CubeFaceResources = std::array<std::string, static_cast<size_t>(CubeFace::Count)>;
+    using CubeFaceResources = std::array<std::string, 6>;
 
     explicit ImageLoader(Data::Provider& data_provider);
 
     ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
 
-    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options = Options::None);
-    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options = Options::None);
+    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options options = Options::None);
+    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options = Options::None);
 
 private:
     Data::Provider& m_data_provider;

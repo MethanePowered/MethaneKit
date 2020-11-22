@@ -62,7 +62,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
+static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
     using ColorChannel = RenderState::Blending::ColorChannel;
@@ -355,30 +355,30 @@ void RenderStateMT::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
+void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
-    if (state_groups & Group::Program    ||
-        state_groups & Group::Rasterizer ||
-        state_groups & Group::Blending)
+    if (state_groups & Groups::Program    ||
+        state_groups & Groups::Rasterizer ||
+        state_groups & Groups::Blending)
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (state_groups & Group::DepthStencil)
+    if (state_groups & Groups::DepthStencil)
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
-    if (state_groups & Group::Rasterizer)
+    if (state_groups & Groups::Rasterizer)
     {
         [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (state_groups & Group::BlendingColor)
+    if (state_groups & Groups::BlendingColor)
     {
         const Settings& settings = GetSettings();
         [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()

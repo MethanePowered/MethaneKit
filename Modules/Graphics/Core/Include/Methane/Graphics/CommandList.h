@@ -74,7 +74,7 @@ struct CommandList : virtual Object
     virtual void  PopDebugGroup() = 0;
     virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
     virtual void  SetProgramBindings(ProgramBindings& program_bindings,
-                                     ProgramBindings::ApplyBehavior::Mask apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
+                                     ProgramBindings::ApplyBehavior apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
     virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;

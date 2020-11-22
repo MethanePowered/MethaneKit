@@ -34,6 +34,7 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
@@ -161,7 +162,7 @@ RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access::Value access)
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access access)
 {
     META_FUNCTION_TASK();
     switch (access)
@@ -292,11 +293,14 @@ template<typename FuncType>
 void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     const Settings& settings = GetSettings();
     const RenderContextBase& context = GetRenderContext();
-    for (Access::Value access : Access::values)
+
+    for (Access access : magic_enum::enum_values<Access>())
     {
-        if (!(settings.shader_access_mask & access))
+        if (!magic_enum::flags::enum_contains(settings.shader_access_mask & access))
             continue;
 
         const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);

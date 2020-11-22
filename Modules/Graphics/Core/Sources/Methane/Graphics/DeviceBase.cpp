@@ -31,39 +31,7 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
-std::string Device::Feature::ToString(Value feature)
-{
-    META_FUNCTION_TASK();
-    switch(feature)
-    {
-    case Value::Unknown:                    return "Unknown";
-    case Value::All:                        return "All";
-    case Value::BasicRendering:             return "Basic Rendering";
-    case Value::TextureAndSamplerArrays:    return "Texture and Sampler Arrays";
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(feature, "");
-    }
-}
-
-std::string Device::Feature::ToString(Mask features)
-{
-    META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool is_first_feature = true;
-    for(Value value : values)
-    {
-        if (!(features & value))
-            continue;
-        
-        if (!is_first_feature)
-            ss << ", ";
-        
-        ss << ToString(value);
-        is_first_feature = false;
-    }
-    return ss.str();
-}
-
-DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features)
+DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, Features supported_features)
     : m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
     , m_supported_features(supported_features)

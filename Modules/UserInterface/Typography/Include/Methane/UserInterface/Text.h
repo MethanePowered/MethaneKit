@@ -137,7 +137,7 @@ public:
 protected:
     // IFontCallback interface
     void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
-    void OnFontAtlasUpdated(Font&) override {}
+    void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
 
 private:
     struct Constants;
@@ -146,26 +146,22 @@ private:
     class FrameResources
     {
     public:
-        struct Dirty
+        enum class DirtyFlags : uint32_t
         {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                None         = 0U,
-                Mesh         = 1U << 0U,
-                Uniforms     = 1U << 1U,
-                Atlas        = 1U << 2U,
-                All          = ~0U,
-            };
+            None     = 0U,
+            Mesh     = 1U << 0U,
+            Uniforms = 1U << 1U,
+            Atlas    = 1U << 2U,
+            All      = ~0U
         };
 
         FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
                        const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
 
-        void SetDirty(Dirty::Mask dirty_flags) noexcept         { m_dirty_mask |= dirty_flags; }
-        bool IsDirty() const noexcept                           { return m_dirty_mask != Dirty::None; }
-        bool IsDirty(Dirty::Mask dirty_flags) const noexcept    { return m_dirty_mask & dirty_flags; }
+        void SetDirty(DirtyFlags dirty_flags) noexcept;
+        bool IsDirty(DirtyFlags dirty_flags) const noexcept;
+        bool IsDirty() const noexcept                           { return m_dirty_mask != DirtyFlags::None; }
         bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
         bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
 
@@ -179,7 +175,7 @@ private:
         void InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
 
     private:
-        Dirty::Mask               m_dirty_mask = Dirty::None;
+        DirtyFlags               m_dirty_mask = DirtyFlags::None;
         Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::Buffer>          m_index_buffer_ptr;
         Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
@@ -188,7 +184,7 @@ private:
     };
 
     void InitializeFrameResources();
-    void MakeFrameResourcesDirty(FrameResources::Dirty::Mask dirty_flags);
+    void MakeFrameResourcesDirty(FrameResources::DirtyFlags dirty_flags);
     FrameResources& GetCurrentFrameResources();
 
     void UpdateTextMesh();

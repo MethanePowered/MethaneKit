@@ -33,6 +33,7 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <thread>
 #include <array>
 #include <map>
+#include <magic_enum.hpp>
 
 namespace Methane::Samples
 {
@@ -194,6 +195,7 @@ void AsteroidsApp::Init()
     m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
+    using namespace magic_enum::bitwise_operators;
     m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
         m_view_camera,
         {

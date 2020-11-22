@@ -115,15 +115,17 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings, uint32_t first_instance_index = 0)
+    void Draw(RenderCommandList& cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
+              ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+              uint32_t first_instance_index = 0)
     {
-        Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(), first_instance_index);
+        Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(), bindings_apply_behavior, first_instance_index);
     }
 
     void Draw(RenderCommandList& cmd_list,
               const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_begin,
               const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_end,
-              ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+              ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0)
     {
         META_FUNCTION_TASK();
@@ -153,7 +155,7 @@ public:
     }
 
     void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
-                      ProgramBindings::ApplyBehavior::Mask bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
+                      ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
     {
         META_FUNCTION_TASK();
 
