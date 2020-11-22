@@ -28,20 +28,20 @@ Metal implementation of the device interface.
 #include <Methane/Checks.hpp>
 
 #include <algorithm>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
 
-Device::Feature::Mask DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
+Device::Features DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
 {
     META_FUNCTION_TASK();
-    Device::Feature::Mask supported_features = Device::Feature::Value::BasicRendering;
+    Device::Features supported_features = Device::Features::BasicRendering;
     return supported_features;
 }
 
 DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
-    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false,
-                 GetSupportedFeatures(mtl_device))
+    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, GetSupportedFeatures(mtl_device))
     , m_mtl_device(mtl_device)
 {
     META_FUNCTION_TASK();
@@ -70,7 +70,7 @@ SystemMT::~SystemMT()
     }
 }
 
-const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Features supported_features)
 {
     META_FUNCTION_TASK();
     if (m_device_observer != nil)
@@ -117,8 +117,10 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
 void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
-    Device::Feature::Mask device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
-    if (!(device_supported_features & GetGpuSupportedFeatures()))
+    using namespace magic_enum::bitwise_operators;
+
+    Device::Features device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetGpuSupportedFeatures()))
         return;
 
     SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device));

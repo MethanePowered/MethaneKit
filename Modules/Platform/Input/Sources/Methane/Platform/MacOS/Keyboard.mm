@@ -27,6 +27,7 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 #import <AppKit/AppKit.h>
 
 #include <map>
+#include <magic_enum.hpp>
 
 namespace Methane::Platform::Keyboard
 {
@@ -160,6 +161,8 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     Modifiers modifiers_mask = Modifiers::None;
     
     if (native_key.flags & NSEventModifierFlagShift)

@@ -30,6 +30,7 @@ Metal implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics
@@ -216,16 +217,18 @@ RenderContextMT& TextureMT::GetRenderContextMT()
 MTLTextureUsage TextureMT::GetNativeTextureUsage()
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderRead))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderWrite))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::RenderTarget))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;
