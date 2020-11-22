@@ -141,8 +141,6 @@ struct Program : virtual Object
     virtual const Settings&      GetSettings() const = 0;
     virtual const Shader::Types& GetShaderTypes() const = 0;
     virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
-
-    virtual ~Program() = default;
 };
 
 } // namespace Methane::Graphics

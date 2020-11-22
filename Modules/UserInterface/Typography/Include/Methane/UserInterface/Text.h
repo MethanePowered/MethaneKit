@@ -107,7 +107,7 @@ public:
 
     Text(Context& ui_context, Font& font, const SettingsUtf8&  settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
-    ~Text();
+    ~Text() override;
 
     const SettingsUtf32&  GetSettings() const noexcept            { return m_settings; }
     const std::u32string& GetTextUtf32() const noexcept           { return m_settings.text; }
