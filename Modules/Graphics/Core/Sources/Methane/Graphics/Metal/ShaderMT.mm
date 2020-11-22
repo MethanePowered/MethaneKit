@@ -33,6 +33,7 @@ Metal implementation of the shader interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <regex>
 
 namespace Methane::Graphics
@@ -120,7 +121,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
         return argument_bindings;
     
 #ifndef NDEBUG
-    NSLog(@"%s shader '%s' arguments:", GetTypeName().c_str(), GetCompiledEntryFunctionName().c_str());
+    NSLog(@"%s shader '%s' arguments:", magic_enum::enum_name(GetType()).data(), GetCompiledEntryFunctionName().c_str());
 #endif
 
     for(MTLArgument* mtl_arg in m_mtl_arguments)
