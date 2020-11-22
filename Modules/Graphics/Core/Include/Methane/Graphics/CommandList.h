@@ -39,16 +39,16 @@ struct CommandQueue;
 
 struct CommandList : virtual Object
 {
-    enum class Type : uint32_t
+    enum class Type
     {
-        Blit = 0U,
+        Blit,
         Render,
         ParallelRender,
     };
 
-    enum State : uint32_t
+    enum class State
     {
-        Pending = 0U,
+        Pending,
         Encoding,
         Committed,
         Executing,
@@ -61,8 +61,6 @@ struct CommandList : virtual Object
         virtual DebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
         virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
         virtual bool        HasSubGroups() const noexcept = 0;
-
-        virtual ~DebugGroup() = default;
     };
 
     using CompletedCallback = std::function<void(CommandList& command_list)>;
@@ -79,8 +77,6 @@ struct CommandList : virtual Object
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
     virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;
     virtual CommandQueue& GetCommandQueue() = 0;
-
-    virtual ~CommandList() = default;
 };
 
 struct CommandListSet

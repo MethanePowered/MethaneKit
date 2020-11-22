@@ -89,7 +89,7 @@ public:
     };
 
     static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);
-    virtual ~DescriptorHeap();
+    ~DescriptorHeap() override;
 
     // DescriptorHeap interface
     virtual Data::Index AddResource(const ResourceBase& resource);

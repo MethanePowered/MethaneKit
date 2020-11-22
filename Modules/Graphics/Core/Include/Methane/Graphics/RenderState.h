@@ -233,8 +233,6 @@ public:
     // RenderState interface
     virtual const Settings& GetSettings() const noexcept = 0;
     virtual void Reset(const Settings& settings) = 0;
-
-    virtual ~RenderState() = default;
 };
 
 } // namespace Methane::Graphics

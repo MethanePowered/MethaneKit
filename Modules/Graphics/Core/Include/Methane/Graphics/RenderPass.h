@@ -125,8 +125,6 @@ struct RenderPass : virtual Object
     virtual const Settings& GetSettings() const = 0;
     virtual bool Update(const Settings& settings) = 0;
     virtual void ReleaseAttachmentTextures() = 0;
-
-    virtual ~RenderPass() = default;
 };
 
 } // namespace Methane::Graphics
