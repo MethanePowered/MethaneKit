@@ -28,6 +28,8 @@ SkyBox rendering primitive
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -77,10 +79,12 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
             context_settings.depth_stencil_format
         }
     );
+
+    using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
-    state_settings.depth.enabled        = m_settings.render_options & Options::DepthEnabled;
+    state_settings.depth.enabled        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
-    state_settings.depth.compare        = m_settings.render_options & Options::DepthReversed ? Compare::GreaterEqual : Compare::Less;
+    state_settings.depth.compare        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_render_state_ptr = RenderState::Create(context, state_settings);

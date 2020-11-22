@@ -168,16 +168,16 @@ public:
         Map  m_barriers_map;
     };
 
-    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
 
     // Resource interface
     Type                      GetResourceType() const noexcept final             { return m_type; }
-    Usage::Mask               GetUsageMask() const noexcept final                { return m_usage_mask; }
+    Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
     const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
-    const Descriptor&         GetDescriptor(Usage::Value usage) const final;
+    const Descriptor&         GetDescriptor(Usage usage) const final;
     void                      SetData(const SubResources& sub_resources) override;
     SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
     const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
@@ -185,8 +185,6 @@ public:
     Context&                  GetContext() noexcept final;
 
     void                      InitializeDefaultDescriptors();
-    std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
-    std::string               GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
     DescriptorHeap::Types     GetUsedDescriptorHeapTypes() const noexcept;
 
     State   GetState() const noexcept                                            { return m_state;  }
@@ -196,8 +194,8 @@ public:
 
 protected:
     ContextBase&         GetContextBase()                                       { return m_context; }
-    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
-    const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
+    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
+    const Descriptor&    GetDescriptorByUsage(Usage usage) const;
     Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;
@@ -210,7 +208,7 @@ private:
     void FillSubresourceSizes();
 
     const Type         m_type;
-    const Usage::Mask  m_usage_mask;
+    const Usage        m_usage_mask;
     ContextBase&       m_context;
     DescriptorByUsage  m_descriptor_by_usage;
     State              m_state = State::Common;

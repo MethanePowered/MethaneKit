@@ -73,7 +73,9 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 
     if (!m_settings.deferred_allocation)
     {
-        META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1, "{} descriptor heap is full, no free space to add a resource", GetTypeName());
+        META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1,
+                                  "{} descriptor heap is full, no free space to add a resource",
+                                  magic_enum::flags::enum_name(m_settings.type));
     }
     else if (m_resources.size() >= m_settings.size)
     {
@@ -142,19 +144,6 @@ void DescriptorHeap::SetDeferredAllocation(bool deferred_allocation)
 {
     META_FUNCTION_TASK();
     m_settings.deferred_allocation = deferred_allocation;
-}
-
-std::string DescriptorHeap::GetTypeName(Type heap_type)
-{
-    META_FUNCTION_TASK();
-    switch (heap_type)
-    {
-        case Type::ShaderResources: return "Shader Resources";
-        case Type::Samplers:        return "Samplers";
-        case Type::RenderTargets:   return "Render Targets";
-        case Type::DepthStencil:    return "Depth Stencil";
-        default: META_UNEXPECTED_ENUM_ARG_RETURN(heap_type, "Undefined");
-    }
 }
 
 } // namespace Methane::Graphics

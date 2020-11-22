@@ -52,10 +52,10 @@ struct IDescriptorHeapCallback
 class DescriptorHeap : public Data::Emitter<IDescriptorHeapCallback>
 {
 public:
-    enum class Type : uint32_t
+    enum class Type
     {
         // Shader visible heap types
-        ShaderResources = 0,
+        ShaderResources,
         Samplers,
 
         // Other heap types
@@ -105,12 +105,10 @@ public:
     const Settings&     GetSettings() const                             { return m_settings; }
     Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
     Data::Size          GetAllocatedSize() const                        { return m_allocated_size; }
-    std::string         GetTypeName() const                             { return GetTypeName(m_settings.type); }
     const ResourceBase* GetResource(uint32_t descriptor_index) const    { return m_resources[descriptor_index]; }
     bool                IsShaderVisible() const                         { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
 
     static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
-    static std::string  GetTypeName(Type heap_type);
 
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);

@@ -50,6 +50,7 @@ target_link_libraries(${TARGET}
         MethanePrecompiledHeaders
         MethanePrimitives
         MethanePlatformUtils
+        magic_enum
         ${PLATFORM_LIBRARIES}
 )
 

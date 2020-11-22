@@ -18,6 +18,7 @@ target_link_libraries(${TARGET}
         MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2
+        magic_enum
 )
 
 if (METHANE_RUN_TESTS_DURING_BUILD)

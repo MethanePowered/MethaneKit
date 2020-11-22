@@ -25,6 +25,7 @@ Platform abstraction of mouse events.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <map>
 #include <sstream>
 
@@ -56,41 +57,6 @@ std::string ButtonConverter::ToString() const
 
     return button_and_name_it->second;
 };
-
-std::string State::Property::ToString(State::Property::Value property_value)
-{
-    META_FUNCTION_TASK();
-    switch (property_value)
-    {
-    case All:       return "All";
-    case Buttons:   return "Buttons";
-    case Position:  return "Position";
-    case Scroll:    return "Scroll";
-    case InWindow:  return "InWindow";
-    case None:      return "None";
-    default:        META_UNEXPECTED_ENUM_ARG_RETURN(property_value, "Undefined");
-    }
-}
-
-std::string State::Property::ToString(State::Property::Mask properties_mask)
-{
-    META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool first_property = true;
-    for (Value property_value : values)
-    {
-        if (!(properties_mask & property_value))
-            continue;
-
-        if (!first_property)
-        {
-            ss << g_properties_separator;
-        }
-        ss << ToString(property_value);
-        first_property = false;
-    }
-    return ss.str();
-}
 
 State::State(std::initializer_list<Button> pressed_buttons, const Position& position, const Scroll& scroll, bool in_window)
     : m_position(position)
@@ -135,22 +101,24 @@ bool State::operator==(const State& other) const
            m_in_window     == other.m_in_window;
 }
 
-State::Property::Mask State::GetDiff(const State& other) const
+State::Properties State::GetDiff(const State& other) const
 {
     META_FUNCTION_TASK();
-    State::Property::Mask properties_diff_mask = State::Property::None;
+    using namespace magic_enum::bitwise_operators;
+
+    State::Properties properties_diff_mask = State::Properties::None;
 
     if (m_button_states != other.m_button_states)
-        properties_diff_mask |= State::Property::Buttons;
+        properties_diff_mask |= State::Properties::Buttons;
     
     if (m_position != other.m_position)
-        properties_diff_mask |= State::Property::Position;
+        properties_diff_mask |= State::Properties::Position;
 
     if (m_scroll != other.m_scroll)
-        properties_diff_mask |= State::Property::Scroll;
+        properties_diff_mask |= State::Properties::Scroll;
 
     if (m_in_window != other.m_in_window)
-        properties_diff_mask |= State::Property::InWindow;
+        properties_diff_mask |= State::Properties::InWindow;
 
     return properties_diff_mask;
 }

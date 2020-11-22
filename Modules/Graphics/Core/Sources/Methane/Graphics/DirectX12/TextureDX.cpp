@@ -34,6 +34,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <DirectXTex.h>
 
 namespace Methane::Graphics
@@ -117,7 +118,7 @@ template<>
 void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetUsageMask(), Usage::RenderTarget, "frame-buffer texture supports only 'RenderTarget' usage");
+    META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::RenderTarget, "frame-buffer texture supports only 'RenderTarget' usage");
     InitializeFrameBufferResource(frame_buffer_index);
 
     const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle = GetNativeCpuDescriptorHandle(Usage::RenderTarget);
@@ -138,12 +139,13 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
     );
 
     tex_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-    if (settings.usage_mask & Usage::RenderTarget)
+
+    using namespace magic_enum::bitwise_operators;
+    if (magic_enum::flags::enum_contains(settings.usage_mask & Usage::RenderTarget))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
-    if (!(settings.usage_mask & Usage::ShaderRead ||
-          settings.usage_mask & Usage::ShaderWrite))
+    if (!magic_enum::flags::enum_contains(settings.usage_mask & (Usage::ShaderRead | Usage::ShaderWrite)))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
@@ -163,10 +165,11 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
 
-    const Usage::Mask usage_mask = GetUsageMask();
-    for (Usage::Value usage : Usage::primary_values)
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = GetUsage();
+    for (Usage usage : magic_enum::enum_values<Usage>())
     {
-        if (!(usage_mask & usage))
+        if (!magic_enum::flags::enum_contains(usage & usage_mask & ~s_secondary_usage_mask) || usage == Usage::None)
             continue;
 
         const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
@@ -179,7 +182,8 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
         default:
             META_UNEXPECTED_ENUM_ARG_DESCR(descriptor_heap_type,
                                            "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
-                                           Usage::ToString(usage), DescriptorHeap::GetTypeName(descriptor_heap_type));
+                                           magic_enum::flags::enum_name(usage),
+                                           magic_enum::flags::enum_name(descriptor_heap_type));
         }
     }
 }
@@ -214,7 +218,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
     : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetUsageMask(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
+    META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
 
     InitializeDefaultDescriptors();
 

@@ -37,6 +37,7 @@ DirectX 12 implementation of the shader interface.
 #include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>
+#include <magic_enum.hpp>
 #include <sstream>
 
 namespace Methane::Graphics
@@ -238,7 +239,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
-    log_ss << std::endl << GetTypeName() << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
+    log_ss << std::endl << magic_enum::flags::enum_name(GetType()) << " shader v." << shader_desc.Version << " with argument bindings:" << std::endl;
 #endif
 
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
@@ -308,7 +309,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
-    log_ss << std::endl << GetTypeName() << " shader input parameters:" << std::endl;
+    log_ss << std::endl << magic_enum::flags::enum_name(GetType()) << " shader input parameters:" << std::endl;
 #endif
 
     std::vector<uint32_t> input_buffer_byte_offsets;

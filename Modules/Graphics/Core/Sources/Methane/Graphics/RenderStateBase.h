@@ -65,7 +65,7 @@ public:
     void Reset(const Settings& settings) override;
 
     // RenderStateBase interface
-    virtual void Apply(RenderCommandListBase& command_list, Group::Mask apply_groups) = 0;
+    virtual void Apply(RenderCommandListBase& command_list, Groups apply_groups) = 0;
 
     Ptr<RenderStateBase> GetRenderStatePtr()    { return std::static_pointer_cast<RenderStateBase>(GetBasePtr()); }
     RenderContextBase&   GetRenderContext()     { return m_context; }

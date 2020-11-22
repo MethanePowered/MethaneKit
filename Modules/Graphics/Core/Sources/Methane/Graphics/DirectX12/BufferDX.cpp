@@ -30,6 +30,8 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -50,21 +52,22 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
     return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
@@ -72,7 +75,8 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
@@ -118,8 +122,10 @@ void ConstantBufferDX::InitializeView()
     m_buffer_view.SizeInBytes    = data_size;
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
-    const Usage::Mask usage_mask = GetUsageMask();
-    if (usage_mask & Usage::ShaderRead && !(usage_mask & Usage::Addressable))
+    const Usage usage_mask = GetUsage();
+    using namespace magic_enum::bitwise_operators;
+    if (magic_enum::flags::enum_contains(usage_mask & Usage::ShaderRead) &&
+       !magic_enum::flags::enum_contains(usage_mask & Usage::Addressable))
     {
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
         GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);

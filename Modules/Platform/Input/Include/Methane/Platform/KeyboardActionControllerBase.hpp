@@ -51,7 +51,7 @@ public:
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
     {
         META_FUNCTION_TASK();
-        if (state_change.changed_properties == State::Property::None)
+        if (state_change.changed_properties == State::Properties::None)
             return;
         
         const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state_change.current);

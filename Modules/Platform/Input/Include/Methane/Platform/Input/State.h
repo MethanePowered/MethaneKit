@@ -48,7 +48,7 @@ public:
     void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta) override;
     void OnMouseInWindowChanged(bool is_mouse_in_window) override;
     void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) override;
-    void OnModifiersChanged(Keyboard::Modifier::Mask modifiers) override;
+    void OnModifiersChanged(Keyboard::Modifiers modifiers) override;
 
     void ReleaseAllKeys();
 

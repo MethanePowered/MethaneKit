@@ -41,6 +41,7 @@ Methane text rendering primitive.
 #include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
+#include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
@@ -322,18 +323,18 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         UpdateViewport(render_attachment_size);
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Mesh) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Mesh) && m_text_mesh_ptr)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Atlas) && m_font_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr)
     {
         if (!frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
         {
             frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
         }
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Uniforms) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
     }
@@ -365,7 +366,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
         (new_atlas_texture_ptr && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(new_atlas_texture_ptr->GetContext())))
         return;
 
-    MakeFrameResourcesDirty(FrameResources::Dirty::Atlas);
+    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Atlas);
 
     if (m_text_mesh_ptr)
     {
@@ -391,6 +392,18 @@ Text::FrameResources::FrameResources(gfx::RenderState& state, gfx::RenderContext
     UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
     UpdateUniformsBuffer(render_context, text_mesh, text_name);
     InitializeProgramBindings(state, const_buffer_ptr, atlas_sampler_ptr);
+}
+
+void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
+{
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask |= dirty_flags;
+}
+
+bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
+{
+    using namespace magic_enum::bitwise_operators;
+    return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
 }
 
 void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
@@ -451,7 +464,9 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
         return false;
 
     m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" })->SetResourceLocations({ { m_atlas_texture_ptr } });
-    m_dirty_mask &= ~Dirty::Atlas;
+
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Atlas;
     return true;
 }
 
@@ -496,7 +511,8 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
         )
     });
 
-    m_dirty_mask &= ~Dirty::Mesh;
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
 void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name)
@@ -530,7 +546,8 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     }
     m_uniforms_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
 
-    m_dirty_mask &= ~Dirty::Uniforms;
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Uniforms;
 }
 
 void Text::InitializeFrameResources()
@@ -562,7 +579,7 @@ Text::FrameResources& Text::GetCurrentFrameResources()
     return m_frame_resources[frame_index];
 }
 
-void Text::MakeFrameResourcesDirty(FrameResources::Dirty::Mask dirty_flags)
+void Text::MakeFrameResourcesDirty(FrameResources::DirtyFlags dirty_flags)
 {
     META_FUNCTION_TASK();
     for(FrameResources& frame_resources : m_frame_resources)
@@ -602,8 +619,9 @@ void Text::UpdateTextMesh()
         InitializeFrameResources();
         return;
     }
-    
-    MakeFrameResourcesDirty(FrameResources::Dirty::Mesh | FrameResources::Dirty::Uniforms);
+
+    using namespace magic_enum::bitwise_operators;
+    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Mesh | FrameResources::DirtyFlags::Uniforms);
 }
 
 void Text::UpdateConstantsBuffer()

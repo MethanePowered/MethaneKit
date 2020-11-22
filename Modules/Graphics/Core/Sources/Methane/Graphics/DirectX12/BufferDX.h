@@ -32,6 +32,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
@@ -45,9 +46,10 @@ public:
         : ResourceDX<BufferBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
+        using namespace magic_enum::bitwise_operators;
 
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
-        const bool is_read_back_buffer = settings.usage_mask & Usage::ReadBack;
+        const bool is_read_back_buffer = magic_enum::flags::enum_contains(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
@@ -140,7 +142,9 @@ public:
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() & Usage::ReadBack,
+
+        using namespace magic_enum::bitwise_operators;
+        META_CHECK_ARG_DESCR(GetUsage(), magic_enum::flags::enum_contains(GetUsage() & Usage::ReadBack),
                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);

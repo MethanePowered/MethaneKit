@@ -45,19 +45,13 @@ class RenderCommandListBase
 public:
     struct DrawingState final
     {
-        struct Changes
+        enum class Changes : uint32_t
         {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                None          = 0U,
-                PrimitiveType = 1U << 0U,
-                IndexBuffer   = 1U << 1U,
-                VertexBuffers = 1U << 2U,
-                All           = ~0U,
-            };
-
-            Changes() = delete;
+            None          = 0U,
+            PrimitiveType = 1U << 0U,
+            IndexBuffer   = 1U << 1U,
+            VertexBuffers = 1U << 2U,
+            All           = ~0U
         };
 
         Ptrs<TextureBase>        render_pass_attachments_ptr;
@@ -66,8 +60,8 @@ public:
         Ptr<BufferBase>          index_buffer_ptr;
         std::optional<Primitive> opt_primitive_type;
         ViewStateBase*           p_view_state        = nullptr;
-        RenderState::Group::Mask render_state_groups = RenderState::Group::None;
-        Changes::Mask            changes             = Changes::None;
+        RenderState::Groups      render_state_groups = RenderState::Groups::None;
+        Changes                  changes             = Changes::None;
     };
 
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
@@ -77,10 +71,10 @@ public:
 
     // RenderCommandList interface
     bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) override { m_is_validation_enabled = is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) override          { m_is_validation_enabled = is_validation_enabled; }
     RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
     void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
-    void SetRenderState(RenderState& render_state, RenderState::Group::Mask state_groups = RenderState::Group::All) override;
+    void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) override;
     void SetViewState(ViewState& view_state) override;
     void SetVertexBuffers(BufferSet& vertex_buffers) override;
     void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,

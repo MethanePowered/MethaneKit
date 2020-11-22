@@ -37,12 +37,12 @@ class DeviceBase
     , public Data::Emitter<IDeviceCallback>
 {
 public:
-    DeviceBase(const std::string& adapter_name, bool is_software_adapter, Feature::Mask supported_features);
+    DeviceBase(const std::string& adapter_name, bool is_software_adapter, Features supported_features);
 
     // Device interface
     const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
-    Feature::Mask       GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
+    Features            GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
     std::string         ToString() const override;
 
     Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
@@ -54,30 +54,30 @@ protected:
     void OnRemoved();
 
 private:
-    const std::string    m_adapter_name;
-    const bool           m_is_software_adapter;
-    const Feature::Mask  m_supported_features;
+    const std::string m_adapter_name;
+    const bool        m_is_software_adapter;
+    const Features    m_supported_features;
 };
 
 class SystemBase : public System
 {
 public:
     const Ptrs<Device>&   GetGpuDevices() const override            { return m_devices; }
-    Device::Feature::Mask GetGpuSupportedFeatures() const override  { return m_supported_features; }
+    Device::Features      GetGpuSupportedFeatures() const override  { return m_supported_features; }
     Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
     Ptr<Device>           GetSoftwareGpuDevice() const override;
     std::string           ToString() const override;
 
 protected:
-    void SetGpuSupportedFeatures(Device::Feature::Mask supported_features) { m_supported_features = supported_features; }
+    void SetGpuSupportedFeatures(Device::Features supported_features) { m_supported_features = supported_features; }
     void ClearDevices() { m_devices.clear(); }
     void AddDevice(const Ptr<Device>& device_ptr) { m_devices.emplace_back(device_ptr); }
     void RequestRemoveDevice(Device& device) const;
     void RemoveDevice(Device& device);
 
 private:
-    Device::Feature::Mask m_supported_features = Device::Feature::Value::All;
-    Ptrs<Device>          m_devices;
+    Device::Features m_supported_features = Device::Features::All;
+    Ptrs<Device>     m_devices;
 };
 
 } // namespace Methane::Graphics

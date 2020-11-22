@@ -31,6 +31,7 @@ Base implementation of the resource interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 #include <sstream>
 #include <utility>
@@ -245,56 +246,6 @@ Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
     META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not create resource location for an empty resource");
 }
 
-std::string Resource::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch (type)
-    {
-    case Resource::Type::Buffer:  return "Buffer";
-    case Resource::Type::Texture: return "Texture";
-    case Resource::Type::Sampler: return "Sampler";
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
-    }
-}
-
-std::string Resource::Usage::ToString(Usage::Value usage)
-{
-    META_FUNCTION_TASK();
-    switch (usage)
-    {
-    case Resource::Usage::ShaderRead:   return "Shader Read";
-    case Resource::Usage::ShaderWrite:  return "Shader Write";
-    case Resource::Usage::RenderTarget: return "Render Target";
-    case Resource::Usage::ReadBack:     return "Read Back";
-    case Resource::Usage::Addressable:  return "Addressable";
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(usage, "Unknown");
-    }
-}
-
-std::string Resource::Usage::ToString(Usage::Mask usage_mask)
-{
-    META_FUNCTION_TASK();
-
-    std::stringstream names_ss;
-    bool first_usage = true;
-
-    for (Usage::Value usage : Usage::values)
-    {
-        if (!(usage & usage_mask))
-            continue;
-
-        if (!first_usage)
-        {
-            names_ss << ", ";
-        }
-
-        names_ss << Usage::ToString(usage);
-        first_usage = false;
-    }
-
-    return names_ss.str();
-}
-
 Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
@@ -457,7 +408,7 @@ Resource::SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
@@ -484,10 +435,10 @@ ResourceBase::~ResourceBase()
 void ResourceBase::InitializeDefaultDescriptors()
 {
     META_FUNCTION_TASK();
-
-    for (Usage::Value usage : Usage::primary_values)
+    using namespace magic_enum::bitwise_operators;
+    for (Usage usage : magic_enum::enum_values<Usage>())
     {
-        if (!(m_usage_mask & usage))
+        if (!magic_enum::flags::enum_contains(usage & m_usage_mask & ~s_secondary_usage_mask) || usage == Usage::None)
             continue;
 
         auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
@@ -501,12 +452,13 @@ void ResourceBase::InitializeDefaultDescriptors()
     }
 }
 
-const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) const
+const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
 {
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage));
+                         "resource '{}' does not support '{}' usage",
+                         GetName(), magic_enum::flags::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -561,7 +513,7 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
-DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
+DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
 {
     META_FUNCTION_TASK();
     switch (resource_usage)
@@ -582,12 +534,13 @@ DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Us
     }
 }
 
-const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usage) const
+const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage usage) const
 {
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage));
+                         "Resource '{}' does not have descriptor for usage '{}'",
+                         GetName(), magic_enum::flags::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 

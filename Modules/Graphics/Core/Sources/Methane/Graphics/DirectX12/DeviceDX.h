@@ -43,7 +43,7 @@ namespace wrl = Microsoft::WRL;
 class DeviceDX final : public DeviceBase
 {
 public:
-    static Device::Feature::Mask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    static Device::Features GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
     DeviceDX(const DeviceDX& device) noexcept = default;
@@ -80,7 +80,7 @@ public:
 
     // System interface
     void  CheckForChanges() override;
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
 
     const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const;

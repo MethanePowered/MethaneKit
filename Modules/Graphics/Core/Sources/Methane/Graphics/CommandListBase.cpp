@@ -164,7 +164,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior)
+void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
     if (m_command_state.program_bindings_ptr.get() == &program_bindings)

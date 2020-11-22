@@ -30,7 +30,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Platform/Utils.h>
 
 #include <fmt/ranges.h>
-#include <cassert>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -76,11 +76,12 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     {
         META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
-                                  Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
-                                  m_settings.argument.name, Resource::GetTypeName(bound_resource_type));
+                                  magic_enum::enum_name(resource_location.GetResource().GetResourceType()),
+                                  m_settings.argument.name, magic_enum::enum_name(bound_resource_type));
 
-        const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
-        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+        const Resource::Usage resource_usage_mask = resource_location.GetResource().GetUsage();
+        using namespace magic_enum::bitwise_operators;
+        META_CHECK_ARG_DESCR(resource_usage_mask, magic_enum::flags::enum_contains(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
                                   "can not set resource location with non-zero offset to non-addressable resource binding");
@@ -268,8 +269,8 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
-        assert(heap_reservation.heap.get().GetSettings().type == heap_type);
-        assert(heap_reservation.heap.get().GetSettings().shader_visible);
+        META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
+        META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
         if (descriptors.constant_count > 0)
         {

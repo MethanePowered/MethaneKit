@@ -234,7 +234,7 @@ ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bind
     META_FUNCTION_TASK();
 }
 
-void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const
+void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
 

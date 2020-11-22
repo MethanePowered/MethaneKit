@@ -135,28 +135,22 @@ public:
         class Glyph;
         using Code = char32_t;
 
-        struct Type
+        enum class Type : uint8_t
         {
-            using Mask = uint8_t;
-            enum Value : Mask
-            {
-                Unknown    = 0U,
-                Whitespace = 1U << 0U,
-                LineBreak  = 1U << 1U,
-            };
-
-            static Mask Get(Code code);
-
-            Type() = delete;
+            Unknown    = 0U,
+            Whitespace = 1U << 0U,
+            LineBreak  = 1U << 1U
         };
+
+        static Type GetType(Code code);
 
         Char() = default;
         explicit Char(Code code);
         Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
         Code                  GetCode() const noexcept        { return m_code; }
-        bool                  IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
-        bool                  IsWhiteSpace() const noexcept   { return m_type_mask & Type::Whitespace; }
+        bool                  IsLineBreak() const noexcept    { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::LineBreak); }
+        bool                  IsWhiteSpace() const noexcept   { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::Whitespace); }
         const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
         const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
@@ -171,7 +165,7 @@ public:
 
     private:
         const Code       m_code = 0U;
-        const Type::Mask m_type_mask = Type::Value::Unknown;
+        const Type       m_type_mask = Type::Unknown;
         gfx::FrameRect   m_rect;
         gfx::Point2i     m_offset;
         gfx::Point2i     m_advance;

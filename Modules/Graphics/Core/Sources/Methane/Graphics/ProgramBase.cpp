@@ -28,6 +28,8 @@ Base implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -51,17 +53,17 @@ bool Program::Argument::operator==(const Argument& other) const noexcept
 Program::Argument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} {}", Shader::GetTypeName(shader_type), name);
+    return fmt::format("{} {}", magic_enum::flags::enum_name(shader_type), name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers::Mask modifiers) noexcept
+Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers modifiers) noexcept
     : Argument(shader_type, argument_name)
     , modifiers(modifiers)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers::Mask modifiers) noexcept
+Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers modifiers) noexcept
     : Argument(argument)
     , modifiers(modifiers)
 {
@@ -82,7 +84,7 @@ Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(c
 
 Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
-                                        program.GetName(), argument.name, Shader::GetTypeName(argument.shader_type)))
+                                        program.GetName(), argument.name, magic_enum::flags::enum_name(argument.shader_type)))
     , m_program(program)
     , m_argument_ptr(std::make_unique<Program::Argument>(argument))
 {
@@ -213,7 +215,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);
-    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", Shader::GetTypeName(shader_type), GetName());
+    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::flags::enum_name(shader_type), GetName());
     return *shader_ptr;
 }
 

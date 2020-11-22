@@ -87,27 +87,14 @@ inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 class State
 {
 public:
-    struct Property
+    enum class Properties : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None        = 0U,
-            Buttons     = 1U << 0U,
-            Position    = 1U << 1U,
-            Scroll      = 1U << 2U,
-            InWindow    = 1U << 3U,
-            All         = ~0U,
-        };
-
-        using Values = std::array<Value, 4>;
-        static constexpr const Values values{ Buttons, Position, Scroll, InWindow };
-
-        static std::string ToString(Value property_value);
-        static std::string ToString(Mask properties_mask);
-
-        Property() = delete;
-        ~Property() = delete;
+        None        = 0U,
+        Buttons     = 1U << 0U,
+        Position    = 1U << 1U,
+        Scroll      = 1U << 2U,
+        InWindow    = 1U << 3U,
+        All         = ~0U
     };
 
     State() = default;
@@ -118,7 +105,7 @@ public:
     bool operator==(const State& other) const;
     bool operator!=(const State& other) const                   { return !operator==(other); }
     const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
-    operator std::string() const                                { return ToString(); }
+    explicit operator std::string() const                       { return ToString(); }
 
     void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
     void  PressButton(Button button)                            { SetButton(button, ButtonState::Pressed); }
@@ -136,7 +123,7 @@ public:
 
     Buttons             GetPressedButtons() const;
     const ButtonStates& GetButtonStates() const                 { return m_button_states; }
-    Property::Mask      GetDiff(const State& other) const;
+    Properties          GetDiff(const State& other) const;
     std::string         ToString() const;
 
 private:
@@ -154,7 +141,7 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
 
 struct StateChange
 {
-    StateChange(const State& in_current, const State& in_previous, State::Property::Mask in_changed_properties)
+    StateChange(const State& in_current, const State& in_previous, State::Properties in_changed_properties)
         : current(in_current)
         , previous(in_previous)
         , changed_properties(in_changed_properties)
@@ -162,7 +149,7 @@ struct StateChange
 
     const State& current;
     const State& previous;
-    const State::Property::Mask changed_properties;
+    const State::Properties changed_properties;
 };
 
 } // namespace Methane::Platform::Mouse

@@ -29,7 +29,7 @@ namespace Methane::Graphics
 {
 
 DeviceVK::DeviceVK()
-    : DeviceBase("", false, Device::Feature::Value::BasicRendering)
+    : DeviceBase("", false, Device::Features::BasicRendering)
 {
     META_FUNCTION_TASK();
 }
@@ -51,7 +51,7 @@ SystemVK::~SystemVK()
     META_FUNCTION_TASK();
 }
 
-const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Features supported_features)
 {
     META_FUNCTION_TASK();
     SetGpuSupportedFeatures(supported_features);

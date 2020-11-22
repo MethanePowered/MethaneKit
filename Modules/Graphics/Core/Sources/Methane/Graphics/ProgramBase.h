@@ -29,6 +29,7 @@ Base implementation of the program interface.
 #include "ShaderBase.h"
 #include "DescriptorHeap.h"
 
+#include <magic_enum.hpp>
 #include <memory>
 #include <array>
 #include <optional>
@@ -69,7 +70,7 @@ protected:
     Shader& GetShaderRef(Shader::Type shader_type);
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
 
-    using ShadersByType = std::array<Ptr<Shader>, static_cast<size_t>(Shader::Type::Count)>;
+    using ShadersByType = std::array<Ptr<Shader>, magic_enum::enum_count<Shader::Type>() - 1>;
     static ShadersByType CreateShadersByType(const Ptrs<Shader>& shaders);
 
 private:

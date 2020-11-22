@@ -52,7 +52,6 @@ public:
     virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
 
     Ptr<ShaderBase> GetPtr()                { return shared_from_this(); }
-    std::string     GetTypeName() const     { return Shader::GetTypeName(m_type); }
 
 protected:
     ContextBase&        GetContext()        { return m_context; }
