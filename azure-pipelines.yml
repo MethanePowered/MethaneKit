@@ -259,7 +259,7 @@ jobs:
                 mv default.profraw "$test_exe$prof_raw_ext"
                 xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
                 xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
-                echo  - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
+                echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
               done
               echo List of generated coverage files in directory $PWD/Coverage
               ls -la ./Coverage
@@ -269,7 +269,7 @@ jobs:
 - job: Ubuntu
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   variables:
     platform: 'Ubuntu'
@@ -288,7 +288,7 @@ jobs:
 - job: Ubuntu_Sonar_Scan
 
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
 
   variables:
     platform: 'Ubuntu'
