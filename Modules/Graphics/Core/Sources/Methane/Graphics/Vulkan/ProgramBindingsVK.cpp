@@ -26,6 +26,8 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -76,14 +78,18 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 
     for(const auto& binding_by_argument : GetArgumentBindings())
     {
         const auto& vulkan_argument_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*binding_by_argument.second);
-        if ((apply_behavior & ApplyBehavior::ConstantOnce || apply_behavior & ApplyBehavior::ChangesOnly) && vulkan_command_list.GetProgramBindings() &&
-            vulkan_argument_binding.IsAlreadyApplied(GetProgram(), *vulkan_command_list.GetProgramBindings(), apply_behavior & ApplyBehavior::ChangesOnly))
+        if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
+             magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
+             vulkan_command_list.GetProgramBindings() &&
+             vulkan_argument_binding.IsAlreadyApplied(GetProgram(), *vulkan_command_list.GetProgramBindings(),
+                                                      magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
     }
 }

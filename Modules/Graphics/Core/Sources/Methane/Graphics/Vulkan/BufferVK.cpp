@@ -27,6 +27,7 @@ Vulkan implementation of the buffer interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <iterator>
 
 namespace Methane::Graphics
@@ -49,6 +50,7 @@ Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFo
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
@@ -56,6 +58,8 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool
 
 Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
@@ -77,14 +81,12 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, const Descrip
 void BufferVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetName(name);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetData(sub_resources);
 }
 
