@@ -436,9 +436,9 @@ void ResourceBase::InitializeDefaultDescriptors()
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    for (Usage usage : magic_enum::enum_values<Usage>())
+    for (Usage usage : GetPrimaryUsageValues())
     {
-        if (!magic_enum::flags::enum_contains(usage & m_usage_mask & ~s_secondary_usage_mask) || usage == Usage::None)
+        if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
             continue;
 
         auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
@@ -680,6 +680,22 @@ std::string ResourceBase::GetStateName(State state)
     case State::Predication:             return "Predication";
     default:                             META_UNEXPECTED_ENUM_ARG_RETURN(state, "");
     }
+}
+
+const std::vector<Resource::Usage>& ResourceBase::GetPrimaryUsageValues() noexcept
+{
+    META_FUNCTION_TASK();
+    static std::vector<Resource::Usage> s_primary_usages;
+    if (!s_primary_usages.empty())
+        return s_primary_usages;
+
+    for (Usage usage : magic_enum::enum_values<Usage>())
+    {
+        using namespace magic_enum::bitwise_operators;
+        if (!magic_enum::flags::enum_contains(usage & s_secondary_usage_mask) && usage != Usage::None)
+            s_primary_usages.push_back(usage);
+    }
+    return s_primary_usages;
 }
 
 } // namespace Methane::Graphics

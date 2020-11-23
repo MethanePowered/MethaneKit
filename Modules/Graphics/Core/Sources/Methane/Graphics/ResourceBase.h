@@ -191,6 +191,7 @@ public:
     bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
     static std::string GetStateName(State state);
+    static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
     ContextBase&         GetContextBase()                                       { return m_context; }
