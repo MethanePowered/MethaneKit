@@ -60,12 +60,15 @@ struct Resource : virtual Object
         ShaderRead   = 1U << 0U,
         ShaderWrite  = 1U << 1U,
         RenderTarget = 1U << 2U,
-        ReadBack     = 1U << 3U,
         // Secondary usages
+        ReadBack     = 1U << 3U,
         Addressable  = 1U << 4U,
     };
 
-    static constexpr Usage s_secondary_usage_mask = Usage::Addressable;
+    static constexpr Usage s_secondary_usage_mask = static_cast<Usage>(
+        static_cast<uint32_t>(Usage::Addressable) |
+        static_cast<uint32_t>(Usage::ReadBack)
+    );
 
     struct Descriptor
     {
