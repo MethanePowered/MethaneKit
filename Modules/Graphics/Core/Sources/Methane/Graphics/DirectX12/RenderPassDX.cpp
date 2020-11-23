@@ -298,7 +298,8 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
     const Settings& settings = GetSettings();
     const RenderContextBase& context = GetRenderContext();
 
-    for (Access access : magic_enum::enum_values<Access>())
+    static constexpr auto s_access_values = magic_enum::enum_values<Access>();
+    for (Access access : s_access_values)
     {
         if (!magic_enum::flags::enum_contains(settings.shader_access_mask & access))
             continue;

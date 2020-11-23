@@ -167,9 +167,9 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
 
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = GetUsage();
-    for (Usage usage : magic_enum::enum_values<Usage>())
+    for (Usage usage : ResourceBase::GetPrimaryUsageValues())
     {
-        if (!magic_enum::flags::enum_contains(usage & usage_mask & ~s_secondary_usage_mask) || usage == Usage::None)
+        if (!magic_enum::flags::enum_contains(usage & usage_mask))
             continue;
 
         const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
