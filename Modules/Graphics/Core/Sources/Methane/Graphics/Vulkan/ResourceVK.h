@@ -53,7 +53,7 @@ public:
 protected:
     IContextVK& GetContextVK() noexcept
     {
-        return static_cast<IContextVK&>(ResourceBase::GetContextBase());
+        return dynamic_cast<IContextVK&>(ResourceBase::GetContextBase());
     }
 };
 

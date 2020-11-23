@@ -40,11 +40,17 @@ public:
     using VectorType::VectorType;
     using VectorType::operator=;
 
+    ColorNf(const ColorNf<vector_size>& other) : VectorType(other) { }
+    ColorNf(ColorNf<vector_size>&& other) : VectorType(static_cast<VectorType&&>(other)) { }
+
+    ColorNf<vector_size>& operator=(const ColorNf<vector_size>& other) noexcept { VectorType::operator=(other); return *this; }
+    ColorNf<vector_size>& operator=(ColorNf<vector_size>&& other) noexcept      { VectorType::operator=(static_cast<VectorType&&>(other)); return *this; }
+
     float GetRf() const noexcept { return (*this)[0]; }
     float GetGf() const noexcept { return (*this)[1]; }
     float GetBf() const noexcept { return (*this)[2]; }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>
     float GetAf() const noexcept { return (*this)[3]; }
 
     float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
