@@ -215,8 +215,7 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    const bool apply_constant_resource_bindings   = !magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
-                                                    std::addressof(*this) != p_applied_program_bindings;
+    const bool apply_constant_resource_bindings   = apply_behavior != ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
 
     // Set resource transition barriers before applying resource bindings
