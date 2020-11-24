@@ -32,13 +32,11 @@ namespace Methane::UserInterface
 
 struct IApp : Graphics::IApp
 {
-    enum HeadsUpDisplayMode : uint32_t
+    enum class HeadsUpDisplayMode : uint32_t
     {
         Hidden = 0U,
         WindowTitle,
-        UserInterface,
-
-        Count
+        UserInterface
     };
 
     struct Settings
