@@ -71,10 +71,7 @@ public:
     void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
 
 private:
-    void LayoutTextBlocks();
-    void UpdateAllTextBlocks(const FrameSize& render_attachment_size);
-
-    enum TextBlock : size_t
+    enum class TextBlock : size_t
     {
         Fps = 0U,
         FrameTime,
@@ -82,12 +79,14 @@ private:
         GpuName,
         HelpKey,
         FrameBuffers,
-        VSync,
-
-        Count
+        VSync
     };
 
-    using TextBlockPtrs = std::array<Ptr<Text>, TextBlock::Count>;
+    using TextBlockPtrs = std::array<Ptr<Text>, 7>;
+    Text& GetTextBlock(TextBlock block) const;
+
+    void LayoutTextBlocks();
+    void UpdateAllTextBlocks(const FrameSize& render_attachment_size);
 
     Settings            m_settings;
     const Ptr<Font>     m_major_font_ptr;

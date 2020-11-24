@@ -41,6 +41,8 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::UserInterface
 {
 
@@ -201,13 +203,13 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     const gfx::FpsCounter& fps_counter = GetUIContext().GetRenderContext().GetFpsCounter();
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
-    m_text_blocks[TextBlock::Fps]->SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
-    m_text_blocks[TextBlock::FrameTime]->SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
-    m_text_blocks[TextBlock::CpuTime]->SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
-    m_text_blocks[TextBlock::GpuName]->SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    m_text_blocks[TextBlock::FrameBuffers]->SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.width, context_settings.frame_size.height, context_settings.frame_buffers_count));
-    m_text_blocks[TextBlock::VSync]->SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
-    m_text_blocks[TextBlock::VSync]->SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
+    GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
+    GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
+    GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
+    GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
+    GetTextBlock(TextBlock::FrameBuffers).SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.width, context_settings.frame_size.height, context_settings.frame_buffers_count));
+    GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
+    GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
     LayoutTextBlocks();
     UpdateAllTextBlocks(render_attachment_size);
@@ -225,46 +227,54 @@ void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::De
     }
 }
 
+Text& HeadsUpDisplay::GetTextBlock(TextBlock block) const
+{
+    META_FUNCTION_TASK();
+    const Ptr<Text>& text_block_ptr = m_text_blocks[static_cast<size_t>(block)];
+    META_CHECK_ARG_NOT_NULL(text_block_ptr);
+    return *text_block_ptr;
+}
+
 void HeadsUpDisplay::LayoutTextBlocks()
 {
     META_FUNCTION_TASK();
     const UnitSize text_margins_in_dots = GetUIContext().ConvertToDots(m_settings.text_margins);
 
     // Layout left column text blocks
-    const FrameSize help_size          = m_text_blocks[TextBlock::HelpKey]->GetRectInDots().size;
-    const FrameSize frame_time_size    = m_text_blocks[TextBlock::FrameTime]->GetRectInDots().size;
-    const FrameSize cpu_time_size      = m_text_blocks[TextBlock::CpuTime]->GetRectInDots().size;
-    const FrameSize vsync_size         = m_text_blocks[TextBlock::VSync]->GetRectInDots().size;
+    const FrameSize help_size          = GetTextBlock(TextBlock::HelpKey).GetRectInDots().size;
+    const FrameSize frame_time_size    = GetTextBlock(TextBlock::FrameTime).GetRectInDots().size;
+    const FrameSize cpu_time_size      = GetTextBlock(TextBlock::CpuTime).GetRectInDots().size;
+    const FrameSize vsync_size         = GetTextBlock(TextBlock::VSync).GetRectInDots().size;
     const uint32_t  left_column_width  = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
 
     UnitPoint position(Units::Dots, text_margins_in_dots.width, text_margins_in_dots.height);
-    m_text_blocks[TextBlock::HelpKey]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::HelpKey).SetRelOrigin(position);
 
     position.SetY(position.GetY() + help_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::FrameTime]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameTime).SetRelOrigin(position);
 
     position.SetY(position.GetY() + frame_time_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::CpuTime]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::CpuTime).SetRelOrigin(position);
 
     position.SetY(position.GetY() + cpu_time_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::VSync]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::VSync).SetRelOrigin(position);
 
     // Layout right column text blocks
-    const FrameSize gpu_name_size      = m_text_blocks[TextBlock::GpuName]->GetRectInDots().size;
-    const FrameSize fps_size           = m_text_blocks[TextBlock::Fps]->GetRectInDots().size;
-    const FrameSize frame_buffers_size = m_text_blocks[TextBlock::FrameBuffers]->GetRectInDots().size;
+    const FrameSize gpu_name_size      = GetTextBlock(TextBlock::GpuName).GetRectInDots().size;
+    const FrameSize fps_size           = GetTextBlock(TextBlock::Fps).GetRectInDots().size;
+    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffers).GetRectInDots().size;
     const uint32_t  right_column_width = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.width);
-    m_text_blocks[TextBlock::FrameBuffers]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameBuffers).SetRelOrigin(position);
 
     const UnitPoint right_bottom_position = position;
 
     position.SetY(text_margins_in_dots.height);
-    m_text_blocks[TextBlock::GpuName]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::GpuName).SetRelOrigin(position);
 
     position.SetY(position.GetY() + gpu_name_size.height + text_margins_in_dots.height);
-    m_text_blocks[TextBlock::Fps]->SetRelOrigin(position);
+    GetTextBlock(TextBlock::Fps).SetRelOrigin(position);
 
     Panel::SetRect(UnitRect{
         Units::Dots,

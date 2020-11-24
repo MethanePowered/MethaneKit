@@ -26,6 +26,8 @@ Base user interface application controller
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::UserInterface
 {
 
@@ -54,7 +56,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
     {
     case AppAction::SwitchHeadsUpDisplayMode:
         m_application.SetHeadsUpDisplayMode(static_cast<IApp::HeadsUpDisplayMode>(
-            (static_cast<uint32_t>(m_application.GetUserInterfaceAppSettings().heads_up_display_mode) + 1) % IApp::HeadsUpDisplayMode::Count));
+            (static_cast<uint32_t>(m_application.GetUserInterfaceAppSettings().heads_up_display_mode) + 1) % magic_enum::enum_count<IApp::HeadsUpDisplayMode>()));
         break;
 
     default:
