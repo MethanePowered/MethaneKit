@@ -144,6 +144,7 @@ public:
 private:
     const Key       m_key;
     const Modifiers m_modifiers;
+    static Key GetControlKey(const NativeKey& native_key);
 };
 
 enum class KeyState : uint8_t

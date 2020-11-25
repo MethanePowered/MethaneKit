@@ -50,7 +50,6 @@ class RenderStateVK final : public RenderStateBase
 {
 public:
     RenderStateVK(RenderContextBase& context, const Settings& settings);
-    ~RenderStateVK() override;
     
     // RenderState interface
     void Reset(const Settings& settings) override;

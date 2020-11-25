@@ -258,7 +258,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
                 : 1.F
         ),
         RenderPass::StencilAttachment(),
-        static_cast<RenderPass::Access>(m_settings.screen_pass_access),
+        m_settings.screen_pass_access,
         true // final render pass
     });
 }
