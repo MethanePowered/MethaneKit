@@ -96,11 +96,6 @@ RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& setting
     Reset(settings);
 }
 
-RenderStateVK::~RenderStateVK()
-{
-    META_FUNCTION_TASK();
-}
-
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();

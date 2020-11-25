@@ -259,22 +259,6 @@ bool Resource::Location::operator==(const Location& other) const noexcept
            std::tie(other.m_resource_ptr, other.m_offset);
 }
 
-Resource::SubResource::SubResource(SubResource&& other) noexcept
-    : Data::Chunk(std::move(static_cast<Data::Chunk&&>(other)))
-    , m_index(other.m_index)
-    , m_data_range(std::move(other.m_data_range))
-{
-    META_FUNCTION_TASK();
-}
-
-Resource::SubResource::SubResource(const SubResource& other) noexcept
-    : Data::Chunk(other)
-    , m_index(other.m_index)
-    , m_data_range(other.m_data_range)
-{
-    META_FUNCTION_TASK();
-}
-
 Resource::SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
     , m_index(index)

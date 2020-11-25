@@ -118,9 +118,6 @@ struct Resource : virtual Object
         {
         public:
             explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
-            Count(const Count&) noexcept = default;
-
-            Count& operator=(const Count&) noexcept = default;
 
             Data::Size GetDepth() const noexcept          { return m_depth; }
             Data::Size GetArraySize() const noexcept      { return m_array_size; }
@@ -173,8 +170,6 @@ struct Resource : virtual Object
 
         using BytesRangeOpt = std::optional<BytesRange>;
 
-        explicit SubResource(SubResource&& other) noexcept;
-        explicit SubResource(const SubResource& other) noexcept;
         explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
         SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
         ~SubResource() = default;
