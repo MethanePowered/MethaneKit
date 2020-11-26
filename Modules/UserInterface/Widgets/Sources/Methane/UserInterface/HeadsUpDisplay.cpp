@@ -53,12 +53,12 @@ inline uint32_t GetTextHeightInDots(const Context& ui_context, const Font& font)
     return ui_context.ConvertPixelsToDots(font.GetMaxGlyphSize().height);
 }
 
-inline uint32_t GetFpsTextHeightInDots(Context& ui_context, Font& major_font, Font& minor_font, const UnitSize& text_margins)
+inline uint32_t GetFpsTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
     return std::max(GetTextHeightInDots(ui_context, major_font), GetTextHeightInDots(ui_context, minor_font) * 2U + ui_context.ConvertToDots(text_margins).height);
 }
 
-inline uint32_t GetTimingTextHeightInDots(Context& ui_context, Font& major_font, Font& minor_font, const UnitSize& text_margins)
+inline uint32_t GetTimingTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
     return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).height) / 2U;
 }
