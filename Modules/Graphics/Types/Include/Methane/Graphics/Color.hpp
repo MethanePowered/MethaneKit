@@ -34,17 +34,19 @@ namespace Methane::Graphics
 {
 
 template<size_t vector_size, typename VectorType = std::enable_if_t<3 <= vector_size && vector_size <= 4, cml::vector<float, cml::fixed<vector_size>>>>
-class ColorNf : public VectorType
+class ColorF : public VectorType
 {
 public:
     using VectorType::VectorType;
     using VectorType::operator=;
 
-    ColorNf(const ColorNf& other) noexcept : VectorType(other) { }
-    ColorNf(ColorNf&& other) noexcept : VectorType(static_cast<VectorType&&>(other)) { }
+    ~ColorF() = default;
 
-    ColorNf& operator=(const ColorNf& other) noexcept { VectorType::operator=(other); return *this; }
-    ColorNf& operator=(ColorNf&& other) noexcept      { VectorType::operator=(static_cast<VectorType&&>(other)); return *this; }
+    ColorF(const ColorF& other) noexcept : VectorType(other) { }
+    ColorF(ColorF&& other) noexcept : VectorType(static_cast<VectorType&&>(other)) { }
+
+    ColorF& operator=(const ColorF& other) noexcept { VectorType::operator=(other); return *this; }
+    ColorF& operator=(ColorF&& other) noexcept      { VectorType::operator=(static_cast<VectorType&&>(other)); return *this; }
 
     float GetRf() const noexcept { return (*this)[0]; }
     float GetGf() const noexcept { return (*this)[1]; }
@@ -97,7 +99,7 @@ private:
     static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
-using Color3f = ColorNf<3>;
-using Color4f = ColorNf<4>;
+using Color3f = ColorF<3>;
+using Color4f = ColorF<4>;
 
 } // namespace Methane::Graphics

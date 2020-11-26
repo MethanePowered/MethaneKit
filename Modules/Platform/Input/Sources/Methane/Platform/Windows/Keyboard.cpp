@@ -185,7 +185,7 @@ Key KeyConverter::GetControlKey(const NativeKey& native_key)
     //       Right Alt we ignore this (synthetic) Left Ctrl message
     time = GetMessageTime();
 
-    if (!PeekMessageW(&next, 0, 0, 0, PM_NOREMOVE))
+    if (!PeekMessageW(&next, nullptr, 0, 0, PM_NOREMOVE))
         return Key::LeftControl;
 
     if ((next.message == WM_KEYDOWN || next.message == WM_SYSKEYDOWN || next.message == WM_KEYUP || next.message == WM_SYSKEYUP) &&
