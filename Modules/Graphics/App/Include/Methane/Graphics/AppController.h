@@ -33,11 +33,8 @@ namespace Methane::Graphics
 
 enum class AppAction : uint32_t
 {
-    None = 0,
-
-    SwitchAnimations,
-
-    Count
+    None = 0U,
+    SwitchAnimations
 };
 
 class AppController

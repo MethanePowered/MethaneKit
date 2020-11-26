@@ -32,11 +32,8 @@ namespace Methane::UserInterface
 
 enum class AppAction : uint32_t
 {
-    None = 0,
-
-    SwitchHeadsUpDisplayMode,
-
-    Count
+    None = 0U,
+    SwitchHeadsUpDisplayMode
 };
 
 class AppController

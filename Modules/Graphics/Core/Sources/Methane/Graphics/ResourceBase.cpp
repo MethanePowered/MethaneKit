@@ -130,17 +130,10 @@ ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("Resource '{}' {} barrier from {} to {} state",
-                       m_id.GetResource().GetName(), GetTypeName(m_id.GetType()), GetStateName(m_state_change.GetStateBefore()), GetStateName(m_state_change.GetStateAfter()));
-}
-
-std::string ResourceBase::Barrier::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch(type)
-    {
-    case Type::Transition: return "Transition";
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "");
-    }
+                       m_id.GetResource().GetName(),
+                       magic_enum::enum_name(m_id.GetType()),
+                       magic_enum::enum_name(m_state_change.GetStateBefore()),
+                       magic_enum::enum_name(m_state_change.GetStateAfter()));
 }
 
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after)
@@ -636,33 +629,6 @@ void ResourceBase::FillSubresourceSizes()
     {
         const SubResource::Index subresource_index(subresource_raw_index, m_sub_resource_count);
         m_sub_resource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
-    }
-}
-
-std::string ResourceBase::GetStateName(State state)
-{
-    META_FUNCTION_TASK();
-    switch(state)
-    {
-    case State::Common:                  return "Common";
-    case State::VertexAndConstantBuffer: return "VertexAndConstantBuffer";
-    case State::IndexBuffer:             return "IndexBuffer";
-    case State::RenderTarget:            return "RenderTarget";
-    case State::UnorderedAccess:         return "UnorderedAccess";
-    case State::DepthWrite:              return "DepthWrite";
-    case State::DepthRead:               return "DepthRead";
-    case State::NonPixelShaderResource:  return "NonPixelShaderResource";
-    case State::PixelShaderResource:     return "PixelShaderResource";
-    case State::StreamOut:               return "StreamOut";
-    case State::IndirectArgument:        return "IndirectArgument";
-    case State::CopyDest:                return "CopyDest";
-    case State::CopySource:              return "CopySource";
-    case State::ResolveDest:             return "ResolveDest";
-    case State::ResolveSource:           return "ResolveSource";
-    case State::GenericRead:             return "GenericRead";
-    case State::Present:                 return "Present";
-    case State::Predication:             return "Predication";
-    default:                             META_UNEXPECTED_ENUM_ARG_RETURN(state, "");
     }
 }
 

@@ -33,16 +33,13 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-enum class AppContextAction : uint32_t
+enum class AppContextAction
 {
-    None = 0,
-
+    None,
     SwitchVSync,
     SwitchDevice,
     AddFrameBufferToSwapChain,
-    RemoveFrameBufferFromSwapChain,
-    
-    Count
+    RemoveFrameBufferFromSwapChain
 };
 
 class AppContextController final

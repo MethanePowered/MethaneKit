@@ -128,8 +128,6 @@ public:
         bool operator!=(const Barrier& other) const noexcept;
         explicit operator std::string() const noexcept;
 
-        static std::string GetTypeName(Type type);
-
         const Id&          GetId() const noexcept          { return m_id; }
         const StateChange& GetStateChange() const noexcept { return m_state_change; }
 
@@ -190,7 +188,6 @@ public:
     State   GetState() const noexcept                                            { return m_state;  }
     bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
-    static std::string GetStateName(State state);
     static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:

@@ -37,7 +37,7 @@ static constexpr Data::Size g_colors_count = 6;
 
 Data::Size Mesh::GetVertexFieldSize(size_t vertex_field_index)
 {
-    static const std::array<Data::Size, static_cast<size_t>(VertexField::Count)> s_vertex_field_sizes {{
+    static const std::array<Data::Size, magic_enum::enum_count<VertexField>()> s_vertex_field_sizes {{
         sizeof(Position),
         sizeof(Normal),
         sizeof(TexCoord),

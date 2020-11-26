@@ -30,6 +30,8 @@ GPU data query buffer base implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -63,7 +65,7 @@ void QueryBuffer::Query::End()
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
     META_UNUSED(query_buffer_type);
     META_CHECK_ARG_DESCR(m_state, query_buffer_type == QueryBuffer::Type::Timestamp || m_state == State::Begun,
-                         "can not end {} query that was not begun", GetTypeName(query_buffer_type));
+                         "can not end {} query that was not begun", magic_enum::enum_name(query_buffer_type));
     m_state = State::Ended;
 }
 
@@ -104,16 +106,6 @@ QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
     META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };
-}
-
-std::string QueryBuffer::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch(type)
-    {
-    case Type::Timestamp: return "Timestamp";
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
-    }
 }
 
 } // namespace Methane::Graphics

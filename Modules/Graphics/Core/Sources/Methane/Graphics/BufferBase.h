@@ -44,8 +44,7 @@ public:
     const Settings& GetSettings() const noexcept final       { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept final;
 
-    Ptr<BufferBase> GetBufferPtr()                              { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
-    std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
+    Ptr<BufferBase> GetBufferPtr()                           { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
 
 private:
     Settings    m_settings;

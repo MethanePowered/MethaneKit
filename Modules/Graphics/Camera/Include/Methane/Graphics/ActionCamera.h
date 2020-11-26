@@ -36,21 +36,17 @@ namespace Methane::Graphics
 class ActionCamera : public ArcBallCamera
 {
 public:
-    enum class MouseAction : uint32_t
+    enum class MouseAction
     {
-        None = 0,
-
+        None,
         Rotate,
         Move,
-        Zoom,
-
-        // Keep at end
-        Count
+        Zoom
     };
 
-    enum class KeyboardAction : uint32_t
+    enum class KeyboardAction
     {
-        None = 0,
+        None,
 
         // Move
         MoveLeft,
@@ -74,10 +70,7 @@ public:
         
         // Other
         Reset,
-        ChangePivot,
-
-        // Keep at end
-        Count
+        ChangePivot
     };
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;

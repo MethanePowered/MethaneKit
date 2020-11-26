@@ -27,6 +27,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
+#include <magic_enum.hpp>
 #include <array>
 
 namespace Methane::Tutorials
@@ -457,9 +458,9 @@ std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
     ss << "Typography parameters:"
-       << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_layout.wrap)
-       << std::endl << "  - horizontal text alignment: " << gui::Text::GetHorizontalAlignmentName(m_settings.text_layout.horizontal_alignment)
-       << std::endl << "  - vertical text alignment:   " << gui::Text::GetVerticalAlignmentName(m_settings.text_layout.vertical_alignment)
+       << std::endl << "  - text wrap mode:            " << magic_enum::enum_name(m_settings.text_layout.wrap)
+       << std::endl << "  - horizontal text alignment: " << magic_enum::enum_name(m_settings.text_layout.horizontal_alignment)
+       << std::endl << "  - vertical text alignment:   " << magic_enum::enum_name(m_settings.text_layout.vertical_alignment)
        << std::endl << "  - text typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
        << std::endl << "  - text typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
        << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")

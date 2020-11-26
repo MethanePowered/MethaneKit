@@ -121,7 +121,7 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     {
         META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Buffer::Type::Vertex,
                                   "can not set buffers of '{}' type where 'Vertex' buffers are required",
-                                  Buffer::GetBufferTypeName(vertex_buffers.GetType()));
+                                  magic_enum::enum_name(vertex_buffers.GetType()));
     }
 
     DrawingState&  drawing_state = GetDrawingState();
@@ -146,7 +146,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
     {
         META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
                                   "can not draw with index buffer of type '{}' when 'Index' buffer is required",
-                                  static_cast<const BufferBase&>(index_buffer).GetBufferTypeName());
+                                  magic_enum::enum_name(index_buffer.GetSettings().type));
 
         const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
         META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");

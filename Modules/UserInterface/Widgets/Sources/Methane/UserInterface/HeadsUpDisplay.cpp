@@ -48,7 +48,7 @@ namespace Methane::UserInterface
 
 static constexpr uint32_t g_first_line_height_decrement = 5;
 
-inline uint32_t GetTextHeightInDots(Context& ui_context, Font& font)
+inline uint32_t GetTextHeightInDots(const Context& ui_context, const Font& font)
 {
     return ui_context.ConvertPixelsToDots(font.GetMaxGlyphSize().height);
 }
@@ -63,9 +63,9 @@ inline uint32_t GetTimingTextHeightInDots(Context& ui_context, Font& major_font,
     return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).height) / 2U;
 }
 
-HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings)
+HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
-    , m_settings(std::move(settings))
+    , m_settings(settings)
     , m_major_font_ptr(
         Font::Library::Get().GetFont(font_data_provider,
             Font::Settings

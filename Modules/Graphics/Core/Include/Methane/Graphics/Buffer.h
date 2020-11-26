@@ -66,7 +66,6 @@ struct Buffer : virtual Resource
 
     // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
-    static std::string GetBufferTypeName(Type type);
 
     // Buffer interface
     virtual const Settings& GetSettings() const noexcept = 0;

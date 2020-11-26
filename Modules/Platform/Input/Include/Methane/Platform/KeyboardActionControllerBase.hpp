@@ -28,6 +28,7 @@
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <map>
 
 namespace Methane::Platform::Keyboard
@@ -75,10 +76,8 @@ public:
             return help_lines;
         
         help_lines.reserve(m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size());
-        for (uint32_t action_index = 0; action_index < static_cast<uint32_t>(ActionEnum::Count); ++action_index)
+        for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            const ActionEnum action = static_cast<ActionEnum>(action_index);
-            
             const auto action_by_keyboard_state_it = std::find_if(m_action_by_keyboard_state.begin(), m_action_by_keyboard_state.end(),
                                                                   [action](const std::pair<Keyboard::State, ActionEnum>& keys_and_action)
                                                                   { return keys_and_action.second == action; });

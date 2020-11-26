@@ -36,31 +36,6 @@ Base implementation of the command list interface.
 namespace Methane::Graphics
 {
 
-std::string CommandListBase::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch (type)
-    {
-    case CommandList::Type::Blit:           return "Blit";
-    case CommandList::Type::Render:         return "Render";
-    case CommandList::Type::ParallelRender: return "ParallelRender";
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(type, "Undefined");
-    }
-}
-
-std::string CommandListBase::GetStateName(State state)
-{
-    META_FUNCTION_TASK();
-    switch (state)
-    {
-    case State::Pending:   return "Pending";
-    case State::Encoding:  return "Encoding";
-    case State::Committed: return "Committed";
-    case State::Executing: return "Executing";
-    default:               META_UNEXPECTED_ENUM_ARG_RETURN(state, "Undefined");
-    }
-}
-
 CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     : ObjectBase(name)
 {
@@ -99,14 +74,14 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
 {
     META_FUNCTION_TASK();
     TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
-    META_LOG("{} Command list '{}' was created", GetTypeName(), GetName());
+    META_LOG("{} Command list '{}' was created", magic_enum::enum_name(m_type), GetName());
     META_UNUSED(m_tracy_gpu_scope); // silence unused member warning on MacOS when Tracy GPU profiling
 }
 
 CommandListBase::~CommandListBase()
 {
     META_FUNCTION_TASK();
-    META_LOG("{} Command list '{}' was destroyed", GetTypeName(), GetName());
+    META_LOG("{} Command list '{}' was destroyed", magic_enum::enum_name(m_type), GetName());
 }
 
 void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
@@ -117,7 +92,7 @@ void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_START(debug_group.GetName().c_str());
 #endif
-    META_LOG("{} Command list '{}' PUSH debug group '{}'", GetTypeName(), GetName(), debug_group.GetName());
+    META_LOG("{} Command list '{}' PUSH debug group '{}'", magic_enum::enum_name(m_type), GetName(), debug_group.GetName());
 
     PushOpenDebugGroup(debug_group);
 }
@@ -130,7 +105,7 @@ void CommandListBase::PopDebugGroup()
         throw std::underflow_error("Can not pop debug group, since no debug groups were pushed");
     }
 
-    META_LOG("{} Command list '{}' POP debug group '{}'", GetTypeName(), GetName(), GetTopOpenDebugGroup()->GetName());
+    META_LOG("{} Command list '{}' POP debug group '{}'", magic_enum::enum_name(m_type), GetName(), GetTopOpenDebugGroup()->GetName());
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
     META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().c_str());
 #endif
@@ -144,7 +119,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_state_mutex);
 
     META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
-    META_LOG("{} Command list '{}' RESET commands encoding", GetTypeName(), GetName());
+    META_LOG("{} Command list '{}' RESET commands encoding", magic_enum::enum_name(m_type), GetName());
 
     SetCommandListStateNoLock(State::Encoding);
 
@@ -185,10 +160,10 @@ void CommandListBase::Commit()
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
                                "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
-                               GetTypeName(), GetName(), GetStateName(m_state));
+                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
-    META_LOG("{} Command list '{}' COMMIT on frame {}", GetTypeName(), GetName(), GetCurrentFrameIndex());
+    META_LOG("{} Command list '{}' COMMIT on frame {}", magic_enum::enum_name(m_type), GetName(), GetCurrentFrameIndex());
 
     m_committed_frame_index = GetCurrentFrameIndex();
 
@@ -208,7 +183,7 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     if (is_completed())
         return;
 
-    META_LOG("{} Command list '{}' WAITING for completion", GetTypeName(), GetName());
+    META_LOG("{} Command list '{}' WAITING for completion", magic_enum::enum_name(m_type), GetName());
 
     if (timeout_ms == 0U)
     {
@@ -227,13 +202,13 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Committed,
                                "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
-                               GetTypeName(), GetName(), GetStateName(m_state));
+                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
                                "{} command list '{}' committed on frame {} can not be executed on frame {}",
-                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
+                               magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
 
-    META_LOG("{} Command list '{}' EXECUTE on frame {}", GetTypeName(), GetName(), frame_index);
+    META_LOG("{} Command list '{}' EXECUTE on frame {}", magic_enum::enum_name(m_type), GetName(), frame_index);
 
     m_completed_callback = completed_callback;
 
@@ -255,17 +230,17 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Executing,
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
-                               GetTypeName(), GetName(), GetStateName(m_state));
+                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
                                "{} command list '{}' committed on frame {} can not be completed on frame {}",
-                               GetTypeName(), GetName(), m_committed_frame_index, frame_index);
+                               magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
 
     SetCommandListStateNoLock(State::Pending);
     ResetCommandState();
 
     TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
-    META_LOG("{} Command list '{}' was COMPLETED on frame {} with GPU timings {}", GetTypeName(), GetName(), frame_index, static_cast<std::string>(GetGpuTimeRange(true)));
+    META_LOG("{} Command list '{}' was COMPLETED on frame {} with GPU timings {}", magic_enum::enum_name(m_type), GetName(), frame_index, static_cast<std::string>(GetGpuTimeRange(true)));
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -302,7 +277,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     if (m_state == state)
         return;
 
-    META_LOG("{} Command list '{}' change state from {} to {}", GetTypeName(), GetName(), GetStateName(m_state), GetStateName(state));
+    META_LOG("{} Command list '{}' change state from {} to {}", magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state), GetStateName(state));
 
     m_state = state;
     m_state_change_condition_var.notify_one();

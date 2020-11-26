@@ -30,6 +30,7 @@ and deferred releasing of GPU resource.
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <array>
 #include <mutex>
 
@@ -41,7 +42,7 @@ class ContextBase;
 class ResourceManager
 {
 public:
-    using DescriptorHeapSizeByType = std::array<uint32_t, static_cast<size_t>(DescriptorHeap::Type::Count)>;
+    using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
 
     struct Settings
     {
@@ -73,7 +74,7 @@ private:
     template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
     void ForEachDescriptorHeap(FuncType process_heap) const;
 
-    using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Count)>;
+    using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
 
     bool                      m_deferred_heap_allocation = false;
     ContextBase&              m_context;

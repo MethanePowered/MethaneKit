@@ -70,28 +70,6 @@ State::State(std::initializer_list<Button> pressed_buttons, const Position& posi
     }
 }
 
-State::State(const State& other)
-    : m_button_states(other.m_button_states)
-    , m_position(other.m_position)
-    , m_scroll(other.m_scroll)
-    , m_in_window(other.m_in_window)
-{
-    META_FUNCTION_TASK();
-}
-
-State& State::operator=(const State& other)
-{
-    META_FUNCTION_TASK();
-    if (this != &other)
-    {
-        m_button_states = other.m_button_states;
-        m_position      = other.m_position;
-        m_scroll        = other.m_scroll;
-        m_in_window     = other.m_in_window;
-    }
-    return *this;
-}
-
 bool State::operator==(const State& other) const
 {
     META_FUNCTION_TASK();
