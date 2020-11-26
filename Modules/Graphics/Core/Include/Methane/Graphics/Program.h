@@ -30,6 +30,7 @@ pipeline via state object and used to create resource binding objects.
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
 
+#include <magic_enum.hpp>
 #include <vector>
 #include <string>
 #include <unordered_set>
@@ -116,8 +117,8 @@ struct Program : virtual Object
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
         ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
-        inline bool IsConstant() const    { return static_cast<uint32_t>(modifiers) & static_cast<uint32_t>(Modifiers::Constant); }
-        inline bool IsAddressable() const { return static_cast<uint32_t>(modifiers) & static_cast<uint32_t>(Modifiers::Addressable); }
+        inline bool IsConstant() const    { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Constant); }
+        inline bool IsAddressable() const { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Addressable); }
     };
 
     using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;

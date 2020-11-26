@@ -32,6 +32,8 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 struct RenderCommandList;
@@ -82,7 +84,7 @@ private:
         VSync
     };
 
-    using TextBlockPtrs = std::array<Ptr<Text>, 7>;
+    using TextBlockPtrs = std::array<Ptr<Text>, magic_enum::enum_count<TextBlock>()>;
     Text& GetTextBlock(TextBlock block) const;
 
     void LayoutTextBlocks();

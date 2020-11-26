@@ -53,17 +53,17 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
     switch(action)
     {
     case TypographyAppAction::SwitchTextWrapMode:
-        text_layout.wrap = static_cast<gui::Text::Wrap>((static_cast<uint32_t>(text_layout.wrap) + 1) % 3);
+        text_layout.wrap = magic_enum::enum_value<gui::Text::Wrap>((magic_enum::enum_integer(text_layout.wrap) + 1) % 3);
         m_typography_app.SetTextLayout(text_layout);
         break;
 
     case TypographyAppAction::SwitchTextHorizontalAlignment:
-        text_layout.horizontal_alignment = static_cast<gui::Text::HorizontalAlignment>((static_cast<uint32_t>(text_layout.horizontal_alignment) + 1) % 3);
+        text_layout.horizontal_alignment = magic_enum::enum_value<gui::Text::HorizontalAlignment>((magic_enum::enum_integer(text_layout.horizontal_alignment) + 1) % 3);
         m_typography_app.SetTextLayout(text_layout);
         break;
 
     case TypographyAppAction::SwitchTextVerticalAlignment:
-        text_layout.vertical_alignment = static_cast<gui::Text::VerticalAlignment>((static_cast<uint32_t>(text_layout.vertical_alignment) + 1) % 3);
+        text_layout.vertical_alignment = magic_enum::enum_value<gui::Text::VerticalAlignment>((magic_enum::enum_integer(text_layout.vertical_alignment) + 1) % 3);
         m_typography_app.SetTextLayout(text_layout);
         break;
 

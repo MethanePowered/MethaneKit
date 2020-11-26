@@ -276,6 +276,8 @@ set(CMAKE_DISABLE_FIND_PACKAGE_HHC TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_LATEX TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_Perl TRUE)
 
+set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Generate and install magic_enum target")
+
 add_subdirectory(Externals)
 add_subdirectory(Modules)
 

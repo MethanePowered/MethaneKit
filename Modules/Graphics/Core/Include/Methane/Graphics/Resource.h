@@ -32,6 +32,7 @@ Methane resource interface: base class of all GPU resources.
 
 #include <fmt/format.h>
 
+#include <magic_enum.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -65,10 +66,11 @@ struct Resource : virtual Object
         Addressable  = 1U << 4U,
     };
 
-    static constexpr Usage s_secondary_usage_mask = static_cast<Usage>(
-        static_cast<uint32_t>(Usage::Addressable) |
-        static_cast<uint32_t>(Usage::ReadBack)
-    );
+    static constexpr Usage s_secondary_usage_mask = []() constexpr
+    {
+        using namespace magic_enum::bitwise_operators;
+        return Usage::Addressable | Usage::ReadBack;
+    }();
 
     struct Descriptor
     {

@@ -214,7 +214,7 @@ protected:
     // IContextCallback interface
     void OnContextReleased(gfx::Context& context) override;
     void OnContextCompletingInitialization(gfx::Context& context) override;
-    void OnContextInitialized(gfx::Context&) override { }
+    void OnContextInitialized(gfx::Context&) override { /* callback not handled in this class */}
 
 private:
     struct AtlasTexture
