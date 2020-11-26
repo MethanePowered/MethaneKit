@@ -51,7 +51,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
 
 ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings)
     : ArgumentBindingBase(context, settings)
-    , m_settings_vk(std::move(settings))
+    , m_settings_vk(settings)
 {
     META_FUNCTION_TASK();
 }
