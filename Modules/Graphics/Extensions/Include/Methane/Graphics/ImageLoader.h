@@ -28,6 +28,7 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/Provider.h>
 
+#include <magic_enum.hpp>
 #include <string>
 #include <array>
 
@@ -74,7 +75,7 @@ public:
         NegativeZ
     };
 
-    using CubeFaceResources = std::array<std::string, 6>;
+    using CubeFaceResources = std::array<std::string, magic_enum::enum_count<CubeFace>()>;
 
     explicit ImageLoader(Data::Provider& data_provider);
 

@@ -258,7 +258,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         const DescriptorHeap::Type heap_type = descriptor_heap_type_and_count.first;
         const DescriptorsCount&  descriptors = descriptor_heap_type_and_count.second;
 
-        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
+        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
             descriptor_heap_reservation_opt.emplace(
@@ -345,7 +345,7 @@ const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescri
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EQUAL(heap_type, DescriptorHeap::Type::Undefined);
-    return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
+    return m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
 }
 
 } // namespace Methane::Graphics
