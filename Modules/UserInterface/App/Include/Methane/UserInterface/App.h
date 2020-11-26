@@ -53,7 +53,6 @@ struct IApp : Graphics::IApp
     virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;
     virtual bool SetHeadsUpDisplayMode(HeadsUpDisplayMode heads_up_display_mode) = 0;
     virtual std::string GetParametersString() = 0;
-
 };
 
 } // namespace Methane::UserInterface
