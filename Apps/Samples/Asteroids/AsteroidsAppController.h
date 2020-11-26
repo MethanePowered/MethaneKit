@@ -31,18 +31,15 @@ namespace Methane::Samples
 
 class AsteroidsApp;
 
-enum class AsteroidsAppAction : uint32_t
+enum class AsteroidsAppAction
 {
-    None = 0U,
-
+    None,
     IncreaseComplexity,
     DecreaseComplexity,
     SwitchParallelRendering,
     SwitchMeshLodsColoring,
     IncreaseMeshLodComplexity,
-    DecreaseMeshLodComplexity,
-
-    Count
+    DecreaseMeshLodComplexity
 };
 
 class AsteroidsAppController final

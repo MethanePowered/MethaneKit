@@ -60,7 +60,7 @@ public:
         double                    update_interval_sec = 0.33;
     };
 
-    HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, Settings settings);
+    HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings);
 
     const Settings& GetSettings() const { return m_settings; }
 

@@ -159,7 +159,7 @@ const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSetDX::GetNativeVertexBufferV
     META_FUNCTION_TASK();
     const Buffer::Type buffers_type = GetType();
     META_CHECK_ARG_EQUAL_DESCR(buffers_type, Buffer::Type::Vertex,
-                               "unable to get vertex buffer views from buffer of {} type", Buffer::GetBufferTypeName(buffers_type));
+                               "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
     return m_vertex_buffer_views;
 }
 

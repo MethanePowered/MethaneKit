@@ -37,6 +37,7 @@ Platform abstraction of keyboard events.
 
 #endif
 
+#include <magic_enum.hpp>
 #include <array>
 #include <set>
 #include <string>
@@ -84,7 +85,7 @@ enum class Key : uint32_t
     RightShift, RightControl, RightAlt, RightSuper,
     Menu,
 
-    Count,
+    // Always keep at the end
     Unknown
 };
 
@@ -153,7 +154,7 @@ enum class KeyState : uint8_t
     Pressed,
 };
 
-using KeyStates = std::array<KeyState, static_cast<size_t>(Key::Count)>;
+using KeyStates = std::array<KeyState, magic_enum::enum_count<Key>() - 1>;
 
 class State
 {

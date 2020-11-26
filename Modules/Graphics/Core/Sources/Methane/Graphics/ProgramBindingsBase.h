@@ -30,6 +30,7 @@ Base implementation of the program bindings interface.
 #include "CommandListBase.h"
 #include "ObjectBase.h"
 
+#include <magic_enum.hpp>
 #include <optional>
 
 namespace Methane::Graphics
@@ -105,8 +106,7 @@ protected:
     const std::optional<DescriptorHeap::Reservation>& GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const;
 
 private:
-    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>,
-                                                       static_cast<uint32_t>(DescriptorHeap::Type::Count)>;
+    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
 
     const Ptr<Program>              m_program_ptr;
     Program::Arguments              m_arguments;

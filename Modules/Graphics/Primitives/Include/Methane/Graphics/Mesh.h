@@ -25,6 +25,7 @@ Abstract mesh class
 
 #include <Methane/Graphics/Types.h>
 
+#include <magic_enum.hpp>
 #include <vector>
 #include <array>
 #include <map>
@@ -80,9 +81,7 @@ public:
         Position = 0,
         Normal,
         TexCoord,
-        Color,
-
-        Count
+        Color
     };
 
     class VertexLayout : public std::vector<VertexField>
@@ -127,7 +126,7 @@ protected:
         bool operator<(const Edge& other) const;
     };
     
-    using VertexFieldOffsets = std::array<int32_t,     static_cast<size_t>(VertexField::Count)>;
+    using VertexFieldOffsets = std::array<int32_t, magic_enum::enum_count<VertexField>()>;
 
     bool HasVertexField(VertexField field) const noexcept;
     void CheckLayoutHasVertexField(VertexField field) const;

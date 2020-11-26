@@ -36,7 +36,7 @@ namespace Methane::Platform::Mouse
 
 enum class Button : uint32_t
 {
-    Left        = 0,
+    Left = 0U,
     Right,
     Middle,
     Button4,
@@ -47,7 +47,6 @@ enum class Button : uint32_t
     VScroll,
     HScroll,
 
-    Count,
     Unknown
 };
 
@@ -56,7 +55,7 @@ using Buttons = std::set<Button>;
 class ButtonConverter
 {
 public:
-    ButtonConverter(Button button) : m_button(button) { }
+    explicit ButtonConverter(Button button) : m_button(button) { }
     
     std::string ToString() const;
     
@@ -70,7 +69,7 @@ enum class ButtonState : uint8_t
     Pressed,
 };
 
-using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Count)>;
+using ButtonStates = std::array<ButtonState, magic_enum::enum_count<Button>() - 1>;
 
 using Position = Data::Point2i;
 using Scroll = Data::Point2f;
@@ -99,9 +98,7 @@ public:
 
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
-    State(const State& other);
 
-    State& operator=(const State& other);
     bool operator==(const State& other) const;
     bool operator!=(const State& other) const                   { return !operator==(other); }
     const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }

@@ -52,18 +52,18 @@ struct IDescriptorHeapCallback
 class DescriptorHeap : public Data::Emitter<IDescriptorHeapCallback>
 {
 public:
-    enum class Type
+    enum class Type : uint32_t
     {
         // Shader visible heap types
-        ShaderResources,
+        ShaderResources = 0U,
         Samplers,
 
         // Other heap types
         RenderTargets,
         DepthStencil,
 
-        Count,
-        Undefined,
+        // Always keep at the end
+        Undefined
     };
 
     struct Settings

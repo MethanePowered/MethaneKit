@@ -700,40 +700,4 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
     m_is_viewport_dirty = false;
 }
 
-std::string Text::GetWrapName(Wrap wrap)
-{
-    META_FUNCTION_TASK();
-    switch (wrap)
-    {
-    case Wrap::None:     return "No Wrap";
-    case Wrap::Anywhere: return "Wrap Anywhere";
-    case Wrap::Word:     return "Wrap Words";
-    default:             META_UNEXPECTED_ENUM_ARG_RETURN(wrap, "Undefined Wrap");
-    }
-}
-
-std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment)
-{
-    META_FUNCTION_TASK();
-    switch(alignment)
-    {
-    case HorizontalAlignment::Left:   return "Left";
-    case HorizontalAlignment::Right:  return "Right";
-    case HorizontalAlignment::Center: return "Center";
-    default:                          META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined horizontal alignment");
-    }
-}
-
-std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment)
-{
-    META_FUNCTION_TASK();
-    switch(alignment)
-    {
-    case VerticalAlignment::Top:    return "Top";
-    case VerticalAlignment::Bottom: return "Bottom";
-    case VerticalAlignment::Center: return "Center";
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined vertical alignment");
-    }
-}
-
 } // namespace Methane::Graphics

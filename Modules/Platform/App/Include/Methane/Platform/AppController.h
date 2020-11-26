@@ -29,17 +29,14 @@ Base application controller providing commands like app close and help.
 namespace Methane::Platform
 {
 
-enum class AppAction : uint32_t
+enum class AppAction
 {
-    None = 0,
-    
+    None,
     ShowControlsHelp,
     ShowCommandLineHelp,
     ShowParameters,
     SwitchFullScreen,
-    CloseApp,
-    
-    Count
+    CloseApp
 };
 
 class AppController

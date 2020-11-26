@@ -26,6 +26,7 @@
 #include "Input/HelpProvider.h"
 #include "Mouse.h"
 
+#include <magic_enum.hpp>
 #include <map>
 
 namespace Methane::Platform::Mouse
@@ -51,9 +52,8 @@ public:
             return help_lines;
         
         help_lines.reserve(m_action_by_mouse_button.size());
-        for (uint32_t action_index = 0; action_index < static_cast<uint32_t>(ActionEnum::Count); ++action_index)
+        for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            const ActionEnum action = static_cast<ActionEnum>(action_index);
             const auto action_by_mouse_button_it = std::find_if(m_action_by_mouse_button.begin(), m_action_by_mouse_button.end(),
                                                                 [action](const std::pair<Button, ActionEnum>& button_and_action)
                                                                 {
