@@ -72,9 +72,9 @@ struct fmt::formatter<Methane::Graphics::Volume<T, D>>
 };
 
 template<size_t color_size>
-struct fmt::formatter<Methane::Graphics::ColorNf<color_size>>
+struct fmt::formatter<Methane::Graphics::ColorF<color_size>>
 {
     template<typename FormatContext>
-    auto format(const Methane::Graphics::ColorNf<color_size>& color, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(color)); }
+    auto format(const Methane::Graphics::ColorF<color_size>& color, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(color)); }
     constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
