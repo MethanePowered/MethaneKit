@@ -130,7 +130,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
         [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
-                static_cast<uint32_t>(rng()),
+                static_cast<uint32_t>(rng()), //NOSONAR
                 noise_persistence_distribution(rng),
                 noise_scale_distribution(rng),
                 1.5F
@@ -274,7 +274,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
         m_unique_textures.back()->SetData(texture_subresources);
-        m_unique_textures.back()->SetName(fmt::format("Asteroid Texture {:d}", texture_index++));
+        m_unique_textures.back()->SetName(fmt::format("Asteroid Texture {:d}", texture_index));
+        texture_index++;
     }
 
     // Distribute textures between unique mesh subsets

@@ -65,6 +65,8 @@ public:
     }
 
 protected:
+    FileProvider() = default;
+
     std::string GetFullFilePath(const std::string& path) const
     {
         META_FUNCTION_TASK();
@@ -78,14 +80,8 @@ protected:
         const bool is_root_path = std::regex_match(path, root_path_regex);
         return is_root_path ? path : m_resources_dir + path_delimiter + path;
     }
-    
-    FileProvider()
-        : m_resources_dir(Platform::GetResourceDir())
-    {
-        META_FUNCTION_TASK();
-    }
 
-    const std::string m_resources_dir;
+    const std::string m_resources_dir = Platform::GetResourceDir();
 };
 
 } // namespace Methane::Graphics

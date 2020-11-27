@@ -77,7 +77,7 @@ public:
             { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
         } };
 
-        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
+        const auto vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
         Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
         vertex_buffer_ptr->SetData(
             Resource::SubResources
@@ -126,7 +126,7 @@ public:
         if (!GraphicsApp::Render())
             return false;
 
-        HelloTriangleFrame& frame = GetCurrentFrame();
+        const HelloTriangleFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);

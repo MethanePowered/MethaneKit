@@ -93,7 +93,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     Update(0.0, 0.0);
 }
 
-Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr)
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
 
@@ -111,9 +111,13 @@ bool Planet::Update(double elapsed_seconds, double)
 {
     META_FUNCTION_TASK();
 
-    gfx::Matrix44f model_scale_matrix, model_translate_matrix, model_rotation_matrix;
+    gfx::Matrix44f model_scale_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
+
+    gfx::Matrix44f model_translate_matrix;
     cml::matrix_translation(model_translate_matrix, m_settings.position);
+
+    gfx::Matrix44f model_rotation_matrix;
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms{};

@@ -39,7 +39,7 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidsArray final : protected gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
 {
 public:
     using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;

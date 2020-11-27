@@ -91,7 +91,8 @@ private:
     void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(gui::Font& font) override;
 
-    bool Animate(double elapsed_seconds, double delta_seconds);
+    bool Animate(double elapsed_seconds, double);
+    void AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots);
     void ResetAnimation();
 
     Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr);

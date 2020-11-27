@@ -52,14 +52,6 @@ ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Shadow Cube"), {},
         "Methane tutorial of shadow pass rendering")
-    , m_scene_scale(15.F)
-    , m_scene_constants(                                // Shader constants:
-        {                                               // ================
-            gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
-            700.F,                                      // - light_power
-            0.04F,                                      // - light_ambient_factor
-            30.F                                        // - light_specular_factor
-        })
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")
 {
@@ -467,9 +459,9 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
-ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_group_name)
+ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, const std::string& debug_group_name)
     : is_final_pass(is_final_pass)
-    , debug_group_ptr(META_DEBUG_GROUP_CREATE(std::move(debug_group_name)))
+    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
 {
     META_UNUSED(debug_group_name);
 }

@@ -27,7 +27,7 @@ either stored in embedded application resources of on file system.
 #ifdef TEXTURE_RESOURCES_NAMESPACE
 
 #ifdef RESOURCE_NAMESPACE
-#undef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE //NOSONAR
 #endif
 
 #define RESOURCE_NAMESPACE TEXTURE_RESOURCES_NAMESPACE

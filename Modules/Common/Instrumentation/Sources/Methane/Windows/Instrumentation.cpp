@@ -21,7 +21,7 @@ Windows implementation of the platform specific instrumentation functions.
 
 ******************************************************************************/
 
-#include <windows.h>
+#include <Windows.h>
 
 #include <nowide/convert.hpp>
 
@@ -31,7 +31,7 @@ namespace Methane
 #if defined _MSC_VER
 
 #pragma pack(push, 8)
-struct THREADNAME_INFO
+struct ThreadNameInfo
 {
     DWORD  dw_type;
     LPCSTR sz_name;
@@ -44,7 +44,7 @@ static void SetLegacyThreadName(const char* name)
 {
     // Set thread name with legacy exception way
     constexpr DWORD msvc_exception = 0x406D1388;
-    THREADNAME_INFO info           = {
+    ThreadNameInfo info {
         0x1000,
         name,
         GetCurrentThreadId(),
@@ -57,6 +57,7 @@ static void SetLegacyThreadName(const char* name)
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
+        // Exception is not handled intentionally, it is used to set Windows thread name
     }
 }
 
@@ -70,8 +71,7 @@ extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR);
 
 void SetThreadName(const char* name)
 {
-    static SetThreadDescriptionFn s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"),
-                                                                                                                        "SetThreadDescription"));
+    static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
     if (s_set_thread_description_fn)
     {
         const std::wstring w_name = nowide::widen(name);

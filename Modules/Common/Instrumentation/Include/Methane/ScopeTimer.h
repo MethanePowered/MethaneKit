@@ -35,7 +35,7 @@ Code scope measurement timer with aggregating and averaging of timings.
 namespace Methane
 {
 
-class ScopeTimer : protected Timer
+class ScopeTimer : public Timer
 {
 public:
     using ScopeId = uint32_t;
@@ -58,7 +58,13 @@ public:
         };
 
         static Aggregator& Get();
+
+        Aggregator(const Aggregator&) = delete;
+        Aggregator(Aggregator&&) = delete;
         ~Aggregator();
+
+        Aggregator& operator=(const Aggregator&) = delete;
+        Aggregator& operator=(Aggregator&&) = delete;
 
         void SetLogger(Ptr<ILogger> logger_ptr)   { m_logger_ptr = std::move(logger_ptr); }
         const Ptr<ILogger>& GetLogger() const    { return m_logger_ptr; }
@@ -90,19 +96,22 @@ public:
         Aggregator::Get().SetLogger(std::make_shared<TLogger>());
     }
 
-    ScopeTimer(const char* scope_name);
+    explicit ScopeTimer(const char* scope_name);
+    ScopeTimer(const ScopeTimer&) = delete;
+    ScopeTimer(ScopeTimer&&) = delete;
     ~ScopeTimer();
+
+    ScopeTimer& operator=(const ScopeTimer&) = delete;
+    ScopeTimer& operator=(ScopeTimer&&) = delete;
 
     const Registration& GetRegistration() const { return m_registration; }
     const char*         GetScopeName() const    { return m_registration.name; }
     ScopeId             GetScopeId() const      { return m_registration.id; }
 
-    using Timer::GetElapsedDuration;
-    using Timer::GetElapsedSecondsU;
-    using Timer::GetElapsedSecondsD;
-    using Timer::GetElapsedSecondsF;
-
 private:
+    using Timer::Reset;
+    using Timer::ResetToSeconds;
+
     const Registration m_registration;
 };
 

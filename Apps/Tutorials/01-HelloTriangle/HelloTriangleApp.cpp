@@ -58,8 +58,8 @@ void HelloTriangleApp::Init()
     } };
 
     // Create vertex buffer with triangle data
-    const Data::Size vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
-    const Data::Size vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
+    const auto vertex_size      = static_cast<Data::Size>(sizeof(Vertex));
+    const auto vertex_data_size = static_cast<Data::Size>(sizeof(triangle_vertices));
 
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     vertex_buffer_ptr->SetName("Triangle Vertex Buffer");
@@ -112,7 +112,7 @@ bool HelloTriangleApp::Render()
 
     // Issue commands for triangle rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Triangle Rendering");
-    HelloTriangleFrame& frame = GetCurrentFrame();
+    const HelloTriangleFrame& frame = GetCurrentFrame();
     frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
