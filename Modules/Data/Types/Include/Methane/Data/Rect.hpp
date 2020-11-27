@@ -192,6 +192,7 @@ struct Rect
 
     Rect() noexcept = default;
     explicit Rect(const Size& size) noexcept : size(size) { }
+    explicit Rect(const Point& origin) : origin(origin) { }
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
 
     Rect(const Rect&) noexcept = default;
