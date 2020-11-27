@@ -38,35 +38,56 @@ template<class EventType>
 class Receiver : public EventType
 {
 public:
-    Receiver() = default;
-    Receiver(const Receiver& other)
+    Receiver() noexcept = default;
+    Receiver(const Receiver& other) noexcept
         : m_connected_emitter_refs(other.m_connected_emitter_refs)
     {
         META_FUNCTION_TASK();
-        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : m_connected_emitter_refs)
-        {
-            connected_emitter_ref.get().Connect(*this);
-        }
+        ConnectEmitters();
+    }
+
+    Receiver(Receiver&& other) noexcept
+        : m_connected_emitter_refs(other.DisconnectEmitters())
+    {
+        META_FUNCTION_TASK();
+        ConnectEmitters();
     }
 
     ~Receiver() override
     {
         META_FUNCTION_TASK();
-        const auto connected_emitter_refs = m_connected_emitter_refs;
-        m_connected_emitter_refs.clear(); // no need to be processed in OnDisconnected callbacks from emitter
+        DisconnectEmitters();
+    }
 
-        // Disconnect all connected emitters on receiver destruction
-        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : connected_emitter_refs)
-        {
-            connected_emitter_ref.get().Disconnect(*this);
-        }
+    Receiver& operator=(const Receiver& other) noexcept
+    {
+        META_FUNCTION_TASK();
+        if (this == std::addressof(other))
+            return *this;
+
+        DisconnectEmitters();
+        m_connected_emitter_refs = other.m_connected_emitter_refs;
+        ConnectEmitters();
+        return *this;
+    }
+
+    Receiver& operator=(Receiver&& other) noexcept
+    {
+        META_FUNCTION_TASK();
+        if (this == std::addressof(other))
+            return *this;
+
+        DisconnectEmitters();
+        m_connected_emitter_refs = std::move(other.m_connected_emitter_refs);
+        ConnectEmitters();
+        return *this;
     }
 
 protected:
     template<class>
     friend class Emitter;
 
-    void OnConnected(IEmitter<EventType>& emitter)
+    void OnConnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
         const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
@@ -76,7 +97,7 @@ protected:
         m_connected_emitter_refs.emplace_back(emitter);
     }
 
-    void OnDisconnected(IEmitter<EventType>& emitter)
+    void OnDisconnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
         const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
@@ -89,14 +110,33 @@ protected:
     size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
 
 private:
-    decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter)
+    inline decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter) noexcept
     {
-        META_FUNCTION_TASK();
         return std::find_if(m_connected_emitter_refs.begin(), m_connected_emitter_refs.end(),
-                            [&emitter](const Ref<IEmitter<EventType>>& connected_emitter_ref)
-                            {
-                                return std::addressof(connected_emitter_ref.get()) == std::addressof(emitter);
-                            });
+            [&emitter](const Ref<IEmitter<EventType>>& connected_emitter_ref)
+            {
+                return std::addressof(connected_emitter_ref.get()) == std::addressof(emitter);
+            }
+        );
+    }
+
+    inline void ConnectEmitters() noexcept
+    {
+        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : m_connected_emitter_refs)
+        {
+            connected_emitter_ref.get().Connect(*this);
+        }
+    }
+
+    inline auto DisconnectEmitters() noexcept
+    {
+        // Move connected emitters so that OnDisconnected callbacks are not processed (m_connected_emitter_refs would be empty)
+        const auto connected_emitter_refs = std::move(m_connected_emitter_refs);
+        for(const Ref<IEmitter<EventType>>& connected_emitter_ref : connected_emitter_refs)
+        {
+            connected_emitter_ref.get().Disconnect(*this);
+        }
+        return connected_emitter_refs;
     }
 
     Refs<IEmitter<EventType>> m_connected_emitter_refs;

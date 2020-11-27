@@ -36,36 +36,52 @@ template<typename EventType>
 class Emitter : public virtual IEmitter<EventType>
 {
 public:
-    Emitter() = default;
-    Emitter(const Emitter& other)
+    Emitter() noexcept = default;
+    Emitter(const Emitter& other) noexcept
         : m_connected_receivers(other.m_connected_receivers)
     {
         META_FUNCTION_TASK();
-        for(Receiver<EventType>* p_connected_receiver : m_connected_receivers)
-        {
-            if (p_connected_receiver)
-            {
-                p_connected_receiver->OnConnected(*this);
-            }
-        }
+        ConnectReceivers();
+    }
+
+    Emitter(Emitter&& other) noexcept
+        : m_connected_receivers(other.DisconnectReceivers())
+    {
+        META_FUNCTION_TASK();
+        ConnectReceivers();
     }
 
     ~Emitter() override
     {
         META_FUNCTION_TASK();
-        const auto connected_receivers = m_connected_receivers;
-        m_connected_receivers.clear(); // no need to process Disconnect callbacks from Receiver
-
-        for(Receiver<EventType>* p_receiver : connected_receivers)
-        {
-            if (!p_receiver)
-                continue;
-
-            p_receiver->OnDisconnected(*this);
-        }
+        DisconnectReceivers();
     }
 
-    void Connect(Receiver<EventType>& receiver) override
+    Emitter& operator=(const Emitter& other) noexcept
+    {
+        META_FUNCTION_TASK();
+        if (this == std::addressof(other))
+            return *this;
+
+        DisconnectReceivers();
+        m_connected_receivers = other.m_connected_receivers;
+        ConnectReceivers();
+        return *this;
+    }
+
+    Emitter& operator=(Emitter&& other) noexcept
+    {
+        META_FUNCTION_TASK();
+        if (this == std::addressof(other))
+            return *this;
+
+        DisconnectReceivers();
+        m_connected_receivers = std::move(other.m_connected_receivers);
+        ConnectReceivers();
+        return *this;
+    }
+
+    void Connect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
@@ -84,7 +100,7 @@ public:
         receiver.OnConnected(*this);
     }
 
-    void Disconnect(Receiver<EventType>& receiver) override
+    void Disconnect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
@@ -122,13 +138,13 @@ protected:
             // Create copy of the additional connected receivers to iterate over,
             // because original set of additional receivers may change during emitted calls
             auto additional_connected_receivers = m_additional_connected_receivers;
-            EmitFuncOfReceivers(additional_connected_receivers, func_ptr, std::forward<ArgTypes>(args)...);
+            EmitFuncOfReceivers(additional_connected_receivers, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...);
         }
 
         // Emit function of connected receivers
         bool was_emitting = m_is_emitting;
         m_is_emitting = true;
-        if (EmitFuncOfReceivers(m_connected_receivers, func_ptr, std::forward<ArgTypes>(args)...))
+        if (EmitFuncOfReceivers(m_connected_receivers, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...))
         {
             CleanupConnectedReceivers();
         }
@@ -145,11 +161,10 @@ protected:
     size_t GetConnectedReceiversCount() const noexcept { return m_connected_receivers.size() + m_additional_connected_receivers.size(); }
 
 private:
-    decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver)
+    inline decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver) noexcept
     {
-        META_FUNCTION_TASK();
         return std::find_if(m_connected_receivers.begin(), m_connected_receivers.end(),
-                            [&receiver](Receiver<EventType>* p_connected_receiver)
+            [&receiver](Receiver<EventType>* p_connected_receiver)
             {
                 return p_connected_receiver && p_connected_receiver == std::addressof(receiver);
             }
@@ -180,7 +195,7 @@ private:
         return is_cleanup_required;
     }
 
-    inline void CleanupConnectedReceivers()
+    inline void CleanupConnectedReceivers() noexcept
     {
         // Erase receivers disconnected during emit cycle from the connected receivers
         for(auto connected_receiver_it  = m_connected_receivers.begin(); connected_receiver_it != m_connected_receivers.end();)
@@ -190,6 +205,29 @@ private:
             else
                 connected_receiver_it = m_connected_receivers.erase(connected_receiver_it);
         }
+    }
+
+    inline void ConnectReceivers() noexcept
+    {
+        for(Receiver<EventType>* p_connected_receiver : m_connected_receivers)
+        {
+            if (p_connected_receiver)
+                p_connected_receiver->OnConnected(*this);
+        }
+    }
+
+    inline auto DisconnectReceivers() noexcept
+    {
+        // Move connected receivers so that OnDisconnected callbacks are not processed (m_connected_receivers would be empty)
+        const auto connected_receivers = std::move(m_connected_receivers);
+        for(Receiver<EventType>* p_receiver : connected_receivers)
+        {
+            if (!p_receiver)
+                continue;
+
+            p_receiver->OnDisconnected(*this);
+        }
+        return connected_receivers;
     }
 
     bool                              m_is_emitting = false;
