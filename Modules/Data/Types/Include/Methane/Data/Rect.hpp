@@ -49,16 +49,10 @@ struct RectSize
         , height(static_cast<D>(point.GetY()))
     { }
 
-    template<typename V>
-    RectSize(const RectSize<V>& other) noexcept
+    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>, void>>
+    explicit RectSize(const RectSize<V>& other) noexcept
         : RectSize(static_cast<D>(other.width), static_cast<D>(other.height))
     { }
-
-    RectSize(const RectSize&) noexcept = default;
-    RectSize(RectSize&&) noexcept = default;
-
-    RectSize& operator=(const RectSize&) noexcept = default;
-    RectSize& operator=(RectSize&&) noexcept = default;
 
     bool operator==(const RectSize& other) const noexcept
     { return std::tie(width, height) == std::tie(other.width, other.height); }
@@ -194,12 +188,6 @@ struct Rect
     explicit Rect(const Size& size) noexcept : size(size) { }
     explicit Rect(const Point& origin) : origin(origin) { }
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
-
-    Rect(const Rect&) noexcept = default;
-    Rect(Rect&&) noexcept = default;
-
-    Rect& operator=(const Rect&) noexcept = default;
-    Rect& operator=(Rect&&) noexcept = default;
 
     T GetLeft() const   { return origin.GetX(); }
     T GetRight() const  { return origin.GetX() + size.width; }
