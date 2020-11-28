@@ -287,8 +287,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     }
     
     m_texture_sampler_ptr = gfx::Sampler::Create(context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },
-        { gfx::Sampler::Address::Mode::ClampToZero }
+        gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
+        gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToZero)
     });
     m_texture_sampler_ptr->SetName("Asteroid Texture Sampler");
 

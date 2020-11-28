@@ -132,19 +132,19 @@ struct Volume
     { return std::tie(origin, size) != std::tie(other.origin, other.size); }
 
     template<typename M>
-    Rect<T, D> operator*(M multiplier) const noexcept
-    { return Rect<T, D>{ origin* multiplier, size* multiplier }; }
+    Volume<T, D> operator*(M multiplier) const noexcept
+    { return Volume<T, D>{ origin * multiplier, size * multiplier }; }
 
     template<typename M>
-    Rect<T, D> operator/(M divisor) const noexcept
-    { return Rect<T, D>{ origin / divisor, size / divisor }; }
+    Volume<T, D> operator/(M divisor) const noexcept
+    { return Volume<T, D>{ origin / divisor, size / divisor }; }
 
     template<typename M>
-    Rect<T, D>& operator*=(M multiplier) noexcept
+    Volume<T, D>& operator*=(M multiplier) noexcept
     { origin *= multiplier; size *= multiplier; return *this; }
 
     template<typename M>
-    Rect<T, D>& operator/=(M divisor) noexcept
+    Volume<T, D>& operator/=(M divisor) noexcept
     { origin /= divisor; size /= divisor; return *this; }
 
     explicit operator std::string() const

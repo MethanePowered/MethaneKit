@@ -39,9 +39,9 @@ static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
     META_FUNCTION_TASK();
 
     gfx::Color3f linear_color{};
-    for (int c = 0; c < 3; ++c)
+    for (Data::Index c = 0U; c < gfx::Color3f::Size; ++c)
     {
-        linear_color[c] = std::pow(srgb_color[c] / 255.F, 2.233333333F);
+        linear_color.Set(c, std::pow(srgb_color[c] / 255.F, 2.233333333F));
     }
     return linear_color;
 }

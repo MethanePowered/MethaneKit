@@ -186,7 +186,7 @@ struct Rect
 
     Rect() noexcept = default;
     explicit Rect(const Size& size) noexcept : size(size) { }
-    explicit Rect(const Point& origin) : origin(origin) { }
+    explicit Rect(const Point& origin) noexcept : origin(origin) { }
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
 
     T GetLeft() const   { return origin.GetX(); }
@@ -195,7 +195,7 @@ struct Rect
     T GetBottom() const { return origin.GetY() + size.height; }
 
     template<typename U>
-    operator Rect<U, U>() const
+    explicit operator Rect<U, U>() const
     { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::RectSize>(size) }; }
 
     bool operator==(const Rect& other) const noexcept

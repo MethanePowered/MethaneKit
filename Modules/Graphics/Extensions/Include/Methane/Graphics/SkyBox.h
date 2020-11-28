@@ -69,7 +69,7 @@ public:
 
     SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr);
+    Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const;
     void Update();
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state);
 

@@ -127,7 +127,9 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
                                 Data::Chunk(std::move(texture_data)));
 
 #else
-    int image_width = 0, image_height = 0, image_channels_count = 0;
+    int image_width = 0;
+    int image_height = 0;
+    int image_channels_count = 0;
     stbi_uc* p_image_data = stbi_load_from_memory(raw_image_data.GetDataPtr(),
                                                   static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
@@ -139,12 +141,11 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
+    const auto image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
 
     if (create_copy)
     {
-        Data::RawPtr p_image_raw_data = reinterpret_cast<Data::RawPtr>(p_image_data);
-        Data::Bytes image_data_copy(p_image_raw_data, p_image_raw_data + image_data_size);
+        Data::Bytes image_data_copy(p_image_data, p_image_data + image_data_size);
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
@@ -183,14 +184,12 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     tf::Taskflow load_task_flow;
     load_task_flow.for_each_index_guided(0, static_cast<int>(image_paths.size()), 1,
-        [&](const int face_index)
+        [this, &image_paths, &face_images_data, &data_mutex, desired_channels_count](const int face_index)
         {
             META_FUNCTION_TASK();
-            // NOTE:
-            //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
-            //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-            const std::string& face_image_path = image_paths[face_index];
-            ImageLoader::ImageData image_data = LoadImage(face_image_path, desired_channels_count, true);
+            // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
+            // to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+            ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
             std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));

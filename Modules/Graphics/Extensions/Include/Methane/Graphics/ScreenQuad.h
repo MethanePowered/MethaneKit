@@ -59,8 +59,8 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(RenderContext& context, Settings settings);
-    ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Settings settings);
+    ScreenQuad(RenderContext& context, const Settings& settings);
+    ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, const Settings& settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);

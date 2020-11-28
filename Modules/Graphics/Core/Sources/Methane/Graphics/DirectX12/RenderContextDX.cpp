@@ -173,7 +173,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, NULL, NULL, &cp_swap_chain), p_native_device);
+    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
     META_CHECK_ARG_NOT_NULL(cp_swap_chain);
 
     if (settings.is_full_screen)

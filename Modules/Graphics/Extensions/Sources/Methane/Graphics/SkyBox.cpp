@@ -91,17 +91,16 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
     m_render_state_ptr->SetName("Sky-box render state");
 
     m_texture_sampler_ptr = Sampler::Create(context, {
-        { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero },
+        Sampler::Filter(Sampler::Filter::MinMag::Linear),
+        Sampler::Address(Sampler::Address::Mode::ClampToZero),
         Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr)
+Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
-
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
@@ -115,8 +114,10 @@ void SkyBox::Update()
 {
     META_FUNCTION_TASK();
 
-    Matrix44f model_scale_matrix, model_translate_matrix;
+    Matrix44f model_scale_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
+
+    Matrix44f model_translate_matrix;
     cml::matrix_translation(model_translate_matrix, m_settings.view_camera.GetOrientation().eye); // Sky-box is centered in the camera eye to simulate infinity distance
 
     m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * m_settings.view_camera.GetViewProjMatrix() });

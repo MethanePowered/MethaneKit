@@ -119,10 +119,10 @@ private:
                 const uint32_t  vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
 
                 VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
-                {
-                    Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                    vertex_position = Mesh::Position(0.F, m_radius, 0.F) * rotation_matrix;
-                }
+
+                Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+                vertex_position = Mesh::Position(0.F, m_radius, 0.F) * rotation_matrix;
+
                 if (has_normals)
                 {
                     Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);

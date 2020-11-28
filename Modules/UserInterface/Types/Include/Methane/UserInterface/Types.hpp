@@ -69,7 +69,7 @@ struct UnitType : BaseType
 
     // Disable Sonar Check for variadic arguments constructor, since it reports false positive about slicing for universal references
     template<typename... BaseArgs>
-    UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { } //NOSONAR
+    explicit UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { } //NOSONAR
 
     template<typename T = BaseType, typename = std::enable_if_t<std::is_same_v<FramePoint, T>>>
     explicit UnitType(const UnitType<FrameSize>& size) noexcept : UnitType<FramePoint>(size.units, size.width, size.height) { }

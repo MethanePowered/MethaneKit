@@ -95,7 +95,7 @@ private:
         bool                        stencil_cleared = false;
         UINT8                       stencil_value   = 0;
 
-        DSClearInfo() {}
+        DSClearInfo() = default;
         DSClearInfo(const RenderPassBase::DepthAttachment& depth_attach, const RenderPassBase::StencilAttachment& stencil_attach);
     };
 

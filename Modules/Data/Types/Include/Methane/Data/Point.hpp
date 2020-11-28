@@ -42,26 +42,27 @@ public:
 
     static constexpr size_t dimensions_count = vector_size;
 
-    PointT() = default;
+    PointT() noexcept = default;
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 2, void>>
-    PointT(T x, T y) : m_vector(x, y) { }
+    PointT(T x, T y) noexcept : m_vector(x, y) { }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 3, void>>
-    PointT(T x, T y, T z) : m_vector(x, y, z) { }
+    PointT(T x, T y, T z) noexcept : m_vector(x, y, z) { }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4, void>>
-    PointT(T x, T y, T z, T w) : m_vector(x, y, z, w) { }
+    PointT(T x, T y, T z, T w) noexcept : m_vector(x, y, z, w) { }
 
-    explicit PointT(const VectorType& vector) : m_vector(vector) { }
+    explicit PointT(const VectorType& vector) noexcept : m_vector(vector) { }
 
-    template<typename V>
-    explicit PointT(const PointT<V, vector_size>& other) : m_vector(other.AsVector()) { }
+    template<typename V, typename = std::enable_if_t<!std::is_same_v<T, V>, void>>
+    explicit PointT(const PointT<V, vector_size>& other) noexcept : m_vector(other.AsVector()) { }
 
     // FIXME: Enabling compilation of this code on Windows breaks all UI layout... Who knows why?
 #ifndef _WIN32
     PointT(const PointType& other) noexcept : m_vector(other.m_vector) { }
     PointT(PointType&& other) noexcept : m_vector(std::move(other.m_vector)) { }
+    ~PointT() = default;
 
     PointT& operator=(const PointType& other) noexcept { m_vector = other.m_vector; return *this; }
     PointT& operator=(PointType&& other) noexcept      { m_vector = std::move(other.m_vector); return *this; }

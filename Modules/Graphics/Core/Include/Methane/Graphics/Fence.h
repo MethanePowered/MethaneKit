@@ -42,8 +42,6 @@ struct Fence : virtual Object
     virtual void WaitOnGpu(CommandQueue& wait_on_command_queue) = 0;
     virtual void FlushOnCpu() = 0;
     virtual void FlushOnGpu(CommandQueue& wait_on_command_queue) = 0;
-
-    virtual ~Fence() = default;
 };
 
 } // namespace Methane::Graphics

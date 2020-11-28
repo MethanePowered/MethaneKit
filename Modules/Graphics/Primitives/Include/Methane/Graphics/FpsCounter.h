@@ -66,7 +66,7 @@ public:
     };
 
     FpsCounter() = default;
-    FpsCounter(uint32_t averaged_timings_count) noexcept : m_averaged_timings_count(averaged_timings_count) { }
+    explicit FpsCounter(uint32_t averaged_timings_count) noexcept : m_averaged_timings_count(averaged_timings_count) { }
 
     void Reset(uint32_t averaged_timings_count) noexcept;
     void OnGpuFramePresentWait() noexcept    { m_present_timer.Reset(); }

@@ -158,7 +158,7 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
     std::fill(field_offsets.begin(), field_offsets.end(), -1);
     for (VertexField vertex_field : vertex_layout)
     {
-        const size_t vertex_field_index = static_cast<size_t>(vertex_field);
+        const auto vertex_field_index = static_cast<size_t>(vertex_field);
         field_offsets[vertex_field_index] = static_cast<int32_t>(current_offset);
         current_offset += GetVertexFieldSize(vertex_field_index);
     }

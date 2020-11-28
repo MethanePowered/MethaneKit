@@ -23,37 +23,51 @@ Color type based on cml::vector.
 
 #pragma once
 
-#include "Types.h"
-
+#include <Methane/Data/Types.h>
 #include <Methane/Checks.hpp>
 
+#include <cml/vector.h>
 #include <fmt/format.h>
 #include <cstdint>
 
 namespace Methane::Graphics
 {
 
-template<size_t vector_size, typename VectorType = std::enable_if_t<3 <= vector_size && vector_size <= 4, cml::vector<float, cml::fixed<vector_size>>>>
-class ColorF : public VectorType
+template<Data::Size vector_size, typename VectorType = std::enable_if_t<3 <= vector_size && vector_size <= 4, cml::vector<float, cml::fixed<vector_size>>>>
+class ColorF
 {
 public:
-    using VectorType::VectorType;
-    using VectorType::operator=;
+    static constexpr Data::Size Size = vector_size;
 
-    ~ColorF() = default;
+    ColorF() noexcept = default;
+    ColorF(float r, float g, float b) noexcept : m_components(r, g, b) { }
 
-    ColorF(const ColorF& other) noexcept : VectorType(other) { }
-    ColorF(ColorF&& other) noexcept : VectorType(static_cast<VectorType&&>(other)) { }
+    template<Data::Size sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>
+    ColorF(float r, float g, float b, float a) noexcept : m_components(r, g, b, a) { }
 
-    ColorF& operator=(const ColorF& other) noexcept { VectorType::operator=(other); return *this; }
-    ColorF& operator=(ColorF&& other) noexcept      { VectorType::operator=(static_cast<VectorType&&>(other)); return *this; }
+    template<Data::Size sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>
+    ColorF(const ColorF<3>& color, float a) noexcept : m_components(color.AsVector(), a) { }
 
-    float GetRf() const noexcept { return (*this)[0]; }
-    float GetGf() const noexcept { return (*this)[1]; }
-    float GetBf() const noexcept { return (*this)[2]; }
+    template<typename... Args>
+    explicit ColorF(const VectorType& components, Args&&... args) noexcept : m_components(components, std::forward<Args>(args)...) { }
+
+    explicit ColorF(VectorType&& components) noexcept : m_components(std::move(components)) { }
+
+    bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
+    bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
+    float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
+    explicit operator const VectorType&() const noexcept { return m_components; }
+
+    const VectorType& AsVector() const noexcept { return m_components; }
+
+    Data::Size GetSize() const noexcept      { return vector_size; }
+
+    float GetRf() const noexcept { return m_components[0]; }
+    float GetGf() const noexcept { return m_components[1]; }
+    float GetBf() const noexcept { return m_components[2]; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>
-    float GetAf() const noexcept { return (*this)[3]; }
+    float GetAf() const noexcept { return m_components[3]; }
 
     float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
     float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
@@ -69,12 +83,18 @@ public:
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
 
-    void SetR(float r) { META_CHECK_ARG_RANGE(r, s_float_range.first, s_float_range.second); (*this)[0] = r; }
-    void SetG(float g) { META_CHECK_ARG_RANGE(g, s_float_range.first, s_float_range.second); (*this)[1] = g; }
-    void SetB(float b) { META_CHECK_ARG_RANGE(b, s_float_range.first, s_float_range.second); (*this)[2] = b; }
+    void Set(Data::Index component_index, float value)
+    {
+        META_CHECK_ARG_LESS(component_index, Size);
+        META_CHECK_ARG_RANGE(value, s_float_range.first, s_float_range.second);
+        m_components[component_index] = value;
+    }
+    void SetR(float r) { Set(0, r); }
+    void SetG(float g) { Set(1, g); }
+    void SetB(float b) { Set(2, b); }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
-    void SetA(float a) { META_CHECK_ARG_RANGE(a, s_float_range.first, s_float_range.second); (*this)[3] = a; }
+    void SetA(float a) { Set(3, a); }
 
     explicit operator std::string() const noexcept
     {
@@ -94,6 +114,8 @@ private:
     {
         return static_cast<uint8_t>(std::round(component * static_cast<float>(s_uint_component_max)));
     }
+
+    VectorType m_components;
 
     static constexpr std::pair<float, float> s_float_range{ 0.F, 1.F };
     static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();

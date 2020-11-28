@@ -83,8 +83,8 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
 
     m_texture_sampler_ptr = gfx::Sampler::Create(context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },
-        { gfx::Sampler::Address::Mode::ClampToEdge },
+        gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
+        gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToEdge),
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Planet Texture Sampler");

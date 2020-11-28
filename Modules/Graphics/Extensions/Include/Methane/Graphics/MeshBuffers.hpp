@@ -129,7 +129,6 @@ public:
               uint32_t first_instance_index = 0)
     {
         META_FUNCTION_TASK();
-
         cmd_list.SetVertexBuffers(GetVertexBuffers());
 
         Buffer& index_buffer = GetIndexBuffer();
@@ -154,21 +153,19 @@ public:
         }
     }
 
-    void DrawParallel(ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
+    void DrawParallel(const ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
                       ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
     {
         META_FUNCTION_TASK();
-
         const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
-        const uint32_t instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
+        const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
         render_task_flow.for_each_index_guided(0, static_cast<int>(render_cmd_lists.size()), 1,
-            [&](const int cmd_list_index)
+            [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings, bindings_apply_behavior](const int cmd_list_index)
             {
-                META_FUNCTION_TASK();
                 const Ptr<RenderCommandList>& render_command_list_ptr = render_cmd_lists[cmd_list_index];
-                const uint32_t begin_instance_index = static_cast<uint32_t>(cmd_list_index * instances_count_per_command_list);
+                const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
 
@@ -191,7 +188,6 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
-
         return m_final_pass_instance_uniforms[instance_index];
     }
 
@@ -199,7 +195,6 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
-
         m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
 

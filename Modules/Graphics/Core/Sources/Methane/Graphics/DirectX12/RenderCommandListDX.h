@@ -52,8 +52,8 @@ public:
 
     void ResetNative(const Ptr<RenderState>& render_state_ptr = Ptr<RenderState>());
 
-protected:
-    RenderPassDX&   GetPassDX();
+private:
+    RenderPassDX& GetPassDX();
 };
 
 } // namespace Methane::Graphics

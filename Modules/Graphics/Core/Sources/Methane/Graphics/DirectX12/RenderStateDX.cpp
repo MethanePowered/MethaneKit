@@ -322,8 +322,8 @@ void RenderStateDX::Reset(const Settings& settings)
     }
 
     // Set blending factor
-    META_CHECK_ARG_LESS(settings.blending_color.size(), 5);
-    for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(settings.blending_color.size()); ++component_index)
+    META_CHECK_ARG_LESS(settings.blending_color.GetSize(), 5);
+    for (Data::Size component_index = 0; component_index < settings.blending_color.GetSize(); ++component_index)
     {
         m_blend_factor[component_index] = settings.blending_color[component_index];
     }

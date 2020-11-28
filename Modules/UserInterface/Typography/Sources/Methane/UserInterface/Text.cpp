@@ -149,8 +149,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     if (!m_atlas_sampler_ptr)
     {
         m_atlas_sampler_ptr = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
-            { gfx::Sampler::Filter::MinMag::Linear },
-            { gfx::Sampler::Address::Mode::ClampToZero },
+            gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
+            gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToZero),
         });
         m_atlas_sampler_ptr->SetName(s_sampler_name);
 
