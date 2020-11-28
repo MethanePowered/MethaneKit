@@ -175,7 +175,7 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
 Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options)
 {
     META_FUNCTION_TASK();
-    const uint32_t desired_channels_count = 4;
+    constexpr uint32_t desired_channels_count = 4;
 
     // Load face image data in parallel
     TracyLockable(std::mutex, data_mutex);
@@ -184,7 +184,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     tf::Taskflow load_task_flow;
     load_task_flow.for_each_index_guided(0, static_cast<int>(image_paths.size()), 1,
-        [this, &image_paths, &face_images_data, &data_mutex, desired_channels_count](const int face_index)
+        [this, &image_paths, &face_images_data, &data_mutex](const int face_index)
         {
             META_FUNCTION_TASK();
             // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
