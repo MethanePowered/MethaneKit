@@ -175,8 +175,6 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
 Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options)
 {
     META_FUNCTION_TASK();
-    constexpr uint32_t desired_channels_count = 4;
-
     // Load face image data in parallel
     TracyLockable(std::mutex, data_mutex);
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
@@ -189,6 +187,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             META_FUNCTION_TASK();
             // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
             // to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+            constexpr uint32_t desired_channels_count = 4;
             ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
             std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);

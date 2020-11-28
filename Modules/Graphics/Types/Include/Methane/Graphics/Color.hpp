@@ -56,7 +56,7 @@ public:
     bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
     bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
     float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
-    explicit operator const VectorType&() const noexcept { return m_components; }
+    explicit operator VectorType() const noexcept { return m_components; }
 
     const VectorType& AsVector() const noexcept { return m_components; }
 

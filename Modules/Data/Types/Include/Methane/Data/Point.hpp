@@ -58,16 +58,6 @@ public:
     template<typename V, typename = std::enable_if_t<!std::is_same_v<T, V>, void>>
     explicit PointT(const PointT<V, vector_size>& other) noexcept : m_vector(other.AsVector()) { }
 
-    // FIXME: Enabling compilation of this code on Windows breaks all UI layout... Who knows why?
-#ifndef _WIN32
-    PointT(const PointType& other) noexcept : m_vector(other.m_vector) { }
-    PointT(PointType&& other) noexcept : m_vector(std::move(other.m_vector)) { }
-    ~PointT() = default;
-
-    PointT& operator=(const PointType& other) noexcept { m_vector = other.m_vector; return *this; }
-    PointT& operator=(PointType&& other) noexcept      { m_vector = std::move(other.m_vector); return *this; }
-#endif
-
     VectorType& AsVector() noexcept               { return m_vector; }
     const VectorType& AsVector() const noexcept   { return m_vector; }
 
