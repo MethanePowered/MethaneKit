@@ -50,7 +50,7 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ContextBase& conte
     , m_settings_dx(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG("m_p_descriptor_heap_reservation", !m_p_descriptor_heap_reservation);
+    META_CHECK_ARG_NAME("m_p_descriptor_heap_reservation", !m_p_descriptor_heap_reservation);
 }
 
 ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX& other)

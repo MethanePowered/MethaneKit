@@ -36,22 +36,20 @@ namespace Methane::Data
 {
 
 template<typename ScalarT>
-class RangeSet : protected std::set<Range<ScalarT>>
+class RangeSet
 {
 public:
     using BaseSet  = std::set<Range<ScalarT>>;
-    using InitList = std::initializer_list<Range<ScalarT>>;
     using Iterator = typename BaseSet::iterator;
     using ConstIterator = typename BaseSet::const_iterator;
 
-    explicit RangeSet() noexcept : BaseSet() { META_FUNCTION_TASK(); }
-    RangeSet(const RangeSet& other) noexcept : BaseSet(other) { META_FUNCTION_TASK(); }
-    RangeSet(InitList init) noexcept : BaseSet() { META_FUNCTION_TASK(); operator=(init); }
+    RangeSet() noexcept = default;
+    RangeSet(std::initializer_list<Range<ScalarT>> init) noexcept : m_container(init) { } //NOSONAR - initializer list constructor is not explicit intentionally
 
-    bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == static_cast<const BaseSet&>(other); }
-    bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return static_cast<const BaseSet&>(*this) == other; }
+    bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
+    bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
 
-    RangeSet<ScalarT>& operator=(InitList init) noexcept
+    RangeSet<ScalarT>& operator=(std::initializer_list<Range<ScalarT>> init) noexcept
     {
         META_FUNCTION_TASK();
         for (const Range<ScalarT>& range : init)
@@ -59,13 +57,13 @@ public:
         return *this;
     }
 
-    size_t Size() const noexcept              { return BaseSet::size();  }
-    bool   IsEmpty() const noexcept           { return BaseSet::empty(); }
-    void   Clear() noexcept                   { META_FUNCTION_TASK(); BaseSet::clear(); }
+    size_t Size() const noexcept              { return m_container.size();  }
+    bool   IsEmpty() const noexcept           { return m_container.empty(); }
+    void   Clear() noexcept                   { META_FUNCTION_TASK(); m_container.clear(); }
 
     const BaseSet& GetRanges() const noexcept { return *this; }
-    ConstIterator begin() const noexcept      { return BaseSet::begin(); }
-    ConstIterator end() const noexcept        { return BaseSet::end(); }
+    ConstIterator begin() const noexcept      { return m_container.begin(); }
+    ConstIterator end() const noexcept        { return m_container.end(); }
 
     void Add(const Range<ScalarT>& range)
     {
@@ -81,13 +79,14 @@ public:
         }
 
         RemoveRanges(remove_ranges);
-        BaseSet::insert(merged_range);
+        m_container.insert(merged_range);
     }
 
     void Remove(const Range<ScalarT>& range)
     {
         META_FUNCTION_TASK();
-        Ranges remove_ranges, add_ranges;
+        Ranges remove_ranges;
+        Ranges add_ranges;
         RangeOfRanges ranges = GetMergeableRanges(range);
         for (auto range_it = ranges.first; range_it != ranges.second; ++range_it)
         {
@@ -127,32 +126,32 @@ public:
         AddRanges(add_ranges);
     }
 
-protected:
+private:
     using RangeOfRanges = std::pair<ConstIterator, ConstIterator>;
     RangeOfRanges GetMergeableRanges(const Range<ScalarT>& range)
     {
         META_FUNCTION_TASK();
-        if (BaseSet::empty())
+        if (m_container.empty())
         {
-            return RangeOfRanges{ BaseSet::end(), BaseSet::end() };
+            return RangeOfRanges{ m_container.end(), m_container.end() };
         }
 
         RangeOfRanges mergeable_ranges{
-            BaseSet::lower_bound(Range<ScalarT>(range.GetStart(), range.GetStart())),
-            BaseSet::upper_bound(range)
+            m_container.lower_bound(Range<ScalarT>(range.GetStart(), range.GetStart())),
+            m_container.upper_bound(range)
         };
 
-        if (mergeable_ranges.first != BaseSet::begin())
+        if (mergeable_ranges.first != m_container.begin())
             mergeable_ranges.first--;
 
-        while (mergeable_ranges.first != BaseSet::end() && !range.IsMergeable(*mergeable_ranges.first))
+        while (mergeable_ranges.first != m_container.end() && !range.IsMergeable(*mergeable_ranges.first))
             mergeable_ranges.first++;
 
-        if (mergeable_ranges.first == BaseSet::end())
-            return RangeOfRanges(BaseSet::end(), BaseSet::end());
+        if (mergeable_ranges.first == m_container.end())
+            return RangeOfRanges(m_container.end(), m_container.end());
 
         while (mergeable_ranges.second != mergeable_ranges.first &&
-              (mergeable_ranges.second == BaseSet::end() || !range.IsMergeable(*mergeable_ranges.second)))
+              (mergeable_ranges.second == m_container.end() || !range.IsMergeable(*mergeable_ranges.second)))
         {
             mergeable_ranges.second--;
         }
@@ -167,7 +166,7 @@ protected:
         META_FUNCTION_TASK();
         for (const Range<ScalarT>& delete_range : delete_ranges)
         {
-            BaseSet::erase(delete_range);
+            m_container.erase(delete_range);
         }
     }
 
@@ -176,9 +175,11 @@ protected:
         META_FUNCTION_TASK();
         for(const Range<ScalarT>& add_range : add_ranges)
         {
-            BaseSet::insert(add_range);
+            m_container.insert(add_range);
         }
     }
+
+    std::set<Range<ScalarT>> m_container;
 };
 
 } // namespace Methane::Data

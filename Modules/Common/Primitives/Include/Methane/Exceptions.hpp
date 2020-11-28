@@ -38,6 +38,12 @@ Methane common exception types
 namespace Methane
 {
 
+template <typename T, typename C, typename = C>
+struct IsStaticCastable : std::false_type { };
+
+template <typename T, typename C>
+struct IsStaticCastable<T, C, decltype(static_cast<C>(std::declval<T>()))> : std::true_type { };
+
 // ========================= Argument exceptions =========================
 
 class ArgumentException
@@ -81,13 +87,19 @@ public:
     { }
 
     InvalidArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is not valid", typeid(T).name(), value), description)
+        : ArgumentExceptionBaseType(function_name, argument_name, GetMessage(value), description)
         , m_value(std::move(value))
     { }
 
     const DecayType& GetValue() const noexcept { return m_value; }
 
 private:
+    template<typename V = DecayType, typename = V>
+    static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), value); }
+
+    template<typename V = DecayType, std::enable_if_t<IsStaticCastable<V, std::string>::value, void>>
+    static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), static_cast<std::string>(value)); }
+
     const DecayType m_value{ };
 };
 

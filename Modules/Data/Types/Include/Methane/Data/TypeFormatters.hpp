@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/TypeFormatters.hpp
-Methane Graphics Type formatters for use with fmt::format(...)
+Methane data type formatters for use with fmt::format(...)
 
 ******************************************************************************/
 
