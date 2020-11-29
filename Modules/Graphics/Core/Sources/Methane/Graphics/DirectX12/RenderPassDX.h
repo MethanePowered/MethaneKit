@@ -38,7 +38,7 @@ class RenderCommandListDX;
 
 class RenderPassDX final
     : public RenderPassBase
-    , private Data::Receiver<IDescriptorHeapCallback>
+    , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);

@@ -173,7 +173,7 @@ public:
     explicit operator std::string() const                   { return ToString(); }
     explicit operator bool() const noexcept;
 
-    virtual KeyType SetKey(Key key, KeyState state);
+    virtual KeyType SetKey(Key key, KeyState key_state);
 
     void    SetModifiersMask(Modifiers mask) noexcept  { m_modifiers_mask = mask; }
     void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
@@ -186,13 +186,14 @@ public:
     std::string      ToString() const;
 
 private:
+    KeyType SetKeyImpl(Key key, KeyState key_state);
     void UpdateModifiersMask(Modifiers modifier_value, bool add_modifier) noexcept;
 
     KeyStates m_key_states{};
     Modifiers m_modifiers_mask = Modifiers::None;
 };
 
-inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
+inline std::ostream& operator<<(std::ostream& os, State const& keyboard_state)
 {
     os << keyboard_state.ToString();
     return os;
@@ -203,14 +204,17 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
 class StateExt : public State
 {
 public:
-    using State::State;
+    StateExt() = default;
+    StateExt(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
 
-    KeyType SetKey(Key key, KeyState state) override;
+    KeyType SetKey(Key key, KeyState key_state) override;
 
     const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
     Keys        GetAllPressedKeys() const;
 
 private:
+    void SetModifierKey(Key key, KeyState key_state);
+
     Keys m_pressed_modifier_keys;
 };
 

@@ -68,7 +68,7 @@ using FT_Error = int;
 class Font
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
-    , protected Data::Receiver<gfx::IContextCallback>
+    , protected Data::Receiver<gfx::IContextCallback> //NOSONAR
 {
 public:
     struct Description

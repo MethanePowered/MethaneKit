@@ -241,7 +241,7 @@ State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
     META_FUNCTION_TASK();
     for (Key pressed_key : pressed_keys)
     {
-        SetKey(pressed_key, KeyState::Pressed);
+        SetKeyImpl(pressed_key, KeyState::Pressed);
     }
 }
 
@@ -285,7 +285,12 @@ State::Properties State::GetDiff(const State& other) const noexcept
     return properties_diff_mask;
 }
 
-KeyType State::SetKey(Key key, KeyState state)
+KeyType State::SetKey(Key key, KeyState key_state)
+{
+    return SetKeyImpl(key, key_state);
+}
+
+KeyType State::SetKeyImpl(Key key, KeyState key_state)
 {
     META_FUNCTION_TASK();
     if (key == Key::Unknown)
@@ -294,16 +299,14 @@ KeyType State::SetKey(Key key, KeyState state)
     const Modifiers key_modifier = KeyConverter(key).GetModifierKey();
     if (key_modifier != Modifiers::None)
     {
-        UpdateModifiersMask(key_modifier, state == KeyState::Pressed);
-        return KeyType::Common;
-    }
-    else
-    {
-        const auto key_index = static_cast<size_t>(key);
-        META_CHECK_ARG_LESS(key_index, m_key_states.size());
-        m_key_states[key_index] = state;
+        UpdateModifiersMask(key_modifier, key_state == KeyState::Pressed);
         return KeyType::Modifier;
     }
+
+    const auto key_index = static_cast<size_t>(key);
+    META_CHECK_ARG_LESS(key_index, m_key_states.size());
+    m_key_states[key_index] = key_state;
+    return KeyType::Common;
 }
 
 void State::UpdateModifiersMask(Modifiers modifier, bool add_modifier) noexcept
@@ -332,22 +335,39 @@ Keys State::GetPressedKeys() const noexcept
     return pressed_keys;
 }
 
-KeyType StateExt::SetKey(Key key, KeyState state)
+StateExt::StateExt(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
+    : State(pressed_keys, modifiers_mask)
 {
     META_FUNCTION_TASK();
-    const KeyType key_type = State::SetKey(key, state);
-    if (key_type == KeyType::Modifier)
+    for (Key pressed_key : pressed_keys)
     {
-        if (state == KeyState::Pressed)
-        {
-            m_pressed_modifier_keys.insert(key);
-        }
-        else
-        {
-            m_pressed_modifier_keys.erase(key);
-        }
+        if (KeyConverter(pressed_key).GetModifierKey() != Modifiers::None)
+            SetModifierKey(pressed_key, KeyState::Pressed);
     }
-    return key_type;
+}
+
+KeyType StateExt::SetKey(Key key, KeyState key_state)
+{
+    META_FUNCTION_TASK();
+    const KeyType key_type = State::SetKey(key, key_state);
+    if (key_type != KeyType::Modifier)
+        return key_type;
+
+    SetModifierKey(key, key_state);
+    return KeyType::Modifier;
+}
+
+void StateExt::SetModifierKey(Key key, KeyState key_state)
+{
+    META_FUNCTION_TASK();
+    if (key_state == KeyState::Pressed)
+    {
+        m_pressed_modifier_keys.insert(key);
+    }
+    else
+    {
+        m_pressed_modifier_keys.erase(key);
+    }
 }
 
 Keys StateExt::GetAllPressedKeys() const

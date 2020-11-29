@@ -90,7 +90,7 @@ ImageLoader::ImageLoader(Data::Provider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy)
+ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -159,7 +159,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options)
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -172,7 +172,7 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options)
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options) const
 {
     META_FUNCTION_TASK();
     // Load face image data in parallel

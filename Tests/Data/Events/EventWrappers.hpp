@@ -62,7 +62,8 @@ public:
     using Emitter<ITestEvents>::GetConnectedReceiversCount;
 };
 
-class TestReceiver : protected Receiver<ITestEvents>
+class TestReceiver
+    : protected Receiver<ITestEvents> //NOSONAR
 {
 public:
     TestReceiver() = default;

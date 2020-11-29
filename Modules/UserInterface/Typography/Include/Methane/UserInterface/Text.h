@@ -50,7 +50,7 @@ class TextMesh;
 
 class Text
     : public Item
-    , protected Data::Receiver<IFontCallback>
+    , protected Data::Receiver<IFontCallback> //NOSONAR
 {
 public:
     enum class Wrap : uint32_t

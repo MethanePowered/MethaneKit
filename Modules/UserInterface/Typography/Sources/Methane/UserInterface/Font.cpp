@@ -50,11 +50,11 @@ static const char* GetFTErrorMessage(FT_Error err)
 {
     META_FUNCTION_TASK();
 
-#undef __FTERRORS_H__
+#undef __FTERRORS_H__ //NOSONARs
 #define FT_ERRORDEF( e, v, s )  case e: return s;
 #define FT_ERROR_START_LIST     switch (err) {
 #define FT_ERROR_END_LIST       }
-#include FT_ERRORS_H
+#include FT_ERRORS_H  //NOSONAR
 
     return "(Unknown error)";
 }

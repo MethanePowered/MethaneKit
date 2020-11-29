@@ -32,7 +32,7 @@ namespace Methane::Platform::Keyboard
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
-    static const std::map<uint8_t, Key> s_key_by_native_code {
+    static const std::map<NativeKey::Code, Key> s_key_by_native_code {
         { 0x1D, Key::Num0           },
         { 0x12, Key::Num1           },
         { 0x13, Key::Num2           },

@@ -49,7 +49,7 @@ struct AppSettings
 
 class AppBase
     : public Platform::App
-    , protected Data::Receiver<IContextCallback>
+    , protected Data::Receiver<IContextCallback> //NOSONAR
 {
 public:
     explicit AppBase(const AppSettings& settings, Data::Provider& textures_provider);
