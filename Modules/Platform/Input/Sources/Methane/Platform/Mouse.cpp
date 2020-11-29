@@ -110,7 +110,7 @@ Buttons State::GetPressedButtons() const
         if (m_button_states[button_index] != ButtonState::Pressed)
             continue;
 
-        const Button button = static_cast<Button>(button_index);
+        const auto button = static_cast<Button>(button_index);
         pressed_buttons.insert(button);
     }
     return pressed_buttons;
@@ -133,7 +133,7 @@ std::string State::ToString() const
             ss << g_buttons_separator;
         }
         
-        const Button button = static_cast<Button>(button_index);
+        const auto button = static_cast<Button>(button_index);
         ss << ButtonConverter(button).ToString();
         is_first_button = false;
     }

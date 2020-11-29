@@ -192,13 +192,13 @@ public:
     void                     AddChars(const std::string& utf8_characters);
     void                     AddChars(const std::u32string& utf32_characters);
     const Font::Char&        AddChar(Char::Code char_code);
-    bool                     HasChar(Char::Code char_code);
+    bool                     HasChar(Char::Code char_code) const;
     const Char&              GetChar(Char::Code char_code) const;
     Chars                    GetChars() const;
     Chars                    GetTextChars(const std::string& text);
     Chars                    GetTextChars(const std::u32string& text);
     gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
-    uint32_t                 GetLineHeight() const noexcept;
+    uint32_t                 GetLineHeight() const;
     const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     const gfx::FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);

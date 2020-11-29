@@ -245,24 +245,6 @@ State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
     }
 }
 
-State::State(const State& other) noexcept
-    : m_key_states(other.m_key_states)
-    , m_modifiers_mask(other.m_modifiers_mask)
-{
-    META_FUNCTION_TASK();
-}
-
-State& State::operator=(const State& other) noexcept
-{
-    META_FUNCTION_TASK();
-    if (this != &other)
-    {
-        m_key_states     = other.m_key_states;
-        m_modifiers_mask = other.m_modifiers_mask;
-    }
-    return *this;
-}
-
 bool State::operator<(const State& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -317,7 +299,7 @@ KeyType State::SetKey(Key key, KeyState state)
     }
     else
     {
-        const size_t key_index = static_cast<size_t>(key);
+        const auto key_index = static_cast<size_t>(key);
         META_CHECK_ARG_LESS(key_index, m_key_states.size());
         m_key_states[key_index] = state;
         return KeyType::Modifier;
@@ -344,7 +326,7 @@ Keys State::GetPressedKeys() const noexcept
         if (m_key_states[key_index] != KeyState::Pressed)
             continue;
 
-        const Key key = static_cast<Key>(key_index);
+        const auto key = static_cast<Key>(key_index);
         pressed_keys.insert(key);
     }
     return pressed_keys;
@@ -397,7 +379,7 @@ std::string State::ToString() const
             ss << g_keys_separator;
         }
         
-        const Key key = static_cast<Key>(key_index);
+        const auto key = static_cast<Key>(key_index);
         ss << KeyConverter(key).ToString();
         is_first_key = false;
     }

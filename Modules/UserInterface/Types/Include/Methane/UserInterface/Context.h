@@ -43,7 +43,7 @@ namespace gfx = Methane::Graphics;
 class Context
 {
 public:
-    Context(gfx::RenderContext& render_context) noexcept;
+    explicit Context(gfx::RenderContext& render_context) noexcept;
 
     const gfx::RenderContext& GetRenderContext() const noexcept         { return m_render_context; }
     gfx::RenderContext&       GetRenderContext() noexcept               { return m_render_context; }

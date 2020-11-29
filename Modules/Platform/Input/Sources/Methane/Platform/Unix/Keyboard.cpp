@@ -155,6 +155,8 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
 }
 
+#ifdef __linux__
+
 Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& /*native_key*/)
 {
     META_FUNCTION_TASK();
@@ -162,5 +164,7 @@ Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& /*native_key*/
     Modifiers modifiers_mask = Modifiers::None;
     return modifiers_mask;
 }
+
+#endif // ifdef __linux__
 
 } // namespace Methane::Platform::Keyboard

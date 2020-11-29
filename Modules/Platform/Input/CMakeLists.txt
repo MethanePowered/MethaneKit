@@ -12,8 +12,38 @@ if(APPLE)
 
 endif()
 
+if (WIN32)
+
+    set(PLATFORM_HEADERS
+        ${INCLUDE_DIR}/Windows/Keyboard.h
+    )
+    set(PLATFORM_SOURCES
+        ${SOURCES_DIR}/Windows/Keyboard.cpp
+    )
+
+endif()
+
+if (APPLE)
+
+    set(PLATFORM_SOURCES
+        ${SOURCES_DIR}/MacOS/Keyboard.mm
+    )
+
+endif()
+
+if (UNIX) # Linux & MacOS
+
+    set(PLATFORM_HEADERS
+        ${INCLUDE_DIR}/Unix/Keyboard.h
+    )
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        ${SOURCES_DIR}/Unix/Keyboard.cpp
+    )
+
+endif()
+
 set(HEADERS
-    ${INCLUDE_PLATFORM_DIR}/Keyboard.h
+    ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
@@ -22,11 +52,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Input/Controller.h
     ${INCLUDE_DIR}/Input/ControllersPool.h
     ${INCLUDE_DIR}/Input/State.h
-)
-
-set(PLATFORM_SOURCES
-    ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
-)
+    )
 
 set(SOURCES
     ${PLATFORM_SOURCES}

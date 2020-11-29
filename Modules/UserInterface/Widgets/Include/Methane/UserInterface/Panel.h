@@ -48,7 +48,7 @@ public:
 
     Panel(Context& ui_context, const UnitRect& rect, Settings settings);
 
-    const Settings& GetSettings() const noexcept { return m_settings; }
+    const Settings& GetPanelSettings() const noexcept { return m_settings; }
 
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;

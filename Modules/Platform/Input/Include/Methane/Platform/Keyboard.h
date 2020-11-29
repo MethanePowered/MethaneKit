@@ -27,13 +27,9 @@ Platform abstraction of keyboard events.
 
 #include "Windows/Keyboard.h"
 
-#elif defined __APPLE__
+#else
 
-#include "MacOS/Keyboard.h"
-
-#elif defined __linux__
-
-#include "Linux/Keyboard.h"
+#include "Unix/Keyboard.h"
 
 #endif
 
@@ -129,9 +125,9 @@ struct NativeKey;
 class KeyConverter
 {
 public:
-    KeyConverter(Key key);
+    explicit KeyConverter(Key key);
     KeyConverter(Key key, Modifiers modifiers);
-    KeyConverter(const NativeKey& native_key);
+    explicit KeyConverter(const NativeKey& native_key);
     
     Key         GetKey() const noexcept         { return m_key; }
     Modifiers   GetModifiers() const noexcept   { return m_modifiers; }
@@ -169,9 +165,7 @@ public:
 
     State() noexcept = default;
     State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
-    State(const State& other) noexcept;
 
-    State& operator=(const State& other) noexcept;
     bool   operator<(const State& other) const noexcept;
     bool   operator==(const State& other) const noexcept;
     bool   operator!=(const State& other) const noexcept    { return !operator==(other); }
@@ -179,14 +173,15 @@ public:
     explicit operator std::string() const                   { return ToString(); }
     explicit operator bool() const noexcept;
 
-    KeyType SetKey(Key key, KeyState state);
+    virtual KeyType SetKey(Key key, KeyState state);
+
     void    SetModifiersMask(Modifiers mask) noexcept  { m_modifiers_mask = mask; }
     void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
     void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
 
     Keys             GetPressedKeys() const noexcept;
     const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
-    Modifiers   GetModifiersMask() const noexcept      { return m_modifiers_mask; }
+    Modifiers        GetModifiersMask() const noexcept      { return m_modifiers_mask; }
     Properties       GetDiff(const State& other) const noexcept;
     std::string      ToString() const;
 
@@ -210,7 +205,7 @@ class StateExt : public State
 public:
     using State::State;
 
-    KeyType SetKey(Key key, KeyState state);
+    KeyType SetKey(Key key, KeyState state) override;
 
     const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
     Keys        GetAllPressedKeys() const;

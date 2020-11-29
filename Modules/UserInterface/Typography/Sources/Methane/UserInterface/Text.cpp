@@ -327,12 +327,10 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr &&
+        !frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
     {
-        if (!frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
-        {
-            frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
-        }
+        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
     }
     if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
     {
@@ -347,7 +345,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     if (m_frame_resources.empty())
         return;
 
-    FrameResources& frame_resources = GetCurrentFrameResources();
+    const FrameResources& frame_resources = GetCurrentFrameResources();
     if (!frame_resources.IsInitialized())
         return;
 
@@ -383,7 +381,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
+Text::FrameResources::FrameResources(const gfx::RenderState& state, gfx::RenderContext& render_context,
                                      const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                                      const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
      : m_atlas_texture_ptr(atlas_texture_ptr)
@@ -406,7 +404,7 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
     return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
+void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)
@@ -532,7 +530,7 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
         scale_text_matrix * translate_text_matrix
     };
 
-    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
+    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
 
     if (!m_uniforms_buffer_ptr)
     {
@@ -630,7 +628,7 @@ void Text::UpdateConstantsBuffer()
     Constants constants{
         m_settings.color
     };
-    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(constants));
+    const auto const_data_size = static_cast<Data::Size>(sizeof(constants));
 
     if (!m_const_buffer_ptr)
     {
@@ -642,7 +640,7 @@ void Text::UpdateConstantsBuffer()
     });
 }
 
-FrameRect Text::GetAlignedViewportRect()
+FrameRect Text::GetAlignedViewportRect() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");

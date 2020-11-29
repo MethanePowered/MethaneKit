@@ -48,6 +48,8 @@ public:
     {
         META_FUNCTION_TASK();
     }
+
+    size_t GetKeyboardActionsCount() const noexcept { return m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size(); }
     
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
     {
@@ -147,10 +149,7 @@ protected:
     virtual void        OnKeyboardStateAction(ActionEnum action) = 0;
     virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
 
-    const ActionByKeyboardKey&   GetActionByKeyboardKey() const noexcept   { return m_action_by_keyboard_key; }
-    const ActionByKeyboardState& GetActionByKeyboardState() const noexcept { return m_action_by_keyboard_state; }
-    
-    ActionEnum GetKeyboardActionByState(State state) const
+    ActionEnum GetKeyboardActionByState(const State& state) const
     {
         META_FUNCTION_TASK();
         const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state);
@@ -163,7 +162,7 @@ protected:
         META_FUNCTION_TASK();
         const auto action_by_keyboard_key_it = m_action_by_keyboard_key.find(key);
         return (action_by_keyboard_key_it != m_action_by_keyboard_key.end())
-        ? action_by_keyboard_key_it->second : ActionEnum::None;
+              ? action_by_keyboard_key_it->second : ActionEnum::None;
     }
 
 private:

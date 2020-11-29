@@ -295,8 +295,8 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
               [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
               {
-                  return left_ptr->GetSettings().screen_rect.size.GetPixelsCount() >
-                         right_ptr->GetSettings().screen_rect.size.GetPixelsCount();
+                  return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
+                         right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
               }
     );
 

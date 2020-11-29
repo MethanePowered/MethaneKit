@@ -151,7 +151,7 @@ private:
             All      = ~0U
         };
 
-        FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
+        FrameResources(const gfx::RenderState& state, gfx::RenderContext& render_context,
                        const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
 
@@ -168,10 +168,10 @@ private:
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name);
-        void InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
+        void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
 
     private:
-        DirtyFlags               m_dirty_mask = DirtyFlags::None;
+        DirtyFlags                m_dirty_mask = DirtyFlags::None;
         Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::Buffer>          m_index_buffer_ptr;
         Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
@@ -193,7 +193,7 @@ private:
     };
 
     UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool reset_content_rect);
-    FrameRect GetAlignedViewportRect();
+    FrameRect GetAlignedViewportRect() const;
     void UpdateViewport(const gfx::FrameSize& render_attachment_size);
 
     SettingsUtf32               m_settings;

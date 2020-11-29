@@ -290,9 +290,13 @@ void TextMesh::AppendChars(std::u32string added_text)
           m_last_line_start_index != std::string::npos))
     {
         // Remove characters starting with last whitespace and other non-whitespace symbols
-        const size_t update_from_index = m_last_whitespace_index != std::string::npos
-                                       ? (m_last_line_start_index != std::string::npos ? std::max(m_last_whitespace_index, m_last_line_start_index) : m_last_whitespace_index)
-                                       : m_last_line_start_index;
+        size_t update_from_index = m_last_line_start_index;
+        if (m_last_whitespace_index != std::string::npos)
+        {
+            update_from_index = m_last_line_start_index != std::string::npos
+                              ? std::max(m_last_whitespace_index, m_last_line_start_index)
+                              : m_last_whitespace_index;
+        }
         if (update_from_index < m_text.length())
         {
             added_text = m_text.substr(update_from_index) + added_text;
@@ -357,7 +361,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
 
     META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
-    const int32_t frame_width                     = static_cast<int32_t>(m_content_size.width);
+    const auto    frame_width                     = static_cast<int32_t>(m_content_size.width);
     int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
     int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
 
@@ -381,7 +385,9 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
 
         // Apply line alignment offset to the character quad vertices
         META_CHECK_ARG_LESS(char_position.start_vertex_index, m_vertices.size());
-        const int32_t alignment_offset = char_index < aligned_text_length ? horizontal_alignment_adjustment : horizontal_alignment_offset;
+        const float alignment_offset = char_index < aligned_text_length
+                                     ? static_cast<float>(horizontal_alignment_adjustment)
+                                     : static_cast<float>(horizontal_alignment_offset);
         for (size_t vertex_id = 0; vertex_id < 4; ++vertex_id)
         {
             m_vertices[char_position.start_vertex_index + vertex_id].position[0] += alignment_offset;
@@ -442,7 +448,7 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& c
     };
 
     META_CHECK_ARG_LESS_DESCR(m_vertices.size(), std::numeric_limits<Index>::max() - 5, "text mesh index buffer overflow");
-    const Index start_index = static_cast<Index>(m_vertices.size());
+    const auto start_index = static_cast<Index>(m_vertices.size());
 
     m_vertices.emplace_back(Vertex{
         { ver_rect.GetLeft(), ver_rect.GetBottom() },

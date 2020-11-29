@@ -67,11 +67,11 @@ public:
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> texture_ptr);
 
-    const Settings& GetSettings() const noexcept { return m_settings; }
+    const Settings& GetQuadSettings() const noexcept { return m_settings; }
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
     const Texture&  GetTexture() const;
 
-    void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
+    virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
     RenderContext& GetRenderContext() noexcept { return m_context; }

@@ -37,12 +37,9 @@ Font atlas textures generation and fonts library management classes.
 #include <codecvt>
 #include <algorithm>
 
-extern "C"
-{
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
 #include FT_FREETYPE_H
-}
 
 static constexpr int32_t g_ft_dots_in_pixel = 64; // Freetype measures all font sizes in 1/64ths of pixels
 
@@ -397,7 +394,8 @@ std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
     size_t alpha_index = 0;
     for(char32_t utf32_char : alphabet_set)
     {
-        alphabet[alpha_index++] = utf32_char;
+        alphabet[alpha_index] = utf32_char;
+        alpha_index++;
     }
 
     return alphabet;
@@ -456,12 +454,11 @@ void Font::AddChars(const std::string& utf8_characters)
 void Font::AddChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
-    for (char32_t character : utf32_characters)
+    for (Char::Code char_code : utf32_characters)
     {
-        if (!character)
+        if (!char_code)
             break;
 
-        const Char::Code char_code = static_cast<Char::Code>(character);
         if (HasChar(char_code))
             continue;
 
@@ -487,7 +484,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     // Attempt to pack new char into existing atlas
     if (m_atlas_pack_ptr && m_atlas_pack_ptr->TryPack(new_font_char))
     {
-        // Draw char to existing atlas bitmap and update textures;
+        // Draw char to existing atlas bitmap and update textures
         new_font_char.DrawToAtlas(m_atlas_bitmap, m_atlas_pack_ptr->GetSize().width);
         UpdateAtlasTextures(true);
         return new_font_char;
@@ -500,7 +497,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     return new_font_char;
 }
 
-bool Font::HasChar(Char::Code char_code)
+bool Font::HasChar(Char::Code char_code) const
 {
     META_FUNCTION_TASK();
     return m_char_by_code.count(char_code) ||
@@ -555,7 +552,7 @@ gfx::FramePoint Font::GetKerning(const Char& left_char, const Char& right_char) 
     return m_face_ptr->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
-uint32_t Font::GetLineHeight() const noexcept
+uint32_t Font::GetLineHeight() const
 {
     META_FUNCTION_TASK();
     return m_face_ptr->GetLineHeight();
@@ -596,12 +593,12 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
     // Estimate required atlas size
     uint32_t char_pixels_count = 0U;
-    for(Font::Char& font_char : font_chars)
+    for(const Font::Char& font_char : font_chars)
     {
         char_pixels_count += font_char.GetRect().size.GetPixelsCount();
     }
-    char_pixels_count = static_cast<uint32_t>(char_pixels_count * pixels_reserve_multiplier);
-    const uint32_t square_atlas_dimension = static_cast<uint32_t>(std::sqrt(char_pixels_count));
+    char_pixels_count = static_cast<uint32_t>(static_cast<float>(char_pixels_count) * pixels_reserve_multiplier);
+    const auto square_atlas_dimension = static_cast<uint32_t>(std::sqrt(char_pixels_count));
 
     // Pack all character glyphs intro atlas size with doubling the size until all chars fit in
     gfx::FrameSize atlas_size(square_atlas_dimension, square_atlas_dimension);

@@ -30,11 +30,11 @@ Aggregated application input state with controllers.
 namespace Methane::Platform::Input
 {
 
-class State : public IActionController
+class State final : public IActionController
 {
 public:
     State() = default;
-    State(const ControllersPool& controllers) : m_controllers(controllers) {}
+    explicit State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
     const ControllersPool&  GetControllers() const noexcept                     { return m_controllers; }
     void                    AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
@@ -62,14 +62,15 @@ public:
         {
             if (!controller_ptr)
                 continue;
-            Controller& controller = *controller_ptr;
+
+            const Controller& controller = *controller_ptr;
             if (typeid(controller) == controller_type)
                 controllers.emplace_back(static_cast<ControllerT&>(*controller_ptr));
         }
         return controllers;
     }
 
-protected:
+private:
     ControllersPool     m_controllers;
     Mouse::State        m_mouse_state;
     Keyboard::StateExt  m_keyboard_state;

@@ -216,7 +216,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
+void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     Panel::Draw(cmd_list, p_debug_group);
@@ -287,7 +287,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
     });
 }
 
-void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size)
+void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size) const
 {
     META_FUNCTION_TASK();
     for(const Ptr<Text>& text_ptr : m_text_blocks)

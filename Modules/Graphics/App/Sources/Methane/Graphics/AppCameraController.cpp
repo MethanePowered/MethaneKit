@@ -79,7 +79,7 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
 {
     META_FUNCTION_TASK();
     HelpLines help_lines;
-    help_lines.reserve(m_action_by_mouse_button.size() + GetActionByKeyboardKey().size() + GetActionByKeyboardState().size() + 2);
+    help_lines.reserve(GetMouseActionsCount() + GetKeyboardActionsCount() + 2);
 
     const HelpLines mouse_help_lines = GetMouseHelp();
     if (!mouse_help_lines.empty())

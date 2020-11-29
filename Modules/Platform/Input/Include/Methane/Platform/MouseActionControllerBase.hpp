@@ -38,11 +38,13 @@ class ActionControllerBase
 public:
     using ActionByMouseButton = std::map<Button, ActionEnum>;
     
-    ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
+    explicit ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
         : m_action_by_mouse_button(action_by_mouse_button)
     {
         META_FUNCTION_TASK();
     }
+
+    size_t GetMouseActionsCount() const noexcept { return m_action_by_mouse_button.size(); }
     
     Input::IHelpProvider::HelpLines GetMouseHelp() const
     {
@@ -82,7 +84,8 @@ protected:
         return (action_by_mouse_button_it != m_action_by_mouse_button.end())
               ? action_by_mouse_button_it->second : ActionEnum::None;
     }
-    
+
+private:
     ActionByMouseButton m_action_by_mouse_button;
 };
 

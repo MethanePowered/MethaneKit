@@ -165,7 +165,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     if (native_key.w_param == VK_PROCESSKEY)
         return Key::Unknown; // IME notifies that keys have been filtered by setting the virtual key-code to VK_PROCESSKEY
 
-    const uint32_t native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
+    const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
     auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
     return native_code_and_key_it == s_key_by_native_code.end()
          ? Key::Unknown : native_code_and_key_it->second;

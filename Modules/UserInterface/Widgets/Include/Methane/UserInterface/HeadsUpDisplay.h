@@ -64,13 +64,13 @@ public:
 
     HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings);
 
-    const Settings& GetSettings() const { return m_settings; }
+    const Settings& GetHudSettings() const { return m_settings; }
 
     void SetTextColor(const Color4f& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr) const override;
 
 private:
     enum class TextBlock : size_t
@@ -88,7 +88,7 @@ private:
     Text& GetTextBlock(TextBlock block) const;
 
     void LayoutTextBlocks();
-    void UpdateAllTextBlocks(const FrameSize& render_attachment_size);
+    void UpdateAllTextBlocks(const FrameSize& render_attachment_size) const;
 
     Settings            m_settings;
     const Ptr<Font>     m_major_font_ptr;
