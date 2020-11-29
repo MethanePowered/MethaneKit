@@ -47,8 +47,8 @@ public:
         const Mesh::Indices& sub_indices = sub_mesh.GetIndices();
 
         m_subsets.emplace_back(sub_mesh.GetType(),
-                               Mesh::Subset::Slice(static_cast<Data::Size>(BaseMeshT::m_vertices.size()), static_cast<Data::Size>(sub_vertices.size())),
-                               Mesh::Subset::Slice(static_cast<Data::Size>(Mesh::m_indices.size()), static_cast<Data::Size>(sub_indices.size())),
+                               Mesh::Subset::Slice(BaseMeshT::GetVertexCount(), static_cast<Data::Size>(sub_vertices.size())),
+                               Mesh::Subset::Slice(Mesh::GetIndexCount(),       static_cast<Data::Size>(sub_indices.size())),
                                adjust_indices);
 
         if (adjust_indices)
@@ -56,8 +56,8 @@ public:
             const Data::Size vertex_count = BaseMeshT::GetVertexCount();
             META_CHECK_ARG_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
 
-            const Mesh::Index index_offset = static_cast<Mesh::Index>(vertex_count);
-            std::transform(sub_indices.begin(), sub_indices.end(), std::back_inserter(Mesh::m_indices),
+            const auto index_offset = static_cast<Mesh::Index>(vertex_count);
+            std::transform(sub_indices.begin(), sub_indices.end(), BaseMeshT::GetIndicesBackInserter(),
                            [index_offset](const Mesh::Index& index)
                            {
                                META_CHECK_ARG_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);
@@ -66,10 +66,10 @@ public:
         }
         else
         {
-            Mesh::m_indices.insert(Mesh::m_indices.end(), sub_indices.begin(), sub_indices.end());
+            BaseMeshT::AppendIndices(sub_indices);
         }
 
-        BaseMeshT::m_vertices.insert(BaseMeshT::m_vertices.end(), sub_vertices.begin(), sub_vertices.end());
+        BaseMeshT::AppendVertices(sub_vertices);
     }
 
     const Mesh::Subsets& GetSubsets() const                     { return m_subsets; }
@@ -78,7 +78,6 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(subset_index, m_subsets.size());
-
         return m_subsets[subset_index];
     }
 

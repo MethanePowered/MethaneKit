@@ -59,19 +59,19 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(RenderContext& context, Settings settings);
-    ScreenQuad(RenderContext& context, Ptr<Texture> texture_ptr, Settings settings);
+    ScreenQuad(RenderContext& context, const Settings& settings);
+    ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, const Settings& settings);
 
     void SetBlendColor(const Color4f& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> texture_ptr);
 
-    const Settings& GetSettings() const noexcept { return m_settings; }
+    const Settings& GetQuadSettings() const noexcept { return m_settings; }
     FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
     const Texture&  GetTexture() const;
 
-    void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
+    virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
     RenderContext& GetRenderContext() noexcept { return m_context; }

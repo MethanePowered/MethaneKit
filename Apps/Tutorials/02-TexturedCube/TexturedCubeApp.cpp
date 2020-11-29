@@ -27,6 +27,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
+#include <magic_enum.hpp>
 #include <cml/mathlib/mathlib.h>
 
 namespace Methane::Tutorials
@@ -49,14 +50,6 @@ TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Textured Cube"), {},
         "Methane tutorial of textured cube rendering")
-    , m_shader_constants(                               // Shader constants:
-        {                                               // ================
-            gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
-            700.F,                                      // - light_power
-            0.04F,                                      // - light_ambient_factor
-            30.F                                        // - light_specular_factor
-        })
-    , m_cube_scale(15.F)
 {
     m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
@@ -120,8 +113,9 @@ void TexturedCubeApp::Init()
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
-    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
-                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+    using namespace magic_enum::bitwise_operators;
+    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
+                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
     m_cube_texture_ptr->SetName("Cube Texture 2D Image");
 
@@ -135,15 +129,15 @@ void TexturedCubeApp::Init()
     );
 
     // Create vertex buffer for cube mesh
-    const Data::Size vertex_data_size = static_cast<Data::Size>(cube_mesh.GetVertexDataSize());
-    const Data::Size vertex_size      = static_cast<Data::Size>(cube_mesh.GetVertexSize());
+    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
+    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     vertex_buffer_ptr->SetName("Cube Vertex Buffer");
     vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
     m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
-    const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
+    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_index_buffer_ptr->SetName("Cube Index Buffer");
     m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
@@ -224,7 +218,7 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    TexturedCubeFrame& frame = GetCurrentFrame();
+    const TexturedCubeFrame& frame = GetCurrentFrame();
     frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering

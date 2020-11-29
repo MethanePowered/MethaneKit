@@ -16,42 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/DescriptorHeapNT.h
-Native implementation alias of the descriptor heap.
+FILE: Methane/Graphics/AppFontsProvider.h
+Application Texture resources provider
+either stored in embedded application resources of on file system.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#ifdef FONT_RESOURCES_NAMESPACE
 
-#include <Methane/Graphics/DirectX12/DescriptorHeapDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/DescriptorHeapMT.hh>
-
-#elif defined __linux__
-
-#include <Methane/Graphics/Vulkan/DescriptorHeapVK.h>
-
+#ifdef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE //NOSONAR
 #endif
 
-namespace Methane::Graphics
+#define RESOURCE_NAMESPACE FONT_RESOURCES_NAMESPACE
+#include "ResourceProvider.hpp"
+
+namespace Methane::Data
 {
+using FontProvider = FONT_RESOURCES_NAMESPACE::ResourceProvider;
+}
 
-#if defined _WIN32
+#else // ifdef FONT_RESOURCES_NAMESPACE
 
-using DescriptorHeapNT = DescriptorHeapDX;
+#include "FileProvider.hpp"
 
-#elif defined __APPLE__
+namespace Methane::Data
+{
+using FontProvider = FileProvider;
+}
 
-using DescriptorHeapNT = DescriptorHeapMT;
-
-#elif defined __linux__
-
-using DescriptorHeapNT = DescriptorHeapVK;
-
-#endif
-
-} // namespace Methane::Graphics
+#endif // ifdef FONT_RESOURCES_NAMESPACE

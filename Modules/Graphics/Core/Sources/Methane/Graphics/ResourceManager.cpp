@@ -30,6 +30,7 @@ and deferred releasing of GPU resource.
 #include <Methane/Checks.hpp>
 
 #include <taskflow/taskflow.hpp>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -37,7 +38,7 @@ namespace Methane::Graphics
 inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, ContextBase& context, bool deferred_heap_allocation,
                               const ResourceManager::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
 {
-    const auto heap_type_idx = static_cast<uint32_t>(heap_type);
+    const auto heap_type_idx = magic_enum::enum_integer(heap_type);
     const uint32_t heap_size = is_shader_visible ? settings.shader_visible_heap_sizes[heap_type_idx] : settings.default_heap_sizes[heap_type_idx];
     const DescriptorHeap::Settings heap_settings{ heap_type, heap_size, deferred_heap_allocation, is_shader_visible };
     desc_heaps.push_back(DescriptorHeap::Create(context, heap_settings));
@@ -54,10 +55,12 @@ void ResourceManager::Initialize(const Settings& settings)
     META_FUNCTION_TASK();
 
     m_deferred_heap_allocation = settings.deferred_heap_allocation;
-    for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
+    for (const DescriptorHeap::Type heap_type : magic_enum::enum_values<DescriptorHeap::Type>())
     {
-        const auto            heap_type  = static_cast<DescriptorHeap::Type>(heap_type_idx);
-        Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        if (heap_type == DescriptorHeap::Type::Undefined)
+            continue;
+
+        Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(heap_type)];
         desc_heaps.clear();
 
         // CPU only accessible descriptor heaps of all types are created for default resource creation
@@ -153,10 +156,10 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(settings.type, settings.type != DescriptorHeap::Type::Undefined && settings.type != DescriptorHeap::Type::Count,
+    META_CHECK_ARG_DESCR(settings.type, settings.type != DescriptorHeap::Type::Undefined,
                          "can not create 'Undefined' descriptor heap");
 
-    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(settings.type)];
+    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(settings.type)];
     desc_heaps.push_back(DescriptorHeap::Create(m_context, settings));
     return static_cast<uint32_t>(desc_heaps.size() - 1);
 }
@@ -165,15 +168,14 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
 {
     META_FUNCTION_TASK();
 
-    if (type == DescriptorHeap::Type::Undefined ||
-        type == DescriptorHeap::Type::Count)
+    if (type == DescriptorHeap::Type::Undefined)
     {
         static const Ptr<DescriptorHeap> s_empty_ptr;
         return s_empty_ptr;
     }
 
-    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[static_cast<size_t>(type)];
-    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", DescriptorHeap::GetTypeName(type));
+    Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
+    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::flags::enum_name(type));
 
     return desc_heaps[heap_index];
 }
@@ -181,11 +183,11 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
 DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(type, type != DescriptorHeap::Type::Undefined && type != DescriptorHeap::Type::Count,
+    META_CHECK_ARG_DESCR(type, type != DescriptorHeap::Type::Undefined,
                          "can not get reference to 'Undefined' descriptor heap");
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", DescriptorHeap::GetTypeName(type), heap_index);
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::flags::enum_name(type), heap_index);
 
     return *resource_heap_ptr;
 }
@@ -194,14 +196,13 @@ const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
 {
     META_FUNCTION_TASK();
 
-    if (type == DescriptorHeap::Type::Undefined ||
-        type == DescriptorHeap::Type::Count)
+    if (type == DescriptorHeap::Type::Undefined)
     {
         static const Ptr<DescriptorHeap> s_empty_ptr;
         return s_empty_ptr;
     }
 
-    const Ptrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[static_cast<uint32_t>(type)];
+    const Ptrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
         [](const Ptr<DescriptorHeap>& descriptor_heap_ptr)
         {
@@ -218,7 +219,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", DescriptorHeap::GetTypeName(type));
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", magic_enum::flags::enum_name(type));
 
     return *resource_heap_ptr;
 }
@@ -235,7 +236,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
             return;
 
         const uint32_t heap_size = get_allocated_size ? descriptor_heap.GetAllocatedSize() : descriptor_heap.GetDeferredSize();
-        uint32_t& max_desc_heap_size = max_descriptor_heap_sizes[static_cast<size_t>(descriptor_heap.GetSettings().type)];
+        uint32_t& max_desc_heap_size = max_descriptor_heap_sizes[magic_enum::enum_integer(descriptor_heap.GetSettings().type)];
         max_desc_heap_size = std::max(max_desc_heap_size, heap_size);
     });
 
@@ -246,17 +247,20 @@ template<typename FuncType>
 void ResourceManager::ForEachDescriptorHeap(FuncType process_heap) const
 {
     META_FUNCTION_TASK();
-    for (uint32_t heap_type_idx = 0; heap_type_idx < static_cast<uint32_t>(DescriptorHeap::Type::Count); ++heap_type_idx)
+    for (const DescriptorHeap::Type desc_heaps_type : magic_enum::enum_values<DescriptorHeap::Type>())
     {
-        const auto desc_heaps_type = static_cast<DescriptorHeap::Type>(heap_type_idx);
-        const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[heap_type_idx];
+        if (desc_heaps_type == DescriptorHeap::Type::Undefined)
+            continue;
+
+        const Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(desc_heaps_type)];
         for (const Ptr<DescriptorHeap>& desc_heap_ptr : desc_heaps)
         {
             META_CHECK_ARG_NOT_NULL(desc_heap_ptr);
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             META_CHECK_ARG_EQUAL_DESCR(heap_type, desc_heaps_type,
                                        "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
-                                       DescriptorHeap::GetTypeName(heap_type), DescriptorHeap::GetTypeName(desc_heaps_type));
+                                       magic_enum::flags::enum_name(heap_type),
+                                       magic_enum::flags::enum_name(desc_heaps_type));
             process_heap(*desc_heap_ptr);
         }
         META_UNUSED(desc_heaps_type);

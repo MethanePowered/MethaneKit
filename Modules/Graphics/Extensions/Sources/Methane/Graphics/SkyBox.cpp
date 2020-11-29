@@ -28,16 +28,18 @@ SkyBox rendering primitive
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings)
     : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Sky-Box")
@@ -77,27 +79,28 @@ SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings
             context_settings.depth_stencil_format
         }
     );
+
+    using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
-    state_settings.depth.enabled        = m_settings.render_options & Options::DepthEnabled;
+    state_settings.depth.enabled        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
-    state_settings.depth.compare        = m_settings.render_options & Options::DepthReversed ? Compare::GreaterEqual : Compare::Less;
+    state_settings.depth.compare        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_render_state_ptr = RenderState::Create(context, state_settings);
     m_render_state_ptr->SetName("Sky-box render state");
 
     m_texture_sampler_ptr = Sampler::Create(context, {
-        { Sampler::Filter::MinMag::Linear     },
-        { Sampler::Address::Mode::ClampToZero },
+        Sampler::Filter(Sampler::Filter::MinMag::Linear),
+        Sampler::Address(Sampler::Address::Mode::ClampToZero),
         Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr)
+Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
-
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
@@ -111,8 +114,10 @@ void SkyBox::Update()
 {
     META_FUNCTION_TASK();
 
-    Matrix44f model_scale_matrix, model_translate_matrix;
+    Matrix44f model_scale_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
+
+    Matrix44f model_translate_matrix;
     cml::matrix_translation(model_translate_matrix, m_settings.view_camera.GetOrientation().eye); // Sky-box is centered in the camera eye to simulate infinity distance
 
     m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * m_settings.view_camera.GetViewProjMatrix() });

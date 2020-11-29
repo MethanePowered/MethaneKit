@@ -39,7 +39,7 @@ static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
     std::vector<size_t> line_break_positions;
     for (size_t line_break_pos = text_str.find('\n', 0);
                 line_break_pos != std::string::npos;
-                line_break_pos = text_str.find('\n', line_break_positions.back() + 1))
+                line_break_pos = text_str.find('\n', line_break_pos + 1))
     {
         line_break_positions.emplace_back(line_break_pos);
     }
@@ -145,7 +145,7 @@ bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
     return true;
 }
 
-bool AppBase::UpdateUI()
+bool AppBase::UpdateUI() const
 {
     META_FUNCTION_TASK();
     if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
@@ -157,7 +157,7 @@ bool AppBase::UpdateUI()
     return true;
 }
 
-void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list)
+void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
@@ -206,7 +206,7 @@ void AppBase::TextItem::Reset(bool forget_text_string)
         text_str.clear();
 }
 
-bool AppBase::SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
+bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
 {
     META_FUNCTION_TASK();
     if (m_app_settings.heads_up_display_mode == heads_up_display_mode)
@@ -337,7 +337,7 @@ bool AppBase::UpdateTextItem(TextItem& item)
     return true;
 }
 
-void AppBase::UpdateHelpTextPosition()
+void AppBase::UpdateHelpTextPosition() const
 {
     META_FUNCTION_TASK();
     if (!m_help_columns.first.panel_ptr)
@@ -348,7 +348,7 @@ void AppBase::UpdateHelpTextPosition()
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
         FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
-        first_text_size + m_text_margins * 2
+        first_text_size + static_cast<FrameSize>(m_text_margins * 2)
     ));
 
     if (!m_help_columns.second.panel_ptr)
@@ -359,11 +359,11 @@ void AppBase::UpdateHelpTextPosition()
     m_help_columns.second.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
         FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
-        second_text_size + m_text_margins * 2
+        second_text_size + static_cast<FrameSize>(m_text_margins * 2)
     ));
 }
 
-void AppBase::UpdateParametersTextPosition()
+void AppBase::UpdateParametersTextPosition() const
 {
     META_FUNCTION_TASK();
     if (!m_parameters.text_ptr)

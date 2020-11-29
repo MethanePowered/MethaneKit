@@ -43,19 +43,19 @@ public:
         : Mesh(type, vertex_layout)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_EQUAL_DESCR(m_vertex_size, sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
+        META_CHECK_ARG_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
     const Vertices& GetVertices() const noexcept       { return m_vertices; }
     Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
-    Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * m_vertex_size); }
+    Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
 
 protected:
     template<typename FType>
     FType& GetVertexField(VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
-        const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
+        const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
         return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
     }
@@ -64,7 +64,7 @@ protected:
     const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
-        const int32_t field_offset = m_vertex_field_offsets[static_cast<size_t>(field)];
+        const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
         return *reinterpret_cast<const FType*>(reinterpret_cast<const char*>(&vertex) + field_offset);
     }
@@ -110,7 +110,7 @@ protected:
             v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.F;
         }
 
-        const Mesh::Index v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
+        const auto v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
         edge_midpoints.emplace(edge, v_mid_index);
         m_vertices.push_back(v_mid);
         return v_mid_index;
@@ -120,7 +120,7 @@ protected:
     {
         META_FUNCTION_TASK();
         CheckLayoutHasVertexField(VertexField::Normal);
-        META_CHECK_ARG_DESCR(BaseMesh::m_indices.size(), BaseMesh::m_indices.size() % 3 == 0,
+        META_CHECK_ARG_DESCR(BaseMesh::GetIndexCount(), BaseMesh::GetIndexCount() % 3 == 0,
                              "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
@@ -129,12 +129,12 @@ protected:
             vertex_normal = { 0.F, 0.F, 0.F };
         }
 
-        const size_t triangles_count = BaseMesh::m_indices.size() / 3;
-        for (size_t triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
+        const Data::Size triangles_count = BaseMesh::GetIndexCount() / 3;
+        for (Data::Index triangle_index = 0; triangle_index < triangles_count; ++triangle_index)
         {
-            VType& v1 = m_vertices[m_indices[triangle_index * 3]];
-            VType& v2 = m_vertices[m_indices[triangle_index * 3 + 1]];
-            VType& v3 = m_vertices[m_indices[triangle_index * 3 + 2]];
+            VType& v1 = GetMutableVertex(GetIndex(triangle_index * 3));
+            VType& v2 = GetMutableVertex(GetIndex(triangle_index * 3 + 1));
+            VType& v3 = GetMutableVertex(GetIndex(triangle_index * 3 + 2));
 
             const Mesh::Position& p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position);
             const Mesh::Position& p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position);
@@ -164,14 +164,23 @@ protected:
 
     void ValidateMeshData()
     {
-        for(size_t index = 0; index < m_indices.size(); ++index)
+        for(size_t index = 0; index < GetIndexCount(); ++index)
         {
-            const Index vertex_index = m_indices[index];
+            const Index vertex_index = GetIndex(index);
             META_CHECK_ARG_LESS_DESCR(vertex_index, m_vertices.size(),
                                       "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
         }
     }
 
+    void   ResizeVertices(size_t vertex_count) noexcept  { m_vertices.resize(vertex_count, {}); }
+    void   ReserveVertices(size_t vertex_count) noexcept { m_vertices.reserve(vertex_count); }
+    VType& GetMutableVertex(size_t vertex_index)         { return m_vertices[vertex_index]; }
+    VType& GetMutableFirstVertex()                       { return m_vertices.front(); }
+    VType& GetMutableLastVertex()                        { return m_vertices.back(); }
+    void   AddVertex(VType&& vertex) noexcept            { m_vertices.emplace_back(std::move(vertex)); }
+    void   AppendVertices(const Vertices& vertices)      { m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end()); }
+
+private:
     Vertices m_vertices;
 };
 

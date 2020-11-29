@@ -83,7 +83,7 @@ public:
     void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
     HelpLines GetHelp() const override;
 
-protected:
+private:
     // Keyboard::ActionControllerBase interface
     void        OnKeyboardKeyAction(ActionCamera::KeyboardAction, Platform::Keyboard::KeyState) override;
     void        OnKeyboardStateAction(ActionCamera::KeyboardAction action) override;

@@ -28,38 +28,48 @@ Data chunk representing owning or non-owning memory container
 namespace Methane::Data
 {
 
-struct Chunk
+class Chunk
 {
-    // Data storage is used only when data is not managed by data provider and
-    // returned with chunk (when data is loaded from file, for example)
-    const Bytes data;
-    ConstRawPtr p_data = nullptr;
-    const Size  size   = 0;
-
+public:
     Chunk() noexcept = default;
     Chunk(ConstRawPtr in_p_data, Size in_size) noexcept
-        : p_data(in_p_data)
-        , size(in_size)
+        : m_data_ptr(in_p_data)
+        , m_data_size(in_size)
     { }
 
     explicit Chunk(Bytes&& in_data) noexcept
-        : data(std::move(in_data))
-        , p_data(static_cast<ConstRawPtr>(data.data()))
-        , size(static_cast<Size>(data.size()))
+        : m_data_storage(std::move(in_data))
+        , m_data_ptr(m_data_storage.empty() ? nullptr : m_data_storage.data())
+        , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
     explicit Chunk(Chunk&& other) noexcept
-        : data(std::move(other.data))
-        , p_data(data.empty() ? other.p_data : data.data())
-        , size(data.empty() ? other.size : static_cast<Size>(data.size()))
+        : m_data_storage(std::move(other.m_data_storage))
+        , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
+        , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
     { }
+
+    ~Chunk() = default;
+
+    ConstRawPtr GetDataPtr() const noexcept    { return m_data_ptr; }
+    ConstRawPtr GetDataEndPtr() const noexcept { return m_data_ptr + m_data_size; }
+    Size        GetDataSize() const noexcept   { return m_data_size; }
+    bool        IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
+    bool        IsDataStored() const noexcept  { return !m_data_storage.empty(); }
 
 protected:
     explicit Chunk(const Chunk& other) noexcept
-        : data(other.data)
-        , p_data(data.empty() ? other.p_data : data.data())
-        , size(data.empty() ? other.size : static_cast<Size>(data.size()))
+        : m_data_storage(other.m_data_storage)
+        , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
+        , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
     { }
+
+private:
+    // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
+    // returned with chunk (when m_data_storage is loaded from file, for example)
+    Bytes             m_data_storage;
+    const ConstRawPtr m_data_ptr  = nullptr;
+    const Size        m_data_size = 0U;
 };
 
 } // namespace Methane::Data

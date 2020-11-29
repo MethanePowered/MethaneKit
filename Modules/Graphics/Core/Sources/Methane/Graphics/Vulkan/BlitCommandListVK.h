@@ -44,7 +44,7 @@ public:
     void Commit() override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void SetResourceBarriers(const ResourceBase::Barriers&) override;
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // BlitCommandList interface

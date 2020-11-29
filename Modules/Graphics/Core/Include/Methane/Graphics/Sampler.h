@@ -55,7 +55,7 @@ struct Sampler : virtual Resource
         
         Filter(MinMag in_min, MinMag in_mag, Mip in_mip) : min(in_min), mag(in_mag), mip(in_mip) { }
         Filter(MinMag in_min_max, Mip in_mip) : Filter(in_min_max, in_min_max, in_mip) { }
-        Filter(MinMag in_min_max) : Filter(in_min_max, Mip::NotMipmapped) { }
+        explicit Filter(MinMag in_min_max) : Filter(in_min_max, Mip::NotMipmapped) { }
 
         MinMag min = MinMag::Nearest;
         MinMag mag = MinMag::Nearest;
@@ -74,7 +74,7 @@ struct Sampler : virtual Resource
         };
         
         Address(Mode in_s, Mode in_t, Mode in_r) : s(in_s), t(in_t), r(in_r) { }
-        Address(Mode all) : s(all), t(all), r(all) { }
+        explicit Address(Mode all) : s(all), t(all), r(all) { }
 
         Mode s = Mode::ClampToEdge; // width
         Mode t = Mode::ClampToEdge; // height

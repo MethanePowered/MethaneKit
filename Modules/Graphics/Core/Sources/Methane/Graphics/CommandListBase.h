@@ -33,6 +33,7 @@ Base implementation of the command list interface.
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <stack>
 #include <mutex>
 #include <condition_variable>
@@ -84,7 +85,7 @@ public:
     void  PushDebugGroup(DebugGroup& debug_group) override;
     void  PopDebugGroup() override;
     void  Reset(DebugGroup* p_debug_group = nullptr) override;
-    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) override;
+    void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }
@@ -128,17 +129,13 @@ protected:
     bool        IsExecuting(uint32_t frame_index) const     { return m_state == State::Executing && m_committed_frame_index == frame_index; }
     bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
     uint32_t    GetCurrentFrameIndex() const;
-    std::string GetTypeName() const noexcept                { return GetTypeName(m_type); }
 
     inline void VerifyEncodingState() const
     {
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
                                    "{} command list '{}' encoding is not possible in '{}' state",
-                                   GetTypeName(), GetName(), GetStateName(m_state));
+                                   magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
     }
-
-    static std::string GetTypeName(Type type);
-    static std::string GetStateName(State state);
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;

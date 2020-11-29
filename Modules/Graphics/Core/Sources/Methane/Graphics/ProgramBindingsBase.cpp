@@ -30,7 +30,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Platform/Utils.h>
 
 #include <fmt/ranges.h>
-#include <cassert>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -76,11 +76,12 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     {
         META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
-                                  Resource::GetTypeName(resource_location.GetResource().GetResourceType()),
-                                  m_settings.argument.name, Resource::GetTypeName(bound_resource_type));
+                                  magic_enum::enum_name(resource_location.GetResource().GetResourceType()),
+                                  m_settings.argument.name, magic_enum::enum_name(bound_resource_type));
 
-        const Resource::Usage::Mask resource_usage_mask = resource_location.GetResource().GetUsageMask();
-        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+        const Resource::Usage resource_usage_mask = resource_location.GetResource().GetUsage();
+        using namespace magic_enum::bitwise_operators;
+        META_CHECK_ARG_DESCR(resource_usage_mask, magic_enum::flags::enum_contains(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
                                   "can not set resource location with non-zero offset to non-addressable resource binding");
@@ -257,7 +258,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         const DescriptorHeap::Type heap_type = descriptor_heap_type_and_count.first;
         const DescriptorsCount&  descriptors = descriptor_heap_type_and_count.second;
 
-        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
+        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
             descriptor_heap_reservation_opt.emplace(
@@ -268,8 +269,8 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
-        assert(heap_reservation.heap.get().GetSettings().type == heap_type);
-        assert(heap_reservation.heap.get().GetSettings().shader_visible);
+        META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
+        META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
         if (descriptors.constant_count > 0)
         {
@@ -344,7 +345,7 @@ const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescri
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EQUAL(heap_type, DescriptorHeap::Type::Undefined);
-    return m_descriptor_heap_reservations_by_type[static_cast<uint32_t>(heap_type)];
+    return m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
 }
 
 } // namespace Methane::Graphics

@@ -44,7 +44,7 @@ namespace Methane
 void SetThreadName(const char* name);
 }
 
-#define METHANE_DOMAIN_NAME "Methane Kit"
+constexpr const char* g_methane_itt_domain_name = "Methane Kit";
 
 ITT_DOMAIN_EXTERN();
 

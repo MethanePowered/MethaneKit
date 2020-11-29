@@ -53,7 +53,7 @@ public:
         float                           scale;
         float                           spin_velocity_rps   = 0.3F; // (rps = radians per second)
         bool                            depth_reversed      = false;
-        gfx::ImageLoader::Options::Mask image_options       = gfx::ImageLoader::Options::None;
+        gfx::ImageLoader::Options image_options       = gfx::ImageLoader::Options::None;
         float                           lod_bias            = 0.F;
     };
 
@@ -65,9 +65,9 @@ public:
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr);
+    Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const;
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
@@ -87,7 +87,7 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

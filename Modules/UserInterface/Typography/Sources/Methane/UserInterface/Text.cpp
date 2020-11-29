@@ -41,6 +41,7 @@ Methane text rendering primitive.
 #include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
+#include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
@@ -148,8 +149,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     if (!m_atlas_sampler_ptr)
     {
         m_atlas_sampler_ptr = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
-            { gfx::Sampler::Filter::MinMag::Linear },
-            { gfx::Sampler::Address::Mode::ClampToZero },
+            gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
+            gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToZero),
         });
         m_atlas_sampler_ptr->SetName(s_sampler_name);
 
@@ -322,18 +323,16 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         UpdateViewport(render_attachment_size);
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Mesh) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Mesh) && m_text_mesh_ptr)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Atlas) && m_font_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr &&
+        !frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
     {
-        if (!frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
-        {
-            frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
-        }
+        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
     }
-    if (frame_resources.IsDirty(FrameResources::Dirty::Uniforms) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
     }
@@ -346,7 +345,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     if (m_frame_resources.empty())
         return;
 
-    FrameResources& frame_resources = GetCurrentFrameResources();
+    const FrameResources& frame_resources = GetCurrentFrameResources();
     if (!frame_resources.IsInitialized())
         return;
 
@@ -365,7 +364,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
         (new_atlas_texture_ptr && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(new_atlas_texture_ptr->GetContext())))
         return;
 
-    MakeFrameResourcesDirty(FrameResources::Dirty::Atlas);
+    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Atlas);
 
     if (m_text_mesh_ptr)
     {
@@ -382,7 +381,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(gfx::RenderState& state, gfx::RenderContext& render_context,
+Text::FrameResources::FrameResources(const gfx::RenderState& state, gfx::RenderContext& render_context,
                                      const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                                      const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
      : m_atlas_texture_ptr(atlas_texture_ptr)
@@ -393,7 +392,19 @@ Text::FrameResources::FrameResources(gfx::RenderState& state, gfx::RenderContext
     InitializeProgramBindings(state, const_buffer_ptr, atlas_sampler_ptr);
 }
 
-void Text::FrameResources::InitializeProgramBindings(gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
+void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
+{
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask |= dirty_flags;
+}
+
+bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
+{
+    using namespace magic_enum::bitwise_operators;
+    return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
+}
+
+void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)
@@ -451,7 +462,9 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
         return false;
 
     m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" })->SetResourceLocations({ { m_atlas_texture_ptr } });
-    m_dirty_mask &= ~Dirty::Atlas;
+
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Atlas;
     return true;
 }
 
@@ -496,7 +509,8 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
         )
     });
 
-    m_dirty_mask &= ~Dirty::Mesh;
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
 void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name)
@@ -516,7 +530,7 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
         scale_text_matrix * translate_text_matrix
     };
 
-    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
+    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
 
     if (!m_uniforms_buffer_ptr)
     {
@@ -530,7 +544,8 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     }
     m_uniforms_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
 
-    m_dirty_mask &= ~Dirty::Uniforms;
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Uniforms;
 }
 
 void Text::InitializeFrameResources()
@@ -562,7 +577,7 @@ Text::FrameResources& Text::GetCurrentFrameResources()
     return m_frame_resources[frame_index];
 }
 
-void Text::MakeFrameResourcesDirty(FrameResources::Dirty::Mask dirty_flags)
+void Text::MakeFrameResourcesDirty(FrameResources::DirtyFlags dirty_flags)
 {
     META_FUNCTION_TASK();
     for(FrameResources& frame_resources : m_frame_resources)
@@ -602,8 +617,9 @@ void Text::UpdateTextMesh()
         InitializeFrameResources();
         return;
     }
-    
-    MakeFrameResourcesDirty(FrameResources::Dirty::Mesh | FrameResources::Dirty::Uniforms);
+
+    using namespace magic_enum::bitwise_operators;
+    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Mesh | FrameResources::DirtyFlags::Uniforms);
 }
 
 void Text::UpdateConstantsBuffer()
@@ -612,7 +628,7 @@ void Text::UpdateConstantsBuffer()
     Constants constants{
         m_settings.color
     };
-    const Data::Size const_data_size = static_cast<Data::Size>(sizeof(constants));
+    const auto const_data_size = static_cast<Data::Size>(sizeof(constants));
 
     if (!m_const_buffer_ptr)
     {
@@ -624,7 +640,7 @@ void Text::UpdateConstantsBuffer()
     });
 }
 
-FrameRect Text::GetAlignedViewportRect()
+FrameRect Text::GetAlignedViewportRect() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
@@ -680,42 +696,6 @@ void Text::UpdateViewport(const gfx::FrameSize& render_attachment_size)
     m_view_state_ptr->SetViewports({ gfx::GetFrameViewport(viewport_rect) });
     m_view_state_ptr->SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
     m_is_viewport_dirty = false;
-}
-
-std::string Text::GetWrapName(Wrap wrap)
-{
-    META_FUNCTION_TASK();
-    switch (wrap)
-    {
-    case Wrap::None:     return "No Wrap";
-    case Wrap::Anywhere: return "Wrap Anywhere";
-    case Wrap::Word:     return "Wrap Words";
-    default:             META_UNEXPECTED_ENUM_ARG_RETURN(wrap, "Undefined Wrap");
-    }
-}
-
-std::string Text::GetHorizontalAlignmentName(HorizontalAlignment alignment)
-{
-    META_FUNCTION_TASK();
-    switch(alignment)
-    {
-    case HorizontalAlignment::Left:   return "Left";
-    case HorizontalAlignment::Right:  return "Right";
-    case HorizontalAlignment::Center: return "Center";
-    default:                          META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined horizontal alignment");
-    }
-}
-
-std::string Text::GetVerticalAlignmentName(VerticalAlignment alignment)
-{
-    META_FUNCTION_TASK();
-    switch(alignment)
-    {
-    case VerticalAlignment::Top:    return "Top";
-    case VerticalAlignment::Bottom: return "Bottom";
-    case VerticalAlignment::Center: return "Center";
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(alignment, "undefined vertical alignment");
-    }
 }
 
 } // namespace Methane::Graphics

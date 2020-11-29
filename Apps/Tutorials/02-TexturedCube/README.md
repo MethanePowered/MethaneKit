@@ -264,7 +264,7 @@ void TexturedCubeApp::Init()
 Cube face texture is created using `Graphics::ImageLoader` class through the instance provided by 
 `Graphics::App::GetImageLoader()` function. Texture is loaded from embedded JPEG image from application resources
 by path in embedded file system `Textures/MethaneBubbles.jpg`. Image is added to application resources in build time and
-[configured in CMakeLists.txt](#cmake-build-configuration). `Graphics::ImageLoader::Options::Mask` is passed to
+[configured in CMakeLists.txt](#cmake-build-configuration). `Graphics::ImageLoader::Options` is passed to
 image loading function to request mipmaps generation and using SRGB texture format.
 
 Sampler object is created with `Graphics::Sampler::Create(...)` factory function which defines
@@ -276,7 +276,7 @@ void TexturedCubeApp::Init()
     ...
 
     // Load texture image from file
-    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
+    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                         | gfx::ImageLoader::Options::SrgbColorSpace;
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
     m_cube_texture_ptr->SetName("Cube Texture 2D Image");

@@ -44,18 +44,12 @@ class Camera;
 class SkyBox
 {
 public:
-    struct Options
+    enum class Options : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None            = 0U,
-            DepthEnabled    = 1U << 0U,
-            DepthReversed   = 1U << 1U,
-            All             = ~0U,
-        };
-
-        Options() = delete;
+        None            = 0U,
+        DepthEnabled    = 1U << 0U,
+        DepthReversed   = 1U << 1U,
+        All             = ~0U,
     };
 
     struct Settings
@@ -63,9 +57,9 @@ public:
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
         float                          scale;
-        ImageLoader::Options::Mask     image_options  = ImageLoader::Options::None;
-        SkyBox::Options::Mask          render_options = SkyBox::Options::None;
-        float                          lod_bias = 0.F;
+        ImageLoader::Options     image_options  = ImageLoader::Options::None;
+        Options                        render_options = Options::None;
+        float                          lod_bias       = 0.F;
     };
 
     struct SHADER_STRUCT_ALIGN Uniforms
@@ -73,9 +67,9 @@ public:
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
+    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings);
 
-    Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr);
+    Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const;
     void Update();
     void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state);
 
@@ -89,7 +83,7 @@ private:
         };
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
+    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     Settings                      m_settings;
     RenderContext&                m_context;

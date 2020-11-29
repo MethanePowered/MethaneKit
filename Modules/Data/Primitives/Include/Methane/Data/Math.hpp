@@ -45,8 +45,10 @@ template<typename T>
 std::enable_if_t<std::is_signed<T>::value, T> DivCeil(T numerator, T denominator)
 {
     std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
-    return res.rem ? (res.quot >= 0 ? (res.quot + 1) : (res.quot - 1))
-                   : res.quot;
+    if (res.rem)
+        return res.quot >= 0 ? (res.quot + 1) : (res.quot - 1);
+
+    return res.quot;
 }
 
 template<typename T>

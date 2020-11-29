@@ -133,13 +133,13 @@ public:
         META_LOG("Command list '{}' set resource barriers:\n{}", GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
-        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const ResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
+        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const IResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
     }
 
     // CommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) override
+    void Reset(CommandList::DebugGroup* p_debug_group) final
     {
         META_FUNCTION_TASK();
         if (!m_is_native_committed)
@@ -158,7 +158,7 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior::Mask apply_behavior) final
+    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
     {
         META_FUNCTION_TASK();
         CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
@@ -188,7 +188,7 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) override
+    void SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
 

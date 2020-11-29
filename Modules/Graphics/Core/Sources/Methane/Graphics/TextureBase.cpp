@@ -25,13 +25,14 @@ Base implementation of the texture interface.
 #include "DescriptorHeap.h"
 #include "RenderContextBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage::Mask usage)
+Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
 {
     META_FUNCTION_TASK();
 
@@ -52,7 +53,7 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     return settings;
 }
 
-Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage)
+Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage)
 {
     META_FUNCTION_TASK();
 
@@ -82,7 +83,7 @@ Texture::Settings Texture::Settings::FrameBuffer(const Dimensions& dimensions, P
     return settings;
 }
 
-Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask)
+Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask)
 {
     META_FUNCTION_TASK();
 
@@ -97,11 +98,11 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
 }
 
 TextureBase::TextureBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceNT(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
+    : ResourceBase(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::Unknown, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, TextureBase::Usage::None, "can not create texture with 'Unknown' usage mask");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 
@@ -161,15 +162,15 @@ Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept
 Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource_index);
+    ValidateSubResource(sub_resource_index, {});
 
     const Data::Size pixel_size = GetPixelSize(m_settings.pixel_format);
-    if (sub_resource_index.mip_level == 0U)
+    if (sub_resource_index.GetMipLevel() == 0U)
     {
         return pixel_size * static_cast<const Data::FrameSize&>(m_settings.dimensions).GetPixelsCount();
     }
 
-    const double mip_divider = std::pow(2.0, sub_resource_index.mip_level);
+    const double mip_divider = std::pow(2.0, sub_resource_index.GetMipLevel());
     const Data::FrameSize mip_frame_size(
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
         static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))

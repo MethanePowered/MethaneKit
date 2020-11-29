@@ -37,9 +37,9 @@ using NSWindowType = NSWindow;
 
 #else
 
-using NSApplicationType = void;
-using AppDelegateType = void;
-using NSWindowType = void;
+using NSApplicationType = uint8_t;
+using AppDelegateType = uint8_t;
+using NSWindowType = uint8_t;
 
 #endif
 
@@ -49,7 +49,7 @@ namespace Methane::Platform
 class AppMac : public AppBase
 {
 public:
-    AppMac(const AppBase::Settings& settings);
+    explicit AppMac(const AppBase::Settings& settings);
     ~AppMac() override;
 
     // AppBase interface
@@ -68,6 +68,7 @@ protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
+private:
     NSApplicationType*  m_ns_app;
     AppDelegateType*    m_ns_app_delegate;
     NSWindowType*       m_ns_window;

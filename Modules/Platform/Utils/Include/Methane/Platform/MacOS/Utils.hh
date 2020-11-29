@@ -23,10 +23,3 @@ MacOS platform utility functions.
 
 #pragma once
 
-#include <string>
-#include <vector>
-
-namespace Methane::MacOS
-{
-
-} // namespace Methane::MacOS

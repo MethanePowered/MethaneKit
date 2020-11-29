@@ -22,14 +22,6 @@ Metal implementation of the resource interface.
 ******************************************************************************/
 
 #include "ResourceMT.hh"
-#include "ContextMT.h"
-#include "BufferMT.hh"
-#include "TextureMT.hh"
-
-#include <Methane/Graphics/RenderContextBase.h>
-#include <Methane/Instrumentation.h>
-
-#include <vector>
 
 namespace Methane::Graphics
 {
@@ -37,19 +29,7 @@ namespace Methane::Graphics
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceMT::BarriersMT>(barriers);
-}
-
-ResourceMT::ResourceMT(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(type, usage_mask, context, descriptor_by_usage)
-{
-    META_FUNCTION_TASK();
-}
-
-IContextMT& ResourceMT::GetContextMT() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContextBase());
+    return std::make_shared<ResourceBarriersMT>(barriers);
 }
 
 } // namespace Methane::Graphics

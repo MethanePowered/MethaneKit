@@ -42,11 +42,6 @@ ShaderVK::ShaderVK(Shader::Type shader_type, ContextBase& context, const Setting
     META_FUNCTION_TASK();
 }
 
-ShaderVK::~ShaderVK()
-{
-    META_FUNCTION_TASK();
-}
-
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentDescriptions&) const
 {
     META_FUNCTION_TASK();

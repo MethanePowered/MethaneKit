@@ -23,6 +23,8 @@ DirectX 12 implementation of the texture interface.
 
 #pragma once
 
+#include "ResourceDX.hpp"
+
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Types.h>
@@ -44,11 +46,11 @@ namespace Methane::Graphics
 class ContextBase;
 
 template<typename... ExtraArgs>
-class TextureDX : public TextureBase
+class TextureDX final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
-        : TextureBase(context, settings, descriptor_by_usage)
+        : ResourceDX<TextureBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
         InitializeDefaultDescriptors();
@@ -56,7 +58,7 @@ public:
     }
 
     // Resource interface
-    void SetData(const SubResources&) final
+    void SetData(const SubResources&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("setting texture data is allowed for image textures only");
     }
@@ -68,16 +70,16 @@ private:
 struct ImageTextureArg { };
 
 template<>
-class TextureDX<ImageTextureArg> : public TextureBase
+class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Object overrides
-    void SetName(const std::string& name) final;
+    void SetName(const std::string& name) override;
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) final;
+    void SetData(const SubResources& sub_resources) override;
 
 private:
     using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
@@ -90,13 +92,13 @@ private:
 };
 
 template<>
-class TextureDX<const std::optional<DepthStencil>&> : public TextureBase
+class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
 
     // Resource overrides
-    void SetData(const SubResources&) final
+    void SetData(const SubResources&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth stencil texture does not allow to set data");
     }

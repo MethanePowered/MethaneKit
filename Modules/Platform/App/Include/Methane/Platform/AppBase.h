@@ -100,7 +100,7 @@ public:
     virtual bool SetKeyboardFocus(bool has_keyboard_focus);
     virtual void ShowControlsHelp();
     virtual void ShowCommandLineHelp();
-    virtual void ShowParameters() { }
+    virtual void ShowParameters() { /* no parameters are displayed by default, but can be overridden */ }
     virtual void Close() = 0;
 
     bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
@@ -133,7 +133,9 @@ protected:
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }
 
-    Ptr<Message> m_deferred_message_ptr;
+    bool HasDeferredMessage() const noexcept { return !!m_deferred_message_ptr; }
+    const Message& GetDeferredMessage() const;
+    void ResetDeferredMessage() noexcept { m_deferred_message_ptr.reset(); }
 
 private:
     bool UpdateAndRender();
@@ -171,6 +173,7 @@ private:
     Settings        m_settings;
     Data::FrameRect m_window_bounds;
     Data::FrameSize m_frame_size;
+    Ptr<Message>    m_deferred_message_ptr;
     bool            m_is_minimized = false;
     bool            m_initialized = false;
     bool            m_is_resizing = false;

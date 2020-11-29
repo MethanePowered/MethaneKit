@@ -36,7 +36,7 @@ namespace Methane::Platform::Mouse
 
 enum class Button : uint32_t
 {
-    Left        = 0,
+    Left = 0U,
     Right,
     Middle,
     Button4,
@@ -47,7 +47,6 @@ enum class Button : uint32_t
     VScroll,
     HScroll,
 
-    Count,
     Unknown
 };
 
@@ -56,7 +55,7 @@ using Buttons = std::set<Button>;
 class ButtonConverter
 {
 public:
-    ButtonConverter(Button button) : m_button(button) { }
+    explicit ButtonConverter(Button button) : m_button(button) { }
     
     std::string ToString() const;
     
@@ -70,7 +69,7 @@ enum class ButtonState : uint8_t
     Pressed,
 };
 
-using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Count)>;
+using ButtonStates = std::array<ButtonState, magic_enum::enum_count<Button>() - 1>;
 
 using Position = Data::Point2i;
 using Scroll = Data::Point2f;
@@ -78,47 +77,35 @@ using Scroll = Data::Point2f;
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
-    const float min_scroll_delta = 0.00001F;
-    return std::fabs(scroll_delta.GetY()) > min_scroll_delta ? MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY())
-                                                             : (std::fabs(scroll_delta.GetX()) > min_scroll_delta ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
-                                                             : MouseButtonAndDelta(Button::Unknown, 0.F ) );
+    constexpr float min_scroll_delta = 0.00001F;
+    if (std::fabs(scroll_delta.GetY()) > min_scroll_delta)
+        return MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY());
+
+    return std::fabs(scroll_delta.GetX()) > min_scroll_delta
+         ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
+         : MouseButtonAndDelta(Button::Unknown, 0.F);
 }
 
 class State
 {
 public:
-    struct Property
+    enum class Properties : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None        = 0U,
-            Buttons     = 1U << 0U,
-            Position    = 1U << 1U,
-            Scroll      = 1U << 2U,
-            InWindow    = 1U << 3U,
-            All         = ~0U,
-        };
-
-        using Values = std::array<Value, 4>;
-        static constexpr const Values values{ Buttons, Position, Scroll, InWindow };
-
-        static std::string ToString(Value property_value);
-        static std::string ToString(Mask properties_mask);
-
-        Property() = delete;
-        ~Property() = delete;
+        None        = 0U,
+        Buttons     = 1U << 0U,
+        Position    = 1U << 1U,
+        Scroll      = 1U << 2U,
+        InWindow    = 1U << 3U,
+        All         = ~0U
     };
 
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
-    State(const State& other);
 
-    State& operator=(const State& other);
     bool operator==(const State& other) const;
     bool operator!=(const State& other) const                   { return !operator==(other); }
     const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
-    operator std::string() const                                { return ToString(); }
+    explicit operator std::string() const                       { return ToString(); }
 
     void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
     void  PressButton(Button button)                            { SetButton(button, ButtonState::Pressed); }
@@ -136,7 +123,7 @@ public:
 
     Buttons             GetPressedButtons() const;
     const ButtonStates& GetButtonStates() const                 { return m_button_states; }
-    Property::Mask      GetDiff(const State& other) const;
+    Properties          GetDiff(const State& other) const;
     std::string         ToString() const;
 
 private:
@@ -154,7 +141,7 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
 
 struct StateChange
 {
-    StateChange(const State& in_current, const State& in_previous, State::Property::Mask in_changed_properties)
+    StateChange(const State& in_current, const State& in_previous, State::Properties in_changed_properties)
         : current(in_current)
         , previous(in_previous)
         , changed_properties(in_changed_properties)
@@ -162,7 +149,7 @@ struct StateChange
 
     const State& current;
     const State& previous;
-    const State::Property::Mask changed_properties;
+    const State::Properties changed_properties;
 };
 
 } // namespace Methane::Platform::Mouse

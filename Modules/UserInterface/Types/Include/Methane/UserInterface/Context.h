@@ -43,7 +43,7 @@ namespace gfx = Methane::Graphics;
 class Context
 {
 public:
-    Context(gfx::RenderContext& render_context) noexcept;
+    explicit Context(gfx::RenderContext& render_context) noexcept;
 
     const gfx::RenderContext& GetRenderContext() const noexcept         { return m_render_context; }
     gfx::RenderContext&       GetRenderContext() noexcept               { return m_render_context; }
@@ -105,7 +105,7 @@ public:
     }
 
     template<typename UnitType>
-    bool AreEqual(const UnitType& left, const UnitType& right)
+    bool AreEqual(const UnitType& left, const UnitType& right) const noexcept
     {
         if (left.units == right.units)
             return left == right;

@@ -28,11 +28,13 @@ Base implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
 BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceNT(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
+    : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -53,19 +55,6 @@ uint32_t BufferBase::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
-std::string Buffer::GetBufferTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch (type)
-    {
-    case Type::Data:     return "Data";
-    case Type::Index:    return "Index";
-    case Type::Vertex:   return "Vertex";
-    case Type::Constant: return "Constant";
-    default:             META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
-    }
-}
-
 BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
     : m_buffers_type(buffers_type)
     , m_refs(buffer_refs)
@@ -77,10 +66,8 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
     m_raw_ptrs.reserve(m_refs.size());
     for(const Ref<Buffer>& buffer_ref : m_refs)
     {
-        if (buffer_ref.get().GetSettings().type != m_buffers_type)
-        {
-            std::invalid_argument("All buffers must be of the same type \"" + Buffer::GetBufferTypeName(m_buffers_type) + "\"");
-        }
+        META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
+                                   "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
         auto& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
         m_ptrs.emplace_back(buffer_base.GetBufferPtr());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));

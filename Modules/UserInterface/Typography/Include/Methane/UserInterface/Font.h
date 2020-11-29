@@ -62,13 +62,13 @@ struct IFontCallback
 };
 
 #ifndef FT_Error
-typedef int FT_Error;
+using FT_Error = int;
 #endif
 
 class Font
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
-    , protected Data::Receiver<gfx::IContextCallback>
+    , protected Data::Receiver<gfx::IContextCallback> //NOSONAR
 {
 public:
     struct Description
@@ -135,32 +135,26 @@ public:
         class Glyph;
         using Code = char32_t;
 
-        struct Type
+        enum class Type : uint8_t
         {
-            using Mask = uint8_t;
-            enum Value : Mask
-            {
-                Unknown    = 0U,
-                Whitespace = 1U << 0U,
-                LineBreak  = 1U << 1U,
-            };
-
-            static Mask Get(Code code);
-
-            Type() = delete;
+            Unknown    = 0U,
+            Whitespace = 1U << 0U,
+            LineBreak  = 1U << 1U
         };
 
+        static Type GetType(Code code);
+
         Char() = default;
-        Char(Code code);
+        explicit Char(Code code);
         Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
         Code                  GetCode() const noexcept        { return m_code; }
-        bool                  IsLineBreak() const noexcept    { return m_type_mask & Type::LineBreak; }
-        bool                  IsWhiteSpace() const noexcept   { return m_type_mask & Type::Whitespace; }
+        bool                  IsLineBreak() const noexcept    { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::LineBreak); }
+        bool                  IsWhiteSpace() const noexcept   { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::Whitespace); }
         const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
         const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
-        const gfx::FrameSize  GetVisualSize() const noexcept  { return m_visual_size; }
+        const gfx::FrameSize& GetVisualSize() const noexcept  { return m_visual_size; }
 
         bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
         bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
@@ -171,7 +165,7 @@ public:
 
     private:
         const Code       m_code = 0U;
-        const Type::Mask m_type_mask = Type::Value::Unknown;
+        const Type       m_type_mask = Type::Unknown;
         gfx::FrameRect   m_rect;
         gfx::Point2i     m_offset;
         gfx::Point2i     m_advance;
@@ -188,7 +182,7 @@ public:
     static std::u32string GetAlphabetFromText(const std::string& text);
     static std::u32string GetAlphabetFromText(const std::u32string& text);
 
-    ~Font();
+    ~Font() override;
 
     Ptr<Font>       GetPtr()            { return shared_from_this(); }
     const Settings& GetSettings() const { return m_settings; }
@@ -198,13 +192,13 @@ public:
     void                     AddChars(const std::string& utf8_characters);
     void                     AddChars(const std::u32string& utf32_characters);
     const Font::Char&        AddChar(Char::Code char_code);
-    bool                     HasChar(Char::Code char_code);
+    bool                     HasChar(Char::Code char_code) const;
     const Char&              GetChar(Char::Code char_code) const;
     Chars                    GetChars() const;
     Chars                    GetTextChars(const std::string& text);
     Chars                    GetTextChars(const std::u32string& text);
     gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
-    uint32_t                 GetLineHeight() const noexcept;
+    uint32_t                 GetLineHeight() const;
     const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     const gfx::FrameSize&    GetAtlasSize() const noexcept;
     const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
@@ -220,7 +214,7 @@ protected:
     // IContextCallback interface
     void OnContextReleased(gfx::Context& context) override;
     void OnContextCompletingInitialization(gfx::Context& context) override;
-    void OnContextInitialized(gfx::Context&) override { }
+    void OnContextInitialized(gfx::Context&) override { /* callback not handled in this class */}
 
 private:
     struct AtlasTexture

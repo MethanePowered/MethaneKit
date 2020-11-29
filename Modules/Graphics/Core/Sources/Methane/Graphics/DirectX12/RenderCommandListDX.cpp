@@ -34,6 +34,7 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 
+#include <magic_enum.hpp>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
@@ -100,11 +101,12 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
     if (!render_state_ptr)
         return;
 
+    using namespace magic_enum::bitwise_operators;
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.render_state_ptr     = std::static_pointer_cast<RenderStateBase>(render_state_ptr);
-    drawing_state.render_state_groups = RenderState::Group::Program
-                                      | RenderState::Group::Rasterizer
-                                      | RenderState::Group::DepthStencil;
+    drawing_state.render_state_ptr    = std::static_pointer_cast<RenderStateBase>(render_state_ptr);
+    drawing_state.render_state_groups = RenderState::Groups::Program
+                                      | RenderState::Groups::Rasterizer
+                                      | RenderState::Groups::DepthStencil;
 }
 
 void RenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
@@ -130,10 +132,12 @@ void RenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_pt
 void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
     DrawingState& drawing_state = GetDrawingState();
-    if (!(drawing_state.changes & DrawingState::Changes::VertexBuffers))
+    if (!magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BufferSetDX&>(vertex_buffers).GetNativeVertexBufferViews();
@@ -146,6 +150,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
     if (!index_count)
@@ -157,13 +162,13 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
+    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
         drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
-    if (drawing_state.changes & DrawingState::Changes::IndexBuffer)
+    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::IndexBuffer))
     {
         dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
         drawing_state.changes &= ~DrawingState::Changes::IndexBuffer;
@@ -175,12 +180,13 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.changes & DrawingState::Changes::PrimitiveType)
+    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);

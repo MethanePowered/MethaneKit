@@ -40,7 +40,7 @@ using NativeAppViewPtr = NativeAppView* _Nonnull;
 
 #else
 
-using NativeAppView = void;
+using NativeAppView = uint8_t;
 using NativeAppViewPtr = NativeAppView*;
 
 #endif

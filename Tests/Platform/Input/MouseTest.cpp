@@ -120,7 +120,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, g_test_scroll, true);
         CHECK(mouse_state_a == mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::None);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::None);
     }
 
     SECTION("States inequality in buttons")
@@ -128,7 +128,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left },  g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Right }, g_test_position, g_test_scroll, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::Buttons);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Buttons);
     }
 
     SECTION("States inequality in position")
@@ -136,7 +136,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, { 56, 78 }, g_test_scroll, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::Position);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Position);
     }
 
     SECTION("States inequality in scroll")
@@ -144,7 +144,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, { 4.f, 5.f }, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::Scroll);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Scroll);
     }
 
     SECTION("States inequality in window")
@@ -152,6 +152,6 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, g_test_scroll, false);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Property::InWindow);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::InWindow);
     }
 }

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/IttNotifyHelper.h
+FILE: Methane/IttApiHelper.h
 Helper macro-definitions for ITT instrumentation
 
 ******************************************************************************/
@@ -96,12 +96,12 @@ protected:
 class Marker : public Event
 {
 public:
-    enum Scope
+    enum class Scope : int
     {
         Global  = __itt_scope_global,
         Process = __itt_scope_track_group,
-        Thread  =__itt_scope_track,
-        Task    =__itt_scope_task, //means a task that will long until another marker with task scope in this thread occurs
+        Thread  = __itt_scope_track,
+        Task    = __itt_scope_task, //means a task that will long until another marker with task scope in this thread occurs
     };
 
     Marker(const __itt_domain* p_domain, const char* p_name, Scope scope) noexcept

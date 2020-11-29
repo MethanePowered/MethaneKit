@@ -38,7 +38,7 @@ namespace Methane::Platform
 class AppWin : public AppBase
 {
 public:
-    AppWin(const Settings& settings);
+    explicit AppWin(const Settings& settings);
 
     // AppBase interface
     int Run(const RunArgs& args) override;

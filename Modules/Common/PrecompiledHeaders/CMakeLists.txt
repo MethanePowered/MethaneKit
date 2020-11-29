@@ -17,12 +17,14 @@ endif()
 
 set(PRECOMPILED_HEADERS ${PRECOMPILED_HEADERS}
     # Common Methane headers
+    $<TARGET_PROPERTY:MethanePrimitives,SOURCE_DIR>/Include/Methane/Memory.hpp
     $<TARGET_PROPERTY:MethanePrimitives,SOURCE_DIR>/Include/Methane/Checks.hpp
     $<TARGET_PROPERTY:MethaneInstrumentation,SOURCE_DIR>/Include/Methane/Instrumentation.h
 
     # Common External headers
     <fmt/format.h>
     <nowide/convert.hpp>
+    <magic_enum.hpp>
 
     # types
     <limits>
@@ -63,6 +65,7 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
         fmt
         nowide
+        magic_enum
 )
 
 target_precompile_headers(${TARGET}
@@ -107,6 +110,9 @@ target_link_libraries(${EXTRA_TARGET}
         MethaneInstrumentation
         TaskFlow
         CML
+        fmt
+        nowide
+        magic_enum
         ${PLATFORM_LIBRARIES}
 )
 

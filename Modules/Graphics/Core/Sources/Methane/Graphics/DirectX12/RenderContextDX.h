@@ -52,7 +52,7 @@ public:
     uint32_t GetFontResolutionDpi() const override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true)  override;
+    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
     CommandQueueDX& GetRenderCommandQueueDX();
@@ -60,12 +60,12 @@ public:
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    inline uint32_t GetPresentVSyncInterval() const { return GetSettings().vsync_enabled ? 1 : 0; }
-
     // RenderContextBase overrides
     uint32_t GetNextFrameBufferIndex() override;
 
 private:
+    inline uint32_t GetPresentVSyncInterval() const { return GetSettings().vsync_enabled ? 1 : 0; }
+
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
 };

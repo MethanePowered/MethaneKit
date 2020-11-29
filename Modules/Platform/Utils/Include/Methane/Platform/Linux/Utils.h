@@ -22,11 +22,3 @@ MacOS platform utility functions.
 ******************************************************************************/
 
 #pragma once
-
-#include <string>
-#include <vector>
-
-namespace Methane::Linux
-{
-
-} // namespace Methane::Linux

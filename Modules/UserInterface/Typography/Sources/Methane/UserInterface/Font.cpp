@@ -30,18 +30,16 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
+#include <magic_enum.hpp>
 #include <map>
 #include <set>
 #include <locale>
 #include <codecvt>
 #include <algorithm>
 
-extern "C"
-{
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
 #include FT_FREETYPE_H
-}
 
 static constexpr int32_t g_ft_dots_in_pixel = 64; // Freetype measures all font sizes in 1/64ths of pixels
 
@@ -52,11 +50,11 @@ static const char* GetFTErrorMessage(FT_Error err)
 {
     META_FUNCTION_TASK();
 
-#undef __FTERRORS_H__
+#undef __FTERRORS_H__ //NOSONARs
 #define FT_ERRORDEF( e, v, s )  case e: return s;
 #define FT_ERROR_START_LIST     switch (err) {
 #define FT_ERROR_END_LIST       }
-#include FT_ERRORS_H
+#include FT_ERRORS_H  //NOSONAR
 
     return "(Unknown error)";
 }
@@ -89,6 +87,12 @@ public:
         FT_Done_FreeType(m_ft_library);
     }
 
+    Impl(const Impl&) noexcept = delete;
+    Impl(Impl&&) noexcept = delete;
+
+    Impl& operator=(const Impl&) noexcept = delete;
+    Impl& operator=(Impl&&) noexcept = delete;
+
     FT_Library GetFTLib() const { return m_ft_library; }
 
 private:
@@ -110,6 +114,12 @@ public:
         META_FUNCTION_TASK();
         FT_Done_Glyph(m_ft_glyph);
     }
+
+    Glyph(const Glyph&) noexcept = delete;
+    Glyph(Glyph&&) noexcept = delete;
+
+    Glyph& operator=(const Glyph&) noexcept = delete;
+    Glyph& operator=(Glyph&&) noexcept = delete;
 
     FT_Glyph GetFTGlyph() const   { return m_ft_glyph; }
     uint32_t GetFaceIndex() const { return m_face_index; }
@@ -136,6 +146,12 @@ public:
         META_FUNCTION_TASK();
         FT_Done_Face(m_ft_face);
     }
+
+    Face(const Face&) noexcept = delete;
+    Face(Face&&) noexcept = delete;
+
+    Face& operator=(const Face&) noexcept = delete;
+    Face& operator=(Face&&) noexcept = delete;
 
     void SetSize(uint32_t font_size_pt, uint32_t resolution_dpi)
     {
@@ -196,7 +212,7 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_NOT_NULL(m_ft_face_rec.size);
-        return m_ft_face_rec.size->metrics.height / g_ft_dots_in_pixel;
+        return static_cast<uint32_t>(m_ft_face_rec.size->metrics.height / g_ft_dots_in_pixel);
     }
 
     const FT_FaceRec& GetFaceRec() const
@@ -213,8 +229,8 @@ private:
         FT_Face ft_face = nullptr;
 
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
-            font_data.p_data,
-            static_cast<FT_Long>(font_data.size), 0,
+            font_data.GetDataPtr(),
+            static_cast<FT_Long>(font_data.GetDataSize()), 0,
             &ft_face));
 
         return ft_face;
@@ -378,7 +394,8 @@ std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
     size_t alpha_index = 0;
     for(char32_t utf32_char : alphabet_set)
     {
-        alphabet[alpha_index++] = utf32_char;
+        alphabet[alpha_index] = utf32_char;
+        alpha_index++;
     }
 
     return alphabet;
@@ -437,12 +454,11 @@ void Font::AddChars(const std::string& utf8_characters)
 void Font::AddChars(const std::u32string& utf32_characters)
 {
     META_FUNCTION_TASK();
-    for (char32_t character : utf32_characters)
+    for (Char::Code char_code : utf32_characters)
     {
-        if (!character)
+        if (!char_code)
             break;
 
-        const Char::Code char_code = static_cast<Char::Code>(character);
         if (HasChar(char_code))
             continue;
 
@@ -468,7 +484,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     // Attempt to pack new char into existing atlas
     if (m_atlas_pack_ptr && m_atlas_pack_ptr->TryPack(new_font_char))
     {
-        // Draw char to existing atlas bitmap and update textures;
+        // Draw char to existing atlas bitmap and update textures
         new_font_char.DrawToAtlas(m_atlas_bitmap, m_atlas_pack_ptr->GetSize().width);
         UpdateAtlasTextures(true);
         return new_font_char;
@@ -481,7 +497,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     return new_font_char;
 }
 
-bool Font::HasChar(Char::Code char_code)
+bool Font::HasChar(Char::Code char_code) const
 {
     META_FUNCTION_TASK();
     return m_char_by_code.count(char_code) ||
@@ -521,9 +537,12 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
 {
     META_FUNCTION_TASK();
     Refs<const Char> text_chars;
-    text_chars.reserve(text.size());
-    for (char32_t char_code : text)
+    text_chars.reserve(text.length());
+    for (Char::Code char_code : text)
     {
+        if (!char_code)
+            break;
+
         text_chars.emplace_back(AddChar(char_code));
     }
     return text_chars;
@@ -536,7 +555,7 @@ gfx::FramePoint Font::GetKerning(const Char& left_char, const Char& right_char) 
     return m_face_ptr->GetKerning(left_char.GetGlyphIndex(), right_char.GetGlyphIndex());
 }
 
-uint32_t Font::GetLineHeight() const noexcept
+uint32_t Font::GetLineHeight() const
 {
     META_FUNCTION_TASK();
     return m_face_ptr->GetLineHeight();
@@ -571,18 +590,18 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 
     // Sort chars by decreasing of glyph pixels count from largest to smallest
     std::sort(font_chars.begin(), font_chars.end(),
-        [](const Ref<Char>& left, const Ref<Char>& right) -> bool
+        [](const Ref<Char>& left, const Ref<Char>& right)
         { return left.get() > right.get(); }
     );
 
     // Estimate required atlas size
     uint32_t char_pixels_count = 0U;
-    for(Font::Char& font_char : font_chars)
+    for(const Font::Char& font_char : font_chars)
     {
         char_pixels_count += font_char.GetRect().size.GetPixelsCount();
     }
-    char_pixels_count = static_cast<uint32_t>(char_pixels_count * pixels_reserve_multiplier);
-    const uint32_t square_atlas_dimension = static_cast<uint32_t>(std::sqrt(char_pixels_count));
+    char_pixels_count = static_cast<uint32_t>(static_cast<float>(char_pixels_count) * pixels_reserve_multiplier);
+    const auto square_atlas_dimension = static_cast<uint32_t>(std::sqrt(char_pixels_count));
 
     // Pack all character glyphs intro atlas size with doubling the size until all chars fit in
     gfx::FrameSize atlas_size(square_atlas_dimension, square_atlas_dimension);
@@ -763,9 +782,12 @@ void Font::OnContextCompletingInitialization(gfx::Context& context)
 
 static constexpr Font::Char::Code g_line_break_code = static_cast<Font::Char::Code>('\n');
 
-Font::Char::Type::Mask Font::Char::Type::Get(Font::Char::Code char_code)
+Font::Char::Type Font::Char::GetType(Font::Char::Code char_code)
 {
-    Font::Char::Type::Mask type_mask = Font::Char::Type::Unknown;
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
+    Font::Char::Type type_mask = Font::Char::Type::Unknown;
     if (char_code > 255)
         return type_mask;
 
@@ -780,14 +802,14 @@ Font::Char::Type::Mask Font::Char::Type::Get(Font::Char::Code char_code)
 
 Font::Char::Char(Code code)
     : m_code(code)
-    , m_type_mask(Type::Get(code))
+    , m_type_mask(GetType(code))
 {
     META_FUNCTION_TASK();
 }
 
 Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr)
     : m_code(code)
-    , m_type_mask(Type::Get(code))
+    , m_type_mask(GetType(code))
     , m_rect(std::move(rect))
     , m_offset(std::move(offset))
     , m_advance(std::move(advance))

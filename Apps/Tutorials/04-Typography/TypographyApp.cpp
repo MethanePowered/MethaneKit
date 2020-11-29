@@ -27,6 +27,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
+#include <magic_enum.hpp>
 #include <array>
 
 namespace Methane::Tutorials
@@ -38,9 +39,9 @@ struct FontSettings
     gfx::Color3f           color;
 };
 
-constexpr int32_t g_margin_size_in_dots      = 32;
-constexpr int32_t g_top_text_pos_in_dots     = 110;
-constexpr size_t  g_text_blocks_count        = 3;
+constexpr int32_t g_margin_size_in_dots  = 32;
+constexpr int32_t g_top_text_pos_in_dots = 110;
+constexpr size_t  g_text_blocks_count    = 3;
 
 static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
     { { "European",     "Fonts/Roboto/Roboto-Regular.ttf",                 20U }, { 1.F,  1.F,  0.5F } },
@@ -49,7 +50,7 @@ static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
 } };
 
 static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
-static const std::map<std::string, gfx::Color3f>    g_font_color_by_name   {
+static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },
@@ -96,10 +97,12 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
 {
     return gui::UnitRect(
         gui::Units::Dots,
+        gfx::Point2i
         {
             g_margin_size_in_dots,
             vertical_pos_in_dots
         },
+        gfx::FrameSize
         {
             frame_size_in_dots.width - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
@@ -109,14 +112,29 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
     );
 }
 
+inline Timer::TimeDuration UpdateTextRect(gui::Text& text, const gui::UnitRect& text_block_rect)
+{
+    Methane::ScopeTimer scope_timer("Text update");
+    text.SetRect(text_block_rect);
+    return scope_timer.GetElapsedDuration();
+}
+
+inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& displayed_text, const gui::UnitRect& text_block_rect)
+{
+    Methane::ScopeTimer scope_timer("Text update");
+    text.SetTextInScreenRect(displayed_text, text_block_rect);
+    return scope_timer.GetElapsedDuration();
+}
+
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Typography", true /* animations */, false /* depth */),
         { gui::IApp::HeadsUpDisplayMode::UserInterface, true },
         "Dynamic text rendering and fonts management tutorial.")
-    , m_displayed_text_lengths(g_text_blocks_count, 0)
 {
+    m_displayed_text_lengths.resize(g_text_blocks_count, 0);
     m_displayed_text_lengths[0] = 1;
+
     GetHeadsUpDisplaySettings().position = gui::UnitPoint(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
 
     gui::Font::Library::Get().Connect(*this);
@@ -177,8 +195,8 @@ void TypographyApp::Init()
                     gui::UnitRect
                     {
                         gui::Units::Dots,
-                        { g_margin_size_in_dots, vertical_text_pos_in_dots },
-                        { frame_width_without_margins, 0U /* calculated height */ }
+                        gfx::Point2i { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
                     gfx::Color4f(font_settings.color, 1.F),
@@ -203,7 +221,7 @@ void TypographyApp::Init()
     CompleteInitialization();
 }
 
-Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gui::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
@@ -277,8 +295,8 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
               [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
               {
-                  return left_ptr->GetSettings().screen_rect.size.GetPixelsCount() >
-                         right_ptr->GetSettings().screen_rect.size.GetPixelsCount();
+                  return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
+                         right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
               }
     );
 
@@ -289,7 +307,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + static_cast<int32_t>(g_margin_size_in_dots), 0U);
+        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + g_margin_size_in_dots, 0U);
     }
 }
 
@@ -306,11 +324,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     {
         const Ptr<gui::Text>& text_ptr = m_texts[block_index];
         const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
-        {
-            Methane::ScopeTimer scope_timer("Text update");
-            text_ptr->SetRect(text_block_rect);
-            m_text_update_duration = scope_timer.GetElapsedDuration();
-        }
+        m_text_update_duration = UpdateTextRect(*text_ptr, text_block_rect);
         vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.height + g_margin_size_in_dots;
     }
 
@@ -326,74 +340,85 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 
     m_text_update_elapsed_sec = elapsed_seconds;
 
-    const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
-
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        size_t& displayed_text_length    = m_displayed_text_lengths[block_index];
-        const Ptr<gui::Text>& text_ptr   = m_texts[block_index];
-        const std::u32string& text_block = g_text_blocks[block_index];
-        const size_t   text_block_length = text_block.length();
-
-        if (displayed_text_length == (m_settings.is_forward_typing_direction ? 0 : text_block_length))
-        {
-            text_ptr->SetText(m_settings.is_forward_typing_direction ? std::u32string() : text_block);
-            if (!m_settings.is_forward_typing_direction)
-                vertical_text_pos_in_dots = text_ptr->GetRectInDots().GetBottom() + g_margin_size_in_dots;
-            continue;
-        }
-
-        if (displayed_text_length == (m_settings.is_forward_typing_direction ? text_block_length : 0))
-        {
-            if (block_index == (m_settings.is_forward_typing_direction ? g_text_blocks_count - 1 : 0))
-            {
-                ResetAnimation();
-            }
-            else
-            {
-                vertical_text_pos_in_dots = text_ptr->GetRectInDots().GetBottom() + g_margin_size_in_dots;
-                size_t next_block_index = block_index + (m_settings.is_forward_typing_direction ? 1 : -1);
-                size_t& next_displayed_text_length = m_displayed_text_lengths[next_block_index];
-                if (m_settings.is_forward_typing_direction && next_displayed_text_length == 0)
-                    next_displayed_text_length = 1;
-                if (!m_settings.is_forward_typing_direction && next_displayed_text_length == g_text_blocks[next_block_index].length())
-                    next_displayed_text_length = g_text_blocks[next_block_index].length() - 1;
-            }
-            continue;
-        }
-
-        if (m_settings.is_forward_typing_direction)
-            displayed_text_length++;
-        else
-            displayed_text_length--;
-
-        const std::u32string displayed_text = text_block.substr(0, displayed_text_length);
-        const gui::UnitRect  text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
-        {
-            Methane::ScopeTimer scope_timer("Text update");
-            text_ptr->SetTextInScreenRect(displayed_text, text_block_rect);
-            m_text_update_duration = scope_timer.GetElapsedDuration();
-        }
-        vertical_text_pos_in_dots = text_ptr->GetRectInDots().GetBottom() + g_margin_size_in_dots;
+        AnimateTextBlock(block_index, vertical_text_pos_in_dots);
     }
 
     UpdateParametersText();
     return true;
 }
 
+void TypographyApp::AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots)
+{
+    gui::Text& text                 = *m_texts[block_index];
+    const std::u32string& full_text = g_text_blocks[block_index];
+    const size_t text_block_length  = full_text.length();
+    size_t& displayed_text_length   = m_displayed_text_lengths[block_index];
+
+    if (displayed_text_length == (m_settings.is_forward_typing_direction ? 0 : text_block_length))
+    {
+        text.SetText(m_settings.is_forward_typing_direction ? std::u32string() : full_text);
+        if (!m_settings.is_forward_typing_direction)
+            vertical_text_pos_in_dots = text.GetRectInDots().GetBottom() + g_margin_size_in_dots;
+        return;
+    }
+
+    if (displayed_text_length == (m_settings.is_forward_typing_direction ? text_block_length : 0))
+    {
+        if (block_index == (m_settings.is_forward_typing_direction ? g_text_blocks_count - 1 : 0))
+        {
+            ResetAnimation();
+            return;
+        }
+
+        vertical_text_pos_in_dots = text.GetRectInDots().GetBottom() + g_margin_size_in_dots;
+        size_t next_block_index = block_index + (m_settings.is_forward_typing_direction ? 1 : -1);
+        size_t& next_displayed_text_length = m_displayed_text_lengths[next_block_index];
+
+        if (m_settings.is_forward_typing_direction && next_displayed_text_length == 0)
+            next_displayed_text_length = 1;
+
+        if (!m_settings.is_forward_typing_direction && next_displayed_text_length == g_text_blocks[next_block_index].length())
+            next_displayed_text_length = g_text_blocks[next_block_index].length() - 1;
+
+        return;
+    }
+
+    if (m_settings.is_forward_typing_direction)
+        displayed_text_length++;
+    else
+        displayed_text_length--;
+
+    const std::u32string displayed_text = full_text.substr(0, displayed_text_length);
+    const gui::UnitRect  text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, GetFrameSizeInDots());
+
+    m_text_update_duration = UpdateText(text, displayed_text, text_block_rect);
+
+    vertical_text_pos_in_dots = text.GetRectInDots().GetBottom() + g_margin_size_in_dots;
+}
+
 void TypographyApp::ResetAnimation()
 {
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        const size_t displayed_text_length  = m_settings.is_forward_typing_direction
-                                            ? (block_index ? 0 : 1)
-                                            : (g_text_blocks[block_index].length() - (block_index == g_text_blocks_count - 1 ? 1 : 0));
-        const std::u32string displayed_text = g_text_blocks[block_index].substr(0, displayed_text_length);
+        const std::u32string& full_text = g_text_blocks[block_index];
+
+        size_t displayed_text_length = block_index ? 0 : 1;
+        if (!m_settings.is_forward_typing_direction)
+        {
+            displayed_text_length = full_text.length();
+            if (block_index == g_text_blocks_count - 1)
+                displayed_text_length--;
+        }
+
+        const std::u32string displayed_text = full_text.substr(0, displayed_text_length);
         m_displayed_text_lengths[block_index] = displayed_text_length;
         m_texts[block_index]->SetText(displayed_text);
         m_fonts[block_index]->ResetChars(displayed_text);
     }
+    
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
 }
 
@@ -403,7 +428,7 @@ bool TypographyApp::Update()
         return false;
 
     // Update text block resources
-    for(Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::Text>& text_ptr : m_texts)
     {
         text_ptr->Update(GetFrameSize());
     }
@@ -416,11 +441,11 @@ bool TypographyApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    TypographyFrame& frame = GetCurrentFrame();
+    const TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
     META_DEBUG_GROUP_CREATE_VAR(s_text_debug_group, "Text Blocks Rendering");
-    for(Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::Text>& text_ptr : m_texts)
     {
         text_ptr->Draw(*frame.render_cmd_list_ptr, s_text_debug_group.get());
     }
@@ -448,9 +473,9 @@ std::string TypographyApp::GetParametersString()
 {
     std::stringstream ss;
     ss << "Typography parameters:"
-       << std::endl << "  - text wrap mode:            " << gui::Text::GetWrapName(m_settings.text_layout.wrap)
-       << std::endl << "  - horizontal text alignment: " << gui::Text::GetHorizontalAlignmentName(m_settings.text_layout.horizontal_alignment)
-       << std::endl << "  - vertical text alignment:   " << gui::Text::GetVerticalAlignmentName(m_settings.text_layout.vertical_alignment)
+       << std::endl << "  - text wrap mode:            " << magic_enum::enum_name(m_settings.text_layout.wrap)
+       << std::endl << "  - horizontal text alignment: " << magic_enum::enum_name(m_settings.text_layout.horizontal_alignment)
+       << std::endl << "  - vertical text alignment:   " << magic_enum::enum_name(m_settings.text_layout.vertical_alignment)
        << std::endl << "  - text typing mode:          " << (m_settings.is_forward_typing_direction ? "Appending" : "Backspace")
        << std::endl << "  - text typing interval (ms): " << static_cast<uint32_t>(m_settings.typing_update_interval_sec * 1000)
        << std::endl << "  - text typing animation:     " << (!GetAnimations().IsPaused() ? "ON" : "OFF")
@@ -540,7 +565,7 @@ void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::Text
         }
         else
         {
-            Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
+            const Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
             badge_ptr->SetTexture(new_atlas_texture_ptr);
             badge_ptr->SetSize(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions)));
         }

@@ -45,7 +45,7 @@ public:
     void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change) override;
     void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change) override;
     void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) override;
-    void OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change) override;
+    void OnModifiersChanged(Keyboard::Modifiers modifiers, const Keyboard::StateChange& state_change) override;
 
     // IHelpProvider implementation
     HelpLines GetHelp() const override;

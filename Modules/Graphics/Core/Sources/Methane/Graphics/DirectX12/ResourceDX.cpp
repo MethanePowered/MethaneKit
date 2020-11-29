@@ -26,7 +26,6 @@ DirectX 12 implementation of the resource interface.
 #include "RenderContextDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -38,10 +37,10 @@ namespace Methane::Graphics
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ResourceDX::BarriersDX>(barriers);
+    return std::make_shared<IResourceDX::BarriersDX>(barriers);
 }
 
-ResourceDX::BarriersDX::BarriersDX(const Set& barriers)
+IResourceDX::BarriersDX::BarriersDX(const Set& barriers)
     : Barriers(barriers)
 {
     META_FUNCTION_TASK();
@@ -53,7 +52,7 @@ ResourceDX::BarriersDX::BarriersDX(const Set& barriers)
     );
 }
 
-bool ResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
+bool IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     bool changed = ResourceBase::Barriers::AddStateChange(id, state_change);
@@ -64,67 +63,14 @@ bool ResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier
     return changed;
 }
 
-
-ResourceDX::LocationDX::LocationDX(const Location& location)
+IResourceDX::LocationDX::LocationDX(const Location& location)
     : Location(location)
-    , m_resource_dx(dynamic_cast<ResourceDX&>(GetResource()))
+    , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
 {
     META_FUNCTION_TASK();
 }
 
-ResourceDX::LocationDX::LocationDX(const LocationDX& location)
-    : Location(location)
-    , m_resource_dx(dynamic_cast<ResourceDX&>(GetResource()))
-{
-    META_FUNCTION_TASK();
-}
-
-ResourceDX::LocationDX& ResourceDX::LocationDX::operator=(const LocationDX& other)
-{
-    Location::operator=(other);
-    m_resource_dx = dynamic_cast<ResourceDX&>(GetResource());
-    return *this;
-}
-
-
-ResourceDX::ResourceDX(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(type, usage_mask, context, descriptor_by_usage)
-{
-    META_FUNCTION_TASK();
-}
-
-void ResourceDX::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    ResourceBase::SetName(name);
-    
-    // NOTE: there is no native resource for some resources like DX SamplerBase
-    if (m_cp_resource)
-    {
-        m_cp_resource->SetName(nowide::widen(name).c_str());
-    }
-}
-
-ID3D12Resource& ResourceDX::GetNativeResourceRef() const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_resource);
-    return *m_cp_resource.Get();
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index);
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceDX::GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index);
-}
-
-D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state)
+D3D12_RESOURCE_STATES IResourceDX::GetNativeResourceState(State resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
@@ -151,69 +97,21 @@ D3D12_RESOURCE_STATES ResourceDX::GetNativeResourceState(State resource_state)
     }
 }
 
-D3D12_RESOURCE_BARRIER ResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
+D3D12_RESOURCE_BARRIER IResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    switch (id.type)
+    switch (id.GetType())
     {
     case Barrier::Type::Transition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
-            dynamic_cast<const ResourceDX&>(id.resource).GetNativeResource(),
-            GetNativeResourceState(state_change.before),
-            GetNativeResourceState(state_change.after)
+            dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource(),
+            GetNativeResourceState(state_change.GetStateBefore()),
+            GetNativeResourceState(state_change.GetStateAfter())
         );
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(id.type, D3D12_RESOURCE_BARRIER());
+        META_UNEXPECTED_ENUM_ARG_RETURN(id.GetType(), D3D12_RESOURCE_BARRIER());
     }
-}
-
-IContextDX& ResourceDX::GetContextDX() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContextBase());
-}
-
-wrl::ComPtr<ID3D12Resource> ResourceDX::CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
-                                                                D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
-{
-    wrl::ComPtr<ID3D12Resource> cp_resource;
-    const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetContextDX().GetDeviceDX().GetNativeDevice();
-    ThrowIfFailed(
-        cp_native_device->CreateCommittedResource(
-            &heap_properties,
-            D3D12_HEAP_FLAG_NONE,
-            &resource_desc,
-            resource_state,
-            p_clear_value,
-            IID_PPV_ARGS(&cp_resource)
-        ),
-        cp_native_device.Get()
-    );
-    return cp_resource;
-}
-
-void ResourceDX::InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type, 
-                                             D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
-    m_cp_resource = CreateCommittedResource(resource_desc, heap_type, resource_state, p_clear_value);
-}
-
-void ResourceDX::InitializeFrameBufferResource(uint32_t frame_buffer_index)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
-
-    ThrowIfFailed(
-        static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
-            frame_buffer_index,
-            IID_PPV_ARGS(&m_cp_resource)
-        ),
-        GetContextDX().GetDeviceDX().GetNativeDevice().Get()
-    );
 }
 
 } // namespace Methane::Graphics

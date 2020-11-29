@@ -35,9 +35,10 @@ DirectX 12 implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <nowide/convert.hpp>
+#include <magic_enum.hpp>
 #include <d3dx12.h>
 #include <d3dcompiler.h>
-#include <nowide/convert.hpp>
 
 namespace Methane::Graphics
 {
@@ -49,8 +50,8 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
     META_FUNCTION_TASK();
     const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const ShaderDX&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
-        ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->p_data, p_byte_code_chunk->size)
-        : CD3DX12_SHADER_BYTECODE(NULL, 0);
+        ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())
+        : CD3DX12_SHADER_BYTECODE(nullptr, 0);
 }
 
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
@@ -80,19 +81,20 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     }
 }
 
-static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannel::Mask rt_write_mask)
+static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
-    using ColorChannel = RenderState::Blending::ColorChannel;
+    using namespace magic_enum::bitwise_operators;
+    using ColorChannels = RenderState::Blending::ColorChannels;
 
     UINT8 d3d12_color_write_mask = 0;
-    if (rt_write_mask & ColorChannel::Red)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Red))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;
-    if (rt_write_mask & ColorChannel::Green)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Green))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN;
-    if (rt_write_mask & ColorChannel::Blue)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Blue))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;
-    if (rt_write_mask & ColorChannel::Alpha)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Alpha))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA;
     return d3d12_color_write_mask;
 };
@@ -320,8 +322,8 @@ void RenderStateDX::Reset(const Settings& settings)
     }
 
     // Set blending factor
-    META_CHECK_ARG_LESS(settings.blending_color.size(), 5);
-    for (uint32_t component_index = 0; component_index < static_cast<uint32_t>(settings.blending_color.size()); ++component_index)
+    META_CHECK_ARG_LESS(settings.blending_color.GetSize(), 5);
+    for (Data::Size component_index = 0; component_index < settings.blending_color.GetSize(); ++component_index)
     {
         m_blend_factor[component_index] = settings.blending_color[component_index];
     }
@@ -363,23 +365,25 @@ void RenderStateDX::Reset(const Settings& settings)
     m_cp_pipeline_state.Reset();
 }
 
-void RenderStateDX::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
+void RenderStateDX::Apply(RenderCommandListBase& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     const auto& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
-    if (state_groups & Group::Program    ||
-        state_groups & Group::Rasterizer ||
-        state_groups & Group::Blending   ||
-        state_groups & Group::DepthStencil)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::Program)    ||
+        magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer) ||
+        magic_enum::flags::enum_contains(state_groups & Groups::Blending)   ||
+        magic_enum::flags::enum_contains(state_groups & Groups::DepthStencil))
     {
         d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
     }
 
     d3d12_command_list.SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
 
-    if (state_groups & Group::BlendingColor)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
     {
         d3d12_command_list.OMSetBlendFactor(m_blend_factor.data());
     }

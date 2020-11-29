@@ -23,7 +23,7 @@ Base implementation of the buffer interface.
 
 #pragma once
 
-#include "Native/ResourceNT.h"
+#include "ResourceBase.h"
 
 #include <Methane/Graphics/Buffer.h>
 
@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 class BufferBase
     : public Buffer
-    , public ResourceNT
+    , public ResourceBase
 {
 public:
     BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
@@ -44,8 +44,7 @@ public:
     const Settings& GetSettings() const noexcept final       { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept final;
 
-    Ptr<BufferBase> GetBufferPtr()                              { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
-    std::string GetBufferTypeName() const noexcept              { return Buffer::GetBufferTypeName(m_settings.type); }
+    Ptr<BufferBase> GetBufferPtr()                           { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
 
 private:
     Settings    m_settings;

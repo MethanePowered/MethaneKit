@@ -90,20 +90,14 @@ public:
 
     struct Blending
     {
-        struct ColorChannel
+        enum class ColorChannels : uint32_t
         {
-            using Mask = uint32_t;
-            enum Value : Mask
-            {
-                None    = 0U,
-                Red     = 1U << 0U,
-                Green   = 1U << 1U,
-                Blue    = 1U << 2U,
-                Alpha   = 1U << 3U,
-                All     = ~0U,
-            };
-
-            ColorChannel() = delete;
+            None    = 0U,
+            Red     = 1U << 0U,
+            Green   = 1U << 1U,
+            Blue    = 1U << 2U,
+            Alpha   = 1U << 3U,
+            All     = ~0U
         };
 
         enum class Operation : uint32_t
@@ -140,14 +134,14 @@ public:
 
         struct RenderTarget
         {
-            bool               blend_enabled             = false;
-            ColorChannel::Mask write_mask                = ColorChannel::All;
-            Operation          rgb_blend_op              = Operation::Add;
-            Operation          alpha_blend_op            = Operation::Add;
-            Factor             source_rgb_blend_factor   = Factor::One;
-            Factor             source_alpha_blend_factor = Factor::One;
-            Factor             dest_rgb_blend_factor     = Factor::Zero;
-            Factor             dest_alpha_blend_factor   = Factor::Zero;
+            bool          blend_enabled             = false;
+            ColorChannels write_mask                = ColorChannels::All;
+            Operation     rgb_blend_op              = Operation::Add;
+            Operation     alpha_blend_op            = Operation::Add;
+            Factor        source_rgb_blend_factor   = Factor::One;
+            Factor        source_alpha_blend_factor = Factor::One;
+            Factor        dest_rgb_blend_factor     = Factor::Zero;
+            Factor        dest_alpha_blend_factor   = Factor::Zero;
 
             bool operator==(const RenderTarget& other) const noexcept;
             bool operator!=(const RenderTarget& other) const noexcept;
@@ -207,21 +201,15 @@ public:
         bool operator!=(const Stencil& other) const noexcept;
     };
 
-    struct Group
+    enum class Groups : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None                = 0U,
-            Program             = 1U << 0U,
-            Rasterizer          = 1U << 1U,
-            Blending            = 1U << 2U,
-            BlendingColor       = 1U << 3U,
-            DepthStencil        = 1U << 4U,
-            All                 = ~0U
-        };
-
-        Group() = delete;
+        None          = 0U,
+        Program       = 1U << 0U,
+        Rasterizer    = 1U << 1U,
+        Blending      = 1U << 2U,
+        BlendingColor = 1U << 3U,
+        DepthStencil  = 1U << 4U,
+        All           = ~0U
     };
 
     struct Settings
@@ -236,7 +224,7 @@ public:
         Blending     blending;
         Color4f      blending_color;
 
-        static Group::Mask Compare(const Settings& left, const Settings& right, Group::Mask compare_groups = Group::All) noexcept;
+        static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
     };
 
     // Create RenderState instance
@@ -245,8 +233,6 @@ public:
     // RenderState interface
     virtual const Settings& GetSettings() const noexcept = 0;
     virtual void Reset(const Settings& settings) = 0;
-
-    virtual ~RenderState() = default;
 };
 
 } // namespace Methane::Graphics

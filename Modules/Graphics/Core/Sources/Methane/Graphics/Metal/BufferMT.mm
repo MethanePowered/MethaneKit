@@ -32,6 +32,8 @@ Metal implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -48,28 +50,30 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
@@ -81,7 +85,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : BufferBase(context, settings, descriptor_by_usage)
+    : ResourceMT<BufferBase>(context, settings, descriptor_by_usage)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {
@@ -123,13 +127,13 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        if (sub_resource.data_range)
-            data_offset = sub_resource.data_range->GetStart();
+        if (sub_resource.HasDataRange())
+            data_offset = sub_resource.GetDataRange().GetStart();
 
-        std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, p_resource_data + data_offset);
+        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data + data_offset);
 
-        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.size)];
-        data_offset += sub_resource.size;
+        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.GetDataSize())];
+        data_offset += sub_resource.GetDataSize();
     }
 }
 
@@ -140,8 +144,6 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
-    id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
-
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.RetainResource(*this);
 
@@ -151,23 +153,18 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     Data::Size data_offset = 0;
     for(const SubResource& sub_resource : sub_resources)
     {
-        // Create temporary buffer with shared storage mode for sub-resource data upload to private buffer on GPU
-        id <MTLBuffer> mtl_sub_resource_upload_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
-                                                                                length:sub_resource.size
-                                                                               options:MTLResourceStorageModeShared];
+        if (sub_resource.HasDataRange())
+            data_offset = sub_resource.GetDataRange().GetStart();
 
-        if (sub_resource.data_range)
-            data_offset = sub_resource.data_range->GetStart();
-
-        [mtl_blit_encoder copyFromBuffer:mtl_sub_resource_upload_buffer
+        [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
                             sourceOffset:0
                                 toBuffer:m_mtl_buffer
                        destinationOffset:data_offset
-                                    size:sub_resource.size];
+                                    size:sub_resource.GetDataSize()];
 
-        data_offset += sub_resource.size;
+        data_offset += sub_resource.GetDataSize();
     }
-
+    
     GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

@@ -65,7 +65,7 @@ public:
     ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument);
 
     // ProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior::Mask apply_behavior) const override;
+    void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
     // ProgramBindingsBase interface
     void CompleteInitialization() override { }

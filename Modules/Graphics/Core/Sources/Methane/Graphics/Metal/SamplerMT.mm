@@ -97,7 +97,7 @@ Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings
 }
 
 SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : SamplerBase(context, settings, descriptor_by_usage)
+    : ResourceMT<SamplerBase>(context, settings, descriptor_by_usage)
     , m_mtl_sampler_desc([[MTLSamplerDescriptor alloc] init])
 {
     META_FUNCTION_TASK();

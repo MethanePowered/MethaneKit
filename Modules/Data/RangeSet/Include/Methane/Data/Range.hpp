@@ -28,6 +28,7 @@ till end (exclusively): [start, end)
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
 #include <initializer_list>
 #include <algorithm>
 
@@ -38,27 +39,28 @@ template<typename ScalarT>
 class Range
 {
 public:
+    Range() noexcept = default;
     Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end"); }
-    Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { }
+    Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { } //NOSONAR - initializer list constructor is not explicit intentionally
     Range(const Range& other) noexcept : m_start(other.m_start), m_end(other.m_end) { }
-    Range() noexcept: Range({}, {}) { }
     Range(Range&&) noexcept = default;
+    ~Range() = default;
 
-    Range<ScalarT>& operator=(const Range<ScalarT>& other) noexcept        { META_FUNCTION_TASK(); m_start = other.m_start; m_end = other.m_end; return *this; }
-    bool            operator==(const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_start == other.m_start && m_end == other.m_end; }
-    bool            operator!=(const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return !operator==(other); }
-    bool            operator< (const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_end  <= other.m_start; }
-    bool            operator> (const Range<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_start > other.end; }
+    Range<ScalarT>& operator=(const Range<ScalarT>& other) noexcept        { m_start = other.m_start; m_end = other.m_end; return *this; }
+    bool            operator==(const Range<ScalarT>& other) const noexcept { return m_start == other.m_start && m_end == other.m_end; }
+    bool            operator!=(const Range<ScalarT>& other) const noexcept { return !operator==(other); }
+    bool            operator< (const Range<ScalarT>& other) const noexcept { return m_end  <= other.m_start; }
+    bool            operator> (const Range<ScalarT>& other) const noexcept { return m_start > other.end; }
 
     ScalarT GetStart() const noexcept                           { return m_start; }
     ScalarT GetEnd() const noexcept                             { return m_end; }
     ScalarT GetLength() const noexcept                          { return m_end - m_start; }
     bool    IsEmpty() const noexcept                            { return m_start == m_end; }
 
-    bool    IsAdjacent(const Range& other) const noexcept       { META_FUNCTION_TASK(); return m_start == other.m_end   || other.m_start == m_end; }
-    bool    IsOverlapping(const Range& other) const noexcept    { META_FUNCTION_TASK(); return m_start <  other.m_end   && other.m_start <  m_end;  }
-    bool    IsMergeable(const Range& other) const noexcept      { META_FUNCTION_TASK(); return m_start <= other.m_end   && other.m_start <= m_end; }
-    bool    Contains(const Range& other) const noexcept         { META_FUNCTION_TASK(); return m_start <= other.m_start && other.m_end   <= m_end; }
+    bool    IsAdjacent(const Range& other) const noexcept       { return m_start == other.m_end   || other.m_start == m_end; }
+    bool    IsOverlapping(const Range& other) const noexcept    { return m_start <  other.m_end   && other.m_start <  m_end; }
+    bool    IsMergeable(const Range& other) const noexcept      { return m_start <= other.m_end   && other.m_start <= m_end; }
+    bool    Contains(const Range& other) const noexcept         { return m_start <= other.m_start && other.m_end   <= m_end; }
 
     Range operator+(const Range& other) const // merge
     {
@@ -82,17 +84,8 @@ public:
         return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
     }
 
-    operator bool() const noexcept
-    {
-        META_FUNCTION_TASK();
-        return !IsEmpty();
-    }
-
-    explicit operator std::string() const noexcept
-    {
-        META_FUNCTION_TASK();
-        return fmt::format("[{}, {})", m_start, m_end);
-    }
+    explicit operator bool() const noexcept        { return !IsEmpty(); }
+    explicit operator std::string() const noexcept { META_FUNCTION_TASK(); return fmt::format("[{}, {})", m_start, m_end); }
 
 private:
     ScalarT m_start;
@@ -100,3 +93,11 @@ private:
 };
 
 } // namespace Methane::Data
+
+template<typename ScalarT>
+struct fmt::formatter<Methane::Data::Range<ScalarT>>
+{
+    template<typename FormatContext>
+    auto format(const Methane::Data::Range<ScalarT>& range, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(range)); }
+    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};

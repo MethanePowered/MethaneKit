@@ -34,8 +34,8 @@ namespace Methane::Graphics
 struct Buffer;
 struct IContextDX;
 struct ICommandListDX;
+struct IResourceDX;
 class  CommandQueueDX;
-class  ResourceDX;
 
 class QueryBufferDX : public QueryBuffer
 {
@@ -64,7 +64,7 @@ public:
 
     CommandQueueDX&  GetCommandQueueDX() noexcept;
     IContextDX&      GetContextDX() noexcept                { return m_context_dx; }
-    ResourceDX&      GetResultResourceDX() const noexcept   { return m_result_resource_dx; }
+    IResourceDX&     GetResultResourceDX() const noexcept   { return m_result_resource_dx; }
     D3D12_QUERY_TYPE GetNativeQueryType() const noexcept    { return m_native_query_type; }
     ID3D12QueryHeap& GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
 
@@ -73,8 +73,8 @@ protected:
 
 private:
     Ptr<Buffer>       m_result_buffer_ptr;
-    IContextDX&       m_context_dx;
-    ResourceDX&       m_result_resource_dx;
+    IContextDX &       m_context_dx;
+    IResourceDX&       m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;
     ID3D12QueryHeap&  m_native_query_heap;
 };
@@ -86,7 +86,7 @@ class TimestampQueryBufferDX final
     , public TimestampQueryBuffer
 {
 public:
-    class TimestampQueryDX
+    class TimestampQueryDX final
         : public QueryDX
         , public TimestampQuery
     {
@@ -108,8 +108,8 @@ public:
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
 
-    Frequency GetGpuFrequency() const noexcept  { return m_gpu_frequency; }
-    TimeDelta GetGpuTimeOffset() const noexcept { return m_gpu_time_calibration.second; }
+    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
+    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
     TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
 
 private:

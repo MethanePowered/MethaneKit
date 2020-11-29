@@ -33,11 +33,8 @@ namespace Methane::Graphics
 
 enum class AppAction : uint32_t
 {
-    None = 0,
-
-    SwitchAnimations,
-
-    Count
+    None = 0U,
+    SwitchAnimations
 };
 
 class AppController
@@ -64,7 +61,7 @@ protected:
     using Platform::AppController::GetKeyboardActionName;
     
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

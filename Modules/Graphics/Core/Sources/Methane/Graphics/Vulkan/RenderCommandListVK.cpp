@@ -32,6 +32,8 @@ Vulkan implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -92,7 +94,8 @@ void RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers)
 
     RenderCommandListBase::SetVertexBuffers(vertex_buffers);
 
-    if (!(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
+    using namespace magic_enum::bitwise_operators;
+    if (!magic_enum::flags::enum_contains(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
         return;
 }
 

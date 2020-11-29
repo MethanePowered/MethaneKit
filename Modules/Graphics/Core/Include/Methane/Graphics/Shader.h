@@ -41,12 +41,10 @@ struct Context;
 
 struct Shader
 {
-    enum class Type : uint32_t
+    enum class Type
     {
-        Vertex = 0,
+        Vertex,
         Pixel,
-        
-        Count,
         All
     };
     
@@ -85,7 +83,6 @@ struct Shader
     static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
-    static std::string GetTypeName(Type shader_type);
     static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
 
     // Shader interface

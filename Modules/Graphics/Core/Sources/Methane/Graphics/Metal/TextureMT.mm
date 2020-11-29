@@ -30,6 +30,7 @@ Metal implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics
@@ -111,7 +112,7 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 }
 
 TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : TextureBase(context, settings, descriptor_by_usage)
+    : ResourceMT<TextureBase>(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
@@ -124,7 +125,7 @@ void TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     TextureBase::SetName(name);
-    m_mtl_texture.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
 }
 
 void TextureMT::SetData(const SubResources& sub_resources)
@@ -134,8 +135,6 @@ void TextureMT::SetData(const SubResources& sub_resources)
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
     TextureBase::SetData(sub_resources);
-
-    id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
 
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.RetainResource(*this);
@@ -155,31 +154,26 @@ void TextureMT::SetData(const SubResources& sub_resources)
         {
             case Texture::DimensionType::Tex1DArray:
             case Texture::DimensionType::Tex2DArray:
-                slice = sub_resource.index.array_index;
+                slice = sub_resource.GetIndex().GetArrayIndex();
                 break;
             case Texture::DimensionType::Cube:
-                slice = sub_resource.index.depth_slice;
+                slice = sub_resource.GetIndex().GetDepthSlice();
                 break;
             case Texture::DimensionType::CubeArray:
-                slice = sub_resource.index.depth_slice + sub_resource.index.array_index * 6;
+                slice = sub_resource.GetIndex().GetDepthSlice() + sub_resource.GetIndex().GetArrayIndex() * 6;
                 break;
             default:
                 slice = 0;
         }
 
-        // Create temporary buffer with shared storage mode for sub-resource data upload to private texture on GPU
-        id <MTLBuffer> mtl_sub_resource_upload_buffer = [mtl_device newBufferWithBytes:sub_resource.p_data
-                                                                                length:sub_resource.size
-                                                                               options:MTLResourceStorageModeShared];
-
-        [mtl_blit_encoder copyFromBuffer:mtl_sub_resource_upload_buffer
+        [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
                             sourceOffset:0
                        sourceBytesPerRow:bytes_per_row
                      sourceBytesPerImage:bytes_per_image
                               sourceSize:texture_region.size
                                toTexture:m_mtl_texture
                         destinationSlice:slice
-                        destinationLevel:sub_resource.index.mip_level
+                        destinationLevel:sub_resource.GetIndex().GetMipLevel()
                        destinationOrigin:texture_region.origin];
     }
 
@@ -196,19 +190,45 @@ void TextureMT::UpdateFrameBuffer()
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
+void TextureMT::GenerateMipLevels()
+{
+    META_FUNCTION_TASK();
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
+
+    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    blit_command_list.Reset(s_debug_group.get());
+
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
+
+    [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
+
+    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
+}
+
+RenderContextMT& TextureMT::GetRenderContextMT()
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
+    return static_cast<RenderContextMT&>(GetContextMT());
+}
+
 MTLTextureUsage TextureMT::GetNativeTextureUsage()
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderRead))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::ShaderWrite))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (settings.usage_mask & static_cast<uint32_t>(TextureBase::Usage::RenderTarget))
+    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;
@@ -251,7 +271,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.height             = settings.dimensions.height;
         mtl_tex_desc.depth              = settings.dimensions.depth;
         mtl_tex_desc.arrayLength        = settings.array_length;
-        mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().mip_levels_count;
+        mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;
 
     default: META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
@@ -264,30 +284,6 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     mtl_tex_desc.usage = GetNativeTextureUsage();
 
     return mtl_tex_desc;
-}
-
-void TextureMT::GenerateMipLevels()
-{
-    META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
-
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
-    blit_command_list.Reset(s_debug_group.get());
-    
-    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
-    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
-    
-    [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
-
-    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
-}
-
-RenderContextMT& TextureMT::GetRenderContextMT()
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
-    return static_cast<RenderContextMT&>(GetContextMT());
 }
 
 } // namespace Methane::Graphics

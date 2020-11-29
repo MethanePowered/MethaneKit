@@ -57,16 +57,16 @@ struct Texture : virtual Resource
     {
         Type           type           = Type::Texture;
         DimensionType  dimension_type = DimensionType::Tex2D;
-        Usage::Mask    usage_mask     = Usage::Value::Unknown;
+        Usage          usage_mask     = Usage::None;
         PixelFormat    pixel_format   = PixelFormat::Unknown;
         Dimensions     dimensions     = Dimensions();
         uint32_t       array_length   = 1U;
         bool           mipmapped      = false;
 
-        static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
-        static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage::Mask usage);
+        static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
         static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
-        static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage::Mask usage_mask = Usage::RenderTarget);
+        static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
     };
 
     // Create Texture instance

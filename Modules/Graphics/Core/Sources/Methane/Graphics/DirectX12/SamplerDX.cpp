@@ -183,7 +183,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode 
 static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
 {
     META_FUNCTION_TASK();
-    for (int i = 0; i < Color4f::array_size; ++i)
+    for (Data::Size i = 0; i < Color4f::Size; ++i)
     {
         p_out_color[i] = in_color[i];
     }
@@ -211,7 +211,7 @@ Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings
 }
 
 SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : SamplerBase(context, settings, descriptor_by_usage)
+    : ResourceDX<SamplerBase>(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();

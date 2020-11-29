@@ -32,11 +32,10 @@ DirectX 12 implementation of the device interface.
 #include <dxgidebug.h>
 #endif
 
+#include <magic_enum.hpp>
 #include <nowide/convert.hpp>
 #include <algorithm>
 #include <cassert>
-
-
 
 namespace Methane::Graphics
 {
@@ -59,10 +58,10 @@ static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
 }
 
-Device::Feature::Mask DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+Device::Features DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
-    return Device::Feature::Value::BasicRendering;
+    return Device::Features::BasicRendering;
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
@@ -251,7 +250,7 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Feature::Mask supported_features)
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Features supported_features)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
@@ -291,8 +290,10 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    Device::Feature::Mask device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
-    if (!(device_supported_features & GetGpuSupportedFeatures()))
+    Device::Features device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
+
+    using namespace magic_enum::bitwise_operators;
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetGpuSupportedFeatures()))
         return;
 
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));

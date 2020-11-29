@@ -71,16 +71,11 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 }
 
 TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : TextureBase(context, settings, descriptor_by_usage)
+    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
 
     InitializeDefaultDescriptors();
-}
-
-TextureVK::~TextureVK()
-{
-    META_FUNCTION_TASK();
 }
 
 void TextureVK::SetName(const std::string& name)

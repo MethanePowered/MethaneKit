@@ -160,7 +160,6 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
-            -Wno-deprecated-copy
         )
 
     endif()
@@ -276,6 +275,8 @@ set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_HHC TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_LATEX TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_Perl TRUE)
+
+set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Generate and install magic_enum target")
 
 add_subdirectory(Externals)
 add_subdirectory(Modules)

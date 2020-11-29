@@ -24,6 +24,7 @@ Base implementation of the render context interface.
 #include "RenderContextBase.h"
 #include "DeviceBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -33,7 +34,6 @@ namespace Methane::Graphics
 RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings)
     : ContextBase(device, parallel_executor, Type::Render)
     , m_settings(settings)
-    , m_frame_buffer_index(0)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),

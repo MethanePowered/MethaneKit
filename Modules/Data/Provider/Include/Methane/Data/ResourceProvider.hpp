@@ -22,7 +22,7 @@ from RESOURCES_NAMESPACE or external resource files on disk.
 
 ******************************************************************************/
 
-// FIXME: add inclusion guard, depending on RESOURCE_PROVIDER
+// Inclusion guard is missing intentionally because is included multiple times with different value of RESOURCE_PROVIDER
 
 #include "FileProvider.hpp"
 
@@ -67,21 +67,17 @@ public:
         {
             cmrc::file res_file = m_resource_fs.open(path);
             return Methane::Data::Chunk(reinterpret_cast<Methane::Data::ConstRawPtr>(res_file.cbegin()),
-                                        static_cast<Methane::Data::Size>(res_file.cend() - res_file.cbegin()));
+                                        static_cast<Methane::Data::Size>(std::distance(res_file.cbegin(), res_file.cend())));
         }
 
         META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), "invalid resource path '{}'", path);
         return FileProvider::GetData(path);
     }
 
-protected:
-    ResourceProvider()
-        : m_resource_fs(cmrc::RESOURCE_NAMESPACE::get_filesystem())
-    {
-        META_FUNCTION_TASK();
-    }
+private:
+    ResourceProvider() = default;
 
-    cmrc::embedded_filesystem m_resource_fs;
+    cmrc::embedded_filesystem m_resource_fs = cmrc::RESOURCE_NAMESPACE::get_filesystem();
 };
 
 } // namespace RESOURCE_NAMESPACE

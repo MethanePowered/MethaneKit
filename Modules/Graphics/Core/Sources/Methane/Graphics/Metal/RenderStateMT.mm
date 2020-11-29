@@ -32,6 +32,8 @@ Metal implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -62,19 +64,21 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannel::Mask rt_write_mask)
+static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
-    using ColorChannel = RenderState::Blending::ColorChannel;
+    using namespace magic_enum::bitwise_operators;
+
+    using ColorChannels = RenderState::Blending::ColorChannels;
 
     MTLColorWriteMask mtl_color_write_mask = 0U;
-    if (rt_write_mask & ColorChannel::Red)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Red))
         mtl_color_write_mask |= MTLColorWriteMaskRed;
-    if (rt_write_mask & ColorChannel::Green)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Green))
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
-    if (rt_write_mask & ColorChannel::Blue)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Blue))
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
-    if (rt_write_mask & ColorChannel::Alpha)
+    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Alpha))
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
     return mtl_color_write_mask;
 };
@@ -355,30 +359,31 @@ void RenderStateMT::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateMT::Apply(RenderCommandListBase& command_list, Group::Mask state_groups)
+void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
-    if (state_groups & Group::Program    ||
-        state_groups & Group::Rasterizer ||
-        state_groups & Group::Blending)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::Program)    ||
+        magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer) ||
+        magic_enum::flags::enum_contains(state_groups & Groups::Blending))
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (state_groups & Group::DepthStencil)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::DepthStencil))
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
-    if (state_groups & Group::Rasterizer)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer))
     {
         [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (state_groups & Group::BlendingColor)
+    if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
     {
         const Settings& settings = GetSettings();
         [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()

@@ -39,7 +39,7 @@ namespace gfx = Methane::Graphics;
 template<typename FrameT>
 class App
     : public Graphics::App<FrameT, IApp>
-    , protected AppBase
+    , public AppBase
 {
 public:
     using GraphicsApp = Graphics::App<FrameT, IApp>;
@@ -87,21 +87,21 @@ public:
 
     // UserInterface::IApp interface
 
-    const IApp::Settings& GetUserInterfaceAppSettings() const noexcept override { return AppBase::GetAppSettings(); }
+    const IApp::Settings& GetUserInterfaceAppSettings() const noexcept final { return AppBase::GetAppSettings(); }
 
-    bool SetHeadsUpDisplayMode(IApp::HeadsUpDisplayMode heads_up_display_mode) override
+    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) final
     {
         META_FUNCTION_TASK();
         if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
             return false;
 
-        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::IApp::HeadsUpDisplayMode::WindowTitle);
         GraphicsApp::GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
-        return AppBase::SetHeadsUpDisplayMode(heads_up_display_mode);
+        return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }
 
-    bool SetAnimationsEnabled(bool animations_enabled) override
+    bool SetAnimationsEnabled(bool animations_enabled) final
     {
         META_FUNCTION_TASK();
         if (!GraphicsApp::SetAnimationsEnabled(animations_enabled))
@@ -131,21 +131,21 @@ protected:
     }
 
     // Platform::AppBase overrides
-    void ShowControlsHelp() override
+    void ShowControlsHelp() final
     {
         META_FUNCTION_TASK();
         if (!SetHelpText(Platform::AppBase::GetControlsHelp()))
             SetHelpText("");
     }
 
-    void ShowCommandLineHelp() override
+    void ShowCommandLineHelp() final
     {
         META_FUNCTION_TASK();
         if (!SetHelpText(Platform::AppBase::GetCommandLineHelp()))
             SetHelpText("");
     }
 
-    // IContextCallback implementation
+    // IContextCallback override
     void OnContextReleased(gfx::Context& context) override
     {
         META_FUNCTION_TASK();

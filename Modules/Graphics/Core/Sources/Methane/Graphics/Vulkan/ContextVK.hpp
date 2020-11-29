@@ -48,11 +48,6 @@ public:
         META_FUNCTION_TASK();
     }
 
-    ~ContextVK() override
-    {
-        META_FUNCTION_TASK();
-    }
-
     // Context interface
 
     void WaitForGpu(Context::WaitFor wait_for) override
@@ -79,13 +74,13 @@ public:
 
     // IContextVK interface
 
-    DeviceVK& GetDeviceVK() noexcept override
+    DeviceVK& GetDeviceVK() noexcept final
     {
         META_FUNCTION_TASK();
         return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueVK& GetUploadCommandQueueVK() noexcept override
+    CommandQueueVK& GetUploadCommandQueueVK() noexcept final
     {
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBase::GetUploadCommandQueue());

@@ -25,14 +25,14 @@ Base implementation of the texture interface.
 
 #include <Methane/Graphics/Texture.h>
 
-#include "Native/ResourceNT.h"
+#include "ResourceBase.h"
 
 namespace Methane::Graphics
 {
 
 class TextureBase
     : public Texture
-    , public ResourceNT
+    , public ResourceBase
 {
 public:
     TextureBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);

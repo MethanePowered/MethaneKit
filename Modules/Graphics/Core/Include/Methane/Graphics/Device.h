@@ -49,30 +49,17 @@ struct Device
     : virtual Object
     , virtual Data::IEmitter<IDeviceCallback>
 {
-    struct Feature
+    enum class Features : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            Unknown                 = 0U,
-            BasicRendering          = 1U << 0U,
-            TextureAndSamplerArrays = 1U << 1U,
-            All                     = ~0U,
-        };
-
-        using Values = std::array<Value, 2>;
-        static constexpr const Values values{ BasicRendering, TextureAndSamplerArrays };
-        
-        static std::string ToString(Value feature);
-        static std::string ToString(Mask features);
-
-        Feature()  = delete;
-        ~Feature() = delete;
+        Unknown                 = 0U,
+        BasicRendering          = 1U << 0U,
+        TextureAndSamplerArrays = 1U << 1U,
+        All                     = ~0U,
     };
 
     virtual const std::string& GetAdapterName() const noexcept = 0;
     virtual bool               IsSoftwareAdapter() const noexcept = 0;
-    virtual Feature::Mask      GetSupportedFeatures() const noexcept = 0;
+    virtual Features           GetSupportedFeatures() const noexcept = 0;
     virtual std::string        ToString() const = 0;
 };
 
@@ -80,13 +67,13 @@ struct System
 {
     static System& Get();
 
-    virtual void                  CheckForChanges() = 0;
-    virtual const Ptrs<Device>&   UpdateGpuDevices(Device::Feature::Mask supported_features = Device::Feature::Value::All) = 0;
-    virtual const Ptrs<Device>&   GetGpuDevices() const = 0;
-    virtual Ptr<Device>           GetNextGpuDevice(const Device& device) const = 0;
-    virtual Ptr<Device>           GetSoftwareGpuDevice() const = 0;
-    virtual Device::Feature::Mask GetGpuSupportedFeatures() const = 0;
-    virtual std::string           ToString() const = 0;
+    virtual void                CheckForChanges() = 0;
+    virtual const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features = Device::Features::All) = 0;
+    virtual const Ptrs<Device>& GetGpuDevices() const = 0;
+    virtual Ptr<Device>         GetNextGpuDevice(const Device& device) const = 0;
+    virtual Ptr<Device>         GetSoftwareGpuDevice() const = 0;
+    virtual Device::Features    GetGpuSupportedFeatures() const = 0;
+    virtual std::string         ToString() const = 0;
     
     virtual ~System() = default;
 };

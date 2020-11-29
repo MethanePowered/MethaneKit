@@ -23,11 +23,13 @@ by decoding them from popular image formats.
 ******************************************************************************/
 
 #include <Methane/Graphics/ImageLoader.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <taskflow/taskflow.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
@@ -51,18 +53,20 @@ static PixelFormat GetDefaultImageFormat(bool srgb)
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
 }
 
-ImageLoader::ImageData::ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept
-    : dimensions(in_dimensions)
-    , channels_count(in_channels_count)
-    , pixels(std::move(in_pixels))
+ImageLoader::ImageData::ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept
+    : m_dimensions(dimensions)
+    , m_channels_count(channels_count)
+    , m_pixels(std::move(pixels))
+    , m_pixels_release_required(!m_pixels.IsDataStored() && !m_pixels.IsEmptyOrNull())
 {
     META_FUNCTION_TASK();
 }
 
 ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
-    : dimensions(std::move(other.dimensions))
-    , channels_count(other.channels_count)
-    , pixels(std::move(other.pixels))
+    : m_dimensions(other.m_dimensions)
+    , m_channels_count(other.m_channels_count)
+    , m_pixels(std::move(other.m_pixels))
+    , m_pixels_release_required(other.m_pixels_release_required)
 {
     META_FUNCTION_TASK();
 }
@@ -72,10 +76,10 @@ ImageLoader::ImageData::~ImageData()
     META_FUNCTION_TASK();
 
 #ifndef USE_OPEN_IMAGE_IO
-    if (pixels.data.empty() && pixels.p_data)
+    if (m_pixels_release_required)
     {
         // We assume that image data was loaded with STB load call and was not copied to container, so it must be freed
-        stbi_image_free(const_cast<Data::RawPtr>(pixels.p_data));
+        stbi_image_free(const_cast<Data::RawPtr>(m_pixels.GetDataPtr()));
     }
 #endif
 }
@@ -86,7 +90,7 @@ ImageLoader::ImageLoader(Data::Provider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy)
+ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -95,7 +99,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #ifdef USE_OPEN_IMAGE_IO
 
 #if 0
-    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(raw_image_data.p_data), raw_image_data.size);
+    OIIO::Filesystem::IOMemReader image_reader(const_cast<char*>(raw_image_data.GetDataPtr()), raw_image_data.size);
     OIIO::ImageSpec init_spec;
     init_spec.attribute("oiio:ioproxy", OIIO::TypeDesc::PTR, &image_reader);
     OIIO::ImageBuf image_buf(init_spec);
@@ -123,9 +127,11 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
                                 Data::Chunk(std::move(texture_data)));
 
 #else
-    int image_width = 0, image_height = 0, image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<stbi_uc const*>(raw_image_data.p_data),
-                                                  static_cast<int>(raw_image_data.size),
+    int image_width = 0;
+    int image_height = 0;
+    int image_channels_count = 0;
+    stbi_uc* p_image_data = stbi_load_from_memory(raw_image_data.GetDataPtr(),
+                                                  static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));
 
@@ -135,12 +141,11 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const Data::Size image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
+    const auto image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
 
     if (create_copy)
     {
-        Data::RawPtr p_image_raw_data = reinterpret_cast<Data::RawPtr>(p_image_data);
-        Data::Bytes image_data_copy(p_image_raw_data, p_image_raw_data + image_data_size);
+        Data::Bytes image_data_copy(p_image_data, p_image_data + image_data_size);
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
@@ -154,24 +159,22 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options)
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options) const
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
-    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.dimensions, 1, image_format, options & Options::Mipmapped);
-    texture_ptr->SetData({ { image_data.pixels.p_data, image_data.pixels.size } });
+    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
 
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options)
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options) const
 {
     META_FUNCTION_TASK();
-
-    const uint32_t desired_channels_count = 4;
-
     // Load face image data in parallel
     TracyLockable(std::mutex, data_mutex);
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
@@ -179,14 +182,13 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     tf::Taskflow load_task_flow;
     load_task_flow.for_each_index_guided(0, static_cast<int>(image_paths.size()), 1,
-        [&](const int face_index)
+        [this, &image_paths, &face_images_data, &data_mutex](const int face_index)
         {
             META_FUNCTION_TASK();
-            // NOTE:
-            //  we create a copy of the loaded image data (via 3-rd argument of LoadImage)
-            //  to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
-            const std::string& face_image_path = image_paths[face_index];
-            ImageLoader::ImageData image_data = LoadImage(face_image_path, desired_channels_count, true);
+            // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
+            // to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
+            constexpr uint32_t desired_channels_count = 4;
+            ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
             std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
@@ -195,25 +197,24 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     context.GetParallelExecutor().run(load_task_flow).get();
 
     // Verify cube textures
-
     META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
-    const Dimensions face_dimensions     = face_images_data.front().second.dimensions;
-    const uint32_t   face_channels_count = face_images_data.front().second.channels_count;
+    const Dimensions face_dimensions     = face_images_data.front().second.GetDimensions();
+    const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
     META_CHECK_ARG_EQUAL_DESCR(face_dimensions.width, face_dimensions.height, "all images of cube texture faces must have equal width and height");
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
     for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions, face_image_data.second.dimensions, "all face image of cube texture must have equal dimensions");
-        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.channels_count, "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(face_image_data.second.pixels.p_data, face_image_data.second.pixels.size, Resource::SubResource::Index(face_image_data.first));
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),    "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.GetChannelsCount(), "all face image of cube texture must have equal channels count");
+        face_resources.emplace_back(face_image_data.second.GetPixels().GetDataPtr(), face_image_data.second.GetPixels().GetDataSize(), Resource::SubResource::Index(face_image_data.first));
     }
 
     // Load face images to cube texture
-
-    const PixelFormat image_format = GetDefaultImageFormat(options & Options::SrgbColorSpace);
-    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, options & Options::Mipmapped);
+    using namespace magic_enum::bitwise_operators;
+    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetData(face_resources);
 
     return texture_ptr;

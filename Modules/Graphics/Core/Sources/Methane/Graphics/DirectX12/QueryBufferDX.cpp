@@ -125,7 +125,7 @@ QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type, Data::Siz
     : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, buffer_size, query_size)
     , m_result_buffer_ptr(Buffer::CreateReadBackBuffer(GetContext(), buffer_size))
     , m_context_dx(dynamic_cast<IContextDX&>(GetContext()))
-    , m_result_resource_dx(dynamic_cast<ResourceDX&>(*m_result_buffer_ptr))
+    , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type), max_query_count))
 {
@@ -202,9 +202,9 @@ Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetGpuTimestamp()
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.size, sizeof(Timestamp), "query data size is less than expected for timestamp");
-    META_CHECK_ARG_NOT_NULL(query_data.p_data);
-    return *reinterpret_cast<const Timestamp*>(query_data.p_data);
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
+    return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr());
 }
 
 Timestamp TimestampQueryBufferDX::TimestampQueryDX::GetCpuNanoseconds()

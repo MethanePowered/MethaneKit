@@ -49,10 +49,9 @@ public:
     // DescriptorHeap interface
     void Allocate() override;
 
-protected:
+private:
     IContextDX& GetContextDX() noexcept;
 
-private:
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;
     wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;

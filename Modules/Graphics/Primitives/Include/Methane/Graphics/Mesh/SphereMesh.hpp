@@ -70,34 +70,36 @@ private:
         const uint32_t actual_long_lines_count = GetActualLongLinesCount();
         const uint32_t cap_vertex_count = 2 * (has_texcoord ? actual_long_lines_count : 1);
 
-        BaseMeshT::m_vertices.resize((m_lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count, {});
+        BaseMeshT::ResizeVertices((m_lat_lines_count - 2) * actual_long_lines_count + cap_vertex_count);
 
         if (!has_texcoord)
         {
-            Mesh::Position& first_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Position);
-            Mesh::Position& last_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Position);
+            Mesh::Position& first_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::GetMutableFirstVertex(), Mesh::VertexField::Position);
+            Mesh::Position& last_vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(BaseMeshT::GetMutableLastVertex(), Mesh::VertexField::Position);
 
-            first_vertex_position = Mesh::Position(0.F, m_radius, 0.F);
-            last_vertex_position = Mesh::Position(0.F, -m_radius, 0.F);
+            first_vertex_position = Mesh::Position(0.F,  m_radius, 0.F);
+            last_vertex_position  = Mesh::Position(0.F, -m_radius, 0.F);
 
             if (has_normals)
             {
-                Mesh::Normal& first_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.front(), Mesh::VertexField::Normal);
-                Mesh::Normal& last_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::m_vertices.back(), Mesh::VertexField::Normal);
+                Mesh::Normal& first_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::GetMutableFirstVertex(), Mesh::VertexField::Normal);
+                Mesh::Normal& last_vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(BaseMeshT::GetMutableLastVertex(), Mesh::VertexField::Normal);
 
-                first_vertex_normal = Mesh::Normal(0.F, 1.F, 0.F);
-                last_vertex_normal = Mesh::Normal(0.F, -1.F, 0.F);
+                first_vertex_normal = Mesh::Normal(0.F,  1.F, 0.F);
+                last_vertex_normal  = Mesh::Normal(0.F, -1.F, 0.F);
             }
         }
 
         const float texcoord_long_spacing = 1.F / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.F / (m_lat_lines_count + 1);
 
-        Matrix33f pitch_step_matrix{ }, yaw_step_matrix{ };
+        Matrix33f pitch_step_matrix{ };
+        Matrix33f yaw_step_matrix{ };
         cml::matrix_rotation_world_x(pitch_step_matrix, -cml::constants<float>::pi() / (m_lat_lines_count - 1));
         cml::matrix_rotation_world_y(yaw_step_matrix, -2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
-        Matrix33f pitch_matrix{ }, yaw_matrix{ };
+        Matrix33f pitch_matrix{ };
+        Matrix33f yaw_matrix{ };
         pitch_matrix.identity();
 
         if (!has_texcoord)
@@ -116,11 +118,11 @@ private:
                 const Matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
                 const uint32_t  vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
 
-                VType& vertex = BaseMeshT::m_vertices[vertex_index];
-                {
-                    Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                    vertex_position = Mesh::Position(0.F, m_radius, 0.F) * rotation_matrix;
-                }
+                VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
+
+                Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
+                vertex_position = Mesh::Position(0.F, m_radius, 0.F) * rotation_matrix;
+
                 if (has_normals)
                 {
                     Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
@@ -146,10 +148,9 @@ private:
         const bool     has_texcoord            = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
         const uint32_t actual_long_lines_count = GetActualLongLinesCount();
         const uint32_t sphere_faces_count      = GetSphereFacesCount();
+        uint32_t       index_offset            = 0;
 
-        BaseMeshT::m_indices.resize(sphere_faces_count * 3, 0);
-
-        uint32_t index_offset = 0;
+        Mesh::ResizeIndices(sphere_faces_count * 3);
 
         if (!has_texcoord)
         {
@@ -157,21 +158,21 @@ private:
 
             for (Mesh::Index long_line_index = 0; long_line_index < actual_long_lines_count - 1; ++long_line_index)
             {
-                BaseMeshT::m_indices[index_offset]     = 0;
-                BaseMeshT::m_indices[index_offset + 1] = long_line_index + 2;
-                BaseMeshT::m_indices[index_offset + 2] = long_line_index + 1;
+                Mesh::SetIndex(index_offset, 0);
+                Mesh::SetIndex(index_offset + 1, long_line_index + 2);
+                Mesh::SetIndex(index_offset + 2, long_line_index + 1);
 
                 index_offset += 3;
             }
 
-            BaseMeshT::m_indices[index_offset]     = 0;
-            BaseMeshT::m_indices[index_offset + 1] = 1;
-            BaseMeshT::m_indices[index_offset + 2] = static_cast<Mesh::Index>(m_long_lines_count);
+            Mesh::SetIndex(index_offset, 0);
+            Mesh::SetIndex(index_offset + 1, 1);
+            Mesh::SetIndex(index_offset + 2, static_cast<Mesh::Index>(m_long_lines_count));
 
             index_offset += 3;
         }
 
-        const uint32_t vertices_count         = static_cast<uint32_t>(BaseMeshT::m_vertices.size());
+        const auto     vertices_count         = static_cast<uint32_t>(BaseMeshT::GetVertexCount());
         const uint32_t index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
         const uint32_t index_long_lines_count = has_texcoord ? m_long_lines_count : m_long_lines_count - 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
@@ -180,26 +181,31 @@ private:
         {
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMeshT::m_indices[index_offset]     = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index);
-                BaseMeshT::m_indices[index_offset + 1] = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1);
-                BaseMeshT::m_indices[index_offset + 2] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index);
+                Mesh::SetIndex(index_offset, static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + long_line_index + first_vertex_index));
+                Mesh::SetIndex(index_offset + 1,
+                               static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + long_line_index + first_vertex_index + 1));
+                Mesh::SetIndex(index_offset + 2,
+                               static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + long_line_index + first_vertex_index));
 
-                BaseMeshT::m_indices[index_offset + 3] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index);
-                BaseMeshT::m_indices[index_offset + 4] = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + long_line_index + first_vertex_index + 1);
-                BaseMeshT::m_indices[index_offset + 5] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + long_line_index + first_vertex_index + 1);
+                Mesh::SetIndex(index_offset + 3,
+                               static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + long_line_index + first_vertex_index));
+                Mesh::SetIndex(index_offset + 4,
+                               static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + long_line_index + first_vertex_index + 1));
+                Mesh::SetIndex(index_offset + 5,
+                               static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + long_line_index + first_vertex_index + 1));
 
                 index_offset += 6;
             }
 
             if (!has_texcoord)
             {
-                BaseMeshT::m_indices[index_offset]     = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + actual_long_lines_count);
-                BaseMeshT::m_indices[index_offset + 1] = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + 1);
-                BaseMeshT::m_indices[index_offset + 2] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count);
+                Mesh::SetIndex(index_offset, static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + actual_long_lines_count));
+                Mesh::SetIndex(index_offset + 1, static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + 1));
+                Mesh::SetIndex(index_offset + 2, static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + actual_long_lines_count));
 
-                BaseMeshT::m_indices[index_offset + 3] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + actual_long_lines_count);
-                BaseMeshT::m_indices[index_offset + 4] = static_cast<Mesh::Index>((lat_line_index      * actual_long_lines_count) + 1);
-                BaseMeshT::m_indices[index_offset + 5] = static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count  + 1);
+                Mesh::SetIndex(index_offset + 3, static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + actual_long_lines_count));
+                Mesh::SetIndex(index_offset + 4, static_cast<Mesh::Index>((lat_line_index * actual_long_lines_count) + 1));
+                Mesh::SetIndex(index_offset + 5, static_cast<Mesh::Index>((lat_line_index + 1) * actual_long_lines_count + 1));
 
                 index_offset += 6;
             }
@@ -211,16 +217,16 @@ private:
 
             for (uint32_t long_line_index = 0; long_line_index < index_long_lines_count; ++long_line_index)
             {
-                BaseMeshT::m_indices[index_offset]     = static_cast<Mesh::Index>(vertices_count - 1);
-                BaseMeshT::m_indices[index_offset + 1] = static_cast<Mesh::Index>((vertices_count - 1) - (long_line_index + 2));
-                BaseMeshT::m_indices[index_offset + 2] = static_cast<Mesh::Index>((vertices_count - 1) - (long_line_index + 1));
+                Mesh::SetIndex(index_offset, static_cast<Mesh::Index>(vertices_count - 1));
+                Mesh::SetIndex(index_offset + 1, static_cast<Mesh::Index>((vertices_count - 1) - (long_line_index + 2)));
+                Mesh::SetIndex(index_offset + 2, static_cast<Mesh::Index>((vertices_count - 1) - (long_line_index + 1)));
 
                 index_offset += 3;
             }
 
-            BaseMeshT::m_indices[index_offset]     = static_cast<Mesh::Index>(vertices_count - 1);
-            BaseMeshT::m_indices[index_offset + 1] = static_cast<Mesh::Index>(vertices_count - 2);
-            BaseMeshT::m_indices[index_offset + 2] = static_cast<Mesh::Index>((vertices_count - 1) - actual_long_lines_count);
+            Mesh::SetIndex(index_offset, static_cast<Mesh::Index>(vertices_count - 1));
+            Mesh::SetIndex(index_offset + 1, static_cast<Mesh::Index>(vertices_count - 2));
+            Mesh::SetIndex(index_offset + 2, static_cast<Mesh::Index>((vertices_count - 1) - actual_long_lines_count));
         }
     }
 

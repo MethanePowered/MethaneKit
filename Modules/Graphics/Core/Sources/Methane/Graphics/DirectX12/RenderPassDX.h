@@ -38,7 +38,7 @@ class RenderCommandListDX;
 
 class RenderPassDX final
     : public RenderPassBase
-    , private Data::Receiver<IDescriptorHeapCallback>
+    , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR
 {
 public:
     RenderPassDX(RenderContextBase& context, const Settings& settings);
@@ -95,7 +95,7 @@ private:
         bool                        stencil_cleared = false;
         UINT8                       stencil_value   = 0;
 
-        DSClearInfo() {}
+        DSClearInfo() = default;
         DSClearInfo(const RenderPassBase::DepthAttachment& depth_attach, const RenderPassBase::StencilAttachment& stencil_attach);
     };
 

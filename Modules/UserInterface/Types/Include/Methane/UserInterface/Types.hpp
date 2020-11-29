@@ -29,6 +29,7 @@ Methane user interface types root header.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
@@ -53,127 +54,67 @@ enum class Units : uint8_t
     Dots,
 };
 
-inline std::string UnitsToString(Units units) noexcept
-{
-    switch(units)
-    {
-    case Units::Pixels: return "pixels";
-    case Units::Dots:   return "dots";
-    default:            return "";
-    }
-}
-
 template<typename BaseType>
 struct UnitType : BaseType
 {
     Units units = Units::Pixels;
 
     using BaseType::BaseType;
-
-    explicit UnitType(const BaseType& base) noexcept     : BaseType(base), units(Units::Pixels) { }
+    explicit UnitType(const BaseType& base) noexcept     : BaseType(base) { }
     UnitType(Units units, const BaseType& base) noexcept : BaseType(base), units(units) { }
     UnitType(Units units, BaseType&& base) noexcept      : BaseType(std::move(base)), units(units) { }
 
+    template<typename V>
+    explicit UnitType(const UnitType<V>& other) noexcept : BaseType(static_cast<const V&>(other)), units(other.units) { }
+
+    // Disable Sonar Check for variadic arguments constructor, since it reports false positive about slicing for universal references
     template<typename... BaseArgs>
-    UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { }
+    explicit UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { } //NOSONAR
 
-    explicit operator std::string() const                  { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), UnitsToString(units)); }
-    bool operator==(const UnitType& other) const noexcept  { return BaseType::operator==(other) && units == other.units; }
-    bool operator!=(const UnitType& other) const noexcept  { return BaseType::operator!=(other) || units != other.units; }
+    template<typename T = BaseType, typename = std::enable_if_t<std::is_same_v<FramePoint, T>>>
+    explicit UnitType(const UnitType<FrameSize>& size) noexcept : UnitType<FramePoint>(size.units, size.width, size.height) { }
+
+    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), magic_enum::enum_name(units)); }
+
+    template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(other) && units == other.units; }
+    template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(other) || units != other.units; }
+
+    template<typename T> bool operator<=(const T& other) const noexcept     { return units == other.units && BaseType::operator<=(other); }
+    template<typename T> bool operator<(const T& other) const noexcept      { return units == other.units && BaseType::operator<(other); }
+    template<typename T> bool operator>=(const T& other) const noexcept     { return units == other.units && BaseType::operator>=(other); }
+    template<typename T> bool operator>(const T& other) const noexcept      { return units == other.units && BaseType::operator>(other); }
+
+    template<typename T> UnitType operator+(const T& other) const           { META_CHECK_ARG_EQUAL(other.units, units); return UnitType<BaseType>(units, BaseType::operator+(other)); }
+    template<typename T> UnitType operator-(const T& other) const           { META_CHECK_ARG_EQUAL(other.units, units); return UnitType<BaseType>(units, BaseType::operator-(other)); }
+    template<typename T> UnitType& operator+=(const T& other)               { META_CHECK_ARG_EQUAL(other.units, units); BaseType::operator+=(other); return *this; }
+    template<typename T> UnitType& operator-=(const T& other)               { META_CHECK_ARG_EQUAL(other.units, units); BaseType::operator-=(other); return *this; }
+
+    template<typename T> UnitType  operator*(T&& multiplier) const noexcept { return UnitType<BaseType>(units, BaseType::operator*(std::forward<T>(multiplier))); }
+    template<typename T> UnitType  operator/(T&& divisor) const noexcept    { return UnitType<BaseType>(units, BaseType::operator/(std::forward<T>(divisor))); }
+    template<typename T> UnitType& operator*=(T&& multiplier) noexcept      { BaseType::operator*=(std::forward<T>(multiplier)); return *this; }
+    template<typename T> UnitType& operator/=(T&& divisor) noexcept         { BaseType::operator/=(std::forward<T>(divisor)); return *this; }
+
+    template<typename T, typename V, typename R>
+    using EnableReturnTypeIf = std::enable_if_t<std::is_same_v<V, T>, R>;
+
+    template<typename T, typename R>
+    using EnableReturnType = EnableReturnTypeIf<T, std::decay_t<R>, R>;
+
+    template<typename T = BaseType> EnableReturnType<T, FrameSize&>        AsSize() noexcept        { return static_cast<FrameSize&>(*this); }
+    template<typename T = BaseType> EnableReturnType<T, const FrameSize&>  AsSize() const noexcept  { return static_cast<const FrameSize&>(*this); }
+
+    template<typename T = BaseType> EnableReturnType<T, FramePoint&>       AsPoint() noexcept       { return static_cast<FramePoint&>(*this); }
+    template<typename T = BaseType> EnableReturnType<T, const FramePoint&> AsPoint() const noexcept { return static_cast<const FramePoint&>(*this); }
+
+    template<typename T = BaseType> EnableReturnType<T, FrameRect&>        AsRect() noexcept        { return static_cast<FrameRect&>(*this); }
+    template<typename T = BaseType> EnableReturnType<T, const FrameRect&>  AsRect() const noexcept  { return static_cast<const FrameRect&>(*this); }
+
+    template<typename T = BaseType> EnableReturnTypeIf<T, FrameRect, UnitType<FramePoint>> GetUnitOrigin() const noexcept { return UnitType<FramePoint>(units, FrameRect::origin); }
+    template<typename T = BaseType> EnableReturnTypeIf<T, FrameRect, UnitType<FrameSize>>  GetUnitSize() const noexcept   { return UnitType<FrameSize>(units, FrameRect::size); }
 };
 
-struct UnitSize : UnitType<FrameSize>
-{
-    using UnitType<FrameSize>::UnitType;
-    UnitSize(Units units, DimensionType w, DimensionType h) noexcept : UnitType<FrameSize>(units, w, h) { }
-
-    FrameSize&       AsSize() noexcept       { return static_cast<FrameSize&>(*this); }
-    const FrameSize& AsSize() const noexcept { return static_cast<const FrameSize&>(*this); }
-
-    using FrameSize::operator bool;
-    using UnitType<FrameSize>::operator==;
-    using UnitType<FrameSize>::operator!=;
-
-    bool operator<=(const UnitSize& other) const noexcept                  { return units == other.units && FrameSize::operator<=(other); }
-    bool operator<(const UnitSize& other) const noexcept                   { return units == other.units && FrameSize::operator<(other); }
-    bool operator>=(const UnitSize& other) const noexcept                  { return units == other.units && FrameSize::operator>=(other); }
-    bool operator>(const UnitSize& other) const noexcept                   { return units == other.units && FrameSize::operator>(other); }
-
-    UnitSize operator+(const UnitSize& other) const                        { META_CHECK_ARG_EQUAL(other.units, units); return UnitSize(units, FrameSize::operator+(other)); }
-    UnitSize operator-(const UnitSize& other) const                        { META_CHECK_ARG_EQUAL(other.units, units); return UnitSize(units, FrameSize::operator-(other)); }
-    UnitSize& operator+=(const UnitSize& other)                            { META_CHECK_ARG_EQUAL(other.units, units); FrameSize::operator+=(other); return *this; }
-    UnitSize& operator-=(const UnitSize& other)                            { META_CHECK_ARG_EQUAL(other.units, units); FrameSize::operator-=(other); return *this; }
-
-    template<typename M> UnitSize operator*(M multiplier) const noexcept                    { return UnitSize(units, FrameSize::operator*(multiplier)); }
-    template<typename M> UnitSize operator/(M divisor) const noexcept                       { return UnitSize(units, FrameSize::operator/(divisor)); }
-    template<typename M> UnitSize& operator*=(M multiplier) noexcept                        { FrameSize::operator*=(multiplier); return *this; }
-    template<typename M> UnitSize& operator/=(M divisor) noexcept                           { FrameSize::operator/=(divisor); return *this; }
-
-    template<typename M> using Point = Data::Point2T<M>;
-    template<typename M> UnitSize operator*(const Point<M>& multiplier) const noexcept      { return UnitSize(units, FrameSize::operator*(multiplier)); }
-    template<typename M> UnitSize operator/(const Point<M>& divisor) const noexcept         { return UnitSize(units, FrameSize::operator/(divisor)); }
-    template<typename M> UnitSize& operator*=(const Point<M>& multiplier) noexcept          { FrameSize::operator*=(multiplier); return *this; }
-    template<typename M> UnitSize& operator/=(const Point<M>& divisor) noexcept             { FrameSize::operator/=(divisor); return *this; }
-
-    template<typename M> using RectSize = Data::RectSize<M>;
-    template<typename M> UnitSize operator*(const RectSize<M>& multiplier) const noexcept   { return UnitSize(units, FrameSize::operator*(multiplier)); }
-    template<typename M> UnitSize operator/(const RectSize<M>& divisor) const noexcept      { return UnitSize(units, FrameSize::operator/(divisor)); }
-    template<typename M> UnitSize& operator*=(const RectSize<M>& multiplier) noexcept       { FrameSize::operator*=(multiplier); return *this; }
-    template<typename M> UnitSize& operator/=(const RectSize<M>& divisor) noexcept          { FrameSize::operator/=(divisor); return *this; }
-};
-
-struct UnitPoint : UnitType<FramePoint>
-{
-    using UnitType<FramePoint>::UnitType;
-    UnitPoint(Units units, CoordinateType x, CoordinateType y) noexcept : UnitType<FramePoint>(units, x, y) { }
-    explicit UnitPoint(const UnitSize& size) noexcept : UnitPoint(size.units, size.width, size.height) { }
-
-    FramePoint&       AsPoint() noexcept       { return static_cast<FramePoint&>(*this); }
-    const FramePoint& AsPoint() const noexcept { return static_cast<const FramePoint&>(*this); }
-
-    using UnitType<FramePoint>::operator==;
-    using UnitType<FramePoint>::operator!=;
-
-    bool operator<=(const UnitPoint& other) const noexcept                 { return units == other.units && FramePoint::operator<=(other); }
-    bool operator<(const UnitPoint& other) const noexcept                  { return units == other.units && FramePoint::operator<(other);  }
-    bool operator>=(const UnitPoint& other) const noexcept                 { return units == other.units && FramePoint::operator>=(other); }
-    bool operator>(const UnitPoint& other) const noexcept                  { return units == other.units && FramePoint::operator>(other);  }
-
-    UnitPoint operator+(const UnitPoint& other) const                      { META_CHECK_ARG_EQUAL(other.units, units); return UnitPoint(units, static_cast<const FramePoint&>(*this) + other); }
-    UnitPoint operator-(const UnitPoint& other) const                      { META_CHECK_ARG_EQUAL(other.units, units); return UnitPoint(units, static_cast<const FramePoint&>(*this) - other); }
-    UnitPoint& operator+=(const UnitPoint& other)                          { META_CHECK_ARG_EQUAL(other.units, units); FramePoint::operator+=(other); return *this; }
-    UnitPoint& operator-=(const UnitPoint& other)                          { META_CHECK_ARG_EQUAL(other.units, units); FramePoint::operator-=(other); return *this; }
-
-    template<typename M> UnitPoint  operator*(M multiplier) const noexcept                  { return UnitPoint(units, FramePoint::operator*(multiplier)); }
-    template<typename M> UnitPoint  operator/(M divisor) const noexcept                     { return UnitPoint(units, FramePoint::operator/(divisor)); }
-    template<typename M> UnitPoint& operator*=(M multiplier) noexcept                       { FramePoint::operator*=(multiplier); return *this; }
-    template<typename M> UnitPoint& operator/=(M divisor) noexcept                          { FramePoint::operator/=(divisor); return *this; }
-
-    template<typename M> UnitPoint  operator*(const Point2T<M>& multiplier) const noexcept  { return UnitPoint(units, FramePoint::operator*(multiplier)); }
-    template<typename M> UnitPoint  operator/(const Point2T<M>& divisor) const noexcept     { return UnitPoint(units, FramePoint::operator/(divisor)); }
-    template<typename M> UnitPoint& operator*=(const Point2T<M>& multiplier) noexcept       { FramePoint::operator*=(multiplier); return *this; }
-    template<typename M> UnitPoint& operator/=(const Point2T<M>& divisor) noexcept          { FramePoint::operator/=(divisor); return *this; }
-};
-
-struct UnitRect : UnitType<FrameRect>
-{
-    using UnitType<FrameRect>::UnitType;
-    explicit UnitRect(const UnitPoint& origin, const Size& size = {}) noexcept : UnitType<FrameRect>(origin.units, origin.AsPoint(), size) { }
-    UnitRect(Units units, const Point& origin, const Size& size) noexcept : UnitType<FrameRect>(units, origin, size) { }
-
-    FrameRect&       AsRect() noexcept          { return static_cast<FrameRect&>(*this); }
-    const FrameRect& AsRect() const noexcept    { return static_cast<const FrameRect&>(*this); }
-
-    UnitPoint GetUnitOrigin() const noexcept    { return UnitPoint(units, origin); }
-    UnitSize  GetUnitSize() const noexcept      { return UnitSize(units, size); }
-
-    using UnitType<FrameRect>::operator==;
-    using UnitType<FrameRect>::operator!=;
-
-    template<typename M> UnitRect operator*(M multiplier) const noexcept    { return UnitRect(units, FrameRect::operator*(multiplier)); }
-    template<typename M> UnitRect operator/(M divisor) const noexcept       { return UnitRect(units, FrameRect::operator/(divisor)); }
-    template<typename M> UnitRect& operator*=(M multiplier) noexcept        { FrameRect::operator*=(multiplier); return *this; }
-    template<typename M> UnitRect& operator/=(M divisor) noexcept           { FrameRect::operator/=(divisor); return *this; }
-};
+using UnitSize  = UnitType<FrameSize>;
+using UnitPoint = UnitType<FramePoint>;
+using UnitRect  = UnitType<FrameRect>;
 
 } // namespace Methane::UserInterface

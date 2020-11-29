@@ -51,7 +51,7 @@ public:
     template <typename T2>
     struct rebind
     {
-        typedef AlignedAllocator<T2, N> other;
+        using other = AlignedAllocator<T2, N>;
     };
 
     AlignedAllocator() = default;

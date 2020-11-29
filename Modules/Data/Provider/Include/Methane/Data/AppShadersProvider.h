@@ -16,42 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/SamplerNT.h
-Native implementation alias of the sampler interface.
+FILE: Methane/Graphics/AppShadersProvider.h
+Application Shader resources provider
+either stored in embedded application resources of on file system.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#ifdef SHADER_RESOURCES_NAMESPACE
 
-#include <Methane/Graphics/DirectX12/SamplerDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/SamplerMT.hh>
-
-#elif defined __linux__
-
-#include <Methane/Graphics/Vulkan/SamplerVK.h>
-
+#ifdef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE //NOSONAR
 #endif
 
-namespace Methane::Graphics
+#define RESOURCE_NAMESPACE SHADER_RESOURCES_NAMESPACE
+#include "ResourceProvider.hpp"
+
+namespace Methane::Data
 {
+using ShaderProvider = SHADER_RESOURCES_NAMESPACE::ResourceProvider;
+}
 
-#if defined _WIN32
+#else // ifdef SHADER_RESOURCES_NAMESPACE
 
-using SamplerNT = SamplerDX;
+#include "FileProvider.hpp"
 
-#elif defined __APPLE__
+namespace Methane::Data
+{
+using ShaderProvider = FileProvider;
+}
 
-using SamplerNT = SamplerMT;
-
-#elif defined __linux__
-
-using SamplerNT = SamplerVK;
-
-#endif
-
-} // namespace Methane::Graphics
+#endif // ifdef SHADER_RESOURCES_NAMESPACE

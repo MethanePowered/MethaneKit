@@ -158,60 +158,52 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
         { 0x04A, Key::KeyPadSubtract},
     };
 
-
     // The Ctrl keys require special handling
     if (native_key.w_param == VK_CONTROL)
-    {
-        MSG  next {};
-        LONG time = 0;
-
-        // Right side keys have the extended key bit set
-        if (native_key.l_param & 0x01000000)
-            return Key::Unknown;
-
-        // HACK: Alt Gr sends Left Ctrl and then Right Alt in close sequence
-        //       We only want the Right Alt message, so if the next message is
-        //       Right Alt we ignore this (synthetic) Left Ctrl message
-        time = GetMessageTime();
-
-        if (PeekMessageW(&next, NULL, 0, 0, PM_NOREMOVE))
-        {
-            if (next.message == WM_KEYDOWN ||
-                next.message == WM_SYSKEYDOWN ||
-                next.message == WM_KEYUP ||
-                next.message == WM_SYSKEYUP)
-            {
-                if (next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == static_cast<DWORD>(time))
-                {
-                    // Next message is Right Alt down so discard this
-                    return Key::Unknown;
-                }
-            }
-        }
-
-        return Key::LeftControl;
-    }
+        return GetControlKey(native_key);
 
     if (native_key.w_param == VK_PROCESSKEY)
-    {
-        // IME notifies that keys have been filtered by setting the virtual key-code to VK_PROCESSKEY
-        return Key::Unknown;
-    }
+        return Key::Unknown; // IME notifies that keys have been filtered by setting the virtual key-code to VK_PROCESSKEY
 
-    const uint32_t native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
+    const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
     auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
-    return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
+    return native_code_and_key_it == s_key_by_native_code.end()
+         ? Key::Unknown : native_code_and_key_it->second;
 }
 
-Modifier::Mask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Key KeyConverter::GetControlKey(const NativeKey& native_key)
+{
+    MSG  next {};
+    LONG time = 0;
+
+    // Right side keys have the extended key bit set
+    if (native_key.l_param & 0x01000000)
+        return Key::Unknown;
+
+    // HACK: Alt Gr sends Left Ctrl and then Right Alt in close sequence
+    //       We only want the Right Alt message, so if the next message is
+    //       Right Alt we ignore this (synthetic) Left Ctrl message
+    time = GetMessageTime();
+
+    if (!PeekMessageW(&next, nullptr, 0, 0, PM_NOREMOVE))
+        return Key::LeftControl;
+
+    if ((next.message == WM_KEYDOWN || next.message == WM_SYSKEYDOWN || next.message == WM_KEYUP || next.message == WM_SYSKEYUP) &&
+        next.wParam == VK_MENU && (next.lParam & 0x01000000) && next.time == static_cast<DWORD>(time))
+        return Key::Unknown; // Next message is Right Alt down so discard this
+
+    return Key::LeftControl;
+}
+
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
     switch (native_key.w_param)
     {
-    case VK_CONTROL: return Modifier::Value::Control;
-    case VK_SHIFT:   return Modifier::Value::Shift;
-    case VK_CAPITAL: return Modifier::Value::CapsLock;
-    default:         return Modifier::Value::None;
+    case VK_CONTROL: return Modifiers::Control;
+    case VK_SHIFT:   return Modifiers::Shift;
+    case VK_CAPITAL: return Modifiers::CapsLock;
+    default:         return Modifiers::None;
     }
 }
 

@@ -25,7 +25,10 @@ Unit tests of the Keyboard data types
 
 #include <Methane/Platform/Keyboard.h>
 
+#include <magic_enum.hpp>
+
 using namespace Methane::Platform::Keyboard;
+using namespace magic_enum::bitwise_operators;
 
 TEST_CASE("Keyboard state initialization", "[keyboard-state]")
 {
@@ -35,14 +38,14 @@ TEST_CASE("Keyboard state initialization", "[keyboard-state]")
         const KeyStates released_key_states{};
         CHECK(keyboard_state.GetKeyStates() == released_key_states);
         CHECK(keyboard_state.GetPressedKeys() == Keys{});
-        CHECK(keyboard_state.GetModifiersMask() == Modifier::None);
+        CHECK(keyboard_state.GetModifiersMask() == Modifiers::None);
     }
 
     SECTION("Initializer list constructor")
     {
         const State keyboard_state{ Key::LeftControl, Key::LeftShift, Key::C };
         CHECK(keyboard_state.GetPressedKeys() == Keys{ Key::C });
-        CHECK(keyboard_state.GetModifiersMask() == (Modifier::Control | Modifier::Shift));
+        CHECK(keyboard_state.GetModifiersMask() == (Modifiers::Control | Modifiers::Shift));
     }
 
     SECTION("Copy constructor")
@@ -50,14 +53,14 @@ TEST_CASE("Keyboard state initialization", "[keyboard-state]")
         const State keyboard_state_a{ Key::LeftControl, Key::LeftShift, Key::C, Key::Up };
         const State keyboard_state_b(keyboard_state_a);
         CHECK(keyboard_state_b.GetPressedKeys() == Keys{ Key::C, Key::Up });
-        CHECK(keyboard_state_b.GetModifiersMask() == (Modifier::Control | Modifier::Shift));
+        CHECK(keyboard_state_b.GetModifiersMask() == (Modifiers::Control | Modifiers::Shift));
     }
     
     SECTION("Construct with unknown key")
     {
         const State keyboard_state{ Key::Unknown };
         CHECK(keyboard_state.GetPressedKeys() == Keys{ });
-        CHECK(keyboard_state.GetModifiersMask() == Modifier::None);
+        CHECK(keyboard_state.GetModifiersMask() == Modifiers::None);
     }
 }
 
@@ -68,7 +71,7 @@ TEST_CASE("Keyboard state modification", "[keyboard-state]")
         State keyboard_state;
         keyboard_state.PressKey(Key::A);
         CHECK(keyboard_state.GetPressedKeys() == Keys{ Key::A });
-        CHECK(keyboard_state.GetModifiersMask() == Modifier::None);
+        CHECK(keyboard_state.GetModifiersMask() == Modifiers::None);
     }
 
     SECTION("Press control key")
@@ -76,7 +79,7 @@ TEST_CASE("Keyboard state modification", "[keyboard-state]")
         State keyboard_state;
         keyboard_state.PressKey(Key::LeftAlt);
         CHECK(keyboard_state.GetPressedKeys() == Keys{ });
-        CHECK(keyboard_state.GetModifiersMask() == Modifier::Alt);
+        CHECK(keyboard_state.GetModifiersMask() == Modifiers::Alt);
     }
 
     SECTION("Release printable key")
@@ -84,7 +87,7 @@ TEST_CASE("Keyboard state modification", "[keyboard-state]")
         State keyboard_state{ Key::RightControl, Key::RightAlt, Key::W, Key::Num3 };
         keyboard_state.ReleaseKey(Key::Num3);
         CHECK(keyboard_state.GetPressedKeys() == Keys{ Key::W });
-        CHECK(keyboard_state.GetModifiersMask() == (Modifier::Control | Modifier::Alt));
+        CHECK(keyboard_state.GetModifiersMask() == (Modifiers::Control | Modifiers::Alt));
     }
 
     SECTION("Release control key")
@@ -92,7 +95,7 @@ TEST_CASE("Keyboard state modification", "[keyboard-state]")
         State keyboard_state{ Key::RightControl, Key::RightAlt, Key::W, Key::Num3 };
         keyboard_state.ReleaseKey(Key::RightAlt);
         CHECK(keyboard_state.GetPressedKeys() == Keys{ Key::W, Key::Num3 });
-        CHECK(keyboard_state.GetModifiersMask() == Modifier::Control);
+        CHECK(keyboard_state.GetModifiersMask() == Modifiers::Control);
     }
 }
 
@@ -103,7 +106,7 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a{ Key::RightControl, Key::LeftAlt,  Key::Up, Key::Y, Key::Num5 };
         const State keyboard_state_b{ Key::LeftControl,  Key::RightAlt, Key::Up, Key::Y, Key::Num5 };
         CHECK(keyboard_state_a == keyboard_state_b);
-        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::None);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Properties::None);
     }
 
     SECTION("States inequality in printable keys")
@@ -111,7 +114,7 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a{ Key::RightControl, Key::LeftAlt,   Key::Down, Key::U, Key::Num2 };
         const State keyboard_state_b{ Key::LeftControl,  Key::RightAlt,  Key::Up,   Key::Y, Key::Num5 };
         CHECK(keyboard_state_a != keyboard_state_b);
-        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::KeyStates);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Properties::KeyStates);
     }
 
     SECTION("States inequality in modifiers")
@@ -119,6 +122,6 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         const State keyboard_state_a{ Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5 };
         const State keyboard_state_b{ Key::LeftControl,  Key::RightAlt,  Key::Up, Key::Y, Key::Num5 };
         CHECK(keyboard_state_a != keyboard_state_b);
-        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Property::Modifiers);
+        CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Properties::Modifiers);
     }
 }

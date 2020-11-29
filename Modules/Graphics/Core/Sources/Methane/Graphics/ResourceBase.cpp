@@ -31,6 +31,7 @@ Base implementation of the resource interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 #include <sstream>
 #include <utility>
@@ -39,9 +40,9 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-ResourceBase::Barrier::Id::Id(Type type, const Resource& resource)
-    : type(type)
-    , resource(resource)
+ResourceBase::Barrier::Id::Id(Type type, const Resource& resource) noexcept
+    : m_type(type)
+    , m_resource_ref(resource)
 {
     META_FUNCTION_TASK();
 }
@@ -49,17 +50,17 @@ ResourceBase::Barrier::Id::Id(Type type, const Resource& resource)
 bool ResourceBase::Barrier::Id::operator<(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Resource* p_this_resource  = std::addressof(resource);
-    const Resource* p_other_resource = std::addressof(other.resource);
-    return std::tie(type, p_this_resource) < std::tie(other.type, p_other_resource);
+    const Resource* p_this_resource  = std::addressof(m_resource_ref.get());
+    const Resource* p_other_resource = std::addressof(other.GetResource());
+    return std::tie(m_type, p_this_resource) < std::tie(other.m_type, p_other_resource);
 }
 
 bool ResourceBase::Barrier::Id::operator==(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Resource* p_this_resource  = std::addressof(resource);
-    const Resource* p_other_resource = std::addressof(other.resource);
-    return std::tie(type, p_this_resource) == std::tie(other.type, p_other_resource);
+    const Resource* p_this_resource  = std::addressof(m_resource_ref.get());
+    const Resource* p_other_resource = std::addressof(other.GetResource());
+    return std::tie(m_type, p_this_resource) == std::tie(other.m_type, p_other_resource);
 }
 
 bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
@@ -68,9 +69,9 @@ bool ResourceBase::Barrier::Id::operator!=(const Id& other) const noexcept
     return !operator==(other);
 }
 
-ResourceBase::Barrier::StateChange::StateChange(State before, State after)
-    : before(before)
-    , after(after)
+ResourceBase::Barrier::StateChange::StateChange(State before, State after) noexcept
+    : m_before(before)
+    , m_after(after)
 {
     META_FUNCTION_TASK();
 }
@@ -78,13 +79,13 @@ ResourceBase::Barrier::StateChange::StateChange(State before, State after)
 bool ResourceBase::Barrier::StateChange::operator<(const StateChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(before, after) < std::tie(other.before, other.after);
+    return std::tie(m_before, m_after) < std::tie(other.m_before, other.m_after);
 }
 
 bool ResourceBase::Barrier::StateChange::operator==(const StateChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(before, after) == std::tie(other.before, other.after);
+    return std::tie(m_before, m_after) == std::tie(other.m_before, other.m_after);
 }
 
 bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) const noexcept
@@ -93,9 +94,9 @@ bool ResourceBase::Barrier::StateChange::operator!=(const StateChange& other) co
     return !operator==(other);
 }
 
-ResourceBase::Barrier::Barrier(Id id, StateChange state_change)
-    : id(std::move(id))
-    , state_change(std::move(state_change))
+ResourceBase::Barrier::Barrier(const Id& id, const StateChange& state_change)
+    : m_id(id)
+    , m_state_change(state_change)
 {
     META_FUNCTION_TASK();
 }
@@ -110,13 +111,13 @@ ResourceBase::Barrier::Barrier(Type type, const Resource& resource, State state_
 bool ResourceBase::Barrier::operator<(const Barrier& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(id, state_change) < std::tie(other.id, other.state_change);
+    return std::tie(m_id, m_state_change) < std::tie(other.m_id, other.m_state_change);
 }
 
 bool ResourceBase::Barrier::operator==(const Barrier& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(id, state_change) == std::tie(other.id, other.state_change);
+    return std::tie(m_id, m_state_change) == std::tie(other.m_id, other.m_state_change);
 }
 
 bool ResourceBase::Barrier::operator!=(const Barrier& other) const noexcept
@@ -129,17 +130,10 @@ ResourceBase::Barrier::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("Resource '{}' {} barrier from {} to {} state",
-                       id.resource.GetName(), GetTypeName(id.type), GetStateName(state_change.before), GetStateName(state_change.after));
-}
-
-std::string ResourceBase::Barrier::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch(type)
-    {
-    case Type::Transition: return "Transition";
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(type, "");
-    }
+                       m_id.GetResource().GetName(),
+                       magic_enum::enum_name(m_id.GetType()),
+                       magic_enum::enum_name(m_state_change.GetStateBefore()),
+                       magic_enum::enum_name(m_state_change.GetStateAfter()));
 }
 
 Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after)
@@ -164,7 +158,7 @@ ResourceBase::Barriers::Barriers(const Set& barriers)
     std::transform(barriers.begin(), barriers.end(), std::inserter(m_barriers_map, m_barriers_map.begin()),
         [](const Barrier& barrier)
         {
-            return std::pair<Barrier::Id, Barrier::StateChange>{ barrier.id, barrier.state_change };
+            return std::pair<Barrier::Id, Barrier::StateChange>{ barrier.GetId(), barrier.GetStateChange() };
         }
     );
 }
@@ -245,56 +239,6 @@ Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
     META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not create resource location for an empty resource");
 }
 
-std::string Resource::GetTypeName(Type type)
-{
-    META_FUNCTION_TASK();
-    switch (type)
-    {
-    case Resource::Type::Buffer:  return "Buffer";
-    case Resource::Type::Texture: return "Texture";
-    case Resource::Type::Sampler: return "Sampler";
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(type, "Unknown");
-    }
-}
-
-std::string Resource::Usage::ToString(Usage::Value usage)
-{
-    META_FUNCTION_TASK();
-    switch (usage)
-    {
-    case Resource::Usage::ShaderRead:   return "Shader Read";
-    case Resource::Usage::ShaderWrite:  return "Shader Write";
-    case Resource::Usage::RenderTarget: return "Render Target";
-    case Resource::Usage::ReadBack:     return "Read Back";
-    case Resource::Usage::Addressable:  return "Addressable";
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(usage, "Unknown");
-    }
-}
-
-std::string Resource::Usage::ToString(Usage::Mask usage_mask)
-{
-    META_FUNCTION_TASK();
-
-    std::stringstream names_ss;
-    bool first_usage = true;
-
-    for (Usage::Value usage : Usage::values)
-    {
-        if (!(usage & usage_mask))
-            continue;
-
-        if (!first_usage)
-        {
-            names_ss << ", ";
-        }
-
-        names_ss << Usage::ToString(usage);
-        first_usage = false;
-    }
-
-    return names_ss.str();
-}
-
 Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
@@ -308,42 +252,26 @@ bool Resource::Location::operator==(const Location& other) const noexcept
            std::tie(other.m_resource_ptr, other.m_offset);
 }
 
-Resource::SubResource::SubResource(SubResource&& other) noexcept
-    : Data::Chunk(std::move(static_cast<Data::Chunk&&>(other)))
-    , index(std::move(other.index))
-    , data_range(std::move(other.data_range))
-{
-    META_FUNCTION_TASK();
-}
-
-Resource::SubResource::SubResource(const SubResource& other) noexcept
-    : Data::Chunk(other)
-    , index(other.index)
-    , data_range(other.data_range)
-{
-    META_FUNCTION_TASK();
-}
-
-Resource::SubResource::SubResource(Data::Bytes&& data, Index index, std::optional<BytesRange> data_range) noexcept
+Resource::SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
-    , index(std::move(index))
-    , data_range(std::move(data_range))
+    , m_index(index)
+    , m_data_range(std::move(data_range))
 {
     META_FUNCTION_TASK();
 }
 
-Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index, std::optional<BytesRange> data_range) noexcept
+Resource::SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(p_data, size)
-    , index(std::move(index))
-    , data_range(std::move(data_range))
+    , m_index(index)
+    , m_data_range(std::move(data_range))
 {
     META_FUNCTION_TASK();
 }
 
 Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
-    : depth(depth)
-    , array_size(array_size)
-    , mip_levels_count(mip_levels_count)
+    : m_depth(depth)
+    , m_array_size(array_size)
+    , m_mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
@@ -351,24 +279,19 @@ Resource::SubResource::Count::Count(Data::Size depth, Data::Size array_size, Dat
     META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
-Data::Size Resource::SubResource::Count::GetRawCount() const noexcept
-{
-    META_FUNCTION_TASK();
-    return depth * array_size * mip_levels_count;
-}
-
 void Resource::SubResource::Count::operator+=(const Index& other) noexcept
 {
-    depth            = std::max(depth,            other.depth_slice + 1U);
-    array_size       = std::max(array_size,       other.array_index + 1U);
-    mip_levels_count = std::max(mip_levels_count, other.mip_level   + 1U);
+    META_FUNCTION_TASK();
+    m_depth            = std::max(m_depth,            other.GetDepthSlice() + 1U);
+    m_array_size       = std::max(m_array_size,       other.GetArrayIndex() + 1U);
+    m_mip_levels_count = std::max(m_mip_levels_count, other.GetMipLevel()   + 1U);
 }
 
 bool Resource::SubResource::Count::operator==(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth, array_size, mip_levels_count) ==
-           std::tie(other.depth, other.array_size, other.mip_levels_count);
+    return std::tie(m_depth, m_array_size, m_mip_levels_count) ==
+           std::tie(other.m_depth, other.m_array_size, other.m_mip_levels_count);
 }
 
 bool Resource::SubResource::Count::operator<(const Count& other) const noexcept
@@ -392,13 +315,13 @@ Resource::SubResource::Count::operator Resource::SubResource::Index() const noex
 Resource::SubResource::Count::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("count(d:{}, a:{}, m:{})", depth, array_size, mip_levels_count);
+    return fmt::format("count(d:{}, a:{}, m:{})", m_depth, m_array_size, m_mip_levels_count);
 }
 
 Resource::SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
-    : depth_slice(depth_slice)
-    , array_index(array_index)
-    , mip_level(mip_level)
+    : m_depth_slice(depth_slice)
+    , m_array_index(array_index)
+    , m_mip_level(mip_level)
 {
     META_FUNCTION_TASK();
 }
@@ -408,38 +331,32 @@ Resource::SubResource::Index::Index(Data::Index raw_index, const Count& count)
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(raw_index, count.GetRawCount());
 
-    const uint32_t array_and_depth_index = raw_index / count.mip_levels_count;
-    depth_slice = array_and_depth_index % count.depth;
-    array_index = array_and_depth_index / count.depth;
-    mip_level   = raw_index % count.mip_levels_count;
+    const uint32_t array_and_depth_index = raw_index / count.GetMipLevelsCount();
+    m_depth_slice = array_and_depth_index % count.GetDepth();
+    m_array_index = array_and_depth_index / count.GetDepth();
+    m_mip_level   = raw_index % count.GetMipLevelsCount();
 }
 
 Resource::SubResource::Index::Index(const Resource::SubResource::Count& count)
-    : depth_slice(count.depth)
-    , array_index(count.array_size)
-    , mip_level(count.mip_levels_count)
+    : m_depth_slice(count.GetDepth())
+    , m_array_index(count.GetArraySize())
+    , m_mip_level(count.GetMipLevelsCount())
 {
     META_FUNCTION_TASK();
-}
-
-Data::Index Resource::SubResource::Index::GetRawIndex(const Count& count) const noexcept
-{
-    META_FUNCTION_TASK();
-    return (array_index * count.depth + depth_slice) * count.mip_levels_count + mip_level;
 }
 
 bool Resource::SubResource::Index::operator==(const Index& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) ==
-           std::tie(other.depth_slice, other.array_index, other.mip_level);
+    return std::tie(m_depth_slice, m_array_index, m_mip_level) ==
+           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
 bool Resource::SubResource::Index::operator<(const Index& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(other.depth_slice, other.array_index, other.mip_level);
+    return std::tie(m_depth_slice, m_array_index, m_mip_level) <
+           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
 bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
@@ -451,8 +368,9 @@ bool Resource::SubResource::Index::operator>=(const Index& other) const noexcept
 bool Resource::SubResource::Index::operator<(const Count& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(depth_slice, array_index, mip_level) <
-           std::tie(other.depth, other.array_size, other.mip_levels_count);
+    return m_depth_slice < other.GetDepth() &&
+           m_array_index < other.GetArraySize() &&
+           m_mip_level   < other.GetMipLevelsCount();
 }
 
 bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
@@ -464,10 +382,10 @@ bool Resource::SubResource::Index::operator>=(const Count& other) const noexcept
 Resource::SubResource::Index::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("index(d:{}, a:{}, m:{})", depth_slice, array_index, mip_level);
+    return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-ResourceBase::ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
@@ -494,10 +412,10 @@ ResourceBase::~ResourceBase()
 void ResourceBase::InitializeDefaultDescriptors()
 {
     META_FUNCTION_TASK();
-
-    for (Usage::Value usage : Usage::primary_values)
+    using namespace magic_enum::bitwise_operators;
+    for (Usage usage : GetPrimaryUsageValues())
     {
-        if (!(m_usage_mask & usage))
+        if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
             continue;
 
         auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
@@ -511,12 +429,13 @@ void ResourceBase::InitializeDefaultDescriptors()
     }
 }
 
-const Resource::Descriptor& ResourceBase::GetDescriptor(Usage::Value usage) const
+const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
 {
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "resource '{}' does not support '{}' usage", GetName(), Usage::ToString(usage));
+                         "resource '{}' does not support '{}' usage",
+                         GetName(), magic_enum::flags::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -528,16 +447,16 @@ void ResourceBase::SetData(const SubResources& sub_resources)
     Data::Size sub_resources_data_size = 0U;
     for(const SubResource& sub_resource : sub_resources)
     {
-        META_CHECK_ARG_NAME_DESCR("sub_resource", sub_resource.p_data && sub_resource.size, "can not set empty subresource data to buffer");
-        sub_resources_data_size += sub_resource.size;
+        META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
+        sub_resources_data_size += sub_resource.GetDataSize();
 
         if (m_sub_resource_count_constant)
         {
-            META_CHECK_ARG_LESS(sub_resource.index, m_sub_resource_count);
+            META_CHECK_ARG_LESS(sub_resource.GetIndex(), m_sub_resource_count);
         }
         else
         {
-            m_sub_resource_count += sub_resource.index;
+            m_sub_resource_count += sub_resource.GetIndex();
         }
     }
 
@@ -567,11 +486,11 @@ Context& ResourceBase::GetContext() noexcept
 Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource_index);
+    META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
-DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage::Value resource_usage) const
+DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
 {
     META_FUNCTION_TASK();
     switch (resource_usage)
@@ -592,12 +511,13 @@ DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Us
     }
 }
 
-const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage::Value usage) const
+const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage usage) const
 {
     META_FUNCTION_TASK();
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "Resource '{}' does not have descriptor for usage '{}'", GetName(), Usage::ToString(usage));
+                         "Resource '{}' does not have descriptor for usage '{}'",
+                         GetName(), magic_enum::flags::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -648,24 +568,23 @@ void ResourceBase::SetSubResourceCount(const SubResource::Count& sub_resource_co
 void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
 {
     META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource.index, sub_resource.data_range);
+    ValidateSubResource(sub_resource.GetIndex(), sub_resource.GetDataRangeOptional());
 
-    const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(m_sub_resource_count);
+    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(m_sub_resource_count);
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
     META_UNUSED(sub_resource_data_size);
 
-    if (sub_resource.data_range)
+    if (sub_resource.HasDataRange())
     {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource.data_range->GetLength(),
-                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.index);
-
-        META_CHECK_ARG_LESS_DESCR(sub_resource.size, sub_resource_data_size + 1,
-                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.index);
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
+                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
+        META_CHECK_ARG_LESS_DESCR(sub_resource.GetDataSize(), sub_resource_data_size + 1,
+                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
     }
     else
     {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.size, sub_resource_data_size,
-                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.index);
+        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
+                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.GetIndex());
     }
 }
 
@@ -713,31 +632,20 @@ void ResourceBase::FillSubresourceSizes()
     }
 }
 
-std::string ResourceBase::GetStateName(State state)
+const std::vector<Resource::Usage>& ResourceBase::GetPrimaryUsageValues() noexcept
 {
     META_FUNCTION_TASK();
-    switch(state)
+    static std::vector<Resource::Usage> s_primary_usages;
+    if (!s_primary_usages.empty())
+        return s_primary_usages;
+
+    for (Usage usage : magic_enum::enum_values<Usage>())
     {
-    case State::Common:                  return "Common";
-    case State::VertexAndConstantBuffer: return "VertexAndConstantBuffer";
-    case State::IndexBuffer:             return "IndexBuffer";
-    case State::RenderTarget:            return "RenderTarget";
-    case State::UnorderedAccess:         return "UnorderedAccess";
-    case State::DepthWrite:              return "DepthWrite";
-    case State::DepthRead:               return "DepthRead";
-    case State::NonPixelShaderResource:  return "NonPixelShaderResource";
-    case State::PixelShaderResource:     return "PixelShaderResource";
-    case State::StreamOut:               return "StreamOut";
-    case State::IndirectArgument:        return "IndirectArgument";
-    case State::CopyDest:                return "CopyDest";
-    case State::CopySource:              return "CopySource";
-    case State::ResolveDest:             return "ResolveDest";
-    case State::ResolveSource:           return "ResolveSource";
-    case State::GenericRead:             return "GenericRead";
-    case State::Present:                 return "Present";
-    case State::Predication:             return "Predication";
-    default:                             META_UNEXPECTED_ENUM_ARG_RETURN(state, "");
+        using namespace magic_enum::bitwise_operators;
+        if (!magic_enum::flags::enum_contains(usage & s_secondary_usage_mask) && usage != Usage::None)
+            s_primary_usages.push_back(usage);
     }
+    return s_primary_usages;
 }
 
 } // namespace Methane::Graphics

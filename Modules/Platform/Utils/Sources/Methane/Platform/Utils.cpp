@@ -23,7 +23,3 @@ Methane platform utility functions
 
 #include <Methane/Platform/Utils.h>
 
-namespace Methane::Platform
-{
-
-} // namespace Methane::Platform

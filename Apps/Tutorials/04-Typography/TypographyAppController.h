@@ -31,19 +31,16 @@ namespace Methane::Tutorials
 
 class TypographyApp;
 
-enum class TypographyAppAction : uint32_t
+enum class TypographyAppAction
 {
-    None = 0U,
-
+    None,
     SwitchTextWrapMode,
     SwitchTextHorizontalAlignment,
     SwitchTextVerticalAlignment,
     SwitchIncrementalTextUpdate,
     SwitchTypingDirection,
     SpeedupTyping,
-    SlowdownTyping,
-
-    Count
+    SlowdownTyping
 };
 
 class TypographyAppController final
@@ -59,10 +56,11 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(TypographyAppAction action) override;
     std::string GetKeyboardActionName(TypographyAppAction action) const override;
 
+private:
     TypographyApp& m_typography_app;
 };
 

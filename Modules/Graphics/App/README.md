@@ -13,7 +13,7 @@ The following settings are available:
 
 | IApp Setting             | Type     | Default Value | Cmd-Line Option | Description           |
 |--------------------------|----------|---------------|-----------------|-----------------------|
-| screen_pass_access       | uint32_t | 0             |                 | Render pass access mask Graphics::RenderPass::Access::Mask |
+| screen_pass_access       | uint32_t | 0             |                 | Render pass access mask Graphics::RenderPass::Access |
 | animations_enabled       | bool     | true          | -a,--animations | Flag to enable or disable all animations |
 | show_hud_in_window_title | bool     | true          |                 | Flag to display or hide graphics runtime parameters in window title |         
 | default_device_index     | int32_t  | 0             | -d,--device     | Default GPU device used at startup: 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device |

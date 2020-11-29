@@ -25,6 +25,7 @@ Abstract mesh class
 
 #include <Methane/Graphics/Types.h>
 
+#include <magic_enum.hpp>
 #include <vector>
 #include <array>
 #include <map>
@@ -35,12 +36,13 @@ namespace Methane::Graphics
 class Mesh
 {
 public:
-    using Position  = Vector3f;
-    using Normal    = Vector3f;
-    using Color     = Vector4f;
-    using TexCoord  = Vector2f;
-    using Index     = uint16_t;
-    using Indices   = std::vector<Index>;
+    using Position   = Vector3f;
+    using Position2D = Vector2f;
+    using Normal     = Vector3f;
+    using Color      = Vector4f;
+    using TexCoord   = Vector2f;
+    using Index      = uint16_t;
+    using Indices    = std::vector<Index>;
 
     enum class Type
     {
@@ -79,9 +81,7 @@ public:
         Position = 0,
         Normal,
         TexCoord,
-        Color,
-
-        Count
+        Color
     };
 
     class VertexLayout : public std::vector<VertexField>
@@ -107,13 +107,13 @@ public:
 
     Mesh(Type type, const VertexLayout& vertex_layout);
 
-    Type                GetType() const noexcept            { return m_type; }
-    const VertexLayout& GetVertexLayout() const noexcept    { return m_vertex_layout; }
-    Data::Size          GetVertexSize() const noexcept      { return m_vertex_size; }
-    const Indices&      GetIndices() const noexcept         { return m_indices; }
-    Index               GetIndex(uint32_t i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
-    Data::Size          GetIndexCount() const noexcept      { return static_cast<Data::Size>(m_indices.size()); }
-    Data::Size          GetIndexDataSize() const noexcept   { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    Type                GetType() const noexcept               { return m_type; }
+    const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
+    Data::Size          GetVertexSize() const noexcept         { return m_vertex_size; }
+    const Indices&      GetIndices() const noexcept            { return m_indices; }
+    Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
+    Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
+    Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
     struct Edge
@@ -126,31 +126,37 @@ protected:
         bool operator<(const Edge& other) const;
     };
     
-    using VertexFieldOffsets = std::array<int32_t,     static_cast<size_t>(VertexField::Count)>;
-    using VertexFieldSizes   = std::array<Data::Size,  static_cast<size_t>(VertexField::Count)>;
+    using VertexFieldOffsets = std::array<int32_t, magic_enum::enum_count<VertexField>()>;
 
     bool HasVertexField(VertexField field) const noexcept;
     void CheckLayoutHasVertexField(VertexField field) const;
+    int32_t GetVertexFieldOffset(VertexField field) const { return m_vertex_field_offsets[static_cast<size_t>(field)]; }
+
+    void ResizeIndices(size_t indices_count)         { m_indices.resize(indices_count, 0); }
+    void SetIndex(size_t index, Index vertex_index)  { m_indices[index] = vertex_index; }
+    void SetIndices(Indices&& indices) noexcept      { m_indices = std::move(indices); }
+    void SwapIndices(Indices& indices)               { m_indices.swap(indices); }
+    void AppendIndices(const Mesh::Indices& indices) { m_indices.insert(m_indices.end(), indices.begin(), indices.end()); }
+    auto GetIndicesBackInserter()                    { return std::back_inserter(m_indices); }
 
     static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
     static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;
+    static Data::Size         GetVertexFieldSize(VertexField vertex_field)   { return GetVertexFieldSize(static_cast<size_t>(vertex_field)); }
+    static Data::Size         GetVertexFieldSize(size_t vertex_field_index);
+    static const Position2D&  GetFacePosition2D(size_t index);
+    static Data::Size         GetFacePositionCount() noexcept;
+    static const TexCoord&    GetFaceTexCoord(size_t index);
+    static Mesh::Index        GetFaceIndex(size_t index);
+    static Data::Size         GetFaceIndicesCount() noexcept;
+    static const Color&       GetColor(size_t index);
+    static Data::Size         GetColorsCount() noexcept;
 
+private:
     const Type                  m_type;
     const VertexLayout          m_vertex_layout;
     const VertexFieldOffsets    m_vertex_field_offsets;
     const Data::Size            m_vertex_size;
     Indices                     m_indices;
-
-    using Position2D  = Vector2f;
-    using Positions2D = std::vector<Position2D>;
-    using TexCoords   = std::vector<TexCoord>;
-    using Colors      = std::vector<Color>;
-
-    static const VertexFieldSizes   g_vertex_field_sizes;
-    static const Positions2D        g_face_positions_2d;
-    static const TexCoords          g_face_texcoords;
-    static const Indices            g_face_indices;
-    static const Colors             g_colors;
 };
 
 } // namespace Methane::Graphics

@@ -28,6 +28,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cml/mathlib/mathlib.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Tutorials
 {
@@ -51,14 +52,6 @@ ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Shadow Cube"), {},
         "Methane tutorial of shadow pass rendering")
-    , m_scene_scale(15.F)
-    , m_scene_constants(                                // Shader constants:
-        {                                               // ================
-            gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
-            700.F,                                      // - light_power
-            0.04F,                                      // - light_ambient_factor
-            30.F                                        // - light_specular_factor
-        })
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")
 {
@@ -94,8 +87,9 @@ void ShadowCubeApp::Init()
     const gfx::QuadMesh<Vertex>   floor_mesh(mesh_layout, 7.F, 7.F, 0.F, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
-    const gfx::ImageLoader::Options::Mask image_options = gfx::ImageLoader::Options::Mipmapped
-                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+    using namespace magic_enum::bitwise_operators;
+    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
+                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
 
     m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), cube_mesh, "Cube");
     m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options));
@@ -180,7 +174,8 @@ void ShadowCubeApp::Init()
     m_final_pass.view_state_ptr = GetViewStatePtr();
 
     // ========= Shadow Pass objects =========
-    
+
+    using namespace magic_enum::bitwise_operators;
     gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,
@@ -351,11 +346,14 @@ bool ShadowCubeApp::Update()
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
     
     // Prepare shadow transform matrix
-    static const gfx::Matrix44f s_shadow_transform_matrix = ([]() -> gfx::Matrix44f
+    static const gfx::Matrix44f s_shadow_transform_matrix = ([]()
     {
-        gfx::Matrix44f shadow_scale_matrix, shadow_translate_matrix;
+        gfx::Matrix44f shadow_scale_matrix;
         cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
+
+        gfx::Matrix44f shadow_translate_matrix;
         cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
+
         return shadow_scale_matrix * shadow_translate_matrix;
     })();
 
@@ -408,7 +406,7 @@ bool ShadowCubeApp::Render()
         return false;
 
     // Upload uniform buffers to GPU
-    ShadowCubeFrame& frame = GetCurrentFrame();
+    const ShadowCubeFrame& frame = GetCurrentFrame();
     frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
     frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
     frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
@@ -426,7 +424,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, ShadowCubeFrame::PassResources &render_pass_resources)
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
@@ -461,9 +459,9 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
-ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, std::string debug_group_name)
+ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, const std::string& debug_group_name)
     : is_final_pass(is_final_pass)
-    , debug_group_ptr(META_DEBUG_GROUP_CREATE(std::move(debug_group_name)))
+    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
 {
     META_UNUSED(debug_group_name);
 }

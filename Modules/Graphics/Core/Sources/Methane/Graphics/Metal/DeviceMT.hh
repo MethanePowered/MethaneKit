@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class DeviceMT final : public DeviceBase
 {
 public:
-    static Device::Feature::Mask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
+    static Device::Features GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
     DeviceMT(const id<MTLDevice>& mtl_device);
     ~DeviceMT() override;
@@ -49,8 +49,8 @@ class SystemMT final : public SystemBase
 public:
     ~SystemMT() override;
     
-    void           CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(Device::Feature::Mask supported_features) override;
+    void                CheckForChanges() override {}
+    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);

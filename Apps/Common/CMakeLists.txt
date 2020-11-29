@@ -22,4 +22,5 @@ target_link_libraries(${TARGET}
     INTERFACE
         MethaneGraphicsApp
         MethaneBuildOptions
+        magic_enum
 )

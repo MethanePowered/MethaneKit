@@ -32,13 +32,13 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings)
     : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")
@@ -83,8 +83,8 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
 
     m_texture_sampler_ptr = gfx::Sampler::Create(context, {
-        { gfx::Sampler::Filter::MinMag::Linear     },
-        { gfx::Sampler::Address::Mode::ClampToEdge },
+        gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
+        gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToEdge),
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Planet Texture Sampler");
@@ -93,7 +93,7 @@ Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, cons
     Update(0.0, 0.0);
 }
 
-Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr)
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
 
@@ -111,9 +111,13 @@ bool Planet::Update(double elapsed_seconds, double)
 {
     META_FUNCTION_TASK();
 
-    gfx::Matrix44f model_scale_matrix, model_translate_matrix, model_rotation_matrix;
+    gfx::Matrix44f model_scale_matrix;
     cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
+
+    gfx::Matrix44f model_translate_matrix;
     cml::matrix_translation(model_translate_matrix, m_settings.position);
+
+    gfx::Matrix44f model_rotation_matrix;
     cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
 
     Uniforms uniforms{};

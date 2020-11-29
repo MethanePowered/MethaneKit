@@ -32,13 +32,11 @@ namespace Methane::UserInterface
 
 struct IApp : Graphics::IApp
 {
-    enum HeadsUpDisplayMode : uint32_t
+    enum class HeadsUpDisplayMode : uint32_t
     {
         Hidden = 0U,
         WindowTitle,
-        UserInterface,
-
-        Count
+        UserInterface
     };
 
     struct Settings
@@ -54,10 +52,7 @@ struct IApp : Graphics::IApp
 
     virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;
     virtual bool SetHeadsUpDisplayMode(HeadsUpDisplayMode heads_up_display_mode) = 0;
-
     virtual std::string GetParametersString() = 0;
-
-    virtual ~IApp() = default;
 };
 
 } // namespace Methane::UserInterface

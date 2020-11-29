@@ -34,8 +34,8 @@ namespace Methane::Platform
 
 constexpr auto WM_ALERT = WM_USER + 1;
 
-static const wchar_t* g_window_class = L"MethaneWindowClass";
-static const wchar_t* g_window_icon  = L"IDI_APP_ICON";
+static const wchar_t* const g_window_class = L"MethaneWindowClass";
+static const wchar_t* const g_window_icon  = L"IDI_APP_ICON";
 
 static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 {
@@ -69,22 +69,25 @@ int AppWin::Run(const RunArgs& args)
     window_class.style          = CS_HREDRAW | CS_VREDRAW;
     window_class.lpfnWndProc    = WindowProc;
     window_class.hInstance      = GetModuleHandle(nullptr);
-    window_class.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    window_class.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     window_class.lpszClassName  = g_window_class;
     window_class.hIcon          = LoadIcon(window_class.hInstance, g_window_icon);
 
     RegisterClassEx(&window_class);
 
-    uint32_t desktop_width = 0, desktop_height = 0;
-    Methane::Platform::Windows::GetDesktopResolution(desktop_width, desktop_height);
+    uint32_t desktop_width  = 0U;
+    uint32_t desktop_height = 0U;
+    Windows::GetDesktopResolution(desktop_width, desktop_height);
 
     const Settings& app_settings = GetPlatformAppSettings();
 
     Data::FrameSize frame_size;
-    frame_size.width  = app_settings.width < 1.0  ? static_cast<uint32_t>(desktop_width * (app_settings.width > 0.0 ? app_settings.width : 0.7))
-                                                  : static_cast<uint32_t>(app_settings.width);
-    frame_size.height = app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * (app_settings.height > 0.0 ? app_settings.height : 0.7))
-                                                  : static_cast<uint32_t>(app_settings.height);
+    frame_size.width  = app_settings.width < 1.0
+                      ? static_cast<uint32_t>(desktop_width * app_settings.width)
+                      : static_cast<uint32_t>(app_settings.width);
+    frame_size.height = app_settings.height < 1.0
+                      ? static_cast<uint32_t>(desktop_height * app_settings.height)
+                      : static_cast<uint32_t>(app_settings.height);
 
     RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.width), static_cast<LONG>(frame_size.height) };
     AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -92,7 +95,7 @@ int AppWin::Run(const RunArgs& args)
                                       static_cast<uint32_t>(window_rect.bottom - window_rect.top));
 
     // Create the window and store a handle to it.
-    m_env.window_handle = CreateWindowEx(NULL,
+    m_env.window_handle = CreateWindowEx(0,
         g_window_class,
         nowide::widen(app_settings.name).c_str(),
         WS_OVERLAPPEDWINDOW,
@@ -100,15 +103,15 @@ int AppWin::Run(const RunArgs& args)
         (desktop_height - window_size.height) / 2,
         window_size.width,
         window_size.height,
-        NULL, // No parent window
-        NULL, // No menus
+        nullptr, // No parent window
+        nullptr, // No menus
         window_class.hInstance,
         this);
 
     ShowWindow(m_env.window_handle, SW_SHOW);
 
     // If there's a deferred message, schedule it to show for the current window message loop
-    if (m_deferred_message_ptr)
+    if (HasDeferredMessage())
     {
         ScheduleAlert();
     }
@@ -125,7 +128,7 @@ int AppWin::Run(const RunArgs& args)
     while (m_is_message_processing)
     {
         // Process any messages in the queue.
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -162,10 +165,11 @@ void AppWin::Alert(const Message& msg, bool deferred)
 void AppWin::OnWindowAlert()
 {
     META_FUNCTION_TASK();
-    if (!m_deferred_message_ptr)
+    if (!HasDeferredMessage())
         return;
 
-    ShowAlert(*m_deferred_message_ptr);
+    ShowAlert(GetDeferredMessage());
+    ResetDeferredMessage();
 }
 
 LRESULT AppWin::OnWindowDestroy()
@@ -227,7 +231,7 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
     int32_t min_window_height = settings.min_height + header;
 
     // Update window rectangle with respect to minimum size limit
-    PRECT p_window_rect = reinterpret_cast<PRECT>(l_param);
+    auto p_window_rect = reinterpret_cast<PRECT>(l_param);
 
     if (p_window_rect->right - p_window_rect->left < min_window_width)
     {
@@ -381,7 +385,7 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
         return 0;
     }
 
-    AppWin* p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
+    auto p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
     if (!p_app || !p_app->IsMessageProcessing())
     {
         return DefWindowProc(h_wnd, msg_id, w_param, l_param);

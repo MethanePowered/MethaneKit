@@ -24,6 +24,7 @@ DirectX 12 implementation of the buffer interface.
 #pragma once
 
 #include "BlitCommandListDX.h"
+#include "ResourceDX.hpp"
 
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/DescriptorHeap.h>
@@ -31,22 +32,24 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
 {
 
 template<typename TViewNative, typename... ExtraViewArgs>
-class BufferDX final : public BufferBase
+class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
-        : BufferBase(context, settings, descriptor_by_usage)
+        : ResourceDX<BufferBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
+        using namespace magic_enum::bitwise_operators;
 
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
-        const bool is_read_back_buffer = settings.usage_mask & Usage::ReadBack;
+        const bool is_read_back_buffer = magic_enum::flags::enum_contains(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
@@ -64,7 +67,7 @@ public:
     }
 
     // Object overrides
-    void SetName(const std::string& name) final
+    void SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
         BufferBase::SetName(name);
@@ -76,7 +79,7 @@ public:
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) final
+    void SetData(const SubResources& sub_resources) override
     {
         META_FUNCTION_TASK();
         BufferBase::SetData(sub_resources);
@@ -89,7 +92,7 @@ public:
             ValidateSubResource(sub_resource);
 
             // Using zero range, since we're not going to read this resource on CPU
-            const Data::Index sub_resource_raw_index = sub_resource.index.GetRawIndex(GetSubresourceCount());
+            const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(GetSubresourceCount());
             Data::RawPtr p_sub_resource_data = nullptr;
             ThrowIfFailed(
                 d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
@@ -98,12 +101,12 @@ public:
             );
 
             META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-            stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.size);
-            std::copy(sub_resource.p_data, sub_resource.p_data + sub_resource.size, target_data_it);
+            stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
-            if (sub_resource.data_range)
+            if (sub_resource.HasDataRange())
             {
-                const CD3DX12_RANGE write_range(sub_resource.data_range->GetStart(), sub_resource.data_range->GetEnd());
+                const CD3DX12_RANGE write_range(sub_resource.GetDataRange().GetStart(), sub_resource.GetDataRange().GetEnd());
                 d3d12_resource.Unmap(sub_resource_raw_index, &write_range);
             }
             else
@@ -136,10 +139,12 @@ public:
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
 
-    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) final
+    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(GetUsageMask(), GetUsageMask() & Usage::ReadBack,
+
+        using namespace magic_enum::bitwise_operators;
+        META_CHECK_ARG_DESCR(GetUsage(), magic_enum::flags::enum_contains(GetUsage() & Usage::ReadBack),
                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);
@@ -172,10 +177,9 @@ public:
 
     const TViewNative& GetNativeView() const { return m_buffer_view; }
 
-protected:
+private:
     void InitializeView(ExtraViewArgs...);
 
-private:
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
     TViewNative                 m_buffer_view;
 

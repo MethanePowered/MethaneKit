@@ -16,42 +16,25 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Native/CommandQueueNT.h
-Native implementation alias of the command queue interface.
+FILE: Methane/Platform/MacOS/Keyboard.h
+MacOS platform specific types and implementation of Keyboard abstractions.
 
 ******************************************************************************/
 
 #pragma once
 
-#if defined _WIN32
+#include <stdint.h>
 
-#include <Methane/Graphics/DirectX12/CommandQueueDX.h>
-
-#elif defined __APPLE__
-
-#include <Methane/Graphics/Metal/CommandQueueMT.hh>
-
-#elif defined __linux__
-
-#include <Methane/Graphics/Vulkan/CommandQueueVK.h>
-
-#endif
-
-namespace Methane::Graphics
+namespace Methane::Platform::Keyboard
 {
 
-#if defined _WIN32
+struct NativeKey
+{
+    using Code  = uint16_t;
+    using Flags = uint64_t;
 
-using CommandQueueNT = CommandQueueDX;
+    Code  code;
+    Flags flags;
+};
 
-#elif defined __APPLE__
-
-using CommandQueueNT = CommandQueueMT;
-
-#elif defined __linux__
-
-using CommandQueueNT = CommandQueueVK;
-
-#endif
-
-} // namespace Methane::Graphics
+} // namespace Methane::Platform::Keyboard

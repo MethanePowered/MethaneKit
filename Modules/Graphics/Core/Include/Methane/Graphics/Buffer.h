@@ -50,7 +50,7 @@ struct Buffer : virtual Resource
     struct Settings
     {
         Buffer::Type type;
-        Usage::Mask  usage_mask;
+        Usage        usage_mask;
         Data::Size   size;
         Data::Size   item_stride_size;
         PixelFormat  data_format;
@@ -66,7 +66,6 @@ struct Buffer : virtual Resource
 
     // Auxiliary functions
     static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
-    static std::string GetBufferTypeName(Type type);
 
     // Buffer interface
     virtual const Settings& GetSettings() const noexcept = 0;

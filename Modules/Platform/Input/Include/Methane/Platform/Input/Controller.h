@@ -38,7 +38,7 @@ struct IActionController
     virtual void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta) = 0;
     virtual void OnMouseInWindowChanged(bool is_mouse_in_window) = 0;
     virtual void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state) = 0;
-    virtual void OnModifiersChanged(Keyboard::Modifier::Mask modifiers) = 0;
+    virtual void OnModifiersChanged(Keyboard::Modifiers modifiers) = 0;
 
     virtual ~IActionController() = default;
 };
@@ -50,7 +50,7 @@ struct IController
     virtual void OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change) = 0;
     virtual void OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change) = 0;
     virtual void OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change) = 0;
-    virtual void OnModifiersChanged(Keyboard::Modifier::Mask modifiers, const Keyboard::StateChange& state_change) = 0;
+    virtual void OnModifiersChanged(Keyboard::Modifiers modifiers, const Keyboard::StateChange& state_change) = 0;
 
     virtual ~IController() = default;
 };
@@ -60,19 +60,19 @@ class Controller
     , public IHelpProvider
 {
 public:
-    Controller(const std::string& name) : m_name(name) { }
+    explicit Controller(const std::string& name) : m_name(name) { }
 
     const std::string& GetControllerName() const { return m_name; }
     bool IsEnabled() const { return m_is_enabled; }
     void SetEnabled(bool is_enabled) { m_is_enabled = is_enabled; }
 
     // IController - overrides are optional
-    void OnMouseButtonChanged(Mouse::Button /*button*/, Mouse::ButtonState /*button_state*/, const Mouse::StateChange& /*state_change*/) override { }
-    void OnMousePositionChanged(const Mouse::Position& /*mouse_position*/, const Mouse::StateChange& /*state_change*/) override { }
-    void OnMouseScrollChanged(const Mouse::Scroll& /*mouse_scroll_delta*/, const Mouse::StateChange& /*state_change*/) override { }
-    void OnMouseInWindowChanged(bool /*is_mouse_in_window*/, const Mouse::StateChange& /*state_change*/) override { }
-    void OnKeyboardChanged(Keyboard::Key /*key*/, Keyboard::KeyState /*key_state*/, const Keyboard::StateChange& /*state_change*/) override { }
-    void OnModifiersChanged(Keyboard::Modifier::Mask /*modifiers*/, const Keyboard::StateChange& /*state_change*/) override { }
+    void OnMouseButtonChanged(Mouse::Button /*button*/, Mouse::ButtonState /*button_state*/, const Mouse::StateChange& /*state_change*/) override { /* empty by default */ }
+    void OnMousePositionChanged(const Mouse::Position& /*mouse_position*/, const Mouse::StateChange& /*state_change*/) override { /* empty by default */ }
+    void OnMouseScrollChanged(const Mouse::Scroll& /*mouse_scroll_delta*/, const Mouse::StateChange& /*state_change*/) override { /* empty by default */ }
+    void OnMouseInWindowChanged(bool /*is_mouse_in_window*/, const Mouse::StateChange& /*state_change*/) override { /* empty by default */ }
+    void OnKeyboardChanged(Keyboard::Key /*key*/, Keyboard::KeyState /*key_state*/, const Keyboard::StateChange& /*state_change*/) override { /* empty by default */ }
+    void OnModifiersChanged(Keyboard::Modifiers /*modifiers*/, const Keyboard::StateChange& /*state_change*/) override { /* empty by default */ }
     
     // IHelpProvider - overrides are optional
     HelpLines GetHelp() const override { return HelpLines(); }

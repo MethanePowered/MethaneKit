@@ -27,6 +27,7 @@ Vulkan implementation of the buffer interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <iterator>
 
 namespace Methane::Graphics
@@ -35,28 +36,31 @@ namespace Methane::Graphics
 Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::Unknown, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{ Buffer::Type::Index, Usage::Unknown, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
 }
 
 Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
-    const Usage::Mask usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::Unknown);
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
     return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
 }
@@ -68,28 +72,21 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferVK::BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : BufferBase(context, settings, descriptor_by_usage)
+    : ResourceVK<BufferBase>(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
 }
 
-BufferVK::~BufferVK()
-{
-    META_FUNCTION_TASK();
-}
-
 void BufferVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetName(name);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-
     BufferBase::SetData(sub_resources);
 }
 

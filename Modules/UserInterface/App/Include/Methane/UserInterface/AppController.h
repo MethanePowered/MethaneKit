@@ -32,11 +32,8 @@ namespace Methane::UserInterface
 
 enum class AppAction : uint32_t
 {
-    None = 0,
-
-    SwitchHeadsUpDisplayMode,
-
-    Count
+    None = 0U,
+    SwitchHeadsUpDisplayMode
 };
 
 class AppController
@@ -64,7 +61,7 @@ protected:
     using Graphics::AppController::GetKeyboardActionName;
 
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

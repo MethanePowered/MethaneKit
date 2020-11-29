@@ -28,6 +28,7 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/Provider.h>
 
+#include <magic_enum.hpp>
 #include <string>
 #include <array>
 
@@ -37,29 +38,31 @@ namespace Methane::Graphics
 class ImageLoader final
 {
 public:
-    struct Options
+    enum class Options : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            None            = 0U,
-            Mipmapped       = 1U << 0U,
-            SrgbColorSpace  = 1U << 1U,
-            All             = ~0U,
-        };
-
-        Options() = delete;
+        None            = 0U,
+        Mipmapped       = 1U << 0U,
+        SrgbColorSpace  = 1U << 1U,
+        All             = ~0U
     };
 
-    struct ImageData
+    class ImageData
     {
-        Dimensions  dimensions;
-        uint32_t    channels_count;
-        Data::Chunk pixels;
-
-        ImageData(const Dimensions& in_dimensions, uint32_t in_channels_count, Data::Chunk&& in_pixels) noexcept;
+    public:
+        ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept;
         ImageData(ImageData&& other) noexcept;
+        ImageData(const ImageData& other) noexcept = delete;
         ~ImageData();
+
+        const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
+        uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
+        const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
+
+    private:
+        Dimensions  m_dimensions;
+        uint32_t    m_channels_count;
+        Data::Chunk m_pixels;
+        const bool  m_pixels_release_required;
     };
 
     enum class CubeFace : size_t
@@ -69,19 +72,17 @@ public:
         PositiveY,
         NegativeY,
         PositiveZ,
-        NegativeZ,
-
-        Count
+        NegativeZ
     };
 
-    using CubeFaceResources = std::array<std::string, static_cast<size_t>(CubeFace::Count)>;
+    using CubeFaceResources = std::array<std::string, magic_enum::enum_count<CubeFace>()>;
 
     explicit ImageLoader(Data::Provider& data_provider);
 
-    ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy);
+    ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const;
 
-    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options::Mask options = Options::None);
-    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options::Mask options = Options::None);
+    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options options = Options::None) const;
+    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options = Options::None) const;
 
 private:
     Data::Provider& m_data_provider;

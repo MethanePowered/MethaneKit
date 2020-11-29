@@ -36,6 +36,13 @@ namespace Methane::Graphics
 
 class ContextBase;
 
+struct IResourceBase
+{
+    virtual DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept = 0;
+
+    virtual ~IResourceBase() = default;
+};
+
 class ResourceBase
     : public virtual Resource
     , public ObjectBase
@@ -63,49 +70,70 @@ public:
         Predication,
     };
 
-    struct Barrier
+    class Barrier
     {
+    public:
         enum class Type
         {
             Transition,
         };
 
-        struct Id
+        class Id
         {
-            const Type      type;
-            const Resource& resource;
+        public:
+            Id(Type type, const Resource& resource) noexcept;
+            Id(const Id& id) noexcept = default;
 
-            Id(Type type, const Resource& resource);
+            Id& operator=(const Id&) noexcept = default;
 
             bool operator<(const Id& other) const noexcept;
             bool operator==(const Id& other) const noexcept;
             bool operator!=(const Id& other) const noexcept;
+
+            Type            GetType() const noexcept     { return m_type; }
+            const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
+
+        private:
+            Type                m_type;
+            Ref<const Resource> m_resource_ref;
         };
 
-        struct StateChange
+        class StateChange
         {
-            State before;
-            State after;
+        public:
+            StateChange(State before, State after) noexcept;
+            StateChange(const StateChange& id) noexcept = default;
 
-            StateChange(State before, State after);
+            StateChange& operator=(const StateChange&) noexcept = default;
 
             bool operator<(const StateChange& other) const noexcept;
             bool operator==(const StateChange& other) const noexcept;
             bool operator!=(const StateChange& other) const noexcept;
+
+            State GetStateBefore() const noexcept { return m_before; }
+            State GetStateAfter() const noexcept  { return m_after; }
+
+        private:
+            State m_before;
+            State m_after;
         };
 
-        Id          id;
-        StateChange state_change;
-
-        Barrier(Id id, StateChange state_change);
+        Barrier(const Id& id, const StateChange& state_change);
         Barrier(Type type, const Resource& resource, State state_before, State state_after);
+        Barrier(const Barrier&) = default;
 
+        Barrier& operator=(const Barrier& barrier) noexcept = default;
         bool operator<(const Barrier& other) const noexcept;
         bool operator==(const Barrier& other) const noexcept;
         bool operator!=(const Barrier& other) const noexcept;
         explicit operator std::string() const noexcept;
 
-        static std::string GetTypeName(Type type);
+        const Id&          GetId() const noexcept          { return m_id; }
+        const StateChange& GetStateChange() const noexcept { return m_state_change; }
+
+    private:
+        Id          m_id;
+        StateChange m_state_change;
     };
 
     class Barriers
@@ -138,16 +166,16 @@ public:
         Map  m_barriers_map;
     };
 
-    ResourceBase(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
 
     // Resource interface
     Type                      GetResourceType() const noexcept final             { return m_type; }
-    Usage::Mask               GetUsageMask() const noexcept final                { return m_usage_mask; }
+    Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
     const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
-    const Descriptor&         GetDescriptor(Usage::Value usage) const final;
+    const Descriptor&         GetDescriptor(Usage usage) const final;
     void                      SetData(const SubResources& sub_resources) override;
     SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
     const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
@@ -155,23 +183,21 @@ public:
     Context&                  GetContext() noexcept final;
 
     void                      InitializeDefaultDescriptors();
-    std::string               GetUsageNames() const noexcept                     { return Usage::ToString(m_usage_mask); }
-    std::string               GetResourceTypeName() const noexcept               { return Resource::GetTypeName(m_type); }
     DescriptorHeap::Types     GetUsedDescriptorHeapTypes() const noexcept;
 
     State   GetState() const noexcept                                            { return m_state;  }
     bool    SetState(State state, Ptr<Barriers>& out_barriers);
 
-    static std::string GetStateName(State state);
+    static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
     ContextBase&         GetContextBase()                                       { return m_context; }
-    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage::Value usage) const;
-    const Descriptor&    GetDescriptorByUsage(Usage::Value usage) const;
+    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
+    const Descriptor&    GetDescriptorByUsage(Usage usage) const;
     Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;
-    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range = {}) const;
+    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
 
     virtual Data::Size   CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
@@ -180,7 +206,7 @@ private:
     void FillSubresourceSizes();
 
     const Type         m_type;
-    const Usage::Mask  m_usage_mask;
+    const Usage        m_usage_mask;
     ContextBase&       m_context;
     DescriptorByUsage  m_descriptor_by_usage;
     State              m_state = State::Common;

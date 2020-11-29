@@ -23,6 +23,8 @@ Interface of the graphics application base template class defined in App.hpp
 
 #pragma once
 
+#include <Methane/Graphics/RenderPass.h>
+
 #include <stdint.h>
 
 namespace Methane::Graphics
@@ -32,13 +34,13 @@ struct IApp
 {
     struct Settings
     {
-        uint32_t screen_pass_access         = 0U;   // Graphics::RenderPass::Access::Mask
-        bool     animations_enabled         = true;
-        bool     show_hud_in_window_title   = true;
-        int32_t  default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
+        RenderPass::Access screen_pass_access         = RenderPass::Access::None;
+        bool               animations_enabled         = true;
+        bool               show_hud_in_window_title   = true;
+        int32_t            default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
     };
 
-    virtual const IApp::Settings& GetGraphicsAppSettings() const noexcept = 0;
+    virtual const Settings& GetGraphicsAppSettings() const noexcept = 0;
     virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;
 
     virtual ~IApp() = default;

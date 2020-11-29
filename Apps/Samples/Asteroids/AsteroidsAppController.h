@@ -31,18 +31,15 @@ namespace Methane::Samples
 
 class AsteroidsApp;
 
-enum class AsteroidsAppAction : uint32_t
+enum class AsteroidsAppAction
 {
-    None = 0U,
-
+    None,
     IncreaseComplexity,
     DecreaseComplexity,
     SwitchParallelRendering,
     SwitchMeshLodsColoring,
     IncreaseMeshLodComplexity,
-    DecreaseMeshLodComplexity,
-
-    Count
+    DecreaseMeshLodComplexity
 };
 
 class AsteroidsAppController final
@@ -58,10 +55,11 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AsteroidsAppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AsteroidsAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AsteroidsAppAction action) override;
     std::string GetKeyboardActionName(AsteroidsAppAction action) const override;
 
+private:
     AsteroidsApp& m_asteroids_app;
 };
 

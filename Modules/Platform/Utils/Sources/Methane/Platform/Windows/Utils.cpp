@@ -23,14 +23,12 @@ Windows platform utility functions.
 
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <Windows.h>
 #include <shellapi.h>
 
-#include <wrl.h>
 #include <nowide/convert.hpp>
-
-namespace wrl = Microsoft::WRL;
 
 namespace Methane::Platform
 {
@@ -42,41 +40,34 @@ void PrintToDebugOutput(const std::string& msg)
     TracyMessage(msg.c_str(), msg.size());
 }
 
+inline std::wstring GetExecutableFilePath()
+{
+    std::array<wchar_t, 512> path_chars{ };
+    const DWORD path_size = GetModuleFileNameW(nullptr, path_chars.data(), static_cast<DWORD>(path_chars.size()));
+    META_CHECK_ARG_RANGE_DESCR(path_size, 1, path_chars.size(), "failed to get module file path");
+    return std::wstring(path_chars.data(), path_size);
+}
+
 std::string GetExecutableDir()
 {
     META_FUNCTION_TASK();
+    std::wstring path = GetExecutableFilePath();
 
-    WCHAR path[512];
-    DWORD size = GetModuleFileName(nullptr, path, _countof(path));
+    const size_t last_slash_pos = path.rfind(L'\\');
+    META_CHECK_ARG_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
 
-    if (size == 0 || size == _countof(path))
-    {
-        return "";
-    }
-
-    WCHAR* last_slash = wcsrchr(path, L'\\');
-    if (last_slash)
-    {
-        *(last_slash + 1) = NULL;
-    }
-
-    return nowide::narrow(path);
+    return nowide::narrow(path.substr(0, last_slash_pos));
 }
 
 std::string GetExecutableFileName()
 {
     META_FUNCTION_TASK();
+    std::wstring path = GetExecutableFilePath();
 
-    WCHAR path[512];
-    DWORD size = GetModuleFileName(nullptr, path, _countof(path));
+    const size_t last_slash_pos = path.rfind(L'\\');
+    META_CHECK_ARG_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
 
-    if (size == 0 || size == _countof(path))
-    {
-        return "";
-    }
-
-    WCHAR* last_slash = wcsrchr(path, L'\\');
-    return last_slash ? nowide::narrow(last_slash + 1) : "";
+    return nowide::narrow(path.substr(last_slash_pos + 1));
 }
 
 std::string GetResourceDir()
@@ -88,17 +79,19 @@ std::string GetResourceDir()
 namespace Windows
 {
 
-void GetDesktopResolution(uint32_t& width, uint32_t& height)
+void GetDesktopResolution(uint32_t& width, uint32_t& height) noexcept
 {
     META_FUNCTION_TASK();
-    RECT       desktop;
     const HWND h_desktop = GetDesktopWindow();
+
+    RECT desktop;
     GetWindowRect(h_desktop, &desktop);
+
     width = static_cast<uint32_t>(desktop.right);
     height = static_cast<uint32_t>(desktop.bottom);
 }
 
-bool IsDeveloperModeEnabled()
+bool IsDeveloperModeEnabled() noexcept
 {
     HKEY h_key{};
     auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock)", 0, KEY_READ, &h_key);
@@ -107,7 +100,7 @@ bool IsDeveloperModeEnabled()
 
     DWORD value{};
     DWORD dword_size = sizeof(DWORD);
-    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", 0, NULL, reinterpret_cast<LPBYTE>(&value), &dword_size);
+    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &dword_size);
     RegCloseKey(h_key);
     if (err != ERROR_SUCCESS)
         return false;

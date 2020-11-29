@@ -98,14 +98,18 @@ private:
         SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
     };
 
-    bool Animate(double elapsed_seconds, double delta_seconds);
-
-    Ptr<gfx::CommandListSet> CreateExecuteCommandListSet(AsteroidsFrame& frame);
+    bool Animate(double elapsed_seconds, double delta_seconds) const;
+    Ptr<gfx::CommandListSet> CreateExecuteCommandListSet(const AsteroidsFrame& frame) const;
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
     const float                       m_scene_scale = 15.F;
-    const Constants                   m_scene_constants;
+    const Constants                   m_scene_constants{
+        gfx::Color4f(1.F, 1.F, 1.F, 1.F), // - light_color
+        3.0F,                             // - light_power
+        0.05F,                            // - light_ambient_factor
+        30.F                              // - light_specular_factor
+    };
     AsteroidsArray::Settings          m_asteroids_array_settings;
     uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;

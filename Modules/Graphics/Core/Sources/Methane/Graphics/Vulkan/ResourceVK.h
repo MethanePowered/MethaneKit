@@ -24,6 +24,7 @@ Vulkan implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Instrumentation.h>
 
 #include <memory>
 
@@ -32,19 +33,28 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class ResourceVK : public ResourceBase
+class ResourceBarriersVK : public ResourceBase::Barriers
 {
 public:
-    class BarriersVK : public Barriers
-    {
-    public:
-        explicit BarriersVK(const Set& barriers) : Barriers(barriers) {}
-    };
+    explicit ResourceBarriersVK(const Set& barriers) : ResourceBase::Barriers(barriers) {}
+};
 
-    ResourceVK(Type type, Usage::Mask usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+class ResourceVK : public ReourceBaseType
+{
+public:
+    template<typename SettingsType>
+    ResourceVK(ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
+        : ReourceBaseType(context, settings, descriptor_by_usage)
+    {
+        META_FUNCTION_TASK();
+    }
 
 protected:
-    IContextVK& GetContextVK() noexcept;
+    IContextVK& GetContextVK() noexcept
+    {
+        return dynamic_cast<IContextVK&>(ResourceBase::GetContextBase());
+    }
 };
 
 } // namespace Methane::Graphics

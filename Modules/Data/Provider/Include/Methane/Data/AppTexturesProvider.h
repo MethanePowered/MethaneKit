@@ -16,22 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Linux/Keyboard.h
-Linux platform specific types and implementation of Keyboard abstractions.
+FILE: Methane/Graphics/AppTexturesProvider.h
+Application Texture resources provider
+either stored in embedded application resources of on file system.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <stdint.h>
+#ifdef TEXTURE_RESOURCES_NAMESPACE
 
-namespace Methane::Platform::Keyboard
+#ifdef RESOURCE_NAMESPACE
+#undef RESOURCE_NAMESPACE //NOSONAR
+#endif
+
+#define RESOURCE_NAMESPACE TEXTURE_RESOURCES_NAMESPACE
+#include "ResourceProvider.hpp"
+
+namespace Methane::Data
 {
+using TextureProvider = TEXTURE_RESOURCES_NAMESPACE::ResourceProvider;
+}
 
-struct NativeKey
+#else // ifdef TEXTURE_RESOURCES_NAMESPACE
+
+#include "FileProvider.hpp"
+
+namespace Methane::Data
 {
-    unsigned int  code;
-    unsigned long flags;
-};
+    using TextureProvider = FileProvider;
+}
 
-} // namespace Methane::Platform::Keyboard
+#endif // ifdef TEXTURE_RESOURCES_NAMESPACE

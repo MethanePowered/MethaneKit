@@ -32,6 +32,7 @@ Methane resource interface: base class of all GPU resources.
 
 #include <fmt/format.h>
 
+#include <magic_enum.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -46,40 +47,30 @@ class DescriptorHeap;
 
 struct Resource : virtual Object
 {
-    enum class Type : uint32_t
+    enum class Type
     {
-        Buffer = 0U,
+        Buffer,
         Texture,
         Sampler,
     };
 
-    struct Usage
+    enum class Usage : uint32_t
     {
-        using Mask = uint32_t;
-        enum Value : Mask
-        {
-            Unknown      = 0U,
-            // Primary usages
-            ShaderRead   = 1U << 0U,
-            ShaderWrite  = 1U << 1U,
-            RenderTarget = 1U << 2U,
-            ReadBack     = 1U << 3U,
-            // Secondary usages
-            Addressable  = 1U << 4U,
-            All          = ~0U,
-        };
-
-        using BaseValues = std::array<Value, 4>;
-        static constexpr const BaseValues primary_values{ ShaderRead, ShaderWrite, RenderTarget };
-
-        using Values = std::array<Value, 5>;
-        static constexpr const Values values{ ShaderRead, ShaderWrite, RenderTarget, ReadBack, Addressable };
-
-        static std::string ToString(Usage::Value usage);
-        static std::string ToString(Usage::Mask usage_mask);
-
-        Usage() = delete;
+        None         = 0U,
+        // Primary usages
+        ShaderRead   = 1U << 0U,
+        ShaderWrite  = 1U << 1U,
+        RenderTarget = 1U << 2U,
+        // Secondary usages
+        ReadBack     = 1U << 3U,
+        Addressable  = 1U << 4U,
     };
+
+    static constexpr Usage s_secondary_usage_mask = []() constexpr
+    {
+        using namespace magic_enum::bitwise_operators;
+        return Usage::Addressable | Usage::ReadBack;
+    }();
 
     struct Descriptor
     {
@@ -89,7 +80,7 @@ struct Resource : virtual Object
         Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
     };
 
-    using DescriptorByUsage = std::map<Usage::Value, Descriptor>;
+    using DescriptorByUsage = std::map<Usage, Descriptor>;
     
     class Location
     {
@@ -120,18 +111,20 @@ struct Resource : virtual Object
 
     using BytesRange = Data::Range<Data::Index>;
 
-    struct SubResource : Data::Chunk
+    class SubResource : public Data::Chunk
     {
-        struct Index;
+    public:
+        class Index;
 
-        struct Count
+        class Count
         {
-            Data::Size depth;
-            Data::Size array_size;
-            Data::Size mip_levels_count;
-
+        public:
             explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
-            Data::Size GetRawCount() const noexcept;
+
+            Data::Size GetDepth() const noexcept          { return m_depth; }
+            Data::Size GetArraySize() const noexcept      { return m_array_size; }
+            Data::Size GetMipLevelsCount() const noexcept { return m_mip_levels_count; }
+            Data::Size GetRawCount() const noexcept       { return m_depth * m_array_size * m_mip_levels_count; }
 
             void operator+=(const Index& other) noexcept;
             bool operator==(const Count& other) const noexcept;
@@ -140,18 +133,28 @@ struct Resource : virtual Object
             bool operator>=(const Count& other) const noexcept;
             explicit operator Index() const noexcept;
             explicit operator std::string() const noexcept;
+
+        private:
+            Data::Size m_depth;
+            Data::Size m_array_size;
+            Data::Size m_mip_levels_count;
         };
 
-        struct Index
+        class Index
         {
-            Data::Index depth_slice;
-            Data::Index array_index;
-            Data::Index mip_level;
-
+        public:
             explicit Index(Data::Index depth_slice  = 0U, Data::Index array_index  = 0U, Data::Index mip_level = 0U) noexcept;
             Index(Data::Index raw_index, const Count& count);
             explicit Index(const Count& count);
-            Data::Index GetRawIndex(const Count& count) const noexcept;
+            Index(const Index&) noexcept = default;
+
+            Index& operator=(const Index&) noexcept = default;
+
+            Data::Index GetDepthSlice() const noexcept { return m_depth_slice; }
+            Data::Index GetArrayIndex() const noexcept { return m_array_index; }
+            Data::Index GetMipLevel() const noexcept   { return m_mip_level; }
+            Data::Index GetRawIndex(const Count& count) const noexcept
+            { return (m_array_index * count.GetDepth() + m_depth_slice) * count.GetMipLevelsCount() + m_mip_level; }
 
             bool operator==(const Index& other) const noexcept;
             bool operator!=(const Index& other) const noexcept { return !operator==(other); }
@@ -160,22 +163,30 @@ struct Resource : virtual Object
             bool operator<(const Count& other) const noexcept;
             bool operator>=(const Count& other) const noexcept;
             explicit operator std::string() const noexcept;
+
+        private:
+            Data::Index m_depth_slice;
+            Data::Index m_array_index;
+            Data::Index m_mip_level;
         };
 
-        Index index;
-        std::optional<BytesRange> data_range;
+        using BytesRangeOpt = std::optional<BytesRange>;
 
-        SubResource() noexcept = default;
-        explicit SubResource(SubResource&& other) noexcept;
-        explicit SubResource(const SubResource& other) noexcept;
-        explicit SubResource(Data::Bytes&& data, Index index = Index(), std::optional<BytesRange> data_range = {}) noexcept;
-        SubResource(Data::ConstRawPtr p_data, Data::Size size, Index index = Index(), std::optional<BytesRange> data_range = {}) noexcept;
+        explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
+        SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
+        ~SubResource() = default;
+
+        const Index&         GetIndex() const noexcept             { return m_index; }
+        bool                 HasDataRange() const noexcept         { return m_data_range.has_value(); }
+        const BytesRange&    GetDataRange() const                  { return m_data_range.value(); }
+        const BytesRangeOpt& GetDataRangeOptional() const noexcept { return m_data_range; }
+
+    private:
+        Index         m_index;
+        BytesRangeOpt m_data_range;
     };
 
     using SubResources = std::vector<SubResource>;
-
-    // Auxiliary functions
-    static std::string GetTypeName(Type type);
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
@@ -184,9 +195,9 @@ struct Resource : virtual Object
     virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     virtual Type                      GetResourceType() const noexcept = 0;
-    virtual Usage::Mask               GetUsageMask() const noexcept = 0;
+    virtual Usage                     GetUsage() const noexcept = 0;
     virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
-    virtual const Descriptor&         GetDescriptor(Usage::Value usage) const = 0;
+    virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
     virtual Context&                  GetContext() noexcept = 0;
 };
 

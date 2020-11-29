@@ -29,7 +29,7 @@ Windows platform utility functions.
 namespace Methane::Platform::Windows
 {
 
-void GetDesktopResolution(uint32_t& width, uint32_t& height);
-bool IsDeveloperModeEnabled();
+void GetDesktopResolution(uint32_t& width, uint32_t& height) noexcept;
+bool IsDeveloperModeEnabled() noexcept;
 
 } // namespace Methane::Platform::Windows

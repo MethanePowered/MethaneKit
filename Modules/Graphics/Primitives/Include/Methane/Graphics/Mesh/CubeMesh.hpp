@@ -54,17 +54,19 @@ protected:
     void AddFace(const QuadMeshT& face_mesh) noexcept
     {
         META_FUNCTION_TASK();
-        const size_t initial_vertices_count = BaseMeshT::m_vertices.size();
+        BaseMeshT::AppendVertices(face_mesh.GetVertices());
 
-        const typename BaseMeshT::Vertices& face_vertices = face_mesh.GetVertices();
-        BaseMeshT::m_vertices.insert(BaseMeshT::m_vertices.end(), face_vertices.begin(), face_vertices.end());
-
+        const Data::Size initial_vertices_count = BaseMeshT::GetVertexCount();
         const Mesh::Indices& face_indices = face_mesh.GetIndices();
-        std::transform(face_indices.begin(), face_indices.end(), std::back_inserter(Mesh::m_indices),
-                       [initial_vertices_count](const Mesh::Index& index)
-                           { return static_cast<Mesh::Index>(initial_vertices_count + index); });
+        std::transform(face_indices.begin(), face_indices.end(), Mesh::GetIndicesBackInserter(),
+            [initial_vertices_count](const Mesh::Index& index)
+            {
+                return static_cast<Mesh::Index>(initial_vertices_count + index);
+            }
+       );
     }
 
+private:
     const float m_depth;
 };
 

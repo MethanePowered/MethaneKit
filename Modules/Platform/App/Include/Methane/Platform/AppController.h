@@ -29,17 +29,14 @@ Base application controller providing commands like app close and help.
 namespace Methane::Platform
 {
 
-enum class AppAction : uint32_t
+enum class AppAction
 {
-    None = 0,
-    
+    None,
     ShowControlsHelp,
     ShowCommandLineHelp,
     ShowParameters,
     SwitchFullScreen,
-    CloseApp,
-    
-    Count
+    CloseApp
 };
 
 class AppController
@@ -64,7 +61,7 @@ public:
 
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { }
+    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

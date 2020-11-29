@@ -78,10 +78,15 @@ private:
 
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const Constants       m_shader_constants;
+    const float           m_cube_scale          = 15.F;
+    const Constants       m_shader_constants{
+        gfx::Color4f(1.F, 1.F, 0.74F, 1.F),     // - light_color
+        700.F,                                  // - light_power
+        0.04F,                                  // - light_ambient_factor
+        30.F                                    // - light_specular_factor
+    };
     Uniforms              m_shader_uniforms { };
     gfx::Camera           m_camera;
-    float                 m_cube_scale;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
     Ptr<gfx::Buffer>      m_index_buffer_ptr;

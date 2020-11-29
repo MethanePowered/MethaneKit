@@ -26,6 +26,7 @@
 #include "Input/HelpProvider.h"
 #include "Mouse.h"
 
+#include <magic_enum.hpp>
 #include <map>
 
 namespace Methane::Platform::Mouse
@@ -37,11 +38,13 @@ class ActionControllerBase
 public:
     using ActionByMouseButton = std::map<Button, ActionEnum>;
     
-    ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
+    explicit ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
         : m_action_by_mouse_button(action_by_mouse_button)
     {
         META_FUNCTION_TASK();
     }
+
+    size_t GetMouseActionsCount() const noexcept { return m_action_by_mouse_button.size(); }
     
     Input::IHelpProvider::HelpLines GetMouseHelp() const
     {
@@ -51,9 +54,8 @@ public:
             return help_lines;
         
         help_lines.reserve(m_action_by_mouse_button.size());
-        for (uint32_t action_index = 0; action_index < static_cast<uint32_t>(ActionEnum::Count); ++action_index)
+        for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            const ActionEnum action = static_cast<ActionEnum>(action_index);
             const auto action_by_mouse_button_it = std::find_if(m_action_by_mouse_button.begin(), m_action_by_mouse_button.end(),
                                                                 [action](const std::pair<Button, ActionEnum>& button_and_action)
                                                                 {
@@ -82,7 +84,8 @@ protected:
         return (action_by_mouse_button_it != m_action_by_mouse_button.end())
               ? action_by_mouse_button_it->second : ActionEnum::None;
     }
-    
+
+private:
     ActionByMouseButton m_action_by_mouse_button;
 };
 
