@@ -42,10 +42,10 @@ void PrintToDebugOutput(const std::string& msg)
 
 inline std::wstring GetExecutableFilePath()
 {
-    std::wstring path(512, 0);
-    const DWORD size = GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
-    META_CHECK_ARG_RANGE_DESCR(size, 1, path.size(), "failed to get module file path");
-    return path;
+    std::array<wchar_t, 512> path_chars{ };
+    const DWORD path_size = GetModuleFileNameW(nullptr, path_chars.data(), static_cast<DWORD>(path_chars.size()));
+    META_CHECK_ARG_RANGE_DESCR(path_size, 1, path_chars.size(), "failed to get module file path");
+    return std::wstring(path_chars.data(), path_size);
 }
 
 std::string GetExecutableDir()

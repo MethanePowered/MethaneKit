@@ -537,9 +537,12 @@ Font::Chars Font::GetTextChars(const std::u32string& text)
 {
     META_FUNCTION_TASK();
     Refs<const Char> text_chars;
-    text_chars.reserve(text.size());
-    for (char32_t char_code : text)
+    text_chars.reserve(text.length());
+    for (Char::Code char_code : text)
     {
+        if (!char_code)
+            break;
+
         text_chars.emplace_back(AddChar(char_code));
     }
     return text_chars;
