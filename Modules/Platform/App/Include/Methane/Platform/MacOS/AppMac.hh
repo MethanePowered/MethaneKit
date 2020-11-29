@@ -37,9 +37,9 @@ using NSWindowType = NSWindow;
 
 #else
 
-using NSApplicationType = void;
-using AppDelegateType = void;
-using NSWindowType = void;
+using NSApplicationType = uint8_t;
+using AppDelegateType = uint8_t;
+using NSWindowType = uint8_t;
 
 #endif
 

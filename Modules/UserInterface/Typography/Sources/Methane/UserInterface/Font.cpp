@@ -212,7 +212,7 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_NOT_NULL(m_ft_face_rec.size);
-        return m_ft_face_rec.size->metrics.height / g_ft_dots_in_pixel;
+        return static_cast<uint32_t>(m_ft_face_rec.size->metrics.height / g_ft_dots_in_pixel);
     }
 
     const FT_FaceRec& GetFaceRec() const

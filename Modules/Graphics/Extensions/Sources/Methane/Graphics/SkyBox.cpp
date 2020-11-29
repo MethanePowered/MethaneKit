@@ -33,13 +33,13 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings)
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings)
     : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Sky-Box")

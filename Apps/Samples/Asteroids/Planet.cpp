@@ -32,13 +32,13 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings)
     : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")

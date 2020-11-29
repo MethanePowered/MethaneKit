@@ -48,11 +48,6 @@ public:
         META_FUNCTION_TASK();
     }
 
-    ~ContextVK() override
-    {
-        META_FUNCTION_TASK();
-    }
-
     // Context interface
 
     void WaitForGpu(Context::WaitFor wait_for) override

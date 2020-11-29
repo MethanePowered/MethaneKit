@@ -65,7 +65,7 @@ public:
         SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const;
     bool Update(double elapsed_seconds, double delta_seconds);
@@ -87,7 +87,7 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

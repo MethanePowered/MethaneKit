@@ -24,17 +24,13 @@ Vulkan implementation of the device interface.
 #include "DeviceVK.h"
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
 DeviceVK::DeviceVK()
     : DeviceBase("", false, Device::Features::BasicRendering)
-{
-    META_FUNCTION_TASK();
-}
-
-DeviceVK::~DeviceVK()
 {
     META_FUNCTION_TASK();
 }
@@ -46,9 +42,10 @@ System& System::Get()
     return s_system;
 }
 
-SystemVK::~SystemVK()
+void SystemVK::CheckForChanges()
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED();
 }
 
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Features supported_features)

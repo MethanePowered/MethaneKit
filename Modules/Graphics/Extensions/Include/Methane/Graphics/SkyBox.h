@@ -67,7 +67,7 @@ public:
         SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings);
+    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings);
 
     Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const;
     void Update();
@@ -83,7 +83,7 @@ private:
         };
     };
 
-    SkyBox(RenderContext& context, ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
+    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     Settings                      m_settings;
     RenderContext&                m_context;

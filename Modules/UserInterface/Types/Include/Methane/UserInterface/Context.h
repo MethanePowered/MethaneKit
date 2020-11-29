@@ -105,7 +105,7 @@ public:
     }
 
     template<typename UnitType>
-    bool AreEqual(const UnitType& left, const UnitType& right)
+    bool AreEqual(const UnitType& left, const UnitType& right) const noexcept
     {
         if (left.units == right.units)
             return left == right;
