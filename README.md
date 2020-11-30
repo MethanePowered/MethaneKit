@@ -32,8 +32,8 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 
 [![Windows Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
+[![Windows Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Code Smells](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=code_smells)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
-[![Windows Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=sqale_index)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Coverage](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=coverage)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
@@ -118,12 +118,13 @@ Methane samples demonstrate advanced techniques and usage scenarios with a more 
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019 with MSVC v142 or later
-  - Windows 10 SDK
+  - Windows 10 SDK latest
 - **MacOS**
-  - MacOS 10.13 "El Capitan" or later
-  - XCode 9 or later with command-line tools
+  - MacOS 10.15 "Catalina" or later
+  - XCode 11 or later with command-line tools
 - **Linux**
-  - Ubuntu 18.04 or later
+  - Ubuntu 20.04 or later
+  - GCC 9 or later
 
 ### Fetch Sources
 
@@ -231,7 +232,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 - Microsoft Visual Studio 2019
   - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
   - Ninja build with CMake native support (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
-- Apple XCode 11
+- Apple XCode
   - XCode workspace and projects (generate with [Build.sh](/Build/Posix/Build.sh))
 - Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/egorodet/MethaneKit) (pre-configured with [.vscode/settings.json](/.vscode/settings.json))
 - Jet Brains CLion (pre-configured with [.idea](/.idea))
