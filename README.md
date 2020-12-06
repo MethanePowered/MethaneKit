@@ -51,6 +51,12 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction.
 ![High Level Architecture](Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
 
+## Graphics Core Interfaces
+
+[Methane Graphics Core](Modules/Graphics/Core) module implements a set of public object-oriented interfaces, 
+which make modern graphics programming easy and convenient in a platform and API independent way.
+![Graphics Core Interfaces](Docs/Diagrams/MethaneKit_GraphicsCore_Interfaces.svg)
+
 ### Features
 
 - **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
