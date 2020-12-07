@@ -3,7 +3,12 @@
 
 steps:
 
-  - script: mkdir $(buildDir)
+  - script: |
+      if exist $(buildDir) (
+        echo Build directory '$(buildDir)' already exists, removing all contents...
+        rmdir /S /Q $(buildDir)
+      )
+      mkdir $(buildDir)
     displayName: 'Make build directories for $(platform) $(configuration)'
 
   - task: CMake@1

@@ -11,6 +11,10 @@ parameters:
 
 steps:
   - script: |
+      if [ -d $(buildDir) ]; then
+        echo Directory '$(buildDir)' already exists, removing all contents...
+        rmdir -rf $(buildDir)
+      fi
       mkdir -p $(buildDir)
     displayName: 'Make build directories for $(platform) $(configuration)'
 

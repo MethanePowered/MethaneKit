@@ -4,6 +4,10 @@
 steps:
 
   - script: |
+      if [ -d $(buildDir) ]; then
+        echo Build directory '$(buildDir)' already exists, removing all contents...
+        rmdir -rf $(buildDir)
+      fi
       mkdir -p $(buildDir)
     displayName: 'Make build directories for $(platform) $(configuration)'
 
