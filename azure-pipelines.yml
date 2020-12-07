@@ -187,7 +187,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Release'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildReleaseCmakeFlags)
+    cmakeFlags: $(buildReleaseCmakeFlags) -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
     buildName: '$(platform)-$(configuration)'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -206,7 +206,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'RelWithDebInfo'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildProfilingCmakeFlags)
+    cmakeFlags: $(buildProfilingCmakeFlags) -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
     buildName: '$(platform)-$(configuration)-Profiling'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -225,7 +225,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Debug'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildScanCmakeFlags)
+    cmakeFlags: $(buildScanCmakeFlags) -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
