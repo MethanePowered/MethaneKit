@@ -42,7 +42,7 @@ public:
 
     static constexpr size_t dimensions_count = vector_size;
 
-    PointT() noexcept = default;
+    PointT() = default;
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz == 2, void>>
     PointT(T x, T y) noexcept : m_vector(x, y) { }

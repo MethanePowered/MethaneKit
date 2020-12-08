@@ -36,7 +36,7 @@ template<typename EventType>
 class Emitter : public virtual IEmitter<EventType>
 {
 public:
-    Emitter() noexcept = default;
+    Emitter() = default;
     Emitter(const Emitter& other) noexcept
         : m_connected_receivers(other.m_connected_receivers)
     {

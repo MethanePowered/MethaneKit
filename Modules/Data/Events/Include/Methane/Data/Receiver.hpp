@@ -38,7 +38,7 @@ template<class EventType>
 class Receiver : public EventType
 {
 public:
-    Receiver() noexcept = default;
+    Receiver() = default;
     Receiver(const Receiver& other) noexcept
         : m_connected_emitter_refs(other.m_connected_emitter_refs)
     {

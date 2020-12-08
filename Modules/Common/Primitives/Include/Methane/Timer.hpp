@@ -35,7 +35,7 @@ public:
     using TimePoint    = Clock::time_point;
     using TimeDuration = Clock::duration;
 
-    Timer() noexcept = default;
+    Timer() = default;
 
     TimePoint    GetStartTime() const noexcept       { return m_start_time; }
     TimeDuration GetElapsedDuration() const noexcept { return Clock::now() - m_start_time; }

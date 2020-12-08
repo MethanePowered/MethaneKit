@@ -39,7 +39,7 @@ class ColorF
 public:
     static constexpr Data::Size Size = vector_size;
 
-    ColorF() noexcept = default;
+    ColorF() = default;
     ColorF(float r, float g, float b) noexcept : m_components(r, g, b) { }
 
     template<Data::Size sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>

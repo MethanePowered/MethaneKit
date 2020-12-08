@@ -40,7 +40,7 @@ struct RectSize
 
     static RectSize<D> Max() noexcept { return RectSize(std::numeric_limits<D>::max(), std::numeric_limits<D>::max()); }
 
-    RectSize() noexcept = default;
+    RectSize() = default;
     RectSize(D w, D h) noexcept : width(w), height(h) { }
 
     template<typename V>
@@ -184,7 +184,7 @@ struct Rect
     Point origin;
     Size  size;
 
-    Rect() noexcept = default;
+    Rect() = default;
     explicit Rect(const Size& size) noexcept : size(size) { }
     explicit Rect(const Point& origin) noexcept : origin(origin) { }
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }

@@ -39,7 +39,7 @@ template<typename ScalarT>
 class Range
 {
 public:
-    Range() noexcept = default;
+    Range() = default;
     Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end"); }
     Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { } //NOSONAR - initializer list constructor is not explicit intentionally
     Range(const Range& other) noexcept : m_start(other.m_start), m_end(other.m_end) { }

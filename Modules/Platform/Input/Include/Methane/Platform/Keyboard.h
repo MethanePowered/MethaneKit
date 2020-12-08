@@ -163,7 +163,7 @@ public:
         All       = ~0U
     };
 
-    State() noexcept = default;
+    State() = default;
     State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
 
     bool   operator<(const State& other) const noexcept;

@@ -43,7 +43,7 @@ public:
     using Iterator = typename BaseSet::iterator;
     using ConstIterator = typename BaseSet::const_iterator;
 
-    RangeSet() noexcept = default;
+    RangeSet() = default;
     RangeSet(std::initializer_list<Range<ScalarT>> init) noexcept : m_container(init) { } //NOSONAR - initializer list constructor is not explicit intentionally
 
     bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }

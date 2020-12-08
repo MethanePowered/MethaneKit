@@ -31,7 +31,7 @@ namespace Methane::Data
 class Chunk
 {
 public:
-    Chunk() noexcept = default;
+    Chunk() = default;
     Chunk(ConstRawPtr in_p_data, Size in_size) noexcept
         : m_data_ptr(in_p_data)
         , m_data_size(in_size)
