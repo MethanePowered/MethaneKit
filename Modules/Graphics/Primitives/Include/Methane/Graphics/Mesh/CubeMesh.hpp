@@ -54,9 +54,10 @@ protected:
     void AddFace(const QuadMeshT& face_mesh) noexcept
     {
         META_FUNCTION_TASK();
+        const Data::Size initial_vertices_count = BaseMeshT::GetVertexCount();
+
         BaseMeshT::AppendVertices(face_mesh.GetVertices());
 
-        const Data::Size initial_vertices_count = BaseMeshT::GetVertexCount();
         const Mesh::Indices& face_indices = face_mesh.GetIndices();
         std::transform(face_indices.begin(), face_indices.end(), Mesh::GetIndicesBackInserter(),
             [initial_vertices_count](const Mesh::Index& index)
