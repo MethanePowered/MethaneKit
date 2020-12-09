@@ -18,6 +18,10 @@ if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW) # option honors normal variables
 endif()
 
+if (POLICY CMP0110)
+    cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
+endif()
+
 enable_testing()
 
 # Build configuration
