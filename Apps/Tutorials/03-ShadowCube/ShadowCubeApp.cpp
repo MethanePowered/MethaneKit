@@ -167,21 +167,15 @@ void ShadowCubeApp::Init()
         }
     );
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
-    final_state_settings.depth.enabled  = true;
-    m_final_pass.render_state_ptr        = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
-    m_final_pass.render_state_ptr->SetName("Final pass render state");
+    final_state_settings.depth.enabled = true;
 
+    m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.render_state_ptr->SetName("Final pass render state");
     m_final_pass.view_state_ptr = GetViewStatePtr();
 
     // ========= Shadow Pass objects =========
 
-    using namespace magic_enum::bitwise_operators;
-    gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
-        gfx::Dimensions(g_shadow_map_size),
-        context_settings.depth_stencil_format,
-        gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead
-    );
-    gfx::Shader::MacroDefinitions textured_definitions    { { "ENABLE_TEXTURING", "" } };
+    gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
 
     // Create shadow-pass rendering state with program
     gfx::RenderState::Settings shadow_state_settings;
@@ -198,20 +192,28 @@ void ShadowCubeApp::Init()
                 { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
             },
             gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
-            shadow_texture_settings.pixel_format
+            context_settings.depth_stencil_format
         }
     );
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
     shadow_state_settings.depth.enabled = true;
-    m_shadow_pass.render_state_ptr       = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
-    m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
 
+    m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
     m_shadow_pass.view_state_ptr = gfx::ViewState::Create({
         { gfx::GetFrameViewport(g_shadow_map_size)    },
         { gfx::GetFrameScissorRect(g_shadow_map_size) }
     });
 
     // ========= Per-Frame Data =========
+
+    using namespace magic_enum::bitwise_operators;
+    const gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
+        gfx::Dimensions(g_shadow_map_size),
+        context_settings.depth_stencil_format,
+        gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead
+    );
+
     for(ShadowCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering

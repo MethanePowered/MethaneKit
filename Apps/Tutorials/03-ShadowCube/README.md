@@ -4,26 +4,37 @@
 | -------------------- | ------------- |
 | ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) |
 
-This tutorial demonstrates using two render passes for rendering shadows additionally to textured cube.
+This tutorial demonstrates using of two render passes for rendering shadow of the textured cube on the floor plane.
 Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
 - TBD...
 
 ## Application and Frame Class Definitions
 
 `ShadowCubeApp` class is declared in header file [ShadowCubeApp.h](ShadowCubeApp.h).
-Private section of the `ShadowCubeApp` class contains declaration of shader argument structures, 
+Private section of the class contains declaration of shader argument structures, 
 which layout is matching definition of the equally named structures in [HLSL shader code](#shadow-cube-shaders):
-- `Constants` structure data is stored in the `m_scene_constants` and is uploaded into the `Graphics::Buffer` object `m_const_buffer_ptr` 
-which is one per application since its data is constant for all frames.
-- `SceneUniforms` structure data is stored in the `m_scene_uniforms` and is uploaded into the `Graphics::Buffer` objects in 
-per-frame `ShadowCubeFrame` structures each with it's own state of volatile uniform values.
-- `MeshUniforms` structure data contains model/mvp matrices and shadow mvp+transform matrix stored in 4 instances:
-uniforms for shadow and final passes stored in `TexturedMeshBuffers` objects one for cube mesh in `m_cube_buffers_ptr` 
+- `Constants` data structure is stored in the `m_scene_constants` member and is uploaded into the `Graphics::Buffer` 
+  object `m_const_buffer_ptr`, which has single instance in application since its data is constant for all frames.
+- `SceneUniforms` data structure is stored in the `m_scene_uniforms` member and is uploaded into the `Graphics::Buffer` 
+  objects in the per-frame `ShadowCubeFrame` objects, each with it's own state of volatile uniform values.
+- `MeshUniforms` data structure contains Model/MVP matrices and shadow MVP+Transform matrix stored in 4 instances:
+uniforms for shadow and final passes stored in `gfx::TexturedMeshBuffers` objects one for cube mesh in `m_cube_buffers_ptr` 
 and one for floor mesh in `m_floor_buffers_ptr`.
 
 [MeshBuffers.hpp](../../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) implements auxiliary class
 `TexturedMeshBuffers<UniformsType>` which is managing vertex, index, uniforms buffers and texture with data for particular
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
+
+Supplementary member `m_scene_uniforms_subresources` of type is used to store a pointer to
+the `m_scene_uniforms` in the `std::vector` type `gfx::Resource::SubResources` which is passed to `gfx::Buffer::SetData(...)`
+method to update the buffer data on GPU.
+
+Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
+is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
+coordinate systems.
+
+Also there are two `gfx::Sampler` objects: one is used for sampling cube and floor textures, the other is used for
+sampling shadow map texture.
 
 ```cpp
 #pragma once
@@ -108,7 +119,142 @@ private:
 } // namespace Methane::Tutorials
 ```
 
+`ShadowCubeFrame` struct contains frame-dependent volatile resources:
+- Shadow & final pass resources in `shadow_pass` and `final_pass`:
+  - Mesh resources for `cube` and `floor`:
+    - Mesh uniforms buffer `uniforms_buffer_ptr`
+    - Program bindings configuration `program_bindings_ptr`
+  - Render target texture `rt_texture_ptr`
+  - Render pass setup object `pass_ptr`
+  - Render command list `cmd_list_ptr`
+- Scene uniforms buffer in `scene_uniforms_buffer_ptr`
+- Command list set for execution on frame, which contains command lists from shadow and final passes
+
+```cpp
+struct ShadowCubeFrame final : gfx::AppFrame
+{
+    struct PassResources
+    {
+        struct MeshResources
+        {
+            Ptr<gfx::Buffer>          uniforms_buffer_ptr;
+            Ptr<gfx::ProgramBindings> program_bindings_ptr;
+        };
+
+        MeshResources               cube;
+        MeshResources               floor;
+        Ptr<gfx::Texture>           rt_texture_ptr;
+        Ptr<gfx::RenderPass>        pass_ptr;
+        Ptr<gfx::RenderCommandList> cmd_list_ptr;
+    };
+
+    PassResources            shadow_pass;
+    PassResources            final_pass;
+    Ptr<gfx::Buffer>         scene_uniforms_buffer_ptr;
+    Ptr<gfx::CommandListSet> execute_cmd_list_set_ptr;
+
+    using gfx::AppFrame::AppFrame;
+};
+```
+
 ## Graphics Resources Initialization
+
+Initialization of textures, buffers and samplers is mostly the same as for `Textured Cube` tutorial, so we skip their
+description here.
+
+**Final pass** render state initialization has some differences:
+- Pixel and vertex shaders are loaded for specific combination of macro definitions enabled during compilation done in build time.
+  This macro definitions set is described in `gfx::Shader::MacroDefinitions` variable `textured_shadows_definitions` which
+  is passed to `gfx::Shader::CreateVertex/CreatePixel` functions.
+- Configuration of `gfx::Program::ArgumentDescriptions` is more complex than for simple cube mesh and mostly describes
+  Pixel-shader specific argument modifiers, except `g_mesh_uniforms` for Vertex-shader.
+  `g_constants`, `g_shadow_sampler`, `g_texture_sampler` arguments are described with `Constant` modifier, while
+  other arguments have no modifiers meaning that that can change during frames rendering.
+
+```cpp
+    const gfx::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
+    const gfx::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
+    const gfx::Shader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
+
+    gfx::RenderState::Settings final_state_settings;
+    final_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
+        gfx::Program::Settings
+        {
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
+                gfx::Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
+            },
+            gfx::Program::InputBufferLayouts
+            {
+                gfx::Program::InputBufferLayout
+                {
+                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                }
+            },
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::None     },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant },
+            },
+            gfx::PixelFormats
+            {
+                context_settings.color_format
+            },
+            context_settings.depth_stencil_format
+        }
+    );
+    final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
+    final_state_settings.depth.enabled = true;
+
+    m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.render_state_ptr->SetName("Final pass render state");
+```
+
+**Shadow pass** render state is using the same shader code, but compiled with a different macro definitions set `textured_definitions`
+and thus the result program having different set of arguments available. Also note that the program include only 
+Vertex shader since it will be used for rendering to depth buffer only without color attachment.
+
+```cpp
+    gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
+
+    gfx::RenderState::Settings shadow_state_settings;
+    shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
+        gfx::Program::Settings
+        {
+            gfx::Program::Shaders
+            {
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+            },
+            final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
+            gfx::Program::ArgumentDescriptions
+            {
+                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
+            },
+            gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
+            shadow_texture_settings.pixel_format
+        }
+    );
+    shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
+    shadow_state_settings.depth.enabled = true;
+
+    m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
+```
+
+The Shadow-pass view state is bound to the size of the Shadow-map texture:
+
+```cpp
+    m_shadow_pass.view_state_ptr = gfx::ViewState::Create({
+        { gfx::GetFrameViewport(g_shadow_map_size)    },
+        { gfx::GetFrameScissorRect(g_shadow_map_size) }
+    });
+```
 
 ## Frame Rendering Cycle
 
