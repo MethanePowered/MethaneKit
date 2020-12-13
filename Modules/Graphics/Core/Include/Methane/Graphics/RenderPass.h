@@ -55,12 +55,9 @@ struct RenderPass : virtual Object
             Resolve,
         };
         
-        Ptr<Texture> texture_ptr;
-        uint32_t     level        = 0U;
-        uint32_t     slice        = 0U;
-        uint32_t     depth_plane  = 0U;
-        LoadAction   load_action  = LoadAction::DontCare;
-        StoreAction  store_action = StoreAction::DontCare;
+        Texture::Location  texture_location;
+        LoadAction         load_action  = LoadAction::DontCare;
+        StoreAction        store_action = StoreAction::DontCare;
         
         bool operator==(const Attachment& other) const;
     };
@@ -69,7 +66,7 @@ struct RenderPass : virtual Object
     {
         Color4f clear_color;
         
-        ColorAttachment(const Attachment&& attach, const Color4f& in_clear_color = Color4f()) : Attachment(attach), clear_color(in_clear_color) { }
+        ColorAttachment(const Attachment&& attach, const Color4f& in_clear_color = Color4f()) : Attachment(std::move(attach)), clear_color(in_clear_color) { }
         
         bool operator==(const ColorAttachment& other) const;
     };
@@ -81,7 +78,7 @@ struct RenderPass : virtual Object
         Depth clear_value = 1.F;
         
         DepthAttachment() = default;
-        DepthAttachment(const Attachment&& attach, Depth in_clear_value = 1.F) : Attachment(attach), clear_value(in_clear_value) { }
+        DepthAttachment(const Attachment&& attach, Depth in_clear_value = 1.F) : Attachment(std::move(attach)), clear_value(in_clear_value) { }
         
         bool operator==(const DepthAttachment& other) const;
     };
@@ -91,7 +88,7 @@ struct RenderPass : virtual Object
         Stencil clear_value = 0U;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0U) : Attachment(attach), clear_value(in_clear_value) { }
+        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0U) : Attachment(std::move(attach)), clear_value(in_clear_value) { }
         
         bool operator==(const StencilAttachment& other) const;
     };

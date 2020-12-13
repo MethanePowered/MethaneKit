@@ -32,10 +32,9 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action) noexcept
+static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action)
 {
     META_FUNCTION_TASK();
-
     switch(store_action)
     {
         case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
@@ -45,10 +44,9 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
     }
 }
 
-static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action) noexcept
+static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action)
 {
     META_FUNCTION_TASK();
-
     switch(load_action)
     {
         case RenderPass::Attachment::LoadAction::DontCare:    return MTLLoadActionDontCare;
@@ -56,6 +54,18 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
         case RenderPass::Attachment::LoadAction::Clear:       return MTLLoadActionClear;
         default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
+}
+
+static void ConvertRenderPassAttcachmentToMetal(const RenderPass::Attachment& pass_attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(mtl_attachment_desc);
+    mtl_attachment_desc.texture       = static_cast<const TextureMT&>(pass_attachment.texture_location.GetTexture()).GetNativeTexture();
+    mtl_attachment_desc.slice         = pass_attachment.texture_location.GetSubresourceIndex().GetArrayIndex();
+    mtl_attachment_desc.level         = pass_attachment.texture_location.GetSubresourceIndex().GetMipLevel();
+    mtl_attachment_desc.depthPlane    = pass_attachment.texture_location.GetSubresourceIndex().GetDepthSlice();
+    mtl_attachment_desc.loadAction    = GetMTLLoadAction(pass_attachment.load_action);
+    mtl_attachment_desc.storeAction   = GetMTLStoreAction(pass_attachment.store_action);
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
@@ -89,38 +99,29 @@ void RenderPassMT::Reset()
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : settings.color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
-        TextureMT& color_texture = static_cast<TextureMT&>(*color_attach.texture_ptr);
-
-        if (color_texture.GetSettings().type == Texture::Type::FrameBuffer)
+        META_CHECK_ARG_TRUE_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
+        if (color_attach.texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
         {
-            color_texture.UpdateFrameBuffer();
+            static_cast<TextureMT&>(color_attach.texture_location.GetTexture()).UpdateFrameBuffer();
         }
-        
-        m_mtl_pass_descriptor.colorAttachments[color_attach_index].texture     = color_texture.GetNativeTexture();
-        m_mtl_pass_descriptor.colorAttachments[color_attach_index].clearColor  = TypeConverterMT::ColorToMetalClearColor(color_attach.clear_color);
-        m_mtl_pass_descriptor.colorAttachments[color_attach_index].loadAction  = GetMTLLoadAction(color_attach.load_action);
-        m_mtl_pass_descriptor.colorAttachments[color_attach_index].storeAction = GetMTLStoreAction(color_attach.store_action);
+
+        MTLRenderPassColorAttachmentDescriptor* mtl_color_attachment_desc = m_mtl_pass_descriptor.colorAttachments[color_attach_index];
+        ConvertRenderPassAttcachmentToMetal(color_attach, mtl_color_attachment_desc);
+        mtl_color_attachment_desc.clearColor  = TypeConverterMT::ColorToMetalClearColor(color_attach.clear_color);
         
         color_attach_index++;
     }
     
-    if (settings.depth_attachment.texture_ptr)
+    if (settings.depth_attachment.texture_location.IsInitialized())
     {
-        const TextureMT& depth_texture = static_cast<const TextureMT&>(*settings.depth_attachment.texture_ptr);
-        m_mtl_pass_descriptor.depthAttachment.texture         = depth_texture.GetNativeTexture();
-        m_mtl_pass_descriptor.depthAttachment.clearDepth      = settings.depth_attachment.clear_value;
-        m_mtl_pass_descriptor.depthAttachment.loadAction      = GetMTLLoadAction(settings.depth_attachment.load_action);
-        m_mtl_pass_descriptor.depthAttachment.storeAction     = GetMTLStoreAction(settings.depth_attachment.store_action);
+        ConvertRenderPassAttcachmentToMetal(settings.depth_attachment, m_mtl_pass_descriptor.depthAttachment);
+        m_mtl_pass_descriptor.depthAttachment.clearDepth = settings.depth_attachment.clear_value;
     }
     
-    if (settings.stencil_attachment.texture_ptr)
+    if (settings.stencil_attachment.texture_location.IsInitialized())
     {
-        const TextureMT& stencil_texture = static_cast<const TextureMT&>(*settings.stencil_attachment.texture_ptr);
-        m_mtl_pass_descriptor.stencilAttachment.texture       = stencil_texture.GetNativeTexture();
+        ConvertRenderPassAttcachmentToMetal(settings.stencil_attachment, m_mtl_pass_descriptor.stencilAttachment);
         m_mtl_pass_descriptor.stencilAttachment.clearStencil  = settings.stencil_attachment.clear_value;
-        m_mtl_pass_descriptor.stencilAttachment.loadAction    = GetMTLLoadAction(settings.stencil_attachment.load_action);
-        m_mtl_pass_descriptor.stencilAttachment.storeAction   = GetMTLStoreAction(settings.stencil_attachment.store_action);
     }
 }
     

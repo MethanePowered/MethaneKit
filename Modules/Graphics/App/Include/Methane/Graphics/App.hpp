@@ -130,8 +130,8 @@ public:
             frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index, frame_restore_info.descriptor_by_usage);
             frame.screen_texture_ptr->SetName(frame_restore_info.name);
 
-            pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
-            pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
+            pass_settings.color_attachments[0].texture_location = Texture::Location(frame.screen_texture_ptr);
+            pass_settings.depth_attachment.texture_location     = Texture::Location(GetDepthTexturePtr());
 
             frame.screen_pass_ptr->Update(pass_settings);
         }

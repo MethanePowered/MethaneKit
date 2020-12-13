@@ -232,11 +232,17 @@ ResourceBase::Barriers::operator std::string() const noexcept
     return ss.str();
 }
 
-Resource::Location::Location(Ptr<Resource> resource_ptr, Data::Size offset)
-    : m_resource_ptr(std::move(resource_ptr))
+Resource::Location::Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset)
+    : m_resource_ptr(resource_ptr)
+    , m_subresource_index(subresource_index)
     , m_offset(offset)
 {
-    META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not create resource location for an empty resource");
+}
+
+Resource& Resource::Location::GetResource() const
+{
+    META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not get resource from uninitialized resource location");
+    return *m_resource_ptr;
 }
 
 Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
@@ -248,8 +254,8 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     
 bool Resource::Location::operator==(const Location& other) const noexcept
 {
-    return std::tie(m_resource_ptr, m_offset) ==
-           std::tie(other.m_resource_ptr, other.m_offset);
+    return std::tie(m_resource_ptr, m_subresource_index, m_offset) ==
+           std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
 }
 
 Resource::SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept

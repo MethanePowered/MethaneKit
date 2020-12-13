@@ -126,7 +126,7 @@ void ShadowCubeApp::Init()
     );
     m_shadow_sampler_ptr->SetName("Shadow Map Sampler");
 
-    // ========= Final Pass objects =========
+    // ========= Final Pass Render & View States =========
 
     const gfx::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
     const gfx::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
@@ -173,7 +173,7 @@ void ShadowCubeApp::Init()
     m_final_pass.render_state_ptr->SetName("Final pass render state");
     m_final_pass.view_state_ptr = GetViewStatePtr();
 
-    // ========= Shadow Pass objects =========
+    // ========= Shadow Pass Render & View States =========
 
     gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
 
@@ -220,7 +220,7 @@ void ShadowCubeApp::Init()
         frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), scene_uniforms_data_size);
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
-        // ========= Shadow Pass data =========
+        // ========= Shadow Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
         frame.shadow_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
@@ -240,8 +240,7 @@ void ShadowCubeApp::Init()
             },
             gfx::RenderPass::DepthAttachment(
                 {
-                    frame.shadow_pass.rt_texture_ptr,
-                    0, 0, 0,
+                    gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
                     gfx::RenderPass::Attachment::LoadAction::Clear,
                     gfx::RenderPass::Attachment::StoreAction::Store,
                 },
@@ -266,7 +265,7 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         });
 
-        // ========= Final Pass data =========
+        // ========= Final Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Final pass
         frame.final_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);

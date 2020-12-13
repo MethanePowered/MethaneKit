@@ -234,7 +234,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
         {
             RenderPass::ColorAttachment(
                 {
-                    frame_buffer_texture, 0, 0, 0,
+                    Texture::Location{ frame_buffer_texture },
                     context_settings.clear_color.has_value()
                         ? RenderPass::Attachment::LoadAction::Clear
                         : RenderPass::Attachment::LoadAction::DontCare,
@@ -247,7 +247,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
         },
         RenderPass::DepthAttachment(
             {
-                m_depth_texture_ptr, 0, 0, 0,
+                Texture::Location{ m_depth_texture_ptr },
                 context_settings.clear_depth_stencil.has_value()
                     ? RenderPass::Attachment::LoadAction::Clear
                     : RenderPass::Attachment::LoadAction::DontCare,

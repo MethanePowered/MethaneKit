@@ -34,12 +34,9 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return texture_ptr  == other.texture_ptr &&
-           level        == other.level &&
-           slice        == other.slice &&
-           depth_plane  == other.depth_plane &&
-           load_action  == other.load_action &&
-           store_action == other.store_action;
+    return texture_location == other.texture_location &&
+           load_action       == other.load_action &&
+           store_action      == other.store_action;
 }
 
 bool RenderPass::ColorAttachment::operator==(const RenderPass::ColorAttachment& other) const
@@ -109,11 +106,11 @@ void RenderPassBase::ReleaseAttachmentTextures()
 {
     META_FUNCTION_TASK();
     m_non_frame_buffer_attachment_textures.clear();
-    m_settings.depth_attachment.texture_ptr.reset();
-    m_settings.stencil_attachment.texture_ptr.reset();
+    m_settings.depth_attachment.texture_location = Texture::Location();
+    m_settings.stencil_attachment.texture_location = Texture::Location();
     for(ColorAttachment& color_attachment : m_settings.color_attachments)
     {
-        color_attachment.texture_ptr.reset();
+        color_attachment.texture_location = Texture::Location();
     }
 }
 
@@ -189,8 +186,8 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(m_settings.color_attachments.size());
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
-        m_color_attachment_textures.push_back(static_cast<TextureBase&>(*color_attach.texture_ptr));
+        META_CHECK_ARG_TRUE_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(color_attach.texture_location.GetTexture()));
     }
     return m_color_attachment_textures;
 }
@@ -198,9 +195,9 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
 TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.texture_ptr)
+    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.texture_location.IsInitialized())
     {
-        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.texture_ptr.get());
+        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.texture_location.GetTexturePtr().get());
     }
     return m_p_depth_attachment_texture;
 }
@@ -215,23 +212,23 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const ColorAttachment& color_attach : m_settings.color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
 
-        Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_ptr);
+        Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_location.GetTexturePtr());
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)
             continue;
 
         m_non_frame_buffer_attachment_textures.emplace_back(std::move(color_attachment_ptr));
     }
 
-    if (m_settings.depth_attachment.texture_ptr)
+    if (m_settings.depth_attachment.texture_location.IsInitialized())
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.texture_ptr));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.texture_location.GetTexturePtr()));
     }
 
-    if (m_settings.stencil_attachment.texture_ptr)
+    if (m_settings.stencil_attachment.texture_location.IsInitialized())
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.texture_ptr));
+        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.texture_location.GetTexturePtr()));
     }
 
     return m_non_frame_buffer_attachment_textures;

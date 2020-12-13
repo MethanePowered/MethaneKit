@@ -316,15 +316,15 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     for (const AsteroidsFrame& frame : GetFrames())
     {
         META_CHECK_ARG_NOT_NULL(frame.initial_screen_pass_ptr);
-        gfx::RenderPass::Settings initial_pass_settings         = frame.initial_screen_pass_ptr->GetSettings();
-        initial_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
-        initial_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
+        gfx::RenderPass::Settings initial_pass_settings             = frame.initial_screen_pass_ptr->GetSettings();
+        initial_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
+        initial_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
         frame.initial_screen_pass_ptr->Update(initial_pass_settings);
         
         META_CHECK_ARG_NOT_NULL(frame.final_screen_pass_ptr);
-        gfx::RenderPass::Settings final_pass_settings           = frame.final_screen_pass_ptr->GetSettings();
-        final_pass_settings.color_attachments[0].texture_ptr = frame.screen_texture_ptr;
-        final_pass_settings.depth_attachment.texture_ptr     = GetDepthTexturePtr();
+        gfx::RenderPass::Settings final_pass_settings             = frame.final_screen_pass_ptr->GetSettings();
+        final_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
+        final_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
         frame.final_screen_pass_ptr->Update(final_pass_settings);
     }
 

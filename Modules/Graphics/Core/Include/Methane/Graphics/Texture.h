@@ -53,6 +53,26 @@ struct Texture : virtual Resource
         Tex3D,
     };
 
+    class Location : public Resource::Location
+    {
+    public:
+        Location() = default;
+        Location(const Ptr<Texture>& texture_ptr, const SubResource::Index& subresource_index = SubResource::Index())
+            : Resource::Location(texture_ptr, subresource_index)
+            , m_texture_ptr(texture_ptr)
+        { }
+
+        using Resource::Location::operator==;
+
+        const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
+        Texture&            GetTexture() const;
+
+    private:
+        // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too
+        // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
+        Ptr<Texture> m_texture_ptr;
+    };
+
     struct Settings
     {
         Type           type           = Type::Texture;

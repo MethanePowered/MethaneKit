@@ -32,6 +32,12 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+Texture& Texture::Location::GetTexture() const
+{
+    META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource location");
+    return *m_texture_ptr;
+}
+
 Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
 {
     META_FUNCTION_TASK();

@@ -40,19 +40,19 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-inline D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Ptr<Texture>& texture_ptr)
+inline D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetTextureCpuDescriptor(const Texture::Location& texture_location)
 {
-    return texture_ptr
-         ? static_cast<ResourceDX<TextureBase>&>(*texture_ptr).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
+    return texture_location.IsInitialized()
+         ? static_cast<ResourceDX<TextureBase>&>(texture_location.GetTexture()).GetNativeCpuDescriptorHandle(Resource::Usage::RenderTarget)
          : D3D12_CPU_DESCRIPTOR_HANDLE();
 }
 
 RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment)
-    : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.texture_ptr))
+    : descriptor(GetRenderTargetTextureCpuDescriptor(attachment.texture_location))
 {
     META_FUNCTION_TASK();
 
-    if (attachment.texture_ptr)
+    if (attachment.texture_location.IsInitialized())
     {
         beginning.Type = GetBeginningAccessTypeByLoadAction(attachment.load_action);
         ending.Type    = GetEndingAccessTypeByStoreAction(attachment.store_action);
@@ -76,9 +76,8 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_ptr, "can not clear render target attachment without texture");
-
-        const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_ptr->GetSettings().pixel_format);
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_location.IsInitialized(), "can not clear render target attachment without texture");
+        const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_location.GetTexture().GetSettings().pixel_format);
         const std::array<float, 4> clear_color_components{
             color_attachment.clear_color.GetRf(),
             color_attachment.clear_color.GetGf(),
@@ -106,9 +105,8 @@ RenderPassDX::AccessDesc::AccessDesc(const StencilAttachment& stencil_attachment
 void RenderPassDX::AccessDesc::InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(depth_attachment.texture_ptr, "depth attachment should point to the depth-stencil texture");
-
-    const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.texture_ptr->GetSettings().pixel_format);
+    META_CHECK_ARG_NOT_NULL_DESCR(depth_attachment.texture_location.IsInitialized(), "depth attachment should point to the depth-stencil texture");
+    const DXGI_FORMAT depth_format = TypeConverterDX::PixelFormatToDxgi(depth_attachment.texture_location.GetTexture().GetSettings().pixel_format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment.clear_value, stencil_attachment.clear_value);
 }
 
@@ -137,17 +135,17 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
-    : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_ptr))
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_location))
     , clear_color{ color_attach.clear_color.GetRf(), color_attach.clear_color.GetGf(), color_attach.clear_color.GetBf(), color_attach.clear_color.GetAf() }
 {
     META_FUNCTION_TASK();
 }
 
 RenderPassDX::DSClearInfo::DSClearInfo(const RenderPass::DepthAttachment& depth_attach, const RenderPass::StencilAttachment& stencil_attach)
-    : cpu_handle(GetRenderTargetTextureCpuDescriptor(depth_attach.texture_ptr))
-    , depth_cleared(depth_attach.texture_ptr && depth_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
+    : cpu_handle(GetRenderTargetTextureCpuDescriptor(depth_attach.texture_location))
+    , depth_cleared(depth_attach.texture_location.IsInitialized() && depth_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach.clear_value)
-    , stencil_cleared(stencil_attach.texture_ptr && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
+    , stencil_cleared(stencil_attach.texture_location.IsInitialized() && stencil_attach.load_action == RenderPass::Attachment::LoadAction::Clear)
     , stencil_value(stencil_attach.clear_value)
 {
     META_FUNCTION_TASK();
@@ -239,7 +237,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
     {
         if (update_descriptors_only)
         {
-            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.texture_ptr);
+            m_render_target_descs[color_attachment_index].cpuDescriptor = GetRenderTargetTextureCpuDescriptor(color_attachment.texture_location);
             color_attachment_index++;
         }
         else
@@ -251,11 +249,11 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
         }
     }
 
-    if (settings.depth_attachment.texture_ptr)
+    if (settings.depth_attachment.texture_location.IsInitialized())
     {
         if (update_descriptors_only && m_depth_stencil_desc)
         {
-            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(settings.depth_attachment.texture_ptr);
+            m_depth_stencil_desc->cpuDescriptor = GetRenderTargetTextureCpuDescriptor(settings.depth_attachment.texture_location);
         }
         else
         {
@@ -282,7 +280,7 @@ void RenderPassDX::UpdateNativeClearDesc()
         if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
             continue;
 
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not clear render target attachment without texture");
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_location.IsInitialized(), "can not clear render target attachment without texture");
         m_rt_clear_infos.emplace_back(color_attach);
     }
 
@@ -428,8 +426,8 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const RenderPassBase::ColorAttachment& color_attach : GetSettings().color_attachments)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_ptr, "can not use color attachment without texture");
-        const auto& rt_texture = static_cast<const ResourceDX<TextureBase>&>(*color_attach.texture_ptr);
+        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
+        const auto& rt_texture = static_cast<const ResourceDX<TextureBase>&>(color_attach.texture_location.GetTexture());
         m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
     }
 
@@ -443,10 +441,10 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
         return &m_native_ds_cpu_handle;
 
     const Settings& settings = GetSettings();
-    if (!settings.depth_attachment.texture_ptr)
+    if (!settings.depth_attachment.texture_location.IsInitialized())
         return nullptr;
 
-    const auto& depth_texture = static_cast<const ResourceDX<TextureBase>&>(*settings.depth_attachment.texture_ptr);
+    const auto& depth_texture = static_cast<const ResourceDX<TextureBase>&>(settings.depth_attachment.texture_location.GetTexture());
     m_native_ds_cpu_handle = depth_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
     return &m_native_ds_cpu_handle;
 }

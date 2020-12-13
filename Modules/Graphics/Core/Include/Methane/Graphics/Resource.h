@@ -81,34 +81,6 @@ struct Resource : virtual Object
     };
 
     using DescriptorByUsage = std::map<Usage, Descriptor>;
-    
-    class Location
-    {
-    public:
-        Location(Ptr<Resource> resource_ptr, Data::Size offset = 0U);
-
-        bool operator==(const Location& other) const noexcept;
-
-        const Ptr<Resource>& GetResourcePtr() const noexcept  { return m_resource_ptr; }
-        Resource&            GetResource() const noexcept     { return *m_resource_ptr; }
-        Data::Size           GetOffset() const noexcept       { return m_offset; }
-
-    private:
-        Ptr<Resource> m_resource_ptr;
-        Data::Size    m_offset;
-    };
-
-    using Locations = std::vector<Location>;
-
-    template<typename TResource>
-    static Locations CreateLocations(const std::vector<std::shared_ptr<TResource>>& resources)
-    {
-        Resource::Locations resource_locations;
-        std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
-                       [](const std::shared_ptr<TResource>& resource_ptr) { return Location(resource_ptr); });
-        return resource_locations;
-    }
-
     using BytesRange = Data::Range<Data::Index>;
 
     class SubResource : public Data::Chunk
@@ -187,6 +159,38 @@ struct Resource : virtual Object
     };
 
     using SubResources = std::vector<SubResource>;
+
+    class Location
+    {
+    public:
+        Location() = default;
+        Location(const Ptr<Resource>& resource_ptr, Data::Size offset = 0U) : Location(resource_ptr, SubResource::Index(), offset) { }
+        Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset = 0U);
+
+        bool operator==(const Location& other) const noexcept;
+
+        bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
+        const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
+        Resource&                 GetResource() const;
+        const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
+        Data::Size                GetOffset() const noexcept           { return m_offset; }
+
+    private:
+        Ptr<Resource>      m_resource_ptr;
+        SubResource::Index m_subresource_index;
+        Data::Size         m_offset = 0U;
+    };
+
+    using Locations = std::vector<Location>;
+
+    template<typename TResource>
+    static Locations CreateLocations(const std::vector<std::shared_ptr<TResource>>& resources)
+    {
+        Resource::Locations resource_locations;
+        std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
+                       [](const std::shared_ptr<TResource>& resource_ptr) { return Location(resource_ptr); });
+        return resource_locations;
+    }
 
     // Resource interface
     virtual void                      SetData(const SubResources& sub_resources) = 0;
