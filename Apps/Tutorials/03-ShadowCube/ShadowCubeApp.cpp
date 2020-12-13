@@ -230,6 +230,16 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.shadow_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
+        // Shadow-pass resource bindings for cube rendering
+        frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer_ptr } } },
+        });
+
+        // Shadow-pass resource bindings for floor rendering
+        frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
+        });
+
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
@@ -255,16 +265,6 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.shadow_pass.pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
-        // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer_ptr } } },
-        });
-
-        // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
-        });
-
         // ========= Final Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Final pass
@@ -274,14 +274,6 @@ void ShadowCubeApp::Init()
         // Create uniforms buffer for Floor rendering in Final pass
         frame.final_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), mesh_uniforms_data_size);
         frame.final_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
-
-        // Bind final pass RT texture and pass to the frame buffer texture and final pass.
-        frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
-        frame.final_pass.pass_ptr       = frame.screen_pass_ptr;
-        
-        // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.final_pass.pass_ptr);
-        frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(final_state_settings.program_ptr, {
@@ -299,6 +291,14 @@ void ShadowCubeApp::Init()
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer_ptr  } } },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexturePtr()        } } },
         });
+
+        // Bind final pass RT texture and pass to the frame buffer texture and final pass.
+        frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
+        frame.final_pass.pass_ptr       = frame.screen_pass_ptr;
+        
+        // Create render pass and command list for final pass rendering
+        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.final_pass.pass_ptr);
+        frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Rendering command lists sequence
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({
