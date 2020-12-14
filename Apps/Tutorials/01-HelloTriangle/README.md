@@ -286,3 +286,8 @@ add_methane_shaders(MethaneHelloTriangle
 ```
 
 Now you have all in one application executable/bundle running on Windows & MacOS, which is rendering colored triangle in window with support of resizing the frame buffer.
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../02-TexturedCube), 
+which is demonstrating simple mesh drawing with phong lighting and texturing.

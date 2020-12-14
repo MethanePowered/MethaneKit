@@ -6,7 +6,12 @@
 
 This tutorial demonstrates using of two render passes for rendering shadow of the textured cube on the floor plane.
 Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
-- TBD...
+- Rendering with multiple render passes
+- Using texture as render target in one pass and as an input program binding in another pass
+- Compiling and loading shaders code with macro-definitions to render state programs
+- Using graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code
+- Simple shadows rendering technique implementation. 
+  See detailed [technique description here](http://www.opengl-tutorial.org/ru/intermediate-tutorials/tutorial-16-shadow-mapping/)
 
 ## Application and Frame Class Definitions
 
@@ -225,15 +230,13 @@ Vertex shader since it will be used for rendering to depth buffer only without c
 ```cpp
     // ========= Shadow Pass Render & View States =========
     
-    gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
-
     gfx::RenderState::Settings shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, { } }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
             gfx::Program::ArgumentDescriptions
@@ -400,9 +403,216 @@ application class `Methane::Graphics::App`. Render command list is created bound
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 ```
 
+When render context is going to be released, all related resources must be released too. This is done in 
+`ShadowCubeApp::OnContextReleased` callback method with a helper method `ShadowCubeApp::RenderPass::Release()` 
+releasing render pass pipeline states:
+
+```cpp
+void ShadowCubeApp::OnContextReleased(gfx::Context& context)
+{
+    m_final_pass.Release();
+    m_shadow_pass.Release();
+
+    m_floor_buffers_ptr.reset();
+    m_cube_buffers_ptr.reset();
+    m_shadow_sampler_ptr.reset();
+    m_texture_sampler_ptr.reset();
+    m_const_buffer_ptr.reset();
+
+    UserInterfaceApp::OnContextReleased(context);
+}
+
+void ShadowCubeApp::RenderPass::Release()
+{
+    render_state_ptr.reset();
+    view_state_ptr.reset();
+}
+```
 ## Frame Rendering Cycle
 
+Animation function bound to time-animation in constructor of `ShadowCubeApp` class is called automatically as a part of 
+every render cycle, just before `App::Update` function call. This function rotates light position and camera in opposite directions.
+
+```cpp
+ShadowCubeApp::ShadowCubeApp()
+{
+    ...
+    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+}
+
+bool ShadowCubeApp::Animate(double, double delta_seconds)
+{
+    m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+    m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 4.F));
+    return true;
+}
+```
+
+`ShadowCubeApp::Update()` function is called before `App::Render()` call to update shader uniforms:
+- Scene uniforms structure is updated with eye and light positions calculated in `ShadowCubeApp::Animate` function.
+- Cube and Floor mesh uniform structures are updated separately for Final and Render passes:
+  - Shadow pass MVP matrix is calculated from the light point of view using `m_light_camera.GetViewProjMatrix()`
+    and the shadow-MVPx matrix is not used for shadow-map rendering, so it is set to zero matrix.
+  - Final pass MVP matrix is calculated from the observer point of view using `m_view_camera.GetViewProjMatrix()`.
+    The shadow-MVPx matrix is used to calculate current pixel coordinates in the shadow-map texture, so we use
+    MVP matrix used during shadow pass rendering multiplied by coordinates transformation matrix to convert 
+    from homogenous [-1, 1] to texture coordinates [0,1].
+
+```cpp
+bool ShadowCubeApp::Update()
+{
+    if (!UserInterfaceApp::Update())
+        return false;
+
+    gfx::Matrix44f scale_matrix;
+    cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
+    
+    // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
+    static const gfx::Matrix44f s_homogen_to_texture_coords_matrix = ([]()
+    {
+        gfx::Matrix44f shadow_scale_matrix;
+        cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
+
+        gfx::Matrix44f shadow_translate_matrix;
+        cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
+
+        return shadow_scale_matrix * shadow_translate_matrix;
+    })();
+
+    // Update scene uniforms
+    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+
+    // Cube model matrix
+    gfx::Matrix44f cube_model_matrix;
+    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.F, 0.5F, 0.F)); // move up by half of cube model height
+    cube_model_matrix = cube_model_matrix * scale_matrix;
+
+    // Update Cube uniforms
+    m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix * m_view_camera.GetViewProjMatrix(),
+        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+    });
+    m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
+        cube_model_matrix,
+        cube_model_matrix * m_light_camera.GetViewProjMatrix(),
+        gfx::Matrix44f()
+    });
+
+    // Update Floor uniforms
+    m_floor_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
+        scale_matrix,
+        scale_matrix * m_view_camera.GetViewProjMatrix(),
+        scale_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+    });
+    m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
+        scale_matrix,
+        scale_matrix * m_light_camera.GetViewProjMatrix(),
+        gfx::Matrix44f()
+    });
+    
+    return true;
+}
+```
+
+Scene rendering consists is done in `ShadowCubeApp::Render()` method in 4 steps:
+1. 5 Volatile uniform buffers are updated with uniform structures data, previously calculated and filled 
+   in `ShadowCubeApp::Update()` method.
+2. Shadow pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the current scene 
+   using already configured shadow render pass bound to shadow render command list and shadow-pass uniforms.
+3. Final pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the same scene 
+   using already configured final render pass bound to final render command list and final-pass uniforms.
+4. Shadow and Final pass rendering command lists are sent for execution to GPU using render command queue from context 
+   and frame present is scheduled.
+
+```cpp
+bool ShadowCubeApp::Render()
+{
+    if (!UserInterfaceApp::Render())
+        return false;
+
+    // Upload uniform buffers to GPU
+    const ShadowCubeFrame& frame = GetCurrentFrame();
+    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
+    frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
+    frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
+    frame.final_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources());
+    frame.final_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources());
+
+    // Record commands for shadow & final render passes
+    RenderScene(m_shadow_pass, frame.shadow_pass);
+    RenderScene(m_final_pass, frame.final_pass);
+
+    // Execute rendering commands and present frame to screen
+    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().Present();
+    
+    return true;
+}
+```
+
+Scene rendering commands encoding is done similarly for both shadow and render passes:
+1. Render command list is reset with state taken from render pass resources and already configured debug group description.
+2. View state is set with viewports and scissor rects.
+3. Cube and floor meshes drawing commands are encoded using
+   [TexturedMeshBuffers<UniformsType>::Draw(...)](../../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp)
+   method which is doing:
+   1. Setting program bindings to resources;
+   2. Setting vertex buffer to draw;
+   3. Encodes `DrawIndexed` command for a given mesh subset.
+   4. Methane application overlay is rendered as a part of Final pass only using `Graphics::App::RenderOverlay(...)` method
+   from base application class.
+   5. Command list is committed making it ready for execution.
+
+```cpp
+void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
+{
+    gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
+
+    // Reset command list with initial rendering state
+    cmd_list.ResetWithState(render_pass.render_state_ptr, render_pass.debug_group_ptr.get());
+    cmd_list.SetViewState(*render_pass.view_state_ptr);
+
+    // Draw scene with cube and floor
+    m_cube_buffers_ptr->Draw(cmd_list, *render_pass_resources.cube.program_bindings_ptr);
+    m_floor_buffers_ptr->Draw(cmd_list, *render_pass_resources.floor.program_bindings_ptr);
+
+    if (render_pass.is_final_pass)
+    {
+        RenderOverlay(cmd_list);
+    }
+
+    // Commit command list with present flag in case of final render pass
+    cmd_list.Commit();
+}
+```
+
+Graphics render loop is started from `main(...)` entry function using `GraphicsApp::Run(...)` method which is also parsing command line arguments.
+
+```cpp
+int main(int argc, const char* argv[])
+{
+    return ShadowCubeApp().Run({ argc, argv });
+}
+```
+
 ## Shadow Cube Shaders
+
+HLSL 6 shaders [Shaders/ShadowCube.hlsl](Shaders/ShadowCube.hlsl) implement both shadow pass rendering and 
+final pass with phong lighting, texturing and shadow map sampling all in one source file with help of `#ifdef ... #endif`
+pre-processor guards. These code blocks are enabled with macro-definitions passed to shader compiler:
+- `ENABLE_TEXTURING` macro-definition:
+  - Adds `texcoord` vector to `VSInput` and `PSInput` argument structures; enables code for passing texture coordinates
+    from vertex to pixel shader with interpolation.
+  - Adds texture `g_texture` along with sampler `g_texture_sampler`
+    and enables code path for its sampling in pixel shader `CubePS`.
+- `ENABLE_SHADOWS` macro-definition:
+  - Adds `shadow_position` vector to `PSInput` arguments structure and enables code path to calculate it 
+    in vertex shader `CubeVS`;
+  - Adds `shadow_mvpx_matrix` matrix to MeshUniforms structure of `g_mesh_uniforms` buffer;
+  - Adds shadow-map texture `g_shadow_map` along with shadow-map sampler `g_shadow_sampler`
+    and enables code path for shadow map sampling in pixel shader `CubePS`.
 
 ```cpp
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
@@ -519,5 +729,67 @@ float4 CubePS(PSInput input) : SV_TARGET
 }
 ```
 
+Shaders configuration file [Shaders/ShadowCube.cfg](Shaders/ShadowCube.cfg)
+is created in pair with shaders file and describes shader types along with entry points and
+macro definitions used to pre-build shaders to bytecode at build time.
+Note that vertex shader `CubeVS` is built twice with different set of macro definitions:
+one instance is used for shadow pass, the other is for final pass rendering.
+
+```ini
+frag=CubePS:ENABLE_SHADOWS ENABLE_TEXTURING
+vert=CubeVS:ENABLE_SHADOWS ENABLE_TEXTURING
+vert=CubeVS:ENABLE_TEXTURING
+```
+
 ## CMake Build Configuration
 
+Shaders are compiled in build time and added as byte code to the application embedded resources.
+Texture images are added to the application embedded resources too.
+
+```cmake
+set(TARGET MethaneShadowCube)
+
+include(MethaneApplications)
+include(MethaneShaders)
+include(MethaneResources)
+
+set(SOURCES
+    ShadowCubeApp.h
+    ShadowCubeApp.cpp
+)
+
+set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)
+set(IMAGES_DIR ${RESOURCES_DIR}/Images)
+set(TEXTURES
+    ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
+    ${IMAGES_DIR}/Textures/MarbleWhite.jpg
+)
+
+add_methane_application(${TARGET}
+    "${SOURCES}"
+    "${RESOURCES_DIR}"
+    "Apps"
+    "Methane Shadow Cube"
+    "Tutorial of the shadow pass rendering with Methane Kit."
+    "${METHANE_COPYRIGHT}"
+    "${METHANE_VERSION_SHORT}"
+    "${METHANE_VERSION_BUILD}"
+)
+add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
+
+target_link_libraries(${TARGET}
+    PRIVATE
+        MethaneAppsCommon
+)
+
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Apps/Tutorials
+)
+```
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [Typography](../04-Typography), which is demonstrating
+text rendering using dynamic font atlas textures.

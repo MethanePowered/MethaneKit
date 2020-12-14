@@ -310,12 +310,6 @@ void ShadowCubeApp::Init()
     UserInterfaceApp::CompleteInitialization();
 }
 
-void ShadowCubeApp::RenderPass::Release()
-{
-    render_state_ptr.reset();
-    view_state_ptr.reset();
-}
-
 bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
     // Resize screen color and depth textures
@@ -338,6 +332,13 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     return true;
 }
 
+bool ShadowCubeApp::Animate(double, double delta_seconds)
+{
+    m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+    m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 4.F));
+    return true;
+}
+
 bool ShadowCubeApp::Update()
 {
     if (!UserInterfaceApp::Update())
@@ -345,9 +346,9 @@ bool ShadowCubeApp::Update()
 
     gfx::Matrix44f scale_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    
-    // Prepare shadow transform matrix
-    static const gfx::Matrix44f s_shadow_transform_matrix = ([]()
+
+    // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
+    static const gfx::Matrix44f s_homogen_to_texture_coords_matrix = ([]()
     {
         gfx::Matrix44f shadow_scale_matrix;
         cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
@@ -371,7 +372,7 @@ bool ShadowCubeApp::Update()
     m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
         cube_model_matrix,
         cube_model_matrix * m_view_camera.GetViewProjMatrix(),
-        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_shadow_transform_matrix
+        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
     });
     m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         cube_model_matrix,
@@ -383,7 +384,7 @@ bool ShadowCubeApp::Update()
     m_floor_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
         scale_matrix,
         scale_matrix * m_view_camera.GetViewProjMatrix(),
-        scale_matrix * m_light_camera.GetViewProjMatrix() * s_shadow_transform_matrix
+        scale_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
     });
     m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         scale_matrix,
@@ -391,13 +392,6 @@ bool ShadowCubeApp::Update()
         gfx::Matrix44f()
     });
     
-    return true;
-}
-
-bool ShadowCubeApp::Animate(double, double delta_seconds)
-{
-    m_view_camera.Rotate(m_view_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
-    m_light_camera.Rotate(m_light_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 4.F));
     return true;
 }
 
@@ -465,6 +459,12 @@ ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, const std::string& deb
     , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
 {
     META_UNUSED(debug_group_name);
+}
+
+void ShadowCubeApp::RenderPass::Release()
+{
+    render_state_ptr.reset();
+    view_state_ptr.reset();
 }
 
 } // namespace Methane::Tutorials

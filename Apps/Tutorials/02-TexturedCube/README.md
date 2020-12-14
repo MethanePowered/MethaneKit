@@ -388,7 +388,7 @@ void TexturedCubeApp::Init()
 }
 ```
 
-`TexturedCubeApp::OnContextReleased` callback function releases all graphics resources before graphics context is released,
+`TexturedCubeApp::OnContextReleased` callback method releases all graphics resources before graphics context is released,
 for example when graphics device is changed via [Graphics::AppContextController](../../../Modules/Graphics/App/README.md#graphicsappcontextcontrollerincludemethanegraphicsappcontextcontrollerh)
 with `LCtrl + X` shortcut.
 
@@ -492,7 +492,7 @@ Graphics render loop is started from `main(...)` entry function using `GraphicsA
 ```cpp
 int main(int argc, const char* argv[])
 {
-    return HelloTriangleApp().Run({ argc, argv });
+    return TexturedCubeApp().Run({ argc, argv });
 }
 ```
 
@@ -629,3 +629,8 @@ target_link_libraries(${TARGET}
         MethaneAppsCommon
 )
 ```
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [Shadow Cube](../03-ShadowCube), which is demonstrating
+multi-pass rendering for drawing simple shadows.
