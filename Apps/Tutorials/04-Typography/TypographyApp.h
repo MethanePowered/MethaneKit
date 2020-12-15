@@ -27,9 +27,6 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include <Methane/UserInterface/App.hpp>
 #include <Methane/Data/Receiver.hpp>
 
-#include <map>
-#include <vector>
-
 namespace Methane::Tutorials
 {
 
@@ -48,8 +45,8 @@ using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
 class TypographyApp final
     : public UserInterfaceApp
-    , private Data::Receiver<gui::IFontLibraryCallback> //NOSONAR
-    , private Data::Receiver<gui::IFontCallback> //NOSONAR
+    , private Data::Receiver<gui::IFontLibraryCallback>
+    , private Data::Receiver<gui::IFontCallback>
 {
 public:
     struct Settings
