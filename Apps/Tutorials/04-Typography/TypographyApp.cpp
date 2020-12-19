@@ -106,8 +106,8 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
         {
             frame_size_in_dots.width - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
-            ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
-            : 0U                                                                        // other text blocks have calculated height
+                ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
+                : 0U                                                                        // other text blocks have calculated height
         }
     );
 }
@@ -179,7 +179,8 @@ void TypographyApp::Init()
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
-                    font_settings.desc, GetUIContext().GetFontResolutionDpi(),
+                    font_settings.desc,
+                    GetUIContext().GetFontResolutionDpi(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             ).GetPtr()

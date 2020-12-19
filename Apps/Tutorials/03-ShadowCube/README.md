@@ -15,7 +15,8 @@ Tutorial demonstrates using of the following Methane Kit features additionally t
 
 ## Application and Frame Class Definitions
 
-`ShadowCubeApp` class is declared in header file [ShadowCubeApp.h](ShadowCubeApp.h).
+`ShadowCubeApp` class is declared in header file [ShadowCubeApp.h](ShadowCubeApp.h) and the application class
+is derived from [UserInterface::App](../../../Modules/UserInterface/App) base class, same as in [previous tutorial](../02-TexturedCube).
 Private section of the class contains declaration of shader argument structures, 
 which layout is matching definition of the equally named structures in [HLSL shader code](#shadow-cube-shaders):
 - `Constants` data structure is stored in the `m_scene_constants` member and is uploaded into the `Graphics::Buffer` 
