@@ -3,7 +3,8 @@
 ## High-Level Architecture
 
 Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction:
-- [External](Externals) libraries and tools
+- [External](../Externals) external libraries and tools
+- [Common](Common) libraries
 - [Data](Data) processing libraries
 - [Platform](Platform) abstraction libraries
 - [Graphics](Graphics) API abstraction libraries
