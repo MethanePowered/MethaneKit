@@ -158,7 +158,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
-            m_binding_by_argument.emplace(shader_argument, argument_binging_ptr);
+            m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
             shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
         }
     }
@@ -185,7 +185,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         }
 
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
-        m_binding_by_argument.emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
+        m_binding_by_argument.try_emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
 }
 
@@ -208,7 +208,7 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
 
     DescriptorHeap::Range const_desc_range = heap.ReserveRange(range_length);
     META_CHECK_ARG_NOT_ZERO_DESCR(const_desc_range, "Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
-    return m_constant_descriptor_range_by_heap_type.emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
+    return m_constant_descriptor_range_by_heap_type.try_emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
 }
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)

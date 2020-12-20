@@ -199,8 +199,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_texture_ptr         } });
-        program_binding_resource_locations.emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_texture_sampler_ptr } });
+        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_texture_ptr         } });
+        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_texture_sampler_ptr } });
     }
 
     m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_locations);

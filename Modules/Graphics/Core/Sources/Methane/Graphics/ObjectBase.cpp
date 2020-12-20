@@ -42,11 +42,13 @@ void ObjectBase::RegistryBase::AddGraphicsObject(Object& object)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
 
-    const auto add_result = m_object_by_name.emplace(object.GetName(), object.GetPtr());
-    if (!add_result.second && !add_result.first->second.expired() && add_result.first->second.lock().get() != std::addressof(object))
+    const auto [ name_and_object_it, object_added ] = m_object_by_name.try_emplace(object.GetName(), object.GetPtr());
+    if (!object_added &&
+        !name_and_object_it->second.expired() &&
+         name_and_object_it->second.lock().get() != std::addressof(object))
         throw NameConflictException(object.GetName());
 
-    add_result.first->second = object.GetPtr();
+    name_and_object_it->second = object.GetPtr();
 }
 
 Ptr<Object> ObjectBase::RegistryBase::GetGraphicsObject(const std::string& object_name) const noexcept

@@ -111,7 +111,7 @@ protected:
         }
 
         const auto v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
-        edge_midpoints.emplace(edge, v_mid_index);
+        edge_midpoints.try_emplace(edge, v_mid_index);
         m_vertices.push_back(v_mid);
         return v_mid_index;
     }

@@ -207,13 +207,13 @@ bool ResourceBase::Barriers::AddTransition(const Resource& resource, State befor
 bool ResourceBase::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    const auto emplace_result = m_barriers_map.emplace(id, state_change);
-    if (emplace_result.second)
+    const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(id, state_change);
+    if (barrier_added)
         return true;
-    else if (emplace_result.first->second == state_change)
+    else if (barrier_id_and_state_change_it->second == state_change)
         return false;
 
-    emplace_result.first->second = state_change;
+    barrier_id_and_state_change_it->second = state_change;
     return true;
 }
 
@@ -430,7 +430,7 @@ void ResourceBase::InitializeDefaultDescriptors()
             // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
             DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
-            m_descriptor_by_usage.emplace(usage, Descriptor(heap, heap.AddResource(*this)));
+            m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
         }
     }
 }

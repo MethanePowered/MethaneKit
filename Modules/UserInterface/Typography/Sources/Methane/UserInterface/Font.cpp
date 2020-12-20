@@ -315,13 +315,13 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
 Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
-    auto emplace_result = m_font_by_name.emplace(font_settings.description.name, Ptr<Font>(new Font(data_provider, font_settings)));
-    META_CHECK_ARG_DESCR(font_settings.description.name, emplace_result.second, "font with a give name already exists in fonts library");
+    auto [ name_and_font_it, font_added ] = m_font_by_name.try_emplace(font_settings.description.name, new Font(data_provider, font_settings));
+    META_CHECK_ARG_DESCR(font_settings.description.name, font_added, "font with a give name already exists in fonts library");
 
-    META_CHECK_ARG_NAME("emplace_result", emplace_result.first->second);
-    Emit(&IFontLibraryCallback::OnFontAdded, *emplace_result.first->second);
+    META_CHECK_ARG_NAME("emplace_result", name_and_font_it->second);
+    Emit(&IFontLibraryCallback::OnFontAdded, *name_and_font_it->second);
 
-    return *emplace_result.first->second;
+    return *name_and_font_it->second;
 }
 
 void Font::Library::RemoveFont(const std::string& font_name)
@@ -474,7 +474,7 @@ const Font::Char& Font::AddChar(Char::Code char_code)
         return font_char;
 
     // Load char glyph and add it to the font characters map
-    auto font_char_it = m_char_by_code.emplace(char_code, m_face_ptr->LoadChar(char_code)).first;
+    const auto font_char_it = m_char_by_code.try_emplace(char_code, m_face_ptr->LoadChar(char_code)).first;
     META_CHECK_ARG_DESCR(static_cast<uint32_t>(char_code), font_char_it != m_char_by_code.end(), "font character was not added to character map");
 
     Char& new_font_char = font_char_it->second;
@@ -638,7 +638,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
 
-    const Ptr<gfx::Texture>& atlas_texture_ptr = m_atlas_textures.emplace(&context, CreateAtlasTexture(context, true)).first->second.texture_ptr;
+    const Ptr<gfx::Texture>& atlas_texture_ptr = m_atlas_textures.try_emplace(&context, CreateAtlasTexture(context, true)).first->second.texture_ptr;
     Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, atlas_texture_ptr);
 
     return atlas_texture_ptr;

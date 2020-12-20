@@ -155,7 +155,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
             resource_locations_by_argument.count(argument_and_argument_binding.first))
             continue;
 
-        resource_locations_by_argument.emplace(
+        resource_locations_by_argument.try_emplace(
             argument_and_argument_binding.first,
             argument_and_argument_binding.second->GetResourceLocations()
         );
@@ -227,7 +227,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
         if (binding_by_argument_it == m_binding_by_argument.end())
         {
-            m_binding_by_argument.emplace(
+            m_binding_by_argument.try_emplace(
                 binding_by_argument.first,
                 binding_settings.argument.IsConstant()
                     ? binding_by_argument.second

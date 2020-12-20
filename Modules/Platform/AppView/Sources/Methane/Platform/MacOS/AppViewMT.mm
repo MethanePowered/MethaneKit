@@ -292,7 +292,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     m_current_drawable = [self.metalLayer nextDrawable];
     TRACY_GPU_SCOPE_END(gpu_scope);
     std::lock_guard<std::mutex> lock(m_present_scopes_mutex);
-    m_present_scopes.emplace(m_current_drawable, std::move(gpu_scope), m_present_scopes, m_present_scopes_mutex);
+    m_present_scopes.try_emplace(m_current_drawable, std::move(gpu_scope), m_present_scopes, m_present_scopes_mutex);
 #else
     m_current_drawable = [self.metalLayer nextDrawable];
 #endif

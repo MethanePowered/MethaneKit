@@ -88,15 +88,15 @@ void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
 ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope_name)
 {
     META_FUNCTION_TASK();
-    const auto result = m_scope_id_by_name.emplace(scope_name, m_new_scope_id);
-    if (result.second)
+    const auto [ scope_name_and_id_it, scope_added ] = m_scope_id_by_name.try_emplace(scope_name, m_new_scope_id);
+    if (scope_added)
     {
         m_new_scope_id++;
         m_timing_by_scope_id.resize(m_new_scope_id);
-        m_counters_by_scope_id.emplace_back(ITT_COUNTER_INIT(result.first->first, g_methane_itt_domain_name));
+        m_counters_by_scope_id.emplace_back(ITT_COUNTER_INIT(scope_name_and_id_it->first, g_methane_itt_domain_name));
         TracyPlotConfig(result.first->first, tracy::PlotFormatType::Number);
     }
-    return Registration{ result.first->first, result.first->second };
+    return Registration{ scope_name_and_id_it->first, scope_name_and_id_it->second };
 }
 
 void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
