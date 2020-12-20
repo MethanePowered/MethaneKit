@@ -94,7 +94,7 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
         m_new_scope_id++;
         m_timing_by_scope_id.resize(m_new_scope_id);
         m_counters_by_scope_id.emplace_back(ITT_COUNTER_INIT(scope_name_and_id_it->first, g_methane_itt_domain_name));
-        TracyPlotConfig(result.first->first, tracy::PlotFormatType::Number);
+        TracyPlotConfig(scope_name_and_id_it->first, tracy::PlotFormatType::Number);
     }
     return Registration{ scope_name_and_id_it->first, scope_name_and_id_it->second };
 }
