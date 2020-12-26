@@ -61,7 +61,13 @@ public:
         std::ifstream fs(file_path, std::ios::binary);
         META_CHECK_ARG_DESCR(path, fs.good(), "File path does not exist '{}'", file_path);
 
-        return Data::Chunk(Data::Bytes(std::istreambuf_iterator<char>(fs), {}));
+        fs.seekg(0,std::ios::end);
+        Data::Bytes buffer(static_cast<size_t>(fs.tellg()), {});
+
+        fs.seekg(0,std::ios::beg);
+        fs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+
+        return Data::Chunk(std::move(buffer));
     }
 
 protected:

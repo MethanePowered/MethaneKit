@@ -130,7 +130,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(raw_image_data.GetDataPtr(),
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()),
                                                   static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));
@@ -145,7 +145,8 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(p_image_data, p_image_data + image_data_size);
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data),
+                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size));
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;

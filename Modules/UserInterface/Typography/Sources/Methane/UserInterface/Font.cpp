@@ -229,7 +229,7 @@ private:
         FT_Face ft_face = nullptr;
 
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
-            font_data.GetDataPtr(),
+            reinterpret_cast<const FT_Byte*>(font_data.GetDataPtr()),
             static_cast<FT_Long>(font_data.GetDataSize()), 0,
             &ft_face));
 
@@ -686,8 +686,8 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
         return false;
 
     // Clear old atlas content
-    std::fill(m_atlas_bitmap.begin(), m_atlas_bitmap.end(), uint8_t(0));
-    m_atlas_bitmap.resize(atlas_size.GetPixelsCount(), uint8_t(0));
+    std::fill(m_atlas_bitmap.begin(), m_atlas_bitmap.end(), Data::Byte{});
+    m_atlas_bitmap.resize(atlas_size.GetPixelsCount(), Data::Byte{});
 
     // Render glyphs to atlas bitmap
     for (const auto& code_and_char : m_char_by_code)
@@ -845,7 +845,9 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
     {
         const uint32_t atlas_index = m_rect.origin.GetX() + (m_rect.origin.GetY() + y) * atlas_row_stride;
         META_CHECK_ARG_LESS_DESCR(atlas_index, atlas_bitmap.size() - ft_bitmap.width + 1, "char glyph does not fit into target atlas bitmap");
-        std::copy(ft_bitmap.buffer + y * ft_bitmap.width, ft_bitmap.buffer + (y + 1) * ft_bitmap.width, atlas_bitmap.begin() + atlas_index);
+        std::copy(reinterpret_cast<Data::RawPtr>(ft_bitmap.buffer + y * ft_bitmap.width),
+                  reinterpret_cast<Data::RawPtr>(ft_bitmap.buffer + (y + 1) * ft_bitmap.width),
+                  atlas_bitmap.begin() + atlas_index);
     }
 }
 
