@@ -399,9 +399,9 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, ContextBase& context, co
 {
     META_FUNCTION_TASK();
 
-    for (auto& usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        usage_and_descriptor.second.heap.ReplaceResource(*this, usage_and_descriptor.second.index);
+        descriptor.heap.ReplaceResource(*this, descriptor.index);
     }
 }
 
@@ -409,9 +409,9 @@ ResourceBase::~ResourceBase()
 {
     META_FUNCTION_TASK();
 
-    for (const auto& usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        usage_and_descriptor.second.heap.RemoveResource(usage_and_descriptor.second.index);
+        descriptor.heap.RemoveResource(descriptor.index);
     }
 }
 
@@ -531,9 +531,9 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 {
     META_FUNCTION_TASK();
     DescriptorHeap::Types heap_types;
-    for (auto usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        heap_types.insert(usage_and_descriptor.second.heap.GetSettings().type);
+        heap_types.insert(descriptor.heap.GetSettings().type);
     }
     return heap_types;
 }

@@ -45,8 +45,8 @@ using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
 class TypographyApp final
     : public UserInterfaceApp
-    , private Data::Receiver<gui::IFontLibraryCallback>
-    , private Data::Receiver<gui::IFontCallback>
+    , private Data::Receiver<gui::IFontLibraryCallback> // NOSONAR
+    , private Data::Receiver<gui::IFontCallback>        // NOSONAR
 {
 public:
     struct Settings

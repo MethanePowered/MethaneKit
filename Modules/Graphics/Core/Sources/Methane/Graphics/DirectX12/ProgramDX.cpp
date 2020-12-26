@@ -161,14 +161,13 @@ void ProgramDX::InitRootSignature()
     root_parameters.reserve(binding_by_argument.size());
 
     std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
-    for (auto& argument_and_binding : binding_by_argument)
+    for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL(argument_and_binding.second);
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-        const Argument&                    shader_argument = argument_and_binding.first;
-        auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
+        auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
-        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
+        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.shader_type);
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
         root_parameters.emplace_back();

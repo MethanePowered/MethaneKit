@@ -222,14 +222,14 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
 
     InitializeDefaultDescriptors();
 
-    const ResourceAndViewDesc tex_and_srv_desc = GetResourceAndViewDesc();
-    InitializeCommittedResource(tex_and_srv_desc.first, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
+    const auto [resource_desc, srv_desc] = GetResourceAndViewDesc();
+    InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
 
     const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
     m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 
     const wrl::ComPtr<ID3D12Device>& cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
-    cp_device->CreateShaderResourceView(GetNativeResource(), &tex_and_srv_desc.second, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
+    cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 
 void ImageTextureDX::SetName(const std::string& name)

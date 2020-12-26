@@ -147,17 +147,19 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
 
     // Form map of volatile resource bindings with replaced resource locations
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
-    for (const auto& argument_and_argument_binding : other_program_bindings.m_binding_by_argument)
+    for (const auto& [program_argument, argument_binding_ptr] : other_program_bindings.m_binding_by_argument)
     {
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
+
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_and_argument_binding.second->GetSettings().argument.IsConstant() ||
-            resource_locations_by_argument.count(argument_and_argument_binding.first))
+        if (argument_binding_ptr->GetSettings().argument.IsConstant() ||
+            resource_locations_by_argument.count(program_argument))
             continue;
 
         resource_locations_by_argument.try_emplace(
-            argument_and_argument_binding.first,
-            argument_and_argument_binding.second->GetResourceLocations()
+            program_argument,
+            argument_binding_ptr->GetResourceLocations()
         );
     }
 
@@ -215,22 +217,21 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
-    for (const auto& binding_by_argument : program.GetArgumentBindings())
+    for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(binding_by_argument.second,
-                                      "no resource binding is set for an argument '{}' of shader", binding_by_argument.first.name);
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
 
-        const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*binding_by_argument.second);
+        const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*argument_binding_ptr);
         const auto& binding_settings = argument_binding.GetSettings();
-        m_arguments.insert(binding_by_argument.first);
+        m_arguments.insert(program_argument);
 
-        auto binding_by_argument_it = m_binding_by_argument.find(binding_by_argument.first);
+        auto binding_by_argument_it = m_binding_by_argument.find(program_argument);
         if (binding_by_argument_it == m_binding_by_argument.end())
         {
             m_binding_by_argument.try_emplace(
-                binding_by_argument.first,
+                program_argument,
                 binding_settings.argument.IsConstant()
-                    ? binding_by_argument.second
+                    ? argument_binding_ptr
                     : ArgumentBindingBase::CreateCopy(argument_binding)
             );
         }
@@ -253,11 +254,8 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 
     // Reserve descriptor ranges in heaps for resource bindings state
     const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
-    for (const auto& descriptor_heap_type_and_count : descriptors_count_by_heap_type)
+    for (const auto& [heap_type, descriptors] : descriptors_count_by_heap_type)
     {
-        const DescriptorHeap::Type heap_type = descriptor_heap_type_and_count.first;
-        const DescriptorsCount&  descriptors = descriptor_heap_type_and_count.second;
-
         std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
@@ -288,19 +286,18 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgu
 {
     META_FUNCTION_TASK();
 
-    for (const auto& argument_and_resource_locations : resource_locations_by_argument)
+    for (const auto& [program_argument, resource_locations] : resource_locations_by_argument)
     {
-        const Program::Argument argument = argument_and_resource_locations.first;
-        const Ptr<ArgumentBinding>& binding_ptr = Get(argument);
+        const Ptr<ArgumentBinding>& binding_ptr = Get(program_argument);
         if (!binding_ptr)
         {
 #ifdef PROGRAM_IGNORE_MISSING_ARGUMENTS
             continue;
 #else
-            throw Program::Argument::NotFoundException(*m_program_ptr, argument);
+            throw Program::Argument::NotFoundException(*m_program_ptr, program_argument);
 #endif
         }
-        binding_ptr->SetResourceLocations(argument_and_resource_locations.second);
+        binding_ptr->SetResourceLocations(resource_locations);
     }
 }
 
@@ -309,7 +306,7 @@ const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Prog
     META_FUNCTION_TASK();
 
     static const Ptr<ArgumentBinding> s_empty_argument_binding_ptr;
-    auto binding_by_argument_it  = m_binding_by_argument.find(shader_argument);
+    auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
     return binding_by_argument_it != m_binding_by_argument.end()
          ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
 }
@@ -318,11 +315,13 @@ Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
 {
     META_FUNCTION_TASK();
     Program::Arguments unbound_arguments;
-    for (const auto& binding_by_argument : m_binding_by_argument)
+    for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        if (binding_by_argument.second->GetResourceLocations().empty())
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
+
+        if (argument_binding_ptr->GetResourceLocations().empty())
         {
-            unbound_arguments.insert(binding_by_argument.first);
+            unbound_arguments.insert(program_argument);
         }
     }
     return unbound_arguments;

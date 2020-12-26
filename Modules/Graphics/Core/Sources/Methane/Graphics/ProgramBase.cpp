@@ -129,9 +129,8 @@ ProgramBase::~ProgramBase()
     META_FUNCTION_TASK();
 
     std::lock_guard<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (const auto& heap_type_and_desc_range : m_constant_descriptor_range_by_heap_type)
+    for (const auto& [heap_type, heap_reservation] : m_constant_descriptor_range_by_heap_type)
     {
-        const DescriptorHeapReservation& heap_reservation = heap_type_and_desc_range.second;
         if (heap_reservation.range.IsEmpty())
             continue;
 
@@ -164,13 +163,11 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
     }
     
     // Replace bindings for argument set for all shader types in program to one binding set for argument with Shader::Type::All
-    for (const auto& shader_types_by_argument_name : shader_types_by_argument_name_map)
+    for (const auto& [argument_name, shader_types] : shader_types_by_argument_name_map)
     {
-        const Shader::Types& shader_types = shader_types_by_argument_name.second;
         if (shader_types != all_shader_types)
             continue;
 
-        const std::string& argument_name = shader_types_by_argument_name.first;
         Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
         for(Shader::Type shader_type : all_shader_types)
         {

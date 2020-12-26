@@ -66,10 +66,8 @@ void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
     std::stringstream ss;
     ss << std::endl << "Aggregated performance timings:" << std::endl;
 
-    for (const auto& scope_name_and_id : m_scope_id_by_name)
+    for (const auto& [scope_name, scope_id] : m_scope_id_by_name)
     {
-        const std::string& scope_name = scope_name_and_id.first;
-        const ScopeId      scope_id   = scope_name_and_id.second;
         META_CHECK_ARG_LESS(scope_id, m_timing_by_scope_id.size());
 
         const Timing& scope_timing = m_timing_by_scope_id[scope_id];

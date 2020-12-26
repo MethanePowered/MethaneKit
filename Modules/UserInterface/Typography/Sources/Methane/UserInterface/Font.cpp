@@ -276,9 +276,9 @@ Refs<Font> Font::Library::GetFonts() const
 {
     META_FUNCTION_TASK();
     Refs<Font> font_refs;
-    for(const auto& name_and_font_ptr : m_font_by_name)
+    for(const auto& [font_name, font_ptr] : m_font_by_name)
     {
-        font_refs.emplace_back(*name_and_font_ptr.second);
+        font_refs.emplace_back(*font_ptr);
     }
     return font_refs;
 }
@@ -432,9 +432,9 @@ void Font::ResetChars(const std::u32string& utf32_characters)
 
     if (utf32_characters.empty())
     {
-        for(const auto& context_and_atlas_texture : m_atlas_textures)
+        for(const auto& [context_ptr, atlas_texture] : m_atlas_textures)
         {
-            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_atlas_texture.second.texture_ptr, nullptr);
+            Emit(&IFontCallback::OnFontAtlasTextureReset, *this, atlas_texture.texture_ptr, nullptr);
         }
         m_atlas_textures.clear();
         return;
@@ -520,9 +520,9 @@ Font::Chars Font::GetChars() const
 {
     META_FUNCTION_TASK();
     Chars font_chars;
-    for(const auto& code_and_char : m_char_by_code)
+    for(const auto& [char_code, character] : m_char_by_code)
     {
-        font_chars.emplace_back(code_and_char.second);
+        font_chars.emplace_back(character);
     }
     return font_chars;
 }
@@ -572,9 +572,9 @@ Refs<Font::Char> Font::GetMutableChars()
 {
     META_FUNCTION_TASK();
     Refs<Char> font_chars;
-    for(auto& code_and_char : m_char_by_code)
+    for(auto& [char_code, character] : m_char_by_code)
     {
-        font_chars.emplace_back(code_and_char.second);
+        font_chars.emplace_back(character);
     }
     return font_chars;
 }
@@ -690,9 +690,9 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
     m_atlas_bitmap.resize(atlas_size.GetPixelsCount(), Data::Byte{});
 
     // Render glyphs to atlas bitmap
-    for (const auto& code_and_char : m_char_by_code)
+    for (const auto& [char_code, character] : m_char_by_code)
     {
-        code_and_char.second.DrawToAtlas(m_atlas_bitmap, atlas_size.width);
+        character.DrawToAtlas(m_atlas_bitmap, atlas_size.width);
     }
 
     UpdateAtlasTextures(deferred_textures_update);
@@ -706,19 +706,19 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     if (m_atlas_textures.empty())
         return;
 
-    for(auto& context_and_texture : m_atlas_textures)
+    for(auto& [context_ptr, atlas_texture] : m_atlas_textures)
     {
         if (deferred_textures_update)
         {
             // Texture will be updated on GPU context completing initialization,
             // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
-            context_and_texture.second.is_update_required = true;
-            context_and_texture.first->RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
+            atlas_texture.is_update_required = true;
+            context_ptr->RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
         }
         else
         {
-            META_CHECK_ARG_NOT_NULL(context_and_texture.first);
-            UpdateAtlasTexture(*context_and_texture.first, context_and_texture.second);
+            META_CHECK_ARG_NOT_NULL(context_ptr);
+            UpdateAtlasTexture(*context_ptr, atlas_texture);
         }
     }
 
@@ -753,13 +753,13 @@ void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture
 void Font::ClearAtlasTextures()
 {
     META_FUNCTION_TASK();
-    for(const auto& context_and_texture : m_atlas_textures)
+    for(const auto& [context_ptr, atlas_texture] : m_atlas_textures)
     {
-        if (!context_and_texture.first)
+        if (!context_ptr)
             continue;
 
-        context_and_texture.first->Disconnect(*this);
-        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, context_and_texture.second.texture_ptr, nullptr);
+        context_ptr->Disconnect(*this);
+        Emit(&IFontCallback::OnFontAtlasTextureReset, *this, atlas_texture.texture_ptr, nullptr);
     }
     m_atlas_textures.clear();
 }

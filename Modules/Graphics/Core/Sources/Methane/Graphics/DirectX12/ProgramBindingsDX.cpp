@@ -250,11 +250,11 @@ template<typename FuncType>
 void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_function) const
 {
     META_FUNCTION_TASK();
-    for (auto& binding_by_argument : GetArgumentBindings())
+    for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(binding_by_argument.second);
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-        auto& argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
+        auto& argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
         const DescriptorHeap::Reservation*        p_heap_reservation = nullptr;
 

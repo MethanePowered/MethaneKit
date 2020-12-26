@@ -86,8 +86,8 @@ public:
     Ptr<QueryT> CreateQuery(CommandListBase& command_list)
     {
         META_FUNCTION_TASK();
-        const CreateQueryArgs   query_args = GetCreateQueryArguments();
-        return std::make_shared<QueryT>(*this, command_list, std::get<0>(query_args), std::get<1>(query_args));
+        const auto [query_index, query_range] = GetCreateQueryArguments();
+        return std::make_shared<QueryT>(*this, command_list, query_index, query_range);
     }
 
     Ptr<QueryBuffer>  GetPtr()                       { return shared_from_this(); }

@@ -61,11 +61,11 @@ void AppCameraController::OnMousePositionChanged(const Platform::Mouse::Position
 void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&)
 {
     META_FUNCTION_TASK();
-    const auto mouse_button_and_delta = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
-    const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button_and_delta.first);
+    const auto [mouse_button, scroll_delta] = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
+    const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button);
     if (action == ActionCamera::MouseAction::Zoom)
     {
-        m_action_camera.OnMouseScrolled(mouse_button_and_delta.second);
+        m_action_camera.OnMouseScrolled(scroll_delta);
     }
 }
 

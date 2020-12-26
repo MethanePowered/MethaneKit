@@ -205,11 +205,11 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
-    for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
+    for(const auto& [face_index, image_data] : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),    "all face image of cube texture must have equal dimensions");
-        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.GetChannelsCount(), "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(face_image_data.second.GetPixels().GetDataPtr(), face_image_data.second.GetPixels().GetDataSize(), Resource::SubResource::Index(face_image_data.first));
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
+        face_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Resource::SubResource::Index(face_index));
     }
 
     // Load face images to cube texture
