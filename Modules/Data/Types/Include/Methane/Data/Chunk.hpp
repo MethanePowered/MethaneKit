@@ -51,11 +51,11 @@ public:
 
     ~Chunk() = default;
 
-    ConstRawPtr GetDataPtr() const noexcept    { return m_data_ptr; }
-    ConstRawPtr GetDataEndPtr() const noexcept { return m_data_ptr + m_data_size; }
-    Size        GetDataSize() const noexcept   { return m_data_size; }
-    bool        IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
-    bool        IsDataStored() const noexcept  { return !m_data_storage.empty(); }
+    [[nodiscard]] ConstRawPtr GetDataPtr() const noexcept    { return m_data_ptr; }
+    [[nodiscard]] ConstRawPtr GetDataEndPtr() const noexcept { return m_data_ptr + m_data_size; }
+    [[nodiscard]] Size        GetDataSize() const noexcept   { return m_data_size; }
+    [[nodiscard]] bool        IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
+    [[nodiscard]] bool        IsDataStored() const noexcept  { return !m_data_storage.empty(); }
 
 protected:
     explicit Chunk(const Chunk& other) noexcept

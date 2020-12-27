@@ -56,18 +56,18 @@ struct CommandList : virtual Object
 
     struct DebugGroup : virtual Object
     {
-        static Ptr<DebugGroup> Create(const std::string& name);
+        [[nodiscard]] static Ptr<DebugGroup> Create(const std::string& name);
 
         virtual DebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
-        virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
-        virtual bool        HasSubGroups() const noexcept = 0;
+        [[nodiscard]] virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
+        [[nodiscard]] virtual bool        HasSubGroups() const noexcept = 0;
     };
 
     using CompletedCallback = std::function<void(CommandList& command_list)>;
 
     // CommandList interface
-    virtual Type  GetType() const noexcept = 0;
-    virtual State GetState() const noexcept = 0;
+    [[nodiscard]] virtual Type  GetType() const noexcept = 0;
+    [[nodiscard]] virtual State GetState() const noexcept = 0;
     virtual void  PushDebugGroup(DebugGroup& debug_group) = 0;
     virtual void  PopDebugGroup() = 0;
     virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
@@ -75,17 +75,17 @@ struct CommandList : virtual Object
                                      ProgramBindings::ApplyBehavior apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
-    virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;
-    virtual CommandQueue& GetCommandQueue() = 0;
+    [[nodiscard]] virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;
+    [[nodiscard]] virtual CommandQueue& GetCommandQueue() = 0;
 };
 
 struct CommandListSet
 {
-    static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs);
+    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs);
 
-    virtual Data::Size               GetCount() const noexcept = 0;
-    virtual const Refs<CommandList>& GetRefs() const noexcept = 0;
-    virtual CommandList&             operator[](Data::Index index) const = 0;
+    [[nodiscard]] virtual Data::Size               GetCount() const noexcept = 0;
+    [[nodiscard]] virtual const Refs<CommandList>& GetRefs() const noexcept = 0;
+    [[nodiscard]] virtual CommandList&             operator[](Data::Index index) const = 0;
 
     virtual ~CommandListSet() = default;
 };

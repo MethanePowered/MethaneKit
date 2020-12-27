@@ -36,11 +36,12 @@ public:
     State() = default;
     explicit State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    const ControllersPool&  GetControllers() const noexcept                     { return m_controllers; }
-    void                    AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
+    [[nodiscard]] const ControllersPool& GetControllers() const noexcept { return m_controllers; }
 
-    const Keyboard::State& GetKeyboardState() const noexcept { return m_keyboard_state; }
-    const Mouse::State&    GetMouseState() const noexcept    { return m_mouse_state; }
+    void AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
+
+    [[nodiscard]] const Keyboard::State& GetKeyboardState() const noexcept { return m_keyboard_state; }
+    [[nodiscard]] const Mouse::State&    GetMouseState() const noexcept    { return m_mouse_state; }
 
     // IActionController
     void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state) override;
@@ -53,7 +54,7 @@ public:
     void ReleaseAllKeys();
 
     template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
-    Refs<ControllerT> GetControllersOfType() const
+    [[nodiscard]] Refs<ControllerT> GetControllersOfType() const
     {
         META_FUNCTION_TASK();
         Refs<ControllerT> controllers;

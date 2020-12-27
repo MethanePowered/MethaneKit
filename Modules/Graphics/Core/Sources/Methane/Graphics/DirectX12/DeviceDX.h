@@ -68,7 +68,7 @@ private:
 class SystemDX final : public SystemBase
 {
 public:
-    static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
+    [[nodiscard]] static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
 
     SystemDX();
     SystemDX(const SystemDX&) = delete;
@@ -82,7 +82,7 @@ public:
     void  CheckForChanges() override;
     const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
 
-    const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
+    [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const;
 
 private:

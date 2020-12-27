@@ -60,6 +60,7 @@ static const std::array<MutableParameters, g_max_complexity+1> g_mutable_paramet
     { 50000U, 1000U, 50U, 0.17F }, // 9
 } };
 
+[[nodiscard]]
 inline uint32_t GetDefaultComplexity()
 {
 #ifdef _DEBUG

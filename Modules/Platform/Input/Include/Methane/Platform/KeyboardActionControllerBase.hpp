@@ -49,6 +49,7 @@ public:
         META_FUNCTION_TASK();
     }
 
+    [[nodiscard]]
     size_t GetKeyboardActionsCount() const noexcept { return m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size(); }
     
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
@@ -69,7 +70,8 @@ public:
             OnKeyboardKeyAction(action_by_keyboard_key_it->second, key_state);
         }
     }
-    
+
+    [[nodiscard]]
     Input::IHelpProvider::HelpLines GetKeyboardHelp() const
     {
         META_FUNCTION_TASK();
@@ -106,6 +108,7 @@ public:
         return help_lines;
     }
 
+    [[nodiscard]]
     Keyboard::State GetKeyboardStateByAction(ActionEnum action) const noexcept
     {
         META_FUNCTION_TASK();
@@ -120,6 +123,7 @@ public:
         return Keyboard::State();
     }
 
+    [[nodiscard]]
     static const State& GetKeyboardStateByAction(const ActionByKeyboardState& action_by_keyboard_state, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
@@ -132,6 +136,7 @@ public:
         return action_by_keyboard_state_it == action_by_keyboard_state.end() ? empty_state : action_by_keyboard_state_it->first;
     }
 
+    [[nodiscard]]
     static Key GetKeyboardKeyByAction(const ActionByKeyboardKey& action_by_key, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
@@ -145,10 +150,11 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    virtual void        OnKeyboardKeyAction(ActionEnum action, KeyState key_state) = 0;
-    virtual void        OnKeyboardStateAction(ActionEnum action) = 0;
-    virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
+    virtual void OnKeyboardKeyAction(ActionEnum action, KeyState key_state) = 0;
+    virtual void OnKeyboardStateAction(ActionEnum action) = 0;
+    [[nodiscard]] virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
 
+    [[nodiscard]]
     ActionEnum GetKeyboardActionByState(const State& state) const
     {
         META_FUNCTION_TASK();
@@ -156,7 +162,8 @@ protected:
         return (action_by_keyboard_state_it != m_action_by_keyboard_state.end())
               ? action_by_keyboard_state_it->second : ActionEnum::None;
     }
-    
+
+    [[nodiscard]]
     ActionEnum GetKeyboardActionByKey(Key key) const
     {
         META_FUNCTION_TASK();

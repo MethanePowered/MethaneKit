@@ -64,8 +64,8 @@ struct Texture : virtual Resource
 
         using Resource::Location::operator==;
 
-        const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
-        Texture&            GetTexture() const;
+        [[nodiscard]] const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
+        [[nodiscard]] Texture&            GetTexture() const;
 
     private:
         // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too
@@ -83,26 +83,26 @@ struct Texture : virtual Resource
         uint32_t       array_length   = 1U;
         bool           mipmapped      = false;
 
-        static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
-        static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
-        static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
-        static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
+        [[nodiscard]] static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
+        [[nodiscard]] static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
     };
 
     // Create Texture instance
-    static Ptr<Texture> CreateRenderTarget(RenderContext& context, const Settings& settings,
-                                           const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index,
-                                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateDepthStencilBuffer(RenderContext& context,
+    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(RenderContext& context, const Settings& settings,
+                                                         const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index,
+                                                        const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(RenderContext& context,
+                                                               const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Texture> CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+                                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Texture> CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
                                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                                    const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Texture> CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                                   const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Texture interface
-    virtual const Settings& GetSettings() const = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
 };
 
 } // namespace Methane::Graphics

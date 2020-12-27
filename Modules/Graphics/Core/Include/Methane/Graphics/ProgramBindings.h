@@ -54,9 +54,9 @@ struct ProgramBindings
         };
 
         // ArgumentBinding interface
-        virtual const Settings&            GetSettings() const noexcept = 0;
-        virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
-        virtual void                       SetResourceLocations(const Resource::Locations& resource_locations) = 0;
+        [[nodiscard]] virtual const Settings&            GetSettings() const noexcept = 0;
+        [[nodiscard]] virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
+        virtual void SetResourceLocations(const Resource::Locations& resource_locations) = 0;
 
         virtual ~ArgumentBinding() = default;
     };
@@ -79,8 +79,8 @@ struct ProgramBindings
     public:
         UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
 
-        const Program& GetProgram() const noexcept { return m_program; }
-        const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+        [[nodiscard]] const Program& GetProgram() const noexcept { return m_program; }
+        [[nodiscard]] const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
     private:
         const Program& m_program;
@@ -88,11 +88,11 @@ struct ProgramBindings
     };
 
     // Create ProgramBindings instance
-    static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
+    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
+    [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
 
     // ProgramBindings interface
-    virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
 
     virtual ~ProgramBindings() = default;
 };

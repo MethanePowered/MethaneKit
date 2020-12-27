@@ -33,16 +33,19 @@ using TimeRange = Range<Timestamp>;
 
 constexpr Timestamp g_one_sec_in_nanoseconds = 1000000000;
 
+[[nodiscard]]
 inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds)
 {
     return static_cast<Timestamp>(seconds * g_one_sec_in_nanoseconds);
 }
 
+[[nodiscard]]
 inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency)
 {
     return ticks * g_one_sec_in_nanoseconds / frequency;
 }
 
+[[nodiscard]]
 inline float ConvertFrequencyToTickPeriod(Frequency frequency)
 {
     return static_cast<float>(g_one_sec_in_nanoseconds) / frequency;

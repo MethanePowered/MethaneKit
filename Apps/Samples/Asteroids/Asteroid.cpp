@@ -252,10 +252,10 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
             const gfx::Vector3f noise_coordinates(noise_scale * static_cast<float>(row), noise_scale * static_cast<float>(col), random_seed);
             const float         noise_intensity = std::max(0.0F, std::min(1.0F, (perlin_noise(noise_coordinates) - 0.5F) * noise_strength + 0.5F));
 
-            auto texel_data = reinterpret_cast<uint8_t*>(&row_data[col]);
+            auto texel_data = reinterpret_cast<std::byte*>(&row_data[col]);
             for (size_t channel = 0; channel < 3; ++channel)
             {
-                texel_data[channel] = static_cast<uint8_t>(255.F * noise_intensity);
+                texel_data[channel] = static_cast<std::byte>(255.F * noise_intensity);
             }
         }
     }

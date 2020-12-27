@@ -93,6 +93,7 @@ static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_ac
     { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
 };
 
+[[nodiscard]]
 static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical_pos_in_dots, const gfx::FrameSize& frame_size_in_dots)
 {
     return gui::UnitRect(

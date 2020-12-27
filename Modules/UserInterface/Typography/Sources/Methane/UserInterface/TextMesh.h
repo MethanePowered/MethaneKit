@@ -61,24 +61,24 @@ public:
 
     TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size);
 
-    bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
+    [[nodiscard]] bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
     void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
 
-    const std::u32string& GetText() const noexcept              { return m_text; }
-    Font&                 GetFont() noexcept                    { return m_font; }
-    Text::Layout          GetLayout() const noexcept            { return m_layout; }
-    const gfx::FrameSize& GetFrameSize() const noexcept         { return m_frame_size; }
-    const gfx::FrameSize& GetContentSize() const noexcept       { return m_content_size; }
-    uint32_t              GetContentTopOffset() const noexcept  { return m_content_top_offset == std::numeric_limits<uint32_t>::max() ? 0U : m_content_top_offset; }
+    [[nodiscard]] const std::u32string& GetText() const noexcept              { return m_text; }
+    [[nodiscard]] Font&                 GetFont() noexcept                    { return m_font; }
+    [[nodiscard]] Text::Layout          GetLayout() const noexcept            { return m_layout; }
+    [[nodiscard]] const gfx::FrameSize& GetFrameSize() const noexcept         { return m_frame_size; }
+    [[nodiscard]] const gfx::FrameSize& GetContentSize() const noexcept       { return m_content_size; }
+    [[nodiscard]] uint32_t              GetContentTopOffset() const noexcept  { return m_content_top_offset == std::numeric_limits<uint32_t>::max() ? 0U : m_content_top_offset; }
 
-    const Vertices& GetVertices() const noexcept                { return m_vertices; }
-    const Indices&  GetIndices() const noexcept                 { return m_indices; }
+    [[nodiscard]] const Vertices& GetVertices() const noexcept                { return m_vertices; }
+    [[nodiscard]] const Indices&  GetIndices() const noexcept                 { return m_indices; }
 
-    Data::Size      GetVertexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Vertex)); }
-    Data::Size      GetVerticesDataSize() const noexcept        { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
+    [[nodiscard]] Data::Size      GetVertexSize() const noexcept              { return static_cast<Data::Size>(sizeof(Vertex)); }
+    [[nodiscard]] Data::Size      GetVerticesDataSize() const noexcept        { return static_cast<Data::Size>(m_vertices.size() * sizeof(Vertex)); }
 
-    Data::Size      GetIndexSize() const noexcept               { return static_cast<Data::Size>(sizeof(Index)); }
-    Data::Size      GetIndicesDataSize() const noexcept         { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    [[nodiscard]] Data::Size      GetIndexSize() const noexcept               { return static_cast<Data::Size>(sizeof(Index)); }
+    [[nodiscard]] Data::Size      GetIndicesDataSize() const noexcept         { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 private:
     void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_alignment_and_content_size);
@@ -89,8 +89,11 @@ private:
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
 
-    bool IsNewTextStartsWithOldOne(const std::u32string& text) const noexcept { return m_text.empty() || (m_text.length() < text.length()   && text.find(m_text) == 0); }
-    bool IsOldTextStartsWithNewOne(const std::u32string& text) const noexcept { return !text.empty()  &&  text.length()   < m_text.length() && m_text.find(text) == 0; }
+    [[nodiscard]] bool IsNewTextStartsWithOldOne(const std::u32string& text) const noexcept
+    { return m_text.empty() || (m_text.length() < text.length()   && text.find(m_text) == 0); }
+
+    [[nodiscard]] bool IsOldTextStartsWithNewOne(const std::u32string& text) const noexcept
+    { return !text.empty()  &&  text.length()   < m_text.length() && m_text.find(text) == 0; }
 
     std::u32string       m_text;
     Font&                m_font;

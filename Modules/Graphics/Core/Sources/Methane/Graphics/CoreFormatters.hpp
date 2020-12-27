@@ -31,7 +31,7 @@ Methane Graphics Core objects formatters for use with fmt::format(...)
 template<>
 struct fmt::formatter<Methane::Graphics::Resource::SubResource::Index>
 {
-    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
     auto format(const Methane::Graphics::Resource::SubResource::Index& index, FormatContext& ctx)
@@ -43,7 +43,7 @@ struct fmt::formatter<Methane::Graphics::Resource::SubResource::Index>
 template<>
 struct fmt::formatter<Methane::Graphics::Resource::SubResource::Count>
 {
-    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
     auto format(const Methane::Graphics::Resource::SubResource::Count& count, FormatContext& ctx)
@@ -55,7 +55,7 @@ struct fmt::formatter<Methane::Graphics::Resource::SubResource::Count>
 template<>
 struct fmt::formatter<Methane::Graphics::Program::Argument>
 {
-    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
     auto format(const Methane::Graphics::Program::Argument& program_argument, FormatContext& ctx)

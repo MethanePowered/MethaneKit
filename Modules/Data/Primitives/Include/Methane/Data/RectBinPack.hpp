@@ -67,8 +67,8 @@ private:
     public:
         explicit Bin(TRect rect) : m_rect(std::move(rect)) { META_FUNCTION_TASK(); }
 
-        bool         IsEmpty() const noexcept { return !m_small_bin_ptr && !m_large_bin_ptr; }
-        const TRect& GetRect() const noexcept { return m_rect; }
+        [[nodiscard]] bool         IsEmpty() const noexcept { return !m_small_bin_ptr && !m_large_bin_ptr; }
+        [[nodiscard]] const TRect& GetRect() const noexcept { return m_rect; }
 
         bool TryPack(TRect& rect, const TSize& char_margins)
         {

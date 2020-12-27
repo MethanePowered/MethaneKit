@@ -90,7 +90,7 @@ public:
     public:
         explicit FreeTypeError(FT_Error error);
 
-        FT_Error GetError() const noexcept { return m_error; }
+        [[nodiscard]] FT_Error GetError() const noexcept { return m_error; }
 
     private:
         const FT_Error m_error;
@@ -102,19 +102,19 @@ public:
         friend class Font;
 
     public:
-        static Library& Get();
+        [[nodiscard]] static Library& Get();
 
-        Refs<Font> GetFonts() const;
-        bool  HasFont(const std::string& font_name) const;
-        Font& GetFont(const std::string& font_name) const;
-        Font& GetFont(const Data::Provider& data_provider, const Settings& font_settings);
+        [[nodiscard]] Refs<Font> GetFonts() const;
+        [[nodiscard]] bool  HasFont(const std::string& font_name) const;
+        [[nodiscard]] Font& GetFont(const std::string& font_name) const;
+        [[nodiscard]] Font& GetFont(const Data::Provider& data_provider, const Settings& font_settings);
         Font& AddFont(const Data::Provider& data_provider, const Settings& font_settings);
         void  RemoveFont(const std::string& font_name);
         void  Clear();
 
     protected:
         class Impl;
-        Impl& GetImpl() { return *m_impl_ptr; }
+        [[nodiscard]] Impl& GetImpl() { return *m_impl_ptr; }
 
     private:
         Library();
@@ -148,17 +148,17 @@ public:
         explicit Char(Code code);
         Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
-        Code                  GetCode() const noexcept        { return m_code; }
-        bool                  IsLineBreak() const noexcept    { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::LineBreak); }
-        bool                  IsWhiteSpace() const noexcept   { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::Whitespace); }
-        const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
-        const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
-        const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
-        const gfx::FrameSize& GetVisualSize() const noexcept  { return m_visual_size; }
+        [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
+        [[nodiscard]] bool                  IsLineBreak() const noexcept    { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::LineBreak); }
+        [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::Whitespace); }
+        [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
+        [[nodiscard]] const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
+        [[nodiscard]] const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
+        [[nodiscard]] const gfx::FrameSize& GetVisualSize() const noexcept  { return m_visual_size; }
 
-        bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
-        bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
-        explicit operator bool() const noexcept               { return m_code != 0U; }
+        [[nodiscard]] bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
+        [[nodiscard]] bool operator>(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
+        [[nodiscard]] explicit operator bool() const noexcept               { return m_code != 0U; }
 
         void     DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const;
         uint32_t GetGlyphIndex() const;
@@ -175,34 +175,35 @@ public:
 
     using Chars = Refs<const Char>;
 
-    static std::u32string ConvertUtf8To32(const std::string& text);
-    static std::string    ConvertUtf32To8(const std::u32string& text);
-    static std::u32string GetAlphabetDefault() { return GetAlphabetInRange(32, 126); }
-    static std::u32string GetAlphabetInRange(char32_t from, char32_t to);
-    static std::u32string GetAlphabetFromText(const std::string& text);
-    static std::u32string GetAlphabetFromText(const std::u32string& text);
+    [[nodiscard]] static std::u32string ConvertUtf8To32(const std::string& text);
+    [[nodiscard]] static std::string    ConvertUtf32To8(const std::u32string& text);
+    [[nodiscard]] static std::u32string GetAlphabetDefault() { return GetAlphabetInRange(32, 126); }
+    [[nodiscard]] static std::u32string GetAlphabetInRange(char32_t from, char32_t to);
+    [[nodiscard]] static std::u32string GetAlphabetFromText(const std::string& text);
+    [[nodiscard]] static std::u32string GetAlphabetFromText(const std::u32string& text);
 
     ~Font() override;
 
-    Ptr<Font>       GetPtr()            { return shared_from_this(); }
-    const Settings& GetSettings() const { return m_settings; }
+    [[nodiscard]] Ptr<Font>       GetPtr()            { return shared_from_this(); }
+    [[nodiscard]] const Settings& GetSettings() const { return m_settings; }
 
     void                     ResetChars(const std::string& utf8_characters);
     void                     ResetChars(const std::u32string& utf32_characters);
     void                     AddChars(const std::string& utf8_characters);
     void                     AddChars(const std::u32string& utf32_characters);
     const Font::Char&        AddChar(Char::Code char_code);
-    bool                     HasChar(Char::Code char_code) const;
-    const Char&              GetChar(Char::Code char_code) const;
-    Chars                    GetChars() const;
-    Chars                    GetTextChars(const std::string& text);
-    Chars                    GetTextChars(const std::u32string& text);
-    gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
-    uint32_t                 GetLineHeight() const;
-    const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
-    const gfx::FrameSize&    GetAtlasSize() const noexcept;
-    const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
-    gfx::Texture&            GetAtlasTexture(gfx::Context& context);
+    
+    [[nodiscard]] bool                     HasChar(Char::Code char_code) const;
+    [[nodiscard]] const Char&              GetChar(Char::Code char_code) const;
+    [[nodiscard]] Chars                    GetChars() const;
+    [[nodiscard]] Chars                    GetTextChars(const std::string& text);
+    [[nodiscard]] Chars                    GetTextChars(const std::u32string& text);
+    [[nodiscard]] gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
+    [[nodiscard]] uint32_t                 GetLineHeight() const;
+    [[nodiscard]] const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
+    [[nodiscard]] const gfx::FrameSize&    GetAtlasSize() const noexcept;
+    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
+    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::Context& context);
 
 protected:
     // Font can be created only via Font::Library::Add

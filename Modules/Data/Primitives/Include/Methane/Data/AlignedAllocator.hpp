@@ -95,7 +95,7 @@ public:
         p->~value_type(); // NOSONAR
     }
 
-    size_type max_size() const noexcept
+    [[nodiscard]] size_type max_size() const noexcept
     {
         return size_type(-1) / sizeof(value_type);
     }

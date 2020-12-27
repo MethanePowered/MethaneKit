@@ -46,7 +46,7 @@ public:
         All             = ~0U
     };
 
-    class ImageData
+    class ImageData // NOSONAR
     {
     public:
         ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept;
@@ -54,9 +54,9 @@ public:
         ImageData(const ImageData& other) noexcept = delete;
         ~ImageData();
 
-        const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
-        uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
-        const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
+        [[nodiscard]] const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
+        [[nodiscard]] uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
+        [[nodiscard]] const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
 
     private:
         Dimensions  m_dimensions;
@@ -79,10 +79,9 @@ public:
 
     explicit ImageLoader(Data::Provider& data_provider);
 
-    ImageData LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const;
-
-    Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options options = Options::None) const;
-    Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options = Options::None) const;
+    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const;
+    [[nodiscard]] Ptr<Texture> LoadImageToTexture2D(Context& context, const std::string& image_path, Options options = Options::None) const;
+    [[nodiscard]] Ptr<Texture> LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options = Options::None) const;
 
 private:
     Data::Provider& m_data_provider;

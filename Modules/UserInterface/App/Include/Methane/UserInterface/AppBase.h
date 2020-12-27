@@ -59,19 +59,18 @@ protected:
     bool SetHelpText(const std::string& help_str);
     bool SetParametersText(const std::string& parameters_str);
 
-    bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
-    bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
-    void GetParametersText(const std::string& parameters_str) const;
-    Font& GetMainFont();
+    [[nodiscard]] bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
+    [[nodiscard]] bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
+    [[nodiscard]] Font& GetMainFont();
 
-    const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
+    [[nodiscard]] const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
 
-    HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_app_settings.hud_settings; }
-    HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_hud_ptr.get(); }
+    [[nodiscard]] HeadsUpDisplay::Settings& GetHeadsUpDisplaySettings()        { return m_app_settings.hud_settings; }
+    [[nodiscard]] HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_hud_ptr.get(); }
 
-    IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
-    const Context&  GetUIContext() const noexcept                { return *m_ui_context_ptr; }
-    Context&        GetUIContext() noexcept                      { return *m_ui_context_ptr; }
+    [[nodiscard]] IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
+    [[nodiscard]] const Context&  GetUIContext() const noexcept                { return *m_ui_context_ptr; }
+    [[nodiscard]] Context&        GetUIContext() noexcept                      { return *m_ui_context_ptr; }
 
 private:
     struct TextItem

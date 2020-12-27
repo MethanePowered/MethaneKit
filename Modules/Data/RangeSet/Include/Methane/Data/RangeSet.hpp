@@ -46,8 +46,8 @@ public:
     RangeSet() = default;
     RangeSet(std::initializer_list<Range<ScalarT>> init) noexcept : m_container(init) { } //NOSONAR - initializer list constructor is not explicit intentionally
 
-    bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
-    bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
+    [[nodiscard]] bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
+    [[nodiscard]] bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
 
     RangeSet<ScalarT>& operator=(std::initializer_list<Range<ScalarT>> init) noexcept
     {
@@ -57,13 +57,19 @@ public:
         return *this;
     }
 
-    size_t Size() const noexcept              { return m_container.size();  }
-    bool   IsEmpty() const noexcept           { return m_container.empty(); }
-    void   Clear() noexcept                   { META_FUNCTION_TASK(); m_container.clear(); }
 
-    const BaseSet& GetRanges() const noexcept { return *this; }
-    ConstIterator begin() const noexcept      { return m_container.begin(); }
-    ConstIterator end() const noexcept        { return m_container.end(); }
+
+    [[nodiscard]] size_t Size() const noexcept              { return m_container.size();  }
+    [[nodiscard]] bool   IsEmpty() const noexcept           { return m_container.empty(); }
+    [[nodiscard]] const BaseSet& GetRanges() const noexcept { return *this; }
+    [[nodiscard]] ConstIterator begin() const noexcept      { return m_container.begin(); }
+    [[nodiscard]] ConstIterator end() const noexcept        { return m_container.end(); }
+
+    void Clear() noexcept
+    {
+        META_FUNCTION_TASK();
+        m_container.clear();
+    }
 
     void Add(const Range<ScalarT>& range)
     {
@@ -128,6 +134,8 @@ public:
 
 private:
     using RangeOfRanges = std::pair<ConstIterator, ConstIterator>;
+
+    [[nodiscard]]
     RangeOfRanges GetMergeableRanges(const Range<ScalarT>& range)
     {
         META_FUNCTION_TASK();

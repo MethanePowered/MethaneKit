@@ -36,7 +36,7 @@ Base application interface and platform-independent implementation.
 #include <vector>
 #include <memory>
 
-namespace tf
+namespace tf // NOSONAR
 {
 // TaskFlow Executor class forward declaration:
 // #include <taskflow/core/executor.hpp>

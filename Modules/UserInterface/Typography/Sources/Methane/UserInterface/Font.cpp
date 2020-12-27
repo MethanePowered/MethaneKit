@@ -46,7 +46,7 @@ static constexpr int32_t g_ft_dots_in_pixel = 64; // Freetype measures all font 
 namespace Methane::UserInterface
 {
 
-static const char* GetFTErrorMessage(FT_Error err)
+[[nodiscard]] static const char* GetFTErrorMessage(FT_Error err)
 {
     META_FUNCTION_TASK();
 
@@ -93,7 +93,7 @@ public:
     Impl& operator=(const Impl&) noexcept = delete;
     Impl& operator=(Impl&&) noexcept = delete;
 
-    FT_Library GetFTLib() const { return m_ft_library; }
+    [[nodiscard]] FT_Library GetFTLib() const { return m_ft_library; }
 
 private:
     FT_Library m_ft_library;
@@ -121,8 +121,8 @@ public:
     Glyph& operator=(const Glyph&) noexcept = delete;
     Glyph& operator=(Glyph&&) noexcept = delete;
 
-    FT_Glyph GetFTGlyph() const   { return m_ft_glyph; }
-    uint32_t GetFaceIndex() const { return m_face_index; }
+    [[nodiscard]] FT_Glyph GetFTGlyph() const   { return m_ft_glyph; }
+    [[nodiscard]] uint32_t GetFaceIndex() const { return m_face_index; }
 
 private:
     const FT_Glyph m_ft_glyph;

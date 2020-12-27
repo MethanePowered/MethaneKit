@@ -66,11 +66,11 @@ public:
         virtual void ResolveData();
         virtual Resource::SubResource GetData() = 0;
 
-        Index            GetIndex() const noexcept       { return m_index; }
-        const Range&     GetDataRange() const noexcept   { return m_data_range; }
-        State            GetState() const noexcept       { return m_state; }
-        QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
-        CommandListBase& GetCommandList() const noexcept { return m_command_list; }
+        [[nodiscard]] Index            GetIndex() const noexcept       { return m_index; }
+        [[nodiscard]] const Range&     GetDataRange() const noexcept   { return m_data_range; }
+        [[nodiscard]] State            GetState() const noexcept       { return m_state; }
+        [[nodiscard]] QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
+        [[nodiscard]] CommandListBase& GetCommandList() const noexcept { return m_command_list; }
 
     private:
         Ptr<QueryBuffer> m_buffer_ptr;
@@ -83,19 +83,19 @@ public:
     virtual ~QueryBuffer() = default;
 
     template<typename QueryT>
-    Ptr<QueryT> CreateQuery(CommandListBase& command_list)
+    [[nodiscard]] Ptr<QueryT> CreateQuery(CommandListBase& command_list)
     {
         META_FUNCTION_TASK();
         const auto [query_index, query_range] = GetCreateQueryArguments();
         return std::make_shared<QueryT>(*this, command_list, query_index, query_range);
     }
 
-    Ptr<QueryBuffer>  GetPtr()                       { return shared_from_this(); }
-    Type              GetType() const noexcept       { return m_type; }
-    Data::Size        GetBufferSize() const noexcept { return m_buffer_size; }
-    Data::Size        GetQuerySize() const noexcept  { return m_query_size; }
-    CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
-    Context&          GetContext() noexcept          { return m_context; }
+    [[nodiscard]] Ptr<QueryBuffer>  GetPtr()                       { return shared_from_this(); }
+    [[nodiscard]] Type              GetType() const noexcept       { return m_type; }
+    [[nodiscard]] Data::Size        GetBufferSize() const noexcept { return m_buffer_size; }
+    [[nodiscard]] Data::Size        GetQuerySize() const noexcept  { return m_query_size; }
+    [[nodiscard]] CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
+    [[nodiscard]] Context&          GetContext() noexcept          { return m_context; }
 
 protected:
     QueryBuffer(CommandQueueBase& command_queue, Type type,
@@ -105,7 +105,7 @@ protected:
     virtual void ReleaseQuery(const Query& query);
 
     using CreateQueryArgs = std::tuple<Query::Index, Query::Range>;
-    CreateQueryArgs GetCreateQueryArguments();
+    [[nodiscard]] CreateQueryArgs GetCreateQueryArguments();
 
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
@@ -125,15 +125,16 @@ struct TimestampQueryBuffer
     {
         virtual void InsertTimestamp() = 0;
         virtual void ResolveTimestamp() = 0;
-        virtual Timestamp GetGpuTimestamp() = 0;
-        virtual Timestamp GetCpuNanoseconds() = 0;
+
+        [[nodiscard]] virtual Timestamp GetGpuTimestamp() = 0;
+        [[nodiscard]] virtual Timestamp GetCpuNanoseconds() = 0;
 
         virtual ~TimestampQuery() = default;
     };
 
-    static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
+    [[nodiscard]] static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
-    virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
+    [[nodiscard]] virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
 
     virtual ~TimestampQueryBuffer() = default;
 };

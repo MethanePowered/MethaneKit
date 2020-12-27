@@ -33,7 +33,10 @@ Arc-ball camera rotation with mouse handling.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static inline float Square(float x)     { return x * x; }
+
+[[nodiscard]]
 static inline float UnitSign(float x)   { return x / std::fabs(x); }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation) noexcept

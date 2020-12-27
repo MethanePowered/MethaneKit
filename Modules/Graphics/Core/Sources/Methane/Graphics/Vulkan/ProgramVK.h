@@ -39,7 +39,7 @@ public:
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 
-protected:
+private:
     IContextVK& GetContextVK() noexcept;
 };
 

@@ -38,7 +38,7 @@ class ContextBase;
 
 struct IResourceBase
 {
-    virtual DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept = 0;
+    [[nodiscard]] virtual DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept = 0;
 
     virtual ~IResourceBase() = default;
 };
@@ -86,12 +86,12 @@ public:
 
             Id& operator=(const Id&) noexcept = default;
 
-            bool operator<(const Id& other) const noexcept;
-            bool operator==(const Id& other) const noexcept;
-            bool operator!=(const Id& other) const noexcept;
+            [[nodiscard]] bool operator<(const Id& other) const noexcept;
+            [[nodiscard]] bool operator==(const Id& other) const noexcept;
+            [[nodiscard]] bool operator!=(const Id& other) const noexcept;
 
-            Type            GetType() const noexcept     { return m_type; }
-            const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
+            [[nodiscard]] Type            GetType() const noexcept     { return m_type; }
+            [[nodiscard]] const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
 
         private:
             Type                m_type;
@@ -106,12 +106,12 @@ public:
 
             StateChange& operator=(const StateChange&) noexcept = default;
 
-            bool operator<(const StateChange& other) const noexcept;
-            bool operator==(const StateChange& other) const noexcept;
-            bool operator!=(const StateChange& other) const noexcept;
+            [[nodiscard]] bool operator<(const StateChange& other) const noexcept;
+            [[nodiscard]] bool operator==(const StateChange& other) const noexcept;
+            [[nodiscard]] bool operator!=(const StateChange& other) const noexcept;
 
-            State GetStateBefore() const noexcept { return m_before; }
-            State GetStateAfter() const noexcept  { return m_after; }
+            [[nodiscard]] State GetStateBefore() const noexcept { return m_before; }
+            [[nodiscard]] State GetStateAfter() const noexcept  { return m_after; }
 
         private:
             State m_before;
@@ -123,13 +123,13 @@ public:
         Barrier(const Barrier&) = default;
 
         Barrier& operator=(const Barrier& barrier) noexcept = default;
-        bool operator<(const Barrier& other) const noexcept;
-        bool operator==(const Barrier& other) const noexcept;
-        bool operator!=(const Barrier& other) const noexcept;
-        explicit operator std::string() const noexcept;
+        [[nodiscard]] bool operator<(const Barrier& other) const noexcept;
+        [[nodiscard]] bool operator==(const Barrier& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Barrier& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const noexcept;
 
-        const Id&          GetId() const noexcept          { return m_id; }
-        const StateChange& GetStateChange() const noexcept { return m_state_change; }
+        [[nodiscard]] const Id&          GetId() const noexcept          { return m_id; }
+        [[nodiscard]] const StateChange& GetStateChange() const noexcept { return m_state_change; }
 
     private:
         Id          m_id;
@@ -142,22 +142,23 @@ public:
         using Set = std::set<Barrier>;
         using Map = std::map<Barrier::Id, Barrier::StateChange>;
 
-        static Ptr<Barriers> Create(const Set& barriers = {});
-        static Ptr<Barriers> CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after);
+        [[nodiscard]] static Ptr<Barriers> Create(const Set& barriers = {});
+        [[nodiscard]] static Ptr<Barriers> CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after);
 
-        bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
-        const Map& GetMap() const noexcept  { return m_barriers_map; }
-        Set        GetSet() const noexcept;
+        [[nodiscard]] bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
+        [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
+        [[nodiscard]] Set        GetSet() const noexcept;
 
-        bool Has(Barrier::Type type, const Resource& resource, State before, State after);
-        bool HasTransition(const Resource& resource, State before, State after);
+        [[nodiscard]] bool Has(Barrier::Type type, const Resource& resource, State before, State after);
+        [[nodiscard]] bool HasTransition(const Resource& resource, State before, State after);
+
         bool Add(Barrier::Type type, const Resource& resource, State before, State after);
         bool AddTransition(const Resource& resource, State before, State after);
         virtual bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
         virtual ~Barriers() = default;
 
-        explicit operator std::string() const noexcept;
+        [[nodiscard]] explicit operator std::string() const noexcept;
 
     protected:
         explicit Barriers(const Set& barriers);
@@ -172,34 +173,35 @@ public:
     ~ResourceBase() override;
 
     // Resource interface
-    Type                      GetResourceType() const noexcept final             { return m_type; }
-    Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
-    const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
-    const Descriptor&         GetDescriptor(Usage usage) const final;
-    void                      SetData(const SubResources& sub_resources) override;
-    SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
-    const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
-    Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
-    Context&                  GetContext() noexcept final;
+    [[nodiscard]] Type                      GetResourceType() const noexcept final             { return m_type; }
+    [[nodiscard]] Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
+    [[nodiscard]] const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
+    [[nodiscard]] const Descriptor&         GetDescriptor(Usage usage) const final;
+    [[nodiscard]] Context&                  GetContext() noexcept final;
+    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
+    [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
+    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
+    void SetData(const SubResources& sub_resources) override;
 
-    void                      InitializeDefaultDescriptors();
-    DescriptorHeap::Types     GetUsedDescriptorHeapTypes() const noexcept;
+    void InitializeDefaultDescriptors();
+    [[nodiscard]] DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept;
 
-    State   GetState() const noexcept                                            { return m_state;  }
-    bool    SetState(State state, Ptr<Barriers>& out_barriers);
+    [[nodiscard]] State GetState() const noexcept { return m_state;  }
+    bool SetState(State state, Ptr<Barriers>& out_barriers);
 
-    static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
+    [[nodiscard]] static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
-    ContextBase&         GetContextBase()                                       { return m_context; }
-    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
-    const Descriptor&    GetDescriptorByUsage(Usage usage) const;
-    Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
+    [[nodiscard]] ContextBase&         GetContextBase()                                       { return m_context; }
+    [[nodiscard]] DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
+    [[nodiscard]] const Descriptor&    GetDescriptorByUsage(Usage usage) const;
+    [[nodiscard]] Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
+
     void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void                 ValidateSubResource(const SubResource& sub_resource) const;
     void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
 
-    virtual Data::Size   CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
+    [[nodiscard]] virtual Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
 private:
     using SubResourceSizes = std::vector<Data::Size>;

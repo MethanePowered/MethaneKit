@@ -80,6 +80,7 @@ public:
         HorizontalAlignment horizontal_alignment = HorizontalAlignment::Left;
         VerticalAlignment   vertical_alignment   = VerticalAlignment::Top;
 
+        [[nodiscard]]
         bool operator==(const Layout& other) const noexcept
         {
             return std::tie(wrap, horizontal_alignment, vertical_alignment) ==
@@ -109,9 +110,9 @@ public:
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 
-    const SettingsUtf32&  GetSettings() const noexcept            { return m_settings; }
-    const std::u32string& GetTextUtf32() const noexcept           { return m_settings.text; }
-    std::string           GetTextUtf8() const;
+    [[nodiscard]] const SettingsUtf32&  GetSettings() const noexcept  { return m_settings; }
+    [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept { return m_settings.text; }
+    [[nodiscard]] std::string           GetTextUtf8() const;
 
     void SetText(const std::string& text);
     void SetText(const std::u32string& text);
@@ -156,14 +157,15 @@ private:
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
 
         void SetDirty(DirtyFlags dirty_flags) noexcept;
-        bool IsDirty(DirtyFlags dirty_flags) const noexcept;
-        bool IsDirty() const noexcept                           { return m_dirty_mask != DirtyFlags::None; }
-        bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
-        bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
 
-        gfx::BufferSet&       GetVertexBufferSet() const;
-        gfx::Buffer&          GetIndexBuffer() const;
-        gfx::ProgramBindings& GetProgramBindings() const;
+        [[nodiscard]] bool IsDirty(DirtyFlags dirty_flags) const noexcept;
+        [[nodiscard]] bool IsDirty() const noexcept                           { return m_dirty_mask != DirtyFlags::None; }
+        [[nodiscard]] bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
+        [[nodiscard]] bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
+
+        [[nodiscard]] gfx::BufferSet&       GetVertexBufferSet() const;
+        [[nodiscard]] gfx::Buffer&          GetIndexBuffer() const;
+        [[nodiscard]] gfx::ProgramBindings& GetProgramBindings() const;
 
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);

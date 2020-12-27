@@ -59,16 +59,16 @@ public:
     void Release();
 
     void SetDeferredHeapAllocation(bool deferred_heap_allocation);
-    bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
+    [[nodiscard]] bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
 
     void AddProgramBindings(ProgramBindings& program_bindings);
 
-    uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
-    const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
-    DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index = 0);
-    const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
-    DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
-    DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
+    [[nodiscard]] uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
+    [[nodiscard]] const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
+    [[nodiscard]] DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index = 0);
+    [[nodiscard]] const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
+    [[nodiscard]] DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
+    [[nodiscard]] DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
 
 private:
     template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)

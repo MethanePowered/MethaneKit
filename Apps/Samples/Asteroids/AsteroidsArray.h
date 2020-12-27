@@ -68,12 +68,12 @@ public:
     public:
         UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed);
 
-        uint32_t GetInstanceCount() const noexcept      { return m_instance_count; }
-        uint32_t GetSubdivisionsCount() const noexcept  { return m_subdivisions_count; }
+        [[nodiscard]] uint32_t GetInstanceCount() const noexcept      { return m_instance_count; }
+        [[nodiscard]] uint32_t GetSubdivisionsCount() const noexcept  { return m_subdivisions_count; }
 
-        uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const;
-        uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
-        const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
+        [[nodiscard]] uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const;
+        [[nodiscard]] uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
+        [[nodiscard]] const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
 
     private:
         const uint32_t             m_instance_count;
@@ -99,8 +99,8 @@ public:
     AsteroidsArray(gfx::RenderContext& context, const Settings& settings);
     AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state);
 
-    const Settings& GetSettings() const         { return m_settings; }
-    const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
+    [[nodiscard]] const Settings& GetSettings() const         { return m_settings; }
+    [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
     using BaseBuffers::GetUniformsBufferSize;
 
     Ptrs<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
@@ -111,11 +111,11 @@ public:
     void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
     void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
-    bool  IsMeshLodColoringEnabled() const                           { return m_mesh_lod_coloring_enabled; }
-    void  SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
+    [[nodiscard]] bool IsMeshLodColoringEnabled() const             { return m_mesh_lod_coloring_enabled; }
+    void SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
 
-    float GetMinMeshLodScreenSize() const;
-    void  SetMinMeshLodScreenSize(float mesh_lod_min_screen_size);
+    [[nodiscard]] float GetMinMeshLodScreenSize() const;
+    void SetMinMeshLodScreenSize(float mesh_lod_min_screen_size);
 
 protected:
     // MeshBuffers overrides

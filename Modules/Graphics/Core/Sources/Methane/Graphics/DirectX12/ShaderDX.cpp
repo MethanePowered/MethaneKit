@@ -43,6 +43,7 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
@@ -56,6 +57,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     }
 }
 
+[[nodiscard]]
 static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
@@ -77,6 +79,7 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type)
     }
 }
 
+[[nodiscard]]
 static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension)
 {
     META_FUNCTION_TASK();
@@ -98,6 +101,7 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension)
     }
 }
 
+[[nodiscard]]
 static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
 {
     META_FUNCTION_TASK();

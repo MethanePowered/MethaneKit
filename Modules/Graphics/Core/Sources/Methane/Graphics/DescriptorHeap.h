@@ -85,7 +85,7 @@ public:
 
         Reservation(const Ref<DescriptorHeap>& in_heap, const Range& in_constant_range, const Range& in_mutable_range);
 
-        const Range& GetRange(bool is_constant) const { return is_constant ? constant_range : mutable_range; }
+        [[nodiscard]] const Range& GetRange(bool is_constant) const noexcept { return is_constant ? constant_range : mutable_range; }
     };
 
     static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);
@@ -102,18 +102,18 @@ public:
 
     void                SetDeferredAllocation(bool deferred_allocation);
 
-    const Settings&     GetSettings() const                             { return m_settings; }
-    Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
-    Data::Size          GetAllocatedSize() const                        { return m_allocated_size; }
-    const ResourceBase* GetResource(uint32_t descriptor_index) const    { return m_resources[descriptor_index]; }
-    bool                IsShaderVisible() const                         { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
+    [[nodiscard]] const Settings&     GetSettings() const                             { return m_settings; }
+    [[nodiscard]] Data::Size          GetDeferredSize() const                         { return m_deferred_size; }
+    [[nodiscard]] Data::Size          GetAllocatedSize() const                        { return m_allocated_size; }
+    [[nodiscard]] const ResourceBase* GetResource(uint32_t descriptor_index) const    { return m_resources[descriptor_index]; }
+    [[nodiscard]] bool                IsShaderVisible() const                         { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
 
-    static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
+    [[nodiscard]] static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
 
 protected:
     DescriptorHeap(ContextBase& context, const Settings& settings);
 
-    ContextBase& GetContext() { return m_context; }
+    [[nodiscard]] ContextBase& GetContext() { return m_context; }
 
 private:
     using ResourcePtrs = std::vector<const ResourceBase*>;

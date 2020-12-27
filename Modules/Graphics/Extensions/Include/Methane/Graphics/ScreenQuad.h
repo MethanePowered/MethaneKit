@@ -67,9 +67,9 @@ public:
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> texture_ptr);
 
-    const Settings& GetQuadSettings() const noexcept { return m_settings; }
-    FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
-    const Texture&  GetTexture() const;
+    [[nodiscard]] const Settings& GetQuadSettings() const noexcept { return m_settings; }
+    [[nodiscard]] FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
+    [[nodiscard]] const Texture&  GetTexture() const;
 
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
@@ -79,7 +79,7 @@ protected:
 private:
     void UpdateConstantsBuffer() const;
 
-    static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
+    [[nodiscard]] static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings             m_settings;
     RenderContext&       m_context;

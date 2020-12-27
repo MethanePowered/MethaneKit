@@ -36,7 +36,7 @@ constexpr bool g_is_apple = true;
 constexpr bool g_is_apple = false;
 #endif
 
-inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
+[[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
                                                     std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
 {
     using namespace magic_enum::bitwise_operators;

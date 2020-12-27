@@ -98,7 +98,7 @@ public:
     
     virtual ~MeshBuffers() = default;
 
-    RenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    [[nodiscard]] RenderContext& GetRenderContext() const noexcept { return m_render_context; }
 
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
@@ -180,10 +180,11 @@ public:
         m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }
 
-    const std::string&  GetMeshName() const      { return m_mesh_name; }
-    Data::Size          GetSubsetsCount() const  { return static_cast<Data::Size>(m_mesh_subsets.size()); }
-    Data::Size          GetInstanceCount() const { return static_cast<Data::Size>(m_final_pass_instance_uniforms.size()); }
+    [[nodiscard]] const std::string&  GetMeshName() const      { return m_mesh_name; }
+    [[nodiscard]] Data::Size          GetSubsetsCount() const  { return static_cast<Data::Size>(m_mesh_subsets.size()); }
+    [[nodiscard]] Data::Size          GetInstanceCount() const { return static_cast<Data::Size>(m_final_pass_instance_uniforms.size()); }
 
+    [[nodiscard]]
     const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0U) const
     {
         META_FUNCTION_TASK();
@@ -198,6 +199,7 @@ public:
         m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
 
+    [[nodiscard]]
     Data::Size GetUniformsBufferSize() const
     {
         META_FUNCTION_TASK();
@@ -207,6 +209,7 @@ public:
         return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
     }
 
+    [[nodiscard]]
     const Resource::SubResources& GetFinalPassUniformsSubresources() const { return m_final_pass_instance_uniforms_subresources; }
 
 protected:
@@ -220,26 +223,31 @@ protected:
         };
     }
 
+    [[nodiscard]]
     virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
+    [[nodiscard]]
     const BufferSet& GetVertexBuffers() const
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
+    [[nodiscard]]
     BufferSet& GetVertexBuffers()
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
+    [[nodiscard]]
     Buffer& GetIndexBuffer()
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
     }
-    
+
+    [[nodiscard]]
     Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
     {
         META_FUNCTION_TASK();
@@ -281,12 +289,14 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
+    [[nodiscard]]
     const Ptr<Texture>& GetTexturePtr() const
     {
         META_FUNCTION_TASK();
         return GetSubsetTexturePtr(0);
     }
 
+    [[nodiscard]]
     const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
@@ -295,6 +305,7 @@ public:
         return m_subset_textures[subset_index];
     }
 
+    [[nodiscard]]
     const Ptr<Texture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
         META_FUNCTION_TASK();

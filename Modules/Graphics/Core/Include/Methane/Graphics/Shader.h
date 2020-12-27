@@ -78,16 +78,16 @@ struct Shader
     };
 
     // Create Shader instance
-    static Ptr<Shader> Create(Type type, Context& context, const Settings& settings);
-    static Ptr<Shader> CreateVertex(Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
-    static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
+    [[nodiscard]] static Ptr<Shader> Create(Type type, Context& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Shader> CreateVertex(Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
+    [[nodiscard]] static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
-    static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
+    [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
 
     // Shader interface
-    virtual Type            GetType() const noexcept = 0;
-    virtual const Settings& GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual Type            GetType() const noexcept = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
 
     virtual ~Shader() = default;
 };

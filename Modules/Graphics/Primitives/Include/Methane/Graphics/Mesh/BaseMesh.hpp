@@ -46,27 +46,27 @@ public:
         META_CHECK_ARG_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
-    const Vertices& GetVertices() const noexcept       { return m_vertices; }
-    Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
-    Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
+    [[nodiscard]] const Vertices& GetVertices() const noexcept       { return m_vertices; }
+    [[nodiscard]] Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
+    [[nodiscard]] Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
 
 protected:
     template<typename FType>
-    FType& GetVertexField(VType& vertex, VertexField field) noexcept
+    [[nodiscard]] FType& GetVertexField(VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
-        return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
+        return *reinterpret_cast<FType*>(reinterpret_cast<std::byte*>(&vertex) + field_offset);
     }
 
     template<typename FType>
-    const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
+    [[nodiscard]] const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
-        return *reinterpret_cast<const FType*>(reinterpret_cast<const char*>(&vertex) + field_offset);
+        return *reinterpret_cast<const FType*>(reinterpret_cast<const std::byte*>(&vertex) + field_offset);
     }
 
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;

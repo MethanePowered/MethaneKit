@@ -37,14 +37,14 @@ public:
 
     Timer() = default;
 
-    TimePoint    GetStartTime() const noexcept       { return m_start_time; }
-    TimeDuration GetElapsedDuration() const noexcept { return Clock::now() - m_start_time; }
-    uint32_t     GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
-    double       GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
-    float        GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
+    [[nodiscard]] TimePoint    GetStartTime() const noexcept       { return m_start_time; }
+    [[nodiscard]] TimeDuration GetElapsedDuration() const noexcept { return Clock::now() - m_start_time; }
+    [[nodiscard]] uint32_t     GetElapsedSecondsU() const noexcept { return GetElapsedSeconds<uint32_t>(); }
+    [[nodiscard]] double       GetElapsedSecondsD() const noexcept { return GetElapsedSeconds<double>(); }
+    [[nodiscard]] float        GetElapsedSecondsF() const noexcept { return GetElapsedSeconds<float>(); }
 
     template<typename T>
-    T GetElapsedSeconds() const noexcept
+    [[nodiscard]] T GetElapsedSeconds() const noexcept
     {
         return std::chrono::duration_cast<std::chrono::duration<T>>(GetElapsedDuration()).count();
     }
