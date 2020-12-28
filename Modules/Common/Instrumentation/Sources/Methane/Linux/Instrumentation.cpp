@@ -24,6 +24,7 @@ Linux implementation of the platform specific instrumentation functions.
 #include <pthread.h>
 
 #include <cstring>
+#include <array>
 
 namespace Methane
 {
