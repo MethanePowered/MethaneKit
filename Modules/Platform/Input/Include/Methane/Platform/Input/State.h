@@ -25,6 +25,7 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Platform::Input
@@ -61,8 +62,10 @@ public:
         const std::type_info& controller_type  = typeid(ControllerT);
         for(const Ptr<Controller>& controller_ptr : m_controllers)
         {
-            if (controller_ptr && typeid(*controller_ptr) == controller_type)
-                controllers.emplace_back(static_cast<ControllerT&>(*controller_ptr));
+            META_CHECK_ARG_NOT_NULL(controller_ptr);
+            if (Controller& controller = *controller_ptr;
+                typeid(controller) == controller_type)
+                controllers.emplace_back(static_cast<ControllerT&>(controller));
         }
         return controllers;
     }

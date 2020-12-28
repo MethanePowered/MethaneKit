@@ -314,7 +314,7 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
 Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
-    auto [ name_and_font_it, font_added ] = m_font_by_name.try_emplace(font_settings.description.name, new Font(data_provider, font_settings));
+    auto [ name_and_font_it, font_added ] = m_font_by_name.try_emplace(font_settings.description.name, new Font(data_provider, font_settings)); // NOSONAR
     META_CHECK_ARG_DESCR(font_settings.description.name, font_added, "font with a give name already exists in fonts library");
 
     META_CHECK_ARG_NAME("emplace_result", name_and_font_it->second);

@@ -30,14 +30,13 @@ namespace Methane
 
 void SetThreadName(const char* name)
 {
-    const std::size_t name_length = strlen(name);
-    if(name_length < 16)
+    if(strlen(name) < 16)
     {
-        pthread_setname_np(pthread_self(), name );
+        pthread_setname_np(pthread_self(), name);
         return;
     }
 
-    char buf[16];
+    std::array<char, 16> buf;
     memcpy(buf, name, 15);
     buf[15] = '\0';
     pthread_setname_np(pthread_self(), buf);
