@@ -156,7 +156,7 @@ using Dimensions = VolumeSize<uint32_t>;
 using Viewport  = Volume<double, double>;
 using Viewports = std::vector<Viewport>;
 
-Viewport GetFrameViewport(const FrameSize& frame_size);
-Viewport GetFrameViewport(const FrameRect& frame_rect);
+[[nodiscard]] Viewport GetFrameViewport(const FrameSize& frame_size);
+[[nodiscard]] Viewport GetFrameViewport(const FrameRect& frame_rect);
 
 } // namespace Methane::Graphics

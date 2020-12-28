@@ -45,6 +45,7 @@ namespace Methane::Graphics
 
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
+[[nodiscard]]
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
 {
     META_FUNCTION_TASK();
@@ -54,6 +55,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
         : CD3DX12_SHADER_BYTECODE(nullptr, 0);
 }
 
+[[nodiscard]]
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
@@ -67,6 +69,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
     }
 }
 
+[[nodiscard]]
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
@@ -81,6 +84,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     }
 }
 
+[[nodiscard]]
 static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
@@ -99,6 +103,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
     return d3d12_color_write_mask;
 };
 
+[[nodiscard]]
 static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
@@ -115,6 +120,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
     }
 }
 
+[[nodiscard]]
 static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
@@ -145,6 +151,7 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
     }
 }
 
+[[nodiscard]]
 static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
 {
     META_FUNCTION_TASK();
@@ -164,6 +171,7 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
     }
 }
 
+[[nodiscard]]
 static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
 {
     META_FUNCTION_TASK();
@@ -177,6 +185,7 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rend
     return stencil_desc;
 }
 
+[[nodiscard]]
 static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
 {
     META_FUNCTION_TASK();
@@ -185,6 +194,7 @@ static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
                             static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
 }
 
+[[nodiscard]]
 static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 {
     META_FUNCTION_TASK();
@@ -193,6 +203,7 @@ static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
                         static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
 }
 
+[[nodiscard]]
 static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
 {
     META_FUNCTION_TASK();
@@ -205,6 +216,7 @@ static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) 
     return d3d_viewports;
 }
 
+[[nodiscard]]
 static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
 {
     META_FUNCTION_TASK();

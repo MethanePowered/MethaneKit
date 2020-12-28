@@ -252,8 +252,8 @@ protected:
     {
         META_FUNCTION_TASK();
         return static_cast<Data::Size>(
-            reinterpret_cast<const char*>(&m_final_pass_instance_uniforms[instance_index]) -
-            reinterpret_cast<const char*>(m_final_pass_instance_uniforms.data())
+            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()),
+                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index]))
         );
     }
 

@@ -40,6 +40,7 @@ DirectX 12 implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
 {
     META_FUNCTION_TASK();
@@ -47,6 +48,7 @@ static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noe
     return tex_dimensions.depth == 1 ? flat_dimension : D3D12_SRV_DIMENSION_TEXTURE3D;
 }
 
+[[nodiscard]]
 static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 {
     META_FUNCTION_TASK();

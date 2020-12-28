@@ -28,6 +28,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Data/Provider.h>
 #include <Methane/Data/Emitter.hpp>
 
+#include <magic_enum.hpp>
 #include <map>
 #include <string>
 #include <cctype>
@@ -149,8 +150,10 @@ public:
         Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
 
         [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
-        [[nodiscard]] bool                  IsLineBreak() const noexcept    { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::LineBreak); }
-        [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { return static_cast<uint8_t>(m_type_mask) & static_cast<uint8_t>(Type::Whitespace); }
+        [[nodiscard]] bool                  IsLineBreak() const noexcept    { using namespace magic_enum::bitwise_operators;
+                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::LineBreak); }
+        [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { using namespace magic_enum::bitwise_operators;
+                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::Whitespace); }
         [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         [[nodiscard]] const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
         [[nodiscard]] const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }

@@ -48,6 +48,7 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static PixelFormat GetDefaultImageFormat(bool srgb)
 {
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
@@ -130,7 +131,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()),
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
                                                   static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));

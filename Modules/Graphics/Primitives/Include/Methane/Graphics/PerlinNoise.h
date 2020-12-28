@@ -33,17 +33,17 @@ namespace Methane::Graphics
 class PerlinNoise
 {
 public:
-    PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
+    explicit PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
     
-    float operator()(Vector2f pos) const;
-    float operator()(Vector3f pos) const;
-    float operator()(Vector4f pos) const;
+    [[nodiscard]] float operator()(Vector2f pos) const;
+    [[nodiscard]] float operator()(Vector3f pos) const;
+    [[nodiscard]] float operator()(Vector4f pos) const;
 
 private:
     using Weights = std::vector<float>;
 
-    static Weights GetWeights(float persistence, size_t octaves_count);
-    static float GetWeightsSum(const PerlinNoise::Weights& weights);
+    [[nodiscard]] static Weights GetWeights(float persistence, size_t octaves_count);
+    [[nodiscard]] static float GetWeightsSum(const PerlinNoise::Weights& weights);
 
     const Weights m_weights;
     const float   m_norm_multiplier;

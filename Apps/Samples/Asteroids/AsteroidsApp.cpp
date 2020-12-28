@@ -70,11 +70,13 @@ inline uint32_t GetDefaultComplexity()
 #endif
 }
 
+[[nodiscard]]
 inline const MutableParameters& GetMutableParameters(uint32_t complexity)
 {
     return g_mutable_parameters[std::min(complexity, g_max_complexity)];
 }
 
+[[nodiscard]]
 inline const MutableParameters& GetMutableParameters()
 {
     return GetMutableParameters(GetDefaultComplexity());

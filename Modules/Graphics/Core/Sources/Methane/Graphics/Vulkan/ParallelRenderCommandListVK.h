@@ -49,7 +49,7 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
-protected:
+private:
     CommandQueueVK& GetCommandQueueVK() noexcept;
     RenderPassVK&   GetPassVK();
 };

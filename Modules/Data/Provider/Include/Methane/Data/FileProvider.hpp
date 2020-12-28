@@ -65,7 +65,7 @@ public:
         Data::Bytes buffer(static_cast<size_t>(fs.tellg()), {});
 
         fs.seekg(0,std::ios::beg);
-        fs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+        fs.read(reinterpret_cast<char*>(buffer.data()), buffer.size()); // NOSONAR
 
         return Data::Chunk(std::move(buffer));
     }

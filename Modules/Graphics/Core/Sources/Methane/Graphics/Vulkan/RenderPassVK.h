@@ -40,7 +40,7 @@ public:
     
     void Reset();
 
-protected:
+private:
     IContextVK& GetContextVK() noexcept;
 };
 

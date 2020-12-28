@@ -53,12 +53,12 @@ public:
 
     explicit ColorF(VectorType&& components) noexcept : m_components(std::move(components)) { }
 
-    bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
-    bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
-    float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
-    explicit operator VectorType() const noexcept { return m_components; }
+    [[nodiscard]] bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
+    [[nodiscard]] bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
+    [[nodiscard]] float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
+    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
 
-    const VectorType& AsVector() const noexcept { return m_components; }
+    [[nodiscard]] const VectorType& AsVector() const noexcept { return m_components; }
 
     [[nodiscard]] Data::Size GetSize() const noexcept      { return vector_size; }
 
@@ -96,7 +96,7 @@ public:
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     void SetA(float a) { Set(3, a); }
 
-    explicit operator std::string() const noexcept
+    [[nodiscard]] explicit operator std::string() const noexcept
     {
         if constexpr (vector_size == 3)
             return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu());

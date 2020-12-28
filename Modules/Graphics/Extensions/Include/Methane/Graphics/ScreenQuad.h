@@ -74,7 +74,7 @@ public:
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
-    RenderContext& GetRenderContext() noexcept { return m_context; }
+    [[nodiscard]] RenderContext& GetRenderContext() noexcept { return m_context; }
 
 private:
     void UpdateConstantsBuffer() const;

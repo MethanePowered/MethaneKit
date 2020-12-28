@@ -229,7 +229,7 @@ private:
         FT_Face ft_face = nullptr;
 
         ThrowFreeTypeError(FT_New_Memory_Face(ft_library,
-            reinterpret_cast<const FT_Byte*>(font_data.GetDataPtr()),
+            reinterpret_cast<const FT_Byte*>(font_data.GetDataPtr()), // NOSONAR
             static_cast<FT_Long>(font_data.GetDataSize()), 0,
             &ft_face));
 

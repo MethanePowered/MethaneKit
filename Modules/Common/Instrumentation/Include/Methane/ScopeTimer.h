@@ -57,7 +57,7 @@ public:
             uint32_t     count    = 0U;
         };
 
-        static Aggregator& Get();
+        [[nodiscard]] static Aggregator& Get();
 
         Aggregator(const Aggregator&) = delete;
         Aggregator(Aggregator&&) = delete;

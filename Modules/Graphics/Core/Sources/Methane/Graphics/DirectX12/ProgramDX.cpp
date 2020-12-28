@@ -46,6 +46,7 @@ struct DescriptorOffsets
     uint32_t mutable_offset = 0;
 };
 
+[[nodiscard]]
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
@@ -76,6 +77,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
     }
 }
 
+[[nodiscard]]
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
     META_FUNCTION_TASK();
@@ -85,6 +87,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
         return DescriptorHeap::Type::ShaderResources;
 }
 
+[[nodiscard]]
 static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
