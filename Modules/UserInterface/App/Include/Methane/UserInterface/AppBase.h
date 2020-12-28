@@ -27,6 +27,8 @@ Base implementation of the Methane user interface application.
 
 #include <Methane/UserInterface/HeadsUpDisplay.h>
 
+#include <string_view>
+
 namespace Methane::UserInterface
 {
 
@@ -56,8 +58,8 @@ protected:
     void RenderOverlay(gfx::RenderCommandList& cmd_list) const;
 
     bool SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode);
-    bool SetHelpText(const std::string& help_str);
-    bool SetParametersText(const std::string& parameters_str);
+    bool SetHelpText(std::string_view help_str);
+    bool SetParametersText(std::string_view parameters_str);
 
     [[nodiscard]] bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
     [[nodiscard]] bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }

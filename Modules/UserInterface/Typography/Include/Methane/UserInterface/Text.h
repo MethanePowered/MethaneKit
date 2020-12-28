@@ -30,6 +30,8 @@ Methane text rendering primitive.
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 
+#include <string_view>
+
 namespace Methane::Graphics
 {
 struct RenderContext;
@@ -114,10 +116,10 @@ public:
     [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept { return m_settings.text; }
     [[nodiscard]] std::string           GetTextUtf8() const;
 
-    void SetText(const std::string& text);
-    void SetText(const std::u32string& text);
-    void SetTextInScreenRect(const std::string& text, const UnitRect& ui_rect);
-    void SetTextInScreenRect(const std::u32string& text, const UnitRect& ui_rect);
+    void SetText(std::string_view text);
+    void SetText(std::u32string_view text);
+    void SetTextInScreenRect(std::string_view text, const UnitRect& ui_rect);
+    void SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect);
     void SetColor(const gfx::Color4f& color);
     void SetLayout(const Layout& layout);
     void SetWrap(Wrap wrap);
@@ -168,8 +170,8 @@ private:
         [[nodiscard]] gfx::ProgramBindings& GetProgramBindings() const;
 
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, const std::string& text_name);
+        void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
         void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
 
     private:

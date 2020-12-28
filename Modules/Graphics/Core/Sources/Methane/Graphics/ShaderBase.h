@@ -29,6 +29,8 @@ Base implementation of the shader interface.
 
 #include <Methane/Graphics/Shader.h>
 
+#include <string_view>
+
 namespace Methane::Graphics
 {
 
@@ -51,7 +53,7 @@ public:
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
     virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
 
-    Ptr<ShaderBase> GetPtr()                { return shared_from_this(); }
+    Ptr<ShaderBase> GetPtr() { return shared_from_this(); }
 
 protected:
     ContextBase&        GetContext()        { return m_context; }

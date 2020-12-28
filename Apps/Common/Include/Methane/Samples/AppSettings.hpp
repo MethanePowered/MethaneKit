@@ -30,18 +30,23 @@ Common application settings for Methane samples and tutorials.
 namespace Methane::Samples
 {
 
-#ifdef __APPLE__
-constexpr bool g_is_apple = true;
-#else
-constexpr bool g_is_apple = false;
-#endif
-
-[[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, bool animations_enabled = true, bool depth_enabled = true, float clear_depth = 1.F,
-                                                    std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
+[[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(
+                                                const std::string& app_name,
+                                                bool animations_enabled = true,
+                                                bool depth_enabled = true,
+                                                float clear_depth = 1.F,
+                                                std::optional<Graphics::Color4f> clear_color = Graphics::Color4f(0.0F, 0.2F, 0.4F, 1.0F))
 {
     using namespace magic_enum::bitwise_operators;
     using Stencil = Graphics::Stencil;
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
+
+#ifdef __APPLE__
+    constexpr bool is_apple = true;
+#else
+    constexpr bool is_apple = false;
+#endif
+
     return Graphics::AppSettings
     {                                                               // =========================
         Platform::App::Settings {                                   // platform_app:
@@ -67,7 +72,7 @@ constexpr bool g_is_apple = false;
                 ? DepthStencilOpt({ clear_depth, Stencil(0) })      //     ...
                 : DepthStencilOpt(),                                //     ...
             3U,                                                     //   - frame_buffers_count
-            g_is_apple,                                             //   - vsync_enabled
+            is_apple,                                             //   - vsync_enabled
             false,                                                  //   - is_full_screen
             false,                                                  //   - is_emulated_render_pass
             1000U,                                                  //   - unsync_max_fps (MacOS only)

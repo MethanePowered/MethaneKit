@@ -26,6 +26,7 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 #include <Methane/Memory.hpp>
 
 #include <string>
+#include <string_view>
 #include <set>
 #include <map>
 
@@ -83,7 +84,7 @@ struct Shader
     [[nodiscard]] static Ptr<Shader> CreatePixel(Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
-    [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, const std::string& splitter = ", ") noexcept;
+    [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter = ", ") noexcept;
 
     // Shader interface
     [[nodiscard]] virtual Type            GetType() const noexcept = 0;

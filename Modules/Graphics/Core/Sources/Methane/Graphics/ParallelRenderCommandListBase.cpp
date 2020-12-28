@@ -34,13 +34,16 @@ Base implementation of the parallel render command list interface.
 #include <Methane/Data/Math.hpp>
 
 #include <taskflow/taskflow.hpp>
+#include <fmt/format.h>
+
+#include <string_view>
 
 namespace Methane::Graphics
 {
 
-inline std::string GetThreadCommandListName(const std::string& name, Data::Index index)
+inline std::string GetThreadCommandListName(std::string_view name, Data::Index index)
 {
-    return name + " [Thread " + std::to_string(index) + "]";
+    return fmt::format("{} [Thread {}", name, index);
 }
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)

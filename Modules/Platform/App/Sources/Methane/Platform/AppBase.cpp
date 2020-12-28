@@ -35,6 +35,7 @@ Base application interface and platform-independent implementation.
 
 #include <sstream>
 #include <vector>
+#include <string_view>
 #include <cstdlib>
 
 namespace Methane::Platform
@@ -57,7 +58,7 @@ static bool WriteControllerHeaderToHelpStream(std::stringstream& help_stream, co
     return false;
 }
 
-static void WriteKeyDescriptionToHelpStream(std::stringstream& help_stream, const std::string& single_offset, const std::string& controller_offset,
+static void WriteKeyDescriptionToHelpStream(std::stringstream& help_stream, std::string_view single_offset, std::string_view controller_offset,
                                             bool first_line, bool& header_present, const Input::IHelpProvider::KeyDescription& key_description)
 {
     if (key_description.first.empty())

@@ -178,8 +178,8 @@ public:
 
     using Chars = Refs<const Char>;
 
-    [[nodiscard]] static std::u32string ConvertUtf8To32(const std::string& text);
-    [[nodiscard]] static std::string    ConvertUtf32To8(const std::u32string& text);
+    [[nodiscard]] static std::u32string ConvertUtf8To32(std::string_view text);
+    [[nodiscard]] static std::string    ConvertUtf32To8(std::u32string_view text);
     [[nodiscard]] static std::u32string GetAlphabetDefault() { return GetAlphabetInRange(32, 126); }
     [[nodiscard]] static std::u32string GetAlphabetInRange(char32_t from, char32_t to);
     [[nodiscard]] static std::u32string GetAlphabetFromText(const std::string& text);

@@ -347,18 +347,18 @@ Font::Library::Library()
     META_FUNCTION_TASK();
 }
 
-std::u32string Font::ConvertUtf8To32(const std::string& text)
+std::u32string Font::ConvertUtf8To32(std::string_view text)
 {
     META_FUNCTION_TASK();
     static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    return converter.from_bytes(text);
+    return converter.from_bytes(text.data(), text.data() + text.length());
 }
 
-std::string Font::ConvertUtf32To8(const std::u32string& text)
+std::string Font::ConvertUtf32To8(std::u32string_view text)
 {
     META_FUNCTION_TASK();
     static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-    return converter.to_bytes(text);
+    return converter.to_bytes(text.data(), text.data() + text.length());
 }
 
 std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)

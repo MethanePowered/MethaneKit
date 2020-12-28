@@ -89,10 +89,10 @@ private:
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
 
-    [[nodiscard]] bool IsNewTextStartsWithOldOne(const std::u32string& text) const noexcept
+    [[nodiscard]] bool IsNewTextStartsWithOldOne(std::u32string_view text) const noexcept
     { return m_text.empty() || (m_text.length() < text.length()   && text.find(m_text) == 0); }
 
-    [[nodiscard]] bool IsOldTextStartsWithNewOne(const std::u32string& text) const noexcept
+    [[nodiscard]] bool IsOldTextStartsWithNewOne(std::u32string_view text) const noexcept
     { return !text.empty()  &&  text.length()   < m_text.length() && m_text.find(text) == 0; }
 
     std::u32string       m_text;
