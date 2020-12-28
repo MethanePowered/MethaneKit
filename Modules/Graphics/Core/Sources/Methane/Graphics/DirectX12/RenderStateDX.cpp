@@ -93,13 +93,13 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
 
     UINT8 d3d12_color_write_mask = 0;
     if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Red))
-        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;   // NOSONAR
     if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Green))
-        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN;
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN; // NOSONAR
     if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Blue))
-        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;  // NOSONAR
     if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Alpha))
-        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA;
+        d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA; // NOSONAR
     return d3d12_color_write_mask;
 };
 

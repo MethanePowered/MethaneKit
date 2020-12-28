@@ -100,7 +100,7 @@ bool IsDeveloperModeEnabled() noexcept
 
     DWORD value{};
     DWORD dword_size = sizeof(DWORD);
-    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &dword_size);
+    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &dword_size); // NOSONAR
     RegCloseKey(h_key);
     if (err != ERROR_SUCCESS)
         return false;

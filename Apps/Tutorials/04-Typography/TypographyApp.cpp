@@ -50,7 +50,7 @@ static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
 } };
 
 static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
-static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
+static const std::map<std::string, gfx::Color3f, std::less<>> g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },

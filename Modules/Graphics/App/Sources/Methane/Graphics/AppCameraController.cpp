@@ -84,14 +84,14 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
     const HelpLines mouse_help_lines = GetMouseHelp();
     if (!mouse_help_lines.empty())
     {
-        help_lines.push_back({ "", "Mouse actions" });
+        help_lines.emplace_back("", "Mouse actions");
         help_lines.insert(help_lines.end(), mouse_help_lines.begin(), mouse_help_lines.end());
     }
 
     const HelpLines keyboard_help_lines = GetKeyboardHelp();
     if (!keyboard_help_lines.empty())
     {
-        help_lines.push_back({ "", "Keyboard actions" });
+        help_lines.emplace_back("", "Keyboard actions");
         help_lines.insert(help_lines.end(), keyboard_help_lines.begin(), keyboard_help_lines.end());
     }
     

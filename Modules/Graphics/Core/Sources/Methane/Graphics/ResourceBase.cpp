@@ -142,12 +142,12 @@ Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<
     std::set<Barrier> resource_barriers;
     for (const Ref<const Resource>& resource_ref : resources)
     {
-        resource_barriers.emplace(Barrier{
+        resource_barriers.emplace(
             ResourceBase::Barrier::Type::Transition,
             resource_ref.get(),
             state_before,
             state_after
-        });
+        );
     }
     return Barriers::Create(resource_barriers);
 }

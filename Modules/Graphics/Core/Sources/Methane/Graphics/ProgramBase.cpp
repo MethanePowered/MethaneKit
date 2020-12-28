@@ -143,7 +143,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
     META_FUNCTION_TASK();
 
     Shader::Types all_shader_types;
-    std::map<std::string, Shader::Types> shader_types_by_argument_name_map;
+    std::map<std::string, Shader::Types, std::less<>> shader_types_by_argument_name_map;
     
     m_binding_by_argument.clear();
     for (const Ptr<Shader>& shader_ptr : m_settings.shaders)

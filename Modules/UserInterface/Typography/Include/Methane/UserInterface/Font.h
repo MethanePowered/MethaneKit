@@ -120,7 +120,7 @@ public:
     private:
         Library();
 
-        using FontByName = std::map<std::string, Ptr<Font>>;
+        using FontByName = std::map<std::string, Ptr<Font>, std::less<>>;
 
         const UniquePtr<Impl> m_impl_ptr;
         FontByName            m_font_by_name;

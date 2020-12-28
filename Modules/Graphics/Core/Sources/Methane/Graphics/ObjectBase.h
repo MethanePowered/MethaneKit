@@ -44,7 +44,7 @@ public:
         bool        HasGraphicsObject(const std::string& object_name) const noexcept override;
 
     private:
-        std::map<std::string, WeakPtr<Object>> m_object_by_name;
+        std::map<std::string, WeakPtr<Object>, std::less<>> m_object_by_name;
     };
 
     ObjectBase() = default;

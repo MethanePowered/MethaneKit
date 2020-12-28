@@ -251,12 +251,12 @@ public:
     bool TryPack(const Refs<Font::Char>& font_chars)
     {
         META_FUNCTION_TASK();
-        for(const Ref<Font::Char>& font_char : font_chars)
-        {
-            if (!TryPack(font_char.get()))
-                return false;
-        }
-        return true;
+        return std::all_of(font_chars.begin(), font_chars.end(),
+            [this](const Ref<Font::Char>& font_char)
+            {
+                return TryPack(font_char.get());
+            }
+        );
     }
 
     bool TryPack(Font::Char& font_char)
