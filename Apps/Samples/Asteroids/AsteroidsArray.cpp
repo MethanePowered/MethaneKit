@@ -73,7 +73,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng()); // NOSONAR
 
-                std::lock_guard<LockableBase(std::mutex)> lock_guard(data_mutex);
+                std::scoped_lock<LockableBase(std::mutex)> lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },

@@ -134,7 +134,7 @@ void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::C
     }
 
     auto& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
     m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
     m_execution_waiting_condition_var.notify_one();
 }
@@ -153,7 +153,7 @@ void CommandQueueDX::SetName(const std::string& name)
 void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
     while (!m_executing_command_lists.empty() &&
           (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
     {
@@ -216,7 +216,7 @@ void CommandQueueDX::WaitForExecution() noexcept
 const Ptr<CommandListSetDX>& CommandQueueDX::GetNextExecutingCommandListSet() const
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
 
     static const Ptr<CommandListSetDX> s_empty_command_list_set_ptr;
 

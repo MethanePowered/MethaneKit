@@ -80,7 +80,7 @@ void ResourceManager::CompleteInitialization()
     if (!IsDeferredHeapAllocation())
         return;
 
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 
     for (const Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {
@@ -138,7 +138,7 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
 
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_program_bindings_mutex);
 #ifdef _DEBUG
     // This may cause performance drop on adding massive amount of program bindings,
     // so we assume that only different program bindings are added and check it in Debug builds only

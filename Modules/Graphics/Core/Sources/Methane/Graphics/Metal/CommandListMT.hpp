@@ -60,7 +60,7 @@ public:
     void PushDebugGroup(CommandList::DebugGroup& debug_group) override
     {
         META_FUNCTION_TASK();
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::PushDebugGroup(debug_group);
 
@@ -71,7 +71,7 @@ public:
     void PopDebugGroup() override
     {
         META_FUNCTION_TASK();
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::PopDebugGroup();
 
@@ -86,7 +86,7 @@ public:
 
         CommandListBaseT::Commit();
 
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         if (m_mtl_cmd_encoder)
         {
@@ -131,7 +131,7 @@ public:
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override
     {
         META_FUNCTION_TASK();
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::Execute(frame_index, completed_callback);
 
@@ -139,7 +139,7 @@ public:
             return;
 
         [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
-            std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+            std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
             CommandListBaseT::Complete(frame_index);
             [m_mtl_cmd_buffer release];
             m_mtl_cmd_buffer  = nil;
@@ -153,7 +153,7 @@ public:
     void SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         CommandListBaseT::SetName(name);
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
@@ -181,7 +181,7 @@ protected:
     id<MTLCommandBuffer>& InitializeCommandBuffer()
     {
         META_FUNCTION_TASK();
-        std::lock_guard<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
+        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_cmd_buffer_mutex);
 
         if (m_mtl_cmd_buffer)
             return m_mtl_cmd_buffer;
