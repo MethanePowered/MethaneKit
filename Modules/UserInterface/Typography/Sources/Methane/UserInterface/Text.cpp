@@ -215,8 +215,8 @@ void Text::SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect
     if (m_frame_resources.empty())
         return;
 
-    FrameResources& frame_resources = GetCurrentFrameResources();
-    if (!frame_resources.IsAtlasInitialized())
+    if (FrameResources& frame_resources = GetCurrentFrameResources();
+        !frame_resources.IsAtlasInitialized())
     {
         // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
         frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));

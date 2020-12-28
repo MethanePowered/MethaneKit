@@ -38,10 +38,7 @@ Container::Container(Context& ui_context, const UnitRect& ui_rect, const Ptrs<It
 bool Container::AddChild(Item& item)
 {
     META_FUNCTION_TASK();
-    const auto child_it = std::find_if(m_children.begin(), m_children.end(),
-        [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }
-    );
-    if (child_it != m_children.end())
+    if (std::any_of(m_children.begin(), m_children.end(), [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }))
         return false;
 
     m_children.emplace_back(item.GetPtr());

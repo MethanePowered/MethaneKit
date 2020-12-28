@@ -152,15 +152,16 @@ AsteroidsApp::AsteroidsApp()
     const std::string options_group = "Asteroids Options";
     add_option_group(options_group);
     add_option("-c,--complexity",
-               [this](const CLI::results_t& res) {
-                       uint32_t complexity = 0;
-                       if (CLI::detail::lexical_cast(res[0], complexity))
-                       {
-                           SetAsteroidsComplexity(complexity);
-                           return true;
-                       }
-                       return false;
-                   }, "simulation complexity", true)
+               [this](const CLI::results_t& res)
+               {
+                   if (uint32_t complexity = 0;
+                       CLI::detail::lexical_cast(res[0], complexity))
+                   {
+                       SetAsteroidsComplexity(complexity);
+                       return true;
+                   }
+                   return false;
+               }, "simulation complexity", true)
         ->default_val(m_asteroids_complexity)
         ->expected(0, static_cast<int>(g_max_complexity))
         ->group(options_group);

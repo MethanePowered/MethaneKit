@@ -106,25 +106,22 @@ public:
             
             if (range_it->Contains(range))
             {
-                const Range<ScalarT> left_sub_range(range_it->GetStart(), range.GetStart());
-                if (!left_sub_range.IsEmpty())
+                if (const Range<ScalarT> left_sub_range(range_it->GetStart(), range.GetStart());
+                    !left_sub_range.IsEmpty())
                 {
                     add_ranges.emplace_back(left_sub_range);
                 }
 
-                const Range<ScalarT> right_sub_range(range.GetEnd(), range_it->GetEnd());
-                if (!right_sub_range.IsEmpty())
+                if (const Range<ScalarT> right_sub_range(range.GetEnd(), range_it->GetEnd());
+                    !right_sub_range.IsEmpty())
                 {
                     add_ranges.emplace_back(right_sub_range);
                 }
             }
-            else
+            else if (Range<ScalarT> trimmed_range = *range_it - range;
+                    !trimmed_range.IsEmpty())
             {
-                Range<ScalarT> trimmed_range = *range_it - range;
-                if (!trimmed_range.IsEmpty())
-                {
-                    add_ranges.emplace_back(trimmed_range);
-                }
+                add_ranges.emplace_back(trimmed_range);
             }
         }
 

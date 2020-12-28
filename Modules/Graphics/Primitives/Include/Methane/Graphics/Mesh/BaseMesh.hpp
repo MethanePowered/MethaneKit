@@ -73,8 +73,8 @@ protected:
     Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoints)
     {
         META_FUNCTION_TASK();
-        const auto edge_midpoint_it = edge_midpoints.find(edge);
-        if (edge_midpoint_it != edge_midpoints.end())
+        if (const auto edge_midpoint_it = edge_midpoints.find(edge);
+            edge_midpoint_it != edge_midpoints.end())
             return edge_midpoint_it->second;
 
         const VType& v1 = m_vertices[edge.first_index];

@@ -304,12 +304,11 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
 {
     META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_settings.description.name);
-    if (font_by_name_it != m_font_by_name.end())
-    {
-        META_CHECK_ARG_NOT_NULL(font_by_name_it->second);
-        return *font_by_name_it->second;
-    }
-    return AddFont(data_provider, font_settings);
+    if (font_by_name_it == m_font_by_name.end())
+        return AddFont(data_provider, font_settings);
+
+    META_CHECK_ARG_NOT_NULL(font_by_name_it->second);
+    return *font_by_name_it->second;
 }
 
 Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
@@ -469,8 +468,7 @@ void Font::AddChars(const std::u32string& utf32_characters)
 const Font::Char& Font::AddChar(Char::Code char_code)
 {
     META_FUNCTION_TASK();
-    const Char& font_char = GetChar(char_code);
-    if (font_char)
+    if (const Char& font_char = GetChar(char_code); font_char)
         return font_char;
 
     // Load char glyph and add it to the font characters map
@@ -508,8 +506,8 @@ const Font::Char& Font::GetChar(Char::Code char_code) const
 {
     META_FUNCTION_TASK();
     static const Char s_none_char {};
-    static const Char s_line_break(static_cast<Char::Code>('\n'));
-    if (char_code == s_line_break.GetCode())
+    if (static const Char s_line_break(static_cast<Char::Code>('\n'));
+        char_code == s_line_break.GetCode())
         return s_line_break;
 
     const auto char_by_code_it = m_char_by_code.find(char_code);
@@ -617,8 +615,8 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
 const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
 {
     META_FUNCTION_TASK();
-    const auto atlas_texture_it = m_atlas_textures.find(&context);
-    if (atlas_texture_it != m_atlas_textures.end())
+    if (const auto atlas_texture_it = m_atlas_textures.find(&context);
+        atlas_texture_it != m_atlas_textures.end())
     {
         META_CHECK_ARG_NOT_NULL(atlas_texture_it->second.texture_ptr);
         return atlas_texture_it->second.texture_ptr;
@@ -730,10 +728,9 @@ void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");
 
-    const gfx::FrameSize   atlas_size         = m_atlas_pack_ptr->GetSize();
-    const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;
-
-    if (texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
+    const gfx::FrameSize atlas_size = m_atlas_pack_ptr->GetSize();
+    if (const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;
+        texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
     {
         const Ptr<gfx::Texture> old_texture_ptr = atlas_texture.texture_ptr;
         atlas_texture.texture_ptr = CreateAtlasTexture(context, false).texture_ptr;
@@ -773,8 +770,8 @@ void Font::OnContextReleased(gfx::Context& context)
 void Font::OnContextCompletingInitialization(gfx::Context& context)
 {
     META_FUNCTION_TASK();
-    const auto atlas_texture_it = m_atlas_textures.find(&context);
-    if (atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
+    if (const auto atlas_texture_it = m_atlas_textures.find(&context);
+        atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
     {
         UpdateAtlasTexture(context, atlas_texture_it->second);
     }

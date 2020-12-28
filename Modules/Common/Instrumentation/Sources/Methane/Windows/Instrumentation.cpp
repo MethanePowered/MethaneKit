@@ -71,8 +71,8 @@ extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR);
 
 void SetThreadName(const char* name)
 {
-    static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
-    if (s_set_thread_description_fn)
+    if (static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
+        s_set_thread_description_fn)
     {
         const std::wstring w_name = nowide::widen(name);
         s_set_thread_description_fn(GetCurrentThread(), w_name.c_str());

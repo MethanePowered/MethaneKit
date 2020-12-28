@@ -90,8 +90,7 @@ protected:
     void OnConnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
-        const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
-        if (connected_emitter_ref_it != m_connected_emitter_refs.end())
+        if (FindConnectedEmitter(emitter) != m_connected_emitter_refs.end())
             return;
 
         m_connected_emitter_refs.emplace_back(emitter);

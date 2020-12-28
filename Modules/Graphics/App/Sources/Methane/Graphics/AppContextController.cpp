@@ -96,10 +96,10 @@ void AppContextController::ResetContextWithNextDevice()
 {
     META_FUNCTION_TASK();
     const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
-    if (next_device_ptr)
-    {
-        m_context.Reset(*next_device_ptr);
-    }
+    if (!next_device_ptr)
+        return;
+
+    m_context.Reset(*next_device_ptr);
 }
 
 } // namespace Methane::Graphics

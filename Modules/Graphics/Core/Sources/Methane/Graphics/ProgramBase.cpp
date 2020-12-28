@@ -73,9 +73,8 @@ Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers modifier
 Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument)
 {
     META_FUNCTION_TASK();
-
-    Program::ArgumentDescriptions::const_iterator argument_desc_it = argument_descriptions.find(argument);
-    if (argument_desc_it != argument_descriptions.end())
+    if (const auto argument_desc_it = argument_descriptions.find(argument);
+        argument_desc_it != argument_descriptions.end())
         return argument_desc_it;
 
     const Argument all_shaders_argument(Shader::Type::All, argument.name);
@@ -192,8 +191,8 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
     std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
-    auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);
-    if (constant_descriptor_range_by_heap_type_it != m_constant_descriptor_range_by_heap_type.end())
+    if (auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);
+        constant_descriptor_range_by_heap_type_it != m_constant_descriptor_range_by_heap_type.end())
     {
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
         META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
@@ -222,8 +221,8 @@ uint32_t ProgramBase::GetInputBufferIndexByArgumentSemantic(const std::string& a
     for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
     {
         const InputBufferLayout& input_buffer_layout = m_settings.input_buffer_layouts[buffer_index];
-        auto argument_it = std::find(input_buffer_layout.argument_semantics.begin(), input_buffer_layout.argument_semantics.end(), argument_semantic);
-        if (argument_it != input_buffer_layout.argument_semantics.end())
+        if (auto argument_it = std::find(input_buffer_layout.argument_semantics.begin(), input_buffer_layout.argument_semantics.end(), argument_semantic);
+            argument_it != input_buffer_layout.argument_semantics.end())
             return static_cast<uint32_t>(buffer_index);
     }
     META_INVALID_ARG_DESCR(argument_semantic, "input argument with semantic name was not found for program '{}'", GetName());

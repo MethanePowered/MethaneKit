@@ -84,8 +84,7 @@ public:
     void Connect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
-        const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it != m_connected_receivers.end())
+        if (FindConnectedReceiver(receiver) != m_connected_receivers.end())
             return;
 
         if (m_is_emitting)

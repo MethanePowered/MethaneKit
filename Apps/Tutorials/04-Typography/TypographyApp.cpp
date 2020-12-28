@@ -252,19 +252,18 @@ void TypographyApp::UpdateFontAtlasBadges()
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
         const Ptr<gui::Badge>& font_atlas_badge_ptr = *badge_it;
-        const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
-            [&font_atlas_badge_ptr, &context](const Ref<gui::Font>& font_ref)
-            {
-                return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get();
-            }
-        );
-        if (font_ref_it == font_refs.end())
+        if (std::any_of(font_refs.begin(), font_refs.end(),
+                [&font_atlas_badge_ptr, &context](const Ref<gui::Font>& font_ref)
+                {
+                    return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get();
+                })
+            )
         {
-            badge_it = m_font_atlas_badges.erase(badge_it);
+            ++badge_it;
         }
         else
         {
-            ++badge_it;
+            badge_it = m_font_atlas_badges.erase(badge_it);
         }
     }
 
@@ -272,17 +271,12 @@ void TypographyApp::UpdateFontAtlasBadges()
     for(const Ref<gui::Font>& font_ref : font_refs)
     {
         const Ptr<gfx::Texture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
-        if (!font_atlas_texture_ptr)
-            continue;
-
-        const auto font_atlas_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                   [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-            {
-                return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
-            }
-        );
-
-        if (font_atlas_ptr_it != m_font_atlas_badges.end())
+        if (!font_atlas_texture_ptr ||
+            std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                        [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                        {
+                            return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
+                        }))
             continue;
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture_ptr));

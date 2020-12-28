@@ -175,9 +175,8 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
             continue;
 
         const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
-        const DescriptorHeap::Type descriptor_heap_type = desc.heap.GetSettings().type;
-
-        switch (descriptor_heap_type)
+        switch (const DescriptorHeap::Type descriptor_heap_type = desc.heap.GetSettings().type;
+                descriptor_heap_type)
         {
         case DescriptorHeap::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
         case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
@@ -418,8 +417,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     for(uint32_t sub_resource_raw_index = 0; sub_resource_raw_index < dx_sub_resources.size(); ++sub_resource_raw_index)
     {
         // Initialize images of base mip-levels only
-        const SubResource::Index sub_resource_index(sub_resource_raw_index, sub_resource_count);
-        if (sub_resource_index.GetMipLevel() > 0)
+        if (SubResource::Index(sub_resource_raw_index, sub_resource_count).GetMipLevel() > 0)
             continue;
 
         const D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];

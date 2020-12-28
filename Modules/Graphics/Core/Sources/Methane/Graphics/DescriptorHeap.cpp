@@ -124,8 +124,8 @@ DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
     META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
     std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    Range reserved_range = Data::ReserveRange(m_free_ranges, length);
-    if (reserved_range || !m_settings.deferred_allocation)
+    if (const Range reserved_range = Data::ReserveRange(m_free_ranges, length);
+        reserved_range || !m_settings.deferred_allocation)
         return reserved_range;
 
     Range deferred_range(m_deferred_size, m_deferred_size + length);

@@ -94,9 +94,8 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
     ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
 
     // Insert beginning GPU timestamp query
-    TimestampQueryBuffer::TimestampQuery* p_begin_timestamp_query = GetBeginTimestampQuery();
-    if (p_begin_timestamp_query)
-        p_begin_timestamp_query->InsertTimestamp();
+    if (HasBeginTimestampQuery())
+        GetBeginTimestampQuery().InsertTimestamp();
 
     if (!render_state_ptr)
         return;
@@ -185,8 +184,8 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    DrawingState& drawing_state = GetDrawingState();
-    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+    if (DrawingState& drawing_state = GetDrawingState();
+        magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
@@ -198,14 +197,16 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
 void RenderCommandListDX::Commit()
 {
     META_FUNCTION_TASK();
-
-    if (!IsParallel())
+    if (IsParallel())
     {
-        RenderPassDX& pass_dx = GetPassDX();
-        if (pass_dx.IsBegun())
-        {
-            pass_dx.End(*this);
-        }
+        CommandListDX<RenderCommandListBase>::Commit();
+        return;
+    }
+
+    if (RenderPassDX& pass_dx = GetPassDX();
+        pass_dx.IsBegun())
+    {
+        pass_dx.End(*this);
     }
 
     CommandListDX<RenderCommandListBase>::Commit();

@@ -70,8 +70,8 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
         }
 
         // Wrap to next line on text overrun of frame width
-        const uint32_t char_right_pos = char_pos.GetX() + (text_char.IsWhiteSpace() ? 0U : char_pos.visual_width);
-        if (wrap == Text::Wrap::Anywhere && frame_width && char_right_pos > frame_width)
+        if (const uint32_t char_right_pos = char_pos.GetX() + (text_char.IsWhiteSpace() ? 0U : char_pos.visual_width);
+            wrap == Text::Wrap::Anywhere && frame_width && char_right_pos > frame_width)
         {
             char_pos.SetX(0);
             char_pos.SetY(char_pos.GetY() + font.GetLineHeight());
@@ -85,8 +85,7 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
         if (p_prev_text_char)
             char_pos += font.GetKerning(*p_prev_text_char, text_char);
 
-        const CharAction action = process_char_at_position(text_char, char_pos, char_index);
-        switch (action)
+        switch (const CharAction action = process_char_at_position(text_char, char_pos, char_index); action)
         {
         case CharAction::Continue:
             char_positions.emplace_back(char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY());
@@ -241,10 +240,9 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
 
     if (fixup_whitespace && m_last_whitespace_index >= m_text.length())
     {
-        const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(),
-            [](char32_t char_code) { return char_code <= 255 && std::isspace(static_cast<int>(char_code)); }
-        );
-        if (whitespace_it != m_text.rend())
+        if (const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(),
+                                                    [](char32_t char_code) { return char_code <= 255 && std::isspace(static_cast<int>(char_code)); });
+            whitespace_it != m_text.rend())
         {
             m_last_whitespace_index = std::distance(m_text.begin(), whitespace_it.base()) - 1;
             META_CHECK_ARG(m_last_whitespace_index, m_char_positions[m_last_whitespace_index].is_whitespace_or_linebreak);
@@ -257,10 +255,9 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
 
     if (m_last_line_start_index >= m_text.length())
     {
-        const auto line_start_it = std::find_if(m_char_positions.rbegin(), m_char_positions.rend(),
-            [](const CharPosition& char_pos) { return char_pos.is_line_start; }
-        );
-        if (line_start_it != m_char_positions.rend())
+        if (const auto line_start_it = std::find_if(m_char_positions.rbegin(), m_char_positions.rend(),
+                                                    [](const CharPosition& char_pos) { return char_pos.is_line_start; });
+            line_start_it != m_char_positions.rend())
         {
             m_last_line_start_index = std::distance(m_char_positions.begin(), line_start_it.base()) - 1;
             META_CHECK_ARG(m_last_line_start_index, m_char_positions[m_last_line_start_index].is_line_start);

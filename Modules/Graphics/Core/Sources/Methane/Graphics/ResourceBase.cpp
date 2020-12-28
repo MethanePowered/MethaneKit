@@ -424,8 +424,8 @@ void ResourceBase::InitializeDefaultDescriptors()
         if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
             continue;
 
-        auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-        if (descriptor_by_usage_it == m_descriptor_by_usage.end())
+        if (const auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
+            descriptor_by_usage_it == m_descriptor_by_usage.end())
         {
             // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);

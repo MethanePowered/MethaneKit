@@ -164,8 +164,8 @@ void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State
 
     if (depth_state)
     {
-        TextureBase* p_depth_texture = GetDepthAttachmentTexture();
-        if (p_depth_texture)
+        if (TextureBase* p_depth_texture = GetDepthAttachmentTexture();
+            p_depth_texture)
         {
             attachment_states_changed |= p_depth_texture->SetState(*depth_state, transition_barriers_ptr);
         }

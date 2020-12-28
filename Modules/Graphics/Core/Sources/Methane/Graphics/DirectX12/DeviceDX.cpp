@@ -101,8 +101,8 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
         m_cp_device->SetName(nowide::widen(GetName()).c_str());
     }
 
-    D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5{};
-    if (m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
+    if (D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5{};
+        m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
     {
         m_feature_options_5 = feature_options_5;
     }

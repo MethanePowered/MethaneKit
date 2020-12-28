@@ -247,8 +247,8 @@ bool AppBase::SetHelpText(std::string_view help_str)
     // Split help text into two columns
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
-    const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
-    if (single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
+    if (const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
+        single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
         single_column_size.width < m_frame_size.width / 2)
     {
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);

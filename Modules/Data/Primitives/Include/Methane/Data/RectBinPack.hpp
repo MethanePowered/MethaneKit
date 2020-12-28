@@ -84,8 +84,8 @@ private:
 
                 // Split node rectangle either vertically or horizontally,
                 // by creating small rectangle and one big rectangle representing free area not taken by glyph
-                const TSize delta = m_rect.size - rect.size;
-                if (delta.width < delta.height)
+                if (const TSize delta = m_rect.size - rect.size;
+                    delta.width < delta.height)
                 {
                     // Small top rectangle, to the right of character glyph
                     m_small_bin_ptr = std::make_unique<Bin>(TRect{

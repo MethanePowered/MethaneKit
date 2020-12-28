@@ -173,18 +173,17 @@ ProgramBindingsBase::~ProgramBindingsBase()
     META_FUNCTION_TASK();
 
     // Release mutable descriptor ranges in heaps (constant ranges are released by the program)
-    for (auto& descriptor_type_and_heap_reservation : m_descriptor_heap_reservations_by_type)
+    for (auto& heap_reservation_opt : m_descriptor_heap_reservations_by_type)
     {
-        if (!descriptor_type_and_heap_reservation)
+        if (!heap_reservation_opt)
             continue;
 
-        const DescriptorHeap::Reservation& heap_reservation = *descriptor_type_and_heap_reservation;
-        if (!heap_reservation.mutable_range.IsEmpty())
+        if (!heap_reservation_opt->mutable_range.IsEmpty())
         {
-            heap_reservation.heap.get().ReleaseRange(heap_reservation.mutable_range);
+            heap_reservation_opt->heap.get().ReleaseRange(heap_reservation_opt->mutable_range);
         }
 
-        descriptor_type_and_heap_reservation.reset();
+        heap_reservation_opt.reset();
     }
 }
 
@@ -225,8 +224,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         const auto& binding_settings = argument_binding.GetSettings();
         m_arguments.insert(program_argument);
 
-        auto binding_by_argument_it = m_binding_by_argument.find(program_argument);
-        if (binding_by_argument_it == m_binding_by_argument.end())
+        if (!m_binding_by_argument.count(program_argument))
         {
             m_binding_by_argument.try_emplace(
                 program_argument,
@@ -332,8 +330,8 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
 #ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
-    Program::Arguments unbound_arguments = GetUnboundArguments();
-    if (!unbound_arguments.empty())
+    if (Program::Arguments unbound_arguments = GetUnboundArguments();
+        !unbound_arguments.empty())
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
