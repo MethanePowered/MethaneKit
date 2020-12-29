@@ -23,14 +23,14 @@ Abstract logger interface.
 
 #pragma once
 
-#include <string>
+#include <string_view>
 
 namespace Methane
 {
 
 struct ILogger
 {
-    virtual void Log(const std::string& message) = 0;
+    virtual void Log(std::string_view message) = 0;
 
     virtual ~ILogger() = default;
 };

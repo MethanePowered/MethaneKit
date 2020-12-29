@@ -69,8 +69,7 @@ public:
         return static_cast<pointer>(_aligned_malloc(allocate_size, N));
 #else
         void* p_memory = nullptr;
-        const int error = posix_memalign(&p_memory, N, allocate_size);
-        if (error)
+        if (posix_memalign(&p_memory, N, allocate_size))
             throw std::bad_alloc();
         return static_cast<pointer>(p_memory);
 #endif

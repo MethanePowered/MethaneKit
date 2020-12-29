@@ -29,15 +29,16 @@ Windows platform utility functions.
 #include <shellapi.h>
 
 #include <nowide/convert.hpp>
+#include <string_view>
 
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(const std::string& msg)
+void PrintToDebugOutput(std::string_view msg)
 {
     META_FUNCTION_TASK();
     OutputDebugStringA(fmt::format("{}\n", msg).c_str());
-    TracyMessage(msg.c_str(), msg.size());
+    TracyMessage(msg.data(), msg.size());
 }
 
 inline std::wstring GetExecutableFilePath()

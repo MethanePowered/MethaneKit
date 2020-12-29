@@ -277,7 +277,8 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     if (m_state == state)
         return;
 
-    META_LOG("{} Command list '{}' change state from {} to {}", magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state), GetStateName(state));
+    META_LOG("{} Command list '{}' change state from {} to {}",
+             magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     m_state = state;
     m_state_change_condition_var.notify_one();

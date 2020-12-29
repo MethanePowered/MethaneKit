@@ -154,7 +154,7 @@ private:
             All      = ~0U
         };
 
-        FrameResources(const gfx::RenderState& state, gfx::RenderContext& render_context,
+        FrameResources(gfx::RenderContext& render_context, const gfx::RenderState& render_state,
                        const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                        const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
 

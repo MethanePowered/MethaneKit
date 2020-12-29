@@ -112,12 +112,10 @@ public:
     Keyboard::State GetKeyboardStateByAction(ActionEnum action) const noexcept
     {
         META_FUNCTION_TASK();
-        const State& key_state = GetKeyboardStateByAction(m_action_by_keyboard_state, action);
-        if (key_state)
+        if (const State& key_state = GetKeyboardStateByAction(m_action_by_keyboard_state, action); key_state)
             return key_state;
 
-        const Key key = GetKeyboardKeyByAction(m_action_by_keyboard_key, action);
-        if (key != Key::Unknown)
+        if (const Key key = GetKeyboardKeyByAction(m_action_by_keyboard_key, action); key != Key::Unknown)
             return Keyboard::State({ key });
 
         return Keyboard::State();

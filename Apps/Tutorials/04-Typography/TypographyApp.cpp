@@ -252,7 +252,7 @@ void TypographyApp::UpdateFontAtlasBadges()
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
         META_CHECK_ARG_NOT_NULL(*badge_it);
-        if (gui::Badge& badge = **badge_it;
+        if (const gui::Badge& badge = **badge_it;
             std::any_of(font_refs.begin(), font_refs.end(),
                 [&badge, &context](const Ref<gui::Font>& font_ref)
                 { return std::addressof(badge.GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get(); }))

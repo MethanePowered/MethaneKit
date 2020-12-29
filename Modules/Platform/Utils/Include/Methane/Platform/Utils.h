@@ -38,12 +38,13 @@ Methane platform utility functions
 #endif
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(const std::string& msg);
+void PrintToDebugOutput(std::string_view msg);
 std::string GetExecutableDir();
 std::string GetExecutableFileName();
 std::string GetResourceDir();

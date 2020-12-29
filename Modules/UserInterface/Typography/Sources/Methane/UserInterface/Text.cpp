@@ -381,7 +381,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(const gfx::RenderState& state, gfx::RenderContext& render_context,
+Text::FrameResources::FrameResources(gfx::RenderContext& render_context, const gfx::RenderState& render_state,
                                      const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                                      const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
      : m_atlas_texture_ptr(atlas_texture_ptr)
@@ -389,7 +389,7 @@ Text::FrameResources::FrameResources(const gfx::RenderState& state, gfx::RenderC
     META_FUNCTION_TASK();
     UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
     UpdateUniformsBuffer(render_context, text_mesh, text_name);
-    InitializeProgramBindings(state, const_buffer_ptr, atlas_sampler_ptr);
+    InitializeProgramBindings(render_state, const_buffer_ptr, atlas_sampler_ptr);
 }
 
 void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
@@ -563,7 +563,8 @@ void Text::InitializeFrameResources()
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
-            *m_render_state_ptr, render_context, m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
+            render_context, *m_render_state_ptr,
+            m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
             *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
         );
     }

@@ -544,7 +544,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), GetStateName(m_state), GetStateName(state));
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {
