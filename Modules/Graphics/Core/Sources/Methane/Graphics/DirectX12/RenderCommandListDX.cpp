@@ -78,7 +78,7 @@ RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
+void RenderCommandListDX::ResetNative(const Ptr<RenderStateDX>& render_state_ptr)
 {
     META_FUNCTION_TASK();
     if (!IsNativeCommitted())
@@ -87,7 +87,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
     SetNativeCommitted(false);
     SetCommandListState(CommandList::State::Encoding);
 
-    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? static_cast<RenderStateDX&>(*render_state_ptr).GetNativePipelineState().Get() : nullptr;
+    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
     ID3D12Device* p_native_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get();
     ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
@@ -102,21 +102,17 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderState>& render_state_ptr)
 
     using namespace magic_enum::bitwise_operators;
     DrawingState& drawing_state = GetDrawingState();
-    drawing_state.render_state_ptr    = std::static_pointer_cast<RenderStateBase>(render_state_ptr);
+    drawing_state.render_state_ptr    = render_state_ptr;
     drawing_state.render_state_groups = RenderState::Groups::Program
                                       | RenderState::Groups::Rasterizer
                                       | RenderState::Groups::DepthStencil;
 }
 
-void RenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListDX::ResetRenderPass()
 {
     META_FUNCTION_TASK();
-
-    ResetNative(render_state_ptr);
-
-    RenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
-
     RenderPassDX& pass_dx = GetPassDX();
+
     if (IsParallel())
     {
         pass_dx.SetNativeDescriptorHeaps(*this);
@@ -126,6 +122,22 @@ void RenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_pt
     {
         pass_dx.Begin(*this);
     }
+}
+
+void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    ResetNative();
+    RenderCommandListBase::Reset(p_debug_group);
+    ResetRenderPass();
+}
+
+void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    ResetNative(std::static_pointer_cast<RenderStateDX>(static_cast<RenderStateBase&>(render_state).GetBasePtr()));
+    RenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    ResetRenderPass();
 }
 
 void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)

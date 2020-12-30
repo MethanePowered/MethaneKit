@@ -140,7 +140,7 @@ public:
 
     // CommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) final
+    void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         if (!m_is_native_committed)

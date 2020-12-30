@@ -73,8 +73,9 @@ public:
     bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override          { m_is_validation_enabled = is_validation_enabled; }
     RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
-    void ResetOnceWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) final;
+    void Reset(DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void ResetOnceWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
     void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) override;
     void SetViewState(ViewState& view_state) override;
     void SetVertexBuffers(BufferSet& vertex_buffers) override;

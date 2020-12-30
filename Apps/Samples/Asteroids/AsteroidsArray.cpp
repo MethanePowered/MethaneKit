@@ -372,7 +372,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
-    cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
+    cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
@@ -390,7 +390,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
-    parallel_cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
+    parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);

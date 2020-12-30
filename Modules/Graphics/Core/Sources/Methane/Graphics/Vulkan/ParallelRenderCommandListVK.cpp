@@ -47,15 +47,19 @@ ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& comma
 void ParallelRenderCommandListVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     ParallelRenderCommandListBase::SetName(name);
 }
 
-void ParallelRenderCommandListVK::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+    ParallelRenderCommandListBase::Reset(p_debug_group);
+}
 
-    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
+void ParallelRenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
 void ParallelRenderCommandListVK::Commit()

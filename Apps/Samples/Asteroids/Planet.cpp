@@ -139,7 +139,7 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buf
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
-    cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
+    cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
     
     META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);

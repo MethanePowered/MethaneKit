@@ -66,14 +66,14 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_b
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
     // Render pass is begun in "beginning" command list only,
     // but it will be ended in the "ending" command list on commit of the parallel CL
-    m_beginning_command_list.ResetWithState(Ptr<RenderState>(), p_debug_group); // begins render pass
-    m_ending_command_list.ResetNative();                               // only reset native command list
+    m_beginning_command_list.Reset(p_debug_group); // begins render pass
+    m_ending_command_list.ResetNative();           // only reset native command list
 
     // Instead of closing debug group (from Reset call) on beginning CL commit, we force to close it in ending CL
     if (p_debug_group)
@@ -82,15 +82,12 @@ void ParallelRenderCommandListDX::ResetWithState(const Ptr<RenderState>& render_
         m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
     }
 
-    if (render_state_ptr)
-    {
-        // Initialize native pipeline state before resetting per-thread command lists
-        // to allow parallel reset of all CLs at once with using native pipeline state for each reset
-        auto& dx_render_state = static_cast<RenderStateDX&>(*render_state_ptr);
-        dx_render_state.InitializeNativePipelineState();
-    }
+    // Initialize native pipeline state before resetting per-thread command lists
+    // to allow parallel reset of all CLs at once with using native pipeline state for each reset
+    auto& dx_render_state = static_cast<RenderStateDX&>(render_state);
+    dx_render_state.InitializeNativePipelineState();
 
-    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
+    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
 void ParallelRenderCommandListDX::SetName(const std::string& name)
