@@ -75,7 +75,7 @@ public:
     RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void ResetOnceWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
+    void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
     void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) override;
     void SetViewState(ViewState& view_state) override;
     void SetVertexBuffers(BufferSet& vertex_buffers) override;

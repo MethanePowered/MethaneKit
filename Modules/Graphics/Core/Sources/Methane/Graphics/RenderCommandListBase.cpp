@@ -67,7 +67,7 @@ void RenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup
     SetRenderState(render_state);
 }
 
-void RenderCommandListBase::ResetOnceWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))
