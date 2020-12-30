@@ -76,7 +76,7 @@ public:
         if (library_by_name_it != m_library_by_name.end())
             return library_by_name_it->second;
 
-        return m_library_by_name.emplace(library_name, std::make_shared<ProgramLibraryMT>(GetDeviceMT(), library_name)).first->second;
+        return m_library_by_name.try_emplace(library_name, std::make_shared<ProgramLibraryMT>(GetDeviceMT(), library_name)).first->second;
     }
 
     // Object overrides

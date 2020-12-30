@@ -57,7 +57,7 @@ public:
             uint32_t     count    = 0U;
         };
 
-        static Aggregator& Get();
+        [[nodiscard]] static Aggregator& Get();
 
         Aggregator(const Aggregator&) = delete;
         Aggregator(Aggregator&&) = delete;
@@ -66,8 +66,8 @@ public:
         Aggregator& operator=(const Aggregator&) = delete;
         Aggregator& operator=(Aggregator&&) = delete;
 
-        void SetLogger(Ptr<ILogger> logger_ptr)   { m_logger_ptr = std::move(logger_ptr); }
-        const Ptr<ILogger>& GetLogger() const    { return m_logger_ptr; }
+        void SetLogger(Ptr<ILogger> logger_ptr)             { m_logger_ptr = std::move(logger_ptr); }
+        [[nodiscard]] const Ptr<ILogger>& GetLogger() const { return m_logger_ptr; }
 
         void LogTimings(ILogger& logger);
         void Flush();
@@ -104,9 +104,9 @@ public:
     ScopeTimer& operator=(const ScopeTimer&) = delete;
     ScopeTimer& operator=(ScopeTimer&&) = delete;
 
-    const Registration& GetRegistration() const { return m_registration; }
-    const char*         GetScopeName() const    { return m_registration.name; }
-    ScopeId             GetScopeId() const      { return m_registration.id; }
+    [[nodiscard]] const Registration& GetRegistration() const { return m_registration; }
+    [[nodiscard]] const char*         GetScopeName() const    { return m_registration.name; }
+    [[nodiscard]] ScopeId             GetScopeId() const      { return m_registration.id; }
 
 private:
     using Timer::Reset;

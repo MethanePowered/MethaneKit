@@ -54,7 +54,7 @@ public:
                 META_LOG("Metal Drawable ({}) was presented at {} sec.", mtl_drawable.drawableID, mtl_drawable.presentedTime);
                 const Methane::Data::Timestamp presented_timestamp = Methane::Data::ConvertTimeSecondsToNanoseconds(mtl_drawable.presentedTime);
                 TRACY_GPU_SCOPE_COMPLETE(m_present_scope, Methane::Data::TimeRange(presented_timestamp, presented_timestamp));
-                std::lock_guard<std::mutex> lock(scope_set_mutex);
+                std::scoped_lock<std::mutex> lock(scope_set_mutex);
                 scope_set.erase(*this);
             }];
         }
@@ -291,8 +291,8 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     TRACY_GPU_SCOPE_BEGIN(gpu_scope, "Request/Present Metal Drawable");
     m_current_drawable = [self.metalLayer nextDrawable];
     TRACY_GPU_SCOPE_END(gpu_scope);
-    std::lock_guard<std::mutex> lock(m_present_scopes_mutex);
-    m_present_scopes.emplace(m_current_drawable, std::move(gpu_scope), m_present_scopes, m_present_scopes_mutex);
+    std::scoped_lock<std::mutex> lock(m_present_scopes_mutex);
+    m_present_scopes.try_emplace(m_current_drawable, std::move(gpu_scope), m_present_scopes, m_present_scopes_mutex);
 #else
     m_current_drawable = [self.metalLayer nextDrawable];
 #endif

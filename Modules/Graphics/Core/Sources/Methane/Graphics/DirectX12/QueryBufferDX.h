@@ -52,7 +52,7 @@ public:
         Resource::SubResource GetData() override;
 
     protected:
-        QueryBufferDX& GetQueryBufferDX() noexcept  { return static_cast<QueryBufferDX&>(GetQueryBuffer()); }
+        [[nodiscard]] QueryBufferDX& GetQueryBufferDX() noexcept  { return static_cast<QueryBufferDX&>(GetQueryBuffer()); }
 
     private:
         ID3D12GraphicsCommandList&  m_native_command_list;
@@ -100,7 +100,7 @@ public:
         Timestamp GetCpuNanoseconds() override;
 
     private:
-        TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept { return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer()); }
+        [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept { return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer()); }
     };
 
     TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);

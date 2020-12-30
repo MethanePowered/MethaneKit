@@ -27,14 +27,16 @@ MacOS platform utility functions.
 
 #import <AppKit/AppKit.h>
 
+#include <string_view>
+
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(const std::string& msg)
+void PrintToDebugOutput(std::string_view msg)
 {
     META_FUNCTION_TASK();
-    NSLog(@"%s", msg.c_str());
-    TracyMessage(msg.c_str(), msg.size());
+    NSLog(@"%s", msg.data());
+    TracyMessage(msg.data(), msg.size());
 }
 
 std::string GetExecutableDir()

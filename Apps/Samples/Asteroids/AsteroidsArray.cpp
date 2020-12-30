@@ -71,9 +71,9 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
             [this, &rng, &data_mutex, &base_mesh](const int)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
-                asteroid_mesh.Randomize(rng());
+                asteroid_mesh.Randomize(rng()); // NOSONAR
 
-                std::lock_guard<LockableBase(std::mutex)> lock_guard(data_mutex);
+                std::scoped_lock<LockableBase(std::mutex)> lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
@@ -372,7 +372,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
-    cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
+    cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
@@ -390,7 +390,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
     buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
 
-    parallel_cmd_list.ResetWithState(m_render_state_ptr, s_debug_group.get());
+    parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);

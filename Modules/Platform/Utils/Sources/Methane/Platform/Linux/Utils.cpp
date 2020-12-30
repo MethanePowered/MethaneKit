@@ -26,14 +26,15 @@ MacOS platform utility functions.
 #include <Methane/Checks.hpp>
 
 #include <stdexcept>
+#include <string_view>
 
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(__attribute__((unused)) const std::string& msg)
+void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 {
     META_FUNCTION_TASK();
-    TracyMessage(msg.c_str(), msg.size());
+    TracyMessage(msg.data(), msg.size());
 }
 
 std::string GetExecutableDir()

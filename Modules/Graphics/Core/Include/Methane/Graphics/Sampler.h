@@ -115,10 +115,10 @@ struct Sampler : virtual Resource
     };
 
     // Create Sampler instance
-    static Ptr<Sampler> Create(Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Sampler> Create(Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Sampler interface
-    virtual const Settings& GetSettings() const = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
 };
 
 } // namespace Methane::Graphics

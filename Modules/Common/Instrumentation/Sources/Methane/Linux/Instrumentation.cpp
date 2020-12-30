@@ -24,23 +24,24 @@ Linux implementation of the platform specific instrumentation functions.
 #include <pthread.h>
 
 #include <cstring>
+#include <string_view>
+#include <array>
 
 namespace Methane
 {
 
-void SetThreadName(const char* name)
+void SetThreadName(std::string_view name)
 {
-    const std::size_t name_length = strlen(name);
-    if(name_length < 16)
+    if(name.length() < 16)
     {
-        pthread_setname_np(pthread_self(), name );
+        pthread_setname_np(pthread_self(), name.data());
         return;
     }
 
-    char buf[16];
-    memcpy(buf, name, 15);
+    std::array<char, 16> buf;
+    memcpy(buf.data(), name.data(), 15);
     buf[15] = '\0';
-    pthread_setname_np(pthread_self(), buf);
+    pthread_setname_np(pthread_self(), buf.data());
 }
 
 } // namespace Methane

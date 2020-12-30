@@ -142,12 +142,12 @@ Ptr<ResourceBase::Barriers> ResourceBase::Barriers::CreateTransition(const Refs<
     std::set<Barrier> resource_barriers;
     for (const Ref<const Resource>& resource_ref : resources)
     {
-        resource_barriers.emplace(Barrier{
+        resource_barriers.emplace(
             ResourceBase::Barrier::Type::Transition,
             resource_ref.get(),
             state_before,
             state_after
-        });
+        );
     }
     return Barriers::Create(resource_barriers);
 }
@@ -207,13 +207,13 @@ bool ResourceBase::Barriers::AddTransition(const Resource& resource, State befor
 bool ResourceBase::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    const auto emplace_result = m_barriers_map.emplace(id, state_change);
-    if (emplace_result.second)
+    const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(id, state_change);
+    if (barrier_added)
         return true;
-    else if (emplace_result.first->second == state_change)
+    else if (barrier_id_and_state_change_it->second == state_change)
         return false;
 
-    emplace_result.first->second = state_change;
+    barrier_id_and_state_change_it->second = state_change;
     return true;
 }
 
@@ -399,9 +399,9 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, ContextBase& context, co
 {
     META_FUNCTION_TASK();
 
-    for (auto& usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        usage_and_descriptor.second.heap.ReplaceResource(*this, usage_and_descriptor.second.index);
+        descriptor.heap.ReplaceResource(*this, descriptor.index);
     }
 }
 
@@ -409,9 +409,9 @@ ResourceBase::~ResourceBase()
 {
     META_FUNCTION_TASK();
 
-    for (const auto& usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        usage_and_descriptor.second.heap.RemoveResource(usage_and_descriptor.second.index);
+        descriptor.heap.RemoveResource(descriptor.index);
     }
 }
 
@@ -424,13 +424,13 @@ void ResourceBase::InitializeDefaultDescriptors()
         if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
             continue;
 
-        auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-        if (descriptor_by_usage_it == m_descriptor_by_usage.end())
+        if (const auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
+            descriptor_by_usage_it == m_descriptor_by_usage.end())
         {
             // Create default resource descriptor by usage
             const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
             DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
-            m_descriptor_by_usage.emplace(usage, Descriptor(heap, heap.AddResource(*this)));
+            m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
         }
     }
 }
@@ -531,9 +531,9 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 {
     META_FUNCTION_TASK();
     DescriptorHeap::Types heap_types;
-    for (auto usage_and_descriptor : m_descriptor_by_usage)
+    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
-        heap_types.insert(usage_and_descriptor.second.heap.GetSettings().type);
+        heap_types.insert(descriptor.heap.GetSettings().type);
     }
     return heap_types;
 }
@@ -544,7 +544,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), GetStateName(m_state), GetStateName(state));
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {

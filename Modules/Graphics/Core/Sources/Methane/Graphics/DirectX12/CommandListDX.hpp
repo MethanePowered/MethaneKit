@@ -68,8 +68,9 @@ public:
         ThrowIfFailed(cp_device->CreateCommandList(0, command_list_type, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)), cp_device.Get());
         m_cp_command_list.As(&m_cp_command_list_4);
 
-        TimestampQueryBuffer* p_query_buffer = GetCommandQueueDX().GetTimestampQueryBuffer();
-        if (p_query_buffer)
+
+        if (TimestampQueryBuffer* p_query_buffer = GetCommandQueueDX().GetTimestampQueryBuffer();
+            p_query_buffer)
         {
             m_begin_timestamp_query_ptr = p_query_buffer->CreateTimestampQuery(*this);
             m_end_timestamp_query_ptr   = p_query_buffer->CreateTimestampQuery(*this);
@@ -139,7 +140,7 @@ public:
 
     // CommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) final
+    void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         if (!m_is_native_committed)
@@ -228,8 +229,19 @@ protected:
         return *m_cp_command_list.Get();
     }
 
-    TimestampQueryBuffer::TimestampQuery* GetBeginTimestampQuery() noexcept { return m_begin_timestamp_query_ptr.get(); }
-    TimestampQueryBuffer::TimestampQuery* GetEndTimestampQuery() noexcept   { return m_end_timestamp_query_ptr.get(); }
+    bool                                  HasBeginTimestampQuery() const noexcept { return !!m_begin_timestamp_query_ptr; }
+    TimestampQueryBuffer::TimestampQuery& GetBeginTimestampQuery() const
+    {
+        META_CHECK_ARG_NOT_NULL(m_begin_timestamp_query_ptr);
+        return *m_begin_timestamp_query_ptr;
+    }
+
+    bool                                  HasEndTimestampQuery() const noexcept   { return !!m_end_timestamp_query_ptr; }
+    TimestampQueryBuffer::TimestampQuery& GetEndTimestampQuery() const
+    {
+        META_CHECK_ARG_NOT_NULL(m_end_timestamp_query_ptr);
+        return m_end_timestamp_query_ptr.get();
+    }
 
 private:
     Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;

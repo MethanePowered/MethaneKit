@@ -31,10 +31,12 @@ Base implementation of the Methane user interface application.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
+#include <string_view>
+
 namespace Methane::UserInterface
 {
 
-static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
+static std::vector<size_t> GetLineBreakPositions(std::string_view text_str)
 {
     std::vector<size_t> line_break_positions;
     for (size_t line_break_pos = text_str.find('\n', 0);
@@ -46,18 +48,18 @@ static std::vector<size_t> GetLineBreakPositions(const std::string& text_str)
     return line_break_positions;
 }
 
-static void SplitTextToColumns(const std::string& text_str, std::string& left_column_str, std::string& right_column_str)
+static void SplitTextToColumns(std::string_view text_str, std::string& left_column_str, std::string& right_column_str)
 {
     const std::vector<size_t> line_break_positions = GetLineBreakPositions(text_str);
     if (line_break_positions.empty())
     {
-        left_column_str = text_str;
-        right_column_str.clear();
+        left_column_str  = text_str;
+        right_column_str = std::string();
         return;
     }
 
     const size_t middle_line_break_position = line_break_positions[line_break_positions.size() / 2];
-    left_column_str = text_str.substr(0, middle_line_break_position);
+    left_column_str  = text_str.substr(0, middle_line_break_position);
     right_column_str = text_str.substr(middle_line_break_position + 1);
 };
 
@@ -227,7 +229,7 @@ bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_
     return true;
 }
 
-bool AppBase::SetHelpText(const std::string& help_str)
+bool AppBase::SetHelpText(std::string_view help_str)
 {
     META_FUNCTION_TASK();
     if (m_help_text_str == help_str)
@@ -245,8 +247,8 @@ bool AppBase::SetHelpText(const std::string& help_str)
     // Split help text into two columns
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
-    const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
-    if (single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
+    if (const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
+        single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
         single_column_size.width < m_frame_size.width / 2)
     {
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
@@ -266,7 +268,7 @@ bool AppBase::SetHelpText(const std::string& help_str)
     return true;
 }
 
-bool AppBase::SetParametersText(const std::string& parameters_str)
+bool AppBase::SetParametersText(std::string_view parameters_str)
 {
     META_FUNCTION_TASK();
     if (m_parameters.text_str == parameters_str)

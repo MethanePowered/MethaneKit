@@ -29,15 +29,16 @@ Windows platform utility functions.
 #include <shellapi.h>
 
 #include <nowide/convert.hpp>
+#include <string_view>
 
 namespace Methane::Platform
 {
 
-void PrintToDebugOutput(const std::string& msg)
+void PrintToDebugOutput(std::string_view msg)
 {
     META_FUNCTION_TASK();
     OutputDebugStringA(fmt::format("{}\n", msg).c_str());
-    TracyMessage(msg.c_str(), msg.size());
+    TracyMessage(msg.data(), msg.size());
 }
 
 inline std::wstring GetExecutableFilePath()
@@ -100,7 +101,7 @@ bool IsDeveloperModeEnabled() noexcept
 
     DWORD value{};
     DWORD dword_size = sizeof(DWORD);
-    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &dword_size);
+    err = RegQueryValueExW(h_key, L"AllowDevelopmentWithoutDevLicense", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &dword_size); // NOSONAR
     RegCloseKey(h_key);
     if (err != ERROR_SUCCESS)
         return false;

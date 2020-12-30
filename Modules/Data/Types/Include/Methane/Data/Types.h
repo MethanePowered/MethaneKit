@@ -27,6 +27,7 @@ u
 #include "Rect.hpp"
 
 #include <cstdint>
+#include <cstddef>
 #include <vector>
 
 namespace Methane::Data
@@ -41,10 +42,11 @@ enum class MemoryState : uint32_t
 using Timestamp = uint64_t;
 using TimeDelta = int64_t;
 using Frequency = Timestamp;
-using Bytes = std::vector<uint8_t>;
+using Byte = std::byte;
+using Bytes = std::vector<std::byte>;
 using Size = uint32_t;
 using Index = Size;
-using RawPtr = uint8_t*;
-using ConstRawPtr = const uint8_t*;
+using RawPtr = Byte*;
+using ConstRawPtr = const Byte*;
 
 } // namespace Methane::Data

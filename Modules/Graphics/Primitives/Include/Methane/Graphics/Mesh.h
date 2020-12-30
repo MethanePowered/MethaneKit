@@ -92,7 +92,7 @@ public:
         public:
             explicit IncompatibleException(VertexField missing_field);
 
-            VertexField GetMissingField() const noexcept { return m_missing_field; }
+            [[nodiscard]] VertexField GetMissingField() const noexcept { return m_missing_field; }
 
         private:
             const VertexField m_missing_field;
@@ -100,20 +100,20 @@ public:
 
         using std::vector<VertexField>::vector;
 
-        std::vector<std::string> GetSemantics() const;
+        [[nodiscard]] std::vector<std::string> GetSemantics() const;
 
-        static std::string GetSemanticByVertexField(VertexField vertex_field);
+        [[nodiscard]] static std::string GetSemanticByVertexField(VertexField vertex_field);
     };
 
     Mesh(Type type, const VertexLayout& vertex_layout);
 
-    Type                GetType() const noexcept               { return m_type; }
-    const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
-    Data::Size          GetVertexSize() const noexcept         { return m_vertex_size; }
-    const Indices&      GetIndices() const noexcept            { return m_indices; }
-    Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
-    Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
-    Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+    [[nodiscard]] Type                GetType() const noexcept               { return m_type; }
+    [[nodiscard]] const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
+    [[nodiscard]] Data::Size          GetVertexSize() const noexcept         { return m_vertex_size; }
+    [[nodiscard]] const Indices&      GetIndices() const noexcept            { return m_indices; }
+    [[nodiscard]] Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
+    [[nodiscard]] Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
+    [[nodiscard]] Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
     struct Edge
@@ -122,15 +122,15 @@ protected:
         const Mesh::Index second_index;
         
         Edge(Mesh::Index v1_index, Mesh::Index v2_index);
-        
-        bool operator<(const Edge& other) const;
+
+        [[nodiscard]] bool operator<(const Edge& other) const;
     };
     
     using VertexFieldOffsets = std::array<int32_t, magic_enum::enum_count<VertexField>()>;
 
-    bool HasVertexField(VertexField field) const noexcept;
     void CheckLayoutHasVertexField(VertexField field) const;
-    int32_t GetVertexFieldOffset(VertexField field) const { return m_vertex_field_offsets[static_cast<size_t>(field)]; }
+    [[nodiscard]] bool HasVertexField(VertexField field) const noexcept;
+    [[nodiscard]] int32_t GetVertexFieldOffset(VertexField field) const { return m_vertex_field_offsets[static_cast<size_t>(field)]; }
 
     void ResizeIndices(size_t indices_count)         { m_indices.resize(indices_count, 0); }
     void SetIndex(size_t index, Index vertex_index)  { m_indices[index] = vertex_index; }
@@ -139,24 +139,24 @@ protected:
     void AppendIndices(const Mesh::Indices& indices) { m_indices.insert(m_indices.end(), indices.begin(), indices.end()); }
     auto GetIndicesBackInserter()                    { return std::back_inserter(m_indices); }
 
-    static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
-    static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;
-    static Data::Size         GetVertexFieldSize(VertexField vertex_field)   { return GetVertexFieldSize(static_cast<size_t>(vertex_field)); }
-    static Data::Size         GetVertexFieldSize(size_t vertex_field_index);
-    static const Position2D&  GetFacePosition2D(size_t index);
-    static Data::Size         GetFacePositionCount() noexcept;
-    static const TexCoord&    GetFaceTexCoord(size_t index);
-    static Mesh::Index        GetFaceIndex(size_t index);
-    static Data::Size         GetFaceIndicesCount() noexcept;
-    static const Color&       GetColor(size_t index);
-    static Data::Size         GetColorsCount() noexcept;
+    [[nodiscard]] static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
+    [[nodiscard]] static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;
+    [[nodiscard]] static Data::Size         GetVertexFieldSize(VertexField vertex_field)   { return GetVertexFieldSize(static_cast<size_t>(vertex_field)); }
+    [[nodiscard]] static Data::Size         GetVertexFieldSize(size_t vertex_field_index);
+    [[nodiscard]] static const Position2D&  GetFacePosition2D(size_t index);
+    [[nodiscard]] static Data::Size         GetFacePositionCount() noexcept;
+    [[nodiscard]] static const TexCoord&    GetFaceTexCoord(size_t index);
+    [[nodiscard]] static Mesh::Index        GetFaceIndex(size_t index);
+    [[nodiscard]] static Data::Size         GetFaceIndicesCount() noexcept;
+    [[nodiscard]] static const Color&       GetColor(size_t index);
+    [[nodiscard]] static Data::Size         GetColorsCount() noexcept;
 
 private:
-    const Type                  m_type;
-    const VertexLayout          m_vertex_layout;
-    const VertexFieldOffsets    m_vertex_field_offsets;
-    const Data::Size            m_vertex_size;
-    Indices                     m_indices;
+    const Type               m_type;
+    const VertexLayout       m_vertex_layout;
+    const VertexFieldOffsets m_vertex_field_offsets;
+    const Data::Size         m_vertex_size;
+    Indices                  m_indices;
 };
 
 } // namespace Methane::Graphics

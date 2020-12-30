@@ -54,8 +54,8 @@ public:
         , m_argument_name(argument_name)
     { }
 
-    const std::string& GetFunctionName() const noexcept { return m_function_name; }
-    const std::string& GetArgumentName() const noexcept { return m_argument_name; }
+    [[nodiscard]] const std::string& GetFunctionName() const noexcept { return m_function_name; }
+    [[nodiscard]] const std::string& GetArgumentName() const noexcept { return m_argument_name; }
 
 private:
     const std::string m_function_name;
@@ -91,14 +91,14 @@ public:
         , m_value(std::move(value))
     { }
 
-    const DecayType& GetValue() const noexcept { return m_value; }
+    [[nodiscard]] const DecayType& GetValue() const noexcept { return m_value; }
 
 private:
     template<typename V = DecayType, typename = V>
-    static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), value); }
+    [[nodiscard]] static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), value); }
 
     template<typename V = DecayType, std::enable_if_t<IsStaticCastable<V, std::string>::value, void>>
-    static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), static_cast<std::string>(value)); }
+    [[nodiscard]] static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), static_cast<std::string>(value)); }
 
     const DecayType m_value{ };
 };
@@ -115,8 +115,8 @@ public:
         , m_range(std::move(range))
     { }
 
-    const T& GetValue() const noexcept               { return m_value; }
-    const std::pair<T, T>& GetRange() const noexcept { return m_range; }
+    [[nodiscard]] const T& GetValue() const noexcept               { return m_value; }
+    [[nodiscard]] const std::pair<T, T>& GetRange() const noexcept { return m_range; }
 
 private:
     const DecayType m_value;
@@ -159,7 +159,7 @@ public:
         , m_value(value)
     { }
 
-    T GetValue() const noexcept { m_value; }
+    [[nodiscard]] T GetValue() const noexcept { m_value; }
 
 private:
     const T m_value;
@@ -173,7 +173,7 @@ public:
         , m_function_name(function_name)
     { }
 
-    const std::string& GetFunctionName() const noexcept { return m_function_name; }
+    [[nodiscard]] const std::string& GetFunctionName() const noexcept { return m_function_name; }
 
 private:
     const std::string m_function_name;

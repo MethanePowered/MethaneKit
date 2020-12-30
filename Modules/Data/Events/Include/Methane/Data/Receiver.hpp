@@ -53,7 +53,7 @@ public:
         ConnectEmitters();
     }
 
-    ~Receiver() override
+    ~Receiver() override // NOSONAR
     {
         META_FUNCTION_TASK();
         DisconnectEmitters();
@@ -90,8 +90,7 @@ protected:
     void OnConnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
-        const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
-        if (connected_emitter_ref_it != m_connected_emitter_refs.end())
+        if (FindConnectedEmitter(emitter) != m_connected_emitter_refs.end())
             return;
 
         m_connected_emitter_refs.emplace_back(emitter);
@@ -107,9 +106,10 @@ protected:
         m_connected_emitter_refs.erase(connected_emitter_ref_it);
     }
 
-    size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
+    [[nodiscard]] size_t GetConnectedEmittersCount() const noexcept { return m_connected_emitter_refs.size(); }
 
 private:
+    [[nodiscard]]
     inline decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter) noexcept
     {
         return std::find_if(m_connected_emitter_refs.begin(), m_connected_emitter_refs.end(),

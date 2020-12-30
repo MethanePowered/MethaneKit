@@ -12,8 +12,12 @@ set(HEADERS
     ${INCLUDE_DIR}/TracyGpu.hpp
 )
 
-set(SOURCES
+set(PLATFORM_SOURCES
     ${SOURCES_PLATFORM_DIR}/Instrumentation.${CPP_EXT}
+)
+
+set(SOURCES
+    ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/Instrumentation.cpp
     ${SOURCES_DIR}/ScopeTimer.cpp
     $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:${SOURCES_DIR}/InstrumentMemoryAllocations.cpp>
@@ -80,6 +84,15 @@ target_compile_definitions(TracyClient
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
+
+if (APPLE)
+    # Disable precompiled headers on MacOS for Objective-C files:
+    set_source_files_properties(
+        ${PLATFORM_SOURCES}
+        PROPERTIES
+            SKIP_PRECOMPILE_HEADERS ON
+    )
+endif()
 
 set_target_properties(${TARGET}
     PROPERTIES

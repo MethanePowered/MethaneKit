@@ -82,14 +82,14 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
 
     auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
 
-    for(const auto& binding_by_argument : GetArgumentBindings())
+    for(const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        const auto& vulkan_argument_binding = static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*binding_by_argument.second);
         if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
              magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
              vulkan_command_list.GetProgramBindings() &&
-             vulkan_argument_binding.IsAlreadyApplied(GetProgram(), *vulkan_command_list.GetProgramBindings(),
-                                                      magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
+             static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr).IsAlreadyApplied(
+                 GetProgram(), *vulkan_command_list.GetProgramBindings(),
+                 magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
     }
 }

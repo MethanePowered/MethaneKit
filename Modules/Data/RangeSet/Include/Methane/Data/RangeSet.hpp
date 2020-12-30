@@ -46,8 +46,8 @@ public:
     RangeSet() = default;
     RangeSet(std::initializer_list<Range<ScalarT>> init) noexcept : m_container(init) { } //NOSONAR - initializer list constructor is not explicit intentionally
 
-    bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
-    bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
+    [[nodiscard]] bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
+    [[nodiscard]] bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
 
     RangeSet<ScalarT>& operator=(std::initializer_list<Range<ScalarT>> init) noexcept
     {
@@ -57,13 +57,19 @@ public:
         return *this;
     }
 
-    size_t Size() const noexcept              { return m_container.size();  }
-    bool   IsEmpty() const noexcept           { return m_container.empty(); }
-    void   Clear() noexcept                   { META_FUNCTION_TASK(); m_container.clear(); }
 
-    const BaseSet& GetRanges() const noexcept { return *this; }
-    ConstIterator begin() const noexcept      { return m_container.begin(); }
-    ConstIterator end() const noexcept        { return m_container.end(); }
+
+    [[nodiscard]] size_t Size() const noexcept              { return m_container.size();  }
+    [[nodiscard]] bool   IsEmpty() const noexcept           { return m_container.empty(); }
+    [[nodiscard]] const BaseSet& GetRanges() const noexcept { return *this; }
+    [[nodiscard]] ConstIterator begin() const noexcept      { return m_container.begin(); }
+    [[nodiscard]] ConstIterator end() const noexcept        { return m_container.end(); }
+
+    void Clear() noexcept
+    {
+        META_FUNCTION_TASK();
+        m_container.clear();
+    }
 
     void Add(const Range<ScalarT>& range)
     {
@@ -100,25 +106,22 @@ public:
             
             if (range_it->Contains(range))
             {
-                const Range<ScalarT> left_sub_range(range_it->GetStart(), range.GetStart());
-                if (!left_sub_range.IsEmpty())
+                if (const Range<ScalarT> left_sub_range(range_it->GetStart(), range.GetStart());
+                    !left_sub_range.IsEmpty())
                 {
                     add_ranges.emplace_back(left_sub_range);
                 }
 
-                const Range<ScalarT> right_sub_range(range.GetEnd(), range_it->GetEnd());
-                if (!right_sub_range.IsEmpty())
+                if (const Range<ScalarT> right_sub_range(range.GetEnd(), range_it->GetEnd());
+                    !right_sub_range.IsEmpty())
                 {
                     add_ranges.emplace_back(right_sub_range);
                 }
             }
-            else
+            else if (Range<ScalarT> trimmed_range = *range_it - range;
+                    !trimmed_range.IsEmpty())
             {
-                Range<ScalarT> trimmed_range = *range_it - range;
-                if (!trimmed_range.IsEmpty())
-                {
-                    add_ranges.emplace_back(trimmed_range);
-                }
+                add_ranges.emplace_back(trimmed_range);
             }
         }
 
@@ -128,6 +131,8 @@ public:
 
 private:
     using RangeOfRanges = std::pair<ConstIterator, ConstIterator>;
+
+    [[nodiscard]]
     RangeOfRanges GetMergeableRanges(const Range<ScalarT>& range)
     {
         META_FUNCTION_TASK();

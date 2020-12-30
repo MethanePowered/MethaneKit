@@ -166,7 +166,7 @@ public:
         META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
 
         stdext::checked_array_iterator<Data::RawPtr> source_data_it(p_sub_resource_data, data_end);
-        Data::Bytes sub_resource_data(data_length, 0);
+        Data::Bytes sub_resource_data(data_length, {});
         std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
 
         const CD3DX12_RANGE zero_write_range(0, 0);

@@ -59,7 +59,7 @@ DescriptorHeap::~DescriptorHeap()
 {
     META_FUNCTION_TASK();
 
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     // All descriptor ranges must be released when heap is destroyed
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
@@ -69,7 +69,7 @@ DescriptorHeap::~DescriptorHeap()
 Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     if (!m_settings.deferred_allocation)
     {
@@ -94,7 +94,7 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
 Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     META_CHECK_ARG_LESS(at_index, m_resources.size());
     m_resources[at_index] = &resource;
@@ -104,7 +104,7 @@ Data::Index DescriptorHeap::ReplaceResource(const ResourceBase& resource, Data::
 void DescriptorHeap::RemoveResource(Data::Index at_index)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
     META_CHECK_ARG_LESS(at_index, m_resources.size());
     m_resources[at_index] = nullptr;
@@ -122,10 +122,10 @@ DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
 
-    Range reserved_range = Data::ReserveRange(m_free_ranges, length);
-    if (reserved_range || !m_settings.deferred_allocation)
+    if (const Range reserved_range = Data::ReserveRange(m_free_ranges, length);
+        reserved_range || !m_settings.deferred_allocation)
         return reserved_range;
 
     Range deferred_range(m_deferred_size, m_deferred_size + length);
@@ -136,7 +136,7 @@ DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 void DescriptorHeap::ReleaseRange(const Range& range)
 {
     META_FUNCTION_TASK();
-    std::lock_guard<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
+    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_modification_mutex);
     m_free_ranges.Add(range);
 }
 

@@ -62,9 +62,9 @@ class Controller
 public:
     explicit Controller(const std::string& name) : m_name(name) { }
 
-    const std::string& GetControllerName() const { return m_name; }
-    bool IsEnabled() const { return m_is_enabled; }
-    void SetEnabled(bool is_enabled) { m_is_enabled = is_enabled; }
+    [[nodiscard]] const std::string& GetControllerName() const { return m_name; }
+    [[nodiscard]] bool IsEnabled() const                       { return m_is_enabled; }
+    void SetEnabled(bool is_enabled)                           { m_is_enabled = is_enabled; }
 
     // IController - overrides are optional
     void OnMouseButtonChanged(Mouse::Button /*button*/, Mouse::ButtonState /*button_state*/, const Mouse::StateChange& /*state_change*/) override { /* empty by default */ }
@@ -75,7 +75,7 @@ public:
     void OnModifiersChanged(Keyboard::Modifiers /*modifiers*/, const Keyboard::StateChange& /*state_change*/) override { /* empty by default */ }
     
     // IHelpProvider - overrides are optional
-    HelpLines GetHelp() const override { return HelpLines(); }
+    [[nodiscard]] HelpLines GetHelp() const override { return HelpLines(); }
 
 private:
     std::string m_name;

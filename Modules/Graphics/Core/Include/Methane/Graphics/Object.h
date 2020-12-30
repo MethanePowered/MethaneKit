@@ -40,17 +40,17 @@ struct Object
             explicit NameConflictException(const std::string& name);
         };
 
-        virtual void        AddGraphicsObject(Object& graphics_object) = 0;
-        virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
-        virtual bool        HasGraphicsObject(const std::string& object_name) const noexcept = 0;
+        virtual void AddGraphicsObject(Object& graphics_object) = 0;
+        [[nodiscard]] virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
+        [[nodiscard]] virtual bool        HasGraphicsObject(const std::string& object_name) const noexcept = 0;
 
         virtual ~Registry() = default;
     };
 
     // Object interface
-    virtual void               SetName(const std::string& name) = 0;
-    virtual const std::string& GetName() const noexcept = 0;
-    virtual Ptr<Object>        GetPtr() = 0;
+    virtual void SetName(const std::string& name) = 0;
+    [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<Object>        GetPtr() = 0;
 
     virtual ~Object() = default;
 };

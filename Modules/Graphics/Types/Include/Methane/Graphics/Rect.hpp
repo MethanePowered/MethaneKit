@@ -42,7 +42,7 @@ using FloatPoint   = Data::FloatPoint;
 using ScissorRect  = Rect<uint32_t, uint32_t>;
 using ScissorRects = std::vector<ScissorRect>;
 
-ScissorRect GetFrameScissorRect(const FrameRect& frame_rect, const FrameSize& render_attachment_size = FrameSize::Max());
-ScissorRect GetFrameScissorRect(const FrameSize& frame_size);
+[[nodiscard]] ScissorRect GetFrameScissorRect(const FrameRect& frame_rect, const FrameSize& render_attachment_size = FrameSize::Max());
+[[nodiscard]] ScissorRect GetFrameScissorRect(const FrameSize& frame_size);
 
 } // namespace Methane::Graphics

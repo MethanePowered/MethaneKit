@@ -93,18 +93,18 @@ struct Resource : virtual Object
         public:
             explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
 
-            Data::Size GetDepth() const noexcept          { return m_depth; }
-            Data::Size GetArraySize() const noexcept      { return m_array_size; }
-            Data::Size GetMipLevelsCount() const noexcept { return m_mip_levels_count; }
-            Data::Size GetRawCount() const noexcept       { return m_depth * m_array_size * m_mip_levels_count; }
+            [[nodiscard]] Data::Size GetDepth() const noexcept          { return m_depth; }
+            [[nodiscard]] Data::Size GetArraySize() const noexcept      { return m_array_size; }
+            [[nodiscard]] Data::Size GetMipLevelsCount() const noexcept { return m_mip_levels_count; }
+            [[nodiscard]] Data::Size GetRawCount() const noexcept       { return m_depth * m_array_size * m_mip_levels_count; }
 
             void operator+=(const Index& other) noexcept;
-            bool operator==(const Count& other) const noexcept;
-            bool operator!=(const Count& other) const noexcept { return !operator==(other); }
-            bool operator<(const Count& other) const noexcept;
-            bool operator>=(const Count& other) const noexcept;
-            explicit operator Index() const noexcept;
-            explicit operator std::string() const noexcept;
+            [[nodiscard]] bool operator==(const Count& other) const noexcept;
+            [[nodiscard]] bool operator!=(const Count& other) const noexcept { return !operator==(other); }
+            [[nodiscard]] bool operator<(const Count& other) const noexcept;
+            [[nodiscard]] bool operator>=(const Count& other) const noexcept;
+            [[nodiscard]] explicit operator Index() const noexcept;
+            [[nodiscard]] explicit operator std::string() const noexcept;
 
         private:
             Data::Size m_depth;
@@ -122,19 +122,19 @@ struct Resource : virtual Object
 
             Index& operator=(const Index&) noexcept = default;
 
-            Data::Index GetDepthSlice() const noexcept { return m_depth_slice; }
-            Data::Index GetArrayIndex() const noexcept { return m_array_index; }
-            Data::Index GetMipLevel() const noexcept   { return m_mip_level; }
-            Data::Index GetRawIndex(const Count& count) const noexcept
+            [[nodiscard]] Data::Index GetDepthSlice() const noexcept { return m_depth_slice; }
+            [[nodiscard]] Data::Index GetArrayIndex() const noexcept { return m_array_index; }
+            [[nodiscard]] Data::Index GetMipLevel() const noexcept   { return m_mip_level; }
+            [[nodiscard]] Data::Index GetRawIndex(const Count& count) const noexcept
             { return (m_array_index * count.GetDepth() + m_depth_slice) * count.GetMipLevelsCount() + m_mip_level; }
 
-            bool operator==(const Index& other) const noexcept;
-            bool operator!=(const Index& other) const noexcept { return !operator==(other); }
-            bool operator<(const Index& other) const noexcept;
-            bool operator>=(const Index& other) const noexcept;
-            bool operator<(const Count& other) const noexcept;
-            bool operator>=(const Count& other) const noexcept;
-            explicit operator std::string() const noexcept;
+            [[nodiscard]] bool operator==(const Index& other) const noexcept;
+            [[nodiscard]] bool operator!=(const Index& other) const noexcept { return !operator==(other); }
+            [[nodiscard]] bool operator<(const Index& other) const noexcept;
+            [[nodiscard]] bool operator>=(const Index& other) const noexcept;
+            [[nodiscard]] bool operator<(const Count& other) const noexcept;
+            [[nodiscard]] bool operator>=(const Count& other) const noexcept;
+            [[nodiscard]] explicit operator std::string() const noexcept;
 
         private:
             Data::Index m_depth_slice;
@@ -148,10 +148,10 @@ struct Resource : virtual Object
         SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
         ~SubResource() = default;
 
-        const Index&         GetIndex() const noexcept             { return m_index; }
-        bool                 HasDataRange() const noexcept         { return m_data_range.has_value(); }
-        const BytesRange&    GetDataRange() const                  { return m_data_range.value(); }
-        const BytesRangeOpt& GetDataRangeOptional() const noexcept { return m_data_range; }
+        [[nodiscard]] const Index&         GetIndex() const noexcept             { return m_index; }
+        [[nodiscard]] bool                 HasDataRange() const noexcept         { return m_data_range.has_value(); }
+        [[nodiscard]] const BytesRange&    GetDataRange() const                  { return m_data_range.value(); }
+        [[nodiscard]] const BytesRangeOpt& GetDataRangeOptional() const noexcept { return m_data_range; }
 
     private:
         Index         m_index;
@@ -167,13 +167,13 @@ struct Resource : virtual Object
         Location(const Ptr<Resource>& resource_ptr, Data::Size offset = 0U) : Location(resource_ptr, SubResource::Index(), offset) { }
         Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset = 0U);
 
-        bool operator==(const Location& other) const noexcept;
+        [[nodiscard]] bool operator==(const Location& other) const noexcept;
 
-        bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
-        const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
-        Resource&                 GetResource() const;
-        const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
-        Data::Size                GetOffset() const noexcept           { return m_offset; }
+        [[nodiscard]] bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
+        [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
+        [[nodiscard]] Resource&                 GetResource() const;
+        [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
+        [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_offset; }
 
     private:
         Ptr<Resource>      m_resource_ptr;
@@ -193,16 +193,16 @@ struct Resource : virtual Object
     }
 
     // Resource interface
-    virtual void                      SetData(const SubResources& sub_resources) = 0;
-    virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
-    virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
-    virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
-    virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
-    virtual Type                      GetResourceType() const noexcept = 0;
-    virtual Usage                     GetUsage() const noexcept = 0;
-    virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
-    virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
-    virtual Context&                  GetContext() noexcept = 0;
+    virtual void SetData(const SubResources& sub_resources) = 0;
+    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
+    [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
+    [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
+    [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
+    [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
+    [[nodiscard]] virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
+    [[nodiscard]] virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
+    [[nodiscard]] virtual Context&                  GetContext() noexcept = 0;
 };
 
 } // namespace Methane::Graphics

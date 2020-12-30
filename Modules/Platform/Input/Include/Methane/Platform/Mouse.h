@@ -56,8 +56,8 @@ class ButtonConverter
 {
 public:
     explicit ButtonConverter(Button button) : m_button(button) { }
-    
-    std::string ToString() const;
+
+    [[nodiscard]] std::string ToString() const;
     
 private:
     Button m_button;
@@ -75,7 +75,7 @@ using Position = Data::Point2i;
 using Scroll = Data::Point2f;
 
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
-inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
+[[nodiscard]] inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
     constexpr float min_scroll_delta = 0.00001F;
     if (std::fabs(scroll_delta.GetY()) > min_scroll_delta)
@@ -102,29 +102,26 @@ public:
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
 
-    bool operator==(const State& other) const;
-    bool operator!=(const State& other) const                   { return !operator==(other); }
-    const ButtonState& operator[](Button button) const          { return m_button_states[static_cast<size_t>(button)]; }
-    explicit operator std::string() const                       { return ToString(); }
+    [[nodiscard]] bool operator==(const State& other) const;
+    [[nodiscard]] bool operator!=(const State& other) const          { return !operator==(other); }
+    [[nodiscard]] const ButtonState& operator[](Button button) const { return m_button_states[static_cast<size_t>(button)]; }
+    [[nodiscard]] explicit operator std::string() const              { return ToString(); }
 
-    void  SetButton(Button button, ButtonState state)           { m_button_states[static_cast<size_t>(button)] = state; }
-    void  PressButton(Button button)                            { SetButton(button, ButtonState::Pressed); }
-    void  ReleaseButton(Button button)                          { SetButton(button, ButtonState::Released); }
-    
-    const Position&     GetPosition() const                     { return m_position; }
-    void                SetPosition(const Position& position)   { m_position = position; }
+    void SetButton(Button button, ButtonState state) { m_button_states[static_cast<size_t>(button)] = state; }
+    void PressButton(Button button)                  { SetButton(button, ButtonState::Pressed); }
+    void ReleaseButton(Button button)                { SetButton(button, ButtonState::Released); }
+    void SetPosition(const Position& position)       { m_position = position; }
+    void SetInWindow(bool in_window)                 { m_in_window = in_window; }
+    void AddScrollDelta(const Scroll& delta)         { m_scroll += delta; }
+    void ResetScroll();
 
-    const Scroll&       GetScroll() const                       { return m_scroll; }
-    void                AddScrollDelta(const Scroll& delta)     { m_scroll += delta; }
-    void                ResetScroll();
-
-    bool                IsInWindow() const                      { return m_in_window; }
-    void                SetInWindow(bool in_window)             { m_in_window = in_window; }
-
-    Buttons             GetPressedButtons() const;
-    const ButtonStates& GetButtonStates() const                 { return m_button_states; }
-    Properties          GetDiff(const State& other) const;
-    std::string         ToString() const;
+    [[nodiscard]] const Position&     GetPosition() const                     { return m_position; }
+    [[nodiscard]] const Scroll&       GetScroll() const                       { return m_scroll; }
+    [[nodiscard]] bool                IsInWindow() const                      { return m_in_window; }
+    [[nodiscard]] const ButtonStates& GetButtonStates() const                 { return m_button_states; }
+    [[nodiscard]] Buttons             GetPressedButtons() const;
+    [[nodiscard]] Properties          GetDiff(const State& other) const;
+    [[nodiscard]] std::string         ToString() const;
 
 private:
     ButtonStates m_button_states { };

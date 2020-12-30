@@ -164,8 +164,8 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     m_device_ptr = device.GetDevicePtr();
     m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
 
-    const std::string& context_name = GetName();
-    if (!context_name.empty())
+    if (const std::string& context_name = GetName();
+        !context_name.empty())
     {
         m_device_ptr->SetName(context_name + " Device");
     }

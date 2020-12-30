@@ -46,9 +46,10 @@ public:
     Animation& operator=(const Animation&) = delete;
     Animation& operator=(Animation&&) = default;
 
-    State  GetState() const noexcept             { return m_state; }
-    double GetDuration() const noexcept          { return m_duration_sec; }
-    void   SetDuration(double duration_sec)      { m_duration_sec = duration_sec; }
+    [[nodiscard]] State  GetState() const noexcept    { return m_state; }
+    [[nodiscard]] double GetDuration() const noexcept { return m_duration_sec; }
+
+    void   SetDuration(double duration_sec)           { m_duration_sec = duration_sec; }
     void   IncreaseDuration(double duration_sec);
 
     virtual void Restart() noexcept;
@@ -60,7 +61,7 @@ public:
     void Resume();
 
 protected:
-    bool IsTimeOver() const noexcept { return GetElapsedSecondsD() >= m_duration_sec; }
+    [[nodiscard]] bool IsTimeOver() const noexcept { return GetElapsedSecondsD() >= m_duration_sec; }
 
     using Timer::Reset;
 

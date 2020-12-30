@@ -44,8 +44,10 @@ public:
         META_FUNCTION_TASK();
     }
 
+    [[nodiscard]]
     size_t GetMouseActionsCount() const noexcept { return m_action_by_mouse_button.size(); }
-    
+
+    [[nodiscard]]
     Input::IHelpProvider::HelpLines GetMouseHelp() const
     {
         META_FUNCTION_TASK();
@@ -75,8 +77,9 @@ public:
     
 protected:
     // Mouse::ActionControllerBase interface
-    virtual std::string GetMouseActionName(ActionEnum action) const = 0;
-    
+    [[nodiscard]] virtual std::string GetMouseActionName(ActionEnum action) const = 0;
+
+    [[nodiscard]]
     ActionEnum GetMouseActionByButton(Button mouse_button) const
     {
         META_FUNCTION_TASK();

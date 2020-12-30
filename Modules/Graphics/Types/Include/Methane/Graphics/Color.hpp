@@ -53,35 +53,35 @@ public:
 
     explicit ColorF(VectorType&& components) noexcept : m_components(std::move(components)) { }
 
-    bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
-    bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
-    float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
-    explicit operator VectorType() const noexcept { return m_components; }
+    [[nodiscard]] bool operator==(const ColorF& other) const noexcept  { return m_components == other.m_components; }
+    [[nodiscard]] bool operator!=(const ColorF& other) const noexcept  { return m_components != other.m_components; }
+    [[nodiscard]] float operator[](Data::Index component_index) const  { META_CHECK_ARG_LESS(component_index, Size); return m_components[static_cast<int>(component_index)]; }
+    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
 
-    const VectorType& AsVector() const noexcept { return m_components; }
+    [[nodiscard]] const VectorType& AsVector() const noexcept { return m_components; }
 
-    Data::Size GetSize() const noexcept      { return vector_size; }
+    [[nodiscard]] Data::Size GetSize() const noexcept      { return vector_size; }
 
-    float GetRf() const noexcept { return m_components[0]; }
-    float GetGf() const noexcept { return m_components[1]; }
-    float GetBf() const noexcept { return m_components[2]; }
+    [[nodiscard]] float GetRf() const noexcept { return m_components[0]; }
+    [[nodiscard]] float GetGf() const noexcept { return m_components[1]; }
+    [[nodiscard]] float GetBf() const noexcept { return m_components[2]; }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz>= 4, void>>
-    float GetAf() const noexcept { return m_components[3]; }
+    [[nodiscard]] float GetAf() const noexcept { return m_components[3]; }
 
-    float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
-    float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
-    float GetNormBf() const noexcept { return GetNormColorComponent(GetBf()); }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
-    float GetNormAf() const noexcept { return GetNormColorComponent(GetAf()); }
-
-    uint8_t GetRu() const noexcept { return GetUintColorComponent(GetNormRf()); }
-    uint8_t GetGu() const noexcept { return GetUintColorComponent(GetNormGf()); }
-    uint8_t GetBu() const noexcept { return GetUintColorComponent(GetNormBf()); }
+    [[nodiscard]] float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
+    [[nodiscard]] float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
+    [[nodiscard]] float GetNormBf() const noexcept { return GetNormColorComponent(GetBf()); }
 
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
-    uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
+    [[nodiscard]] float GetNormAf() const noexcept { return GetNormColorComponent(GetAf()); }
+
+    [[nodiscard]] uint8_t GetRu() const noexcept { return GetUintColorComponent(GetNormRf()); }
+    [[nodiscard]] uint8_t GetGu() const noexcept { return GetUintColorComponent(GetNormGf()); }
+    [[nodiscard]] uint8_t GetBu() const noexcept { return GetUintColorComponent(GetNormBf()); }
+
+    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
+    [[nodiscard]] uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
 
     void Set(Data::Index component_index, float value)
     {
@@ -96,7 +96,7 @@ public:
     template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
     void SetA(float a) { Set(3, a); }
 
-    explicit operator std::string() const noexcept
+    [[nodiscard]] explicit operator std::string() const noexcept
     {
         if constexpr (vector_size == 3)
             return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu());
@@ -105,12 +105,12 @@ public:
     }
 
 private:
-    inline float GetNormColorComponent(float component) const noexcept
+    [[nodiscard]] inline float GetNormColorComponent(float component) const noexcept
     {
         return std::max(s_float_range.first, std::min(s_float_range.second, component));
     }
 
-    inline uint8_t GetUintColorComponent(float component) const noexcept
+    [[nodiscard]] inline uint8_t GetUintColorComponent(float component) const noexcept
     {
         return static_cast<uint8_t>(std::round(component * static_cast<float>(s_uint_component_max)));
     }

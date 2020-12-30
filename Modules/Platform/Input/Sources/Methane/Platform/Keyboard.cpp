@@ -296,8 +296,8 @@ KeyType State::SetKeyImpl(Key key, KeyState key_state)
     if (key == Key::Unknown)
         return KeyType::Common;
 
-    const Modifiers key_modifier = KeyConverter(key).GetModifierKey();
-    if (key_modifier != Modifiers::None)
+    if (const Modifiers key_modifier = KeyConverter(key).GetModifierKey();
+        key_modifier != Modifiers::None)
     {
         UpdateModifiersMask(key_modifier, key_state == KeyState::Pressed);
         return KeyType::Modifier;
@@ -349,8 +349,8 @@ StateExt::StateExt(std::initializer_list<Key> pressed_keys, Modifiers modifiers_
 KeyType StateExt::SetKey(Key key, KeyState key_state)
 {
     META_FUNCTION_TASK();
-    const KeyType key_type = State::SetKey(key, key_state);
-    if (key_type != KeyType::Modifier)
+    if (const KeyType key_type = State::SetKey(key, key_state);
+        key_type != KeyType::Modifier)
         return key_type;
 
     SetModifierKey(key, key_state);

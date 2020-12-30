@@ -23,6 +23,7 @@ Windows implementation of the platform specific instrumentation functions.
 
 #include <Windows.h>
 
+#include <string_view>
 #include <nowide/convert.hpp>
 
 namespace Methane
@@ -40,13 +41,13 @@ struct ThreadNameInfo
 };
 #pragma pack(pop)
 
-static void SetLegacyThreadName(const char* name)
+static void SetLegacyThreadName(std::string_view name)
 {
     // Set thread name with legacy exception way
     constexpr DWORD msvc_exception = 0x406D1388;
     ThreadNameInfo info {
         0x1000,
-        name,
+        name.data(),
         GetCurrentThreadId(),
         0
     };
@@ -63,18 +64,18 @@ static void SetLegacyThreadName(const char* name)
 
 #else
 
-static void SetLegacyThreadName(const char*) { }
+static void SetLegacyThreadName(std::string_view) { }
 
 #endif
 
 extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR);
 
-void SetThreadName(const char* name)
+void SetThreadName(std::string_view name)
 {
-    static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
-    if (s_set_thread_description_fn)
+    if (static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
+        s_set_thread_description_fn)
     {
-        const std::wstring w_name = nowide::widen(name);
+        const std::wstring w_name = nowide::widen(name.data(), name.length());
         s_set_thread_description_fn(GetCurrentThread(), w_name.c_str());
     }
     else

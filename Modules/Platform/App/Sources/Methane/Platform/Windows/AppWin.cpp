@@ -58,9 +58,8 @@ AppWin::AppWin(const AppBase::Settings& settings)
 int AppWin::Run(const RunArgs& args)
 {
     // Skip instrumentation META_FUNCTION_TASK() since this is the only root function running till application close
-
-    const int base_return_code = AppBase::Run(args);
-    if (base_return_code)
+    if (const int base_return_code = AppBase::Run(args);
+        base_return_code)
         return base_return_code;
 
     // Initialize the window class.
@@ -493,13 +492,12 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
     META_CHECK_ARG_NOT_NULL(m_env.window_handle);
     
-    RECT            window_rect{};
-    int32_t         window_style    = WS_OVERLAPPEDWINDOW;
-    int32_t         window_mode     = 0;
-    HWND            window_position = nullptr;
-    const Settings& app_settings    = GetPlatformAppSettings();
+    RECT    window_rect{};
+    int32_t window_style    = WS_OVERLAPPEDWINDOW;
+    int32_t window_mode     = 0;
+    HWND    window_position = nullptr;
 
-    if (app_settings.is_full_screen)
+    if (GetPlatformAppSettings().is_full_screen)
     {
         GetWindowRect(m_env.window_handle, &m_window_rect);
 

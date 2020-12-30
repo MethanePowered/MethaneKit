@@ -48,6 +48,7 @@ by decoding them from popular image formats.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static PixelFormat GetDefaultImageFormat(bool srgb)
 {
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
@@ -130,7 +131,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(raw_image_data.GetDataPtr(),
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
                                                   static_cast<int>(raw_image_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count,
                                                   static_cast<int>(channels_count));
@@ -145,7 +146,8 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(p_image_data, p_image_data + image_data_size);
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data),
+                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size));
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
@@ -190,7 +192,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             constexpr uint32_t desired_channels_count = 4;
             ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
-            std::lock_guard<LockableBase(std::mutex)> data_lock(data_mutex);
+            std::scoped_lock<LockableBase(std::mutex)> data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
         }
     );
@@ -204,11 +206,11 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
-    for(const std::pair<Data::Index, ImageData>& face_image_data : face_images_data)
+    for(const auto& [face_index, image_data] : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     face_image_data.second.GetDimensions(),    "all face image of cube texture must have equal dimensions");
-        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, face_image_data.second.GetChannelsCount(), "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(face_image_data.second.GetPixels().GetDataPtr(), face_image_data.second.GetPixels().GetDataSize(), Resource::SubResource::Index(face_image_data.first));
+        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
+        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
+        face_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Resource::SubResource::Index(face_index));
     }
 
     // Load face images to cube texture

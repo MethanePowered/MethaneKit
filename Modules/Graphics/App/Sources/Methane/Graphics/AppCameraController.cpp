@@ -61,11 +61,11 @@ void AppCameraController::OnMousePositionChanged(const Platform::Mouse::Position
 void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&)
 {
     META_FUNCTION_TASK();
-    const auto mouse_button_and_delta = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
-    const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button_and_delta.first);
-    if (action == ActionCamera::MouseAction::Zoom)
+    const auto [mouse_button, scroll_delta] = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
+    if (const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button);
+        action == ActionCamera::MouseAction::Zoom)
     {
-        m_action_camera.OnMouseScrolled(mouse_button_and_delta.second);
+        m_action_camera.OnMouseScrolled(scroll_delta);
     }
 }
 
@@ -81,17 +81,17 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
     HelpLines help_lines;
     help_lines.reserve(GetMouseActionsCount() + GetKeyboardActionsCount() + 2);
 
-    const HelpLines mouse_help_lines = GetMouseHelp();
-    if (!mouse_help_lines.empty())
+    if (const HelpLines mouse_help_lines = GetMouseHelp();
+        !mouse_help_lines.empty())
     {
-        help_lines.push_back({ "", "Mouse actions" });
+        help_lines.emplace_back("", "Mouse actions");
         help_lines.insert(help_lines.end(), mouse_help_lines.begin(), mouse_help_lines.end());
     }
 
-    const HelpLines keyboard_help_lines = GetKeyboardHelp();
-    if (!keyboard_help_lines.empty())
+    if (const HelpLines keyboard_help_lines = GetKeyboardHelp();
+        !keyboard_help_lines.empty())
     {
-        help_lines.push_back({ "", "Keyboard actions" });
+        help_lines.emplace_back("", "Keyboard actions");
         help_lines.insert(help_lines.end(), keyboard_help_lines.begin(), keyboard_help_lines.end());
     }
     

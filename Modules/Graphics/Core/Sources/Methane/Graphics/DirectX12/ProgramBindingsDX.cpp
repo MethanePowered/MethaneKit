@@ -250,24 +250,26 @@ template<typename FuncType>
 void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_function) const
 {
     META_FUNCTION_TASK();
-    for (auto& binding_by_argument : GetArgumentBindings())
+    for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(binding_by_argument.second);
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        auto& argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
+        const ArgumentBindingDX::DescriptorRange& descriptor_range = argument_binding.GetDescriptorRange();
 
-        auto& argument_binding = static_cast<ArgumentBindingDX&>(*binding_by_argument.second);
-        const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
-        const DescriptorHeap::Reservation*        p_heap_reservation = nullptr;
-
-        if (descriptor_range.heap_type != DescriptorHeap::Type::Undefined)
+        if (descriptor_range.heap_type == DescriptorHeap::Type::Undefined)
         {
-            const std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = GetDescriptorHeapReservationByType(descriptor_range.heap_type);
-            if (descriptor_heap_reservation_opt)
-            {
-                p_heap_reservation = &*descriptor_heap_reservation_opt;
-            }
+            argument_binding_function(argument_binding, nullptr);
+            continue;
         }
 
-        argument_binding_function(argument_binding, p_heap_reservation);
+        if (const std::optional<DescriptorHeap::Reservation>& desc_heap_reservation_opt = GetDescriptorHeapReservationByType(descriptor_range.heap_type);
+            desc_heap_reservation_opt.has_value())
+        {
+            argument_binding_function(argument_binding, &*desc_heap_reservation_opt);
+            continue;
+        }
+
+        argument_binding_function(argument_binding, nullptr);
     }
 }
 
@@ -387,9 +389,8 @@ bool ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states)
 void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const
 {
     META_FUNCTION_TASK();
-    const ArgumentBindingDX::Type binding_type = root_parameter_binding.argument_binding.GetSettingsDX().type;
-
-    switch (binding_type)
+    switch (const ArgumentBindingDX::Type binding_type = root_parameter_binding.argument_binding.GetSettingsDX().type;
+            binding_type)
     {
     case ArgumentBindingDX::Type::DescriptorTable:
         d3d12_command_list.SetGraphicsRootDescriptorTable(root_parameter_binding.root_parameter_index, root_parameter_binding.base_descriptor);

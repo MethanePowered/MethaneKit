@@ -57,23 +57,23 @@ struct Device
         All                     = ~0U,
     };
 
-    virtual const std::string& GetAdapterName() const noexcept = 0;
-    virtual bool               IsSoftwareAdapter() const noexcept = 0;
-    virtual Features           GetSupportedFeatures() const noexcept = 0;
-    virtual std::string        ToString() const = 0;
+    [[nodiscard]] virtual const std::string& GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool               IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual Features           GetSupportedFeatures() const noexcept = 0;
+    [[nodiscard]] virtual std::string        ToString() const = 0;
 };
 
 struct System
 {
-    static System& Get();
+    [[nodiscard]] static System& Get();
 
-    virtual void                CheckForChanges() = 0;
-    virtual const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features = Device::Features::All) = 0;
-    virtual const Ptrs<Device>& GetGpuDevices() const = 0;
-    virtual Ptr<Device>         GetNextGpuDevice(const Device& device) const = 0;
-    virtual Ptr<Device>         GetSoftwareGpuDevice() const = 0;
-    virtual Device::Features    GetGpuSupportedFeatures() const = 0;
-    virtual std::string         ToString() const = 0;
+    virtual void CheckForChanges() = 0;
+    [[nodiscard]] virtual const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features = Device::Features::All) = 0;
+    [[nodiscard]] virtual const Ptrs<Device>& GetGpuDevices() const = 0;
+    [[nodiscard]] virtual Ptr<Device>         GetNextGpuDevice(const Device& device) const = 0;
+    [[nodiscard]] virtual Ptr<Device>         GetSoftwareGpuDevice() const = 0;
+    [[nodiscard]] virtual Device::Features    GetGpuSupportedFeatures() const = 0;
+    [[nodiscard]] virtual std::string         ToString() const = 0;
     
     virtual ~System() = default;
 };

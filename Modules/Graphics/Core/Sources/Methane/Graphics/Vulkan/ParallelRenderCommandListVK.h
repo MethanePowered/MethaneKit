@@ -38,7 +38,8 @@ public:
     ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
 
     // CommandList interface
     void Commit() override;
@@ -49,7 +50,7 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
-protected:
+private:
     CommandQueueVK& GetCommandQueueVK() noexcept;
     RenderPassVK&   GetPassVK();
 };

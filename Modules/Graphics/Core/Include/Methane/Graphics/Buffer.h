@@ -58,29 +58,29 @@ struct Buffer : virtual Resource
     };
 
     // Create Buffer instance
-    static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
-    static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
-    static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
+    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
+    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
+    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
 
     // Auxiliary functions
-    static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
+    [[nodiscard]] static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
 
     // Buffer interface
-    virtual const Settings& GetSettings() const noexcept = 0;
-    virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
 };
 
 struct BufferSet
 {
-    static Ptr<BufferSet> Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
-    static Ptr<BufferSet> CreateVertexBuffers(const Refs<Buffer>& buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, buffer_refs); }
+    [[nodiscard]] static Ptr<BufferSet> Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    [[nodiscard]] static Ptr<BufferSet> CreateVertexBuffers(const Refs<Buffer>& buffer_refs) { return BufferSet::Create(Buffer::Type::Vertex, buffer_refs); }
 
-    virtual Buffer::Type        GetType() const noexcept = 0;
-    virtual Data::Size          GetCount() const noexcept = 0;
-    virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
-    virtual Buffer&             operator[](Data::Index index) const = 0;
+    [[nodiscard]] virtual Buffer::Type        GetType() const noexcept = 0;
+    [[nodiscard]] virtual Data::Size          GetCount() const noexcept = 0;
+    [[nodiscard]] virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
+    [[nodiscard]] virtual Buffer&             operator[](Data::Index index) const = 0;
 
     virtual ~BufferSet() = default;
 };

@@ -129,19 +129,20 @@ public:
     KeyConverter(Key key, Modifiers modifiers);
     explicit KeyConverter(const NativeKey& native_key);
     
-    Key         GetKey() const noexcept         { return m_key; }
-    Modifiers   GetModifiers() const noexcept   { return m_modifiers; }
-    Modifiers   GetModifierKey() const noexcept;
-    std::string ToString() const;
+    [[nodiscard]] Key         GetKey() const noexcept         { return m_key; }
+    [[nodiscard]] Modifiers   GetModifiers() const noexcept   { return m_modifiers; }
+    [[nodiscard]] Modifiers   GetModifierKey() const noexcept;
+    [[nodiscard]] std::string ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
-    static Key       GetKeyByNativeCode(const NativeKey& native_key);
-    static Modifiers GetModifiersByNativeCode(const NativeKey& native_key);
+    [[nodiscard]] static Key       GetKeyByNativeCode(const NativeKey& native_key);
+    [[nodiscard]] static Modifiers GetModifiersByNativeCode(const NativeKey& native_key);
     
 private:
+    [[nodiscard]] static Key GetControlKey(const NativeKey& native_key);
+
     const Key       m_key;
     const Modifiers m_modifiers;
-    static Key GetControlKey(const NativeKey& native_key);
 };
 
 enum class KeyState : uint8_t
@@ -166,12 +167,12 @@ public:
     State() = default;
     State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
 
-    bool   operator<(const State& other) const noexcept;
-    bool   operator==(const State& other) const noexcept;
-    bool   operator!=(const State& other) const noexcept    { return !operator==(other); }
-    const  KeyState& operator[](Key key) const noexcept     { return m_key_states[static_cast<size_t>(key)]; }
-    explicit operator std::string() const                   { return ToString(); }
-    explicit operator bool() const noexcept;
+    [[nodiscard]] bool operator<(const State& other) const noexcept;
+    [[nodiscard]] bool operator==(const State& other) const noexcept;
+    [[nodiscard]] bool operator!=(const State& other) const noexcept    { return !operator==(other); }
+    [[nodiscard]] const  KeyState& operator[](Key key) const noexcept     { return m_key_states[static_cast<size_t>(key)]; }
+    [[nodiscard]] explicit operator std::string() const                   { return ToString(); }
+    [[nodiscard]] explicit operator bool() const noexcept;
 
     virtual KeyType SetKey(Key key, KeyState key_state);
 
@@ -179,11 +180,11 @@ public:
     void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
     void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
 
-    Keys             GetPressedKeys() const noexcept;
-    const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
-    Modifiers        GetModifiersMask() const noexcept      { return m_modifiers_mask; }
-    Properties       GetDiff(const State& other) const noexcept;
-    std::string      ToString() const;
+    [[nodiscard]] Keys             GetPressedKeys() const noexcept;
+    [[nodiscard]] const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
+    [[nodiscard]] Modifiers        GetModifiersMask() const noexcept      { return m_modifiers_mask; }
+    [[nodiscard]] Properties       GetDiff(const State& other) const noexcept;
+    [[nodiscard]] std::string      ToString() const;
 
 private:
     KeyType SetKeyImpl(Key key, KeyState key_state);
@@ -209,8 +210,8 @@ public:
 
     KeyType SetKey(Key key, KeyState key_state) override;
 
-    const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
-    Keys        GetAllPressedKeys() const;
+    [[nodiscard]] const Keys& GetPressedModifierKeys() const { return m_pressed_modifier_keys; }
+    [[nodiscard]] Keys        GetAllPressedKeys() const;
 
 private:
     void SetModifierKey(Key key, KeyState key_state);

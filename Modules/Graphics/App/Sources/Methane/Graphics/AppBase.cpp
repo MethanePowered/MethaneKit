@@ -229,6 +229,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
     META_CHECK_ARG_NOT_NULL(frame_buffer_texture);
 
     const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
+    static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
 
     return RenderPass::Create(*m_context_ptr, {
         {
@@ -240,9 +241,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
                         : RenderPass::Attachment::LoadAction::DontCare,
                     RenderPass::Attachment::StoreAction::Store,
                 },
-                context_settings.clear_color
-                    ? *context_settings.clear_color
-                    : Color4f()
+                context_settings.clear_color.value_or(Color4f())
             )
         },
         RenderPass::DepthAttachment(
@@ -253,9 +252,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
                     : RenderPass::Attachment::LoadAction::DontCare,
                 RenderPass::Attachment::StoreAction::DontCare,
             },
-            context_settings.clear_depth_stencil
-                ? context_settings.clear_depth_stencil->first
-                : 1.F
+            context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
         ),
         RenderPass::StencilAttachment(),
         m_settings.screen_pass_access,

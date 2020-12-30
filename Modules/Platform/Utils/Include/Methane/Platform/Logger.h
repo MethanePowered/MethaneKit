@@ -33,7 +33,7 @@ namespace Methane::Platform
 class Logger : public ILogger
 {
     // Data::ILogger interface
-    void Log(const std::string& message) override
+    void Log(std::string_view message) override
     {
         PrintToDebugOutput(message);
     }

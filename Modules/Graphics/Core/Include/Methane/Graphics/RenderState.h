@@ -44,15 +44,15 @@ struct ViewState
         Viewports    viewports;
         ScissorRects scissor_rects;
 
-        bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
-        bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
+        [[nodiscard]] bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
+        [[nodiscard]] bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
     };
 
     // Create ViewState instance
-    static Ptr<ViewState> Create(const Settings& state_settings);
+    [[nodiscard]] static Ptr<ViewState> Create(const Settings& state_settings);
 
     // ViewState interface
-    virtual const Settings& GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
     virtual bool Reset(const Settings& settings) = 0;
     virtual bool SetViewports(const Viewports& viewports) = 0;
     virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
@@ -84,8 +84,8 @@ public:
         uint32_t sample_count               = 1;
         bool     alpha_to_coverage_enabled  = false;
 
-        bool operator==(const Rasterizer& other) const noexcept;
-        bool operator!=(const Rasterizer& other) const noexcept;
+        [[nodiscard]] bool operator==(const Rasterizer& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Rasterizer& other) const noexcept;
     };
 
     struct Blending
@@ -151,8 +151,8 @@ public:
         bool                        is_independent = false;
         std::array<RenderTarget, 8> render_targets;
 
-        bool operator==(const Blending& other) const noexcept;
-        bool operator!=(const Blending& other) const noexcept;
+        [[nodiscard]] bool operator==(const Blending& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Blending& other) const noexcept;
     };
     
     struct Depth
@@ -161,8 +161,8 @@ public:
         bool    write_enabled   = true;
         Compare compare         = Compare::Less;
 
-        bool operator==(const Depth& other) const noexcept;
-        bool operator!=(const Depth& other) const noexcept;
+        [[nodiscard]] bool operator==(const Depth& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Depth& other) const noexcept;
     };
     
     struct Stencil
@@ -197,8 +197,8 @@ public:
         FaceOperations front_face;
         FaceOperations back_face;
 
-        bool operator==(const Stencil& other) const noexcept;
-        bool operator!=(const Stencil& other) const noexcept;
+        [[nodiscard]] bool operator==(const Stencil& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Stencil& other) const noexcept;
     };
 
     enum class Groups : uint32_t
@@ -224,14 +224,16 @@ public:
         Blending     blending;
         Color4f      blending_color;
 
-        static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
+        [[nodiscard]] static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
+        [[nodiscard]] bool operator==(const Settings& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Settings& other) const noexcept;
     };
 
     // Create RenderState instance
-    static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
+    [[nodiscard]] static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
-    virtual const Settings& GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
     virtual void Reset(const Settings& settings) = 0;
 };
 

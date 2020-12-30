@@ -29,7 +29,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/IEmitter.h>
 
-namespace tf
+namespace tf // NOSONAR
 {
 // TaskFlow Executor class forward declaration:
 // #include <taskflow/core/executor.hpp>
@@ -78,20 +78,20 @@ struct Context
     };
 
     // Context interface
-    virtual Type GetType() const noexcept = 0;
-    virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
-    virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
+    [[nodiscard]] virtual Type GetType() const noexcept = 0;
+    [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
+    [[nodiscard]] virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
-    virtual bool IsCompletingInitialization() const noexcept = 0;
+    [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Reset(Device& device) = 0;
     virtual void Reset() = 0;
 
-    virtual Device&          GetDevice() = 0;
-    virtual CommandQueue&    GetUploadCommandQueue() = 0;
-    virtual BlitCommandList& GetUploadCommandList() = 0;
-    virtual CommandListSet&  GetUploadCommandListSet() = 0;
+    [[nodiscard]] virtual Device&          GetDevice() = 0;
+    [[nodiscard]] virtual CommandQueue&    GetUploadCommandQueue() = 0;
+    [[nodiscard]] virtual BlitCommandList& GetUploadCommandList() = 0;
+    [[nodiscard]] virtual CommandListSet&  GetUploadCommandListSet() = 0;
 };
 
 } // namespace Methane::Graphics

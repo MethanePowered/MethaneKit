@@ -58,17 +58,17 @@ struct RenderPass : virtual Object
         Texture::Location  texture_location;
         LoadAction         load_action  = LoadAction::DontCare;
         StoreAction        store_action = StoreAction::DontCare;
-        
-        bool operator==(const Attachment& other) const;
+
+        [[nodiscard]] bool operator==(const Attachment& other) const;
     };
     
     struct ColorAttachment : Attachment
     {
         Color4f clear_color;
         
-        ColorAttachment(const Attachment&& attach, const Color4f& in_clear_color = Color4f()) : Attachment(std::move(attach)), clear_color(in_clear_color) { }
-        
-        bool operator==(const ColorAttachment& other) const;
+        ColorAttachment(const Attachment& attach, const Color4f& in_clear_color = Color4f()) : Attachment(attach), clear_color(in_clear_color) { }
+
+        [[nodiscard]] bool operator==(const ColorAttachment& other) const;
     };
     
     using ColorAttachments = std::vector<ColorAttachment>;
@@ -78,9 +78,9 @@ struct RenderPass : virtual Object
         Depth clear_value = 1.F;
         
         DepthAttachment() = default;
-        DepthAttachment(const Attachment&& attach, Depth in_clear_value = 1.F) : Attachment(std::move(attach)), clear_value(in_clear_value) { }
-        
-        bool operator==(const DepthAttachment& other) const;
+        DepthAttachment(const Attachment& attach, Depth in_clear_value = 1.F) : Attachment(attach), clear_value(in_clear_value) { }
+
+        [[nodiscard]] bool operator==(const DepthAttachment& other) const;
     };
     
     struct StencilAttachment : Attachment
@@ -88,9 +88,9 @@ struct RenderPass : virtual Object
         Stencil clear_value = 0U;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment&& attach, Stencil in_clear_value = 0U) : Attachment(std::move(attach)), clear_value(in_clear_value) { }
-        
-        bool operator==(const StencilAttachment& other) const;
+        StencilAttachment(const Attachment& attach, Stencil in_clear_value = 0U) : Attachment(attach), clear_value(in_clear_value) { }
+
+        [[nodiscard]] bool operator==(const StencilAttachment& other) const;
     };
 
     enum class Access : uint32_t
@@ -111,15 +111,15 @@ struct RenderPass : virtual Object
         Access             shader_access_mask = Access::None;
         bool               is_final_pass = true;
 
-        bool operator==(const Settings& other) const;
-        bool operator!=(const Settings& other) const;
+        [[nodiscard]] bool operator==(const Settings& other) const;
+        [[nodiscard]] bool operator!=(const Settings& other) const;
     };
 
     // Create RenderPass instance
-    static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
 
     // RenderPass interface
-    virtual const Settings& GetSettings() const = 0;
+    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
     virtual bool Update(const Settings& settings) = 0;
     virtual void ReleaseAttachmentTextures() = 0;
 };

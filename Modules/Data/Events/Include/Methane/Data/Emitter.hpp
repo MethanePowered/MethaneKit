@@ -51,7 +51,7 @@ public:
         ConnectReceivers();
     }
 
-    ~Emitter() override
+    ~Emitter() override // NOSONAR
     {
         META_FUNCTION_TASK();
         DisconnectReceivers();
@@ -84,8 +84,7 @@ public:
     void Connect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
-        const auto connected_receiver_it = FindConnectedReceiver(receiver);
-        if (connected_receiver_it != m_connected_receivers.end())
+        if (FindConnectedReceiver(receiver) != m_connected_receivers.end())
             return;
 
         if (m_is_emitting)
@@ -161,6 +160,7 @@ protected:
     size_t GetConnectedReceiversCount() const noexcept { return m_connected_receivers.size() + m_additional_connected_receivers.size(); }
 
 private:
+    [[nodiscard]]
     inline decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver) noexcept
     {
         return std::find_if(m_connected_receivers.begin(), m_connected_receivers.end(),

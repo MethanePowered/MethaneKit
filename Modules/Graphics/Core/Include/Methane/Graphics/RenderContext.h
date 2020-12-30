@@ -57,21 +57,21 @@ struct RenderContext : virtual Context
     };
 
     // Create RenderContext instance
-    static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // RenderContext interface
-    virtual bool ReadyToRender() const = 0;
+    [[nodiscard]] virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
 
-    virtual Platform::AppView GetAppView() const = 0;
-    virtual CommandQueue&     GetRenderCommandQueue() = 0;
-    virtual const Settings&   GetSettings() const noexcept = 0;
-    virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
-    virtual uint32_t          GetFrameIndex() const noexcept = 0;
-    virtual float             GetContentScalingFactor() const = 0;
-    virtual uint32_t          GetFontResolutionDpi() const = 0;
-    virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
+    [[nodiscard]] virtual Platform::AppView GetAppView() const = 0;
+    [[nodiscard]] virtual CommandQueue&     GetRenderCommandQueue() = 0;
+    [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual float             GetContentScalingFactor() const = 0;
+    [[nodiscard]] virtual uint32_t          GetFontResolutionDpi() const = 0;
+    [[nodiscard]] virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;

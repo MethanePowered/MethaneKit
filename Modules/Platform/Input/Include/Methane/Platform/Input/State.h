@@ -25,6 +25,7 @@ Aggregated application input state with controllers.
 
 #include "ControllersPool.h"
 
+#include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Platform::Input
@@ -36,11 +37,12 @@ public:
     State() = default;
     explicit State(const ControllersPool& controllers) : m_controllers(controllers) {}
 
-    const ControllersPool&  GetControllers() const noexcept                     { return m_controllers; }
-    void                    AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
+    [[nodiscard]] const ControllersPool& GetControllers() const noexcept { return m_controllers; }
 
-    const Keyboard::State& GetKeyboardState() const noexcept { return m_keyboard_state; }
-    const Mouse::State&    GetMouseState() const noexcept    { return m_mouse_state; }
+    void AddControllers(const Ptrs<Controller>& controllers) { m_controllers.insert(m_controllers.end(), controllers.begin(), controllers.end()); }
+
+    [[nodiscard]] const Keyboard::State& GetKeyboardState() const noexcept { return m_keyboard_state; }
+    [[nodiscard]] const Mouse::State&    GetMouseState() const noexcept    { return m_mouse_state; }
 
     // IActionController
     void OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state) override;
@@ -53,19 +55,17 @@ public:
     void ReleaseAllKeys();
 
     template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
-    Refs<ControllerT> GetControllersOfType() const
+    [[nodiscard]] Refs<ControllerT> GetControllersOfType() const
     {
         META_FUNCTION_TASK();
         Refs<ControllerT> controllers;
         const std::type_info& controller_type  = typeid(ControllerT);
         for(const Ptr<Controller>& controller_ptr : m_controllers)
         {
-            if (!controller_ptr)
-                continue;
-
-            const Controller& controller = *controller_ptr;
-            if (typeid(controller) == controller_type)
-                controllers.emplace_back(static_cast<ControllerT&>(*controller_ptr));
+            META_CHECK_ARG_NOT_NULL(controller_ptr);
+            if (Controller& controller = *controller_ptr;
+                typeid(controller) == controller_type)
+                controllers.emplace_back(static_cast<ControllerT&>(controller));
         }
         return controllers;
     }

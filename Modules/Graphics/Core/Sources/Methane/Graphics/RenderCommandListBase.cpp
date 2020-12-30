@@ -53,18 +53,29 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-
     CommandListBase::Reset(p_debug_group);
-
     m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
+}
 
-    if (render_state_ptr)
+void RenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    RenderCommandListBase::Reset(p_debug_group);
+    SetRenderState(render_state);
+}
+
+void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))
     {
-        SetRenderState(*render_state_ptr);
+        META_LOG("{} Command list '{}' was already RESET with the same render state", magic_enum::enum_name(GetType()), GetName());
+        return;
     }
+    ResetWithState(render_state, p_debug_group);
 }
 
 void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)

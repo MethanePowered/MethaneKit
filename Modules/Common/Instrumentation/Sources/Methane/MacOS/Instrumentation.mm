@@ -22,17 +22,20 @@ MacOS implementation of the platform specific instrumentation functions.
 ******************************************************************************/
 
 #include <pthread.h>
+#include <string_view>
 
 #import <Foundation/Foundation.h>
 
 namespace Methane
 {
 
-void SetThreadName(const char* name)
+void SetThreadName(std::string_view name)
 {
-    NSString* ns_name = [[NSString alloc] initWithUTF8String:name];
+    NSString* ns_name = [[NSString alloc] initWithBytes:name.data()
+                                                 length:name.length()
+                                               encoding:NSUTF8StringEncoding];
     [[NSThread currentThread] setName:ns_name];
-    pthread_setname_np(name);
+    pthread_setname_np(name.data());
 }
 
 } // namespace Methane

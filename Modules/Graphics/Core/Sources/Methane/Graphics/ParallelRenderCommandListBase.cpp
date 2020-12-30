@@ -34,13 +34,16 @@ Base implementation of the parallel render command list interface.
 #include <Methane/Data/Math.hpp>
 
 #include <taskflow/taskflow.hpp>
+#include <fmt/format.h>
+
+#include <string_view>
 
 namespace Methane::Graphics
 {
 
-inline std::string GetThreadCommandListName(const std::string& name, Data::Index index)
+inline std::string GetThreadCommandListName(std::string_view name, Data::Index index)
 {
-    return name + " [Thread " + std::to_string(index) + "]";
+    return fmt::format("{} [Thread {}", name, index);
 }
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
@@ -61,9 +64,33 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
     }
 }
 
-void ParallelRenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+    ResetImpl(p_debug_group, [this, p_debug_group](size_t command_list_index)
+    {
+        META_FUNCTION_TASK();
+        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+    });
+}
+
+void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](size_t command_list_index)
+    {
+        META_FUNCTION_TASK();
+        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+    });
+}
+
+template<typename ResetCommandListFn>
+void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn)
+{
     CommandListBase::Reset();
 
     // Create per-thread debug sub-group:
@@ -76,18 +103,10 @@ void ParallelRenderCommandListBase::ResetWithState(const Ptr<RenderState>& rende
     }
 
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
-    const auto reset_command_list_fn = [this, &render_state_ptr, p_debug_group](size_t command_list_index)
-    {
-        META_FUNCTION_TASK();
-        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->ResetWithState(render_state_ptr, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
-    };
-
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
     reset_task_flow.for_each_index_guided(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
-                                 Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
+                                          Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
     for(size_t command_list_index = 0U; command_list_index < m_parallel_command_lists.size(); ++command_list_index)

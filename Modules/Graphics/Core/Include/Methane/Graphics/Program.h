@@ -71,8 +71,8 @@ struct Program : virtual Object
         public:
             NotFoundException(const Program& program, const Argument& argument);
 
-            const Program&  GetProgram() const noexcept  { return m_program; }
-            const Argument& GetArgument() const noexcept { return *m_argument_ptr; }
+            [[nodiscard]] const Program&  GetProgram() const noexcept  { return m_program; }
+            [[nodiscard]] const Argument& GetArgument() const noexcept { return *m_argument_ptr; }
 
         private:
             const Program& m_program;
@@ -95,12 +95,12 @@ struct Program : virtual Object
         Argument(const Argument& argument) = default;
         Argument(Argument&& argument) noexcept = default;
 
-        bool operator==(const Argument& other) const noexcept;
-        explicit operator std::string() const noexcept;
+        [[nodiscard]] bool operator==(const Argument& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const noexcept;
 
         struct Hash
         {
-            size_t operator()(const Argument& arg) const { return arg.hash; }
+            [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.hash; }
         };
     };
 
@@ -117,8 +117,8 @@ struct Program : virtual Object
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
         ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
-        inline bool IsConstant() const    { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Constant); }
-        inline bool IsAddressable() const { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Addressable); }
+        [[nodiscard]] inline bool IsConstant() const    { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Constant); }
+        [[nodiscard]] inline bool IsAddressable() const { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Addressable); }
     };
 
     using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;
@@ -136,12 +136,12 @@ struct Program : virtual Object
     };
 
     // Create Program instance
-    static Ptr<Program> Create(Context& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Program> Create(Context& context, const Settings& settings);
 
     // Program interface
-    virtual const Settings&      GetSettings() const = 0;
-    virtual const Shader::Types& GetShaderTypes() const = 0;
-    virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
+    [[nodiscard]] virtual const Settings&      GetSettings() const = 0;
+    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const = 0;
+    [[nodiscard]] virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
 };
 
 } // namespace Methane::Graphics

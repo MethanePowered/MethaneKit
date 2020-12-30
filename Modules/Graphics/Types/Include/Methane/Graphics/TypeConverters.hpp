@@ -29,18 +29,18 @@ namespace Methane::Graphics
 {
 
 template<typename TIndex>
-PixelFormat GetIndexFormat(TIndex) noexcept          { return PixelFormat::Unknown; }
+[[nodiscard]] PixelFormat GetIndexFormat(TIndex) noexcept          { return PixelFormat::Unknown; }
 
 template<>
-inline PixelFormat GetIndexFormat(uint32_t) noexcept { return PixelFormat::R32Uint; }
+[[nodiscard]] inline PixelFormat GetIndexFormat(uint32_t) noexcept { return PixelFormat::R32Uint; }
 
 template<>
-inline PixelFormat GetIndexFormat(int32_t) noexcept  { return PixelFormat::R32Sint; }
+[[nodiscard]] inline PixelFormat GetIndexFormat(int32_t) noexcept  { return PixelFormat::R32Sint; }
 
 template<>
-inline PixelFormat GetIndexFormat(uint16_t) noexcept { return PixelFormat::R16Uint; }
+[[nodiscard]] inline PixelFormat GetIndexFormat(uint16_t) noexcept { return PixelFormat::R16Uint; }
 
 template<>
-inline PixelFormat GetIndexFormat(int16_t) noexcept  { return PixelFormat::R16Sint; }
+[[nodiscard]] inline PixelFormat GetIndexFormat(int16_t) noexcept  { return PixelFormat::R16Sint; }
 
 } // namespace Methane::Graphics

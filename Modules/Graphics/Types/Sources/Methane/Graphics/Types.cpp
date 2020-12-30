@@ -31,6 +31,7 @@ Methane graphics type functions implementation.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 inline uint32_t GetNormalizedDimensionSize(int32_t offset, uint32_t dimension_size, uint32_t render_attachment_size)
 {
     return std::min(dimension_size + offset, render_attachment_size) - (offset >= 0 ? offset : 0);

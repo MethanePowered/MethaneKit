@@ -143,7 +143,7 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
 
         const HelpLines help_lines = controller_ptr->GetHelp();
 
-        all_help_lines.push_back({ "", controller_ptr->GetControllerName() });
+        all_help_lines.emplace_back("", controller_ptr->GetControllerName());
         all_help_lines.insert(all_help_lines.end(), help_lines.begin(), help_lines.end());
     }
     return all_help_lines;

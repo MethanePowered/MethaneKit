@@ -33,7 +33,7 @@ namespace Methane::Graphics
 struct BlitCommandList : virtual CommandList
 {
     // Create BlitCommandList instance
-    static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
+    [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
 };
 
 } // namespace Methane::Graphics

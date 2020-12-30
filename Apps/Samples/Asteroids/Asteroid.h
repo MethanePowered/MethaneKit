@@ -65,7 +65,7 @@ public:
 
         void Randomize(uint32_t random_seed = 1337);
 
-        const gfx::Vector2f& GetDepthRange() const { return m_depth_range; }
+        [[nodiscard]] const gfx::Vector2f& GetDepthRange() const { return m_depth_range; }
 
     private:
         gfx::Vector2f m_depth_range;

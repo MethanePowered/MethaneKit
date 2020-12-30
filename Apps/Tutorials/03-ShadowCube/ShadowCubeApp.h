@@ -102,9 +102,10 @@ private:
     public:
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        void                SetShadowPassUniforms(MeshUniforms&& uniforms) noexcept             { m_shadow_pass_uniforms = std::move(uniforms); }
-        const MeshUniforms& GetShadowPassUniforms() const noexcept                              { return m_shadow_pass_uniforms; }
-        const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
+        void SetShadowPassUniforms(MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
+
+        [[nodiscard]] const MeshUniforms&                GetShadowPassUniforms() const noexcept               { return m_shadow_pass_uniforms; }
+        [[nodiscard]] const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
 
     private:
         MeshUniforms                m_shadow_pass_uniforms{};

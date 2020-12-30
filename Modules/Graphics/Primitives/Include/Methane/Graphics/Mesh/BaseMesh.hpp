@@ -46,35 +46,35 @@ public:
         META_CHECK_ARG_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
-    const Vertices& GetVertices() const noexcept       { return m_vertices; }
-    Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
-    Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
+    [[nodiscard]] const Vertices& GetVertices() const noexcept       { return m_vertices; }
+    [[nodiscard]] Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
+    [[nodiscard]] Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
 
 protected:
     template<typename FType>
-    FType& GetVertexField(VType& vertex, VertexField field) noexcept
+    [[nodiscard]] FType& GetVertexField(VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
-        return *reinterpret_cast<FType*>(reinterpret_cast<char*>(&vertex) + field_offset);
+        return *reinterpret_cast<FType*>(reinterpret_cast<std::byte*>(&vertex) + field_offset);
     }
 
     template<typename FType>
-    const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
+    [[nodiscard]] const FType& GetVertexField(const VType& vertex, VertexField field) noexcept
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
         assert(field_offset >= 0);
-        return *reinterpret_cast<const FType*>(reinterpret_cast<const char*>(&vertex) + field_offset);
+        return *reinterpret_cast<const FType*>(reinterpret_cast<const std::byte*>(&vertex) + field_offset);
     }
 
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;
     Index AddEdgeMidpoint(const Edge& edge, EdgeMidpoints& edge_midpoints)
     {
         META_FUNCTION_TASK();
-        const auto edge_midpoint_it = edge_midpoints.find(edge);
-        if (edge_midpoint_it != edge_midpoints.end())
+        if (const auto edge_midpoint_it = edge_midpoints.find(edge);
+            edge_midpoint_it != edge_midpoints.end())
             return edge_midpoint_it->second;
 
         const VType& v1 = m_vertices[edge.first_index];
@@ -111,7 +111,7 @@ protected:
         }
 
         const auto v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
-        edge_midpoints.emplace(edge, v_mid_index);
+        edge_midpoints.try_emplace(edge, v_mid_index);
         m_vertices.push_back(v_mid);
         return v_mid_index;
     }

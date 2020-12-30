@@ -40,20 +40,20 @@ namespace Methane::Data
 class FileProvider : public Provider
 {
 public:
-    static Provider& Get()
+    [[nodiscard]] static Provider& Get()
     {
         META_FUNCTION_TASK();
         static FileProvider s_instance;
         return s_instance;
     }
 
-    bool HasData(const std::string& path) const noexcept override
+    [[nodiscard]] bool HasData(const std::string& path) const noexcept override
     {
         META_FUNCTION_TASK();
         return std::ifstream(GetFullFilePath(path)).good();
     }
 
-    Data::Chunk GetData(const std::string& path) const override
+    [[nodiscard]] Data::Chunk GetData(const std::string& path) const override
     {
         META_FUNCTION_TASK();
 
@@ -61,13 +61,19 @@ public:
         std::ifstream fs(file_path, std::ios::binary);
         META_CHECK_ARG_DESCR(path, fs.good(), "File path does not exist '{}'", file_path);
 
-        return Data::Chunk(Data::Bytes(std::istreambuf_iterator<char>(fs), {}));
+        fs.seekg(0,std::ios::end);
+        Data::Bytes buffer(static_cast<size_t>(fs.tellg()), {});
+
+        fs.seekg(0,std::ios::beg);
+        fs.read(reinterpret_cast<char*>(buffer.data()), buffer.size()); // NOSONAR
+
+        return Data::Chunk(std::move(buffer));
     }
 
 protected:
     FileProvider() = default;
 
-    std::string GetFullFilePath(const std::string& path) const
+    [[nodiscard]] std::string GetFullFilePath(const std::string& path) const
     {
         META_FUNCTION_TASK();
 #ifdef _WIN32

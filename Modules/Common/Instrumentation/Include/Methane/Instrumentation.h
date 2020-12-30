@@ -29,11 +29,13 @@ NOTE:
 
 #pragma once
 
+#include "IttApiHelper.h"
+#include "ScopeTimer.h"
+
 #include <Tracy.hpp>
 #include <TracyC.h>
 
-#include "IttApiHelper.h"
-#include "ScopeTimer.h"
+#include <string_view>
 
 #if defined(ITT_INSTRUMENTATION_ENABLED) || defined(TRACY_ENABLE)
 #define META_INSTRUMENTATION_ENABLED
@@ -41,7 +43,7 @@ NOTE:
 
 namespace Methane
 {
-void SetThreadName(const char* name);
+void SetThreadName(std::string_view name);
 }
 
 constexpr const char* g_methane_itt_domain_name = "Methane Kit";
@@ -138,7 +140,7 @@ ITT_DOMAIN_EXTERN();
 
 #include <Methane/Platform/Utils.h>
 
-#define META_LOG(/*const std::string& */message, ...) \
+#define META_LOG(/*std::string_view*/message, ...) \
     Methane::Platform::PrintToDebugOutput(fmt::format(message, ## __VA_ARGS__))
 
 #else // ifdef METHANE_LOGGING_ENABLED

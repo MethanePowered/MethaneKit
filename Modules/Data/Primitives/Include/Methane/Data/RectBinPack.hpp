@@ -67,8 +67,8 @@ private:
     public:
         explicit Bin(TRect rect) : m_rect(std::move(rect)) { META_FUNCTION_TASK(); }
 
-        bool         IsEmpty() const noexcept { return !m_small_bin_ptr && !m_large_bin_ptr; }
-        const TRect& GetRect() const noexcept { return m_rect; }
+        [[nodiscard]] bool         IsEmpty() const noexcept { return !m_small_bin_ptr && !m_large_bin_ptr; }
+        [[nodiscard]] const TRect& GetRect() const noexcept { return m_rect; }
 
         bool TryPack(TRect& rect, const TSize& char_margins)
         {
@@ -84,8 +84,8 @@ private:
 
                 // Split node rectangle either vertically or horizontally,
                 // by creating small rectangle and one big rectangle representing free area not taken by glyph
-                const TSize delta = m_rect.size - rect.size;
-                if (delta.width < delta.height)
+                if (const TSize delta = m_rect.size - rect.size;
+                    delta.width < delta.height)
                 {
                     // Small top rectangle, to the right of character glyph
                     m_small_bin_ptr = std::make_unique<Bin>(TRect{

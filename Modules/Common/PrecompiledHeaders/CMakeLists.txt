@@ -29,6 +29,7 @@ set(PRECOMPILED_HEADERS ${PRECOMPILED_HEADERS}
     # types
     <limits>
     <string>
+    <string_view>
     <sstream>
     <tuple>
     <optional>

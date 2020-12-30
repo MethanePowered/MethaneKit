@@ -49,6 +49,7 @@ public:
         META_FUNCTION_TASK();
     }
 
+    [[nodiscard]]
     size_t GetKeyboardActionsCount() const noexcept { return m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size(); }
     
     void OnKeyboardChanged(Key button, KeyState key_state, const StateChange& state_change)
@@ -57,19 +58,20 @@ public:
         if (state_change.changed_properties == State::Properties::None)
             return;
         
-        const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state_change.current);
-        if (action_by_keyboard_state_it != m_action_by_keyboard_state.end())
+        if (const auto action_by_keyboard_state_it = m_action_by_keyboard_state.find(state_change.current);
+            action_by_keyboard_state_it != m_action_by_keyboard_state.end())
         {
             OnKeyboardStateAction(action_by_keyboard_state_it->second);
         }
         
-        const auto action_by_keyboard_key_it = m_action_by_keyboard_key.find(button);
-        if (action_by_keyboard_key_it != m_action_by_keyboard_key.end())
+        if (const auto action_by_keyboard_key_it = m_action_by_keyboard_key.find(button);
+            action_by_keyboard_key_it != m_action_by_keyboard_key.end())
         {
             OnKeyboardKeyAction(action_by_keyboard_key_it->second, key_state);
         }
     }
-    
+
+    [[nodiscard]]
     Input::IHelpProvider::HelpLines GetKeyboardHelp() const
     {
         META_FUNCTION_TASK();
@@ -80,10 +82,10 @@ public:
         help_lines.reserve(m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size());
         for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            const auto action_by_keyboard_state_it = std::find_if(m_action_by_keyboard_state.begin(), m_action_by_keyboard_state.end(),
-                                                                  [action](const std::pair<Keyboard::State, ActionEnum>& keys_and_action)
-                                                                  { return keys_and_action.second == action; });
-            if (action_by_keyboard_state_it != m_action_by_keyboard_state.end())
+            if (const auto action_by_keyboard_state_it = std::find_if(m_action_by_keyboard_state.begin(), m_action_by_keyboard_state.end(),
+                                                                      [action](const std::pair<Keyboard::State, ActionEnum>& keys_and_action)
+                                                                      { return keys_and_action.second == action; });
+                action_by_keyboard_state_it != m_action_by_keyboard_state.end())
             {
                 help_lines.push_back({
                     action_by_keyboard_state_it->first.ToString(),
@@ -91,10 +93,10 @@ public:
                 });
             }
             
-            const auto action_by_keyboard_key_it = std::find_if(m_action_by_keyboard_key.begin(), m_action_by_keyboard_key.end(),
-                                                                [action](const std::pair<Keyboard::Key, ActionEnum>& key_and_action)
-                                                                { return key_and_action.second == action; });
-            if (action_by_keyboard_key_it != m_action_by_keyboard_key.end())
+            if (const auto action_by_keyboard_key_it = std::find_if(m_action_by_keyboard_key.begin(), m_action_by_keyboard_key.end(),
+                                                                    [action](const std::pair<Keyboard::Key, ActionEnum>& key_and_action)
+                                                                    { return key_and_action.second == action; });
+                action_by_keyboard_key_it != m_action_by_keyboard_key.end())
             {
                 help_lines.push_back({
                     Keyboard::KeyConverter(action_by_keyboard_key_it->first).ToString(),
@@ -106,20 +108,20 @@ public:
         return help_lines;
     }
 
+    [[nodiscard]]
     Keyboard::State GetKeyboardStateByAction(ActionEnum action) const noexcept
     {
         META_FUNCTION_TASK();
-        const State& key_state = GetKeyboardStateByAction(m_action_by_keyboard_state, action);
-        if (key_state)
+        if (const State& key_state = GetKeyboardStateByAction(m_action_by_keyboard_state, action); key_state)
             return key_state;
 
-        const Key key = GetKeyboardKeyByAction(m_action_by_keyboard_key, action);
-        if (key != Key::Unknown)
+        if (const Key key = GetKeyboardKeyByAction(m_action_by_keyboard_key, action); key != Key::Unknown)
             return Keyboard::State({ key });
 
         return Keyboard::State();
     }
 
+    [[nodiscard]]
     static const State& GetKeyboardStateByAction(const ActionByKeyboardState& action_by_keyboard_state, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
@@ -132,6 +134,7 @@ public:
         return action_by_keyboard_state_it == action_by_keyboard_state.end() ? empty_state : action_by_keyboard_state_it->first;
     }
 
+    [[nodiscard]]
     static Key GetKeyboardKeyByAction(const ActionByKeyboardKey& action_by_key, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
@@ -145,10 +148,11 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    virtual void        OnKeyboardKeyAction(ActionEnum action, KeyState key_state) = 0;
-    virtual void        OnKeyboardStateAction(ActionEnum action) = 0;
-    virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
+    virtual void OnKeyboardKeyAction(ActionEnum action, KeyState key_state) = 0;
+    virtual void OnKeyboardStateAction(ActionEnum action) = 0;
+    [[nodiscard]] virtual std::string GetKeyboardActionName(ActionEnum action) const = 0;
 
+    [[nodiscard]]
     ActionEnum GetKeyboardActionByState(const State& state) const
     {
         META_FUNCTION_TASK();
@@ -156,7 +160,8 @@ protected:
         return (action_by_keyboard_state_it != m_action_by_keyboard_state.end())
               ? action_by_keyboard_state_it->second : ActionEnum::None;
     }
-    
+
+    [[nodiscard]]
     ActionEnum GetKeyboardActionByKey(Key key) const
     {
         META_FUNCTION_TASK();

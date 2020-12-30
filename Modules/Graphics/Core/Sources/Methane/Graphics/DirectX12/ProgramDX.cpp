@@ -46,6 +46,7 @@ struct DescriptorOffsets
     uint32_t mutable_offset = 0;
 };
 
+[[nodiscard]]
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
@@ -76,6 +77,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
     }
 }
 
+[[nodiscard]]
 static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
     META_FUNCTION_TASK();
@@ -85,6 +87,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
         return DescriptorHeap::Type::ShaderResources;
 }
 
+[[nodiscard]]
 static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type)
 {
     META_FUNCTION_TASK();
@@ -161,14 +164,13 @@ void ProgramDX::InitRootSignature()
     root_parameters.reserve(binding_by_argument.size());
 
     std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
-    for (auto& argument_and_binding : binding_by_argument)
+    for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL(argument_and_binding.second);
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-        const Argument&                    shader_argument = argument_and_binding.first;
-        auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_and_binding.second);
+        auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
-        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(shader_argument.shader_type);
+        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.shader_type);
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
         root_parameters.emplace_back();

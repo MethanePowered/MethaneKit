@@ -50,7 +50,7 @@ static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
 } };
 
 static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
-static const std::map<std::string, gfx::Color3f> g_font_color_by_name   {
+static const std::map<std::string, gfx::Color3f, std::less<>> g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },
@@ -93,6 +93,7 @@ static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_ac
     { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
 };
 
+[[nodiscard]]
 static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical_pos_in_dots, const gfx::FrameSize& frame_size_in_dots)
 {
     return gui::UnitRect(
@@ -250,38 +251,29 @@ void TypographyApp::UpdateFontAtlasBadges()
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
-        const Ptr<gui::Badge>& font_atlas_badge_ptr = *badge_it;
-        const auto font_ref_it = std::find_if(font_refs.begin(), font_refs.end(),
-            [&font_atlas_badge_ptr, &context](const Ref<gui::Font>& font_ref)
-            {
-                return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get();
-            }
-        );
-        if (font_ref_it == font_refs.end())
-        {
-            badge_it = m_font_atlas_badges.erase(badge_it);
-        }
-        else
+        META_CHECK_ARG_NOT_NULL(*badge_it);
+        if (const gui::Badge& badge = **badge_it;
+            std::any_of(font_refs.begin(), font_refs.end(),
+                [&badge, &context](const Ref<gui::Font>& font_ref)
+                { return std::addressof(badge.GetTexture()) == font_ref.get().GetAtlasTexturePtr(context).get(); }))
         {
             ++badge_it;
+            continue;
         }
+
+        badge_it = m_font_atlas_badges.erase(badge_it);
     }
 
     // Add new font atlas badges
     for(const Ref<gui::Font>& font_ref : font_refs)
     {
         const Ptr<gfx::Texture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
-        if (!font_atlas_texture_ptr)
-            continue;
-
-        const auto font_atlas_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                   [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-            {
-                return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
-            }
-        );
-
-        if (font_atlas_ptr_it != m_font_atlas_badges.end())
+        if (!font_atlas_texture_ptr ||
+            std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                        [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                        {
+                            return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
+                        }))
             continue;
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture_ptr));

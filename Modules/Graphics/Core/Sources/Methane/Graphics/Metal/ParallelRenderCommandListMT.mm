@@ -43,14 +43,28 @@ ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& comma
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListMT::ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+void ParallelRenderCommandListMT::Reset(DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    ResetCommandEncoder();
+    ParallelRenderCommandListBase::Reset(p_debug_group);
+}
+
+void ParallelRenderCommandListMT::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    if (ResetCommandEncoder())
+    {
+        static_cast<RenderStateMT&>(render_state).InitializeNativeStates();
+    }
+    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
+}
+
+bool ParallelRenderCommandListMT::ResetCommandEncoder()
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())
-    {
-        ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
-        return;
-    }
+        return false;
 
     // NOTE: If command buffer was not created for current frame yet,
     // then render pass descriptor should be reset with new frame drawable
@@ -59,13 +73,7 @@ void ParallelRenderCommandListMT::ResetWithState(const Ptr<RenderState>& render_
 
     id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]);
-    
-    if (render_state_ptr)
-    {
-        static_cast<RenderStateMT&>(*render_state_ptr).InitializeNativeStates();
-    }
-
-    ParallelRenderCommandListBase::ResetWithState(render_state_ptr, p_debug_group);
+    return true;
 }
 
 RenderPassMT& ParallelRenderCommandListMT::GetRenderPassMT()

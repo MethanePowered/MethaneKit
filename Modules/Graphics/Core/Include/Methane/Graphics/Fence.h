@@ -34,7 +34,7 @@ struct CommandQueue;
 
 struct Fence : virtual Object
 {
-    static Ptr<Fence> Create(CommandQueue& command_queue);
+    [[nodiscard]] static Ptr<Fence> Create(CommandQueue& command_queue);
 
     // Fence interface
     virtual void Signal() = 0;

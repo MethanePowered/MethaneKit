@@ -42,14 +42,14 @@ namespace RESOURCE_NAMESPACE
 class ResourceProvider final : public Methane::Data::FileProvider
 {
 public:
-    static Provider& Get()
+    [[nodiscard]] static Provider& Get()
     {
         META_FUNCTION_TASK();
         static ResourceProvider s_instance;
         return s_instance;
     }
 
-    bool HasData(const std::string& path) const noexcept override
+    [[nodiscard]] bool HasData(const std::string& path) const noexcept override
     {
         META_FUNCTION_TASK();
 
@@ -59,7 +59,7 @@ public:
         return FileProvider::HasData(path);
     }
 
-    Methane::Data::Chunk GetData(const std::string& path) const override
+    [[nodiscard]] Methane::Data::Chunk GetData(const std::string& path) const override
     {
         META_FUNCTION_TASK();
 
