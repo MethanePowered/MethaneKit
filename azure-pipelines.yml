@@ -225,7 +225,7 @@ jobs:
     platform: 'MacOS'
     configuration: 'Debug'
     generatorName: 'Xcode'
-    cmakeFlags: $(buildScanCmakeFlags) -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+    cmakeFlags: $(buildScanCmakeFlags) -DCMAKE_OSX_ARCHITECTURES="x86_64"
     buildName: '$(platform)-$(configuration)-SonarScan'
     buildDir: 'Build/Output/$(buildName)/Build'
     installDir: 'Build/Output/$(buildName)/Install'
@@ -258,7 +258,7 @@ jobs:
                 fi
                 mv default.profraw "$test_exe$prof_raw_ext"
                 xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
                 echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
               done
               echo List of generated coverage files in directory $PWD/Coverage
