@@ -55,7 +55,7 @@ void ParallelRenderCommandListMT::ResetWithState(RenderState& render_state, Debu
     META_FUNCTION_TASK();
     if (ResetCommandEncoder())
     {
-        static_cast<RenderStateMT&>(render_state.InitializeNativeStates();
+        static_cast<RenderStateMT&>(render_state).InitializeNativeStates();
     }
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
