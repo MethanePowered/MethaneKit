@@ -271,7 +271,7 @@ const Texture& ScreenQuad::GetTexture() const
 void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
-    cmd_list.ResetWithState(m_render_state_ptr, p_debug_group);
+    cmd_list.ResetOnceWithState(m_render_state_ptr, p_debug_group);
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(*m_const_program_bindings_ptr);
     cmd_list.SetVertexBuffers(*m_vertex_buffer_set_ptr);

@@ -71,6 +71,7 @@ struct CommandList : virtual Object
     virtual void  PushDebugGroup(DebugGroup& debug_group) = 0;
     virtual void  PopDebugGroup() = 0;
     virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void  ResetOnce(DebugGroup* p_debug_group = nullptr) = 0;
     virtual void  SetProgramBindings(ProgramBindings& program_bindings,
                                      ProgramBindings::ApplyBehavior apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  Commit() = 0;

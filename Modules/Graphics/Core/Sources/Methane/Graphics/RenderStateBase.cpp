@@ -199,7 +199,19 @@ RenderState::Groups RenderState::Settings::Compare(const Settings& left, const S
     
     return changed_state_groups;
 }
-    
+
+bool RenderState::Settings::operator==(const Settings& other) const noexcept
+{
+    return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) ==
+           std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
+}
+
+bool RenderState::Settings::operator!=(const Settings& other) const noexcept
+{
+    return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) !=
+           std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
+}
+
 RenderStateBase::RenderStateBase(RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)

@@ -55,6 +55,7 @@ struct RenderCommandList : virtual CommandList
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
     [[nodiscard]] virtual RenderPass& GetRenderPass() const noexcept = 0;
     virtual void ResetWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetOnceWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) = 0;
     virtual void SetViewState(ViewState& view_state) = 0;
     virtual void SetVertexBuffers(BufferSet& vertex_buffers) = 0;

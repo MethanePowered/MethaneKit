@@ -67,6 +67,18 @@ void RenderCommandListBase::ResetWithState(const Ptr<RenderState>& render_state_
     }
 }
 
+void RenderCommandListBase::ResetOnceWithState(const Ptr<RenderState>& render_state_ptr, DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == render_state_ptr.get())
+    {
+        META_LOG("{} Command list '{}' was already RESET with the same render state", magic_enum::enum_name(GetType()), GetName());
+        return;
+    }
+
+    ResetWithState(render_state_ptr, p_debug_group);
+}
+
 void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)
 {
     META_FUNCTION_TASK();

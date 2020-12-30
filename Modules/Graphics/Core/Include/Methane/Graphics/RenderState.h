@@ -225,6 +225,8 @@ public:
         Color4f      blending_color;
 
         [[nodiscard]] static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
+        [[nodiscard]] bool operator==(const Settings& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Settings& other) const noexcept;
     };
 
     // Create RenderState instance

@@ -139,6 +139,18 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     }
 }
 
+void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
+{
+    META_FUNCTION_TASK();
+    if (m_state == State::Encoding)
+    {
+        META_LOG("{} Command list '{}' was already RESET", magic_enum::enum_name(GetType()), GetName());
+        return;
+    }
+
+    Reset(p_debug_group);
+}
+
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
