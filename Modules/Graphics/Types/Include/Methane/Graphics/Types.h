@@ -29,6 +29,8 @@ Methane primitive graphics types.
 #include <cml/matrix.h>
 #include <cml/mathlib/constants.h>
 
+#include <hlsl++.h>
+
 #include <string>
 #include <cstdint>
 
