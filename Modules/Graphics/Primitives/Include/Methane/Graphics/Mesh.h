@@ -23,8 +23,9 @@ Abstract mesh class
 
 #pragma once
 
-#include <Methane/Graphics/Types.h>
+#include <Methane/Data/Types.h>
 
+#include <cml/vector.h>
 #include <magic_enum.hpp>
 #include <vector>
 #include <array>
@@ -36,11 +37,11 @@ namespace Methane::Graphics
 class Mesh
 {
 public:
-    using Position   = Vector3f;
-    using Position2D = Vector2f;
-    using Normal     = Vector3f;
-    using Color      = Vector4f;
-    using TexCoord   = Vector2f;
+    using Position   = cml::vector3f;
+    using Position2D = cml::vector2f;
+    using Normal     = cml::vector3f;
+    using Color      = cml::vector4f;
+    using TexCoord   = cml::vector2f;
     using Index      = uint16_t;
     using Indices    = std::vector<Index>;
 

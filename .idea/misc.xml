@@ -21,6 +21,7 @@
       <file path="$PROJECT_DIR$/Externals/DirectXTex" />
       <file path="$PROJECT_DIR$/Externals/FMT" />
       <file path="$PROJECT_DIR$/Externals/FreeType2" />
+      <file path="$PROJECT_DIR$/Externals/HLSLpp" />
       <file path="$PROJECT_DIR$/Externals/IttApi" />
       <file path="$PROJECT_DIR$/Externals/MagicEnum" />
       <file path="$PROJECT_DIR$/Externals/OpenImageIO" />

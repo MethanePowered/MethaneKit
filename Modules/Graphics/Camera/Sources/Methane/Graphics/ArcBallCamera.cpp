@@ -39,15 +39,15 @@ static inline float Square(float x)     { return x * x; }
 [[nodiscard]]
 static inline float UnitSign(float x)   { return x / std::fabs(x); }
 
-ArcBallCamera::ArcBallCamera(Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
-    : Camera(axis_orientation)
+ArcBallCamera::ArcBallCamera(Pivot pivot, bool is_left_handed_axes) noexcept
+    : Camera(is_left_handed_axes)
     , m_pivot(pivot)
 {
     META_FUNCTION_TASK();
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
-    : Camera(axis_orientation)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, bool is_left_handed_axes) noexcept
+    : Camera(is_left_handed_axes)
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {
@@ -66,9 +66,9 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
     META_FUNCTION_TASK();
 
     const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
-    const Vector3f vectors_cross = cml::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
-    const Vector3f rotation_axis = vectors_cross.normalize();
-    const float    rotation_angle = std::atan2(vectors_cross.length(), cml::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
+    const Vector3f vectors_cross = hlslpp::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
+    const Vector3f rotation_axis = hlslpp::normalize(vectors_cross);
+    const float    rotation_angle = std::atan2(hlslpp::length(vectors_cross), hlslpp::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
 
     RotateInView(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 
@@ -93,12 +93,12 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
     // For secondary screen point the primary result is used
     const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
-                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere[2]) > 0.000001F);
+                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere.z) > 0.000001F);
     const float inside_sphere_sign = inside_sphere ? 1.F : -1.F;
 
     // Reflect coordinates for natural camera movement
     const Point2f mirror_multipliers = m_p_view_camera
-                                     ? Point2f(inside_sphere_sign, -1.F ) * UnitSign(cml::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
+                                     ? Point2f(inside_sphere_sign, -1.F ) * UnitSign(hlslpp::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
                                      : Point2f(-1.F, 1.F);
     screen_point.SetX(screen_point.GetX() * mirror_multipliers.GetX());
     screen_point.SetY(screen_point.GetY() * mirror_multipliers.GetY());
@@ -121,7 +121,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         }
     }
 
-    return cml::normalize(Vector3f(screen_point.AsVector(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F));
+    return hlslpp::normalize(Vector3f(screen_point.GetX(), screen_point.GetY(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F));
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
@@ -139,8 +139,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     META_FUNCTION_TASK();
-    Matrix44f view_rotation_matrix { };
-    cml::matrix_rotation_axis_angle(view_rotation_matrix, view_axis, angle_rad);
+    const Matrix44f view_rotation_matrix = hlslpp::float4x4_rotate_axis(view_axis, -angle_rad);
     const Camera* p_view_camera = GetExternalViewCamera();
 
     const Vector4f look_in_view = p_view_camera
@@ -148,17 +147,17 @@ void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, con
                                 : Vector4f(0.F, 0.F, GetAimDistance(base_orientation), 1.F);
 
     const Vector3f look_dir     = p_view_camera
-                                ? p_view_camera->TransformViewToWorld(view_rotation_matrix * look_in_view).subvector(3)
-                                : TransformViewToWorld(view_rotation_matrix * look_in_view, base_orientation).subvector(3);
+                                ? p_view_camera->TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix)).xyz
+                                : TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix), base_orientation).xyz;
 
     const Vector4f up_in_view   = p_view_camera
                                 ? p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.F))
-                                : Vector4f(0.F, base_orientation.up.length(), 0.F, 1.F);
+                                : Vector4f(0.F, hlslpp::length(base_orientation.up), 0.F, 1.F);
 
     SetOrientationUp(
         p_view_camera
-            ? p_view_camera->TransformViewToWorld(view_rotation_matrix * up_in_view).subvector(3)
-            : TransformViewToWorld(view_rotation_matrix * up_in_view, base_orientation).subvector(3)
+            ? p_view_camera->TransformViewToWorld(hlslpp::mul(up_in_view, view_rotation_matrix)).xyz
+            : TransformViewToWorld(hlslpp::mul(up_in_view, view_rotation_matrix), base_orientation).xyz
     );
 
     ApplyLookDirection(look_dir);

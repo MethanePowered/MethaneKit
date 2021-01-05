@@ -53,7 +53,7 @@ public:
         float fov_deg;
     };
 
-    explicit Camera(cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    explicit Camera(bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
 
     inline void Resize(const Data::FloatSize& screen_size) noexcept         { m_screen_size = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
     inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }
@@ -89,21 +89,18 @@ protected:
     float GetFovAngleY() const noexcept;
 
     static inline Vector3f GetLookDirection(const Orientation& orientation) noexcept   { return orientation.aim - orientation.eye; }
-    static inline float    GetAimDistance(const Orientation& orientation) noexcept     { return GetLookDirection(orientation).length(); }
+    static inline float    GetAimDistance(const Orientation& orientation) noexcept     { return hlslpp::length(GetLookDirection(orientation)); }
 
-    Matrix44f GetViewMatrix(const Orientation& orientation) const noexcept;
-    void GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept;
-    void GetViewMatrix(Matrix44f& out_view) const noexcept { return GetViewMatrix(out_view, m_current_orientation); }
-    void GetProjMatrix(Matrix44f& out_proj) const;
+    Matrix44f CreateViewMatrix(const Orientation& orientation) const noexcept;
+    Matrix44f CreateProjMatrix() const;
 
-    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).subvector(3); }
-    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).subvector(3); }
+    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).xyz; }
+    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).xyz; }
     Vector4f TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept;
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
 private:
-    const cml::AxisOrientation m_axis_orientation;
-
+    const bool        m_is_left_handed_axes;
     Projection        m_projection            = Projection::Perspective;
     Data::FloatSize   m_screen_size           { 1.F, 1.F };
     float             m_aspect_ratio          = 1.0F;

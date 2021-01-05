@@ -85,17 +85,17 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     auto  random_noise = std::uniform_real_distribution<float>(0.0F, 10000.0F);
     const float noise = random_noise(rng);
 
-    m_depth_range[0] = std::numeric_limits<float>::max();
-    m_depth_range[1] = std::numeric_limits<float>::min();
+    m_depth_range.first = std::numeric_limits<float>::max();
+    m_depth_range.second = std::numeric_limits<float>::min();
 
     for (size_t vertex_index = 0; vertex_index < GetVertexCount(); ++vertex_index)
     {
         Vertex& vertex = GetMutableVertex(vertex_index);
-        vertex.position *= perlin_noise(gfx::Vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
+        vertex.position *= perlin_noise(cml::vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
 
         const float vertex_depth = vertex.position.length();
-        m_depth_range[0] = std::min(m_depth_range[0], vertex_depth);
-        m_depth_range[1] = std::max(m_depth_range[1], vertex_depth);
+        m_depth_range.first = std::min(m_depth_range.first, vertex_depth);
+        m_depth_range.second = std::max(m_depth_range.second, vertex_depth);
     }
 
     ComputeAverageNormals();

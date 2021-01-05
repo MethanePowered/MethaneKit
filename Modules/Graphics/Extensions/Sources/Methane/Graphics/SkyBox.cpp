@@ -113,14 +113,14 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
 void SkyBox::Update()
 {
     META_FUNCTION_TASK();
-
-    Matrix44f model_scale_matrix;
-    cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
-
-    Matrix44f model_translate_matrix;
-    cml::matrix_translation(model_translate_matrix, m_settings.view_camera.GetOrientation().eye); // Sky-box is centered in the camera eye to simulate infinity distance
-
-    m_mesh_buffers.SetFinalPassUniforms({ model_scale_matrix * model_translate_matrix * m_settings.view_camera.GetViewProjMatrix() });
+    m_mesh_buffers.SetFinalPassUniforms({
+        hlslpp::transpose(hlslpp::mul(
+            hlslpp::mul(
+                hlslpp::float4x4_scale(m_settings.scale),
+                hlslpp::float4x4_translate(m_settings.view_camera.GetOrientation().eye)),
+            m_settings.view_camera.GetViewProjMatrix()
+        ))
+    });
 }
 
 void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state)

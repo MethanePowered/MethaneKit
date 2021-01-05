@@ -520,14 +520,12 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     const gfx::FrameSize& content_size = text_mesh.GetContentSize();
     META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
-    gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.F / static_cast<float>(content_size.width), 2.F / static_cast<float>(content_size.height));
-
-    gfx::Matrix44f translate_text_matrix;
-    cml::matrix_translation_2D(translate_text_matrix, -1.F, 1.F);
-
     Uniforms uniforms{
-        scale_text_matrix * translate_text_matrix
+        hlslpp::mul(
+            hlslpp::float4x4_scale(2.F / static_cast<float>(content_size.width),
+                                   2.F / static_cast<float>(content_size.height),
+                                   1.f),
+            hlslpp::float4x4_translate(-1.F, 1.F, 0.F))
     };
 
     const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));

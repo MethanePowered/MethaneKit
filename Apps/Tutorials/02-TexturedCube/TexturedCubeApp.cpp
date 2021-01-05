@@ -54,6 +54,8 @@ TexturedCubeApp::TexturedCubeApp()
     m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
+    m_shader_uniforms.model_matrix = hlslpp::float4x4_scale(m_cube_scale);
+
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
@@ -175,9 +177,8 @@ void TexturedCubeApp::Init()
 
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    gfx::Matrix33f light_rotate_matrix;
-    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.F * delta_seconds / 4.F));
-    m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
+    gfx::Matrix33f light_rotate_matrix = hlslpp::float3x3_rotate_axis(m_camera.GetOrientation().up, cml::rad(static_cast<float>(delta_seconds * 360.F / 4.F)));
+    m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;
 }
@@ -202,12 +203,8 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    gfx::Matrix44f model_matrix;
-    cml::matrix_uniform_scale(model_matrix, m_cube_scale);
-
-    m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
-    m_shader_uniforms.model_matrix   = model_matrix;
-    m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.F);
+    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
+    m_shader_uniforms.eye_position = gfx::Vector4f(m_camera.GetOrientation().eye, 1.F);
     
     return true;
 }

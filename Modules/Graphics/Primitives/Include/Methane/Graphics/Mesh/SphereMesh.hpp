@@ -25,6 +25,9 @@ Sphere mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
+#include <cml/matrix.h>
+#include <cml/mathlib/constants.h>
+
 namespace Methane::Graphics
 {
 
@@ -93,13 +96,13 @@ private:
         const float texcoord_long_spacing = 1.F / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.F / (m_lat_lines_count + 1);
 
-        Matrix33f pitch_step_matrix{ };
-        Matrix33f yaw_step_matrix{ };
-        cml::matrix_rotation_world_x(pitch_step_matrix, -cml::constants<float>::pi() / (m_lat_lines_count - 1));
-        cml::matrix_rotation_world_y(yaw_step_matrix, -2.0 * cml::constants<float>::pi() / m_long_lines_count);
+        cml::matrix33f pitch_step_matrix{ };
+        cml::matrix33f yaw_step_matrix{ };
+        cml::matrix_rotation_world_x(pitch_step_matrix, cml::constants<float>::pi() / (m_lat_lines_count - 1));
+        cml::matrix_rotation_world_y(yaw_step_matrix, 2.0 * cml::constants<float>::pi() / m_long_lines_count);
 
-        Matrix33f pitch_matrix{ };
-        Matrix33f yaw_matrix{ };
+        cml::matrix33f pitch_matrix{ };
+        cml::matrix33f yaw_matrix{ };
         pitch_matrix.identity();
 
         if (!has_texcoord)
@@ -115,8 +118,8 @@ private:
 
             for(uint32_t long_line_index = 0; long_line_index < actual_long_lines_count; ++long_line_index)
             {
-                const Matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
-                const uint32_t  vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
+                const cml::matrix33f rotation_matrix = pitch_matrix * yaw_matrix;
+                const uint32_t       vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
 
                 VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
 

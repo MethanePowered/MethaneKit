@@ -42,22 +42,16 @@ Methane primitive graphics types.
 namespace Methane::Graphics
 {
 
-constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
+static constexpr bool g_is_left_handed_axes_orientation = true;
 
-// Use row-major order matrices for DirectX
-using Matrix22i = cml::matrix22i_r;
-using Matrix33i = cml::matrix33i_r;
-using Matrix44i = cml::matrix44i_r;
-using Matrix22f = cml::matrix22f_r;
-using Matrix33f = cml::matrix33f_r;
-using Matrix44f = cml::matrix44f_r;
+// All matrices have row-major storage order for compatibility with HLSL
+using Matrix22f = hlslpp::float2x2;
+using Matrix33f = hlslpp::float3x3;
+using Matrix44f = hlslpp::float4x4;
 
-using Vector2i = cml::vector2i;
-using Vector3i = cml::vector3i;
-using Vector4i = cml::vector4i;
-using Vector2f = cml::vector2f;
-using Vector3f = cml::vector3f;
-using Vector4f = cml::vector4f;
+using Vector2f = hlslpp::float2;
+using Vector3f = hlslpp::float3;
+using Vector4f = hlslpp::float4;
 
 using Depth = float;
 using Stencil = uint8_t;

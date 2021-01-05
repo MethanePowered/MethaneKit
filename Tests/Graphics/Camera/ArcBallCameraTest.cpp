@@ -22,6 +22,7 @@ Arc-Ball camera unit tests
 ******************************************************************************/
 
 #include <Methane/Graphics/ArcBallCamera.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Data/Types.h>
 #include <Methane/Checks.hpp>
 
@@ -51,11 +52,16 @@ bool compareEqual(Vector3f const& left, Vector3f const& right)
 {
     for (int i = 0; i < 3; ++i)
     {
-        if (std::fabs(left[i] - right[i]) > g_vectors_equal_epsilon)
+        if (std::fabs(left.f32[i] - right.f32[i]) > g_vectors_equal_epsilon)
             return false;
     }
     return true;
 }
+
+template<>
+struct StringMaker<Vector3f> {
+    static std::string convert(const Vector3f& v) { return fmt::format("{}", v); }
+};
 
 }
 
@@ -118,20 +124,15 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
 
 inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const Vector3f& axis, float angle_degrees)
 {
-    Matrix33f rotation_matrix;
-    cml::matrix_rotation_axis_angle(rotation_matrix, axis.normalize(), cml::rad(angle_degrees));
-    const Vector3f look_dir = rotation_matrix * (orientation.aim - orientation.eye);
-    const Vector3f up_dir = rotation_matrix * orientation.up;
+    Matrix33f rotation_matrix = hlslpp::float3x3_rotate_axis(hlslpp::normalize(axis), cml::rad(angle_degrees));
+    const Vector3f look_dir   = hlslpp::mul(orientation.aim - orientation.eye, rotation_matrix);
+    const Vector3f up_dir     = hlslpp::mul(orientation.up, rotation_matrix);
+
     switch (pivot)
     {
-    case ArcBallCamera::Pivot::Aim:
-        return { orientation.aim - look_dir, orientation.aim, up_dir };
-
-    case ArcBallCamera::Pivot::Eye:
-        return { orientation.eye, orientation.eye + look_dir, up_dir };
-
-    default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(pivot, { });
+    case ArcBallCamera::Pivot::Aim: return { orientation.aim - look_dir, orientation.aim, up_dir };
+    case ArcBallCamera::Pivot::Eye: return { orientation.eye, orientation.eye + look_dir, up_dir };
+    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(pivot, { });
     }
 }
 
@@ -177,7 +178,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, -g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_x, test_angle_deg), test_equality_epsilon);
         }
 
@@ -185,7 +186,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center - Point2f(g_test_radius_pixels * std::cos(test_angle_rad), 0.f)),
+                static_cast<Point2i>(g_test_screen_center + Point2f(g_test_radius_pixels * std::cos(test_angle_rad), 0.f)),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_y, test_angle_deg), test_equality_epsilon);
         }
 
@@ -193,7 +194,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2i(static_cast<int>(g_test_screen_center.GetX()), 0),
-                static_cast<Point2i>(g_test_screen_center - Point2f(g_test_radius_pixels * std::cos(test_angle_rad), g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center + Point2f(g_test_radius_pixels * std::cos(test_angle_rad), -g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }
     }
@@ -257,7 +258,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2i(static_cast<int>(g_test_screen_size.width), static_cast<int>(g_test_screen_center.GetY())),
-                Point2i(g_test_screen_center + Point2f(g_test_screen_center.GetY() * std::cos(test_angle_rad), -1.f * g_test_screen_center.GetY() * std::sin(test_angle_rad))),
+                Point2i(g_test_screen_center + Point2f(g_test_screen_center.GetY() * std::cos(test_angle_rad), g_test_screen_center.GetY() * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }
     }
@@ -305,7 +306,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_x, test_angle_deg), test_equality_epsilon);
         }
 
@@ -313,7 +314,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center - Point2f(g_test_radius_pixels * std::cos(test_angle_rad), 0.f)),
+                static_cast<Point2i>(g_test_screen_center + Point2f(g_test_radius_pixels * std::cos(test_angle_rad), 0.f)),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_y, test_angle_deg), test_equality_epsilon);
         }
 
@@ -321,7 +322,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2i(static_cast<int>(g_test_screen_center.GetX()), 0),
-                static_cast<Point2i>(g_test_screen_center - Point2f(g_test_radius_pixels * std::cos(test_angle_rad), g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center + Point2f(g_test_radius_pixels * std::cos(test_angle_rad), -g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }
     }
@@ -385,7 +386,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2i(static_cast<int>(g_test_screen_size.width), static_cast<int>(g_test_screen_center.GetY())),
-                Point2i(g_test_screen_center + Point2f(g_test_screen_center.GetY() * std::cos(test_angle_rad), -1.f * g_test_screen_center.GetY() * std::sin(test_angle_rad))),
+                Point2i(g_test_screen_center + Point2f(g_test_screen_center.GetY() * std::cos(test_angle_rad), g_test_screen_center.GetY() * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }
     }

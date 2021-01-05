@@ -31,15 +31,15 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 namespace Methane::Graphics
 {
 
-ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
-    : ArcBallCamera(pivot, axis_orientation)
+ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, bool is_left_handed_axes) noexcept
+    : ArcBallCamera(pivot, is_left_handed_axes)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();
 }
 
-ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, cml::AxisOrientation axis_orientation) noexcept
-    : ArcBallCamera(view_camera, pivot, axis_orientation)
+ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, bool is_left_handed_axes) noexcept
+    : ArcBallCamera(view_camera, pivot, is_left_handed_axes)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();
@@ -170,8 +170,8 @@ void ActionCamera::Zoom(float zoom_factor) noexcept
 {
     META_FUNCTION_TASK();
     const Vector3f look_dir   = GetLookDirection(GetOrientation());
-    const float zoom_distance = std::min(std::max(look_dir.length() * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
-    ApplyLookDirection(cml::normalize(look_dir) * zoom_distance);
+    const float zoom_distance = std::min(std::max(static_cast<float>(hlslpp::length(look_dir)) * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
+    ApplyLookDirection(hlslpp::normalize(look_dir) * zoom_distance);
     META_LOG(GetOrientationString());
 }
 
@@ -203,7 +203,7 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const Vector3f& m
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
             {
-                const Vector3f move_per_second = TransformViewToWorld(move_direction_in_view).normalize() * m_move_distance_per_second;
+                const Vector3f move_per_second = hlslpp::normalize(TransformViewToWorld(move_direction_in_view)) * m_move_distance_per_second;
                 Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
                 return true;
             },

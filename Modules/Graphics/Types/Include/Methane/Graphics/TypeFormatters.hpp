@@ -28,8 +28,33 @@ Methane Graphics Type formatters for use with fmt::format(...)
 
 #include <Methane/Data/TypeFormatters.hpp>
 
+#include <hlsl++.h>
 #include <cml/vector.h>
 #include <fmt/format.h>
+
+template<>
+struct fmt::formatter<hlslpp::float2>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const hlslpp::float2& v, FormatContext& ctx) { return format_to(ctx.out(), "V({}, {})", v.x, v.y); }
+    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<hlslpp::float3>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const hlslpp::float3& v, FormatContext& ctx) { return format_to(ctx.out(), "V({}, {}, {})", v.x, v.y, v.z); }
+    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<hlslpp::float4>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const hlslpp::float4& v, FormatContext& ctx) { return format_to(ctx.out(), "V({}, {}, {}, {})", v.x, v.y, v.z, v.w); }
+    constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
 
 template<typename T>
 struct fmt::formatter<cml::vector<T, cml::fixed<2>>>

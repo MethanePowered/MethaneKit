@@ -14,6 +14,7 @@
     <mapping directory="$PROJECT_DIR$/Externals/DirectXTex" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/FMT" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/FreeType2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/HLSLpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/IttApi" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/MagicEnum" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />

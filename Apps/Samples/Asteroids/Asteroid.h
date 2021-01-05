@@ -27,6 +27,8 @@ Random generated asteroid model with mesh and texture ready for rendering.
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
 
+#include <utility>
+
 namespace Methane::Samples
 {
 
@@ -61,14 +63,16 @@ public:
     class Mesh : public gfx::IcosahedronMesh<Vertex>
     {
     public:
+        using DepthRange = std::pair<float, float>;
+
         Mesh(uint32_t subdivisions_count, bool randomize);
 
         void Randomize(uint32_t random_seed = 1337);
 
-        [[nodiscard]] const gfx::Vector2f& GetDepthRange() const { return m_depth_range; }
+        [[nodiscard]] const DepthRange& GetDepthRange() const { return m_depth_range; }
 
     private:
-        gfx::Vector2f m_depth_range;
+        DepthRange m_depth_range;
     };
 
     struct Colors

@@ -47,8 +47,8 @@ void HelloTriangleApp::Init()
 
     struct Vertex
     {
-        gfx::Vector3f position;
-        gfx::Vector3f color;
+        cml::vector3f position;
+        cml::vector3f color;
     };
 
     const std::array<Vertex, 3> triangle_vertices{ {

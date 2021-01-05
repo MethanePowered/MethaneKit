@@ -25,7 +25,15 @@ Multi-octave simplex noise generator in range [0, 1]
 
 #include <Methane/Graphics/Types.h>
 
+#include <cml/vector.h>
 #include <vector>
+
+namespace hlslpp
+{
+    struct float2;
+    struct float3;
+    struct float4;
+}
 
 namespace Methane::Graphics
 {
@@ -34,16 +42,22 @@ class PerlinNoise
 {
 public:
     explicit PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
-    
-    [[nodiscard]] float operator()(Vector2f pos) const;
-    [[nodiscard]] float operator()(Vector3f pos) const;
-    [[nodiscard]] float operator()(Vector4f pos) const;
+
+    [[nodiscard]] float operator()(const hlslpp::float2& pos) const noexcept;
+    [[nodiscard]] float operator()(const hlslpp::float3& pos) const noexcept;
+    [[nodiscard]] float operator()(const hlslpp::float4& pos) const noexcept;
+
+    [[nodiscard]] float operator()(const cml::vector2f& pos) const noexcept;
+    [[nodiscard]] float operator()(const cml::vector3f& pos) const noexcept;
+    [[nodiscard]] float operator()(const cml::vector4f& pos) const noexcept;
 
 private:
     using Weights = std::vector<float>;
 
-    [[nodiscard]] static Weights GetWeights(float persistence, size_t octaves_count);
-    [[nodiscard]] static float GetWeightsSum(const PerlinNoise::Weights& weights);
+    template<typename VectorType>
+    [[nodiscard]] float GetValue(VectorType v) const noexcept;
+    [[nodiscard]] static Weights GetWeights(float persistence, size_t octaves_count) noexcept;
+    [[nodiscard]] static float GetWeightsSum(const PerlinNoise::Weights& weights) noexcept;
 
     const Weights m_weights;
     const float   m_norm_multiplier;

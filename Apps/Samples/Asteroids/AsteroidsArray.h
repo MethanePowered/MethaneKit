@@ -71,14 +71,16 @@ public:
         [[nodiscard]] uint32_t GetInstanceCount() const noexcept      { return m_instance_count; }
         [[nodiscard]] uint32_t GetSubdivisionsCount() const noexcept  { return m_subdivisions_count; }
 
-        [[nodiscard]] uint32_t             GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const;
-        [[nodiscard]] uint32_t             GetSubsetSubdivision(uint32_t subset_index) const;
-        [[nodiscard]] const gfx::Vector2f& GetSubsetDepthRange(uint32_t subset_index) const;
+        [[nodiscard]] uint32_t GetSubsetIndex(uint32_t instance_index, uint32_t subdivision_index) const;
+        [[nodiscard]] uint32_t GetSubsetSubdivision(uint32_t subset_index) const;
+        [[nodiscard]] const Asteroid::Mesh::DepthRange& GetSubsetDepthRange(uint32_t subset_index) const;
 
     private:
-        const uint32_t             m_instance_count;
-        const uint32_t             m_subdivisions_count;
-        std::vector<gfx::Vector2f> m_depth_ranges;
+        using DepthRanges = std::vector<Asteroid::Mesh::DepthRange>;
+
+        const uint32_t m_instance_count;
+        const uint32_t m_subdivisions_count;
+        DepthRanges    m_depth_ranges;
     };
 
     using Parameters               = std::vector<Asteroid::Parameters>;

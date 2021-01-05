@@ -21,6 +21,8 @@ Shaders for planet rendering with spheric texture and Phong lighting.
 
 ******************************************************************************/
 
+#include "..\..\..\Common\Shaders\Primitives.hlsl"
+
 struct VSInput
 {
     float3 position         : POSITION;
@@ -57,24 +59,14 @@ ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
 Texture2D                 g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
 
-float4 LinearToSrgb(float4 color)
-{
-    // Optimized SRGB gamma correction approximation
-    // http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-    float3 S1 = sqrt(color.rgb);
-    float3 S2 = sqrt(S1);
-    float3 S3 = sqrt(S2);
-    return float4(0.585122381 * S1 + 0.783140355 * S2 - 0.368262736 * S3, color.a);
-}
-
 PSInput PlanetVS(VSInput input)
 {
     const float4 position = float4(input.position, 1.0F);
 
     PSInput output;
-    output.position       = mul(g_uniforms.mvp_matrix, position);
-    output.world_position = mul(g_uniforms.model_matrix, position).xyz;
-    output.world_normal   = normalize(mul(g_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
+    output.position       = mul(position, g_uniforms.mvp_matrix);
+    output.world_position = mul(position, g_uniforms.model_matrix).xyz;
+    output.world_normal   = normalize(mul(float4(input.normal, 0.0), g_uniforms.model_matrix).xyz);
     output.texcoord       = input.texcoord;
 
     return output;
@@ -96,5 +88,5 @@ float4 PlanetPS(PSInput input) : SV_TARGET
     const float  specular_part  = pow(clamp(dot(fragment_to_eye, light_reflected_from_fragment), 0.0, 1.0), g_constants.light_specular_factor);
     const float4 specular_color = base_color * specular_part;
 
-    return LinearToSrgb(ambient_color + diffuse_color + specular_color);
+    return ColorLinearToSrgb(ambient_color + diffuse_color + specular_color);
 }

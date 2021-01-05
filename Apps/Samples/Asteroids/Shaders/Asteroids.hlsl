@@ -83,9 +83,9 @@ PSInput AsteroidVS(VSInput input)
     const float  depth    = linstep(g_mesh_uniforms.depth_range.x, g_mesh_uniforms.depth_range.y, length(input.position.xyz));
 
     PSInput output;
-    output.position          = mul(g_mesh_uniforms.mvp_matrix, position);
-    output.world_position    = mul(g_mesh_uniforms.model_matrix, position).xyz;
-    output.world_normal      = normalize(mul(g_mesh_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
+    output.position          = mul(position, g_mesh_uniforms.mvp_matrix);
+    output.world_position    = mul(position, g_mesh_uniforms.model_matrix).xyz;
+    output.world_normal      = normalize(mul(float4(input.normal, 0.0), g_mesh_uniforms.model_matrix).xyz);
     output.albedo            = lerp(g_mesh_uniforms.deep_color, g_mesh_uniforms.shallow_color, depth);
 
     // Prepare coordinates and blending weights for tri-planar projection texturing

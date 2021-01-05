@@ -27,12 +27,13 @@ Camera helper implementation allowing to generate view and projection matrices.
 #include <Methane/Checks.hpp>
 
 #include <cml/mathlib/mathlib.h>
+#include <hlsl++.h>
 
 namespace Methane::Graphics
 {
 
-Camera::Camera(cml::AxisOrientation axis_orientation) noexcept
-    : m_axis_orientation(axis_orientation)
+Camera::Camera(bool is_left_handed_axes) noexcept
+    : m_is_left_handed_axes(is_left_handed_axes)
 {
     META_FUNCTION_TASK();
     ResetOrientation();
@@ -41,38 +42,27 @@ Camera::Camera(cml::AxisOrientation axis_orientation) noexcept
 void Camera::Rotate(const Vector3f& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
-    Matrix33f rotation_matrix{ };
-    cml::matrix_rotation_axis_angle(rotation_matrix, axis, cml::rad(angle_deg));
-    Vector3f new_look_dir = GetLookDirection() * rotation_matrix;
+    const Matrix33f rotation_matrix = hlslpp::float3x3_rotate_axis(axis, cml::rad(angle_deg));
+    const Vector3f new_look_dir = hlslpp::mul(GetLookDirection(), rotation_matrix);
     SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
 
-Matrix44f Camera::GetViewMatrix(const Orientation& orientation) const noexcept
+Matrix44f Camera::CreateViewMatrix(const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
-    Matrix44f view_matrix{ };
-    GetViewMatrix(view_matrix, orientation);
-    return view_matrix;
+    return hlslpp::float4x4_look_at(orientation.eye, orientation.aim, orientation.up, m_is_left_handed_axes);
 }
 
-void Camera::GetViewMatrix(Matrix44f& out_view, const Orientation& orientation) const noexcept
-{
-    META_FUNCTION_TASK();
-    cml::matrix_look_at(out_view, orientation.eye, orientation.aim, orientation.up, m_axis_orientation);
-}
-
-void Camera::GetProjMatrix(Matrix44f& out_proj) const
+Matrix44f Camera::CreateProjMatrix() const
 {
     META_FUNCTION_TASK();
     switch (m_projection)
     {
     case Projection::Perspective:
-        cml::matrix_perspective_yfov(out_proj, GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
-        break;
+        return hlslpp::float4x4_perspective_fovy(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth, true, m_is_left_handed_axes);
 
     case Projection::Orthogonal:
-        cml::matrix_orthographic(out_proj, m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth, m_axis_orientation, cml::ZClip::z_clip_zero);
-        break;
+        return hlslpp::float4x4_orthographic(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth, true, m_is_left_handed_axes);
 
     default:
         META_UNEXPECTED_ENUM_ARG(m_projection);
@@ -85,7 +75,7 @@ const Matrix44f& Camera::GetViewMatrix() const noexcept
     if (!m_is_current_view_matrix_dirty)
         return m_current_view_matrix;
 
-    GetViewMatrix(m_current_view_matrix);
+    m_current_view_matrix = CreateViewMatrix(m_current_orientation);
     m_is_current_view_matrix_dirty = false;
     return m_current_view_matrix;
 }
@@ -96,7 +86,7 @@ const Matrix44f& Camera::GetProjMatrix() const
     if (!m_is_current_proj_matrix_dirty)
         return m_current_proj_matrix;
 
-    GetProjMatrix(m_current_proj_matrix);
+    m_current_proj_matrix = CreateProjMatrix();
     m_is_current_proj_matrix_dirty = false;
     return m_current_proj_matrix;
 }
@@ -107,7 +97,7 @@ const Matrix44f& Camera::GetViewProjMatrix() const noexcept
     if (!m_is_current_view_matrix_dirty && !m_is_current_proj_matrix_dirty)
         return m_current_view_proj_matrix;
 
-    m_current_view_proj_matrix = GetViewMatrix() * GetProjMatrix();
+    m_current_view_proj_matrix = hlslpp::mul(GetViewMatrix(), GetProjMatrix());
     return m_current_view_proj_matrix;
 }
 
@@ -121,7 +111,7 @@ Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const no
 Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return (cml::inverse(GetProjMatrix()) * Vector4f(TransformScreenToProj(screen_pos), 0.F, 1.F)).subvector(3);
+    return hlslpp::mul(hlslpp::inverse(GetProjMatrix()), Vector4f(TransformScreenToProj(screen_pos), 0.F, 1.F)).xyz;
 }
 
 Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
@@ -133,13 +123,13 @@ Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const n
 Vector4f Camera::TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
-    return cml::inverse(GetViewMatrix(orientation)) * world_pos;
+    return hlslpp::mul(hlslpp::inverse(CreateViewMatrix(orientation)), world_pos);
 }
 
 Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
-    return GetViewMatrix(orientation) * view_pos;
+    return hlslpp::mul(CreateViewMatrix(orientation), view_pos);
 }
 
 float Camera::GetFovAngleY() const noexcept

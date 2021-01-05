@@ -72,8 +72,8 @@ public:
             BaseMeshT::AddVertex(std::move(vertex));
         }
 
-        const bool reverse_indices = (g_axis_orientation == cml::AxisOrientation::left_handed  && ((face_type == FaceType::XY && m_depth_pos >= 0) || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0))) ||
-                                     (g_axis_orientation == cml::AxisOrientation::right_handed && ((face_type == FaceType::XY && m_depth_pos < 0)  || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0)));
+        const bool reverse_indices = (g_is_left_handed_axes_orientation && ((face_type == FaceType::XY && m_depth_pos >= 0) || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0))) ||
+                                     (!g_is_left_handed_axes_orientation && ((face_type == FaceType::XY && m_depth_pos < 0)  || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0)));
 
         const size_t face_indices_count = Mesh::GetFaceIndicesCount();
         Mesh::ResizeIndices(face_indices_count);
@@ -103,7 +103,7 @@ private:
 
     void InitVertexNormal(const FaceType& face_type, VType& vertex)
     {
-        Mesh::Normal      & vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+        Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
         const float depth_norm      = m_depth_pos ? m_depth_pos / abs(m_depth_pos) : 1.F;
         switch (face_type)
         {
