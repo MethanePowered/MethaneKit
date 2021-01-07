@@ -49,7 +49,7 @@ public:
         : m_reference_vector(reference_vector)
     { }
 
-    bool match(const HlslVectorType& other) const
+    bool match(const HlslVectorType& other) const override
     {
         return hlslpp::all(other == m_reference_vector);
     }
@@ -80,7 +80,7 @@ public:
         , m_precision_vector(precision)
     { }
 
-    bool match(const HlslVectorType& other) const
+    bool match(const HlslVectorType& other) const override
     {
         return hlslpp::all(hlslpp::abs(other - m_reference_vector) <= m_precision_vector);
     }
