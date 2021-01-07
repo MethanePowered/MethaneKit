@@ -27,6 +27,7 @@ Arc-ball camera rotation with mouse handling.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <hlsl++.h>
 #include <cml/mathlib/mathlib.h>
 #include <cmath>
 
@@ -37,7 +38,7 @@ namespace Methane::Graphics
 static inline float Square(float x)     { return x * x; }
 
 [[nodiscard]]
-static inline float UnitSign(float x)   { return x / std::fabs(x); }
+static inline float UnitSign(float x)   { return x >= 0.F ? 1.F : -1.F; }
 
 ArcBallCamera::ArcBallCamera(Pivot pivot, bool is_left_handed_axes) noexcept
     : Camera(is_left_handed_axes)
@@ -65,10 +66,19 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
 
-    const Vector3f mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
-    const Vector3f vectors_cross = hlslpp::cross(m_mouse_pressed_on_sphere, mouse_current_on_sphere);
-    const Vector3f rotation_axis = hlslpp::normalize(vectors_cross);
-    const float    rotation_angle = std::atan2(hlslpp::length(vectors_cross), hlslpp::dot(m_mouse_pressed_on_sphere, mouse_current_on_sphere));
+    const SphereProjection mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
+    Vector3f vectors_cross = hlslpp::cross(m_mouse_pressed_on_sphere.vector, mouse_current_on_sphere.vector);
+    const float vectors_angle_sin = hlslpp::length(vectors_cross);
+    if (vectors_angle_sin <= 1E-7F)
+    {
+        static const Vector3f s_z_axis(0.F, 0.F, 1.F);
+        vectors_cross = m_mouse_pressed_on_sphere.inside
+                      ? hlslpp::cross(m_mouse_pressed_on_sphere.vector, s_z_axis)
+                      : s_z_axis; // mouse was pressed inside sphere => rotation around z
+    }
+    const Vector3f rotation_axis     = hlslpp::normalize(vectors_cross);
+    const float    vectors_angle_cos = hlslpp::dot(m_mouse_pressed_on_sphere.vector, mouse_current_on_sphere.vector);
+    const float    rotation_angle    = std::atan2(vectors_angle_sin, vectors_angle_cos);
 
     RotateInView(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 
@@ -80,7 +90,7 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
     }
 }
 
-Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const noexcept
+ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const noexcept
 {
     META_FUNCTION_TASK();
     const Data::FloatSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
@@ -93,7 +103,7 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
     // Primary screen point is used to determine if rotation is done inside sphere (around X and Y axes) or outside (around Z axis)
     // For secondary screen point the primary result is used
     const bool inside_sphere = ( is_primary && screen_radius <= sphere_radius) ||
-                               (!is_primary && std::fabs(m_mouse_pressed_on_sphere.z) > 0.000001F);
+                               (!is_primary && m_mouse_pressed_on_sphere.inside);
     const float inside_sphere_sign = inside_sphere ? 1.F : -1.F;
 
     // Reflect coordinates for natural camera movement
@@ -121,7 +131,11 @@ Vector3f ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_scree
         }
     }
 
-    return hlslpp::normalize(Vector3f(screen_point.GetX(), screen_point.GetY(), inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F));
+    const float sphere_z = inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F;
+    return SphereProjection{
+        hlslpp::normalize(Vector3f(screen_point.GetX(), screen_point.GetY(), sphere_z)),
+        inside_sphere
+    };
 }
 
 void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)

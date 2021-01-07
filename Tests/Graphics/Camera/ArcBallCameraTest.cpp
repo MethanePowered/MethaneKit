@@ -22,9 +22,9 @@ Arc-Ball camera unit tests
 ******************************************************************************/
 
 #include <Methane/Graphics/ArcBallCamera.h>
-#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Data/Types.h>
 #include <Methane/Checks.hpp>
+#include <Methane/HlslCatchHelpers.hpp>
 
 #include <catch2/catch.hpp>
 #include <cml/mathlib/mathlib.h>
@@ -32,6 +32,7 @@ Arc-Ball camera unit tests
 
 using namespace Methane::Graphics;
 using namespace Methane::Data;
+using namespace Methane;
 
 static const FloatSize           g_test_screen_size      { 640.f, 480.f };
 static const Point2f             g_test_screen_center    { g_test_screen_size.width / 2.f, g_test_screen_size.height / 2.f };
@@ -42,28 +43,6 @@ static const float               g_test_radius_pixels    = g_test_screen_center.
 static const Vector3f            g_axis_x                { 1.f, 0.f, 0.f };
 static const Vector3f            g_axis_y                { 0.f, 1.f, 0.f };
 static const Vector3f            g_axis_z                { 0.f, 0.f, -1.f };
-static float                     g_vectors_equal_epsilon = 0.00001F;
-
-namespace Catch {
-
-// Override vectors comparison with approximate comparison for test purposes
-template<>
-bool compareEqual(Vector3f const& left, Vector3f const& right)
-{
-    for (int i = 0; i < 3; ++i)
-    {
-        if (std::fabs(left.f32[i] - right.f32[i]) > g_vectors_equal_epsilon)
-            return false;
-    }
-    return true;
-}
-
-template<>
-struct StringMaker<Vector3f> {
-    static std::string convert(const Vector3f& v) { return fmt::format("{}", v); }
-};
-
-}
 
 inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orientation)
 {
@@ -89,10 +68,9 @@ inline ArcBallCamera SetupDependentCamera(const ArcBallCamera& view_camera, ArcB
 
 inline void CheckOrientation(const Camera::Orientation& actual_orientation, const Camera::Orientation& reference_orientation, float epsilon = 0.00001F)
 {
-    g_vectors_equal_epsilon = epsilon;
-    CHECK(actual_orientation.aim == reference_orientation.aim);
-    CHECK(actual_orientation.eye == reference_orientation.eye);
-    CHECK(actual_orientation.up  == reference_orientation.up);
+    CHECK_THAT(actual_orientation.aim, HlslVectorApproxEquals(reference_orientation.aim, epsilon));
+    CHECK_THAT(actual_orientation.eye, HlslVectorApproxEquals(reference_orientation.eye, epsilon));
+    CHECK_THAT(actual_orientation.up , HlslVectorApproxEquals(reference_orientation.up,  epsilon));
 }
 
 inline void TestViewCameraRotation(ArcBallCamera::Pivot view_pivot,
@@ -178,7 +156,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, -g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_x, test_angle_deg), test_equality_epsilon);
         }
 
@@ -241,8 +219,8 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
         SECTION("Around X axis")
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
-                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels)),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels)),
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_x, test_angle_deg), test_equality_epsilon);
         }
 
@@ -337,9 +315,9 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         SECTION("Around X-axis")
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
-                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels)),
                 static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels)),
-                { g_test_view_orientation.eye, { 0.f, 5.f, 20.f }, { 0.f, 0.f, -1.f } });
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels)),
+                { g_test_view_orientation.eye, { 0.f, 5.f, 20.f }, { 0.f, -1.f, 0.f } });
         }
 
         SECTION("Around Y-axis")
@@ -369,8 +347,8 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         SECTION("Around X axis")
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
-                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels)),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
+                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels)),
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_x, test_angle_deg), test_equality_epsilon);
         }
 
@@ -404,7 +382,7 @@ TEST_CASE("Dependent arc-ball camera rotation around Aim pivot < 90 degrees", "[
         {
             TestDependentCameraRotation(test_pivot, g_test_view_orientation, test_pivot, g_test_dept_orientation,
                 static_cast<Point2i>(g_test_screen_center),
-                static_cast<Point2i>(g_test_screen_center + Point2f(0.f, g_test_radius_pixels)),
+                static_cast<Point2i>(g_test_screen_center - Point2f(0.f, g_test_radius_pixels)),
                 { g_test_dept_orientation.eye, g_test_dept_orientation.aim, { 0.f, 1.f, 0.f } }, test_equality_epsilon);
         }
 

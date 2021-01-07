@@ -56,7 +56,12 @@ public:
     void MouseDrag(const Data::Point2i& mouse_screen_pos);
 
 protected:
-    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
+    struct SphereProjection
+    {
+        Vector3f vector;
+        bool     inside = false;
+    };
+    SphereProjection GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
 
     inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
     { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.F; }
@@ -72,11 +77,11 @@ protected:
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
-    const Camera* m_p_view_camera             = nullptr;
-    Pivot         m_pivot;
-    float         m_radius_ratio              = 0.9F;
-    Vector3f      m_mouse_pressed_on_sphere   { };
-    Orientation   m_mouse_pressed_orientation { };
+    const Camera*    m_p_view_camera             = nullptr;
+    Pivot            m_pivot;
+    float            m_radius_ratio              = 0.9F;
+    SphereProjection m_mouse_pressed_on_sphere   { };
+    Orientation      m_mouse_pressed_orientation { };
 };
 
 } // namespace Methane::Graphics

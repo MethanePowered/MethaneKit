@@ -15,6 +15,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsCamera
         MethaneBuildOptions
         MethanePrecompiledHeaders
+        MethaneTestsCatchHelpers
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2
 )
