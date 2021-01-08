@@ -28,6 +28,7 @@ Arc-Ball camera unit tests
 
 #include <catch2/catch.hpp>
 #include <cml/mathlib/mathlib.h>
+#include <hlsl++_matrix_transform_ext.h>
 #include <cmath>
 
 using namespace Methane::Graphics;

@@ -25,7 +25,9 @@ Camera helper implementation allowing to generate view and projection matrices.
 
 #include <Methane/Graphics/Types.h>
 
-#include <cml/mathlib/constants.h>
+#include <hlsl++_matrix_transform_ext.h>
+
+#include <optional>
 
 namespace Methane::Graphics
 {
@@ -55,9 +57,10 @@ public:
 
     explicit Camera(bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
 
-    inline void Resize(const Data::FloatSize& screen_size) noexcept         { m_screen_size = screen_size; m_aspect_ratio = screen_size.width / screen_size.height; m_is_current_proj_matrix_dirty = true; }
-    inline void SetProjection(Projection projection) noexcept               { m_projection = projection; m_is_current_proj_matrix_dirty = true; }
-    inline void SetParameters(const Parameters& parameters) noexcept        { m_parameters = parameters; m_is_current_proj_matrix_dirty = true; }
+    void Resize(const Data::FloatSize& screen_size);
+    void SetProjection(Projection projection);
+    void SetParameters(const Parameters& parameters);
+
     inline void ResetOrientation() noexcept                                 { m_current_orientation = m_default_orientation; m_is_current_view_matrix_dirty = true; }
     inline void ResetOrientation(const Orientation& orientation) noexcept   { m_current_orientation = m_default_orientation = orientation; m_is_current_view_matrix_dirty = true; }
     inline void SetOrientation(const Orientation& orientation) noexcept     { m_current_orientation = orientation; m_is_current_view_matrix_dirty = true; }
@@ -100,6 +103,8 @@ protected:
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
 private:
+    void UpdateProjectionSettings();
+
     const bool        m_is_left_handed_axes;
     Projection        m_projection            = Projection::Perspective;
     Data::FloatSize   m_screen_size           { 1.F, 1.F };
@@ -108,6 +113,7 @@ private:
     Orientation       m_default_orientation   { { 15.0F, 15.0F, -15.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } };
     Orientation       m_current_orientation   { };
 
+    std::optional<hlslpp::ProjectionSettings> m_projection_settings;
     mutable Matrix44f m_current_view_matrix;
     mutable Matrix44f m_current_proj_matrix;
     mutable Matrix44f m_current_view_proj_matrix;
