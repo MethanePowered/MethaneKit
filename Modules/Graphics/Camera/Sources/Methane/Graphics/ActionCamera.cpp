@@ -31,15 +31,15 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 namespace Methane::Graphics
 {
 
-ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot, bool is_left_handed_axes) noexcept
-    : ArcBallCamera(pivot, is_left_handed_axes)
+ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot) noexcept
+    : ArcBallCamera(pivot)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();
 }
 
-ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot, bool is_left_handed_axes) noexcept
-    : ArcBallCamera(view_camera, pivot, is_left_handed_axes)
+ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot) noexcept
+    : ArcBallCamera(view_camera, pivot)
     , m_animations(animations)
 {
     META_FUNCTION_TASK();

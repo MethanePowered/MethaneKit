@@ -40,8 +40,8 @@ public:
         Eye,
     };
 
-    ArcBallCamera(Pivot pivot = Pivot::Aim, bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
-    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
+    ArcBallCamera(Pivot pivot = Pivot::Aim) noexcept;
+    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim) noexcept;
 
     // Parameters
     inline Pivot GetPivot() const noexcept                      { return m_pivot; }

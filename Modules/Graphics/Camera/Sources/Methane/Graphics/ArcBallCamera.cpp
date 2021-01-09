@@ -40,15 +40,15 @@ static inline float Square(float x)     { return x * x; }
 [[nodiscard]]
 static inline float UnitSign(float x)   { return x >= 0.F ? 1.F : -1.F; }
 
-ArcBallCamera::ArcBallCamera(Pivot pivot, bool is_left_handed_axes) noexcept
-    : Camera(is_left_handed_axes)
+ArcBallCamera::ArcBallCamera(Pivot pivot) noexcept
+    : Camera()
     , m_pivot(pivot)
 {
     META_FUNCTION_TASK();
 }
 
-ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot, bool is_left_handed_axes) noexcept
-    : Camera(is_left_handed_axes)
+ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot) noexcept
+    : Camera()
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
 {

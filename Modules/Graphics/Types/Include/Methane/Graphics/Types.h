@@ -42,8 +42,6 @@ Methane primitive graphics types.
 namespace Methane::Graphics
 {
 
-static constexpr bool g_is_left_handed_axes_orientation = true;
-
 // All matrices have row-major storage order for compatibility with HLSL
 using Matrix22f = hlslpp::float2x2;
 using Matrix33f = hlslpp::float3x3;

@@ -72,8 +72,13 @@ public:
             BaseMeshT::AddVertex(std::move(vertex));
         }
 
-        const bool reverse_indices = (g_is_left_handed_axes_orientation && ((face_type == FaceType::XY && m_depth_pos >= 0) || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0))) ||
-                                     (!g_is_left_handed_axes_orientation && ((face_type == FaceType::XY && m_depth_pos < 0)  || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0)));
+#if defined(HLSLPP_COORDINATES) && HLSLPP_COORDINATES == 0 // HLSLPP_COORDINATES_LEFT_HANDED
+        const bool reverse_indices = (face_type == FaceType::XY && m_depth_pos >= 0) ||
+                                     ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0);
+#else
+        const bool reverse_indices = (face_type == FaceType::XY && m_depth_pos < 0) ||
+                                     ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0);
+#endif
 
         const size_t face_indices_count = Mesh::GetFaceIndicesCount();
         Mesh::ResizeIndices(face_indices_count);

@@ -54,7 +54,7 @@ public:
         float fov_deg;
     };
 
-    explicit Camera(bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
+    explicit Camera() noexcept;
 
     void Resize(const Data::FloatSize& screen_size);
     void SetProjection(Projection projection);
@@ -105,8 +105,6 @@ private:
     hlslpp::Frustrum CreateFrustrum() const;
     void UpdateProjectionSettings();
 
-
-    const bool        m_is_left_handed_axes;
     Projection        m_projection            = Projection::Perspective;
     Data::FloatSize   m_screen_size           { 1.F, 1.F };
     float             m_aspect_ratio          = 1.0F;

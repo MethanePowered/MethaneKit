@@ -31,8 +31,7 @@ Camera helper implementation allowing to generate view and projection matrices.
 namespace Methane::Graphics
 {
 
-Camera::Camera(bool is_left_handed_axes) noexcept
-    : m_is_left_handed_axes(is_left_handed_axes)
+Camera::Camera() noexcept
 {
     META_FUNCTION_TASK();
     ResetOrientation();

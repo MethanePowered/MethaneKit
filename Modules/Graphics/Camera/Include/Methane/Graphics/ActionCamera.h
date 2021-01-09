@@ -75,8 +75,8 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
-    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, bool is_left_handed_axes = g_is_left_handed_axes_orientation) noexcept;
+    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
+    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
 
     // Parameters
     uint32_t GetZoomStepsCount() const noexcept                             { return m_zoom_steps_count; }
