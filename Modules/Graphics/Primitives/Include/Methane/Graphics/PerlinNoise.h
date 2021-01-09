@@ -28,7 +28,7 @@ Multi-octave simplex noise generator in range [0, 1]
 #include <cml/vector.h>
 #include <vector>
 
-namespace hlslpp
+namespace hlslpp // NOSONAR
 {
     struct float2;
     struct float3;

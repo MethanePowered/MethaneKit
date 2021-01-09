@@ -176,10 +176,10 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                                                                   scale_proportion_distribution(rng),
                                                                   scale_proportion_distribution(rng)) * asteroid_scale_ratio;
 
-        const gfx::Matrix44f translation_matrix = hlslpp::float4x4::translation(asteroid_orbit_radius, asteroid_orbit_height, 0.F);
-        const gfx::Matrix44f scale_matrix = hlslpp::float4x4::scale(asteroid_scale_ratios * settings.scale);
-        const gfx::Matrix44f scale_translate_matrix = hlslpp::mul(scale_matrix, translation_matrix);
-
+        gfx::Matrix44f scale_translate_matrix = hlslpp::mul(
+            hlslpp::float4x4::scale(asteroid_scale_ratios * settings.scale),
+            hlslpp::float4x4::translation(asteroid_orbit_radius, asteroid_orbit_height, 0.F)
+        );
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.F
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
                                          : Asteroid::GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
@@ -433,7 +433,7 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
     const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
     const uint32_t          mesh_subset_index       = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
-    const auto&             mesh_subset_depth_range = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+    const auto&    [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
     const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled
                                                     ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
                                                     : asteroid_parameters.colors;
@@ -447,7 +447,7 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
             hlslpp::transpose(mvp_matrix),
             asteroid_colors.deep,
             asteroid_colors.shallow,
-            gfx::Vector2f(mesh_subset_depth_range.first, mesh_subset_depth_range.second),
+            gfx::Vector2f(mesh_depth_min, mesh_depth_max),
             asteroid_parameters.texture_index
         },
         asteroid_parameters.index

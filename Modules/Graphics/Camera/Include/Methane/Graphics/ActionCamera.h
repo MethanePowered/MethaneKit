@@ -75,7 +75,7 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
+    explicit ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
     ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
 
     // Parameters
