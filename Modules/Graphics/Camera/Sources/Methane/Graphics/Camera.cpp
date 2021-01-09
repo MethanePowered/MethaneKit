@@ -31,11 +31,6 @@ Camera helper implementation allowing to generate view and projection matrices.
 namespace Methane::Graphics
 {
 
-inline hlslpp::Coordinates GetHlslCoordinatesType(bool is_left_handed) noexcept
-{
-    return is_left_handed ? hlslpp::Coordinates::LeftHanded : hlslpp::Coordinates::RightHanded;
-}
-
 Camera::Camera(bool is_left_handed_axes) noexcept
     : m_is_left_handed_axes(is_left_handed_axes)
 {
@@ -57,7 +52,6 @@ void Camera::SetProjection(Projection projection)
     META_FUNCTION_TASK();
     m_projection = projection;
     m_is_current_proj_matrix_dirty = true;
-    UpdateProjectionSettings();
 }
 
 void Camera::SetParameters(const Parameters& parameters)
@@ -68,38 +62,32 @@ void Camera::SetParameters(const Parameters& parameters)
     UpdateProjectionSettings();
 }
 
-void Camera::UpdateProjectionSettings()
+hlslpp::Frustrum Camera::CreateFrustrum() const
 {
     META_FUNCTION_TASK();
     switch (m_projection)
     {
     case Projection::Perspective:
-        m_projection_settings = hlslpp::ProjectionSettings(
-            hlslpp::Frustrum::WithFieldOfViewY(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth),
-            hlslpp::ProjectionType::Perspective,
-            hlslpp::ZClip::Zero,
-            GetHlslCoordinatesType(m_is_left_handed_axes)
-        );
-        break;
+        return hlslpp::Frustrum::withFieldOfViewY(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth);
 
     case Projection::Orthogonal:
-        m_projection_settings = hlslpp::ProjectionSettings(
-            hlslpp::Frustrum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth),
-            hlslpp::ProjectionType::Orthographic,
-            hlslpp::ZClip::Zero,
-            GetHlslCoordinatesType(m_is_left_handed_axes)
-        );
-        break;
+        return hlslpp::Frustrum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth);
 
     default:
         META_UNEXPECTED_ENUM_ARG(m_projection);
     }
 }
 
+void Camera::UpdateProjectionSettings()
+{
+    META_FUNCTION_TASK();
+    m_projection_settings = hlslpp::ProjectionSettings(CreateFrustrum(), hlslpp::ZClip::Zero);
+}
+
 void Camera::Rotate(const Vector3f& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
-    const Matrix33f rotation_matrix = hlslpp::float3x3_rotate_axis(axis, cml::rad(angle_deg));
+    const Matrix33f rotation_matrix = hlslpp::float3x3::rotation_axis(axis, cml::rad(angle_deg));
     const Vector3f new_look_dir = hlslpp::mul(GetLookDirection(), rotation_matrix);
     SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
@@ -107,14 +95,25 @@ void Camera::Rotate(const Vector3f& axis, float angle_deg) noexcept
 Matrix44f Camera::CreateViewMatrix(const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
-    return hlslpp::float4x4_look_at(orientation.eye, orientation.aim, orientation.up, GetHlslCoordinatesType(m_is_left_handed_axes));
+    return hlslpp::float4x4::look_at(orientation.eye, orientation.aim, orientation.up);
 }
 
 Matrix44f Camera::CreateProjMatrix() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_projection_settings, "can not create projection matrix until parameters, projection and size are initialized");
-    return hlslpp::float4x4_projection(*m_projection_settings);
+
+    switch (m_projection)
+    {
+    case Projection::Perspective:
+        return hlslpp::float4x4::perspective(*m_projection_settings);
+
+    case Projection::Orthogonal:
+        return hlslpp::float4x4::orthographic(*m_projection_settings);
+
+    default:
+        META_UNEXPECTED_ENUM_ARG(m_projection);
+    }
 }
 
 const Matrix44f& Camera::GetViewMatrix() const noexcept

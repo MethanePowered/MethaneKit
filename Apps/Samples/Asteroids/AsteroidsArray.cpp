@@ -176,8 +176,8 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                                                                   scale_proportion_distribution(rng),
                                                                   scale_proportion_distribution(rng)) * asteroid_scale_ratio;
 
-        const gfx::Matrix44f translation_matrix = hlslpp::float4x4_translate(asteroid_orbit_radius, asteroid_orbit_height, 0.F);
-        const gfx::Matrix44f scale_matrix = hlslpp::float4x4_scale(asteroid_scale_ratios * settings.scale);
+        const gfx::Matrix44f translation_matrix = hlslpp::float4x4::translation(asteroid_orbit_radius, asteroid_orbit_height, 0.F);
+        const gfx::Matrix44f scale_matrix = hlslpp::float4x4::scale(asteroid_scale_ratios * settings.scale);
         const gfx::Matrix44f scale_translate_matrix = hlslpp::mul(scale_matrix, translation_matrix);
 
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.F
@@ -420,8 +420,8 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
     const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad - asteroid_parameters.orbit_speed * elapsed_radians;
 
-    const gfx::Matrix44f spin_rotation_matrix = hlslpp::float4x4_rotate_axis(asteroid_parameters.spin_axis, spin_angle_rad);
-    const gfx::Matrix44f orbit_rotation_matrix = hlslpp::float4x4_rotate_y(orbit_angle_rad);
+    const gfx::Matrix44f spin_rotation_matrix = hlslpp::float4x4::rotation_axis(asteroid_parameters.spin_axis, spin_angle_rad);
+    const gfx::Matrix44f orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
 
     const gfx::Matrix44f    model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
     const gfx::Matrix44f    mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);

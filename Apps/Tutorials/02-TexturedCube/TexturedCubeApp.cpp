@@ -54,7 +54,7 @@ TexturedCubeApp::TexturedCubeApp()
     m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
-    m_shader_uniforms.model_matrix = hlslpp::float4x4_scale(m_cube_scale);
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(m_cube_scale);
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -177,7 +177,7 @@ void TexturedCubeApp::Init()
 
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    gfx::Matrix33f light_rotate_matrix = hlslpp::float3x3_rotate_axis(m_camera.GetOrientation().up, cml::rad(static_cast<float>(delta_seconds * 360.F / 4.F)));
+    gfx::Matrix33f light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, cml::rad(static_cast<float>(delta_seconds * 360.F / 4.F)));
     m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;

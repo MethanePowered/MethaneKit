@@ -86,7 +86,6 @@ set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
 set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
     <cml/cml.h>
     <hlsl++.h>
-    <hlsl++_matrix_transform_ext.h>
     <taskflow/taskflow.hpp>
 )
 

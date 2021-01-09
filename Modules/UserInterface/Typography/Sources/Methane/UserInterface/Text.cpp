@@ -522,10 +522,10 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
 
     Uniforms uniforms{
         hlslpp::mul(
-            hlslpp::float4x4_scale(2.F / static_cast<float>(content_size.width),
+            hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.width),
                                    2.F / static_cast<float>(content_size.height),
                                    1.f),
-            hlslpp::float4x4_translate(-1.F, 1.F, 0.F))
+            hlslpp::float4x4::translation(-1.F, 1.F, 0.F))
     };
 
     const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));

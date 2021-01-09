@@ -116,8 +116,8 @@ void SkyBox::Update()
     m_mesh_buffers.SetFinalPassUniforms({
         hlslpp::transpose(hlslpp::mul(
             hlslpp::mul(
-                hlslpp::float4x4_scale(m_settings.scale),
-                hlslpp::float4x4_translate(m_settings.view_camera.GetOrientation().eye)),
+                hlslpp::float4x4::scale(m_settings.scale),
+                hlslpp::float4x4::translation(m_settings.view_camera.GetOrientation().eye)),
             m_settings.view_camera.GetViewProjMatrix()
         ))
     });

@@ -25,8 +25,7 @@ Camera helper implementation allowing to generate view and projection matrices.
 
 #include <Methane/Graphics/Types.h>
 
-#include <hlsl++_matrix_transform_ext.h>
-
+#include <hlsl++.h>
 #include <optional>
 
 namespace Methane::Graphics
@@ -103,7 +102,9 @@ protected:
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
 private:
+    hlslpp::Frustrum CreateFrustrum() const;
     void UpdateProjectionSettings();
+
 
     const bool        m_is_left_handed_axes;
     Projection        m_projection            = Projection::Perspective;

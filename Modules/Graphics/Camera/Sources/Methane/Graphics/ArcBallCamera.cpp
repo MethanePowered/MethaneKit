@@ -153,7 +153,7 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
 void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     META_FUNCTION_TASK();
-    const Matrix44f view_rotation_matrix = hlslpp::float4x4_rotate_axis(view_axis, -angle_rad);
+    const Matrix44f view_rotation_matrix = hlslpp::float4x4::rotation_axis(view_axis, -angle_rad);
     const Camera* p_view_camera = GetExternalViewCamera();
 
     const Vector4f look_in_view = p_view_camera

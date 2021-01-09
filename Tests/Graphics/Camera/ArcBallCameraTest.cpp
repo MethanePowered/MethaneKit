@@ -28,7 +28,7 @@ Arc-Ball camera unit tests
 
 #include <catch2/catch.hpp>
 #include <cml/mathlib/mathlib.h>
-#include <hlsl++_matrix_transform_ext.h>
+#include <hlsl++.h>
 #include <cmath>
 
 using namespace Methane::Graphics;
@@ -103,7 +103,7 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
 
 inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const Vector3f& axis, float angle_degrees)
 {
-    Matrix33f rotation_matrix = hlslpp::float3x3_rotate_axis(hlslpp::normalize(axis), cml::rad(angle_degrees));
+    Matrix33f rotation_matrix = hlslpp::float3x3::rotation_axis(hlslpp::normalize(axis), cml::rad(angle_degrees));
     const Vector3f look_dir   = hlslpp::mul(orientation.aim - orientation.eye, rotation_matrix);
     const Vector3f up_dir     = hlslpp::mul(orientation.up, rotation_matrix);
 

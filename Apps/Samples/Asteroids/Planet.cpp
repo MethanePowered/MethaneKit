@@ -111,9 +111,9 @@ bool Planet::Update(double elapsed_seconds, double)
 {
     META_FUNCTION_TASK();
 
-    const gfx::Matrix44f model_scale_matrix     = hlslpp::float4x4_scale(m_settings.scale);
-    const gfx::Matrix44f model_translate_matrix = hlslpp::float4x4_translate(m_settings.position);
-    const gfx::Matrix44f model_rotation_matrix  = hlslpp::float4x4_rotate_y(static_cast<float>(-m_settings.spin_velocity_rps * elapsed_seconds));
+    const gfx::Matrix44f model_scale_matrix     = hlslpp::float4x4::scale(m_settings.scale);
+    const gfx::Matrix44f model_translate_matrix = hlslpp::float4x4::translation(m_settings.position);
+    const gfx::Matrix44f model_rotation_matrix  = hlslpp::float4x4::rotation_y(static_cast<float>(-m_settings.spin_velocity_rps * elapsed_seconds));
     const gfx::Matrix44f model_matrix           = hlslpp::mul(hlslpp::mul(model_scale_matrix, model_rotation_matrix), model_translate_matrix);
 
     Uniforms uniforms{};
