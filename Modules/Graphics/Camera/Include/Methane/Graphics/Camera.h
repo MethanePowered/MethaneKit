@@ -102,7 +102,7 @@ protected:
     Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
 
 private:
-    hlslpp::Frustrum CreateFrustrum() const;
+    hlslpp::frustrum CreateFrustrum() const;
     void UpdateProjectionSettings();
 
     Projection        m_projection            = Projection::Perspective;
@@ -112,7 +112,7 @@ private:
     Orientation       m_default_orientation   { { 15.0F, 15.0F, -15.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } };
     Orientation       m_current_orientation   { };
 
-    std::optional<hlslpp::ProjectionSettings> m_projection_settings;
+    std::optional<hlslpp::projection> m_projection_settings;
     mutable Matrix44f m_current_view_matrix;
     mutable Matrix44f m_current_proj_matrix;
     mutable Matrix44f m_current_view_proj_matrix;
