@@ -64,7 +64,7 @@ public:
 
     struct SHADER_STRUCT_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN Matrix44f mvp_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
     };
 
     SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings);

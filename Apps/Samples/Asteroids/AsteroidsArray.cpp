@@ -34,12 +34,12 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 namespace Methane::Samples
 {
 
-static gfx::Vector3f GetRandomDirection(std::mt19937& rng)
+static hlslpp::float3 GetRandomDirection(std::mt19937& rng)
 {
     META_FUNCTION_TASK();
 
     std::normal_distribution<float> distribution;
-    gfx::Vector3f direction;
+    hlslpp::float3 direction;
     do
     {
         direction = { distribution(rng), distribution(rng), distribution(rng) };
@@ -172,11 +172,11 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
         const float         asteroid_orbit_height = orbit_height_distribution(rng);
         const float         asteroid_scale_ratio  = scale_distribution(rng);
         const float         asteroid_scale        = asteroid_scale_ratio * settings.scale;
-        const gfx::Vector3f asteroid_scale_ratios = gfx::Vector3f(scale_proportion_distribution(rng),
-                                                                  scale_proportion_distribution(rng),
-                                                                  scale_proportion_distribution(rng)) * asteroid_scale_ratio;
+        const hlslpp::float3 asteroid_scale_ratios = hlslpp::float3(scale_proportion_distribution(rng),
+                                                                    scale_proportion_distribution(rng),
+                                                                    scale_proportion_distribution(rng)) * asteroid_scale_ratio;
 
-        gfx::Matrix44f scale_translate_matrix = hlslpp::mul(
+        hlslpp::float4x4 scale_translate_matrix = hlslpp::mul(
             hlslpp::float4x4::scale(asteroid_scale_ratios * settings.scale),
             hlslpp::float4x4::translation(asteroid_orbit_radius, asteroid_orbit_height, 0.F)
         );
@@ -344,8 +344,8 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Update");
 
-    const gfx::Vector3f&  eye_position     = m_settings.view_camera.GetOrientation().eye;
-    const gfx::Matrix44f& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
+    const hlslpp::float3&   eye_position     = m_settings.view_camera.GetOrientation().eye;
+    const hlslpp::float4x4& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
     const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
@@ -413,20 +413,20 @@ uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
     return m_mesh_subset_by_instance_index[instance_index];
 }
 
-void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const gfx::Matrix44f& view_proj_matrix, const gfx::Vector3f& eye_position, float elapsed_radians)
+void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float4x4& view_proj_matrix, const hlslpp::float3& eye_position, float elapsed_radians)
 {
     META_FUNCTION_TASK();
 
     const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
     const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad - asteroid_parameters.orbit_speed * elapsed_radians;
 
-    const gfx::Matrix44f spin_rotation_matrix = hlslpp::float4x4::rotation_axis(asteroid_parameters.spin_axis, spin_angle_rad);
-    const gfx::Matrix44f orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
+    const hlslpp::float4x4 spin_rotation_matrix  = hlslpp::float4x4::rotation_axis(asteroid_parameters.spin_axis, spin_angle_rad);
+    const hlslpp::float4x4 orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
 
-    const gfx::Matrix44f    model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
-    const gfx::Matrix44f    mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);
+    const hlslpp::float4x4 model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
+    const hlslpp::float4x4 mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);
 
-    const gfx::Vector3f     asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
+    const hlslpp::float3 asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
     const float distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
     const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
@@ -447,7 +447,7 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
             hlslpp::transpose(mvp_matrix),
             asteroid_colors.deep,
             asteroid_colors.shallow,
-            gfx::Vector2f(mesh_depth_min, mesh_depth_max),
+            hlslpp::float2(mesh_depth_min, mesh_depth_max),
             asteroid_parameters.texture_index
         },
         asteroid_parameters.index

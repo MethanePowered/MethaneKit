@@ -345,16 +345,16 @@ bool ShadowCubeApp::Update()
         return false;
 
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const gfx::Matrix44f s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
-    gfx::Matrix44f scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
+    hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
 
     // Cube model matrix
-    gfx::Matrix44f cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
+    hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
 
     // Update Cube uniforms
     m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
@@ -365,7 +365,7 @@ bool ShadowCubeApp::Update()
     m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         hlslpp::transpose(cube_model_matrix),
         hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
-        gfx::Matrix44f()
+        hlslpp::float4x4()
     });
 
     // Update Floor uniforms
@@ -377,7 +377,7 @@ bool ShadowCubeApp::Update()
     m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         hlslpp::transpose(scale_matrix),
         hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
-        gfx::Matrix44f()
+        hlslpp::float4x4()
     });
     
     return true;

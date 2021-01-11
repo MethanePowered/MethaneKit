@@ -42,15 +42,6 @@ Methane primitive graphics types.
 namespace Methane::Graphics
 {
 
-// All matrices have row-major storage order for compatibility with HLSL
-using Matrix22f = hlslpp::float2x2;
-using Matrix33f = hlslpp::float3x3;
-using Matrix44f = hlslpp::float4x4;
-
-using Vector2f = hlslpp::float2;
-using Vector3f = hlslpp::float3;
-using Vector4f = hlslpp::float4;
-
 using Depth = float;
 using Stencil = uint8_t;
 using DepthStencil = std::pair<Depth, Stencil>;

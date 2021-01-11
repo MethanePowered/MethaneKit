@@ -58,8 +58,8 @@ public:
 protected:
     struct SphereProjection
     {
-        Vector3f vector;
-        bool     inside = false;
+        hlslpp::float3 vector;
+        bool           inside = false;
     };
     SphereProjection GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
 
@@ -70,9 +70,9 @@ protected:
     inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir);
-    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
-    void RotateInView(const Vector3f& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
+    void ApplyLookDirection(const hlslpp::float3& look_dir);
+    void RotateInView(const hlslpp::float3& view_axis, float angle_rad, const Orientation& base_orientation);
+    void RotateInView(const hlslpp::float3& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
 
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 

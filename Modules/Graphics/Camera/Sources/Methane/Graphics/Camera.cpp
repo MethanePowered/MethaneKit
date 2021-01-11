@@ -83,21 +83,21 @@ void Camera::UpdateProjectionSettings()
     m_projection_settings = hlslpp::projection(CreateFrustrum(), hlslpp::zclip::zero);
 }
 
-void Camera::Rotate(const Vector3f& axis, float angle_deg) noexcept
+void Camera::Rotate(const hlslpp::float3& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
-    const Matrix33f rotation_matrix = hlslpp::float3x3::rotation_axis(axis, cml::rad(angle_deg));
-    const Vector3f new_look_dir = hlslpp::mul(GetLookDirection(), rotation_matrix);
+    const hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(axis, cml::rad(angle_deg));
+    const hlslpp::float3   new_look_dir    = hlslpp::mul(GetLookDirection(), rotation_matrix);
     SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
 
-Matrix44f Camera::CreateViewMatrix(const Orientation& orientation) const noexcept
+hlslpp::float4x4 Camera::CreateViewMatrix(const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
     return hlslpp::float4x4::look_at(orientation.eye, orientation.aim, orientation.up);
 }
 
-Matrix44f Camera::CreateProjMatrix() const
+hlslpp::float4x4 Camera::CreateProjMatrix() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_projection_settings, "can not create projection matrix until parameters, projection and size are initialized");
@@ -115,7 +115,7 @@ Matrix44f Camera::CreateProjMatrix() const
     }
 }
 
-const Matrix44f& Camera::GetViewMatrix() const noexcept
+const hlslpp::float4x4& Camera::GetViewMatrix() const noexcept
 {
     META_FUNCTION_TASK();
     if (!m_is_current_view_matrix_dirty)
@@ -126,7 +126,7 @@ const Matrix44f& Camera::GetViewMatrix() const noexcept
     return m_current_view_matrix;
 }
 
-const Matrix44f& Camera::GetProjMatrix() const
+const hlslpp::float4x4& Camera::GetProjMatrix() const
 {
     META_FUNCTION_TASK();
     if (!m_is_current_proj_matrix_dirty)
@@ -137,7 +137,7 @@ const Matrix44f& Camera::GetProjMatrix() const
     return m_current_proj_matrix;
 }
 
-const Matrix44f& Camera::GetViewProjMatrix() const noexcept
+const hlslpp::float4x4& Camera::GetViewProjMatrix() const noexcept
 {
     META_FUNCTION_TASK();
     if (!m_is_current_view_matrix_dirty && !m_is_current_proj_matrix_dirty)
@@ -147,32 +147,32 @@ const Matrix44f& Camera::GetViewProjMatrix() const noexcept
     return m_current_view_proj_matrix;
 }
 
-Vector2f Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float2 Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
     return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.width  - 1.F,
            -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.height - 1.F) };
 }
 
-Vector3f Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float3 Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return hlslpp::mul(hlslpp::inverse(GetProjMatrix()), Vector4f(TransformScreenToProj(screen_pos), 0.F, 1.F)).xyz;
+    return hlslpp::mul(hlslpp::inverse(GetProjMatrix()), hlslpp::float4(TransformScreenToProj(screen_pos), 0.F, 1.F)).xyz;
 }
 
-Vector3f Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float3 Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
     return TransformViewToWorld(TransformScreenToView(screen_pos));
 }
 
-Vector4f Camera::TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept
+hlslpp::float4 Camera::TransformWorldToView(const hlslpp::float4& world_pos, const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
     return hlslpp::mul(hlslpp::inverse(CreateViewMatrix(orientation)), world_pos);
 }
 
-Vector4f Camera::TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept
+hlslpp::float4 Camera::TransformViewToWorld(const hlslpp::float4& view_pos, const Orientation& orientation) const noexcept
 {
     META_FUNCTION_TASK();
     return hlslpp::mul(CreateViewMatrix(orientation), view_pos);

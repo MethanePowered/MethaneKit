@@ -85,15 +85,15 @@ private:
 
     struct SHADER_STRUCT_ALIGN SceneUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
+        SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
     };
 
     struct SHADER_STRUCT_ALIGN MeshUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 shadow_mvpx_matrix;
     };
 
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;

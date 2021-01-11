@@ -6,6 +6,7 @@ get_module_dirs("Methane/Data")
 
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Vector.hpp
     ${INCLUDE_DIR}/Point.hpp
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Chunk.hpp
@@ -31,8 +32,9 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
+        MethanePrecompiledExtraHeaders
         MethaneDataRangeSet
-        CML
+        HLSLpp
     PRIVATE
         MethaneBuildOptions
 )

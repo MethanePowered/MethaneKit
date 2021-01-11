@@ -67,16 +67,16 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
     META_FUNCTION_TASK();
 
     const SphereProjection mouse_current_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, false);
-    Vector3f vectors_cross = hlslpp::cross(m_mouse_pressed_on_sphere.vector, mouse_current_on_sphere.vector);
+    hlslpp::float3 vectors_cross = hlslpp::cross(m_mouse_pressed_on_sphere.vector, mouse_current_on_sphere.vector);
     const float vectors_angle_sin = hlslpp::length(vectors_cross);
     if (vectors_angle_sin <= 1E-7F)
     {
-        static const Vector3f s_z_axis(0.F, 0.F, 1.F);
+        static const hlslpp::float3 s_z_axis(0.F, 0.F, 1.F);
         vectors_cross = m_mouse_pressed_on_sphere.inside
                       ? hlslpp::cross(m_mouse_pressed_on_sphere.vector, s_z_axis)
                       : s_z_axis; // mouse was pressed inside sphere => rotation around z
     }
-    const Vector3f rotation_axis     = hlslpp::normalize(vectors_cross);
+    const hlslpp::float3 rotation_axis     = hlslpp::normalize(vectors_cross);
     const float    vectors_angle_cos = hlslpp::dot(m_mouse_pressed_on_sphere.vector, mouse_current_on_sphere.vector);
     const float    rotation_angle    = std::atan2(vectors_angle_sin, vectors_angle_cos);
 
@@ -133,12 +133,12 @@ ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(con
 
     const float sphere_z = inside_sphere ? z_sign * std::sqrt(Square(sphere_radius) - screen_point.GetLengthSquared()) : 0.F;
     return SphereProjection{
-        hlslpp::normalize(Vector3f(screen_point.GetX(), screen_point.GetY(), sphere_z)),
+        hlslpp::normalize(hlslpp::float3(screen_point.GetX(), screen_point.GetY(), sphere_z)),
         inside_sphere
     };
 }
 
-void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
+void ArcBallCamera::ApplyLookDirection(const hlslpp::float3& look_dir)
 {
     META_FUNCTION_TASK();
     switch (m_pivot)
@@ -150,23 +150,23 @@ void ArcBallCamera::ApplyLookDirection(const Vector3f& look_dir)
     META_LOG(GetOrientationString());
 }
 
-void ArcBallCamera::RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation)
+void ArcBallCamera::RotateInView(const hlslpp::float3& view_axis, float angle_rad, const Orientation& base_orientation)
 {
     META_FUNCTION_TASK();
-    const Matrix44f view_rotation_matrix = hlslpp::float4x4::rotation_axis(view_axis, -angle_rad);
+    const hlslpp::float4x4 view_rotation_matrix = hlslpp::float4x4::rotation_axis(view_axis, -angle_rad);
     const Camera* p_view_camera = GetExternalViewCamera();
 
-    const Vector4f look_in_view = p_view_camera
-                                ? p_view_camera->TransformWorldToView(Vector4f(GetLookDirection(base_orientation), 1.F))
-                                : Vector4f(0.F, 0.F, GetAimDistance(base_orientation), 1.F);
+    const hlslpp::float4 look_in_view = p_view_camera
+                                      ? p_view_camera->TransformWorldToView(hlslpp::float4(GetLookDirection(base_orientation), 1.F))
+                                      : hlslpp::float4(0.F, 0.F, GetAimDistance(base_orientation), 1.F);
 
-    const Vector3f look_dir     = p_view_camera
-                                ? p_view_camera->TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix)).xyz
-                                : TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix), base_orientation).xyz;
+    const hlslpp::float3 look_dir     = p_view_camera
+                                      ? p_view_camera->TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix)).xyz
+                                      : TransformViewToWorld(hlslpp::mul(look_in_view, view_rotation_matrix), base_orientation).xyz;
 
-    const Vector4f up_in_view   = p_view_camera
-                                ? p_view_camera->TransformWorldToView(Vector4f(base_orientation.up, 1.F))
-                                : Vector4f(0.F, hlslpp::length(base_orientation.up), 0.F, 1.F);
+    const hlslpp::float4 up_in_view   = p_view_camera
+                                      ? p_view_camera->TransformWorldToView(hlslpp::float4(base_orientation.up, 1.F))
+                                      : hlslpp::float4(0.F, hlslpp::length(base_orientation.up), 0.F, 1.F);
 
     SetOrientationUp(
         p_view_camera

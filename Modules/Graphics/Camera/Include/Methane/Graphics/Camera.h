@@ -42,9 +42,9 @@ public:
 
     struct Orientation
     {
-        Vector3f eye;
-        Vector3f aim;
-        Vector3f up;
+        hlslpp::float3 eye;
+        hlslpp::float3 aim;
+        hlslpp::float3 up;
     };
 
     struct Parameters
@@ -63,43 +63,43 @@ public:
     inline void ResetOrientation() noexcept                                 { m_current_orientation = m_default_orientation; m_is_current_view_matrix_dirty = true; }
     inline void ResetOrientation(const Orientation& orientation) noexcept   { m_current_orientation = m_default_orientation = orientation; m_is_current_view_matrix_dirty = true; }
     inline void SetOrientation(const Orientation& orientation) noexcept     { m_current_orientation = orientation; m_is_current_view_matrix_dirty = true; }
-    inline void SetOrientationEye(const Vector3f& eye) noexcept             { m_current_orientation.eye = eye; m_is_current_view_matrix_dirty = true; }
-    inline void SetOrientationAim(const Vector3f& aim) noexcept             { m_current_orientation.aim = aim; m_is_current_view_matrix_dirty = true; }
-    inline void SetOrientationUp(const Vector3f& up) noexcept               { m_current_orientation.up = up;   m_is_current_view_matrix_dirty = true; }
-    void        Rotate(const Vector3f& axis, float deg) noexcept;
+    inline void SetOrientationEye(const hlslpp::float3& eye) noexcept       { m_current_orientation.eye = eye; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientationAim(const hlslpp::float3& aim) noexcept       { m_current_orientation.aim = aim; m_is_current_view_matrix_dirty = true; }
+    inline void SetOrientationUp(const hlslpp::float3& up) noexcept         { m_current_orientation.up = up;   m_is_current_view_matrix_dirty = true; }
+    void        Rotate(const hlslpp::float3& axis, float deg) noexcept;
 
     inline const Data::FloatSize& GetScreenSize() const noexcept            { return m_screen_size; }
     inline const Orientation& GetOrientation() const noexcept               { return m_current_orientation; }
     inline float GetAimDistance() const noexcept                            { return GetAimDistance(m_current_orientation); }
-    inline Vector3f GetLookDirection() const noexcept                       { return GetLookDirection(m_current_orientation); }
+    inline hlslpp::float3 GetLookDirection() const noexcept                 { return GetLookDirection(m_current_orientation); }
 
-    const Matrix44f& GetViewMatrix() const noexcept;
-    const Matrix44f& GetProjMatrix() const;
-    const Matrix44f& GetViewProjMatrix() const noexcept;
+    const hlslpp::float4x4& GetViewMatrix() const noexcept;
+    const hlslpp::float4x4& GetProjMatrix() const;
+    const hlslpp::float4x4& GetViewProjMatrix() const noexcept;
 
-    Vector2f TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
-    Vector3f TransformWorldToView(const Vector3f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
-    Vector3f TransformViewToWorld(const Vector3f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
-    Vector4f TransformWorldToView(const Vector4f& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
-    Vector4f TransformViewToWorld(const Vector4f& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
+    hlslpp::float2 TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
+    hlslpp::float3 TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
+    hlslpp::float3 TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
+    hlslpp::float3 TransformWorldToView(const hlslpp::float3& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
+    hlslpp::float3 TransformViewToWorld(const hlslpp::float3& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
+    hlslpp::float4 TransformWorldToView(const hlslpp::float4& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
+    hlslpp::float4 TransformViewToWorld(const hlslpp::float4& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
 
     std::string GetOrientationString() const;
 
 protected:
     float GetFovAngleY() const noexcept;
 
-    static inline Vector3f GetLookDirection(const Orientation& orientation) noexcept   { return orientation.aim - orientation.eye; }
+    static inline hlslpp::float3 GetLookDirection(const Orientation& orientation) noexcept   { return orientation.aim - orientation.eye; }
     static inline float    GetAimDistance(const Orientation& orientation) noexcept     { return hlslpp::length(GetLookDirection(orientation)); }
 
-    Matrix44f CreateViewMatrix(const Orientation& orientation) const noexcept;
-    Matrix44f CreateProjMatrix() const;
+    hlslpp::float4x4 CreateViewMatrix(const Orientation& orientation) const noexcept;
+    hlslpp::float4x4 CreateProjMatrix() const;
 
-    Vector3f TransformWorldToView(const Vector3f& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(Vector4f(world_pos, 1.F), orientation).xyz; }
-    Vector3f TransformViewToWorld(const Vector3f& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(Vector4f(view_pos,  1.F), orientation).xyz; }
-    Vector4f TransformWorldToView(const Vector4f& world_pos, const Orientation& orientation) const noexcept;
-    Vector4f TransformViewToWorld(const Vector4f& view_pos, const Orientation& orientation) const noexcept;
+    hlslpp::float3 TransformWorldToView(const hlslpp::float3& world_pos, const Orientation& orientation) const noexcept { return TransformWorldToView(hlslpp::float4(world_pos, 1.F), orientation).xyz; }
+    hlslpp::float3 TransformViewToWorld(const hlslpp::float3& view_pos, const Orientation& orientation) const noexcept  { return TransformViewToWorld(hlslpp::float4(view_pos,  1.F), orientation).xyz; }
+    hlslpp::float4 TransformWorldToView(const hlslpp::float4& world_pos, const Orientation& orientation) const noexcept;
+    hlslpp::float4 TransformViewToWorld(const hlslpp::float4& view_pos, const Orientation& orientation) const noexcept;
 
 private:
     hlslpp::frustrum CreateFrustrum() const;
@@ -113,11 +113,11 @@ private:
     Orientation       m_current_orientation   { };
 
     std::optional<hlslpp::projection> m_projection_settings;
-    mutable Matrix44f m_current_view_matrix;
-    mutable Matrix44f m_current_proj_matrix;
-    mutable Matrix44f m_current_view_proj_matrix;
-    mutable bool      m_is_current_view_matrix_dirty = true;
-    mutable bool      m_is_current_proj_matrix_dirty = true;
+    mutable hlslpp::float4x4 m_current_view_matrix;
+    mutable hlslpp::float4x4 m_current_proj_matrix;
+    mutable hlslpp::float4x4 m_current_view_proj_matrix;
+    mutable bool             m_is_current_view_matrix_dirty = true;
+    mutable bool             m_is_current_proj_matrix_dirty = true;
 };
 
 } // namespace Methane::Graphics

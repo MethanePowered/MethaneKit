@@ -111,15 +111,15 @@ public:
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
 
-    void Move(const Vector3f& move_vector) noexcept;
+    void Move(const hlslpp::float3& move_vector) noexcept;
     void Zoom(float zoom_factor) noexcept;
 
     inline double GetAccelerationFactor(double elapsed_seconds) const noexcept { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
     
-    void StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis,
+    void StartRotateAction(KeyboardAction rotate_action, const hlslpp::float3& rotation_axis,
                            double duration_sec = std::numeric_limits<double>::max());
     
-    void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view,
+    void StartMoveAction(KeyboardAction move_action, const hlslpp::float3& move_direction_in_view,
                          double duration_sec = std::numeric_limits<double>::max());
     
     void StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second,
@@ -136,7 +136,7 @@ private:
     float                    m_rotate_angle_per_second      = 15.F;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
-    Vector3f                 m_mouse_pressed_in_world       { };
+    hlslpp::float3           m_mouse_pressed_in_world       { };
     KeyboardActionAnimations m_keyboard_action_animations;
 };
 

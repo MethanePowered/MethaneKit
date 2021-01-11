@@ -94,8 +94,8 @@ private:
 
     struct SHADER_STRUCT_ALIGN SceneUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
+        SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds) const;

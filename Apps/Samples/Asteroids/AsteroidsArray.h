@@ -126,7 +126,7 @@ protected:
 private:
     using MeshSubsetByInstanceIndex = std::vector<uint32_t>;
 
-    void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const gfx::Matrix44f& view_proj_matrix, const gfx::Vector3f& eye_position, float elapsed_radians);
+    void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float4x4& view_proj_matrix, const hlslpp::float3& eye_position, float elapsed_radians);
 
     const Settings            m_settings;
     Ptr<ContentState>         m_content_state_ptr;

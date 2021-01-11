@@ -75,15 +75,15 @@ private:
 
     struct SHADER_STRUCT_ALIGN SceneUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
+        SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
     };
 
     struct SHADER_STRUCT_ALIGN MeshUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 shadow_mvpx_matrix;
     };
 
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
@@ -465,28 +465,28 @@ bool ShadowCubeApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    gfx::Matrix44f scale_matrix;
+    hlslpp::float4x4 scale_matrix;
     cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
     
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const gfx::Matrix44f s_homogen_to_texture_coords_matrix = ([]()
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = ([]()
     {
-        gfx::Matrix44f shadow_scale_matrix;
+        hlslpp::float4x4 shadow_scale_matrix;
         cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
 
-        gfx::Matrix44f shadow_translate_matrix;
+        hlslpp::float4x4 shadow_translate_matrix;
         cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
 
         return shadow_scale_matrix * shadow_translate_matrix;
     })();
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+    m_scene_uniforms.eye_position   = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.light_position = m_light_camera.GetOrientation().eye;
 
     // Cube model matrix
-    gfx::Matrix44f cube_model_matrix;
-    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.F, 0.5F, 0.F)); // move up by half of cube model height
+    hlslpp::float4x4 cube_model_matrix;
+    cml::matrix_translation(cube_model_matrix, hlslpp::float3(0.F, 0.5F, 0.F)); // move up by half of cube model height
     cube_model_matrix = cube_model_matrix * scale_matrix;
 
     // Update Cube uniforms
@@ -498,7 +498,7 @@ bool ShadowCubeApp::Update()
     m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         cube_model_matrix,
         cube_model_matrix * m_light_camera.GetViewProjMatrix(),
-        gfx::Matrix44f()
+        hlslpp::float4x4()
     });
 
     // Update Floor uniforms
@@ -510,7 +510,7 @@ bool ShadowCubeApp::Update()
     m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
         scale_matrix,
         scale_matrix * m_light_camera.GetViewProjMatrix(),
-        gfx::Matrix44f()
+        hlslpp::float4x4()
     });
     
     return true;

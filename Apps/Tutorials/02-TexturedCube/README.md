@@ -110,10 +110,10 @@ private:
 
     struct SHADER_STRUCT_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4   eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3   light_position;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
+        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
     };
 
     const Constants       m_shader_constants;
@@ -155,7 +155,7 @@ TexturedCubeApp::TexturedCubeApp()
         })
     , m_cube_scale(15.F)
 {
-    m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
+    m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
@@ -414,7 +414,7 @@ This function rotates light position and camera in opposite directions.
 ```cpp
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    gfx::Matrix33f light_rotate_matrix;
+    hlslpp::float3x3 light_rotate_matrix;
     cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.F * delta_seconds / 4.F));
     m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
@@ -432,12 +432,12 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    gfx::Matrix44f model_matrix;
+    hlslpp::float4x4 model_matrix;
     cml::matrix_uniform_scale(model_matrix, m_cube_scale);
 
     m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
     m_shader_uniforms.model_matrix   = model_matrix;
-    m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.F);
+    m_shader_uniforms.eye_position   = hlslpp::float4(m_camera.GetOrientation().eye, 1.F);
     
     return true;
 }

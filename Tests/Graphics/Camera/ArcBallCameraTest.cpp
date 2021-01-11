@@ -41,9 +41,9 @@ static const Camera::Orientation g_test_view_orientation { { 0.f, 5.f, 10.f }, {
 static const Camera::Orientation g_test_dept_orientation { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };
 static const float               g_test_radius_ratio     = 0.75F;
 static const float               g_test_radius_pixels    = g_test_screen_center.GetY() * g_test_radius_ratio;
-static const Vector3f            g_axis_x                { 1.f, 0.f, 0.f };
-static const Vector3f            g_axis_y                { 0.f, 1.f, 0.f };
-static const Vector3f            g_axis_z                { 0.f, 0.f, -1.f };
+static const hlslpp::float3      g_axis_x                { 1.f, 0.f, 0.f };
+static const hlslpp::float3      g_axis_y                { 0.f, 1.f, 0.f };
+static const hlslpp::float3      g_axis_z                { 0.f, 0.f, -1.f };
 
 inline void SetupCamera(ArcBallCamera& camera, const Camera::Orientation& orientation)
 {
@@ -101,11 +101,11 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
     CheckOrientation(dependent_camera.GetOrientation(), rotated_dependent_orientation, vectors_equality_epsilon);
 }
 
-inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const Vector3f& axis, float angle_degrees)
+inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const hlslpp::float3& axis, float angle_degrees)
 {
-    Matrix33f rotation_matrix = hlslpp::float3x3::rotation_axis(hlslpp::normalize(axis), cml::rad(angle_degrees));
-    const Vector3f look_dir   = hlslpp::mul(orientation.aim - orientation.eye, rotation_matrix);
-    const Vector3f up_dir     = hlslpp::mul(orientation.up, rotation_matrix);
+    hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(hlslpp::normalize(axis), cml::rad(angle_degrees));
+    const hlslpp::float3 look_dir    = hlslpp::mul(orientation.aim - orientation.eye, rotation_matrix);
+    const hlslpp::float3 up_dir      = hlslpp::mul(orientation.up, rotation_matrix);
 
     switch (pivot)
     {

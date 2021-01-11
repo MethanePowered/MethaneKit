@@ -104,7 +104,7 @@ public:
     {
         GraphicsApp::Init();
 
-        struct Vertex { Vector3f position; Vector3f color; };
+        struct Vertex { hlslpp::float3 position; hlslpp::float3 color; };
         const std::array<Vertex, 3> triangle_vertices{ {
             { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
             { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },

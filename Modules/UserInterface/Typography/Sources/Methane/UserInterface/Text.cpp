@@ -53,7 +53,7 @@ struct SHADER_STRUCT_ALIGN Text::Constants
 
 struct SHADER_STRUCT_ALIGN Text::Uniforms
 {
-    SHADER_FIELD_ALIGN gfx::Matrix44f vp_matrix;
+    SHADER_FIELD_ALIGN hlslpp::float4x4 vp_matrix;
 };
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)

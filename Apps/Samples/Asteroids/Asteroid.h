@@ -36,12 +36,12 @@ namespace gfx = Graphics;
 
 struct SHADER_STRUCT_ALIGN AsteroidUniforms
 {
-    SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-    SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-    SHADER_FIELD_ALIGN gfx::Color3f   deep_color;
-    SHADER_FIELD_ALIGN gfx::Color3f   shallow_color;
-    SHADER_FIELD_ALIGN gfx::Vector2f  depth_range;
-    SHADER_FIELD_ALIGN uint32_t       texture_index;
+    SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
+    SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
+    SHADER_FIELD_ALIGN gfx::Color3f     deep_color;
+    SHADER_FIELD_ALIGN gfx::Color3f     shallow_color;
+    SHADER_FIELD_ALIGN hlslpp::float2   depth_range;
+    SHADER_FIELD_ALIGN uint32_t         texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -87,13 +87,13 @@ public:
         const uint32_t       mesh_instance_index;
         const uint32_t       texture_index;
         const Colors         colors;
-        const gfx::Matrix44f scale_translate_matrix;
-        const gfx::Vector3f  spin_axis;
-        const float          scale;
-        const float          orbit_speed;
-        const float          spin_speed;
-        const float          spin_angle_rad;
-        const float          orbit_angle_rad;
+        const hlslpp::float4x4 scale_translate_matrix;
+        const hlslpp::float3   spin_axis;
+        const float            scale;
+        const float            orbit_speed;
+        const float            spin_speed;
+        const float            spin_angle_rad;
+        const float            orbit_angle_rad;
     };
 
     struct TextureNoiseParameters

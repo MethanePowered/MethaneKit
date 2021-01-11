@@ -220,7 +220,7 @@ void AsteroidsApp::Init()
         m_view_camera,
         m_light_camera,
         "Textures/Planet/Mars.jpg",             // texture_path
-        gfx::Vector3f(0.F, 0.F, 0.F),           // position
+        hlslpp::float3(0.F, 0.F, 0.F),          // position
         m_scene_scale * 3.F,                    // scale
         0.1F,                                   // spin_velocity_rps
         true,                                   // depth_reversed
@@ -346,7 +346,7 @@ bool AsteroidsApp::Update()
         return false;
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
     m_sky_box_ptr->Update();
