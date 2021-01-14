@@ -111,35 +111,119 @@ public:
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType operator*(M multiplier) const noexcept
-    { return PointType(m_vector * ScalarCast(multiplier)); }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            return PointType(m_vector * multiplier);
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                return PointType(PointT<M, vector_size>(*this) * multiplier);
+            else
+                return PointType(m_vector * static_cast<T>(multiplier));
+        }
+    }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType operator/(M divisor) const noexcept
-    { return PointType(m_vector / ScalarCast(divisor)); }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            return PointType(m_vector / divisor);
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                return PointType(PointT<M, vector_size>(*this) / divisor);
+            else
+                return PointType(m_vector / static_cast<T>(divisor));
+        }
+    }
 
     template<typename M>
     PointType operator*(const PointT<M, vector_size>& multiplier) const noexcept
-    { return PointType(m_vector * static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector())); }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            return PointType(m_vector * multiplier.AsVector());
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                return PointType(static_cast<typename Vector<M, vector_size>::Type>(m_vector) * multiplier.AsVector());
+            else
+                return PointType(m_vector * static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector()));
+        }
+    }
 
     template<typename M>
     PointType operator/(const PointT<M, vector_size>& divisor) const noexcept
-    { return PointType(m_vector / static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector())); }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            return PointType(m_vector / divisor.AsVector());
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                return PointType(static_cast<typename Vector<M, vector_size>::Type>(m_vector) / divisor.AsVector());
+            else
+                return PointType(m_vector / static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector()));
+        }
+    }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType& operator*=(M multiplier) noexcept
-    { m_vector *= ScalarCast(multiplier); return *this; }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            m_vector *= multiplier;
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                *this = PointType(PointT<M, vector_size>(*this) * multiplier);
+            else
+                m_vector *= static_cast<T>(multiplier);
+        }
+        return *this;
+    }
 
     template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
     PointType& operator/=(M divisor) noexcept
-    { m_vector /= ScalarCast(divisor); return *this; }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            m_vector /= divisor;
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                *this = PointType(PointT<M, vector_size>(*this) / divisor);
+            else
+                m_vector /= static_cast<T>(divisor);
+        }
+        return *this;
+    }
 
     template<typename M>
     PointType& operator*=(const PointT<M, vector_size>& multiplier) noexcept
-    { m_vector *= static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector()); return *this; }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            m_vector *= multiplier.AsVector();
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                static_cast<typename Vector<M, vector_size>::Type>(m_vector) *= multiplier.AsVector();
+            else
+                m_vector *= static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector());
+        }
+        return *this;
+    }
 
     template<typename M>
     PointType& operator/=(const PointT<M, vector_size>& divisor) noexcept
-    { m_vector /= static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector()); return *this; }
+    {
+        if constexpr (std::is_same_v<T, M>)
+            m_vector /= divisor.AsVector();
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                *this = PointType(PointT<M, vector_size>(*this) / divisor);
+            else
+                m_vector /= static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector());
+        }
+        return *this;
+    }
 
     template<typename U>
     explicit operator PointT<U, vector_size>() const noexcept
@@ -165,15 +249,6 @@ public:
     }
 
 private:
-    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
-    T ScalarCast(M m) const noexcept
-    {
-        if constexpr (std::is_same_v<M, T>)
-            return m;
-        else
-            return static_cast<T>(m);
-    }
-
     VectorType m_vector;
 };
 
