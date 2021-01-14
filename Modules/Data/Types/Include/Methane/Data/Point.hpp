@@ -203,7 +203,7 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                static_cast<typename Vector<M, vector_size>::Type>(m_vector) *= multiplier.AsVector();
+                *this = PointType(PointT<M, vector_size>(*this) * multiplier);
             else
                 m_vector *= static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector());
         }
