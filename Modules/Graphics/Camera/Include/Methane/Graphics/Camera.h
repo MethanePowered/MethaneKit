@@ -102,7 +102,7 @@ protected:
     hlslpp::float4 TransformViewToWorld(const hlslpp::float4& view_pos, const Orientation& orientation) const noexcept;
 
 private:
-    hlslpp::frustrum CreateFrustrum() const;
+    hlslpp::frustum CreateFrustum() const;
     void UpdateProjectionSettings();
 
     Projection        m_projection            = Projection::Perspective;

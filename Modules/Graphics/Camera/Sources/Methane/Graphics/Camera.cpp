@@ -61,16 +61,16 @@ void Camera::SetParameters(const Parameters& parameters)
     UpdateProjectionSettings();
 }
 
-hlslpp::frustrum Camera::CreateFrustrum() const
+hlslpp::frustum Camera::CreateFrustum() const
 {
     META_FUNCTION_TASK();
     switch (m_projection)
     {
     case Projection::Perspective:
-        return hlslpp::frustrum::field_of_view_y(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth);
+        return hlslpp::frustum::field_of_view_y(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth);
 
     case Projection::Orthogonal:
-        return hlslpp::frustrum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth);
+        return hlslpp::frustum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth);
 
     default:
         META_UNEXPECTED_ENUM_ARG(m_projection);
@@ -80,7 +80,7 @@ hlslpp::frustrum Camera::CreateFrustrum() const
 void Camera::UpdateProjectionSettings()
 {
     META_FUNCTION_TASK();
-    m_projection_settings = hlslpp::projection(CreateFrustrum(), hlslpp::zclip::zero);
+    m_projection_settings = hlslpp::projection(CreateFrustum(), hlslpp::zclip::zero);
 }
 
 void Camera::Rotate(const hlslpp::float3& axis, float angle_deg) noexcept
