@@ -31,6 +31,7 @@ Methane common exception types
 #pragma once
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -150,19 +151,32 @@ public:
     { }
 };
 
-template<typename T, typename = std::enable_if_t<std::is_enum_v<T>, void>>
-class UnexpectedEnumArgumentException : public ArgumentExceptionBase<std::invalid_argument>
+template<typename T, typename RawType = typename std::decay<T>::type>
+class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    UnexpectedEnumArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, variable_name, fmt::format("enum value {}({}) is unexpected", typeid(T).name(), value), description)
+    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
+        : UnexpectedArgumentException(function_name, variable_name, value,
+                                      [&value]
+                                      {
+                                          if constexpr (std::is_enum_v<RawType>)
+                                              return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<RawType>(), magic_enum::enum_name(value), value);
+                                          else
+                                              return fmt::format("{} value {} is unexpected", typeid(RawType).name(), value);
+                                      }(),
+                                      description)
+    { }
+
+    [[nodiscard]] RawType GetValue() const noexcept { m_value; }
+
+protected:
+    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& invalid_msg, const std::string& description)
+        : ArgumentExceptionBaseType(function_name, variable_name, invalid_msg, description)
         , m_value(value)
     { }
 
-    [[nodiscard]] T GetValue() const noexcept { m_value; }
-
 private:
-    const T m_value;
+    const RawType m_value;
 };
 
 class NotImplementedException : public std::logic_error

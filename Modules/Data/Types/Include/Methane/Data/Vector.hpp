@@ -17,16 +17,18 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/Vector.hpp
-Template vector type alias to hlsl++ vectors of various types
+Template vector type alias for HLSL++ vectors of various types and sizes
 
 ******************************************************************************/
+
+#pragma once
 
 #include <hlsl++.h>
 
 namespace Methane::Data
 {
 
-template<typename T, size_t vector_size, typename = std::enable_if_t<2 <= vector_size && vector_size <= 4>>
+template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 struct Vector
 {
     using Type = void;
@@ -49,5 +51,8 @@ template<> struct Vector<double, 2> { using Type = hlslpp::double2; };
 template<> struct Vector<double, 3> { using Type = hlslpp::double3; };
 template<> struct Vector<double, 4> { using Type = hlslpp::double4; };
 #endif
+
+template<typename T, size_t size>
+using VectorType = typename Vector<T, size>::Type;
 
 } // namespace Methane::Data
