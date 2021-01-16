@@ -118,7 +118,7 @@ D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAc
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
+    default:                                META_UNEXPECTED_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
@@ -130,7 +130,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
-    default:                                 META_UNEXPECTED_ENUM_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+    default:                                 META_UNEXPECTED_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
@@ -169,7 +169,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access acc
     case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
+    default:                                  META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
 

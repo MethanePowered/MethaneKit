@@ -40,7 +40,7 @@ static std::string GetWaitForName(Context::WaitFor wait_for)
     case Context::WaitFor::RenderComplete:      return "Render Complete";
     case Context::WaitFor::FramePresented:      return "Frame Present";
     case Context::WaitFor::ResourcesUploaded:   return "Resources Upload";
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(wait_for, "");
+    default:                                    META_UNEXPECTED_ARG_RETURN(wait_for, "");
     }
 }
 #endif
@@ -301,7 +301,7 @@ void ContextBase::PerformRequestedAction()
     case DeferredAction::None:                   break;
     case DeferredAction::UploadResources:        UploadResources(); break;
     case DeferredAction::CompleteInitialization: CompleteInitialization(); break;
-    default:                                     META_UNEXPECTED_ENUM_ARG(m_requested_action);
+    default:                                     META_UNEXPECTED_ARG(m_requested_action);
     }
     m_requested_action = DeferredAction::None;
 }

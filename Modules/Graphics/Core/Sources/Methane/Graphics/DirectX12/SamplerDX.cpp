@@ -47,7 +47,7 @@ static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
@@ -62,7 +62,7 @@ static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter&
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
+    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
     }
 }
 
@@ -75,7 +75,7 @@ static D3D12_FILTER ConvertFilterMinNearesetToDX(const Sampler::Filter& filter)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinNearesetMagNearestToDX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinNearesetMagLinearToDX(filter);
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
@@ -90,7 +90,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagNearestToDX(const Sampler::Filter& 
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
+    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
     }
 }
 
@@ -105,7 +105,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagLinearToDX(const Sampler::Filter& f
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
+    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
     }
 }
 
@@ -118,7 +118,7 @@ static D3D12_FILTER ConvertFilterMinLinearToDX(const Sampler::Filter& filter)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinLinearMagNearestToDX(filter); break;
     case FilterMinMag::Linear:  return ConvertFilterMinLinearMagLinearToDX(filter); break;
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
@@ -130,7 +130,7 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinNearesetToDX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinLinearToDX(filter);
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 
     // TODO: unsupported filtering types
@@ -176,7 +176,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode 
     case AddressMode::ClampToBorderColor:   return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
     case AddressMode::Repeat:               return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     case AddressMode::RepeatMirror:         return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(address_mode, D3D12_TEXTURE_ADDRESS_MODE_WRAP);
+    default: META_UNEXPECTED_ARG_RETURN(address_mode, D3D12_TEXTURE_ADDRESS_MODE_WRAP);
     }
 }
 
@@ -200,7 +200,7 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, p_out_color); break;
     case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, p_out_color); break;
     case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, p_out_color); break;
-    default:                            META_UNEXPECTED_ENUM_ARG(border_color);
+    default:                            META_UNEXPECTED_ARG(border_color);
     }
 }
 

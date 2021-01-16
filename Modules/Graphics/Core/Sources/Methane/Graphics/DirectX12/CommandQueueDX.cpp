@@ -63,7 +63,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        META_UNEXPECTED_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
     }
 }
 

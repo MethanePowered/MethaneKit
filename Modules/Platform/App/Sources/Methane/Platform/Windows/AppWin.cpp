@@ -45,7 +45,7 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
     case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
     case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, 0);
+    default:                                    META_UNEXPECTED_ARG_RETURN(msg_type, 0);
     }
 }
 

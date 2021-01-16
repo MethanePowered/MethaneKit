@@ -43,7 +43,7 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
     {
     case Buffer::StorageMode::Managed: return MTLResourceStorageModeManaged;
     case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
+    default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
 
@@ -110,7 +110,7 @@ void BufferMT::SetData(const SubResources& sub_resources)
     {
     case Buffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
     case Buffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
-    default: META_UNEXPECTED_ENUM_ARG(GetSettings().storage_mode);
+    default: META_UNEXPECTED_ARG(GetSettings().storage_mode);
     }
 }
 

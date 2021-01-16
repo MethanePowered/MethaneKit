@@ -668,7 +668,7 @@ FrameRect Text::GetAlignedViewportRect() const
         case HorizontalAlignment::Left:   break;
         case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
         case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
-        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.horizontal_alignment);
+        default:                          META_UNEXPECTED_ARG(m_settings.layout.horizontal_alignment);
         }
     }
     if (content_size.height != m_frame_rect.size.height)
@@ -678,7 +678,7 @@ FrameRect Text::GetAlignedViewportRect() const
         case VerticalAlignment::Top:      break;
         case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
         case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
-        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.vertical_alignment);
+        default:                          META_UNEXPECTED_ARG(m_settings.layout.vertical_alignment);
         }
     }
 

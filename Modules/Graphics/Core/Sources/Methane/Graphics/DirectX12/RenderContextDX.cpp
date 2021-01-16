@@ -74,7 +74,7 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     case SCALE_400_PERCENT:           return 4.F;
     case SCALE_450_PERCENT:           return 4.5F;
     case SCALE_500_PERCENT:           return 5.F;
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(device_scale_factor, 1.F);
+    default: META_UNEXPECTED_ARG_RETURN(device_scale_factor, 1.F);
     }
 }
 
@@ -121,7 +121,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(wait_for);
+        META_UNEXPECTED_ARG(wait_for);
     }
 }
 

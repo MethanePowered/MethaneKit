@@ -89,7 +89,7 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
             break;
 
         default:
-            META_UNEXPECTED_ENUM_ARG(command_list.GetType());
+            META_UNEXPECTED_ARG(command_list.GetType());
         }
 
         fence_name_ss << " `" << command_list.GetName() << "`";

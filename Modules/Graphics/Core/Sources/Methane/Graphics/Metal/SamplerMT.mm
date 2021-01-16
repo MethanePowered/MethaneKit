@@ -45,7 +45,7 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Addres
         case AddressMode::ClampToBorderColor:   return MTLSamplerAddressModeClampToBorderColor;
         case AddressMode::Repeat:               return MTLSamplerAddressModeRepeat;
         case AddressMode::RepeatMirror:         return MTLSamplerAddressModeMirrorRepeat;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
+        default:                                META_UNEXPECTED_ARG_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
     }
 }
 
@@ -58,7 +58,7 @@ static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filt
     {
         case MinMagFilter::Nearest:             return MTLSamplerMinMagFilterNearest;
         case MinMagFilter::Linear:              return MTLSamplerMinMagFilterLinear;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
+        default:                                META_UNEXPECTED_ARG_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
     }
 }
 
@@ -72,7 +72,7 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mi
         case MipFilter::NotMipmapped:           return MTLSamplerMipFilterNotMipmapped;
         case MipFilter::Nearest:                return MTLSamplerMipFilterNearest;
         case MipFilter::Linear:                 return MTLSamplerMipFilterLinear;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
+        default:                                META_UNEXPECTED_ARG_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
     }
 }
 
@@ -86,7 +86,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
         case BorderColor::TransparentBlack:     return MTLSamplerBorderColorTransparentBlack;
         case BorderColor::OpaqueBlack:          return MTLSamplerBorderColorOpaqueBlack;
         case BorderColor::OpaqueWhite:          return MTLSamplerBorderColorOpaqueWhite;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
+        default:                                META_UNEXPECTED_ARG_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
     }
 }
 

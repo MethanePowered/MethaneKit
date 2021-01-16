@@ -147,7 +147,7 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
         META_CHECK_ARG_DESCR(dimensions.width, !mipmapped || !(dimensions.width % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
         break;
     default:
-        META_UNEXPECTED_ENUM_ARG(dimension_type);
+        META_UNEXPECTED_ARG(dimension_type);
     }
 }
 

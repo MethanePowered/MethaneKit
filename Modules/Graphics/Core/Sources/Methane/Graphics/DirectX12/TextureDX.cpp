@@ -64,8 +64,8 @@ Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Se
     {
     case Texture::Type::Texture:            return std::make_shared<RenderTargetTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage);
     case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage, render_context.GetSettings().clear_depth_stencil);
-    case Texture::Type::FrameBuffer:        META_UNEXPECTED_ENUM_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(settings.type, nullptr);
+    case Texture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
+    default:                                META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
 }
 
@@ -181,7 +181,7 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
         case DescriptorHeap::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
         case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
-            META_UNEXPECTED_ENUM_ARG_DESCR(descriptor_heap_type,
+            META_UNEXPECTED_ARG_DESCR(descriptor_heap_type,
                                            "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
                                            magic_enum::flags::enum_name(usage),
                                            magic_enum::flags::enum_name(descriptor_heap_type));
@@ -277,7 +277,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Tex2DMultisample:
-        META_UNEXPECTED_ENUM_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
+        META_UNEXPECTED_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
 
     case DimensionType::Tex2D:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 2D texture must have array length equal to 1");
@@ -338,7 +338,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
+        META_UNEXPECTED_ARG(settings.dimension_type);
     }
 
     srv_desc.Format                  = tex_desc.Format;

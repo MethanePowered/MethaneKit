@@ -51,7 +51,7 @@ static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type
     case Texture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
     case Texture::DimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
-    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLTextureType1D);
+    default:                                        META_UNEXPECTED_ARG_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
@@ -71,7 +71,7 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
              return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
     case Texture::DimensionType::Tex3D:
              return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(dimension_type, MTLRegion{});
+    default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLRegion{});
     }
 }
 
@@ -274,7 +274,7 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;
 
-    default: META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
+    default: META_UNEXPECTED_ARG(settings.dimension_type);
     }
 
     if (!mtl_tex_desc)

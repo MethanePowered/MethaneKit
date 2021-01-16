@@ -285,7 +285,7 @@ std::string ActionCamera::GetActionName(MouseAction mouse_action)
     case MouseAction::Zoom:     return "zoom";
     case MouseAction::Move:     return "move";
     case MouseAction::None:     return "none";
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(mouse_action, "");
+    default:                    META_UNEXPECTED_ARG_RETURN(mouse_action, "");
     }
 }
 
@@ -319,7 +319,7 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     case KeyboardAction::ChangePivot:   return "change pivot";
 
     case KeyboardAction::None:          return "none";
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(keyboard_action, "");
+    default:                            META_UNEXPECTED_ARG_RETURN(keyboard_action, "");
     }
 }
 

@@ -73,7 +73,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
         return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+        META_UNEXPECTED_ARG_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
     }
 }
 
@@ -96,7 +96,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
     case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
     case Shader::Type::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
     case Shader::Type::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                   META_UNEXPECTED_ENUM_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
+    default:                   META_UNEXPECTED_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
 };
 
@@ -190,7 +190,7 @@ void ProgramDX::InitRootSignature()
             break;
 
         default:
-            META_UNEXPECTED_ENUM_ARG(bind_settings.type);
+            META_UNEXPECTED_ARG(bind_settings.type);
         }
     }
 

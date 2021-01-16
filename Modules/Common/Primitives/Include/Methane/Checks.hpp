@@ -29,7 +29,7 @@ Methane short check macroses throwing exceptions on negative check result
   - META_CHECK_ARG_GREATER_OR_EQUAL[_DESCR](argument, min_value[, description])
   - META_CHECK_ARG_NOT_EMPTY[_DESCR](argument[, description])
   - META_CHECK_ARG_NOT_NULL[_DESCR](argument[, description])
-  - META_UNEXPECTED_ENUM_ARG[_DESCR](argument[, description])
+  - META_UNEXPECTED_ARG[_DESCR](argument[, description])
   - META_FUNCTION_NOT_IMPLEMENTED[_RETURN][_DESCR]([return_value],[description])
 
 ******************************************************************************/
@@ -111,12 +111,12 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_ARG_NOT_ZERO(argument) META_CHECK_ARG_NOT_ZERO_DESCR(argument, "")
 
-#define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description, ...) \
+#define META_UNEXPECTED_ARG_DESCR(argument, description, ...) \
     throw Methane::UnexpectedArgumentException(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
-#define META_UNEXPECTED_ENUM_ARG(argument) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
-#define META_UNEXPECTED_ENUM_ARG_RETURN(argument, return_value) META_UNEXPECTED_ENUM_ARG_DESCR(argument, "")
-#define META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(argument, return_value, description, ...) META_UNEXPECTED_ENUM_ARG_DESCR(argument, description, ## __VA_ARGS__)
+#define META_UNEXPECTED_ARG(argument) META_UNEXPECTED_ARG_DESCR(argument, "")
+#define META_UNEXPECTED_ARG_RETURN(argument, return_value) META_UNEXPECTED_ARG_DESCR(argument, "")
+#define META_UNEXPECTED_ARG_DESCR_RETURN(argument, return_value, description, ...) META_UNEXPECTED_ARG_DESCR(argument, description, ## __VA_ARGS__)
 
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description, ...) \
     throw Methane::NotImplementedException(__FUNCTION_NAME__, fmt::format(description, ## __VA_ARGS__))
@@ -154,10 +154,10 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NOT_NULL(argument) (void)argument
 #define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description, ...) (void)argument
 #define META_CHECK_ARG_NOT_ZERO(argument) (void)argument
-#define META_UNEXPECTED_ENUM_ARG_DESCR(argument, description, ...) (void)argument
-#define META_UNEXPECTED_ENUM_ARG(argument) (void)argument
-#define META_UNEXPECTED_ENUM_ARG_RETURN(argument, return_value) return return_value
-#define META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(argument, return_value, description, ...) return return_value
+#define META_UNEXPECTED_ARG_DESCR(argument, description, ...) (void)argument
+#define META_UNEXPECTED_ARG(argument) (void)argument
+#define META_UNEXPECTED_ARG_RETURN(argument, return_value) return return_value
+#define META_UNEXPECTED_ARG_DESCR_RETURN(argument, return_value, description, ...) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description, ...)
 #define META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(return_value, description, ...) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED()

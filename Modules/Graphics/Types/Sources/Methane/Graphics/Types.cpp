@@ -106,7 +106,7 @@ Data::Size GetPixelSize(PixelFormat pixel_format)
         return 1;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(pixel_format, 0);
+        META_UNEXPECTED_ARG_RETURN(pixel_format, 0);
     }
 }
 

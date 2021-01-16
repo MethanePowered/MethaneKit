@@ -117,7 +117,7 @@ std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_fiel
     case VertexField::Normal:   return "NORMAL";
     case VertexField::TexCoord: return "TEXCOORD";
     case VertexField::Color:    return "COLOR";
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(vertex_field, "");
+    default:                    META_UNEXPECTED_ARG_RETURN(vertex_field, "");
     }
 }
 

@@ -101,7 +101,7 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
             return;
 
         default:
-            META_UNEXPECTED_ENUM_ARG(action);
+            META_UNEXPECTED_ARG(action);
         }
     }
 }

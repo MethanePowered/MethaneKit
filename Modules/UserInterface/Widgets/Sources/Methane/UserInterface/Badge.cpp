@@ -139,7 +139,7 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
         );
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(frame_corner, UnitRect());
+        META_UNEXPECTED_ARG_RETURN(frame_corner, UnitRect());
     }
 }
 

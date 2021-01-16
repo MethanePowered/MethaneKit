@@ -67,7 +67,7 @@ public:
         case 1: return m_components.g;
         case 2: return m_components.b;
         case 3: if constexpr (vector_size == 4) return m_components.a;
-        default: META_UNEXPECTED_ENUM_ARG_RETURN(component_index, 0.f);
+        default: META_UNEXPECTED_ARG_RETURN(component_index, 0.f);
         }
     }
 
@@ -107,7 +107,7 @@ public:
         case 1: m_components.g = value; break;
         case 2: m_components.b = value; break;
         case 3: if constexpr (vector_size == 4) { m_components.a = value; break; }
-        default: META_UNEXPECTED_ENUM_ARG(component_index);
+        default: META_UNEXPECTED_ARG(component_index);
         }
     }
 

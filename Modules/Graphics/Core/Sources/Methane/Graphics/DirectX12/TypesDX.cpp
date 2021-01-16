@@ -42,7 +42,7 @@ D3D12_COMPARISON_FUNC TypeConverterDX::CompareFunctionToD3D(Compare compare_func
     case Compare::GreaterEqual: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
     case Compare::Equal:        return D3D12_COMPARISON_FUNC_EQUAL;
     case Compare::NotEqual:     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-    default:                    META_UNEXPECTED_ENUM_ARG_RETURN(compare_func, D3D12_COMPARISON_FUNC_NEVER);
+    default:                    META_UNEXPECTED_ARG_RETURN(compare_func, D3D12_COMPARISON_FUNC_NEVER);
     }
 }
 
@@ -71,7 +71,7 @@ DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format)
     case PixelFormat::R8Unorm:          return DXGI_FORMAT_R8_UNORM;
     case PixelFormat::R8Snorm:          return DXGI_FORMAT_R8_SNORM;
     case PixelFormat::A8Unorm:          return DXGI_FORMAT_A8_UNORM;
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(pixel_format, DXGI_FORMAT_UNKNOWN);
+    default:                            META_UNEXPECTED_ARG_RETURN(pixel_format, DXGI_FORMAT_UNKNOWN);
     }
 }
 
@@ -86,7 +86,7 @@ DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format, 
         case ResourceFormatType::ResourceBase:  return DXGI_FORMAT_R32_TYPELESS;
         case ResourceFormatType::ViewRead:      return DXGI_FORMAT_R32_FLOAT;
         case ResourceFormatType::ViewWrite:     return DXGI_FORMAT_D32_FLOAT;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
+        default:                                META_UNEXPECTED_ARG_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
         }
     }
 

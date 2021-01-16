@@ -77,7 +77,7 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
         break;
         
     default:
-        META_UNEXPECTED_ENUM_ARG(action);
+        META_UNEXPECTED_ARG(action);
     }
 }
 
@@ -92,7 +92,7 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
     case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
     case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
-    default:                                            META_UNEXPECTED_ENUM_ARG_RETURN(action, "");
+    default:                                            META_UNEXPECTED_ARG_RETURN(action, "");
     }
 }
 

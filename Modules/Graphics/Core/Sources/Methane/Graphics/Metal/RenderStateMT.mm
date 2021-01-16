@@ -47,7 +47,7 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
         case RasterizerCullMode::None:  return MTLCullModeNone;
         case RasterizerCullMode::Back:  return MTLCullModeBack;
         case RasterizerCullMode::Front: return MTLCullModeFront;
-        default:                        META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, MTLCullModeNone);
+        default:                        META_UNEXPECTED_ARG_RETURN(cull_mode, MTLCullModeNone);
     }
 }
 
@@ -60,7 +60,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     {
         case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
         case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
-        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
+        default:                            META_UNEXPECTED_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
 }
     
@@ -95,7 +95,7 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
+    default:                        META_UNEXPECTED_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
     }
 }
 
@@ -125,7 +125,7 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, MTLBlendFactorZero);
+    default:                                    META_UNEXPECTED_ARG_RETURN(blend_factor, MTLBlendFactorZero);
     }
 }
 
@@ -144,7 +144,7 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
         case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, MTLStencilOperationKeep);
+        default:                                META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
     }
 }
 

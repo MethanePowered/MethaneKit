@@ -314,7 +314,7 @@ Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode 
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(texture_mode);
+        META_UNEXPECTED_ARG(texture_mode);
     }
 
     return macro_definitions;

@@ -73,7 +73,7 @@ hlslpp::frustum Camera::CreateFrustum() const
         return hlslpp::frustum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth);
 
     default:
-        META_UNEXPECTED_ENUM_ARG(m_projection);
+        META_UNEXPECTED_ARG(m_projection);
     }
 }
 
@@ -111,7 +111,7 @@ hlslpp::float4x4 Camera::CreateProjMatrix() const
         return hlslpp::float4x4::orthographic(*m_projection_settings);
 
     default:
-        META_UNEXPECTED_ENUM_ARG(m_projection);
+        META_UNEXPECTED_ARG(m_projection);
     }
 }
 
