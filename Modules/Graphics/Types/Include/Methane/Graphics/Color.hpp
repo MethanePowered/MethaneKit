@@ -153,7 +153,7 @@ private:
 
     VectorType m_components;
 
-    static constexpr std::pair<float, float> s_float_range{ 0.F, 1.F };
+    static constexpr std::pair<float, float> s_float_range{ 0.F, 1.F + std::numeric_limits<float>::epsilon() };
     static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
