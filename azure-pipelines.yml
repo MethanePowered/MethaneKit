@@ -155,6 +155,7 @@ jobs:
   - template: Build/Windows/AzureBuild.yml
 
 - job: Windows_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'windows-2019'
@@ -218,6 +219,7 @@ jobs:
   - template: Build/Posix/AzureBuild.yml
 
 - job: MacOS_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'macOS-10.15'
@@ -288,6 +290,7 @@ jobs:
   - template: Build/Posix/AzureBuild.yml
 
 - job: Ubuntu_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'ubuntu-20.04'
