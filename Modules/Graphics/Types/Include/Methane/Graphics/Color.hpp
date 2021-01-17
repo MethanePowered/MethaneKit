@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Color.hpp
-Color type based on cml::vector.
+Color wrapper type based on HLSL++ vector.
 
 ******************************************************************************/
 
