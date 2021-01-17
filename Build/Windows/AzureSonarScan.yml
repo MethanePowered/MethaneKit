@@ -53,6 +53,7 @@ steps:
         sonar.cfamily.threads=4
         sonar.testExecutionReportPaths=$(installDir)\Tests\Results\MethaneDataEventsTest.xml,$(installDir)\Tests\Results\MethaneDataRangeSetTest.xml,$(installDir)\Tests\Results\MethanePlatformInputTest.xml,$(installDir)\Tests\Results\MethaneGraphicsCameraTest.xml
         sonar.coverageReportPaths=$(installDir)\Tests\Coverage\Report\SonarQube.xml
+        sonar.verbose=$(sonar.Verbose)
 
   - script: |
       call "$(vcVarsBatFile)"
@@ -97,3 +98,19 @@ steps:
     displayName: 'Publish results of analysis to Sonar Cloud'
     inputs:
       pollingTimeoutSec: '300'
+
+  - task: CopyFiles@2
+    displayName: 'Copy Sonar Scanner error reproducers to staging directory'
+    condition: failed()
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: 'sonar-*-reproducer.zip'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish sonar error reproduces to build artifacts'
+    condition: failed()
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      archiveFilePatterns: '*.zip'
+      artifactName: MethaneKit-$(buildName)-Errors
