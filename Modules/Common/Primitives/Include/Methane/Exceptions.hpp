@@ -59,8 +59,8 @@ public:
     [[nodiscard]] const std::string& GetArgumentName() const noexcept { return m_argument_name; }
 
 private:
-    const std::string m_function_name;
-    const std::string m_argument_name;
+    std::string m_function_name;
+    std::string m_argument_name;
 };
 
 template<typename BaseExceptionType>
@@ -101,7 +101,7 @@ private:
     template<typename V = DecayType, std::enable_if_t<IsStaticCastable<V, std::string>::value, void>>
     [[nodiscard]] static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), static_cast<std::string>(value)); }
 
-    const DecayType m_value{ };
+    DecayType m_value{ };
 };
 
 template<typename T, typename V, typename RangeType = std::pair<typename std::decay<V>::type, typename std::decay<V>::type>>
@@ -120,8 +120,8 @@ public:
     [[nodiscard]] const std::pair<T, T>& GetRange() const noexcept { return m_range; }
 
 private:
-    const DecayType m_value;
-    const RangeType m_range;
+    DecayType m_value;
+    RangeType m_range;
 };
 
 template<typename T>
@@ -156,27 +156,22 @@ class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_ar
 {
 public:
     UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
-        : UnexpectedArgumentException(function_name, variable_name, value,
-                                      [&value]
-                                      {
-                                          if constexpr (std::is_enum_v<RawType>)
-                                              return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<RawType>(), magic_enum::enum_name(value), value);
-                                          else
-                                              return fmt::format("{} value {} is unexpected", typeid(RawType).name(), value);
-                                      }(),
-                                      description)
+        : ArgumentExceptionBaseType(function_name, variable_name,
+                                    [&value]
+                                    {
+                                        if constexpr (std::is_enum_v<RawType>)
+                                            return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<RawType>(), magic_enum::enum_name(value), value);
+                                        else
+                                            return fmt::format("{} value {} is unexpected", typeid(RawType).name(), value);
+                                    }(),
+                                    description)
+        , m_value(value)
     { }
 
     [[nodiscard]] RawType GetValue() const noexcept { m_value; }
 
-protected:
-    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& invalid_msg, const std::string& description)
-        : ArgumentExceptionBaseType(function_name, variable_name, invalid_msg, description)
-        , m_value(value)
-    { }
-
 private:
-    const RawType m_value;
+    RawType m_value;
 };
 
 class NotImplementedException : public std::logic_error
@@ -190,7 +185,7 @@ public:
     [[nodiscard]] const std::string& GetFunctionName() const noexcept { return m_function_name; }
 
 private:
-    const std::string m_function_name;
+    std::string m_function_name;
 };
 
 } // namespace Methane

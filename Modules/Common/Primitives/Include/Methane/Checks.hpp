@@ -112,7 +112,7 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NOT_ZERO(argument) META_CHECK_ARG_NOT_ZERO_DESCR(argument, "")
 
 #define META_UNEXPECTED_ARG_DESCR(argument, description, ...) \
-    throw Methane::UnexpectedArgumentException(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+    throw Methane::UnexpectedArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_UNEXPECTED_ARG(argument) META_UNEXPECTED_ARG_DESCR(argument, "")
 #define META_UNEXPECTED_ARG_RETURN(argument, return_value) META_UNEXPECTED_ARG_DESCR(argument, "")
