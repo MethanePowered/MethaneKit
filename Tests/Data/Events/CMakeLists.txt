@@ -1,5 +1,5 @@
 include(CTest)
-include(ParseAndAddCatchTests)
+include(Catch)
 
 set(TARGET MethaneDataEventsTest)
 
@@ -51,4 +51,4 @@ install(TARGETS ${TARGET}
         COMPONENT Test
 )
 
-ParseAndAddCatchTests(${TARGET})
+catch_discover_tests(${TARGET})
