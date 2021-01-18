@@ -175,7 +175,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
     sonar.BuildCommand: MSBuild.exe INSTALL.vcxproj /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
-    sonar.Verbose: true
+    sonar.Verbose: false
 
   steps:
     - template: Build/Windows/AzureSonarScan.yml

@@ -167,12 +167,10 @@ private:
     template<typename ValueType = RawType>
     static std::string GetMessage(ValueType&& value)
     {
-#if 0
         if constexpr (std::is_enum_v<ValueType>)
             return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<ValueType>(), magic_enum::enum_name(std::forward<ValueType>(value)), std::forward<ValueType>(value));
         else
-#endif
-        return fmt::format("{} value {} is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
+            return fmt::format("{} value {} is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
     }
 
     RawType m_value;
