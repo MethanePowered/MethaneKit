@@ -119,6 +119,7 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
     }
 }
 
+[[nodiscard]]
 static std::string GetValueTypeName(D3D_NAME value_type)
 {
     META_FUNCTION_TASK();
@@ -153,6 +154,7 @@ static std::string GetValueTypeName(D3D_NAME value_type)
     }
 }
 
+[[nodiscard]]
 static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type)
 {
     META_FUNCTION_TASK();
@@ -167,6 +169,8 @@ static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_ty
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
+
+[[nodiscard]]
 static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type)
 {
     META_FUNCTION_TASK();

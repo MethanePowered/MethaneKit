@@ -155,22 +155,26 @@ template<typename T, typename RawType = typename std::decay<T>::type>
 class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, T value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, variable_name,
-                                    [&value]
-                                    {
-                                        if constexpr (std::is_enum_v<RawType>)
-                                            return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<RawType>(), magic_enum::enum_name(value), value);
-                                        else
-                                            return fmt::format("{} value {} is unexpected", typeid(RawType).name(), value);
-                                    }(),
-                                    description)
-        , m_value(value)
+    template<typename ValueType = RawType>
+    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, ValueType&& value, const std::string& description = "")
+        : ArgumentExceptionBaseType(function_name, variable_name, GetMessage(value), description)
+        , m_value(std::forward<ValueType>(value))
     { }
 
     [[nodiscard]] RawType GetValue() const noexcept { m_value; }
 
 private:
+    template<typename ValueType = RawType>
+    static std::string GetMessage(ValueType&& value)
+    {
+#if 0
+        if constexpr (std::is_enum_v<ValueType>)
+            return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<ValueType>(), magic_enum::enum_name(std::forward<ValueType>(value)), std::forward<ValueType>(value));
+        else
+#endif
+        return fmt::format("{} value {} is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
+    }
+
     RawType m_value;
 };
 

@@ -40,7 +40,9 @@ namespace Methane::Graphics
 {
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
+
+[[nodiscard]]
+static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 {
     META_FUNCTION_TASK();
     switch(step_type)
@@ -52,6 +54,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
     }
 }
 
+[[nodiscard]]
 static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
@@ -66,6 +69,7 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
 
 #ifndef NDEBUG
 
+[[nodiscard]]
 static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
@@ -79,6 +83,7 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type)
     }
 }
 
+[[nodiscard]]
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 {
     META_FUNCTION_TASK();
@@ -90,8 +95,8 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
         default:                            META_UNEXPECTED_ARG_RETURN(mtl_arg_access, "Unknown");
     }
 }
-#endif
 
+#endif // ifndef NDEBUG
 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {
