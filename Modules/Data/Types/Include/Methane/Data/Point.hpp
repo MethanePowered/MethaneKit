@@ -38,7 +38,7 @@ class PointT
 {
 public:
     using CoordinateType = T;
-    using VectorType = typename Vector<T, vector_size>::Type;
+    using VectorType = HlslVector<T, vector_size>;
     using PointType = PointT<T, vector_size>;
 
     static constexpr size_t dimensions_count = vector_size;
@@ -145,9 +145,9 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(static_cast<typename Vector<M, vector_size>::Type>(m_vector) * multiplier.AsVector());
+                return PointType(static_cast<HlslVector<M, vector_size>>(m_vector) * multiplier.AsVector());
             else
-                return PointType(m_vector * static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector()));
+                return PointType(m_vector * static_cast<VectorType>(multiplier.AsVector()));
         }
     }
 
@@ -159,9 +159,9 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(static_cast<typename Vector<M, vector_size>::Type>(m_vector) / divisor.AsVector());
+                return PointType(static_cast<HlslVector<M, vector_size>>(m_vector) / divisor.AsVector());
             else
-                return PointType(m_vector / static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector()));
+                return PointType(m_vector / static_cast<VectorType>(divisor.AsVector()));
         }
     }
 
@@ -205,7 +205,7 @@ public:
             if constexpr (std::is_floating_point_v<M>)
                 *this = PointType(PointT<M, vector_size>(*this) * multiplier);
             else
-                m_vector *= static_cast<typename Vector<T, vector_size>::Type>(multiplier.AsVector());
+                m_vector *= static_cast<VectorType>(multiplier.AsVector());
         }
         return *this;
     }
@@ -220,7 +220,7 @@ public:
             if constexpr (std::is_floating_point_v<M>)
                 *this = PointType(PointT<M, vector_size>(*this) / divisor);
             else
-                m_vector /= static_cast<typename Vector<T, vector_size>::Type>(divisor.AsVector());
+                m_vector /= static_cast<HlslVector<T, vector_size>>(divisor.AsVector());
         }
         return *this;
     }

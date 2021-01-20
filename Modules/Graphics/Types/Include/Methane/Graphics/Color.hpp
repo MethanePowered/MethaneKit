@@ -37,7 +37,7 @@ template<Data::Size vector_size, typename = std::enable_if_t<3 <= vector_size &&
 class ColorF
 {
 public:
-    using VectorType = Data::VectorType<float, vector_size>;
+    using VectorType = Data::HlslVector<float, vector_size>;
 
     static constexpr Data::Size Size = vector_size;
 
