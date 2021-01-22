@@ -27,9 +27,6 @@ Base mesh implementation with customizable vertex types
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cassert>
-#include <cml/mathlib/mathlib.h>
-
 namespace Methane::Graphics
 {
 
@@ -56,7 +53,6 @@ protected:
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
-        assert(field_offset >= 0);
         return *reinterpret_cast<FType*>(reinterpret_cast<std::byte*>(&vertex) + field_offset);
     }
 
@@ -65,7 +61,6 @@ protected:
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
-        assert(field_offset >= 0);
         return *reinterpret_cast<const FType*>(reinterpret_cast<const std::byte*>(&vertex) + field_offset);
     }
 
@@ -81,33 +76,33 @@ protected:
         const VType& v2 = m_vertices[edge.second_index];
         VType  v_mid{ };
 
-        const Mesh::Position& v1_position = GetVertexField<Mesh::Position>(v1,    Mesh::VertexField::Position);
-        const Mesh::Position& v2_position = GetVertexField<Mesh::Position>(v2,    Mesh::VertexField::Position);
-        Mesh::Position&    v_mid_position = GetVertexField<Mesh::Position>(v_mid, Mesh::VertexField::Position);
-        v_mid_position = (v1_position + v2_position) / 2.F;
+        const HlslPosition v1_position = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position).AsHlsl();
+        const HlslPosition v2_position = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position).AsHlsl();
+        Mesh::Position& v_mid_position = GetVertexField<Mesh::Position>(v_mid, Mesh::VertexField::Position);
+        v_mid_position = Mesh::Position((v1_position + v2_position) / 2.F);
 
         if (Mesh::HasVertexField(Mesh::VertexField::Normal))
         {
-            const Mesh::Normal& v1_normal = GetVertexField<Mesh::Normal>(v1,    Mesh::VertexField::Normal);
-            const Mesh::Normal& v2_normal = GetVertexField<Mesh::Normal>(v2,    Mesh::VertexField::Normal);
-            Mesh::Normal&    v_mid_normal = GetVertexField<Mesh::Normal>(v_mid, Mesh::VertexField::Normal);
-            v_mid_normal = cml::normalize(v1_normal + v2_normal);
+            const HlslNormal v1_normal = GetVertexField<Mesh::Normal>(v1, Mesh::VertexField::Normal).AsHlsl();
+            const HlslNormal v2_normal = GetVertexField<Mesh::Normal>(v2, Mesh::VertexField::Normal).AsHlsl();
+            Mesh::Normal& v_mid_normal = GetVertexField<Mesh::Normal>(v_mid, Mesh::VertexField::Normal);
+            v_mid_normal = Mesh::Normal(hlslpp::normalize(v1_normal + v2_normal));
         }
 
         if (Mesh::HasVertexField(Mesh::VertexField::Color))
         {
-            const Mesh::Color& v1_color = GetVertexField<Mesh::Color>(v1,    Mesh::VertexField::Color);
-            const Mesh::Color& v2_color = GetVertexField<Mesh::Color>(v2,    Mesh::VertexField::Color);
-            Mesh::Color&    v_mid_color = GetVertexField<Mesh::Color>(v_mid, Mesh::VertexField::Color);
-            v_mid_color = (v1_color + v2_color) / 2.F;
+            const HlslColor v1_color = GetVertexField<Mesh::Color>(v1, Mesh::VertexField::Color).AsHlsl();
+            const HlslColor v2_color = GetVertexField<Mesh::Color>(v2, Mesh::VertexField::Color).AsHlsl();
+            Mesh::Color& v_mid_color = GetVertexField<Mesh::Color>(v_mid, Mesh::VertexField::Color);
+            v_mid_color = Mesh::Color((v1_color + v2_color) / 2.F);
         }
 
         if (Mesh::HasVertexField(Mesh::VertexField::TexCoord))
         {
-            const Mesh::TexCoord& v1_texcoord = GetVertexField<Mesh::TexCoord>(v1,    Mesh::VertexField::TexCoord);
-            const Mesh::TexCoord& v2_texcoord = GetVertexField<Mesh::TexCoord>(v2,    Mesh::VertexField::TexCoord);
-            Mesh::TexCoord&    v_mid_texcoord = GetVertexField<Mesh::TexCoord>(v_mid, Mesh::VertexField::TexCoord);
-            v_mid_texcoord = (v1_texcoord + v2_texcoord) / 2.F;
+            const HlslTexCoord v1_texcoord = GetVertexField<Mesh::TexCoord>(v1,    Mesh::VertexField::TexCoord).AsHlsl();
+            const HlslTexCoord v2_texcoord = GetVertexField<Mesh::TexCoord>(v2,    Mesh::VertexField::TexCoord).AsHlsl();
+            Mesh::TexCoord& v_mid_texcoord = GetVertexField<Mesh::TexCoord>(v_mid, Mesh::VertexField::TexCoord);
+            v_mid_texcoord = Mesh::TexCoord((v1_texcoord + v2_texcoord) / 2.F);
         }
 
         const auto v_mid_index = static_cast<Mesh::Index>(m_vertices.size());
@@ -136,29 +131,29 @@ protected:
             VType& v2 = GetMutableVertex(GetIndex(triangle_index * 3 + 1));
             VType& v3 = GetMutableVertex(GetIndex(triangle_index * 3 + 2));
 
-            const Mesh::Position& p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position);
-            const Mesh::Position& p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position);
-            const Mesh::Position& p3 = GetVertexField<Mesh::Position>(v3, Mesh::VertexField::Position);
+            const HlslPosition p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position).template AsHlsl();
+            const HlslPosition p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position).template AsHlsl();
+            const HlslPosition p3 = GetVertexField<Mesh::Position>(v3, Mesh::VertexField::Position).template AsHlsl();
 
-            const Mesh::Position u = p2 - p1;
-            const Mesh::Position v = p3 - p1;
-            const Mesh::Normal   n = cml::cross(u, v);
+            const HlslPosition u = p2 - p1;
+            const HlslPosition v = p3 - p1;
+            const HlslNormal   n = hlslpp::cross(u, v);
 
             // NOTE: weight average by contributing face area
             Mesh::Normal& n1 = GetVertexField<Mesh::Normal>(v1, Mesh::VertexField::Normal);
-            n1 += n;
+            n1 = static_cast<Mesh::Normal>(n1.template AsHlsl() + n);
 
             Mesh::Normal& n2 = GetVertexField<Mesh::Normal>(v2, Mesh::VertexField::Normal);
-            n2 += n;
+            n2 = static_cast<Mesh::Normal>(n2.template AsHlsl() + n);
 
             Mesh::Normal& n3 = GetVertexField<Mesh::Normal>(v3, Mesh::VertexField::Normal);
-            n3 += n;
+            n3 = static_cast<Mesh::Normal>(n3.template AsHlsl() + n);
         }
 
         for (VType& vertex : m_vertices)
         {
             Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-            vertex_normal.normalize();
+            vertex_normal = Mesh::Normal(hlslpp::normalize(vertex_normal.template AsHlsl()));
         }
     }
 

@@ -91,9 +91,9 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     for (size_t vertex_index = 0; vertex_index < GetVertexCount(); ++vertex_index)
     {
         Vertex& vertex = GetMutableVertex(vertex_index);
-        vertex.position *= perlin_noise(cml::vector4f(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
+        vertex.position *= perlin_noise(Data::RawVector4F(vertex.position * noise_scale, noise)) * radius_scale + radius_bias;
 
-        const float vertex_depth = vertex.position.length();
+        const float vertex_depth = vertex.position.GetLength();
         m_depth_range.first = std::min(m_depth_range.first, vertex_depth);
         m_depth_range.second = std::max(m_depth_range.second, vertex_depth);
     }

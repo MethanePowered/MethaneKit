@@ -37,9 +37,9 @@ template<> float GetPerlinNoise(const hlslpp::float2& pos) noexcept { return Sim
 template<> float GetPerlinNoise(const hlslpp::float3& pos) noexcept { return SimplexNoise1234::noise(pos.x, pos.y, pos.z); }
 template<> float GetPerlinNoise(const hlslpp::float4& pos) noexcept { return SimplexNoise1234::noise(pos.x, pos.y, pos.z, pos.w); }
 
-template<> float GetPerlinNoise(const cml::vector2f& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1]); }
-template<> float GetPerlinNoise(const cml::vector3f& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2]); }
-template<> float GetPerlinNoise(const cml::vector4f& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2], pos[3]); }
+template<> float GetPerlinNoise(const Data::RawVector2F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1]); }
+template<> float GetPerlinNoise(const Data::RawVector3F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2]); }
+template<> float GetPerlinNoise(const Data::RawVector4F& pos) noexcept { return SimplexNoise1234::noise(pos[0], pos[1], pos[2], pos[3]); }
 
 PerlinNoise::PerlinNoise(float persistence, size_t octaves_count)
     : m_weights(GetWeights(persistence, octaves_count))
@@ -52,9 +52,9 @@ float PerlinNoise::operator()(const hlslpp::float2& pos) const noexcept { return
 float PerlinNoise::operator()(const hlslpp::float3& pos) const noexcept { return GetValue(pos); }
 float PerlinNoise::operator()(const hlslpp::float4& pos) const noexcept { return GetValue(pos); }
 
-float PerlinNoise::operator()(const cml::vector2f& pos) const noexcept { return GetValue(pos); }
-float PerlinNoise::operator()(const cml::vector3f& pos) const noexcept { return GetValue(pos); }
-float PerlinNoise::operator()(const cml::vector4f& pos) const noexcept { return GetValue(pos); }
+float PerlinNoise::operator()(const Data::RawVector2F& pos) const noexcept { return GetValue(pos); }
+float PerlinNoise::operator()(const Data::RawVector3F& pos) const noexcept { return GetValue(pos); }
+float PerlinNoise::operator()(const Data::RawVector4F& pos) const noexcept { return GetValue(pos); }
 
 template<typename VectorType>
 float PerlinNoise::GetValue(VectorType pos) const noexcept

@@ -17,7 +17,12 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/Vector.hpp
-Template vector type alias for HLSL++ vectors of various types and sizes
+Template vector type for arithmetic scalar type and fixed size:
+ - HlslVector<T, size> - alias to HLSL++ vector based on 128-bit XMM aligned memory
+                         sizeof(HlslVector<T, size>) == 16 independent from T and size
+ - RawVector<T, size>  - wrapper type around raw array T[size] for dense data packing
+                         sizeof(RawVector<T, size>) == sizeof(T) * size
+                         it can be created from or casted to HlslVector<T, size>
 
 ******************************************************************************/
 
@@ -77,32 +82,133 @@ template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic
 class RawVector
 {
 public:
+    using ComponentType = T;
+    using RawVectorType = RawVector<T, size>;
+    using HlslVectorType = HlslVector<T, size>;
+
     static constexpr size_t Size = size;
 
     RawVector() = default;
 
     template<typename ...TArgs>
-    RawVector(TArgs... args) noexcept : m_components({ args... }) { }
+    RawVector(TArgs... args) noexcept : m_components{ args... } { }
+
+    RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components); }
+
+    template<size_t sz, typename ...TArgs, typename = std::enable_if_t<sz == 2>>
+    RawVector(const RawVector<T, sz>& other, T z, T w) noexcept : m_components{ other.GetX(), other.GetY(), z, w } { }
+
+    template<size_t sz, typename ...TArgs, typename = std::enable_if_t<sz == 3>>
+    RawVector(const RawVector<T, sz>& other, T w) noexcept : m_components{ other.GetX(), other.GetY(), other.GetZ(), w } { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    explicit RawVector(const HlslVector<T, 2>& vec) noexcept: m_components({ vec.x, vec.y }) { }
+    explicit RawVector(const HlslVector<T, 2>& vec) noexcept: m_components{ vec.x, vec.y } { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    explicit RawVector(const HlslVector<T, 3>& vec) noexcept : m_components({ vec.x, vec.y, vec.z }) { }
+    explicit RawVector(const HlslVector<T, 3>& vec) noexcept : m_components{ vec.x, vec.y, vec.z } { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    explicit RawVector(const HlslVector<T, 4>& vec) noexcept : m_components({ vec.x, vec.y, vec.z, vec.w }) { }
+    explicit RawVector(const HlslVector<T, 4>& vec) noexcept : m_components{ vec.x, vec.y, vec.z, vec.w } { }
+
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>>
+    operator RawVector<V, 2>() const noexcept { return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY())); }
+
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    operator RawVector<V, 3>() const noexcept { return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ())); }
+
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    operator RawVector<V, 4>() const noexcept { return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW())); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    operator HlslVector<T, 2>() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }
+    HlslVector<T, 2> AsHlsl() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    operator HlslVector<T, 3>() const noexcept { return HlslVector<T, 3>(GetX(), GetY(), GetZ()); }
+    HlslVector<T, 3> AsHlsl() const noexcept { return HlslVector<T, 3>(GetX(), GetY(), GetZ()); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    operator HlslVector<T, 4>() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
+    HlslVector<T, 4> AsHlsl() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
+
+    bool operator==(const RawVectorType& other) const noexcept
+    {
+        for(size_t i = 0; i < size; ++i)
+            if (m_components[i] != other[i])
+                return false;
+        return true;
+    }
+
+    bool operator!=(const RawVectorType& other) const noexcept { return !operator==(other); }
+
+    RawVectorType& operator*=(T multiplier) noexcept
+    {
+        for(size_t i = 0; i < size; ++i)
+            m_components[i] *= multiplier;
+        return *this;
+    }
+
+    RawVectorType& operator/=(T multiplier) noexcept
+    {
+        for(size_t i = 0; i < size; ++i)
+            m_components[i] *= multiplier;
+        return *this;
+    }
+
+    RawVectorType operator*(T multiplier) const noexcept
+    {
+        RawVectorType result;
+        for(size_t i = 0; i < size; ++i)
+            result[i] = m_components[i] * multiplier;
+        return result;
+    }
+
+    RawVectorType operator/(T divisor) const noexcept
+    {
+        RawVectorType result;
+        for(size_t i = 0; i < size; ++i)
+            result[i] = m_components[i] / divisor;
+        return result;
+    }
+
+    RawVectorType& operator+=(const RawVectorType& other) noexcept
+    {
+        for(size_t i = 0; i < size; ++i)
+            m_components[i] += other[i];
+        return *this;
+    }
+
+    RawVectorType& operator-=(const RawVectorType& other) noexcept
+    {
+        for(size_t i = 0; i < size; ++i)
+            m_components[i] -= other[i];
+        return *this;
+    }
+
+    RawVectorType operator+(const RawVectorType& other) const noexcept
+    {
+        RawVectorType result;
+        for(size_t i = 0; i < size; ++i)
+            result[i] = m_components[i] + other[i];
+        return result;
+    }
+
+    RawVectorType operator-(const RawVectorType& other) const noexcept
+    {
+        RawVectorType result;
+        for(size_t i = 0; i < size; ++i)
+            result[i] = m_components[i] - other[i];
+        return result;
+    }
+
+    T GetLength() const noexcept
+    {
+        T square_sum{};
+        for(size_t i = 0; i < size; ++i)
+            square_sum += m_components[i];
+        return std::sqrt(square_sum);
+    }
 
     T operator[](size_t index) const noexcept { return m_components[index]; }
+    T& operator[](size_t index) noexcept      { return m_components[index]; }
+
     T Get(size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
 
     T GetX() const noexcept { return m_components[0]; }
@@ -126,5 +232,12 @@ public:
 private:
     T m_components[size]{ };
 };
+
+using RawVector2F = RawVector<float, 2>;
+using RawVector3F = RawVector<float, 3>;
+using RawVector4F = RawVector<float, 4>;
+
+template<typename RawVectorType>
+using HlslVectorType = typename RawVectorType::HlslVectorType;
 
 } // namespace Methane::Data

@@ -23,17 +23,10 @@ Multi-octave simplex noise generator in range [0, 1]
 
 #pragma once
 
+#include <Methane/Data/Vector.hpp>
 #include <Methane/Graphics/Types.h>
 
-#include <cml/vector.h>
 #include <vector>
-
-namespace hlslpp // NOSONAR
-{
-    struct float2;
-    struct float3;
-    struct float4;
-}
 
 namespace Methane::Graphics
 {
@@ -47,9 +40,9 @@ public:
     [[nodiscard]] float operator()(const hlslpp::float3& pos) const noexcept;
     [[nodiscard]] float operator()(const hlslpp::float4& pos) const noexcept;
 
-    [[nodiscard]] float operator()(const cml::vector2f& pos) const noexcept;
-    [[nodiscard]] float operator()(const cml::vector3f& pos) const noexcept;
-    [[nodiscard]] float operator()(const cml::vector4f& pos) const noexcept;
+    [[nodiscard]] float operator()(const Data::RawVector2F& pos) const noexcept;
+    [[nodiscard]] float operator()(const Data::RawVector3F& pos) const noexcept;
+    [[nodiscard]] float operator()(const Data::RawVector4F& pos) const noexcept;
 
 private:
     using Weights = std::vector<float>;
