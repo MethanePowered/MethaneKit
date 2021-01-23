@@ -32,9 +32,9 @@ namespace Methane::Data
 template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 struct Constants
 {
-    static constexpr T Sqrt2     = 1.41421356237309504880168872420969808;
-    static constexpr T E         = 2.71828182845904523536028747135266250;
-    static constexpr T Pi        = 3.14159265358979323846264338327950288;
+    static constexpr T Sqrt2     = static_cast<T>(1.41421356237309504880168872420969808);
+    static constexpr T E         = static_cast<T>(2.71828182845904523536028747135266250);
+    static constexpr T Pi        = static_cast<T>(3.14159265358979323846264338327950288);
     static constexpr T InvPi     = T(1) / Pi;
     static constexpr T TwoPi     = Pi * T(2);
     static constexpr T PiDiv2    = Pi / T(2);

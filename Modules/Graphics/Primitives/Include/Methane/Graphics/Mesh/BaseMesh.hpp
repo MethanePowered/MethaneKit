@@ -131,29 +131,29 @@ protected:
             VType& v2 = GetMutableVertex(GetIndex(triangle_index * 3 + 1));
             VType& v3 = GetMutableVertex(GetIndex(triangle_index * 3 + 2));
 
-            const HlslPosition p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position).template AsHlsl();
-            const HlslPosition p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position).template AsHlsl();
-            const HlslPosition p3 = GetVertexField<Mesh::Position>(v3, Mesh::VertexField::Position).template AsHlsl();
+            const Mesh::HlslPosition p1 = GetVertexField<Mesh::Position>(v1, Mesh::VertexField::Position).AsHlsl();
+            const Mesh::HlslPosition p2 = GetVertexField<Mesh::Position>(v2, Mesh::VertexField::Position).AsHlsl();
+            const Mesh::HlslPosition p3 = GetVertexField<Mesh::Position>(v3, Mesh::VertexField::Position).AsHlsl();
 
-            const HlslPosition u = p2 - p1;
-            const HlslPosition v = p3 - p1;
-            const HlslNormal   n = hlslpp::cross(u, v);
+            const Mesh::HlslPosition u = p2 - p1;
+            const Mesh::HlslPosition v = p3 - p1;
+            const Mesh::HlslNormal   n = hlslpp::cross(u, v);
 
             // NOTE: weight average by contributing face area
             Mesh::Normal& n1 = GetVertexField<Mesh::Normal>(v1, Mesh::VertexField::Normal);
-            n1 = static_cast<Mesh::Normal>(n1.template AsHlsl() + n);
+            n1 = static_cast<Mesh::Normal>(n1.AsHlsl() + n);
 
             Mesh::Normal& n2 = GetVertexField<Mesh::Normal>(v2, Mesh::VertexField::Normal);
-            n2 = static_cast<Mesh::Normal>(n2.template AsHlsl() + n);
+            n2 = static_cast<Mesh::Normal>(n2.AsHlsl() + n);
 
             Mesh::Normal& n3 = GetVertexField<Mesh::Normal>(v3, Mesh::VertexField::Normal);
-            n3 = static_cast<Mesh::Normal>(n3.template AsHlsl() + n);
+            n3 = static_cast<Mesh::Normal>(n3.AsHlsl() + n);
         }
 
         for (VType& vertex : m_vertices)
         {
             Mesh::Normal& vertex_normal = GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-            vertex_normal = Mesh::Normal(hlslpp::normalize(vertex_normal.template AsHlsl()));
+            vertex_normal = Mesh::Normal(hlslpp::normalize(vertex_normal.AsHlsl()));
         }
     }
 

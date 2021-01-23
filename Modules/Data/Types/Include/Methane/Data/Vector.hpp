@@ -91,7 +91,7 @@ public:
     RawVector() = default;
 
     template<typename ...TArgs>
-    RawVector(TArgs... args) noexcept : m_components{ args... } { }
+    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { }
 
     RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components); }
 
