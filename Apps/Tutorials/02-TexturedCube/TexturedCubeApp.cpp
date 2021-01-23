@@ -28,7 +28,6 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <magic_enum.hpp>
-#include <cml/mathlib/mathlib.h>
 
 namespace Methane::Tutorials
 {
@@ -177,7 +176,8 @@ void TexturedCubeApp::Init()
 
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, cml::rad(static_cast<float>(delta_seconds * 360.F / 4.F)));
+    const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
+    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
     m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;

@@ -82,10 +82,10 @@ public:
                 Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction(hlslpp::normalize(vertex_position.AsHlsl()));
 
-                vertex_texcoord.SetX(std::atan2(vertex_direction.GetZ(), vertex_direction.GetX()) / (2.F * cml::constants<float>::pi()) + 0.5F);
+                vertex_texcoord.SetX(std::atan2(vertex_direction.GetZ(), vertex_direction.GetX()) / ConstFloat::TwoPi + 0.5F);
                 assert(0.F <= vertex_texcoord.GetX() && vertex_texcoord.GetX() <= 1.F);
 
-                vertex_texcoord.SetY(std::asin(vertex_direction.GetY()) / cml::constants<float>::pi() + 0.5F);
+                vertex_texcoord.SetY(std::asin(vertex_direction.GetY()) / ConstFloat::Pi + 0.5F);
                 assert(0.F <= vertex_texcoord.GetY() && vertex_texcoord.GetY() <= 1.F);
             }
         }

@@ -25,7 +25,6 @@ Abstract mesh class
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cml/mathlib/mathlib.h>
 #include <array>
 
 namespace Methane::Graphics

@@ -28,10 +28,6 @@ Methane Graphics Type formatters for use with fmt::format(...)
 
 #include <Methane/Data/TypeFormatters.hpp>
 
-#include <hlsl++.h>
-#include <cml/vector.h>
-#include <fmt/format.h>
-
 template<typename D>
 struct fmt::formatter<Methane::Graphics::VolumeSize<D>>
 {

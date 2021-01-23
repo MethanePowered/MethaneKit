@@ -34,7 +34,6 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataTypes
-        CML
         HLSLpp
     PRIVATE
         MethaneBuildOptions

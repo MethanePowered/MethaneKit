@@ -27,7 +27,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
-#include <cml/mathlib/mathlib.h>
 #include <magic_enum.hpp>
 
 namespace Methane::Tutorials

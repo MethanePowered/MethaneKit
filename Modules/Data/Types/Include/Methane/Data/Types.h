@@ -23,6 +23,7 @@ u
 
 #pragma once
 
+#include "Vector.hpp"
 #include "Point.hpp"
 #include "Rect.hpp"
 

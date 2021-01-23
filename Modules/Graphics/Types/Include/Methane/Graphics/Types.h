@@ -26,12 +26,6 @@ Methane primitive graphics types.
 #include <Methane/Data/Types.h>
 #include <Methane/Data/Constants.hpp>
 
-#include <cml/vector.h>
-#include <cml/matrix.h>
-#include <cml/mathlib/constants.h>
-
-#include <hlsl++.h>
-
 #include <string>
 #include <cstdint>
 
@@ -50,6 +44,15 @@ using DepthStencil = std::pair<Depth, Stencil>;
 using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;
 using Frequency = Data::Frequency;
+
+template<typename T, size_t size>
+using HlslVector = Data::HlslVector<T, size>;
+
+template<typename T, size_t size>
+using RawVector = Data::RawVector<T, size>;
+using RawVector2F = Data::RawVector2F;
+using RawVector3F = Data::RawVector3F;
+using RawVector4F = Data::RawVector4F;
 
 template<typename T>
 using Constants   = Data::Constants<T>;

@@ -26,8 +26,6 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cml/mathlib/mathlib.h>
-
 namespace Methane::Graphics
 {
 
@@ -181,7 +179,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const hlslpp:
     if (StartKeyboardAction(rotate_action, duration_sec))
         return;
     
-    const float angle_rad_per_second = cml::rad(m_rotate_angle_per_second);
+    const float angle_rad_per_second = m_rotate_angle_per_second * ConstFloat::RadPerDeg;
     m_animations.push_back(
         std::make_shared<Data::TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
             {

@@ -40,7 +40,6 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cml/mathlib/mathlib.h>
 #include <magic_enum.hpp>
 
 namespace Methane::UserInterface

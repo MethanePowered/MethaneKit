@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Volume.hpp
-3D Volume type based on cml::vector
+3D Volume type based on 3D point and volume size
 
 ******************************************************************************/
 

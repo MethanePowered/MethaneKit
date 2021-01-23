@@ -32,6 +32,8 @@ Template vector type for arithmetic scalar type and fixed size:
 #include <Methane/Instrumentation.h>
 
 #include <hlsl++.h>
+#include <fmt/format.h>
+#include <string>
 
 namespace Methane::Data
 {
@@ -82,8 +84,8 @@ template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic
 class RawVector
 {
 public:
-    using ComponentType = T;
-    using RawVectorType = RawVector<T, size>;
+    using ComponentType  = T;
+    using RawVectorType  = RawVector<T, size>;
     using HlslVectorType = HlslVector<T, size>;
 
     static constexpr size_t Size = size;
@@ -94,7 +96,7 @@ public:
     RawVector(V) = delete;
 
     template<typename ...TArgs>
-    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { } // NOSONAR - do not use explcit
+    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { } // NOSONAR - do not use explicit
 
     explicit RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components); }
 
@@ -113,14 +115,26 @@ public:
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
     explicit RawVector(const HlslVector<T, 4>& vec) noexcept : m_components{ vec.x, vec.y, vec.z, vec.w } { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    explicit operator RawVector<V, 2>() const noexcept { return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY())); }
+    template<typename V>
+    explicit operator RawVector<V, size>() const noexcept
+    {
+        if constexpr (size == 2)
+            return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY()));
+        if constexpr (size == 3)
+            return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()));
+        if constexpr (size == 4)
+            return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW()));
+    }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    explicit operator RawVector<V, 3>() const noexcept { return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ())); }
-
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    explicit operator RawVector<V, 4>() const noexcept { return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW())); }
+    explicit operator std::string() const noexcept
+    {
+        if constexpr (size == 2)
+            return fmt::format("V({}, {})", GetX(), GetY());
+        if constexpr (size == 3)
+            return fmt::format("V({}, {}, {})", GetX(), GetY(), GetZ());
+        if constexpr (size == 4)
+            return fmt::format("V({}, {}, {}, {})", GetX(), GetY(), GetZ(), GetW());
+    }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
     [[nodiscard]] HlslVector<T, 2> AsHlsl() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }

@@ -84,7 +84,6 @@ set_target_properties(${TARGET}
 set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
 
 set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
-    <cml/cml.h>
     <hlsl++.h>
     <taskflow/taskflow.hpp>
 )
@@ -111,7 +110,6 @@ target_link_libraries(${EXTRA_TARGET}
         MethaneBuildOptions
         MethaneInstrumentation
         TaskFlow
-        CML
         HLSLpp
         fmt
         nowide

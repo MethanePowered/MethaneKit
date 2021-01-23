@@ -27,8 +27,6 @@ Arc-ball camera rotation with mouse handling.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <hlsl++.h>
-#include <cml/mathlib/mathlib.h>
 #include <cmath>
 
 namespace Methane::Graphics
@@ -83,7 +81,7 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
     RotateInView(rotation_axis, rotation_angle, m_mouse_pressed_orientation);
 
     // NOTE: fixes rotation axis flip at angles approaching to 180 degrees
-    if (std::abs(rotation_angle) > cml::rad(90.F))
+    if (std::abs(rotation_angle) > ConstFloat::PiDiv2)
     {
         m_mouse_pressed_orientation = GetOrientation();
         m_mouse_pressed_on_sphere = mouse_current_on_sphere;

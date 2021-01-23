@@ -196,8 +196,8 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                 asteroid_scale,
                 orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
                 spin_velocity_distribution(rng)  / asteroid_scale,
-                cml::constants<float>::pi() * normal_distribution(rng),
-                cml::constants<float>::pi() * normal_distribution(rng) * 2.F
+                gfx::ConstFloat::Pi * normal_distribution(rng),
+                gfx::ConstFloat::Pi * normal_distribution(rng) * 2.F
             }
         );
     }
@@ -346,7 +346,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
 
     const hlslpp::float3&   eye_position     = m_settings.view_camera.GetOrientation().eye;
     const hlslpp::float4x4& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
-    const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
+    const float elapsed_radians = gfx::ConstFloat::Pi * static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),

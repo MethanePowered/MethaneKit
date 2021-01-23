@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Rect.hpp
-2D Rect type based on cml::vector
+2D Rect type based on HLSL++ vector
 
 ******************************************************************************/
 

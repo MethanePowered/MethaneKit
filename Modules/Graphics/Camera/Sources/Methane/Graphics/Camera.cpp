@@ -26,8 +26,6 @@ Camera helper implementation allowing to generate view and projection matrices.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cml/mathlib/mathlib.h>
-
 namespace Methane::Graphics
 {
 
@@ -86,7 +84,7 @@ void Camera::UpdateProjectionSettings()
 void Camera::Rotate(const hlslpp::float3& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
-    const hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(axis, cml::rad(angle_deg));
+    const hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(axis, angle_deg * ConstFloat::RadPerDeg);
     const hlslpp::float3   new_look_dir    = hlslpp::mul(GetLookDirection(), rotation_matrix);
     SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
@@ -181,7 +179,7 @@ hlslpp::float4 Camera::TransformViewToWorld(const hlslpp::float4& view_pos, cons
 float Camera::GetFovAngleY() const noexcept
 {
     META_FUNCTION_TASK();
-    float fov_angle_y = m_parameters.fov_deg * cml::constants<float>::pi() / 180.0F;
+    float fov_angle_y = m_parameters.fov_deg * ConstFloat::RadPerDeg;
     if (m_aspect_ratio != 0.F && m_aspect_ratio < 1.0F)
     {
         fov_angle_y /= m_aspect_ratio;

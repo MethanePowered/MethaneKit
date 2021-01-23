@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Point.hpp
-3D Point type based on cml::vector
+Point types based on HLSL++ vector
 
 ******************************************************************************/
 

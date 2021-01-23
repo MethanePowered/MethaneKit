@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Types.h
-Common Methane primitive data types
+FILE: Methane/Data/Rect.hpp
+Rectangle type based on point and size
 
 ******************************************************************************/
 
