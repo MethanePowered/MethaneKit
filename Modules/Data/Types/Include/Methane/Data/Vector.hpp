@@ -90,10 +90,13 @@ public:
 
     RawVector() = default;
 
-    template<typename ...TArgs>
-    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { }
+    template<typename V>
+    RawVector(V) = delete;
 
-    RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components); }
+    template<typename ...TArgs>
+    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { } // NOSONAR - do not use explcit
+
+    explicit RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components); }
 
     template<size_t sz, typename ...TArgs, typename = std::enable_if_t<sz == 2>>
     RawVector(const RawVector<T, sz>& other, T z, T w) noexcept : m_components{ other.GetX(), other.GetY(), z, w } { }
@@ -111,24 +114,24 @@ public:
     explicit RawVector(const HlslVector<T, 4>& vec) noexcept : m_components{ vec.x, vec.y, vec.z, vec.w } { }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    operator RawVector<V, 2>() const noexcept { return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY())); }
+    explicit operator RawVector<V, 2>() const noexcept { return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY())); }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    operator RawVector<V, 3>() const noexcept { return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ())); }
+    explicit operator RawVector<V, 3>() const noexcept { return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ())); }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    operator RawVector<V, 4>() const noexcept { return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW())); }
+    explicit operator RawVector<V, 4>() const noexcept { return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW())); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    HlslVector<T, 2> AsHlsl() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }
+    [[nodiscard]] HlslVector<T, 2> AsHlsl() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    HlslVector<T, 3> AsHlsl() const noexcept { return HlslVector<T, 3>(GetX(), GetY(), GetZ()); }
+    [[nodiscard]] HlslVector<T, 3> AsHlsl() const noexcept { return HlslVector<T, 3>(GetX(), GetY(), GetZ()); }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    HlslVector<T, 4> AsHlsl() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
+    [[nodiscard]] HlslVector<T, 4> AsHlsl() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
 
-    bool operator==(const RawVectorType& other) const noexcept
+    [[nodiscard]] bool operator==(const RawVectorType& other) const noexcept
     {
         for(size_t i = 0; i < size; ++i)
             if (m_components[i] != other[i])
@@ -136,7 +139,7 @@ public:
         return true;
     }
 
-    bool operator!=(const RawVectorType& other) const noexcept { return !operator==(other); }
+    [[nodiscard]] bool operator!=(const RawVectorType& other) const noexcept { return !operator==(other); }
 
     RawVectorType& operator*=(T multiplier) noexcept
     {
@@ -152,7 +155,7 @@ public:
         return *this;
     }
 
-    RawVectorType operator*(T multiplier) const noexcept
+    [[nodiscard]] RawVectorType operator*(T multiplier) const noexcept
     {
         RawVectorType result;
         for(size_t i = 0; i < size; ++i)
@@ -160,7 +163,7 @@ public:
         return result;
     }
 
-    RawVectorType operator/(T divisor) const noexcept
+    [[nodiscard]] RawVectorType operator/(T divisor) const noexcept
     {
         RawVectorType result;
         for(size_t i = 0; i < size; ++i)
@@ -182,7 +185,7 @@ public:
         return *this;
     }
 
-    RawVectorType operator+(const RawVectorType& other) const noexcept
+    [[nodiscard]] RawVectorType operator+(const RawVectorType& other) const noexcept
     {
         RawVectorType result;
         for(size_t i = 0; i < size; ++i)
@@ -190,7 +193,7 @@ public:
         return result;
     }
 
-    RawVectorType operator-(const RawVectorType& other) const noexcept
+    [[nodiscard]] RawVectorType operator-(const RawVectorType& other) const noexcept
     {
         RawVectorType result;
         for(size_t i = 0; i < size; ++i)
@@ -198,7 +201,7 @@ public:
         return result;
     }
 
-    T GetLength() const noexcept
+    [[nodiscard]] T GetLength() const noexcept
     {
         T square_sum{};
         for(size_t i = 0; i < size; ++i)
@@ -206,28 +209,28 @@ public:
         return std::sqrt(square_sum);
     }
 
-    T operator[](size_t index) const noexcept { return m_components[index]; }
-    T& operator[](size_t index) noexcept      { return m_components[index]; }
+    [[nodiscard]] T operator[](size_t index) const noexcept { return m_components[index]; }
+    [[nodiscard]] T& operator[](size_t index) noexcept      { return m_components[index]; }
 
-    T Get(size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T Get(size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
 
-    T GetX() const noexcept { return m_components[0]; }
-    T GetY() const noexcept { return m_components[1]; }
+    [[nodiscard]] T GetX() const noexcept { return m_components[0]; }
+    [[nodiscard]] T GetY() const noexcept { return m_components[1]; }
 
     template<size_t sz = size, typename = std::enable_if_t<sz >= 3>>
-    T GetZ() const noexcept { return m_components[2]; }
+    [[nodiscard]] T GetZ() const noexcept { return m_components[2]; }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    T GetW() const noexcept { return m_components[3]; }
+    [[nodiscard]] T GetW() const noexcept { return m_components[3]; }
 
     void SetX(T x) noexcept { m_components[0] = x; }
     void SetY(T y) noexcept { m_components[1] = y; }
 
     template<size_t sz = size, typename = std::enable_if_t<sz >= 3>>
-    void SetZ(T z) noexcept { return m_components[2] = z; }
+    void SetZ(T z) noexcept { m_components[2] = z; }
 
     template<size_t sz = size, typename = std::enable_if_t<sz >= 4>>
-    void SetW(T w) noexcept { return m_components[3] = w; }
+    void SetW(T w) noexcept { m_components[3] = w; }
 
 private:
     T m_components[size]{ };

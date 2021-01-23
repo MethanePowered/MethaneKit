@@ -44,4 +44,7 @@ struct Constants
     Constants() = delete;
 };
 
+using ConstFloat  = Constants<float>;
+using ConstDouble = Constants<double>;
+
 } // namespace Methane::Data

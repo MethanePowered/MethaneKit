@@ -95,40 +95,33 @@ private:
         const float texcoord_long_spacing = 1.F / (actual_long_lines_count - 1);
         const float texcoord_lat_spacing  = 1.F / (m_lat_lines_count + 1);
 
-        hlslpp::float3x3 pitch_step_matrix = hlslpp::float3x3::rotation_x(Data::Constants<float>::Pi / (m_lat_lines_count - 1));
-        hlslpp::float3x3 yaw_step_matrix   = hlslpp::float3x3::rotation_y(Data::Constants<float>::TwoPi / m_long_lines_count);
-        hlslpp::float3x3 pitch_matrix;
-        hlslpp::float3x3 yaw_matrix = hlslpp::float3x3::identity();
-
-        if (!has_texcoord)
-            pitch_matrix = pitch_step_matrix;
-
         const uint32_t actual_lat_lines_count = has_texcoord ? m_lat_lines_count : m_lat_lines_count - 1;
         const uint32_t first_lat_line_index   = has_texcoord ? 0 : 1;
         const uint32_t first_vertex_index     = has_texcoord ? 0 : 1;
 
-        const Mesh::HlslPosition pole_pos(0.F, m_radius, 0.F);
-        const Mesh::HlslNormal   pole_normal(0.F, 1.F, 0.F);
-
         for (uint32_t lat_line_index = first_lat_line_index; lat_line_index < actual_lat_lines_count; ++lat_line_index)
         {
-            yaw_matrix.identity();
+            const float lat_ratio = static_cast<float>(lat_line_index) / static_cast<float>(actual_lat_lines_count - 1);
 
             for(uint32_t long_line_index = 0; long_line_index < actual_long_lines_count; ++long_line_index)
             {
-                const hlslpp::float3x3 rotation_matrix = hlslpp::mul(pitch_matrix, yaw_matrix);
-                const uint32_t         vertex_index    = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
+                const uint32_t vertex_index = (lat_line_index - first_lat_line_index) * actual_long_lines_count + long_line_index + first_vertex_index;
+                const float    long_ratio   = static_cast<float>(long_line_index) / static_cast<float>(actual_long_lines_count - 1);
 
                 VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
 
                 Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                vertex_position = Mesh::Position(hlslpp::mul(pole_pos, rotation_matrix));
+                vertex_position.SetX(std::sin(ConstFloat::Pi * lat_ratio) * std::cos(ConstFloat::TwoPi * long_ratio));
+                vertex_position.SetZ(std::sin(ConstFloat::Pi * lat_ratio) * std::sin(ConstFloat::TwoPi * long_ratio));
+                vertex_position.SetY(std::cos(ConstFloat::Pi * lat_ratio));
 
                 if (has_normals)
                 {
                     Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-                    vertex_normal = Mesh::Normal(hlslpp::mul(pole_normal, rotation_matrix));
+                    vertex_normal = vertex_position;
                 }
+
+                vertex_position *= m_radius;
 
                 if (has_texcoord)
                 {
@@ -136,11 +129,7 @@ private:
                     vertex_texcoord.SetX(texcoord_long_spacing * long_line_index);
                     vertex_texcoord.SetY(texcoord_lat_spacing * lat_line_index);
                 }
-
-                yaw_matrix = hlslpp::mul(yaw_matrix, yaw_step_matrix);
             }
-
-            pitch_matrix = hlslpp::mul(pitch_matrix, pitch_step_matrix);
         }
     }
 

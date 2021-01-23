@@ -24,6 +24,7 @@ Methane primitive graphics types.
 #pragma once
 
 #include <Methane/Data/Types.h>
+#include <Methane/Data/Constants.hpp>
 
 #include <cml/vector.h>
 #include <cml/matrix.h>
@@ -49,6 +50,11 @@ using DepthStencil = std::pair<Depth, Stencil>;
 using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;
 using Frequency = Data::Frequency;
+
+template<typename T>
+using Constants   = Data::Constants<T>;
+using ConstFloat  = Data::ConstFloat;
+using ConstDouble = Data::ConstDouble;
 
 enum class PixelFormat : uint32_t
 {
