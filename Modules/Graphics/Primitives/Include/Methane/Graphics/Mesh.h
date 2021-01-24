@@ -117,11 +117,11 @@ public:
     [[nodiscard]] Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
-    using HlslPosition   = Data::HlslVectorType<Position>;
-    using HlslPosition2D = Data::HlslVectorType<Position2D>;
-    using HlslNormal     = Data::HlslVectorType<Normal>;
-    using HlslColor      = Data::HlslVectorType<Color>;
-    using HlslTexCoord   = Data::HlslVectorType<TexCoord>;
+    using HlslPosition   = Position::HlslVectorType;
+    using HlslPosition2D = Position2D::HlslVectorType;
+    using HlslNormal     = Normal::HlslVectorType;
+    using HlslColor      = Color::HlslVectorType;
+    using HlslTexCoord   = TexCoord::HlslVectorType;
 
     struct Edge
     {

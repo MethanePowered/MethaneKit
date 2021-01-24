@@ -38,6 +38,9 @@ Template vector type for arithmetic scalar type and fixed size:
 namespace Methane::Data
 {
 
+namespace Internal
+{
+
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
 struct HlslVectorMap
 {
@@ -62,23 +65,10 @@ template<> struct HlslVectorMap<double, 3> { using Type = hlslpp::double3; };
 template<> struct HlslVectorMap<double, 4> { using Type = hlslpp::double4; };
 #endif
 
-template<typename T, size_t size>
-using HlslVector = typename HlslVectorMap<T, size>::Type;
+} // namespace Internal
 
 template<typename T, size_t size>
-T GetVectorComponent(const HlslVector<T, size>& vec, size_t index)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, size);
-    switch(index)
-    {
-    case 0: return vec.x;
-    case 1: return vec.y;
-    case 2: if constexpr (size >= 3) return vec.z; break;
-    case 3: if constexpr (size == 4) return vec.w; break;
-    default: META_UNEXPECTED_ARG(index);
-    }
-}
+using HlslVector = typename Internal::HlslVectorMap<T, size>::Type;
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
 class RawVector
@@ -147,9 +137,20 @@ public:
 
     [[nodiscard]] bool operator==(const RawVectorType& other) const noexcept
     {
-        for(size_t i = 0; i < size; ++i)
-            if (m_components[i] != other[i])
+        if (m_components[0] != other[0])
+            return false;
+        if (m_components[1] != other[1])
+            return false;
+        if constexpr (size >= 3)
+        {
+            if (m_components[2] != other[2])
                 return false;
+        }
+        if constexpr (size == 4)
+        {
+            if (m_components[3] != other[3])
+                return false;
+        }
         return true;
     }
 
@@ -157,69 +158,52 @@ public:
 
     RawVectorType& operator*=(T multiplier) noexcept
     {
-        for(size_t i = 0; i < size; ++i)
-            m_components[i] *= multiplier;
+        UnrollUpdateComponents([multiplier](T& component, size_t) { component *= multiplier; });
         return *this;
     }
 
-    RawVectorType& operator/=(T multiplier) noexcept
+    RawVectorType& operator/=(T divisor) noexcept
     {
-        for(size_t i = 0; i < size; ++i)
-            m_components[i] *= multiplier;
+        UnrollUpdateComponents([divisor](T& component, size_t) { component /= divisor; });
         return *this;
     }
 
     [[nodiscard]] RawVectorType operator*(T multiplier) const noexcept
     {
-        RawVectorType result;
-        for(size_t i = 0; i < size; ++i)
-            result[i] = m_components[i] * multiplier;
-        return result;
+        return UnrollComputeComponents([multiplier](T component, size_t) { return component * multiplier; });
     }
 
     [[nodiscard]] RawVectorType operator/(T divisor) const noexcept
     {
-        RawVectorType result;
-        for(size_t i = 0; i < size; ++i)
-            result[i] = m_components[i] / divisor;
-        return result;
+        return UnrollComputeComponents([divisor](T component, size_t) { return component / divisor; });
     }
 
     RawVectorType& operator+=(const RawVectorType& other) noexcept
     {
-        for(size_t i = 0; i < size; ++i)
-            m_components[i] += other[i];
+        UnrollUpdateComponents([&other](T& component, size_t i) { component += other[i]; });
         return *this;
     }
 
     RawVectorType& operator-=(const RawVectorType& other) noexcept
     {
-        for(size_t i = 0; i < size; ++i)
-            m_components[i] -= other[i];
+        UnrollUpdateComponents([&other](T& component, size_t i) { component -= other[i]; });
         return *this;
     }
 
     [[nodiscard]] RawVectorType operator+(const RawVectorType& other) const noexcept
     {
-        RawVectorType result;
-        for(size_t i = 0; i < size; ++i)
-            result[i] = m_components[i] + other[i];
-        return result;
+        return UnrollComputeComponents([&other](T component, size_t i) { return component + other[i]; });
     }
 
     [[nodiscard]] RawVectorType operator-(const RawVectorType& other) const noexcept
     {
-        RawVectorType result;
-        for(size_t i = 0; i < size; ++i)
-            result[i] = m_components[i] - other[i];
-        return result;
+        return UnrollComputeComponents([&other](T component, size_t i) { return component - other[i]; });
     }
 
     [[nodiscard]] T GetLength() const noexcept
     {
         T square_sum{};
-        for(size_t i = 0; i < size; ++i)
-            square_sum += m_components[i];
+        ForEachComponent([&square_sum](T component) { square_sum += component * component; });
         return std::sqrt(square_sum);
     }
 
@@ -247,14 +231,63 @@ public:
     void SetW(T w) noexcept { m_components[3] = w; }
 
 private:
-    T m_components[size]{ };
+    template<typename ComponentFn /* [](T component) -> void */>
+    constexpr void ForEachComponent(ComponentFn component_action) const noexcept
+    {
+        component_action(m_components[0]);
+        component_action(m_components[1]);
+        if constexpr (size >= 3)
+            component_action(m_components[2]);
+        if constexpr (size == 4)
+            component_action(m_components[3]);
+    }
+
+    template<typename ComponentFn /* [](T& component, size_t index) -> void */>
+    constexpr void UnrollUpdateComponents(ComponentFn component_modifier) noexcept
+    {
+        component_modifier(m_components[0], 0);
+        component_modifier(m_components[1], 1);
+        if constexpr (size >= 3)
+            component_modifier(m_components[2], 2);
+        if constexpr (size == 4)
+            component_modifier(m_components[3], 3);
+    }
+
+    template<typename ComponentFn /* [](T component, size_t index) -> T */>
+    constexpr RawVectorType UnrollComputeComponents(ComponentFn component_compute) const noexcept
+    {
+        RawVectorType result;
+        result[0] = component_compute(m_components[0], 0);
+        result[1] = component_compute(m_components[1], 1);
+        if constexpr (size >= 3)
+            result[2] = component_compute(m_components[2], 2);
+        if constexpr (size == 4)
+            result[3] = component_compute(m_components[3], 3);
+        return result;
+    }
+
+    std::array<T, size> m_components{{ }};
+
+    static_assert(sizeof(m_components) == sizeof(T) * size, "RawVector components raw array does not satisfy to dense memory packing requirement.");
 };
 
 using RawVector2F = RawVector<float, 2>;
 using RawVector3F = RawVector<float, 3>;
 using RawVector4F = RawVector<float, 4>;
 
-template<typename RawVectorType>
-using HlslVectorType = typename RawVectorType::HlslVectorType;
+template<typename T, size_t size>
+T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS(index, size);
+    switch(index)
+    {
+    case 0: return vec.x;
+    case 1: return vec.y;
+    case 2: if constexpr (size >= 3) return vec.z; break;
+    case 3: if constexpr (size == 4) return vec.w; break;
+    default: META_UNEXPECTED_ARG(index);
+    }
+}
 
 } // namespace Methane::Data
