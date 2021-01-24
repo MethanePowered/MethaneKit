@@ -43,20 +43,20 @@ private:
 
 public:
     HelloTriangleApp() : GraphicsApp(
-        {                                               // Application settings:
-            {                                           // platform_app:
-                "Methane Hello Triangle",               // - name
-                0.8, 0.8,                               // - width, height
-            },                                          //
-            {                                           // graphics_app:
-                RenderPass::Access::None,               // - screen_pass_access
-                false,                                  // - animations_enabled
-            },                                          //
-            {                                           // render_context:
-                FrameSize(),                            // - frame_size placeholder: set in InitContext
-                PixelFormat::BGRA8Unorm,                // - color_format
-                PixelFormat::Unknown,                   // - depth_stencil_format
-                Color4F(0.0F, 0.2F, 0.4F, 1.0F),        // - clear_color
+        {                                        // Application settings:
+            {                                    // platform_app:
+                "Methane Hello Triangle",        // - name
+                0.8, 0.8,                        // - width, height
+            },                                   //
+            {                                    // graphics_app:
+                RenderPass::Access::None,        // - screen_pass_access
+                false,                           // - animations_enabled
+            },                                   //
+            {                                    // render_context:
+                FrameSize(),                     // - frame_size placeholder: set in InitContext
+                PixelFormat::BGRA8Unorm,         // - color_format
+                PixelFormat::Unknown,            // - depth_stencil_format
+                Color4F(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
             }
         })
     { }
@@ -70,7 +70,7 @@ public:
     {
         GraphicsApp::Init();
 
-        struct Vertex { hlslpp::float3 position; hlslpp::float3 color; };
+        struct Vertex { RawVector3F position; RawVector3F color; };
         const std::array<Vertex, 3> triangle_vertices{ {
             { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
             { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
