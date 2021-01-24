@@ -110,16 +110,21 @@ private:
 
     struct SHADER_STRUCT_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4   eye_position;
-        SHADER_FIELD_ALIGN hlslpp::float3   light_position;
+        SHADER_FIELD_ALIGN hlslpp::float3  eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
         SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
         SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
     };
 
-    const Constants       m_shader_constants;
+    const float           m_cube_scale          = 15.F;
+    const Constants       m_shader_constants{
+        gfx::Color4F(1.F, 1.F, 0.74F, 1.F),     // - light_color
+        700.F,                                  // - light_power
+        0.04F,                                  // - light_ambient_factor
+        30.F                                    // - light_specular_factor
+    };
     Uniforms              m_shader_uniforms { };
     gfx::Camera           m_camera;
-    float                 m_cube_scale;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
     Ptr<gfx::Buffer>      m_index_buffer_ptr;
@@ -146,17 +151,11 @@ TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Textured Cube"), {},
         "Methane tutorial of textured cube rendering")
-    , m_shader_constants(                               // Shader constants:
-        {                                               // ================
-            gfx::Color4F(1.F, 1.F, 0.74F, 1.F),         // - light_color
-            700.F,                                      // - light_power
-            0.04F,                                      // - light_ambient_factor
-            30.F                                        // - light_specular_factor
-        })
-    , m_cube_scale(15.F)
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
+
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(m_cube_scale);
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -239,15 +238,15 @@ void TexturedCubeApp::Init()
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create vertex buffer for cube mesh
-    const Data::Size vertex_data_size = static_cast<Data::Size>(cube_mesh.GetVertexDataSize());
-    const Data::Size vertex_size      = static_cast<Data::Size>(cube_mesh.GetVertexSize());
+    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
+    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     vertex_buffer_ptr->SetName("Cube Vertex Buffer");
     vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
     m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
-    const Data::Size index_data_size = static_cast<Data::Size>(cube_mesh.GetIndexDataSize());
+    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_index_buffer_ptr->SetName("Cube Index Buffer");
     m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
@@ -277,8 +276,9 @@ void TexturedCubeApp::Init()
     ...
 
     // Load texture image from file
+    using namespace magic_enum::bitwise_operators;
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
-                                                        | gfx::ImageLoader::Options::SrgbColorSpace;
+                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
     m_cube_texture_ptr->SetName("Cube Texture 2D Image");
 
@@ -363,7 +363,7 @@ void TexturedCubeApp::Init()
     ...
 
     // Create frame buffer data
-    const Data::Size uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
+    const Data::Size uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
@@ -414,9 +414,9 @@ This function rotates light position and camera in opposite directions.
 ```cpp
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    hlslpp::float3x3 light_rotate_matrix;
-    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.F * delta_seconds / 4.F));
-    m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
+    const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
+    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
+    m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;
 }
@@ -432,12 +432,8 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    hlslpp::float4x4 model_matrix;
-    cml::matrix_uniform_scale(model_matrix, m_cube_scale);
-
-    m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
-    m_shader_uniforms.model_matrix   = model_matrix;
-    m_shader_uniforms.eye_position   = hlslpp::float4(m_camera.GetOrientation().eye, 1.F);
+    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
+    m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
     
     return true;
 }
@@ -463,12 +459,12 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    TexturedCubeFrame& frame = GetCurrentFrame();
+    const TexturedCubeFrame& frame = GetCurrentFrame();
     frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr, s_debug_group.get());
+    frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
@@ -530,7 +526,7 @@ struct Constants
 
 struct Uniforms
 {
-    float4   eye_position;
+    float3   eye_position;
     float3   light_position;
     float4x4 mvp_matrix;
     float4x4 model_matrix;
@@ -543,12 +539,12 @@ SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0F);
+    const float4 position = float4(input.position, 1.F);
 
     PSInput output;
-    output.position       = mul(g_uniforms.mvp_matrix, position);
-    output.world_position = mul(g_uniforms.model_matrix, position).xyz;
-    output.world_normal   = normalize(mul(g_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
+    output.position       = mul(position, g_uniforms.mvp_matrix);
+    output.world_position = mul(position, g_uniforms.model_matrix).xyz;
+    output.world_normal   = normalize(mul(float4(input.normal, 0.F), g_uniforms.model_matrix).xyz);
     output.texcoord       = input.texcoord;
 
     return output;

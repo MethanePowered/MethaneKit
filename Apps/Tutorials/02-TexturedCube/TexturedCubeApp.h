@@ -70,8 +70,8 @@ private:
 
     struct SHADER_STRUCT_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
-        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
+        SHADER_FIELD_ALIGN hlslpp::float3   eye_position;
+        SHADER_FIELD_ALIGN hlslpp::float3   light_position;
         SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
         SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
     };

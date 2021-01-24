@@ -77,6 +77,26 @@ void TexturedCubeApp::Init()
 
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
+    // Create vertex buffer for cube mesh
+    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
+    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
+    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+
+    // Create index buffer for cube mesh
+    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
+    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr->SetName("Cube Index Buffer");
+    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
+
+    // Create constants buffer for frame rendering
+    const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
+    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr->SetName("Constants Buffer");
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
+
     // Create render state with program
     gfx::RenderState::Settings state_settings;
     state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
@@ -110,6 +130,7 @@ void TexturedCubeApp::Init()
     );
     state_settings.program_ptr->SetName("Textured Phong Lighting");
     state_settings.depth.enabled = true;
+
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
@@ -128,26 +149,6 @@ void TexturedCubeApp::Init()
             gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
         }
     );
-
-    // Create vertex buffer for cube mesh
-    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
-    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
-    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
-    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
-    // Create index buffer for cube mesh
-    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetName("Cube Index Buffer");
-    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
-
-    // Create constants buffer for frame rendering
-    const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
-    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
-    m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create frame buffer data
     const Data::Size uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
@@ -204,7 +205,7 @@ bool TexturedCubeApp::Update()
 
     // Update Model, View, Projection matrices based on camera location
     m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
-    m_shader_uniforms.eye_position = hlslpp::float4(m_camera.GetOrientation().eye, 1.F);
+    m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
     
     return true;
 }

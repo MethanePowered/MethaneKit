@@ -48,7 +48,7 @@ struct Constants
 
 struct Uniforms
 {
-    float4   eye_position;
+    float3   eye_position;
     float3   light_position;
     float4x4 mvp_matrix;
     float4x4 model_matrix;
