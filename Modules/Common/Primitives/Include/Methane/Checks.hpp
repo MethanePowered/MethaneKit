@@ -48,11 +48,11 @@ Methane short check macroses throwing exceptions on negative check result
 #endif
 
 #define META_INVALID_ARG_DESCR(argument, description, ...) \
-    throw Methane::InvalidArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+    throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_DESCR(argument, condition, description, ...) \
     if (!(condition)) \
-        throw Methane::InvalidArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG(argument, condition) META_CHECK_ARG_DESCR(argument, condition, #condition)
 
@@ -73,41 +73,41 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_NOT_EQUAL(argument, value) META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, "")
 
 #define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description, ...) \
-    if (argument < static_cast<typename std::decay<decltype(argument)>::type>(range_begin) || argument >= static_cast<typename std::decay<decltype(argument)>::type>(range_end)) \
-        throw Methane::OutOfRangeArgumentException<typename std::decay<decltype(argument)>::type, typename std::decay<decltype(range_begin)>::type>(__FUNCTION_NAME__, #argument, argument, \
-                    { range_begin, static_cast<typename std::decay<decltype(range_begin)>::type>(range_end) }, fmt::format(description, ## __VA_ARGS__))
+    if (argument < static_cast<std::decay_t<decltype(argument)>>(range_begin) || argument >= static_cast<std::decay_t<decltype(argument)>>(range_end)) \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(range_begin)>>(__FUNCTION_NAME__, #argument, argument, \
+                    { range_begin, static_cast<std::decay_t<decltype(range_begin)>>(range_end) }, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_RANGE(argument, range_begin, range_end) META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, "")
 
 #define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description, ...) \
-    if (argument >= static_cast<typename std::decay<decltype(argument)>::type>(upper_limit)) \
-        throw Methane::OutOfRangeArgumentException<typename std::decay<decltype(argument)>::type, typename std::decay<decltype(upper_limit)>::type>(__FUNCTION_NAME__, #argument, argument, \
-                    { std::numeric_limits<typename std::decay<decltype(upper_limit)>::type>::min(), upper_limit }, fmt::format(description, ## __VA_ARGS__))
+    if (argument >= static_cast<std::decay_t<decltype(argument)>>(upper_limit)) \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(upper_limit)>>(__FUNCTION_NAME__, #argument, argument, \
+                    { std::numeric_limits<std::decay_t<decltype(upper_limit)>>::min(), upper_limit }, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_LESS(argument, upper_limit) META_CHECK_ARG_LESS_DESCR(argument, upper_limit, "")
 
 #define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) \
-    if (argument < static_cast<typename std::decay<decltype(argument)>::type>(min_value)) \
-        throw Methane::OutOfRangeArgumentException<typename std::decay<decltype(argument)>::type, typename std::decay<decltype(min_value)>::type>(__FUNCTION_NAME__, #argument, argument, \
-                    { min_value, std::numeric_limits<typename std::decay<decltype(min_value)>::type>::max() }, fmt::format(description, ## __VA_ARGS__))
+    if (argument < static_cast<std::decay_t<decltype(argument)>>(min_value)) \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(__FUNCTION_NAME__, #argument, argument, \
+                    { min_value, std::numeric_limits<std::decay_t<decltype(min_value)>>::max() }, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, "")
 
 #define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description, ...) \
     if (argument.empty()) \
-        throw Methane::EmptyArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::EmptyArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_NOT_EMPTY(argument) META_CHECK_ARG_NOT_EMPTY_DESCR(argument, "")
 
 #define META_CHECK_ARG_NOT_NULL_DESCR(argument, description, ...) \
     if (!argument) \
-        throw Methane::NullPointerArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::NullPointerArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_NOT_NULL(argument) META_CHECK_ARG_NOT_NULL_DESCR(argument, "")
 
 #define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description, ...) \
     if (!argument) \
-        throw Methane::ZeroArgumentException<typename std::decay<decltype(argument)>::type>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::ZeroArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_ARG_NOT_ZERO(argument) META_CHECK_ARG_NOT_ZERO_DESCR(argument, "")
 

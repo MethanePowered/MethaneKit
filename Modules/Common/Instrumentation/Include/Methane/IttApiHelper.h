@@ -57,7 +57,7 @@ public:
     { }
 
     template<class T>
-    typename std::enable_if<std::is_floating_point<T>::value, void>::type AddArg(__itt_string_handle* p_name, const T& value) const noexcept
+    typename std::enable_if<std::is_floating_point_v<T>, void>::type AddArg(__itt_string_handle* p_name, const T& value) const noexcept
     {
         double double_value = static_cast<double>(value);
         __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_double, 1, &double_value);

@@ -81,7 +81,7 @@ template<typename T>
 class InvalidArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    using DecayType = typename std::decay<T>::type;
+    using DecayType = typename std::decay_t<T>;
 
     InvalidArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, argument_name, "is not valid", description)
@@ -104,11 +104,11 @@ private:
     DecayType m_value{ };
 };
 
-template<typename T, typename V, typename RangeType = std::pair<typename std::decay<V>::type, typename std::decay<V>::type>>
+template<typename T, typename V, typename RangeType = std::pair<typename std::decay_t<V>, typename std::decay_t<V>>>
 class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_range>
 {
 public:
-    using DecayType = typename std::decay<T>::type;
+    using DecayType = typename std::decay_t<T>;
 
     OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, RangeType range, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {})", typeid(T).name(), value, range.first, range.second), description)
@@ -151,7 +151,7 @@ public:
     { }
 };
 
-template<typename T, typename RawType = typename std::decay<T>::type>
+template<typename T, typename RawType = typename std::decay_t<T>>
 class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
