@@ -255,9 +255,9 @@ private:
 template<typename T>
 using Point2T = PointT<T, 2>;
 
-using Point2i = Point2T<int32_t>;
-using Point2u = Point2T<uint32_t>;
-using Point2f = Point2T<float>;
-using Point2d = Point2T<double>;
+using Point2I = Point2T<int32_t>;
+using Point2U = Point2T<uint32_t>;
+using Point2F = Point2T<float>;
+using Point2D = Point2T<double>;
 
 } // namespace Methane::Data

@@ -43,7 +43,7 @@ ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& anim
     META_FUNCTION_TASK();
 }
 
-void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept
+void ActionCamera::OnMousePressed(const Data::Point2I& mouse_screen_pos, MouseAction mouse_action) noexcept
 {
     META_FUNCTION_TASK();
     m_mouse_action = mouse_action;
@@ -64,7 +64,7 @@ void ActionCamera::OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAc
     }
 }
 
-void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
+void ActionCamera::OnMouseDragged(const Data::Point2I& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
     switch (m_mouse_action)
@@ -82,7 +82,7 @@ void ActionCamera::OnMouseDragged(const Data::Point2i& mouse_screen_pos)
     }
 }
 
-void ActionCamera::OnMouseReleased(const Data::Point2i&) noexcept
+void ActionCamera::OnMouseReleased(const Data::Point2I&) noexcept
 {
     META_FUNCTION_TASK();
     m_mouse_action = MouseAction::None;

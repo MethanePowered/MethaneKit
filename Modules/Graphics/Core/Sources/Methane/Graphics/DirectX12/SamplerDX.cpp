@@ -180,10 +180,10 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode 
     }
 }
 
-static void SetColor(const Color4f& in_color, FLOAT* p_out_color) noexcept
+static void SetColor(const Color4F& in_color, FLOAT* p_out_color) noexcept
 {
     META_FUNCTION_TASK();
-    for (Data::Size i = 0; i < Color4f::Size; ++i)
+    for (Data::Size i = 0; i < Color4F::Size; ++i)
     {
         p_out_color[i] = in_color[i];
     }

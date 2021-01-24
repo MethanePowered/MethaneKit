@@ -145,20 +145,20 @@ const hlslpp::float4x4& Camera::GetViewProjMatrix() const noexcept
     return m_current_view_proj_matrix;
 }
 
-hlslpp::float2 Camera::TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float2 Camera::TransformScreenToProj(const Data::Point2I& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
     return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.width  - 1.F,
            -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.height - 1.F) };
 }
 
-hlslpp::float3 Camera::TransformScreenToView(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float3 Camera::TransformScreenToView(const Data::Point2I& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
     return hlslpp::mul(hlslpp::inverse(GetProjMatrix()), hlslpp::float4(TransformScreenToProj(screen_pos), 0.F, 1.F)).xyz;
 }
 
-hlslpp::float3 Camera::TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept
+hlslpp::float3 Camera::TransformScreenToWorld(const Data::Point2I& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
     return TransformViewToWorld(TransformScreenToView(screen_pos));

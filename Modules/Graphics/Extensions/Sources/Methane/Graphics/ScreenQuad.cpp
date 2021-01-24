@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 struct SHADER_STRUCT_ALIGN ScreenQuadConstants
 {
-    SHADER_FIELD_ALIGN Color4f blend_color;
+    SHADER_FIELD_ALIGN Color4F blend_color;
 };
 
 struct ScreenQuadVertex
@@ -208,7 +208,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     UpdateConstantsBuffer();
 }
 
-void ScreenQuad::SetBlendColor(const Color4f& blend_color)
+void ScreenQuad::SetBlendColor(const Color4F& blend_color)
 {
     META_FUNCTION_TASK();
     if (m_settings.blend_color == blend_color)

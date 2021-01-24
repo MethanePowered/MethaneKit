@@ -67,7 +67,7 @@ class ShadowCubeApp final : public UserInterfaceApp
 private:
     struct SHADER_STRUCT_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
+        SHADER_FIELD_ALIGN gfx::Color4F   light_color;
         SHADER_FIELD_PACK  float          light_power;
         SHADER_FIELD_PACK  float          light_ambient_factor;
         SHADER_FIELD_PACK  float          light_specular_factor;

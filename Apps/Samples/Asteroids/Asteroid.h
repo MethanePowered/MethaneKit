@@ -38,8 +38,8 @@ struct SHADER_STRUCT_ALIGN AsteroidUniforms
 {
     SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
     SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
-    SHADER_FIELD_ALIGN gfx::Color3f     deep_color;
-    SHADER_FIELD_ALIGN gfx::Color3f     shallow_color;
+    SHADER_FIELD_ALIGN gfx::Color3F     deep_color;
+    SHADER_FIELD_ALIGN gfx::Color3F     shallow_color;
     SHADER_FIELD_ALIGN hlslpp::float2   depth_range;
     SHADER_FIELD_ALIGN uint32_t         texture_index;
 };
@@ -77,8 +77,8 @@ public:
 
     struct Colors
     {
-        gfx::Color3f deep;
-        gfx::Color3f shallow;
+        gfx::Color3F deep;
+        gfx::Color3F shallow;
     };
 
     struct Parameters

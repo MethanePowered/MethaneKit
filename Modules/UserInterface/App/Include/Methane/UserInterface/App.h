@@ -43,8 +43,8 @@ struct IApp : Graphics::IApp
     {
         HeadsUpDisplayMode       heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
         bool                     show_logo_badge       = true;
-        Color4f                  logo_badge_color      { 1.F, 1.F, 1.F, 0.15F };
-        Color4f                  text_color            { 1.F, 1.F, 1.F, 1.F };
+        Color4F                  logo_badge_color      { 1.F, 1.F, 1.F, 0.15F };
+        Color4F                  text_color            { 1.F, 1.F, 1.F, 1.F };
         UnitPoint                text_margins          { Units::Dots, 20, 20 };
         Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11U };
         HeadsUpDisplay::Settings hud_settings;

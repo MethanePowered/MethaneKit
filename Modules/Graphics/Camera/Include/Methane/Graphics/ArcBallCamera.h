@@ -52,8 +52,8 @@ public:
     inline float GetRadiusInPixels() const noexcept             { return GetRadiusInPixels(GetScreenSize()); }
 
     // Mouse action handlers
-    void MousePress(const Data::Point2i& mouse_screen_pos) noexcept;
-    void MouseDrag(const Data::Point2i& mouse_screen_pos);
+    void MousePress(const Data::Point2I& mouse_screen_pos) noexcept;
+    void MouseDrag(const Data::Point2I& mouse_screen_pos);
 
 protected:
     struct SphereProjection
@@ -61,7 +61,7 @@ protected:
         hlslpp::float3 vector;
         bool           inside = false;
     };
-    SphereProjection GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
+    SphereProjection GetNormalizedSphereProjection(const Data::Point2I& mouse_screen_pos, bool is_primary) const noexcept;
 
     inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
     { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.F; }

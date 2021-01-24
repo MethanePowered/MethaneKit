@@ -256,7 +256,7 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
     }
 }
 
-MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
+MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4F& color) noexcept
 {
     META_FUNCTION_TASK();
     return MTLClearColorMake(color.GetRf(), color.GetGf(), color.GetBf(), color.GetAf());
@@ -268,7 +268,7 @@ NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
     return CreateNSRect(rect.size, rect.origin);
 }
 
-NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
+NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2I& origin) noexcept
 {
     META_FUNCTION_TASK();
     return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
@@ -278,7 +278,7 @@ FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 {
     META_FUNCTION_TASK();
     return FrameRect {
-        Point2i(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
+        Point2I(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
         FrameSize(static_cast<uint32_t>(rect.size.width), static_cast<uint32_t>(rect.size.height))
     };
 }

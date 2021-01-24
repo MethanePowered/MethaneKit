@@ -71,8 +71,8 @@ enum class ButtonState : uint8_t
 
 using ButtonStates = std::array<ButtonState, magic_enum::enum_count<Button>() - 1>;
 
-using Position = Data::Point2i;
-using Scroll = Data::Point2f;
+using Position = Data::Point2I;
+using Scroll = Data::Point2F;
 
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 [[nodiscard]] inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)

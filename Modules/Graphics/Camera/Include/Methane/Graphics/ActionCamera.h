@@ -95,9 +95,9 @@ public:
     void   SetKeyboardActionDurationSec(double min_duration_sec) noexcept   { m_keyboard_action_duration_sec = min_duration_sec; }
 
     // Mouse action handlers
-    void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
-    void OnMouseReleased(const Data::Point2i&) noexcept;
+    void OnMousePressed(const Data::Point2I& mouse_screen_pos, MouseAction mouse_action) noexcept;
+    void OnMouseDragged(const Data::Point2I& mouse_screen_pos);
+    void OnMouseReleased(const Data::Point2I&) noexcept;
     void OnMouseScrolled(float scroll_delta);
 
     // Keyboard action handlers

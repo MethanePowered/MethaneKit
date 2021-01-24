@@ -55,14 +55,14 @@ public:
         const std::string name;
         FrameRect         screen_rect;
         bool              alpha_blending_enabled = false;
-        Color4f           blend_color            { 1.F, 1.F, 1.F, 1.F };
+        Color4F           blend_color            { 1.F, 1.F, 1.F, 1.F };
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
     ScreenQuad(RenderContext& context, const Settings& settings);
     ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, const Settings& settings);
 
-    void SetBlendColor(const Color4f& blend_color);
+    void SetBlendColor(const Color4F& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> texture_ptr);

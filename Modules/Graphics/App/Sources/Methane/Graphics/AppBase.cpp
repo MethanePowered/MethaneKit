@@ -241,7 +241,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
                         : RenderPass::Attachment::LoadAction::DontCare,
                     RenderPass::Attachment::StoreAction::Store,
                 },
-                context_settings.clear_color.value_or(Color4f())
+                context_settings.clear_color.value_or(Color4F())
             )
         },
         RenderPass::DepthAttachment(

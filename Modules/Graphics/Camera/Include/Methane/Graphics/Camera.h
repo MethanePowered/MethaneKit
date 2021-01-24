@@ -77,9 +77,9 @@ public:
     const hlslpp::float4x4& GetProjMatrix() const;
     const hlslpp::float4x4& GetViewProjMatrix() const noexcept;
 
-    hlslpp::float2 TransformScreenToProj(const Data::Point2i& screen_pos) const noexcept;
-    hlslpp::float3 TransformScreenToView(const Data::Point2i& screen_pos) const noexcept;
-    hlslpp::float3 TransformScreenToWorld(const Data::Point2i& screen_pos) const noexcept;
+    hlslpp::float2 TransformScreenToProj(const Data::Point2I& screen_pos) const noexcept;
+    hlslpp::float3 TransformScreenToView(const Data::Point2I& screen_pos) const noexcept;
+    hlslpp::float3 TransformScreenToWorld(const Data::Point2I& screen_pos) const noexcept;
     hlslpp::float3 TransformWorldToView(const hlslpp::float3& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }
     hlslpp::float3 TransformViewToWorld(const hlslpp::float3& view_pos)  const noexcept { return TransformViewToWorld(view_pos,  m_current_orientation); }
     hlslpp::float4 TransformWorldToView(const hlslpp::float4& world_pos) const noexcept { return TransformWorldToView(world_pos, m_current_orientation); }

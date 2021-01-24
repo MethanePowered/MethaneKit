@@ -47,7 +47,7 @@ namespace Methane::UserInterface
 
 struct SHADER_STRUCT_ALIGN Text::Constants
 {
-    SHADER_FIELD_ALIGN gfx::Color4f color;
+    SHADER_FIELD_ALIGN gfx::Color4F color;
 };
 
 struct SHADER_STRUCT_ALIGN Text::Uniforms
@@ -262,7 +262,7 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
     return { ui_rect_changed, ui_size_changed };
 }
 
-void Text::SetColor(const gfx::Color4f& color)
+void Text::SetColor(const gfx::Color4F& color)
 {
     META_FUNCTION_TASK();
     if (m_settings.color == color)

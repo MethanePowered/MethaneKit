@@ -53,14 +53,14 @@ ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot) noexcept
     META_FUNCTION_TASK();
 }
 
-void ArcBallCamera::MousePress(const Point2i& mouse_screen_pos) noexcept
+void ArcBallCamera::MousePress(const Point2I& mouse_screen_pos) noexcept
 {
     META_FUNCTION_TASK();
     m_mouse_pressed_orientation = GetOrientation();
     m_mouse_pressed_on_sphere = GetNormalizedSphereProjection(mouse_screen_pos, true);
 }
 
-void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
+void ArcBallCamera::MouseDrag(const Point2I& mouse_screen_pos)
 {
     META_FUNCTION_TASK();
 
@@ -88,12 +88,12 @@ void ArcBallCamera::MouseDrag(const Point2i& mouse_screen_pos)
     }
 }
 
-ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(const Point2i& mouse_screen_pos, bool is_primary) const noexcept
+ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(const Point2I& mouse_screen_pos, bool is_primary) const noexcept
 {
     META_FUNCTION_TASK();
     const Data::FloatSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
-    const Point2f screen_center(screen_size.width / 2.F, screen_size.height / 2.F);
-    Point2f       screen_point = static_cast<Point2f>(mouse_screen_pos) - screen_center;
+    const Point2F screen_center(screen_size.width / 2.F, screen_size.height / 2.F);
+    Point2F       screen_point = static_cast<Point2F>(mouse_screen_pos) - screen_center;
 
     const float screen_radius = screen_point.GetLength();
     const float sphere_radius = GetRadiusInPixels(screen_size);
@@ -105,9 +105,9 @@ ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(con
     const float inside_sphere_sign = inside_sphere ? 1.F : -1.F;
 
     // Reflect coordinates for natural camera movement
-    const Point2f mirror_multipliers = m_p_view_camera
-                                     ? Point2f(inside_sphere_sign, -1.F ) * UnitSign(hlslpp::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
-                                     : Point2f(-1.F, 1.F);
+    const Point2F mirror_multipliers = m_p_view_camera
+                                     ? Point2F(inside_sphere_sign, -1.F ) * UnitSign(hlslpp::dot(GetLookDirection(m_mouse_pressed_orientation), m_p_view_camera->GetLookDirection()))
+                                     : Point2F(-1.F, 1.F);
     screen_point.SetX(screen_point.GetX() * mirror_multipliers.GetX());
     screen_point.SetY(screen_point.GetY() * mirror_multipliers.GetY());
 
@@ -124,7 +124,7 @@ ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(con
         }
         else
         {
-            screen_point = Point2f(0.F, 0.F);
+            screen_point = Point2F(0.F, 0.F);
             z_sign       = -1.F;
         }
     }

@@ -97,7 +97,7 @@ public:
         StringType        text;
         UnitRect          rect;
         Layout            layout;
-        Color4f           color                { 1.F, 1.F, 1.F, 1.F };
+        Color4F           color                { 1.F, 1.F, 1.F, 1.F };
         bool              incremental_update   = true;
         bool              adjust_vertical_content_offset = true;
 
@@ -120,7 +120,7 @@ public:
     void SetText(std::u32string_view text);
     void SetTextInScreenRect(std::string_view text, const UnitRect& ui_rect);
     void SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect);
-    void SetColor(const gfx::Color4f& color);
+    void SetColor(const gfx::Color4F& color);
     void SetLayout(const Layout& layout);
     void SetWrap(Wrap wrap);
     void SetHorizontalAlignment(HorizontalAlignment alignment);

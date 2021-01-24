@@ -182,13 +182,13 @@ public:
         // All glyph metrics are multiplied by 64, so we reverse them back
         return Char(char_code,
             {
-                gfx::Point2i(),
+                gfx::Point2I(),
                 gfx::FrameSize(static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.width  / g_ft_dots_in_pixel),
                                static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.height / g_ft_dots_in_pixel))
             },
-            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
+            gfx::Point2I(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
                         -static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingY  / g_ft_dots_in_pixel)),
-            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
+            gfx::Point2I(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
                          static_cast<int32_t>(m_ft_face_rec.glyph->metrics.vertAdvance   / g_ft_dots_in_pixel)),
             std::make_unique<Char::Glyph>(ft_glyph, char_index)
         );
@@ -804,7 +804,7 @@ Font::Char::Char(Code code)
     META_FUNCTION_TASK();
 }
 
-Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr)
+Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance, UniquePtr<Glyph>&& glyph_ptr)
     : m_code(code)
     , m_type_mask(GetType(code))
     , m_rect(std::move(rect))

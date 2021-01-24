@@ -55,7 +55,7 @@ public:
                 FrameSize(),                     // - frame_size placeholder: set in InitContext
                 PixelFormat::BGRA8Unorm,         // - color_format
                 PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
+                Color4F(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
             }
         })
     { }

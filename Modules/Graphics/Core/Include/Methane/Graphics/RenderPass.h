@@ -64,9 +64,9 @@ struct RenderPass : virtual Object
     
     struct ColorAttachment : Attachment
     {
-        Color4f clear_color;
+        Color4F clear_color;
         
-        ColorAttachment(const Attachment& attach, const Color4f& in_clear_color = Color4f()) : Attachment(attach), clear_color(in_clear_color) { }
+        ColorAttachment(const Attachment& attach, const Color4F& in_clear_color = Color4F()) : Attachment(attach), clear_color(in_clear_color) { }
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
     };

@@ -32,14 +32,14 @@ Random generated asteroid model with mesh and texture ready for rendering
 namespace Methane::Samples
 {
 
-using AsteroidColorSchema = std::array<gfx::Color3f, Asteroid::color_schema_size>;
+using AsteroidColorSchema = std::array<gfx::Color3F, Asteroid::color_schema_size>;
 
-static gfx::Color3f TransformSrgbToLinear(const gfx::Color3f& srgb_color)
+static gfx::Color3F TransformSrgbToLinear(const gfx::Color3F& srgb_color)
 {
     META_FUNCTION_TASK();
 
-    gfx::Color3f linear_color{};
-    for (Data::Index c = 0U; c < gfx::Color3f::Size; ++c)
+    gfx::Color3F linear_color{};
+    for (Data::Index c = 0U; c < gfx::Color3F::Size; ++c)
     {
         linear_color.Set(c, std::pow(srgb_color[c] / 255.F, 2.233333333F));
     }

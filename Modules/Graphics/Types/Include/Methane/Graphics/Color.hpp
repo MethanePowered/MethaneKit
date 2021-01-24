@@ -157,7 +157,7 @@ private:
     static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
-using Color3f = ColorF<3>;
-using Color4f = ColorF<4>;
+using Color3F = ColorF<3>;
+using Color4F = ColorF<4>;
 
 } // namespace Methane::Graphics

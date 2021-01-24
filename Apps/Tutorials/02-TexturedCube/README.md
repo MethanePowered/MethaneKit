@@ -102,7 +102,7 @@ class TexturedCubeApp final : public UserInterfaceApp
 private:
     struct SHADER_STRUCT_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
+        SHADER_FIELD_ALIGN gfx::Color4F   light_color;
         SHADER_FIELD_PACK  float          light_power;
         SHADER_FIELD_PACK  float          light_ambient_factor;
         SHADER_FIELD_PACK  float          light_specular_factor;
@@ -148,7 +148,7 @@ TexturedCubeApp::TexturedCubeApp()
         "Methane tutorial of textured cube rendering")
     , m_shader_constants(                               // Shader constants:
         {                                               // ================
-            gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
+            gfx::Color4F(1.F, 1.F, 0.74F, 1.F),         // - light_color
             700.F,                                      // - light_power
             0.04F,                                      // - light_ambient_factor
             30.F                                        // - light_specular_factor

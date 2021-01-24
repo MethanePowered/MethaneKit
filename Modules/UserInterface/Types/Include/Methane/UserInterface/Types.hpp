@@ -42,8 +42,8 @@ using FloatRect    = Graphics::FloatRect;
 using FloatSize    = Graphics::FloatSize;
 using FloatPoint   = Graphics::FloatPoint;
 
-using Color3f      = Graphics::Color3f;
-using Color4f      = Graphics::Color4f;
+using Color3F      = Graphics::Color3F;
+using Color4F      = Graphics::Color4F;
 
 template<typename T>
 using Point2T      = Data::PointT<T, 2>;

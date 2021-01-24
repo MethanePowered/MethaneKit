@@ -188,7 +188,7 @@ void AppWin::OnWindowResized(WPARAM w_param, LPARAM l_param)
     GetWindowRect(m_env.window_handle, &window_rect);
     ChangeWindowBounds(
         {
-            Data::Point2i(window_rect.left, window_rect.top),
+            Data::Point2I(window_rect.left, window_rect.top),
             Data::FrameSize(static_cast<uint32_t>(window_rect.right - window_rect.left),
                             static_cast<uint32_t>(window_rect.bottom - window_rect.top))
         }
