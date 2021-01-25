@@ -33,9 +33,9 @@ Screen Quad rendering primitive.
 namespace Methane::Graphics
 {
 
-struct SHADER_STRUCT_ALIGN ScreenQuadConstants
+struct META_UNIFORM_ALIGN ScreenQuadConstants
 {
-    SHADER_FIELD_ALIGN Color4F blend_color;
+    Color4F blend_color;
 };
 
 struct ScreenQuadVertex

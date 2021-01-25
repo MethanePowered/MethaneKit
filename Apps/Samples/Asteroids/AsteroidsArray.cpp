@@ -445,8 +445,8 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
         {
             hlslpp::transpose(model_matrix),
             hlslpp::transpose(mvp_matrix),
-            asteroid_colors.deep,
-            asteroid_colors.shallow,
+            asteroid_colors.deep.AsVector(),
+            asteroid_colors.shallow.AsVector(),
             hlslpp::float2(mesh_depth_min, mesh_depth_max),
             asteroid_parameters.texture_index
         },

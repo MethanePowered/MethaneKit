@@ -34,14 +34,14 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-struct SHADER_STRUCT_ALIGN AsteroidUniforms
+struct META_UNIFORM_ALIGN AsteroidUniforms
 {
-    SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
-    SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
-    SHADER_FIELD_ALIGN gfx::Color3F     deep_color;
-    SHADER_FIELD_ALIGN gfx::Color3F     shallow_color;
-    SHADER_FIELD_ALIGN hlslpp::float2   depth_range;
-    SHADER_FIELD_ALIGN uint32_t         texture_index;
+    hlslpp::float4x4 model_matrix;
+    hlslpp::float4x4 mvp_matrix;
+    hlslpp::float3   deep_color;
+    hlslpp::float3   shallow_color;
+    hlslpp::float2   depth_range;
+    uint32_t         texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>

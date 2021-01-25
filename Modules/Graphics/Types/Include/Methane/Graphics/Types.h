@@ -29,13 +29,12 @@ Methane primitive graphics types.
 #include <string>
 #include <cstdint>
 
-#define SHADER_STRUCT_ALIGNMENT 256
-#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
-#define SHADER_FIELD_ALIGN  alignas(16)
-#define SHADER_FIELD_PACK   alignas(4)
+#define META_UNIFORM_ALIGN alignas(Methane::Graphics::g_uniform_alignment)
 
 namespace Methane::Graphics
 {
+
+constexpr size_t g_uniform_alignment = 256;
 
 using Depth = float;
 using Stencil = uint8_t;

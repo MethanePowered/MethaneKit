@@ -62,9 +62,9 @@ public:
         float                          lod_bias       = 0.F;
     };
 
-    struct SHADER_STRUCT_ALIGN Uniforms
+    struct META_UNIFORM_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 mvp_matrix;
     };
 
     SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings);

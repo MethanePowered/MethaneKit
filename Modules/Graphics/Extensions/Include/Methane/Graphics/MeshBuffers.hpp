@@ -258,7 +258,7 @@ protected:
     }
 
 private:
-    using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, SHADER_STRUCT_ALIGNMENT>>;
+    using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
     RenderContext&         m_render_context;
     const std::string      m_mesh_name;

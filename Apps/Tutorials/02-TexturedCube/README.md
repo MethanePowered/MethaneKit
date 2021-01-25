@@ -100,20 +100,20 @@ class TexturedCubeApp final : public UserInterfaceApp
     ...
 
 private:
-    struct SHADER_STRUCT_ALIGN Constants
+    struct META_UNIFORM_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color4F   light_color;
-        SHADER_FIELD_PACK  float          light_power;
-        SHADER_FIELD_PACK  float          light_ambient_factor;
-        SHADER_FIELD_PACK  float          light_specular_factor;
+        hlslpp::float4 light_color;
+        float          light_power;
+        float          light_ambient_factor;
+        float          light_specular_factor;
     };
 
-    struct SHADER_STRUCT_ALIGN Uniforms
+    struct META_UNIFORM_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float3  eye_position;
-        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
+        hlslpp::float3  eye_position;
+        hlslpp::float3  light_position;
+        hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 model_matrix;
     };
 
     const float           m_cube_scale          = 15.F;

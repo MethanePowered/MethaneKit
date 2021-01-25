@@ -57,12 +57,12 @@ public:
         float                     lod_bias            = 0.F;
     };
 
-    struct SHADER_STRUCT_ALIGN Uniforms
+    struct META_UNIFORM_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4   eye_position;
-        SHADER_FIELD_ALIGN hlslpp::float3   light_position;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
+        hlslpp::float4   eye_position;
+        hlslpp::float3   light_position;
+        hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 model_matrix;
     };
 
     Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);

@@ -65,7 +65,7 @@ class ShadowCubeApp final : public UserInterfaceApp
    ...
 
 private:
-    struct SHADER_STRUCT_ALIGN Constants
+    struct META_UNIFORM_ALIGN Constants
     {
         SHADER_FIELD_ALIGN gfx::Color4F   light_color;
         SHADER_FIELD_PACK  float          light_power;
@@ -73,13 +73,13 @@ private:
         SHADER_FIELD_PACK  float          light_specular_factor;
     };
 
-    struct SHADER_STRUCT_ALIGN SceneUniforms
+    struct META_UNIFORM_ALIGN SceneUniforms
     {
         SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
         SHADER_FIELD_ALIGN hlslpp::float3  light_position;
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
+    struct META_UNIFORM_ALIGN MeshUniforms
     {
         SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
         SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;

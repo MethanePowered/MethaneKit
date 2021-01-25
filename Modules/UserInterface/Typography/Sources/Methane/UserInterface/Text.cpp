@@ -45,14 +45,14 @@ Methane text rendering primitive.
 namespace Methane::UserInterface
 {
 
-struct SHADER_STRUCT_ALIGN Text::Constants
+struct META_UNIFORM_ALIGN Text::Constants
 {
-    SHADER_FIELD_ALIGN gfx::Color4F color;
+    gfx::Color4F color;
 };
 
-struct SHADER_STRUCT_ALIGN Text::Uniforms
+struct META_UNIFORM_ALIGN Text::Uniforms
 {
-    SHADER_FIELD_ALIGN hlslpp::float4x4 vp_matrix;
+    hlslpp::float4x4 vp_matrix;
 };
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
