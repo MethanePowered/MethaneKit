@@ -114,9 +114,9 @@ private:
         };
     };
 
-    struct RenderPass
+    struct RenderPassState
     {
-        RenderPass(bool is_final_pass, const std::string& command_group_name);
+        RenderPassState(bool is_final_pass, const std::string& command_group_name);
         void Release();
 
         const bool                              is_final_pass;
@@ -126,9 +126,9 @@ private:
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderScene(const RenderPass& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
+    void RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
 
-    const float                 m_scene_scale       = 15.F;
+    const float                 m_scene_scale = 15.F;
     const Constants             m_scene_constants{
         { 1.F, 1.F, 0.74F, 1.F }, // - light_color
         700.F,                    // - light_power
@@ -146,8 +146,8 @@ private:
     Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
-    RenderPass                  m_shadow_pass { false, "Shadow Render Pass" };
-    RenderPass                  m_final_pass  { true, "Final Render Pass" };
+    RenderPassState             m_shadow_pass { false, "Shadow Render Pass" };
+    RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };
 
 } // namespace Methane::Tutorials

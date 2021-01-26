@@ -78,7 +78,7 @@ private:
 
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const float           m_cube_scale          = 15.F;
+    const float           m_cube_scale = 15.F;
     const Constants       m_shader_constants{
         { 1.F, 1.F, 0.74F, 1.F },  // - light_color
         700.F,                     // - light_power

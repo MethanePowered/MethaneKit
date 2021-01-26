@@ -406,7 +406,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
+void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
@@ -441,14 +441,14 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
-ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, const std::string& debug_group_name)
+ShadowCubeApp::RenderPassState::RenderPassState(bool is_final_pass, const std::string& debug_group_name)
     : is_final_pass(is_final_pass)
     , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
 {
     META_UNUSED(debug_group_name);
 }
 
-void ShadowCubeApp::RenderPass::Release()
+void ShadowCubeApp::RenderPassState::Release()
 {
     render_state_ptr.reset();
     view_state_ptr.reset();

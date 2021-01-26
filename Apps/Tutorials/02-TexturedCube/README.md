@@ -110,18 +110,18 @@ private:
 
     struct META_UNIFORM_ALIGN Uniforms
     {
-        hlslpp::float3  eye_position;
-        hlslpp::float3  light_position;
+        hlslpp::float3   eye_position;
+        hlslpp::float3   light_position;
         hlslpp::float4x4 mvp_matrix;
         hlslpp::float4x4 model_matrix;
     };
 
-    const float           m_cube_scale          = 15.F;
+    const float           m_cube_scale = 15.F;
     const Constants       m_shader_constants{
-        gfx::Color4F(1.F, 1.F, 0.74F, 1.F),     // - light_color
-        700.F,                                  // - light_power
-        0.04F,                                  // - light_ambient_factor
-        30.F                                    // - light_specular_factor
+        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
+        700.F,                    // - light_power
+        0.04F,                    // - light_ambient_factor
+        30.F                      // - light_specular_factor
     };
     Uniforms              m_shader_uniforms { };
     gfx::Camera           m_camera;

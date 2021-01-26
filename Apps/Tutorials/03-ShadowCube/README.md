@@ -31,9 +31,8 @@ and one for floor mesh in `m_floor_buffers_ptr`.
 `TexturedMeshBuffers<UniformsType>` which is managing vertex, index, uniforms buffers and texture with data for particular
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
 
-Supplementary member `m_scene_uniforms_subresources` of type is used to store a pointer to
-the `m_scene_uniforms` in the `std::vector` type `gfx::Resource::SubResources` which is passed to `gfx::Buffer::SetData(...)`
-method to update the buffer data on GPU.
+Supplementary member `m_scene_uniforms_subresources` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
+type `gfx::Resource::SubResources` which is passed to `gfx::Buffer::SetData(...)` method to update the buffer data on GPU.
 
 Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
 is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
@@ -55,7 +54,7 @@ namespace gfx = Methane::Graphics;
 
 struct ShadowCubeFrame final : gfx::AppFrame
 {
-    ...    
+    ...
 };
 
 using UserInterfaceApp = UserInterface::App<ShadowCubeFrame>;
@@ -67,23 +66,23 @@ class ShadowCubeApp final : public UserInterfaceApp
 private:
     struct META_UNIFORM_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color4F   light_color;
-        SHADER_FIELD_PACK  float          light_power;
-        SHADER_FIELD_PACK  float          light_ambient_factor;
-        SHADER_FIELD_PACK  float          light_specular_factor;
+        hlslpp::float4 light_color;
+        float          light_power;
+        float          light_ambient_factor;
+        float          light_specular_factor;
     };
 
     struct META_UNIFORM_ALIGN SceneUniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4  eye_position;
-        SHADER_FIELD_ALIGN hlslpp::float3  light_position;
+        hlslpp::float4 eye_position;
+        hlslpp::float3 light_position;
     };
 
     struct META_UNIFORM_ALIGN MeshUniforms
     {
-        SHADER_FIELD_ALIGN hlslpp::float4x4 model_matrix;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 mvp_matrix;
-        SHADER_FIELD_ALIGN hlslpp::float4x4 shadow_mvpx_matrix;
+        hlslpp::float4x4 model_matrix;
+        hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 shadow_mvpx_matrix;
     };
 
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
@@ -92,9 +91,10 @@ private:
     public:
         using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
 
-        void                SetShadowPassUniforms(const MeshUniforms& uniforms) noexcept        { m_shadow_pass_uniforms = uniforms; }
-        const MeshUniforms& GetShadowPassUniforms() const noexcept                              { return m_shadow_pass_uniforms; }
-        const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
+        void SetShadowPassUniforms(MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
+
+        [[nodiscard]] const MeshUniforms&                GetShadowPassUniforms() const noexcept               { return m_shadow_pass_uniforms; }
+        [[nodiscard]] const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
 
     private:
         MeshUniforms                m_shadow_pass_uniforms{};
@@ -103,10 +103,24 @@ private:
         };
     };
 
-    ...
+    struct RenderPassState
+    {
+        RenderPassState(bool is_final_pass, const std::string& command_group_name);
+        void Release();
 
-    const float                 m_scene_scale;
-    const Constants             m_scene_constants;
+        const bool                              is_final_pass;
+        const Ptr<gfx::CommandList::DebugGroup> debug_group_ptr;
+        Ptr<gfx::RenderState>                   render_state_ptr;
+        Ptr<gfx::ViewState>                     view_state_ptr;
+    };
+
+    const float                 m_scene_scale = 15.F;
+    const Constants             m_scene_constants{
+        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
+        700.F,                    // - light_power
+        0.04F,                    // - light_ambient_factor
+        30.F                      // - light_specular_factor
+    };
     SceneUniforms               m_scene_uniforms{ };
     gfx::Resource::SubResources m_scene_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
@@ -118,8 +132,8 @@ private:
     Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
-    
-    ...
+    RenderPassState             m_shadow_pass { false, "Shadow Render Pass" };
+    RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };
 
 } // namespace Methane::Tutorials
@@ -179,11 +193,12 @@ description here.
 
 ```cpp
     // ========= Final Pass Render & View States =========
-    
+
     const gfx::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
     const gfx::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
     const gfx::Shader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
+    // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
     final_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
@@ -222,6 +237,7 @@ description here.
 
     m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
     m_final_pass.render_state_ptr->SetName("Final pass render state");
+    m_final_pass.view_state_ptr = GetViewStatePtr();
 ```
 
 **Shadow pass** render state is using the same shader code, but compiled with a different macro definitions set `textured_definitions`
@@ -230,14 +246,17 @@ Vertex shader since it will be used for rendering to depth buffer only without c
 
 ```cpp
     // ========= Shadow Pass Render & View States =========
-    
+
+    gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
+
+    // Create shadow-pass rendering state with program
     gfx::RenderState::Settings shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, { } }),
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
             gfx::Program::ArgumentDescriptions
@@ -245,7 +264,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                 { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
             },
             gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
-            shadow_texture_settings.pixel_format
+            context_settings.depth_stencil_format
         }
     );
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
@@ -465,51 +484,39 @@ bool ShadowCubeApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    hlslpp::float4x4 scale_matrix;
-    cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-    
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = ([]()
-    {
-        hlslpp::float4x4 shadow_scale_matrix;
-        cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
-
-        hlslpp::float4x4 shadow_translate_matrix;
-        cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
-
-        return shadow_scale_matrix * shadow_translate_matrix;
-    })();
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position   = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position = m_light_camera.GetOrientation().eye;
+    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+
+    hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
 
     // Cube model matrix
-    hlslpp::float4x4 cube_model_matrix;
-    cml::matrix_translation(cube_model_matrix, hlslpp::float3(0.F, 0.5F, 0.F)); // move up by half of cube model height
-    cube_model_matrix = cube_model_matrix * scale_matrix;
+    hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
 
     // Update Cube uniforms
     m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
-        cube_model_matrix,
-        cube_model_matrix * m_view_camera.GetViewProjMatrix(),
-        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+        hlslpp::transpose(cube_model_matrix),
+        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
+        hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
     m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
-        cube_model_matrix,
-        cube_model_matrix * m_light_camera.GetViewProjMatrix(),
+        hlslpp::transpose(cube_model_matrix),
+        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()
     });
 
     // Update Floor uniforms
     m_floor_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
-        scale_matrix,
-        scale_matrix * m_view_camera.GetViewProjMatrix(),
-        scale_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+        hlslpp::transpose(scale_matrix),
+        hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
+        hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
     m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
-        scale_matrix,
-        scale_matrix * m_light_camera.GetViewProjMatrix(),
+        hlslpp::transpose(scale_matrix),
+        hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()
     });
     
@@ -572,7 +579,7 @@ void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeF
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
     // Reset command list with initial rendering state
-    cmd_list.ResetWithState(render_pass.render_state_ptr, render_pass.debug_group_ptr.get());
+    cmd_list.ResetWithState(*render_pass.render_state_ptr, render_pass.debug_group_ptr.get());
     cmd_list.SetViewState(*render_pass.view_state_ptr);
 
     // Draw scene with cube and floor
@@ -682,11 +689,11 @@ PSInput CubeVS(VSInput input)
     const float4 position   = float4(input.position, 1.0F);
 
     PSInput output;
-    output.position         = mul(g_mesh_uniforms.mvp_matrix, position);
-    output.world_position   = mul(g_mesh_uniforms.model_matrix, position).xyz;
-    output.world_normal     = normalize(mul(g_mesh_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
+    output.position         = mul(position, g_mesh_uniforms.mvp_matrix);
+    output.world_position   = mul(position, g_mesh_uniforms.model_matrix).xyz;
+    output.world_normal     = normalize(mul(float4(input.normal, 0.0), g_mesh_uniforms.model_matrix).xyz);
 #ifdef ENABLE_SHADOWS
-    output.shadow_position  = mul(g_mesh_uniforms.shadow_mvpx_matrix, position);
+    output.shadow_position  = mul(position, g_mesh_uniforms.shadow_mvpx_matrix);
 #endif
 #ifdef ENABLE_TEXTURING
     output.texcoord         = input.texcoord;
