@@ -41,6 +41,14 @@ void CheckRawVector(const RawVector<T, size>& vec, const std::array<T, size>& co
 }
 
 template<typename T, size_t size>
+std::array<T, size> CreateEqualComponents(T value = T(1))
+{
+    std::array<T, size> values{ };
+    values.fill(value);
+    return values;
+}
+
+template<typename T, size_t size>
 std::array<T, size> CreateComponents(T first_value = T(1), T step_value = T(1))
 {
     std::array<T, size> values{ first_value };
@@ -69,7 +77,7 @@ HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components)
     (float,    2), (float,    3), (float,    4), \
     (double,   2), (double,   3), (double,   4)  \
 
-TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization and Comparison", "[vector][init]", VECTOR_TYPES_MATRIX)
+TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization", "[vector][init]", VECTOR_TYPES_MATRIX)
 {
     const std::array<T, size> raw_arr = CreateComponents<T, size>();
 
@@ -117,8 +125,30 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization and Comparison", "[vector][ini
 
     SECTION("Copy initialization from the same vector type")
     {
-        RawVector<T, size> vec(raw_arr);
+        const RawVector<T, size> vec(raw_arr);
         CheckRawVector(RawVector<T, size>(vec), raw_arr);
+    }
+
+    SECTION("Move initialization from the same vector type")
+    {
+        RawVector<T, size> vec(raw_arr);
+        CheckRawVector(RawVector<T, size>(std::move(vec)), raw_arr);
+    }
+
+    SECTION("Copy assignment initialization")
+    {
+        const RawVector<T, size> raw_vec(raw_arr);
+        RawVector<T, size> copy_vec;
+        copy_vec = raw_vec;
+        CheckRawVector(copy_vec, raw_arr);
+    }
+
+    SECTION("Move assignment initialization")
+    {
+        RawVector<T, size> raw_vec(raw_arr);
+        RawVector<T, size> copy_vec;
+        copy_vec = std::move(raw_vec);
+        CheckRawVector(copy_vec, raw_arr);
     }
 
     if constexpr (size > 2)
@@ -138,18 +168,6 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization and Comparison", "[vector][ini
             RawVector<T, size - 2>        small_vec(small_arr);
             CheckRawVector(RawVector<T, size>(small_vec, raw_arr[2], raw_arr[3]), raw_arr);
         }
-    }
-
-    SECTION("Vectors equality comparison")
-    {
-        CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
-        CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
-    }
-
-    SECTION("Vectors non-equality comparison")
-    {
-        CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
-        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 }
 
@@ -307,5 +325,84 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
             length += component * component;
         length = static_cast<T>(std::sqrt(length));
         CHECK(raw_vec.GetLength() == length);
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG("Raw Vector Comparison and Math Operations", "[vector][operations]", VECTOR_TYPES_MATRIX)
+{
+    const std::array<T, size> raw_arr = CreateComponents<T, size>(T(1), T(1));
+    const RawVector<T, size>  raw_vec(raw_arr);
+    const RawVector<T, size>  identity_vec(CreateEqualComponents<T, size>(T(1)));
+
+    SECTION("Vectors equality comparison")
+    {
+        CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
+        CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Vectors non-equality comparison")
+    {
+        CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
+        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Addition")
+    {
+        CheckRawVector(raw_vec + identity_vec, CreateComponents<T, size>(T(2), T(1)));
+    }
+
+    SECTION("Inplace addition")
+    {
+        RawVector<T, size> res_vec(raw_vec);
+        res_vec += identity_vec;
+        CheckRawVector(res_vec, CreateComponents<T, size>(T(2), T(1)));
+    }
+
+    SECTION("Subtraction")
+    {
+        CheckRawVector(raw_vec - identity_vec, CreateComponents<T, size>(T(0), T(1)));
+    }
+
+    SECTION("Inplace subtraction")
+    {
+        RawVector<T, size> res_vec(raw_vec);
+        res_vec -= identity_vec;
+        CheckRawVector(res_vec, CreateComponents<T, size>(T(0), T(1)));
+    }
+
+    SECTION("Multiplication by scalar")
+    {
+        CheckRawVector(raw_vec * T(2), CreateComponents<T, size>(T(2), T(2)));
+    }
+
+    SECTION("Inplace multiplication by scalar")
+    {
+        RawVector<T, size> res_vec(raw_vec);
+        res_vec *= T(2);
+        CheckRawVector(res_vec, CreateComponents<T, size>(T(2), T(2)));
+    }
+
+    SECTION("Division by scalar")
+    {
+        CheckRawVector(RawVector<T, size>(CreateComponents<T, size>(T(2), T(2))) / T(2), raw_arr);
+    }
+
+    SECTION("Inplace division by scalar")
+    {
+        RawVector<T, size> res_vec(CreateComponents<T, size>(T(2), T(2)));
+        res_vec /= T(2);
+        CheckRawVector(res_vec, raw_arr);
+    }
+
+    SECTION("Vectors equality comparison")
+    {
+        CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
+        CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Vectors non-equality comparison")
+    {
+        CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
+        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 }
