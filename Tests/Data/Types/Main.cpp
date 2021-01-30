@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Data/RangeSet/Main.cpp
+FILE: Tests/Data/Types/Main.cpp
 
 ******************************************************************************/
 
