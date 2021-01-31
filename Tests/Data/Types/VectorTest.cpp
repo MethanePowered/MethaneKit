@@ -33,12 +33,12 @@ using namespace Methane::Data;
 template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckRawVector(const RawVector<T, size>& vec, const std::array<T, size>& components)
 {
-    CHECK(vec[0] == components[0]);
-    CHECK(vec[1] == components[1]);
+    CHECK(vec[0] == Approx(components[0]));
+    CHECK(vec[1] == Approx(components[1]));
     if constexpr (size > 2)
-        CHECK(vec[2] == components[2]);
+        CHECK(vec[2] == Approx(components[2]));
     if constexpr (size > 3)
-        CHECK(vec[3] == components[3]);
+        CHECK(vec[3] == Approx(components[3]));
 }
 
 TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization", "[vector][init]", VECTOR_TYPES_MATRIX)
@@ -196,7 +196,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
     {
         for(size_t i = 0; i < size; ++i)
         {
-            CHECK(raw_vec[i] == raw_arr[i]);
+            CHECK(raw_vec[i] == Approx(raw_arr[i]));
         }
     }
 
@@ -215,7 +215,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
     {
         for(size_t i = 0; i < size; ++i)
         {
-            CHECK(raw_vec.Get(i) == raw_arr[i]);
+            CHECK(raw_vec.Get(i) == Approx(raw_arr[i]));
         }
         CHECK_THROWS_AS(raw_vec.Get(size + 1), Methane::ArgumentExceptionBase<std::out_of_range>);
     }
@@ -232,37 +232,25 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
         CheckRawVector(raw_vec_mutable, other_arr);
     }
 
-    SECTION("X-coordinate getter")
+    SECTION("X-coordinate getter and setter")
     {
-        CHECK(raw_vec.GetX() == raw_arr[0]);
-    }
-
-    SECTION("X-coordinate setter")
-    {
+        CHECK(raw_vec.GetX() == Approx(raw_arr[0]));
         auto new_arr = raw_arr; new_arr[0] = new_value;
         CheckRawVector(RawVector<T, size>(raw_arr).SetX(new_value), new_arr);
     }
 
-    SECTION("Y-coordinate getter")
-    {
-        CHECK(raw_vec.GetY() == raw_arr[1]);
-    }
-
     SECTION("Y-coordinate setter")
     {
+        CHECK(raw_vec.GetY() == Approx(raw_arr[1]));
         auto new_arr = raw_arr; new_arr[1] = new_value;
         CheckRawVector(RawVector<T, size>(raw_arr).SetY(new_value), new_arr);
     }
 
     if constexpr (size > 2)
     {
-        SECTION("Z-coordinate getter")
-        {
-            CHECK(raw_vec.GetZ() == raw_arr[2]);
-        }
-
         SECTION("Z-coordinate setter")
         {
+            CHECK(raw_vec.GetZ() == Approx(raw_arr[2]));
             auto new_arr = raw_arr; new_arr[2] = new_value;
             CheckRawVector(RawVector<T, size>(raw_arr).SetZ(new_value), new_arr);
         }
@@ -270,13 +258,9 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
 
     if constexpr (size > 3)
     {
-        SECTION("W-coordinate getter")
-        {
-            CHECK(raw_vec.GetW() == raw_arr[3]);
-        }
-
         SECTION("W-coordinate setter")
         {
+            CHECK(raw_vec.GetW() == Approx(raw_arr[3]));
             auto new_arr = raw_arr; new_arr[3] = new_value;
             CheckRawVector(RawVector<T, size>(raw_arr).SetW(new_value), new_arr);
         }
@@ -288,7 +272,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
         for(T component : raw_arr)
             length += component * component;
         length = static_cast<T>(std::sqrt(length));
-        CHECK(raw_vec.GetLength() == length);
+        CHECK(raw_vec.GetLength() == Approx(length));
     }
 }
 

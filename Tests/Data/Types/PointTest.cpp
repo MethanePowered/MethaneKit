@@ -33,12 +33,12 @@ using namespace Methane::Data;
 template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)
 {
-    CHECK(point.GetX() == components[0]);
-    CHECK(point.GetY() == components[1]);
+    CHECK(point.GetX() == Approx(components[0]));
+    CHECK(point.GetY() == Approx(components[1]));
     if constexpr (size > 2)
-        CHECK(point.GetZ() == components[2]);
+        CHECK(point.GetZ() == Approx(components[2]));
     if constexpr (size > 3)
-        CHECK(point.GetW() == components[3]);
+        CHECK(point.GetW() == Approx(components[3]));
 }
 
 TEMPLATE_TEST_CASE_SIG("Point Initialization", "[point][init]", VECTOR_TYPES_MATRIX)
@@ -202,14 +202,14 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
 
     SECTION("X-coordinate getter and setter")
     {
-        CHECK(test_point.GetX() == test_arr[0]);
+        CHECK(test_point.GetX() == Approx(test_arr[0]));
         auto new_arr = test_arr; new_arr[0] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetX(new_value), new_arr);
     }
 
     SECTION("Y-coordinate getter and setter")
     {
-        CHECK(test_point.GetY() == test_arr[1]);
+        CHECK(test_point.GetY() == Approx(test_arr[1]));
         auto new_arr = test_arr; new_arr[1] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetY(new_value), new_arr);
     }
@@ -218,7 +218,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     {
         SECTION("Z-coordinate getter and setter")
         {
-            CHECK(test_point.GetZ() == test_arr[2]);
+            CHECK(test_point.GetZ() == Approx(test_arr[2]));
             auto new_arr = test_arr; new_arr[2] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetZ(new_value), new_arr);
         }
@@ -228,7 +228,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     {
         SECTION("W-coordinate getter and setter")
         {
-            CHECK(test_point.GetW() == test_arr[3]);
+            CHECK(test_point.GetW() == Approx(test_arr[3]));
             auto new_arr = test_arr; new_arr[3] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetW(new_value), new_arr);
         }
@@ -240,10 +240,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         for(T component : test_arr)
             length += component * component;
         length = static_cast<T>(std::sqrt(length));
-        if constexpr (std::is_floating_point_v<T>)
-            CHECK(test_point.GetLength() == Approx(length));
-        else
-            CHECK(test_point.GetLength() == length);
+        CHECK(test_point.GetLength() == Approx(length));
     }
 
     SECTION("Length squared getter")
@@ -251,10 +248,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         T sq_length = 0;
         for(T component : test_arr)
             sq_length += component * component;
-        if constexpr (std::is_floating_point_v<T>)
-            CHECK(test_point.GetLengthSquared() == Approx(sq_length));
-        else
-            CHECK(test_point.GetLengthSquared() == sq_length);
+        CHECK(test_point.GetLengthSquared() == Approx(sq_length));
     }
 }
 
