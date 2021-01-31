@@ -292,7 +292,26 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
     }
 }
 
-TEMPLATE_TEST_CASE_SIG("Raw Vector Comparison and Math Operations", "[vector][operations]", VECTOR_TYPES_MATRIX)
+TEMPLATE_TEST_CASE_SIG("Raw Vector Comparison", "[vector][compare]", VECTOR_TYPES_MATRIX)
+{
+    const std::array<T, size> raw_arr = CreateComponents<T, size>(T(1), T(1));
+    const RawVector<T, size>  raw_vec(raw_arr);
+    const RawVector<T, size>  identity_vec(CreateEqualComponents<T, size>(T(1)));
+
+    SECTION("Vectors equality comparison")
+    {
+        CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
+        CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Vectors non-equality comparison")
+    {
+        CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
+        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size > (CreateComponents<T, size>(T(1), T(2))));
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG("Raw Vector Math Operations", "[vector][math]", VECTOR_TYPES_MATRIX)
 {
     const std::array<T, size> raw_arr = CreateComponents<T, size>(T(1), T(1));
     const RawVector<T, size>  raw_vec(raw_arr);

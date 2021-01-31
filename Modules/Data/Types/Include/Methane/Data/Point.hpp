@@ -87,22 +87,31 @@ public:
     template<size_t sz = size, typename = std::enable_if_t<sz >= 4, void>>
     T GetW() const noexcept { return m_vector.w; }
 
-    void SetX(T x) noexcept { m_vector.x = x; }
-    void SetY(T y) noexcept { m_vector.y = y; }
+    PointType& SetX(T x) noexcept { m_vector.x = x; return *this; }
+    PointType& SetY(T y) noexcept { m_vector.y = y; return *this; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 3, void>>
-    void SetZ(T z) noexcept { return m_vector.z = z; }
+    template<size_t sz = size>
+    std::enable_if_t<sz >= 3, PointType&> SetZ(T z) noexcept { m_vector.z = z; return *this; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 4, void>>
-    void SetW(T w) noexcept { return m_vector.w = w; }
+    template<size_t sz = size>
+    std::enable_if_t<sz >= 4, PointType&> SetW(T w) noexcept { m_vector.w = w; return *this; }
 
-    T GetLength() const noexcept { return hlslpp::length(m_vector); }
-    T GetLengthSquared() const noexcept { const T len = GetLength(); return len * len; }
+    T GetLength() const noexcept { return static_cast<T>(hlslpp::length(m_vector)); }
+    T GetLengthSquared() const noexcept
+    {
+        T sq_length = Square(m_vector.x);
+        sq_length += Square(m_vector.y);
+        if constexpr (size > 2)
+            sq_length += Square(m_vector.z);
+        if constexpr (size > 3)
+            sq_length += Square(m_vector.w);
+        return sq_length;
+    }
 
     PointType& Normalize() noexcept { m_vector = hlslpp::normalize(m_vector); return *this; }
 
     bool operator==(const PointType& other) const noexcept { return hlslpp::all(m_vector == other.AsVector()); }
-    bool operator!=(const PointType& other) const noexcept { return hlslpp::any(m_vector != other.AsVector()); }
+    bool operator!=(const PointType& other) const noexcept { return !operator==(other); }
     bool operator<(const PointType& other) const noexcept  { return hlslpp::all(m_vector <  other.AsVector()); }
     bool operator<=(const PointType& other) const noexcept { return hlslpp::all(m_vector <= other.AsVector()); }
     bool operator>(const PointType& other) const noexcept  { return hlslpp::all(m_vector >  other.AsVector()); }
@@ -229,7 +238,7 @@ public:
         return *this;
     }
 
-    template<typename U>
+    template<typename U, typename = std::enable_if_t<!std::is_same_v<T, U>>>
     explicit operator Point<U, size>() const noexcept
     {
         if constexpr (size == 2)
@@ -239,8 +248,6 @@ public:
         else if constexpr (size == 4)
             return Point<U, 4>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()), static_cast<U>(GetW()));
     }
-
-    explicit operator VectorType() const noexcept { return m_vector; }
 
     explicit operator std::string() const
     {
@@ -252,7 +259,13 @@ public:
             return fmt::format("P({}, {}, {}, {})", GetX(), GetY(), GetZ(), GetW());
     }
 
+    explicit operator VectorType() const noexcept { return m_vector; }
+
+    const VectorType& AsHlsl() const noexcept { return m_vector; }
+
 private:
+    static inline T Square(T s) noexcept { return s * s; }
+
     VectorType m_vector;
 };
 
