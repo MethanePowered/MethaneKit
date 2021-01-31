@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Data/Point.hpp
-Point wrapper type based on HLSL++ vector
+Point type wrapper around HLSL++ vector type
 
 ******************************************************************************/
 
@@ -33,41 +33,41 @@ Point wrapper type based on HLSL++ vector
 namespace Methane::Data
 {
 
-template<typename T, size_t vector_size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= vector_size && vector_size <= 4>>
-class PointT
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+class Point
 {
 public:
     using CoordinateType = T;
-    using VectorType = HlslVector<T, vector_size>;
-    using PointType = PointT<T, vector_size>;
+    using VectorType = HlslVector<T, size>;
+    using PointType = Point<T, size>;
 
-    static constexpr size_t dimensions_count = vector_size;
+    static constexpr size_t dimensions_count = size;
 
-    PointT() = default;
+    Point() = default;
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 2, void>>
-    PointT(T x, T y) noexcept : m_vector(x, y) { }
+    template<size_t sz = size, typename = std::enable_if_t<sz == 2, void>>
+    Point(T x, T y) noexcept : m_vector(x, y) { }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 3, void>>
-    PointT(T x, T y, T z) noexcept : m_vector(x, y, z) { }
+    template<size_t sz = size, typename = std::enable_if_t<sz == 3, void>>
+    Point(T x, T y, T z) noexcept : m_vector(x, y, z) { }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4, void>>
-    PointT(T x, T y, T z, T w) noexcept : m_vector(x, y, z, w) { }
+    template<size_t sz = size, typename = std::enable_if_t<sz == 4, void>>
+    Point(T x, T y, T z, T w) noexcept : m_vector(x, y, z, w) { }
 
-    explicit PointT(const VectorType& vector) noexcept : m_vector(vector) { }
+    explicit Point(const VectorType& vector) noexcept : m_vector(vector) { }
 
-    template<typename V, size_t sz = vector_size, typename = std::enable_if_t<sz == 2>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
-    explicit PointT(const PointT<V, 2>& other) noexcept
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
+    explicit Point(const Point<V, 2>& other) noexcept
         : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()))
     { }
 
-    template<typename V, size_t sz = vector_size, typename = std::enable_if_t<sz == 3>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
-    explicit PointT(const PointT<V, 3>& other) noexcept
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
+    explicit Point(const Point<V, 3>& other) noexcept
         : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()), static_cast<V>(other.GetZ()))
     { }
 
-    template<typename V, size_t sz = vector_size, typename = std::enable_if_t<sz == 4>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
-    explicit PointT(const PointT<V, 4>& other) noexcept
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
+    explicit Point(const Point<V, 4>& other) noexcept
         : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()), static_cast<V>(other.GetZ()), static_cast<V>(other.GetW()))
     { }
 
@@ -77,19 +77,19 @@ public:
     T GetX() const noexcept { return m_vector.x; }
     T GetY() const noexcept { return m_vector.y; }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 3, void>>
+    template<size_t sz = size, typename = std::enable_if_t<sz >= 3, void>>
     T GetZ() const noexcept { return m_vector.z; }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
+    template<size_t sz = size, typename = std::enable_if_t<sz >= 4, void>>
     T GetW() const noexcept { return m_vector.w; }
 
     void SetX(T x) noexcept { m_vector.x = x; }
     void SetY(T y) noexcept { m_vector.y = y; }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 3, void>>
+    template<size_t sz = size, typename = std::enable_if_t<sz >= 3, void>>
     void SetZ(T z) noexcept { return m_vector.z = z; }
 
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz >= 4, void>>
+    template<size_t sz = size, typename = std::enable_if_t<sz >= 4, void>>
     void SetW(T w) noexcept { return m_vector.w = w; }
 
     T GetLength() const noexcept { return hlslpp::length(m_vector); }
@@ -117,7 +117,7 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(PointT<M, vector_size>(*this) * multiplier);
+                return PointType(Point<M, size>(*this) * multiplier);
             else
                 return PointType(m_vector * static_cast<T>(multiplier));
         }
@@ -131,35 +131,35 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(PointT<M, vector_size>(*this) / divisor);
+                return PointType(Point<M, size>(*this) / divisor);
             else
                 return PointType(m_vector / static_cast<T>(divisor));
         }
     }
 
     template<typename M>
-    PointType operator*(const PointT<M, vector_size>& multiplier) const noexcept
+    PointType operator*(const Point<M, size>& multiplier) const noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(m_vector * multiplier.AsVector());
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(static_cast<HlslVector<M, vector_size>>(m_vector) * multiplier.AsVector());
+                return PointType(static_cast<HlslVector<M, size>>(m_vector) * multiplier.AsVector());
             else
                 return PointType(m_vector * static_cast<VectorType>(multiplier.AsVector()));
         }
     }
 
     template<typename M>
-    PointType operator/(const PointT<M, vector_size>& divisor) const noexcept
+    PointType operator/(const Point<M, size>& divisor) const noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(m_vector / divisor.AsVector());
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(static_cast<HlslVector<M, vector_size>>(m_vector) / divisor.AsVector());
+                return PointType(static_cast<HlslVector<M, size>>(m_vector) / divisor.AsVector());
             else
                 return PointType(m_vector / static_cast<VectorType>(divisor.AsVector()));
         }
@@ -173,7 +173,7 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                *this = PointType(PointT<M, vector_size>(*this) * multiplier);
+                *this = PointType(Point<M, size>(*this) * multiplier);
             else
                 m_vector *= static_cast<T>(multiplier);
         }
@@ -188,7 +188,7 @@ public:
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                *this = PointType(PointT<M, vector_size>(*this) / divisor);
+                *this = PointType(Point<M, size>(*this) / divisor);
             else
                 m_vector /= static_cast<T>(divisor);
         }
@@ -196,14 +196,14 @@ public:
     }
 
     template<typename M>
-    PointType& operator*=(const PointT<M, vector_size>& multiplier) noexcept
+    PointType& operator*=(const Point<M, size>& multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector *= multiplier.AsVector();
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                *this = PointType(PointT<M, vector_size>(*this) * multiplier);
+                *this = PointType(Point<M, size>(*this) * multiplier);
             else
                 m_vector *= static_cast<VectorType>(multiplier.AsVector());
         }
@@ -211,40 +211,40 @@ public:
     }
 
     template<typename M>
-    PointType& operator/=(const PointT<M, vector_size>& divisor) noexcept
+    PointType& operator/=(const Point<M, size>& divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector /= divisor.AsVector();
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                *this = PointType(PointT<M, vector_size>(*this) / divisor);
+                *this = PointType(Point<M, size>(*this) / divisor);
             else
-                m_vector /= static_cast<HlslVector<T, vector_size>>(divisor.AsVector());
+                m_vector /= static_cast<HlslVector<T, size>>(divisor.AsVector());
         }
         return *this;
     }
 
     template<typename U>
-    explicit operator PointT<U, vector_size>() const noexcept
+    explicit operator Point<U, size>() const noexcept
     {
-        if constexpr (vector_size == 2)
-            return PointT<U, 2>(static_cast<U>(GetX()), static_cast<U>(GetY()));
-        else if constexpr (vector_size == 3)
-            return PointT<U, 3>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()));
-        else if constexpr (vector_size == 4)
-            return PointT<U, 4>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()), static_cast<U>(GetW()));
+        if constexpr (size == 2)
+            return Point<U, 2>(static_cast<U>(GetX()), static_cast<U>(GetY()));
+        else if constexpr (size == 3)
+            return Point<U, 3>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()));
+        else if constexpr (size == 4)
+            return Point<U, 4>(static_cast<U>(GetX()), static_cast<U>(GetY()), static_cast<U>(GetZ()), static_cast<U>(GetW()));
     }
 
     explicit operator VectorType() const noexcept { return m_vector; }
 
     explicit operator std::string() const
     {
-        if constexpr (vector_size == 2)
+        if constexpr (size == 2)
             return fmt::format("P({}, {})", GetX(), GetY());
-        else if constexpr (vector_size == 3)
+        else if constexpr (size == 3)
             return fmt::format("P({}, {}, {})", GetX(), GetY(), GetZ());
-        else if constexpr (vector_size == 4)
+        else if constexpr (size == 4)
             return fmt::format("P({}, {}, {}, {})", GetX(), GetY(), GetZ(), GetW());
     }
 
@@ -253,7 +253,7 @@ private:
 };
 
 template<typename T>
-using Point2T = PointT<T, 2>;
+using Point2T = Point<T, 2>;
 
 using Point2I = Point2T<int32_t>;
 using Point2U = Point2T<uint32_t>;

@@ -62,10 +62,10 @@ struct fmt::formatter<Methane::Data::RawVector<T, size>>
 };
 
 template<typename T, size_t vector_size>
-struct fmt::formatter<Methane::Data::PointT<T, vector_size>>
+struct fmt::formatter<Methane::Data::Point<T, vector_size>>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Data::PointT<T, vector_size>& point, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(point)); }
+    [[nodiscard]] auto format(const Methane::Data::Point<T, vector_size>& point, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(point)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
