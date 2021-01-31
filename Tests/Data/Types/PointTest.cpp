@@ -30,7 +30,7 @@ Unit tests of the Point data type wrapping HLSL++ vector
 
 using namespace Methane::Data;
 
-template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
+template<typename T, size_t size, typename PointType = Point<T, size>, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)
 {
     CHECK(point.GetX() == Approx(components[0]));
@@ -260,14 +260,38 @@ TEMPLATE_TEST_CASE_SIG("Points Comparison", "[point][compare]", VECTOR_TYPES_MAT
 
     SECTION("Points equality comparison")
     {
-        CHECK(Point<T, size>(test_arr) == Point<T, size>(test_arr));
-        CHECK_FALSE(Point<T, size>(test_arr) == Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
+        CHECK(test_point == Point<T, size>(test_arr));
+        CHECK_FALSE(test_point == Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 
     SECTION("Points non-equality comparison")
     {
-        CHECK_FALSE(Point<T, size>(test_arr) != Point<T, size>(test_arr));
-        CHECK(Point<T, size>(test_arr) != Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
+        CHECK_FALSE(test_point != Point<T, size>(test_arr));
+        CHECK(test_point != Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Points less comparison")
+    {
+        CHECK(test_point < Point<T, size>(CreateComponents<T, size>(T(2), T(1))));
+        CHECK_FALSE(test_point < Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
+    }
+
+    SECTION("Points less or equal comparison")
+    {
+        CHECK(test_point <= Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
+        CHECK_FALSE(test_point <= Point<T, size>(CreateComponents<T, size>(T(0), T(2))));
+    }
+
+    SECTION("Points greater comparison")
+    {
+        CHECK(Point<T, size>(CreateComponents<T, size>(T(2), T(1))) > test_point);
+        CHECK_FALSE(Point<T, size>(CreateComponents<T, size>(T(1), T(2))) > test_point);
+    }
+
+    SECTION("Points less or equal comparison")
+    {
+        CHECK(Point<T, size>(CreateComponents<T, size>(T(1), T(2))) >= test_point);
+        CHECK_FALSE(Point<T, size>(CreateComponents<T, size>(T(0), T(2))) >= test_point);
     }
 }
 
@@ -301,30 +325,73 @@ TEMPLATE_TEST_CASE_SIG("Points Math Operations", "[point][math]", VECTOR_TYPES_M
         CheckPoint(point, CreateComponents<T, size>(T(0), T(1)));
     }
 
-    SECTION("Multiplication by scalar")
+    SECTION("Multiplication by scalar of same type")
     {
         CheckPoint(test_point * T(2), CreateComponents<T, size>(T(2), T(2)));
     }
 
-    SECTION("Inplace multiplication by scalar")
+    SECTION("Multiplication by scalar of different type")
+    {
+        if constexpr (std::is_floating_point_v<T>)
+            CheckPoint(test_point * 2U, CreateComponents<T, size>(T(2), T(2)));
+        else
+            CheckPoint(test_point * 2.1F, CreateComponents<T, size>(T(2), T(2)));
+    }
+
+    SECTION("Inplace multiplication by scalar of same type")
     {
         Point<T, size> point(test_point);
         point *= T(2);
         CheckPoint(point, CreateComponents<T, size>(T(2), T(2)));
     }
 
-    SECTION("Division by scalar")
+    SECTION("Inplace multiplication by scalar of different type")
+    {
+        Point<T, size> point(test_point);
+        if constexpr (std::is_floating_point_v<T>)
+            point *= 2U;
+        else
+            point *= 2.1F;
+        CheckPoint(point, CreateComponents<T, size>(T(2), T(2)));
+    }
+
+    SECTION("Division by scalar of same type")
     {
         CheckPoint(Point<T, size>(CreateComponents<T, size>(T(2), T(2))) / T(2), test_arr);
     }
 
+    SECTION("Division by scalar of different type")
+    {
+        Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
+        if constexpr (std::is_floating_point_v<T>)
+            CheckPoint(point / 2U, test_arr);
+        else
+            CheckPoint(point / 2.1F, test_arr);
+    }
+
     if constexpr (!std::is_integral_v<T>)
     {
-        SECTION("Inplace division by scalar")
+        SECTION("Inplace division by scalar of same type")
         {
             Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
             point /= T(2);
             CheckPoint(point, test_arr);
+        }
+
+        SECTION("Inplace division by scalar of different type")
+        {
+            Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
+            point /= 2U;
+            CheckPoint(point, test_arr);
+        }
+
+        SECTION("Normalize")
+        {
+            const T length   = test_point.GetLength();
+            auto    norm_arr = test_arr;
+            for (T& component : norm_arr)
+                component /= length;
+            CheckPoint(Point<T, size>(test_arr).Normalize(), norm_arr);
         }
     }
 }

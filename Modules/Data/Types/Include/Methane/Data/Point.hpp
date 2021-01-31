@@ -62,17 +62,17 @@ public:
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
     explicit Point(const Point<V, 2>& other) noexcept
-        : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()))
+        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()))
     { }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
     explicit Point(const Point<V, 3>& other) noexcept
-        : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()), static_cast<V>(other.GetZ()))
+        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()), RoundCast(other.GetZ()))
     { }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
     explicit Point(const Point<V, 4>& other) noexcept
-        : m_vector(static_cast<V>(other.GetX()), static_cast<V>(other.GetY()), static_cast<V>(other.GetZ()), static_cast<V>(other.GetW()))
+        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()), RoundCast(other.GetZ()), RoundCast(other.GetW()))
     { }
 
     VectorType& AsVector() noexcept               { return m_vector; }
@@ -108,7 +108,14 @@ public:
         return sq_length;
     }
 
-    PointType& Normalize() noexcept { m_vector = hlslpp::normalize(m_vector); return *this; }
+    PointType& Normalize() noexcept
+    {
+        if constexpr (std::is_same_v<float, T>)
+            m_vector = hlslpp::normalize(m_vector);
+        else
+            m_vector /= GetLength();
+        return *this;
+    }
 
     bool operator==(const PointType& other) const noexcept { return hlslpp::all(m_vector == other.AsVector()); }
     bool operator!=(const PointType& other) const noexcept { return !operator==(other); }
@@ -265,6 +272,15 @@ public:
 
 private:
     static inline T Square(T s) noexcept { return s * s; }
+
+    template<typename V>
+    std::enable_if_t<!std::is_same_v<T, V>, T> RoundCast(V value) noexcept
+    {
+        if constexpr (std::is_integral_v<T> && std::is_floating_point_v<V>)
+            return static_cast<T>(std::round(value));
+        else
+            return static_cast<T>(value);
+    }
 
     VectorType m_vector;
 };
