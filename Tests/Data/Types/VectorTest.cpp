@@ -21,10 +21,11 @@ Unit tests of the RawVector data type
 
 ******************************************************************************/
 
-#include <catch2/catch.hpp>
+#include "TestHelpers.hpp"
 
 #include <Methane/Data/Vector.hpp>
 
+#include <catch2/catch.hpp>
 #include <sstream>
 
 using namespace Methane::Data;
@@ -39,43 +40,6 @@ void CheckRawVector(const RawVector<T, size>& vec, const std::array<T, size>& co
     if constexpr (size > 3)
         CHECK(vec[3] == components[3]);
 }
-
-template<typename T, size_t size>
-std::array<T, size> CreateEqualComponents(T value = T(1))
-{
-    std::array<T, size> values{ };
-    values.fill(value);
-    return values;
-}
-
-template<typename T, size_t size>
-std::array<T, size> CreateComponents(T first_value = T(1), T step_value = T(1))
-{
-    std::array<T, size> values{ first_value };
-    for(size_t i = 1; i < size; ++i)
-    {
-        values[i] = first_value + step_value * T(i);
-    }
-    return values;
-}
-
-template<typename T, size_t size>
-HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components)
-{
-    if constexpr (size == 2)
-        return HlslVector<T, 2>(components[0], components[1]);
-    if constexpr (size == 3)
-        return HlslVector<T, 3>(components[0], components[1], components[2]);
-    if constexpr (size == 4)
-        return HlslVector<T, 4>(components[0], components[1], components[2], components[3]);
-}
-
-#define VECTOR_TYPES_MATRIX \
-    ((typename T, size_t size), T, size),        \
-    (int32_t,  2), (int32_t,  3), (int32_t,  4), \
-    (uint32_t, 2), (uint32_t, 3), (uint32_t, 4), \
-    (float,    2), (float,    3), (float,    4), \
-    (double,   2), (double,   3), (double,   4)  \
 
 TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization", "[vector][init]", VECTOR_TYPES_MATRIX)
 {
@@ -94,11 +58,11 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization", "[vector][init]", VECTOR_TYP
     SECTION("Initialization with component values")
     {
         if constexpr (size == 2)
-            CheckRawVector(RawVector<T, 2>(T(1), T(2)), { T(1), T(2) });
+            CheckRawVector(RawVector<T, 2>(raw_arr[0], raw_arr[1]), raw_arr);
         if constexpr (size == 3)
-            CheckRawVector(RawVector<T, 3>(T(1), T(2), T(3)), { T(1), T(2), T(3) });
+            CheckRawVector(RawVector<T, 3>(raw_arr[0], raw_arr[1], raw_arr[2]), raw_arr);
         if constexpr (size == 4)
-            CheckRawVector(RawVector<T, 4>(T(1), T(2), T(3), T(4)), { T(1), T(2), T(3), T(4) });
+            CheckRawVector(RawVector<T, 4>(raw_arr[0], raw_arr[1], raw_arr[2], raw_arr[3]), raw_arr);
     }
 
     SECTION("Initialization with array")

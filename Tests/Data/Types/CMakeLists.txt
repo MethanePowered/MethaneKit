@@ -6,6 +6,7 @@ set(TARGET MethaneDataTypesTest)
 add_executable(${TARGET}
     Main.cpp
     VectorTest.cpp
+    PointTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

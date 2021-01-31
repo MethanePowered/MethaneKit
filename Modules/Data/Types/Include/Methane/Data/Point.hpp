@@ -54,7 +54,11 @@ public:
     template<size_t sz = size, typename = std::enable_if_t<sz == 4, void>>
     Point(T x, T y, T z, T w) noexcept : m_vector(x, y, z, w) { }
 
+    Point(const std::array<T, size>& components) : m_vector(RawVector<T, size>(components).AsHlsl()) { }
+    Point(std::array<T, size>&& components) : m_vector(RawVector<T, size>(components).AsHlsl()) { }
+
     explicit Point(const VectorType& vector) noexcept : m_vector(vector) { }
+    explicit Point(VectorType&& vector) noexcept : m_vector(std::move(vector)) { }
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>, typename = std::enable_if_t<!std::is_same_v<T, V>>>
     explicit Point(const Point<V, 2>& other) noexcept
