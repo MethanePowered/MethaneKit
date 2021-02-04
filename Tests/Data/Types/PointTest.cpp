@@ -369,22 +369,22 @@ TEMPLATE_TEST_CASE_SIG("Points Math Operations", "[point][math]", VECTOR_TYPES_M
             CheckPoint(point / 2.1F, test_arr);
     }
 
+    SECTION("Inplace division by scalar of same type")
+    {
+        Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
+        point /= T(2);
+        CheckPoint(point, test_arr);
+    }
+
+    SECTION("Inplace division by scalar of different type")
+    {
+        Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
+        point /= 2U;
+        CheckPoint(point, test_arr);
+    }
+
     if constexpr (!std::is_integral_v<T>)
     {
-        SECTION("Inplace division by scalar of same type")
-        {
-            Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
-            point /= T(2);
-            CheckPoint(point, test_arr);
-        }
-
-        SECTION("Inplace division by scalar of different type")
-        {
-            Point<T, size> point(CreateComponents<T, size>(T(2), T(2)));
-            point /= 2U;
-            CheckPoint(point, test_arr);
-        }
-
         SECTION("Normalize")
         {
             const T length   = test_point.GetLength();
@@ -392,6 +392,95 @@ TEMPLATE_TEST_CASE_SIG("Points Math Operations", "[point][math]", VECTOR_TYPES_M
             for (T& component : norm_arr)
                 component /= length;
             CheckPoint(Point<T, size>(test_arr).Normalize(), norm_arr);
+        }
+    }
+
+    const auto same_mult_arr = CreateComponents<T, size>(T(2), T(1));
+    const auto same_mulprod_arr = DoPerComponent(test_arr, same_mult_arr, [](T l, T r) { return l * r; });
+
+    SECTION("Multiplication by point of same type")
+    {
+        CheckPoint(test_point * Point<T, size>(same_mult_arr), same_mulprod_arr);
+    }
+
+    SECTION("Inplace multiplication by point of same type")
+    {
+        Point<T, size> point = test_point;
+        CheckPoint(point *= Point<T, size>(same_mult_arr), same_mulprod_arr);
+    }
+
+    const auto same_div_arr = CreateComponents<T, size>(T(2), T(2));
+    const auto same_divprod_arr = DoPerComponent(same_div_arr, test_arr, [](T l, T r) { return l / r; });
+
+    SECTION("Division by point of same type")
+    {
+        CheckPoint(Point<T, size>(same_div_arr) / test_point, same_divprod_arr);
+    }
+
+    SECTION("Inplace division by point of same type")
+    {
+        Point<T, size> point = Point<T, size>(same_div_arr);
+        CheckPoint(point /= test_point, same_divprod_arr);
+    }
+
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        const auto other_mult_arr = CreateComponents<int32_t, size>(2, 1);
+        const auto other_prod_arr = DoPerComponent(test_arr, other_mult_arr, [](T l, int32_t r) { return l * static_cast<T>(r); });
+
+        SECTION("Multiplication by point of integer type")
+        {
+            CheckPoint(test_point * Point<int32_t, size>(other_mult_arr), other_prod_arr);
+        }
+
+        SECTION("Inplace multiplication by point of integer type")
+        {
+            Point<T, size> point = test_point;
+            CheckPoint(point *= Point<int32_t, size>(other_mult_arr), other_prod_arr);
+        }
+
+        const auto other_test_arr = CreateComponents<int32_t, size>();
+        const auto other_divprod_arr = DoPerComponent(same_div_arr, other_test_arr, [](T l, int32_t r) { return l / static_cast<T>(r); });
+
+        SECTION("Division by point of integer type")
+        {
+            CheckPoint(Point<T, size>(same_div_arr) / Point<int32_t, size>(other_test_arr), other_divprod_arr);
+        }
+
+        SECTION("Inplace division by point of integer type")
+        {
+            Point<T, size> point = Point<T, size>(same_div_arr);
+            CheckPoint(point /= Point<int32_t, size>(other_test_arr), same_divprod_arr);
+        }
+    }
+    else
+    {
+        const auto other_mult_arr = CreateComponents<float, size>(2.1F, 1.F);
+        const auto other_prod_arr = DoPerComponent(test_arr, other_mult_arr, [](T l, float r) { return static_cast<T>(static_cast<float>(l) * r); });
+
+        SECTION("Multiplication by point of floating point type")
+        {
+            CheckPoint(test_point * Point<float, size>(other_mult_arr), other_prod_arr);
+        }
+
+        SECTION("Inplace multiplication by point of floating point type")
+        {
+            Point<T, size> point = test_point;
+            CheckPoint(point *= Point<float, size>(other_mult_arr), other_prod_arr);
+        }
+
+        const auto other_test_arr = CreateComponents<float, size>();
+        const auto other_divprod_arr = DoPerComponent(same_div_arr, other_test_arr, [](T l, float r) { return static_cast<T>(static_cast<float>(l) / r); });
+
+        SECTION("Division by point of floating point type")
+        {
+            CheckPoint(Point<T, size>(same_div_arr) / Point<float, size>(other_test_arr), other_divprod_arr);
+        }
+
+        SECTION("Inplace division by point of floating point type")
+        {
+            Point<T, size> point = Point<T, size>(same_div_arr);
+            CheckPoint(point /= Point<float, size>(other_test_arr), same_divprod_arr);
         }
     }
 }

@@ -54,6 +54,17 @@ std::array<T, size> CreateComponents(T first_value = T(1), T step_value = T(1))
     return values;
 }
 
+template<typename T, typename V, size_t size, typename DoFunc /* [](T left_component, V right_component) -> T */>
+std::array<T, size> DoPerComponent(const std::array<T, size>& left, const std::array<V, size>& right, const DoFunc& do_func)
+{
+    std::array<T, size> result{};
+    for (size_t i = 0; i < size; ++i)
+    {
+        result[i] = do_func(left[i], right[i]);
+    }
+    return result;
+}
+
 template<typename T, size_t size>
 HlslVector<T, size> CreateHlslVector(const std::array <T, size>& components)
 {
