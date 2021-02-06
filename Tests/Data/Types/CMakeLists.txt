@@ -7,6 +7,8 @@ add_executable(${TARGET}
     Main.cpp
     VectorTest.cpp
     PointTest.cpp
+    RectSizeTest.cpp
+    RectTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

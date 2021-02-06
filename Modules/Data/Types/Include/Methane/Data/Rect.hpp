@@ -35,24 +35,32 @@ struct RectSize
 {
     using DimensionType = D;
 
-    D width = 0;
-    D height = 0;
+    D width  { };
+    D height { };
 
     static RectSize<D> Max() noexcept { return RectSize(std::numeric_limits<D>::max(), std::numeric_limits<D>::max()); }
 
     RectSize() = default;
-    RectSize(D w, D h) noexcept : width(w), height(h) { }
 
-    template<typename V>
+    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
+    RectSize(V w, V h) noexcept
+        : width(RoundCast<D>(w))
+        , height(RoundCast<D>(h))
+    { }
+
+    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
     explicit RectSize(const Point2T<V>& point) noexcept
-        : width(static_cast<D>(point.GetX()))
-        , height(static_cast<D>(point.GetY()))
+        : width(RoundCast<D>(point.GetX()))
+        , height(RoundCast<D>(point.GetY()))
     { }
 
     template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>, void>>
     explicit RectSize(const RectSize<V>& other) noexcept
         : RectSize(static_cast<D>(other.width), static_cast<D>(other.height))
     { }
+
+    D GetPixelsCount() const noexcept { return width * height; }
+    D GetLongestSide() const noexcept { return std::max(width, height); }
 
     bool operator==(const RectSize& other) const noexcept
     { return std::tie(width, height) == std::tie(other.width, other.height); }
@@ -84,90 +92,168 @@ struct RectSize
     RectSize& operator-=(const RectSize& other) noexcept
     { width -= other.width; height -= other.height; return *this; }
 
-    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
-    RectSize operator*(M multiplier) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) * multiplier), static_cast<D>(static_cast<M>(height) * multiplier)); }
-
-    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
-    RectSize operator/(M divisor) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) / divisor), static_cast<D>(static_cast<M>(height) / divisor)); }
-
-    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
-    RectSize& operator*=(M multiplier) noexcept
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(M multiplier) const noexcept
     {
-        width  = static_cast<D>(static_cast<M>(width) * multiplier);
-        height = static_cast<D>(static_cast<M>(height) * multiplier);
-        return *this;
-    }
-
-    template<typename M, typename = std::enable_if_t<std::is_arithmetic_v<M>>>
-    RectSize& operator/=(M divisor) noexcept
-    {
-        width  = static_cast<D>(static_cast<M>(width) / divisor);
-        height = static_cast<D>(static_cast<M>(height) / divisor);
-        return *this;
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) * multiplier), RoundCast<D>(static_cast<M>(height) * multiplier));
+        else
+            return RectSize(width * RoundCast<D>(multiplier), height * RoundCast<D>(multiplier));
     }
 
     template<typename M>
-    RectSize operator*(const Point2T<M>& multiplier) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) * multiplier.GetX()), static_cast<D>(static_cast<M>(height) * multiplier.GetY())); }
-
-    template<typename M>
-    RectSize operator/(const Point2T<M>& divisor) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) / divisor.GetX()), static_cast<D>(static_cast<M>(height) / divisor.GetY())); }
-
-    template<typename M>
-    RectSize& operator*=(const Point2T<M>& multiplier) noexcept
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(M divisor) const noexcept
     {
-        width  = static_cast<D>(static_cast<M>(width) * multiplier.GetX());
-        height = static_cast<D>(static_cast<M>(height) * multiplier.GetY());
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) / divisor), RoundCast<D>(static_cast<M>(height) / divisor));
+        else
+            return RectSize(width / RoundCast<D>(divisor), height / RoundCast<D>(divisor));
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator*=(M multiplier) noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  * multiplier);
+            height = RoundCast<D>(static_cast<M>(height) * multiplier);
+        }
+        else
+        {
+            width  = width  * RoundCast<D>(multiplier);
+            height = height * RoundCast<D>(multiplier);
+        }
         return *this;
     }
 
     template<typename M>
-    RectSize& operator/=(const Point2T<M>& divisor) noexcept
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator/=(M divisor) noexcept
     {
-        SetX(static_cast<D>(static_cast<M>(width) / divisor.GetX()));
-        SetY(static_cast<D>(static_cast<M>(height) / divisor.GetY()));
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  / divisor);
+            height = RoundCast<D>(static_cast<M>(height) / divisor);
+        }
+        else
+        {
+            width  = width  / RoundCast<D>(divisor);
+            height = height / RoundCast<D>(divisor);
+        }
         return *this;
     }
 
     template<typename M>
-    RectSize operator*(const RectSize<M>& multiplier) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) * multiplier.width), static_cast<D>(static_cast<M>(height) * multiplier.height)); }
-
-    template<typename M>
-    RectSize operator/(const RectSize<M>& divisor) const noexcept
-    { return RectSize(static_cast<D>(static_cast<M>(width) / divisor.width), static_cast<D>(static_cast<M>(height) / divisor.height)); }
-
-    template<typename M>
-    RectSize& operator*=(const RectSize<M>& multiplier) noexcept
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const Point2T<M>& multiplier) const noexcept
     {
-        width  = static_cast<D>(static_cast<M>(width)  * multiplier.width);
-        height = static_cast<D>(static_cast<M>(height) * multiplier.height);
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) * multiplier.GetX()), RoundCast<D>(static_cast<M>(height) * multiplier.GetY()));
+        else
+            return RectSize(width * RoundCast<D>(multiplier.GetX()), height * RoundCast<D>(multiplier.GetY()));
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const Point2T<M>& divisor) const noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) / divisor.GetX()), RoundCast<D>(static_cast<M>(height) / divisor.GetY()));
+        else
+            return RectSize(width / RoundCast<D>(divisor.GetX()), height / RoundCast<D>(divisor.GetY()));
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator*=(const Point2T<M>& multiplier) noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  * multiplier.GetX());
+            height = RoundCast<D>(static_cast<M>(height) * multiplier.GetY());
+        }
+        else
+        {
+            width  = width  * RoundCast<D>(multiplier.GetX());
+            height = height * RoundCast<D>(multiplier.GetY());
+        }
         return *this;
     }
 
     template<typename M>
-    RectSize& operator/=(const RectSize<M>& divisor) noexcept
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator/=(const Point2T<M>& divisor) noexcept
     {
-        width  = static_cast<D>(static_cast<M>(width)  / divisor.width);
-        height = static_cast<D>(static_cast<M>(height) / divisor.height);
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  / divisor.GetX());
+            height = RoundCast<D>(static_cast<M>(height) / divisor.GetY());
+        }
+        else
+        {
+            width  = width  / RoundCast<D>(divisor.GetX());
+            height = height / RoundCast<D>(divisor.GetY());
+        }
         return *this;
     }
 
-    explicit operator bool() const noexcept
-    { return width && height; }
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize<M>& multiplier) const noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) * multiplier.width), RoundCast<D>(static_cast<M>(height) * multiplier.height));
+        else
+            return RectSize(width * RoundCast<D>(multiplier.width), height * RoundCast<D>(multiplier.height));
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize<M>& divisor) const noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            return RectSize(RoundCast<D>(static_cast<M>(width) / divisor.width), RoundCast<D>(static_cast<M>(height) / divisor.height));
+        else
+            return RectSize(width / RoundCast<D>(divisor.width), height / RoundCast<D>(divisor.height));
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator*=(const RectSize<M>& multiplier) noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  * multiplier.width);
+            height = RoundCast<D>(static_cast<M>(height) * multiplier.height);
+        }
+        else
+        {
+            width  = width  * RoundCast<D>(multiplier.width);
+            height = height * RoundCast<D>(multiplier.height);
+        }
+        return *this;
+    }
+
+    template<typename M>
+    std::enable_if_t<std::is_arithmetic_v<M>, RectSize&> operator/=(const RectSize<M>& divisor) noexcept
+    {
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+        {
+            width  = RoundCast<D>(static_cast<M>(width)  / divisor.width);
+            height = RoundCast<D>(static_cast<M>(height) / divisor.height);
+        }
+        else
+        {
+            width  = width  / RoundCast<D>(divisor.width);
+            height = height / RoundCast<D>(divisor.height);
+        }
+        return *this;
+    }
+
+    explicit operator bool() const noexcept { return width && height; }
 
     template<typename V>
     explicit operator RectSize<V>() const noexcept
-    { return RectSize<V>(static_cast<V>(width), static_cast<V>(height)); }
-
-    D GetPixelsCount() const noexcept { return width * height; }
-    D GetLongestSide() const noexcept { return std::max(width, height); }
+    {
+        return RectSize<V>(RoundCast<V>(width), RoundCast<V>(height));
+    }
 
     explicit operator std::string() const
-    { return fmt::format("Sz({} x {})", width, height); }
+    {
+        return fmt::format("Sz({} x {})", width, height);
+    }
 };
 
 template<typename T, typename D,
@@ -221,7 +307,7 @@ struct Rect
     { origin /= divisor; size /= divisor; return *this; }
 
     explicit operator std::string() const
-    { return fmt::format("Rt[{} + {}]", origin, size); }
+    { return fmt::format("Rt[{} : {}]", origin, size); }
 };
 
 using FrameRect    = Rect<int32_t, uint32_t>;

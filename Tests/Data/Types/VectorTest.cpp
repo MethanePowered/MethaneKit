@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Tests/Data/Types/VectorTest.cpp
-Unit tests of the RawVector data type
+Unit-tests of the RawVector data type
 
 ******************************************************************************/
 
@@ -282,16 +282,16 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Comparison", "[vector][compare]", VECTOR_TYPE
     const RawVector<T, size>  raw_vec(raw_arr);
     const RawVector<T, size>  identity_vec(CreateEqualComponents<T, size>(T(1)));
 
-    SECTION("Vectors equality comparison")
+    SECTION("Equality")
     {
         CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
         CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 
-    SECTION("Vectors non-equality comparison")
+    SECTION("Inequality")
     {
         CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
-        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size > (CreateComponents<T, size>(T(1), T(2))));
+        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size> (CreateComponents<T, size>(T(1), T(2))));
     }
 }
 
@@ -300,18 +300,6 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Math Operations", "[vector][math]", VECTOR_TY
     const std::array<T, size> raw_arr = CreateComponents<T, size>(T(1), T(1));
     const RawVector<T, size>  raw_vec(raw_arr);
     const RawVector<T, size>  identity_vec(CreateEqualComponents<T, size>(T(1)));
-
-    SECTION("Vectors equality comparison")
-    {
-        CHECK(RawVector<T, size>(raw_arr) == RawVector<T, size>(raw_arr));
-        CHECK_FALSE(RawVector<T, size>(raw_arr) == RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
-    }
-
-    SECTION("Vectors non-equality comparison")
-    {
-        CHECK_FALSE(RawVector<T, size>(raw_arr) != RawVector<T, size>(raw_arr));
-        CHECK(RawVector<T, size>(raw_arr) != RawVector<T, size>(CreateComponents<T, size>(T(1), T(2))));
-    }
 
     SECTION("Addition")
     {

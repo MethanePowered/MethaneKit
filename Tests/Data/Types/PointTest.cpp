@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Tests/Data/Types/PointTest.cpp
-Unit tests of the Point data type wrapping HLSL++ vector
+Unit-tests of the Point data type wrapping HLSL++ vector
 
 ******************************************************************************/
 
@@ -258,37 +258,37 @@ TEMPLATE_TEST_CASE_SIG("Points Comparison", "[point][compare]", VECTOR_TYPES_MAT
     const Point<T, size>  test_point(test_arr);
     const Point<T, size>  identity_point(CreateEqualComponents<T, size>(T(1)));
 
-    SECTION("Points equality comparison")
+    SECTION("Equality")
     {
         CHECK(test_point == Point<T, size>(test_arr));
         CHECK_FALSE(test_point == Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 
-    SECTION("Points non-equality comparison")
+    SECTION("Inequality")
     {
         CHECK_FALSE(test_point != Point<T, size>(test_arr));
         CHECK(test_point != Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 
-    SECTION("Points less comparison")
+    SECTION("Less")
     {
         CHECK(test_point < Point<T, size>(CreateComponents<T, size>(T(2), T(1))));
         CHECK_FALSE(test_point < Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
     }
 
-    SECTION("Points less or equal comparison")
+    SECTION("Less or equal")
     {
         CHECK(test_point <= Point<T, size>(CreateComponents<T, size>(T(1), T(2))));
         CHECK_FALSE(test_point <= Point<T, size>(CreateComponents<T, size>(T(0), T(2))));
     }
 
-    SECTION("Points greater comparison")
+    SECTION("Greater")
     {
         CHECK(Point<T, size>(CreateComponents<T, size>(T(2), T(1))) > test_point);
         CHECK_FALSE(Point<T, size>(CreateComponents<T, size>(T(1), T(2))) > test_point);
     }
 
-    SECTION("Points less or equal comparison")
+    SECTION("Greater or equal")
     {
         CHECK(Point<T, size>(CreateComponents<T, size>(T(1), T(2))) >= test_point);
         CHECK_FALSE(Point<T, size>(CreateComponents<T, size>(T(0), T(2))) >= test_point);
