@@ -45,52 +45,28 @@ public:
 
     Point() = default;
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 2, void>>
-    Point(T x, T y) noexcept : m_vector(x, y) { }
-
-    template<size_t sz = size, typename = std::enable_if_t<sz == 3, void>>
-    Point(T x, T y, T z) noexcept : m_vector(x, y, z) { }
-
-    template<size_t sz = size, typename = std::enable_if_t<sz == 4, void>>
-    Point(T x, T y, T z, T w) noexcept : m_vector(x, y, z, w) { }
-
-    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction<std::is_arithmetic<TArgs>...>::value>>
-    Point(TArgs... args) noexcept : m_vector(RoundCast(args)...) { } // NOSONAR - do not use explicit
+    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<TArgs>...>>>
+    Point(TArgs... args) noexcept : m_vector(RoundCast<T>(args)...) { } // NOSONAR - do not use explicit
 
     explicit Point(const std::array<T, size>& components) : m_vector(RawVector<T, size>(components).AsHlsl()) { }
-    explicit Point(std::array<T, size>&& components) : m_vector(RawVector<T, size>(components).AsHlsl()) { }
+    explicit Point(std::array<T, size>&& components) : m_vector(RawVector<T, size>(std::move(components)).AsHlsl()) { }
 
     explicit Point(const VectorType& vector) noexcept : m_vector(vector) { }
     explicit Point(VectorType&& vector) noexcept : m_vector(std::move(vector)) { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    explicit Point(const HlslVector<V, 2>& vector) noexcept
-        : m_vector(RoundCast(vector.x), RoundCast(vector.y))
-    { }
-
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    explicit Point(const HlslVector<V, 3>& vector) noexcept
-        : m_vector(RoundCast(vector.x), RoundCast(vector.y), RoundCast(vector.z))
-    { }
-
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    explicit Point(const HlslVector<V, 4>& vector) noexcept
-        : m_vector(RoundCast(vector.x), RoundCast(vector.y), RoundCast(vector.z), RoundCast(vector.w))
-    { }
-
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2>>
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2 && !std::is_same_v<T,V>>>
     explicit Point(const Point<V, 2>& other) noexcept
-        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()))
+        : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()))
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3 && !std::is_same_v<T,V>>>
     explicit Point(const Point<V, 3>& other) noexcept
-        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()), RoundCast(other.GetZ()))
+        : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()))
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4 && !std::is_same_v<T,V>>>
     explicit Point(const Point<V, 4>& other) noexcept
-        : m_vector(RoundCast(other.GetX()), RoundCast(other.GetY()), RoundCast(other.GetZ()), RoundCast(other.GetW()))
+        : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(other.GetW()))
     { }
 
     VectorType& AsVector() noexcept               { return m_vector; }
@@ -292,20 +268,6 @@ public:
 
 private:
     static inline T Square(T s) noexcept { return s * s; }
-
-    template<typename V>
-    constexpr T RoundCast(V value) noexcept
-    {
-        if constexpr (std::is_same_v<T, V>)
-            return value;
-        else
-        {
-            if constexpr (std::is_integral_v<T> && std::is_floating_point_v<V>)
-                return static_cast<T>(std::round(value));
-            else
-                return static_cast<T>(value);
-        }
-    }
 
     VectorType m_vector;
 };

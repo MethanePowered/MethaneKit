@@ -271,7 +271,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[
         T length = 0;
         for(T component : raw_arr)
             length += component * component;
-        length = static_cast<T>(std::sqrt(length));
+        length = RoundCast<T>(std::sqrt(length));
         CHECK(raw_vec.GetLength() == Approx(length));
     }
 }

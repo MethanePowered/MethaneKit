@@ -67,8 +67,22 @@ template<> struct HlslVectorMap<double, 4> { using Type = hlslpp::double4; };
 
 } // namespace Internal
 
-template<typename T, size_t size>
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
 using HlslVector = typename Internal::HlslVectorMap<T, size>::Type;
+
+template<typename T, typename V, typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<V>>>
+constexpr T RoundCast(V value) noexcept
+{
+    if constexpr (std::is_same_v<T, V>)
+        return value;
+    else
+    {
+        if constexpr (std::is_integral_v<T> && std::is_floating_point_v<V>)
+            return static_cast<T>(std::round(value));
+        else
+            return static_cast<T>(value);
+    }
+}
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
 class RawVector
@@ -85,21 +99,26 @@ public:
     template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
     RawVector(V) = delete;
 
-    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction<std::is_arithmetic<TArgs>...>::value>>
-    RawVector(TArgs... args) noexcept : m_components{ static_cast<T>(args)... } { } // NOSONAR - do not use explicit
+    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<TArgs>...>>>
+    RawVector(TArgs... args) noexcept : m_components{ RoundCast<T>(args)... } { } // NOSONAR - do not use explicit
 
     explicit RawVector(const std::array<T, size>& components) : m_components(components) { }
     explicit RawVector(std::array<T, size>&& components) : m_components(std::move(components)) { }
     explicit RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components.data()); }
 
-    template<size_t sz = size, typename ...TArgs, typename = std::enable_if_t<sz == 3>>
-    RawVector(const RawVector<T, 2>& other, T z) noexcept : m_components{ other.GetX(), other.GetY(), z } { }
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    RawVector(const RawVector<V, 2>& other, V z) noexcept
+        : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(z) }
+    { }
 
-    template<size_t sz = size, typename ...TArgs, typename = std::enable_if_t<sz == 4>>
-    RawVector(const RawVector<T, 2>& other, T z, T w) noexcept : m_components{ other.GetX(), other.GetY(), z, w } { }
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    RawVector(const RawVector<V, 2>& other, V z, V w) noexcept
+        : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(z), RoundCast<T>(w) }
+    { }
 
-    template<size_t sz = size, typename ...TArgs, typename = std::enable_if_t<sz == 4>>
-    RawVector(const RawVector<T, 3>& other, T w) noexcept : m_components{ other.GetX(), other.GetY(), other.GetZ(), w } { }
+    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    RawVector(const RawVector<V, 3>& other, V w) noexcept
+        : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(w) } { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
     explicit RawVector(const HlslVector<T, 2>& vec) noexcept: m_components{ vec.x, vec.y } { }
@@ -114,11 +133,11 @@ public:
     explicit operator RawVector<V, size>() const noexcept
     {
         if constexpr (size == 2)
-            return RawVector<V, 2>(static_cast<V>(GetX()), static_cast<V>(GetY()));
+            return RawVector<V, 2>(RoundCast<V>(GetX()), RoundCast<V>(GetY()));
         if constexpr (size == 3)
-            return RawVector<V, 3>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()));
+            return RawVector<V, 3>(RoundCast<V>(GetX()), RoundCast<V>(GetY()), RoundCast<V>(GetZ()));
         if constexpr (size == 4)
-            return RawVector<V, 4>(static_cast<V>(GetX()), static_cast<V>(GetY()), static_cast<V>(GetZ()), static_cast<V>(GetW()));
+            return RawVector<V, 4>(RoundCast<V>(GetX()), RoundCast<V>(GetY()), RoundCast<V>(GetZ()), RoundCast<V>(GetW()));
     }
 
     explicit operator std::string() const noexcept
@@ -213,7 +232,7 @@ public:
     {
         T square_sum{};
         ForEachComponent([&square_sum](T component) { square_sum += component * component; });
-        return static_cast<T>(std::sqrt(square_sum));
+        return RoundCast<T>(std::sqrt(square_sum));
     }
 
     [[nodiscard]] T operator[](size_t index) const noexcept { return m_components[index]; }
