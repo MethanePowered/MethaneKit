@@ -71,8 +71,8 @@ void TexturedCubeApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_camera.Resize({
-        static_cast<float>(context_settings.frame_size.width),
-        static_cast<float>(context_settings.frame_size.height)
+        static_cast<float>(context_settings.frame_size.GetWidth()),
+        static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
@@ -191,8 +191,8 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
         return false;
 
     m_camera.Resize({
-        static_cast<float>(frame_size.width),
-        static_cast<float>(frame_size.height)
+        static_cast<float>(frame_size.GetWidth()),
+        static_cast<float>(frame_size.GetHeight())
     });
 
     return true;

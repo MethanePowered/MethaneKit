@@ -271,15 +271,15 @@ NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2I& origin) noexcept
 {
     META_FUNCTION_TASK();
-    return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
+    return NSMakeRect(origin.GetX(), origin.GetY(), size.GetWidth(), size.GetHeight());
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 {
     META_FUNCTION_TASK();
     return FrameRect {
-        Point2I(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
-        FrameSize(static_cast<uint32_t>(rect.size.width), static_cast<uint32_t>(rect.size.height))
+        Point2I(rect.origin.x, rect.origin.y),
+        FrameSize(rect.size.width, rect.size.height)
     };
 }
 

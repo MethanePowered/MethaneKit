@@ -112,7 +112,7 @@ position in DPI-independent Dot units.
 
 ```cpp
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
-    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    const uint32_t frame_width_without_margins = frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)

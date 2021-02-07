@@ -184,10 +184,10 @@ static std::vector<MTLViewport> ConvertViewportsToMetal(const Viewports& viewpor
         MTLViewport mtl_viewport{ };
         mtl_viewport.originX = viewport.origin.GetX();
         mtl_viewport.originY = viewport.origin.GetY();
-        mtl_viewport.width   = viewport.size.width;
-        mtl_viewport.height  = viewport.size.height;
+        mtl_viewport.width   = viewport.size.GetWidth();
+        mtl_viewport.height  = viewport.size.GetHeight();
         mtl_viewport.znear   = viewport.origin.GetZ();
-        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.GetDepth();
         mtl_viewports.emplace_back(std::move(mtl_viewport));
     }
 
@@ -205,8 +205,8 @@ static std::vector<MTLScissorRect> ConvertScissorRectsToMetal(const ScissorRects
         MTLScissorRect mtl_scissor_rect{};
         mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
         mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
-        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
-        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
+        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.GetWidth());
+        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.GetHeight());
         mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
     }
 

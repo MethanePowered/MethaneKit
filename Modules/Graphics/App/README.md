@@ -24,7 +24,7 @@ Graphics application base template class `Graphics::App<Graphics::AppFrame>` is 
 extending it with common graphics application functionality implemented with [Graphics::Core](../Core) API:
 - Parsing graphics app and context settings from command line arguments.
 - Graphics render context initialization using provided settings.
-- Initialization of the common graphics resources, such as frame-buffers and depth textures, final view state.
+- Initialization of the common graphics resources, such as frame-buffers and m_depth textures, final view state.
 - Management of per-frame resources for [deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render)
 such as frame buffer texture and final screen render pass stored in `Graphics::AppFrame` structure, which can be overridden
 and extended with other frame-dependent resources in final applications.

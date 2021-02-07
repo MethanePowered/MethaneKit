@@ -71,7 +71,7 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-    m_p_app->InitContextWithErrorHandling({ self }, { static_cast<uint32_t>(m_frame_rect.size.width), static_cast<uint32_t>(m_frame_rect.size.height) });
+    m_p_app->InitContextWithErrorHandling({ self }, Data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
 - (void)viewDidLoad
@@ -91,7 +91,7 @@ using namespace Methane::Platform;
         m_is_initialized = m_p_app->InitWithErrorHandling();
     }
     m_frame_rect = [view frame];
-    m_p_app->Resize( { static_cast<uint32_t>(size.width), static_cast<uint32_t>(size.height) }, false );
+    m_p_app->Resize( Data::FrameSize(size.width, size.height), false);
 }
 
 - (void) drawInView: (nonnull AppViewMT*) view

@@ -92,7 +92,7 @@ ArcBallCamera::SphereProjection ArcBallCamera::GetNormalizedSphereProjection(con
 {
     META_FUNCTION_TASK();
     const Data::FloatSize& screen_size = m_p_view_camera ? m_p_view_camera->GetScreenSize() : GetScreenSize();
-    const Point2F screen_center(screen_size.width / 2.F, screen_size.height / 2.F);
+    const Point2F screen_center(screen_size.GetWidth() / 2.F, screen_size.GetHeight() / 2.F);
     Point2F       screen_point = static_cast<Point2F>(mouse_screen_pos) - screen_center;
 
     const float screen_radius = screen_point.GetLength();

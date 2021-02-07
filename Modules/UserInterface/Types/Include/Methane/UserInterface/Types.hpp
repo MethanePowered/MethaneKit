@@ -72,7 +72,7 @@ struct UnitType : BaseType
     explicit UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), units(units) { } //NOSONAR
 
     template<typename T = BaseType, typename = std::enable_if_t<std::is_same_v<FramePoint, T>>>
-    explicit UnitType(const UnitType<FrameSize>& size) noexcept : UnitType<FramePoint>(size.units, size.width, size.height) { }
+    explicit UnitType(const UnitType<FrameSize>& size) noexcept : UnitType<FramePoint>(size.units, size.GetWidth(), size.GetHeight()) { }
 
     explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), magic_enum::enum_name(units)); }
 

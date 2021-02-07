@@ -50,17 +50,17 @@ static constexpr uint32_t g_first_line_height_decrement = 5;
 
 inline uint32_t GetTextHeightInDots(const Context& ui_context, const Font& font)
 {
-    return ui_context.ConvertPixelsToDots(font.GetMaxGlyphSize().height);
+    return ui_context.ConvertPixelsToDots(font.GetMaxGlyphSize().GetHeight());
 }
 
 inline uint32_t GetFpsTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
-    return std::max(GetTextHeightInDots(ui_context, major_font), GetTextHeightInDots(ui_context, minor_font) * 2U + ui_context.ConvertToDots(text_margins).height);
+    return std::max(GetTextHeightInDots(ui_context, major_font), GetTextHeightInDots(ui_context, minor_font) * 2U + ui_context.ConvertToDots(text_margins).GetHeight());
 }
 
 inline uint32_t GetTimingTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
-    return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).height) / 2U;
+    return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).GetHeight()) / 2U;
 }
 
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
@@ -207,7 +207,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffers).SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.width, context_settings.frame_size.height, context_settings.frame_buffers_count));
+    GetTextBlock(TextBlock::FrameBuffers).SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(), context_settings.frame_buffers_count));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
@@ -245,35 +245,35 @@ void HeadsUpDisplay::LayoutTextBlocks()
     const FrameSize frame_time_size    = GetTextBlock(TextBlock::FrameTime).GetRectInDots().size;
     const FrameSize cpu_time_size      = GetTextBlock(TextBlock::CpuTime).GetRectInDots().size;
     const FrameSize vsync_size         = GetTextBlock(TextBlock::VSync).GetRectInDots().size;
-    const uint32_t  left_column_width  = std::max({ help_size.width, frame_time_size.width, cpu_time_size.width, vsync_size.width });
+    const uint32_t  left_column_width  = std::max({ help_size.GetWidth(), frame_time_size.GetWidth(), cpu_time_size.GetWidth(), vsync_size.GetWidth() });
 
-    UnitPoint position(Units::Dots, text_margins_in_dots.width, text_margins_in_dots.height);
+    UnitPoint position(Units::Dots, text_margins_in_dots.GetWidth(), text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::HelpKey).SetRelOrigin(position);
 
-    position.SetY(position.GetY() + help_size.height + text_margins_in_dots.height);
+    position.SetY(position.GetY() + help_size.GetHeight() + text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::FrameTime).SetRelOrigin(position);
 
-    position.SetY(position.GetY() + frame_time_size.height + text_margins_in_dots.height);
+    position.SetY(position.GetY() + frame_time_size.GetHeight() + text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::CpuTime).SetRelOrigin(position);
 
-    position.SetY(position.GetY() + cpu_time_size.height + text_margins_in_dots.height);
+    position.SetY(position.GetY() + cpu_time_size.GetHeight() + text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::VSync).SetRelOrigin(position);
 
     // Layout right column text blocks
     const FrameSize gpu_name_size      = GetTextBlock(TextBlock::GpuName).GetRectInDots().size;
     const FrameSize fps_size           = GetTextBlock(TextBlock::Fps).GetRectInDots().size;
     const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffers).GetRectInDots().size;
-    const uint32_t  right_column_width = std::max({ gpu_name_size.width, fps_size.width, frame_buffers_size.width });
+    const uint32_t  right_column_width = std::max({ gpu_name_size.GetWidth(), fps_size.GetWidth(), frame_buffers_size.GetWidth() });
 
-    position.SetX(left_column_width + 2 * text_margins_in_dots.width);
+    position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
     GetTextBlock(TextBlock::FrameBuffers).SetRelOrigin(position);
 
     const UnitPoint right_bottom_position = position;
 
-    position.SetY(text_margins_in_dots.height);
+    position.SetY(text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::GpuName).SetRelOrigin(position);
 
-    position.SetY(position.GetY() + gpu_name_size.height + text_margins_in_dots.height);
+    position.SetY(position.GetY() + gpu_name_size.GetHeight() + text_margins_in_dots.GetHeight());
     GetTextBlock(TextBlock::Fps).SetRelOrigin(position);
 
     Panel::SetRect(UnitRect{
@@ -281,8 +281,8 @@ void HeadsUpDisplay::LayoutTextBlocks()
         m_settings.position,
         gfx::FrameSize
         {
-            right_bottom_position.GetX() + right_column_width + text_margins_in_dots.width,
-            right_bottom_position.GetY() + vsync_size.height + text_margins_in_dots.height
+            right_bottom_position.GetX() + right_column_width + text_margins_in_dots.GetWidth(),
+            right_bottom_position.GetY() + vsync_size.GetHeight() + text_margins_in_dots.GetHeight()
         }
     });
 }

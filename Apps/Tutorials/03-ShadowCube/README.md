@@ -233,7 +233,7 @@ description here.
         }
     );
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
-    final_state_settings.depth.enabled = true;
+    final_state_settings.m_depth.enabled = true;
 
     m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
     m_final_pass.render_state_ptr->SetName("Final pass render state");
@@ -242,7 +242,7 @@ description here.
 
 **Shadow pass** render state is using the same shader code, but compiled with a different macro definitions set `textured_definitions`
 and thus the result program having different set of arguments available. Also note that the program include only 
-Vertex shader since it will be used for rendering to depth buffer only without color attachment.
+Vertex shader since it will be used for rendering to m_depth buffer only without color attachment.
 
 ```cpp
     // ========= Shadow Pass Render & View States =========
@@ -263,12 +263,12 @@ Vertex shader since it will be used for rendering to depth buffer only without c
             {
                 { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
             },
-            gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
+            gfx::PixelFormats { /* no color attachments, rendering to m_depth texture */ },
             context_settings.depth_stencil_format
         }
     );
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
-    shadow_state_settings.depth.enabled = true;
+    shadow_state_settings.m_depth.enabled = true;
 
     m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
     m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
@@ -307,7 +307,7 @@ one for shadow pass rendering and another for final pass rendering.
     }
 ```
 
-Shadow-map render target texture `frame.shadow_pass.rt_texture_ptr` is created for each frame using common setting with depth-stencil format taken from 
+Shadow-map render target texture `frame.shadow_pass.rt_texture_ptr` is created for each frame using common setting with m_depth-stencil format taken from 
 render context settings. Shadow-map texture settings also specify `Usage` bit-mask with `RenderTarget` and `ShaderRead`
 flags to allow both rendering to this texture and sampling from it in a final pass:
 
@@ -325,11 +325,11 @@ meshes both for shadow and final passes rendering. Program bindings are created 
 which are binding created uniform buffers to the `g_mesh_uniforms` program argument of `All` shader types
 (taking into account that there's only Vertex shader in that program).
 
-Shadow render pass `frame.shadow_pass.pass_ptr` is created without color attachments, but with depth attachment
+Shadow render pass `frame.shadow_pass.pass_ptr` is created without color attachments, but with m_depth attachment
 bound to the shadow-map texture for the current frame `frame.shadow_pass.rt_texture_ptr`.
-Depth attachment is crated with `Clear` load action to clear the depth texture with provided depth value, 
+Depth attachment is crated with `Clear` load action to clear the m_depth texture with provided m_depth value, 
 taken from render context settings `context_settings.clear_depth_stencil->first`; and `Store` action is used to retain
-rendered depth texture content for the next render pass. Render command list is created bound to the shadow render pass.
+rendered m_depth texture content for the next render pass. Render command list is created bound to the shadow render pass.
 
 ```cpp
         // ========= Shadow Pass Resources =========
@@ -352,11 +352,11 @@ rendered depth texture content for the next render pass. Render command list is 
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         });
 
-        // Create depth texture for shadow map rendering
+        // Create m_depth texture for shadow map rendering
         frame.shadow_pass.rt_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
-        // Create shadow pass configuration with depth attachment
+        // Create shadow pass configuration with m_depth attachment
         frame.shadow_pass.pass_ptr = gfx::RenderPass::Create(GetRenderContext(), {
             { // No color attachments
             },

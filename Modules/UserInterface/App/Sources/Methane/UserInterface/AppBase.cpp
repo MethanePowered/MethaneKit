@@ -248,8 +248,8 @@ bool AppBase::SetHelpText(std::string_view help_str)
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
     if (const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
-        single_column_size.height + m_text_margins.GetY() > m_frame_size.height / 2 &&
-        single_column_size.width < m_frame_size.width / 2)
+        single_column_size.GetHeight() + m_text_margins.GetY() > m_frame_size.GetHeight() / 2 &&
+        single_column_size.GetWidth() < m_frame_size.GetWidth() / 2)
     {
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
         if (!m_help_columns.second.text_str.empty())
@@ -349,7 +349,7 @@ void AppBase::UpdateHelpTextPosition() const
     const FrameSize& first_text_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
-        FramePoint(m_text_margins.GetX(), m_frame_size.height - first_text_size.height - m_text_margins.GetY() * 3),
+        FramePoint(m_text_margins.GetX(), m_frame_size.GetHeight() - first_text_size.GetHeight() - m_text_margins.GetY() * 3),
         first_text_size + static_cast<FrameSize>(m_text_margins * 2)
     ));
 
@@ -376,8 +376,8 @@ void AppBase::UpdateParametersTextPosition() const
     const FrameSize& parameters_text_size = m_parameters.text_ptr->GetRectInPixels().size;
     m_parameters.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
-        FramePoint(m_frame_size.width  - parameters_text_size.width  - text_margins_size.width  * 3,
-                   m_frame_size.height - parameters_text_size.height - text_margins_size.height * 3),
+        FramePoint(m_frame_size.GetWidth()  - parameters_text_size.GetWidth()  - text_margins_size.GetWidth()  * 3,
+                   m_frame_size.GetHeight() - parameters_text_size.GetHeight() - text_margins_size.GetHeight() * 3),
         parameters_text_size + text_margins_size * 2U
     ));
 }

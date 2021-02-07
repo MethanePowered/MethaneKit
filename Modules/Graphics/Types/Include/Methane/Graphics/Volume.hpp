@@ -37,83 +37,107 @@ template<typename D>
 using RectSize = Data::RectSize<D>;
 
 template<typename D>
-struct VolumeSize : RectSize<D>
+class VolumeSize : public RectSize<D>
 {
-    D depth = 1;
-
+public:
     VolumeSize() = default;
-    explicit VolumeSize(const RectSize<D>& rect_size, D d = 1) : RectSize<D>(rect_size), depth(d) { }
-    VolumeSize(D w, D h, D d = 1) : RectSize<D>(w, h), depth(d) { }
+
+    explicit VolumeSize(const RectSize<D>& rect_size, D d = 1) noexcept(std::is_unsigned_v<D>)
+        : RectSize<D>(rect_size)
+            , m_depth(d)
+    {
+        if constexpr (std::is_signed_v<D>)
+        {
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
+        }
+    }
+
+    VolumeSize(D w, D h, D d = 1) noexcept(std::is_unsigned_v<D>)
+        : RectSize<D>(w, h)
+        , m_depth(d)
+    {
+        if constexpr (std::is_signed_v<D>)
+        {
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
+        }
+    }
+
+    D GetDepth() const noexcept { return m_depth; }
+
+    void SetDepth(D depth) noexcept(std::is_unsigned_v<D>)
+    {
+        if constexpr (std::is_signed_v<D>)
+        {
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(depth, 0, "volume depth can not be less than zero");
+        }
+        m_depth = depth;
+    }
 
     bool operator==(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator==(other) && depth == other.depth; }
+    { return RectSize<D>::operator==(other) && m_depth == other.m_depth; }
 
     bool operator!=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator!=(other) || depth != other.depth; }
+    { return RectSize<D>::operator!=(other) || m_depth != other.m_depth; }
 
     bool operator<=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator<=(other) && depth <= other.depth; }
+    { return RectSize<D>::operator<=(other) && m_depth <= other.m_depth; }
 
     bool operator<(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator<(other) && depth < other.depth; }
+    { return RectSize<D>::operator<(other) && m_depth < other.m_depth; }
 
     bool operator>=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator>=(other) && depth >= other.depth; }
+    { return RectSize<D>::operator>=(other) && m_depth >= other.m_depth; }
 
     bool operator>(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator>(other) && depth > other.depth; }
+    { return RectSize<D>::operator>(other) && m_depth > other.m_depth; }
 
     VolumeSize operator+(const VolumeSize& other) const noexcept
-    { return VolumeSize(RectSize<D>::operator+(other), depth + other.depth); }
+    { return VolumeSize(RectSize<D>::operator+(other), m_depth + other.m_depth); }
 
     VolumeSize operator-(const VolumeSize& other) const noexcept
-    { return VolumeSize(RectSize<D>::operator-(other), depth - other.depth); }
-
-    template<typename M>
-    VolumeSize operator*(M multiplier) const noexcept
-    { return VolumeSize(RectSize<D>::operator*(multiplier), static_cast<D>(static_cast<M>(depth) * multiplier)); }
-
-    template<typename M>
-    VolumeSize operator/(M divisor) const noexcept
-    { return VolumeSize(RectSize<D>::operator/(divisor), static_cast<D>(static_cast<M>(depth) / divisor)); }
+    { return VolumeSize(RectSize<D>::operator-(other), m_depth - other.m_depth); }
 
     VolumeSize& operator+=(const VolumeSize& other) noexcept
-    { depth += other.depth; return RectSize<D>::operator+=(other); }
+    { m_depth += other.m_depth; return RectSize<D>::operator+=(other); }
 
     VolumeSize& operator-=(const VolumeSize& other) noexcept
-    { depth -= other.depth; return RectSize<D>::operator-=(other); }
+    { m_depth -= other.m_depth; return RectSize<D>::operator-=(other); }
 
     template<typename M>
-    VolumeSize& operator*=(M multiplier) noexcept
+    VolumeSize operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
+    { return VolumeSize(RectSize<D>::operator*(multiplier), static_cast<D>(static_cast<M>(m_depth) * multiplier)); }
+
+    template<typename M>
+    VolumeSize operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    { return VolumeSize(RectSize<D>::operator/(divisor), static_cast<D>(static_cast<M>(m_depth) / divisor)); }
+
+    template<typename M>
+    VolumeSize& operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
-        depth = static_cast<D>(static_cast<M>(depth) * multiplier);
+        m_depth = static_cast<D>(static_cast<M>(m_depth) * multiplier);
         return RectSize<D>::operator*=(multiplier);
     }
 
     template<typename M>
-    VolumeSize& operator/=(M divisor) noexcept
+    VolumeSize& operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
-        depth = static_cast<D>(static_cast<M>(depth) / divisor);
+        m_depth = static_cast<D>(static_cast<M>(m_depth) / divisor);
         return RectSize<D>::operator/=(divisor);
     }
 
     explicit operator bool() const noexcept
-    { return depth && RectSize<D>::operator bool(); }
+    { return m_depth && RectSize<D>::operator bool(); }
 
-    D GetPixelsCount() const noexcept { return depth * RectSize<D>::GetPixelsCount(); }
-    D GetLongestSide() const noexcept { return std::max(depth, RectSize<D>::GetLongestSide()); }
+    D GetPixelsCount() const noexcept { return m_depth * RectSize<D>::GetPixelsCount(); }
+    D GetLongestSide() const noexcept { return std::max(m_depth, RectSize<D>::GetLongestSide()); }
 
-    explicit operator std::string() const
+    explicit operator std::string() const noexcept
     {
-        std::stringstream ss;
-        ss << "Sz(" << std::to_string(RectSize<D>::width);
-        if (RectSize<D>::height != 1 || depth != 1)
-            ss << " x " << std::to_string(RectSize<D>::height);
-        if (depth != 1)
-            ss << " x " << std::to_string(depth);
-        ss << ")";
-        return ss.str();
+        return fmt::format("Sz({} x {} x {})", RectSize<D>::GetWidth(), RectSize<D>::GetHeight(), m_depth);
     }
+
+private:
+    D m_depth = 1;
 };
 
 template<typename T, typename D>

@@ -194,8 +194,8 @@ void AsteroidsApp::Init()
 
     gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
-                                          static_cast<float>(context_settings.frame_size.height));
+    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.GetWidth()),
+                                          static_cast<float>(context_settings.frame_size.GetHeight()));
     m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
@@ -332,7 +332,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         frame.final_screen_pass_ptr->Update(final_pass_settings);
     }
 
-    m_view_camera.Resize({ static_cast<float>(frame_size.width), static_cast<float>(frame_size.height) });
+    m_view_camera.Resize({ static_cast<float>(frame_size.GetWidth()), static_cast<float>(frame_size.GetHeight()) });
 
     return true;
 }

@@ -39,7 +39,7 @@ void Camera::Resize(const Data::FloatSize& screen_size)
 {
     META_FUNCTION_TASK();
     m_screen_size = screen_size;
-    m_aspect_ratio = screen_size.width / screen_size.height;
+    m_aspect_ratio = screen_size.GetWidth() / screen_size.GetHeight();
     m_is_current_proj_matrix_dirty = true;
     UpdateProjectionSettings();
 }
@@ -68,7 +68,7 @@ hlslpp::frustum Camera::CreateFrustum() const
         return hlslpp::frustum::field_of_view_y(GetFovAngleY(), m_aspect_ratio, m_parameters.near_depth, m_parameters.far_depth);
 
     case Projection::Orthogonal:
-        return hlslpp::frustum(m_screen_size.width, m_screen_size.height, m_parameters.near_depth, m_parameters.far_depth);
+        return hlslpp::frustum(m_screen_size.GetWidth(), m_screen_size.GetHeight(), m_parameters.near_depth, m_parameters.far_depth);
 
     default:
         META_UNEXPECTED_ARG(m_projection);
@@ -148,8 +148,8 @@ const hlslpp::float4x4& Camera::GetViewProjMatrix() const noexcept
 hlslpp::float2 Camera::TransformScreenToProj(const Data::Point2I& screen_pos) const noexcept
 {
     META_FUNCTION_TASK();
-    return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.width  - 1.F,
-           -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.height - 1.F) };
+    return { 2.F * static_cast<float>(screen_pos.GetX()) / m_screen_size.GetWidth()  - 1.F,
+           -(2.F * static_cast<float>(screen_pos.GetY()) / m_screen_size.GetHeight() - 1.F) };
 }
 
 hlslpp::float3 Camera::TransformScreenToView(const Data::Point2I& screen_pos) const noexcept

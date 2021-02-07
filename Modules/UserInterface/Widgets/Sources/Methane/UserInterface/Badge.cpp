@@ -126,15 +126,15 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
         return UnitRect(frame_size.units, badge_margins, badge_size);
 
     case FrameCorner::TopRight:
-        return UnitRect(frame_size.units, gfx::FramePoint(frame_size.width - badge_size.width - badge_margins.GetX(), badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.units, gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetX(), badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomLeft:
-        return UnitRect(frame_size.units, gfx::FramePoint(badge_margins.GetX(), frame_size.height - badge_size.height - badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.units, gfx::FramePoint(badge_margins.GetX(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomRight:
         return UnitRect(
             frame_size.units,
-            gfx::FramePoint(frame_size.width  - badge_size.width, frame_size.height - badge_size.height) - badge_margins,
+            gfx::FramePoint(frame_size.GetWidth()  - badge_size.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight()) - badge_margins,
             badge_size
         );
 

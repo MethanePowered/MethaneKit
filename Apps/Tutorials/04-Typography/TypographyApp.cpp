@@ -105,9 +105,9 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
         },
         gfx::FrameSize
         {
-            frame_size_in_dots.width - 2 * g_margin_size_in_dots,
+            frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
-                ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
+                ? frame_size_in_dots.GetHeight() - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
                 : 0U                                                                        // other text blocks have calculated height
         }
     );
@@ -165,7 +165,7 @@ void TypographyApp::Init()
     UserInterfaceApp::Init();
 
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
-    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    const uint32_t frame_width_without_margins = frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
@@ -300,7 +300,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + g_margin_size_in_dots, 0U);
+        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);
     }
 }
 
@@ -318,7 +318,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         const Ptr<gui::Text>& text_ptr = m_texts[block_index];
         const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
         m_text_update_duration = UpdateTextRect(*text_ptr, text_block_rect);
-        vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.height + g_margin_size_in_dots;
+        vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.GetHeight() + g_margin_size_in_dots;
     }
 
     LayoutFontAtlasBadges(frame_size);

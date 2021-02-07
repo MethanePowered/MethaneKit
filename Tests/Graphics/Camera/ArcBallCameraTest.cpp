@@ -34,7 +34,7 @@ using namespace Methane::Data;
 using namespace Methane;
 
 static const FloatSize           g_test_screen_size      { 640.f, 480.f };
-static const Point2F             g_test_screen_center    { g_test_screen_size.width / 2.f, g_test_screen_size.height / 2.f };
+static const Point2F             g_test_screen_center    { g_test_screen_size.GetWidth() / 2.f, g_test_screen_size.GetHeight() / 2.f };
 static const Camera::Orientation g_test_view_orientation { { 0.f, 5.f, 10.f }, { 0.f, 5.f, 0.f }, { 0.f, 1.f, 0.f } };
 static const Camera::Orientation g_test_dept_orientation { { 10.f, 7.f, 0.f }, { 0.f, 7.f, 0.f }, { 0.f, 0.f, 1.f } };
 static const float               g_test_radius_ratio     = 0.75F;
@@ -203,7 +203,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2I(static_cast<int>(g_test_screen_center.GetX()), 0),
-                Point2I(static_cast<int>(g_test_screen_center.GetX()), static_cast<int>(g_test_screen_size.height)),
+                Point2I(static_cast<int>(g_test_screen_center.GetX()), static_cast<int>(g_test_screen_size.GetHeight())),
                 { g_test_view_orientation.eye, g_test_view_orientation.aim, { 0.f, -1.f, 0.f } });
         }
     }
@@ -234,7 +234,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
         SECTION("Around Z axis")
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
-                Point2I(static_cast<int>(g_test_screen_size.width), static_cast<int>(g_test_screen_center.GetY())),
+                Point2I(static_cast<int>(g_test_screen_size.GetWidth()), static_cast<int>(g_test_screen_center.GetY())),
                 Point2I(g_test_screen_center + Point2F(g_test_screen_center.GetY() * std::cos(test_angle_rad), g_test_screen_center.GetY() * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }
@@ -331,7 +331,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
                 Point2I(static_cast<int>(g_test_screen_center.GetX()), 0),
-                Point2I(static_cast<int>(g_test_screen_center.GetX()), static_cast<int>(g_test_screen_size.height)),
+                Point2I(static_cast<int>(g_test_screen_center.GetX()), static_cast<int>(g_test_screen_size.GetHeight())),
                 { g_test_view_orientation.eye, g_test_view_orientation.aim, { 0.f, -1.f, 0.f } });
         }
     }
@@ -362,7 +362,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         SECTION("Around Z axis")
         {
             TestViewCameraRotation(test_pivot, g_test_view_orientation,
-                Point2I(static_cast<int>(g_test_screen_size.width), static_cast<int>(g_test_screen_center.GetY())),
+                Point2I(static_cast<int>(g_test_screen_size.GetWidth()), static_cast<int>(g_test_screen_center.GetY())),
                 Point2I(g_test_screen_center + Point2F(g_test_screen_center.GetY() * std::cos(test_angle_rad), g_test_screen_center.GetY() * std::sin(test_angle_rad))),
                 RotateOrientation(g_test_view_orientation, test_pivot, g_axis_z, test_angle_deg), test_equality_epsilon);
         }

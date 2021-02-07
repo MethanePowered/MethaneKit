@@ -177,13 +177,13 @@ TexturedCubeApp::~TexturedCubeApp()
 ```cpp
 bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
-    // Resize screen color and depth textures
+    // Resize screen color and m_depth textures
     if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
 
     m_camera.Resize({
-        static_cast<float>(frame_size.width),
-        static_cast<float>(frame_size.height)
+        static_cast<float>(frame_size.GetWidth()),
+        static_cast<float>(frame_size.GetHeight())
     });
 
     return true;
@@ -231,8 +231,8 @@ void TexturedCubeApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_camera.Resize({
-        static_cast<float>(context_settings.frame_size.width),
-        static_cast<float>(context_settings.frame_size.height)
+        static_cast<float>(context_settings.frame_size.GetWidth()),
+        static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
@@ -299,7 +299,7 @@ void TexturedCubeApp::Init()
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
 Program settings also includes additional description `Graphics::Program::ArgumentDescriptions` of program arguments bound to graphics resources.
 Argument description define specific access modifiers for program arguments used in `Graphics::ProgramBindings` object.
-Also it is important to note that render state settings enables depth testing for correct rendering of cube faces.
+Also it is important to note that render state settings enables m_depth testing for correct rendering of cube faces.
 Finally, render state is created using filled settings structure with `Graphics::RenderState::Create(...)` factory function.
 
 ```cpp
@@ -339,7 +339,7 @@ void TexturedCubeApp::Init()
         }
     );
     state_settings.program_ptr->SetName("Textured Phong Lighting");
-    state_settings.depth.enabled = true;
+    state_settings.m_depth.enabled = true;
 
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_render_state_ptr->SetName("Final FB Render Pipeline State");

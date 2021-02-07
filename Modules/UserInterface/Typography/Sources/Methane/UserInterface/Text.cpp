@@ -521,8 +521,8 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
 
     Uniforms uniforms{
         hlslpp::mul(
-            hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.width),
-                                    2.F / static_cast<float>(content_size.height),
+            hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.GetWidth()),
+                                    2.F / static_cast<float>(content_size.GetHeight()),
                                     1.F),
             hlslpp::float4x4::translation(-1.F, 1.F, 0.F))
     };
@@ -654,29 +654,29 @@ FrameRect Text::GetAlignedViewportRect() const
     {
         // Apply vertical offset to make top of content match the rect top coordinate
         const uint32_t content_top_offset = m_text_mesh_ptr->GetContentTopOffset();
-        META_CHECK_ARG_LESS(content_top_offset, content_size.height + 1);
+        META_CHECK_ARG_LESS(content_top_offset, content_size.GetHeight() + 1);
 
-        content_size.height -= content_top_offset;
+        content_size.SetHeight(content_size.GetHeight() - content_top_offset);
         viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
     }
 
-    if (content_size.width != m_frame_rect.size.width)
+    if (content_size.GetWidth() != m_frame_rect.size.GetWidth())
     {
         switch (m_settings.layout.horizontal_alignment)
         {
         case HorizontalAlignment::Left:   break;
-        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
-        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
+        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
+        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
         default:                          META_UNEXPECTED_ARG(m_settings.layout.horizontal_alignment);
         }
     }
-    if (content_size.height != m_frame_rect.size.height)
+    if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
     {
         switch (m_settings.layout.vertical_alignment)
         {
         case VerticalAlignment::Top:      break;
-        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
-        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
+        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
+        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
         default:                          META_UNEXPECTED_ARG(m_settings.layout.vertical_alignment);
         }
     }

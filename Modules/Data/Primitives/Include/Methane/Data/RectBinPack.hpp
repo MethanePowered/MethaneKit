@@ -56,8 +56,8 @@ public:
 
         META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetLeft(), 0);
         META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetTop(), 0);
-        META_CHECK_ARG_LESS(rect.GetRight(), m_root_bin.GetRect().size.width + 1);
-        META_CHECK_ARG_LESS(rect.GetBottom(), m_root_bin.GetRect().size.height + 1);
+        META_CHECK_ARG_LESS(rect.GetRight(), m_root_bin.GetRect().size.GetWidth() + 1);
+        META_CHECK_ARG_LESS(rect.GetBottom(), m_root_bin.GetRect().size.GetHeight() + 1);
         return true;
     }
 
@@ -85,30 +85,30 @@ private:
                 // Split node rectangle either vertically or horizontally,
                 // by creating small rectangle and one big rectangle representing free area not taken by glyph
                 if (const TSize delta = m_rect.size - rect.size;
-                    delta.width < delta.height)
+                    delta.GetWidth() < delta.GetHeight())
                 {
                     // Small top rectangle, to the right of character glyph
                     m_small_bin_ptr = std::make_unique<Bin>(TRect{
-                        TPoint(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
-                        TSize(m_rect.size.width - char_size_with_margins.width, char_size_with_margins.height)
+                        TPoint(m_rect.origin.GetX() + char_size_with_margins.GetWidth(), m_rect.origin.GetY()),
+                        TSize(m_rect.size.GetWidth() - char_size_with_margins.GetWidth(), char_size_with_margins.GetHeight())
                     });
                     // Big bottom rectangle, under and to the right of character glyph
                     m_large_bin_ptr = std::make_unique<Bin>(TRect{
-                        TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
-                        TSize(m_rect.size.width, m_rect.size.height - char_size_with_margins.height)
+                        TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.GetHeight()),
+                        TSize(m_rect.size.GetWidth(), m_rect.size.GetHeight() - char_size_with_margins.GetHeight())
                     });
                 }
                 else
                 {
                     // Small left rectangle, under the character glyph
                     m_small_bin_ptr = std::make_unique<Bin>(TRect{
-                        TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.height),
-                        TSize(char_size_with_margins.width, m_rect.size.height - char_size_with_margins.height)
+                        TPoint(m_rect.origin.GetX(), m_rect.origin.GetY() + char_size_with_margins.GetHeight()),
+                        TSize(char_size_with_margins.GetWidth(), m_rect.size.GetHeight() - char_size_with_margins.GetHeight())
                     });
                     // Big right rectangle, to the right and under character glyph
                     m_large_bin_ptr = std::make_unique<Bin>(TRect{
-                        TPoint(m_rect.origin.GetX() + char_size_with_margins.width, m_rect.origin.GetY()),
-                        TSize(m_rect.size.width - char_size_with_margins.width, m_rect.size.height)
+                        TPoint(m_rect.origin.GetX() + char_size_with_margins.GetWidth(), m_rect.origin.GetY()),
+                        TSize(m_rect.size.GetWidth() - char_size_with_margins.GetWidth(), m_rect.size.GetHeight())
                     });
                 }
 

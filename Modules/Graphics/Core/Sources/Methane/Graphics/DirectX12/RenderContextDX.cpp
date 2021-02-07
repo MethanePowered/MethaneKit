@@ -152,8 +152,8 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     // Initialize swap-chain
 
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
-    swap_chain_desc.Width                 = settings.frame_size.width;
-    swap_chain_desc.Height                = settings.frame_size.height;
+    swap_chain_desc.Width                 = settings.frame_size.GetWidth();
+    swap_chain_desc.Height                = settings.frame_size.GetHeight();
     swap_chain_desc.Format                = TypeConverterDX::PixelFormatToDxgi(settings.color_format);
     swap_chain_desc.BufferCount           = settings.frame_buffers_count;
     swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -203,7 +203,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc{};
     m_cp_swap_chain->GetDesc1(&desc);
-    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.width, frame_size.height, desc.Format, desc.Flags),
+    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.GetWidth(), frame_size.GetHeight(), desc.Format, desc.Flags),
                   GetDeviceDX().GetNativeDevice().Get());
 
     UpdateFrameBufferIndex();

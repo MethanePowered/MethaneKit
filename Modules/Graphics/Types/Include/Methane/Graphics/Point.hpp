@@ -39,9 +39,9 @@ using Point2D = Point2T<double>;
 template<typename T>
 using Point3T = Data::Point<T, 3>;
 
-using Point3i = Point3T<int32_t>;
-using Point3u = Point3T<uint32_t>;
-using Point3f = Point3T<float>;
-using Point3d = Point3T<double>;
+using Point3I = Point3T<int32_t>;
+using Point3U = Point3T<uint32_t>;
+using Point3F = Point3T<float>;
+using Point3D = Point3T<double>;
 
 } // namespace Methane::Graphics

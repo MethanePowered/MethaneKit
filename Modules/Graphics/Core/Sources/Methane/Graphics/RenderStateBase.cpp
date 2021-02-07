@@ -190,9 +190,8 @@ RenderState::Groups RenderState::Settings::Compare(const Settings& left, const S
     {
         changed_state_groups |= Groups::BlendingColor;
     }
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::DepthStencil) && (
-        left.depth   != right.depth ||
-        left.stencil != right.stencil))
+    if (magic_enum::flags::enum_contains(compare_groups & Groups::DepthStencil) &&
+        (left.depth != right.depth || left.stencil != right.stencil))
     {
         changed_state_groups |= Groups::DepthStencil;
     }

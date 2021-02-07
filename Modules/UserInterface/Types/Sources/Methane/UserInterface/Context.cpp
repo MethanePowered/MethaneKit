@@ -82,7 +82,7 @@ UnitRect Context::ConvertToPixels(const FloatRect& rect) const noexcept
     META_FUNCTION_TASK();
     const UnitSize frame_size_in_pixels = GetFrameSizeInPixels();
     const UnitSize origin_in_pixels = frame_size_in_pixels * rect.origin;
-    return UnitRect(Units::Pixels, FramePoint(origin_in_pixels.width, origin_in_pixels.height), frame_size_in_pixels * rect.size);
+    return UnitRect(Units::Pixels, FramePoint(origin_in_pixels.GetWidth(), origin_in_pixels.GetHeight()), frame_size_in_pixels * rect.size);
 }
 
 UnitRect Context::ConvertToDots(const FloatRect& rect) const noexcept
@@ -90,7 +90,7 @@ UnitRect Context::ConvertToDots(const FloatRect& rect) const noexcept
     META_FUNCTION_TASK();
     const UnitSize frame_size_in_dots = GetFrameSizeInDots();
     const UnitSize origin_in_dots = frame_size_in_dots * rect.origin;
-    return UnitRect(Units::Dots, FramePoint(origin_in_dots.width, origin_in_dots.height), frame_size_in_dots * rect.size);
+    return UnitRect(Units::Dots, FramePoint(origin_in_dots.GetWidth(), origin_in_dots.GetHeight()), frame_size_in_dots * rect.size);
 }
 
 UnitPoint Context::ConvertToPixels(const UnitPoint& point) const noexcept

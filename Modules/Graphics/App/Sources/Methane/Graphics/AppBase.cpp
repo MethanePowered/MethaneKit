@@ -295,7 +295,7 @@ void AppBase::UpdateWindowTitle()
     const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,
                                           average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
-                                          context_settings.frame_size.width, context_settings.frame_size.height,
+                                          context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(),
                                           context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
                                           m_context_ptr->GetDevice().GetAdapterName());
 

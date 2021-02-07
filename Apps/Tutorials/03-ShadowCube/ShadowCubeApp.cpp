@@ -77,8 +77,8 @@ void ShadowCubeApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize({
-        static_cast<float>(context_settings.frame_size.width),
-        static_cast<float>(context_settings.frame_size.height)
+        static_cast<float>(context_settings.frame_size.GetWidth()),
+        static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
@@ -324,8 +324,8 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         return false;
 
     m_view_camera.Resize({
-        static_cast<float>(frame_size.width),
-        static_cast<float>(frame_size.height)
+        static_cast<float>(frame_size.GetWidth()),
+        static_cast<float>(frame_size.GetHeight())
     });
 
     return true;

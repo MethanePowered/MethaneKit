@@ -123,7 +123,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     const decode_success = image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0]));
     META_CHECK_ARG_DESCR(image_path, decode_success, "failed to decode image pixels, error: {}", image_buf.geterror());
 
-    return ImageData(Dimensions(static_cast<uint32_t>(image_spec.width), static_cast<uint32_t>(image_spec.height)),
+    return ImageData(Dimensions(static_cast<uint32_t>(image_spec.GetWidth()), static_cast<uint32_t>(image_spec.GetHeight())),
                                 static_cast<uint32_t>(channels_count),
                                 Data::Chunk(std::move(texture_data)));
 
@@ -202,7 +202,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
     const Dimensions face_dimensions     = face_images_data.front().second.GetDimensions();
     const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
-    META_CHECK_ARG_EQUAL_DESCR(face_dimensions.width, face_dimensions.height, "all images of cube texture faces must have equal width and height");
+    META_CHECK_ARG_EQUAL_DESCR(face_dimensions.GetWidth(), face_dimensions.GetHeight(), "all images of cube texture faces must have equal width and height");
 
     Resource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
@@ -216,7 +216,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     // Load face images to cube texture
     using namespace magic_enum::bitwise_operators;
     const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.width, 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.GetWidth(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetData(face_resources);
 
     return texture_ptr;

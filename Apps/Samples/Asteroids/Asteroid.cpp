@@ -127,7 +127,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t         pixel_size   = gfx::GetPixelSize(pixel_format);
     const uint32_t         pixels_count = dimensions.GetPixelsCount();
-    const uint32_t         row_stride   = pixel_size * dimensions.width;
+    const uint32_t         row_stride   = pixel_size * dimensions.GetWidth();
 
     gfx::Resource::SubResources sub_resources;
     sub_resources.reserve(array_size);
@@ -243,11 +243,11 @@ void Asteroid::FillPerlinNoiseToTexture(Data::Bytes& texture_data, const gfx::Di
 
     const gfx::PerlinNoise perlin_noise(persistence);
 
-    for (size_t row = 0; row < dimensions.height; ++row)
+    for (size_t row = 0; row < dimensions.GetHeight(); ++row)
     {
         auto row_data = reinterpret_cast<uint32_t*>(texture_data.data() + row * row_stride);
         
-        for (size_t col = 0; col < dimensions.width; ++col)
+        for (size_t col = 0; col < dimensions.GetWidth(); ++col)
         {
             const hlslpp::float3 noise_coordinates(noise_scale * static_cast<float>(row), noise_scale * static_cast<float>(col), random_seed);
             const float noise_intensity = std::max(0.0F, std::min(1.0F, (perlin_noise(noise_coordinates) - 0.5F) * noise_strength + 0.5F));

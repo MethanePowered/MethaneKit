@@ -31,7 +31,7 @@ are implemented using [Taskflow](https://github.com/taskflow/taskflow/) library 
 - All asteroid textures are bound to program uniform all at once as an **array of textures** to minimize number of program binding calls between draws.
 Particular texture is selected on each draw call using index parameter in constants buffer.
 Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped textures used for triplanar projection.
-- **Inverted depth buffer** (with values from 1 in foreground to 0 in background and greater-or-equal compare function)
+- **Inverted m_depth buffer** (with values from 1 in foreground to 0 in background and greater-or-equal compare function)
 is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet
 are drawen first and sky-box afterwards.
 

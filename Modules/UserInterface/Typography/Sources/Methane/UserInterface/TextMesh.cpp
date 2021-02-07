@@ -59,7 +59,7 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
 
         TextMesh::CharPosition& char_pos = char_positions.back();
         char_pos.is_whitespace_or_linebreak = text_char.IsLineBreak() || text_char.IsWhiteSpace();
-        char_pos.visual_width               = text_char.GetVisualSize().width;
+        char_pos.visual_width               = text_char.GetVisualSize().GetWidth();
 
         // Wrap to next line and skip visualization of "line break" character
         if (text_char.IsLineBreak())
@@ -163,7 +163,7 @@ TextMesh::TextMesh(const std::u32string& text, Text::Layout layout, Font& font, 
     , m_frame_size(frame_size)
 {
     META_FUNCTION_TASK();
-    m_content_size.width = frame_size.width;
+    m_content_size.SetWidth(frame_size.GetWidth());
 
     Update(text, frame_size);
 }
@@ -203,13 +203,13 @@ void TextMesh::Update(const std::u32string& text, gfx::FrameSize& frame_size)
         return;
 
     // Update zero frame sizes by calculated content size
-    if (!frame_size.width)
+    if (!frame_size.GetWidth())
     {
-        frame_size.width = m_content_size.width;
+        frame_size.SetWidth(m_content_size.GetWidth());
     }
-    if (!frame_size.height)
+    if (!frame_size.GetHeight())
     {
-        frame_size.height = m_content_size.height - GetContentTopOffset();
+        frame_size.SetHeight(m_content_size.GetHeight() - GetContentTopOffset());
     }
 
     return;
@@ -318,7 +318,7 @@ void TextMesh::AppendChars(std::u32string added_text)
     }
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
-    ForEachTextCharacter(added_text, m_font, m_char_positions, m_frame_size.width, m_layout.wrap,
+    ForEachTextCharacter(added_text, m_font, m_char_positions, m_frame_size.GetWidth(), m_layout.wrap,
         [this, init_text_length, &atlas_size](const Font::Char& font_char, const TextMesh::CharPosition& char_pos, size_t char_index)
         {
             if (font_char.IsWhiteSpace())
@@ -358,7 +358,7 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
 
     META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
-    const auto    frame_width                     = static_cast<int32_t>(m_content_size.width);
+    const auto    frame_width                     = static_cast<int32_t>(m_content_size.GetWidth());
     int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
     int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
 
@@ -424,23 +424,23 @@ void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& c
     const gfx::Rect<float, float> ver_rect {
         {
             static_cast<float>(char_pos.GetX() + font_char.GetOffset().GetX()),
-            static_cast<float>(char_pos.GetY() + font_char.GetOffset().GetY() + static_cast<int32_t>(font_char.GetRect().size.height)) * -1.F,
+            static_cast<float>(char_pos.GetY() + font_char.GetOffset().GetY() + static_cast<int32_t>(font_char.GetRect().size.GetHeight())) * -1.F,
         },
         {
-            static_cast<float>(font_char.GetRect().size.width),
-            static_cast<float>(font_char.GetRect().size.height),
+            static_cast<float>(font_char.GetRect().size.GetWidth()),
+            static_cast<float>(font_char.GetRect().size.GetHeight()),
         }
     };
 
     // Char atlas rectangle in texture coordinates [0, 1] x [0, 1]
     const gfx::Rect<float, float> tex_rect {
         {
-            static_cast<float>(font_char.GetRect().origin.GetX()) / static_cast<float>(atlas_size.width),
-            static_cast<float>(font_char.GetRect().origin.GetY()) / static_cast<float>(atlas_size.height),
+            static_cast<float>(font_char.GetRect().origin.GetX()) / static_cast<float>(atlas_size.GetWidth()),
+            static_cast<float>(font_char.GetRect().origin.GetY()) / static_cast<float>(atlas_size.GetHeight()),
         },
         {
-            static_cast<float>(font_char.GetRect().size.width)  / static_cast<float>(atlas_size.width),
-            static_cast<float>(font_char.GetRect().size.height) / static_cast<float>(atlas_size.height),
+            static_cast<float>(font_char.GetRect().size.GetWidth())  / static_cast<float>(atlas_size.GetWidth()),
+            static_cast<float>(font_char.GetRect().size.GetHeight()) / static_cast<float>(atlas_size.GetHeight()),
         }
     };
 
@@ -480,20 +480,20 @@ void TextMesh::UpdateContentSize()
     for(uint32_t vertex_index = 0; vertex_index < m_vertices.size(); vertex_index += 4)
     {
         m_content_top_offset  = std::min(m_content_top_offset,  static_cast<uint32_t>(-m_vertices[vertex_index].position[1]));
-        m_content_size.width  = std::max(m_content_size.width,  static_cast<uint32_t>( m_vertices[vertex_index + 2].position[0]));
-        m_content_size.height = std::max(m_content_size.height, static_cast<uint32_t>(-m_vertices[vertex_index + 2].position[1]));
+        m_content_size.SetWidth( std::max(m_content_size.GetWidth(),  static_cast<uint32_t>( m_vertices[vertex_index + 2].position[0])));
+        m_content_size.SetHeight(std::max(m_content_size.GetHeight(), static_cast<uint32_t>(-m_vertices[vertex_index + 2].position[1])));
     }
 
-    if (m_frame_size.width)
-        m_content_size.width = m_frame_size.width;
+    if (m_frame_size.GetWidth())
+        m_content_size.SetWidth(m_frame_size.GetWidth());
 }
 
 void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)
 {
     META_FUNCTION_TASK();
     m_content_top_offset  = std::min(m_content_top_offset,  static_cast<uint32_t>(char_pos.GetY() + font_char.GetOffset().GetY()));
-    m_content_size.width  = std::max(m_content_size.width,  char_pos.GetX() + font_char.GetVisualSize().width);
-    m_content_size.height = std::max(m_content_size.height, char_pos.GetY() + font_char.GetVisualSize().height);
+    m_content_size.SetWidth( std::max(m_content_size.GetWidth(),  char_pos.GetX() + font_char.GetVisualSize().GetWidth()));
+    m_content_size.SetHeight(std::max(m_content_size.GetHeight(), char_pos.GetY() + font_char.GetVisualSize().GetHeight()));
 }
 
 } // namespace Methane::Graphics

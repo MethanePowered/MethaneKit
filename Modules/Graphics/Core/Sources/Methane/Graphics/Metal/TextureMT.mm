@@ -62,15 +62,15 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     {
     case Texture::DimensionType::Tex1D:
     case Texture::DimensionType::Tex1DArray:
-             return MTLRegionMake1D(0, dimensions.width);
+             return MTLRegionMake1D(0, dimensions.GetWidth());
     case Texture::DimensionType::Tex2D:
     case Texture::DimensionType::Tex2DArray:
     case Texture::DimensionType::Tex2DMultisample:
     case Texture::DimensionType::Cube:
     case Texture::DimensionType::CubeArray:
-             return MTLRegionMake2D(0, 0, dimensions.width, dimensions.height);
+             return MTLRegionMake2D(0, 0, dimensions.GetWidth(), dimensions.GetHeight());
     case Texture::DimensionType::Tex3D:
-             return MTLRegionMake3D(0, 0, 0, dimensions.width, dimensions.height, dimensions.depth);
+             return MTLRegionMake3D(0, 0, 0, dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
     default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLRegion{});
     }
 }
@@ -143,8 +143,8 @@ void TextureMT::SetData(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
-    const uint32_t  bytes_per_row   = settings.dimensions.width  * GetPixelSize(settings.pixel_format);
-    const uint32_t  bytes_per_image = settings.dimensions.height * bytes_per_row;
+    const uint32_t  bytes_per_row   = settings.dimensions.GetWidth()  * GetPixelSize(settings.pixel_format);
+    const uint32_t  bytes_per_image = settings.dimensions.GetHeight() * bytes_per_row;
     const MTLRegion texture_region  = GetTextureRegion(settings.dimensions, settings.dimension_type);
 
     for(const SubResource& sub_resource : sub_resources)
@@ -247,14 +247,14 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     {
     case Texture::DimensionType::Tex2D:
         mtl_tex_desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtl_pixel_format
-                                                                          width:settings.dimensions.width
-                                                                         height:settings.dimensions.height
+                                                                          width:settings.dimensions.GetWidth()
+                                                                         height:settings.dimensions.GetHeight()
                                                                       mipmapped:is_tex_mipmapped];
         break;
 
     case Texture::DimensionType::Cube:
         mtl_tex_desc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:mtl_pixel_format
-                                                                             size:settings.dimensions.width
+                                                                             size:settings.dimensions.GetWidth()
                                                                         mipmapped:is_tex_mipmapped];
         break;
 
@@ -267,9 +267,9 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc                    = [[MTLTextureDescriptor alloc] init];
         mtl_tex_desc.pixelFormat        = mtl_pixel_format;
         mtl_tex_desc.textureType        = GetNativeTextureType(settings.dimension_type);
-        mtl_tex_desc.width              = settings.dimensions.width;
-        mtl_tex_desc.height             = settings.dimensions.height;
-        mtl_tex_desc.depth              = settings.dimensions.depth;
+        mtl_tex_desc.width              = settings.dimensions.GetWidth();
+        mtl_tex_desc.height             = settings.dimensions.GetHeight();
+        mtl_tex_desc.depth              = settings.dimensions.GetDepth();
         mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;
