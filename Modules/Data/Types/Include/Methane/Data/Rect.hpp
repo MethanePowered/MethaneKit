@@ -43,20 +43,32 @@ struct RectSize
     RectSize() = default;
 
     template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
-    RectSize(V w, V h) noexcept
+    RectSize(V w, V h) noexcept(std::is_unsigned_v<V>)
         : width(RoundCast<D>(w))
         , height(RoundCast<D>(h))
-    { }
+    {
+        if constexpr (std::is_signed_v<V>)
+        {
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(w, 0, "rectangle width can not be less than zero");
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(h, 0, "rectangle height can not be less than zero");
+        }
+    }
 
     template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
-    explicit RectSize(const Point2T<V>& point) noexcept
+    explicit RectSize(const Point2T<V>& point) noexcept(std::is_unsigned_v<V>)
         : width(RoundCast<D>(point.GetX()))
         , height(RoundCast<D>(point.GetY()))
-    { }
+    {
+        if constexpr (std::is_signed_v<V>)
+        {
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(point.GetX(), 0, "rectangle width can not be less than zero");
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(point.GetY(), 0, "rectangle height can not be less than zero");
+        }
+    }
 
-    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>, void>>
+    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>>>
     explicit RectSize(const RectSize<V>& other) noexcept
-        : RectSize(static_cast<D>(other.width), static_cast<D>(other.height))
+        : RectSize(RoundCast<D>(other.width), RoundCast<D>(other.height))
     { }
 
     D GetPixelsCount() const noexcept { return width * height; }
@@ -244,7 +256,7 @@ struct RectSize
 
     explicit operator bool() const noexcept { return width && height; }
 
-    template<typename V>
+    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>>>
     explicit operator RectSize<V>() const noexcept
     {
         return RectSize<V>(RoundCast<V>(width), RoundCast<V>(height));
@@ -274,40 +286,69 @@ struct Rect
     explicit Rect(const Size& size) noexcept : size(size) { }
     explicit Rect(const Point& origin) noexcept : origin(origin) { }
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
+    Rect(T x, T y, D w, D h) : origin(x, y), size(w, h) { }
 
     T GetLeft() const   { return origin.GetX(); }
-    T GetRight() const  { return origin.GetX() + size.width; }
+    T GetRight() const  { return origin.GetX() + RoundCast<T>(size.width); }
     T GetTop() const    { return origin.GetY(); }
-    T GetBottom() const { return origin.GetY() + size.height; }
-
-    template<typename U>
-    explicit operator Rect<U, U>() const
-    { return { static_cast<Point2T<U>>(origin), static_cast<typename Rect<U, U>::RectSize>(size) }; }
+    T GetBottom() const { return origin.GetY() + RoundCast<T>(size.height); }
 
     bool operator==(const Rect& other) const noexcept
-    { return std::tie(origin, size) == std::tie(other.origin, other.size); }
+    {
+        return std::tie(origin, size) == std::tie(other.origin, other.size);
+    }
 
     bool operator!=(const Rect& other) const noexcept
-    { return std::tie(origin, size) != std::tie(other.origin, other.size); }
+    {
+        return std::tie(origin, size) != std::tie(other.origin, other.size);
+    }
 
     template<typename M>
-    Rect<T, D> operator*(M multiplier) const noexcept
-    { return Rect<T, D>{ origin * multiplier, size * multiplier }; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
+        return Rect<T, D>(origin * multiplier, size * multiplier);
+    }
 
     template<typename M>
-    Rect<T, D> operator/(M divisor) const noexcept
-    { return Rect<T, D>{ origin / divisor, size / divisor }; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(M divisor) const
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
+        return Rect<T, D>(origin / divisor, size / divisor);
+    }
 
     template<typename M>
-    Rect<T, D>& operator*=(M multiplier) noexcept
-    { origin *= multiplier; size *= multiplier; return *this; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator*=(M multiplier)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
+        origin *= multiplier;
+        size *= multiplier;
+        return *this;
+    }
 
     template<typename M>
-    Rect<T, D>& operator/=(M divisor) noexcept
-    { origin /= divisor; size /= divisor; return *this; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator/=(M divisor)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
+        origin /= divisor;
+        size /= divisor;
+        return *this;
+    }
+
+    template<typename V, typename K, typename = std::enable_if_t<!std::is_same_v<T, V> || !std::is_same_v<D, K>>>
+    explicit operator Rect<V, K>() const
+    {
+        return Rect<V, K>(static_cast<Point2T<V>>(origin), static_cast<RectSize<K>>(size));
+    }
 
     explicit operator std::string() const
-    { return fmt::format("Rt[{} : {}]", origin, size); }
+    {
+        return fmt::format("Rect[{} : {}]", origin, size);
+    }
 };
 
 using FrameRect    = Rect<int32_t, uint32_t>;

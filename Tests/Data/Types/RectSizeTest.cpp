@@ -43,7 +43,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Initialization", "[rect][size][init]", RECT_S
         CHECK(rect_size.height == TestType(0));
     }
 
-    SECTION("Dimensions initialization with dimensions of same type")
+    SECTION("Initialization with dimensions of same type")
     {
         const RectSize<TestType> rect_size(test_width, test_height);
         CHECK(rect_size.width  == test_width);
@@ -56,6 +56,21 @@ TEMPLATE_TEST_CASE("Rectangle Size Initialization", "[rect][size][init]", RECT_S
         const RectSize<TestType> rect_size(test_point);
         CHECK(rect_size.width  == test_width);
         CHECK(rect_size.height == test_height);
+    }
+
+    if constexpr (std::is_signed_v<TestType>)
+    {
+        SECTION("Exception on initialization with negative dimensions")
+        {
+            CHECK_THROWS_AS(RectSize<TestType>(-test_width, test_height), Methane::ArgumentExceptionBase<std::out_of_range>);
+            CHECK_THROWS_AS(RectSize<TestType>(test_width, -test_height), Methane::ArgumentExceptionBase<std::out_of_range>);
+        }
+
+        SECTION("Exception on initialization with negative point coordinates")
+        {
+            CHECK_THROWS_AS(RectSize<TestType>(Point2T<TestType>(-test_width, test_height)), Methane::ArgumentExceptionBase<std::out_of_range>);
+            CHECK_THROWS_AS(RectSize<TestType>(Point2T<TestType>(test_width, -test_height)), Methane::ArgumentExceptionBase<std::out_of_range>);
+        }
     }
 
     if constexpr (std::is_floating_point_v<TestType>)
@@ -194,7 +209,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Comparison", "[rect][size][compare]", RECT_SI
     }
 }
 
-TEMPLATE_TEST_CASE("Rectangle Math Operations", "[rect][size][math]", RECT_SIZE_TYPES)
+TEMPLATE_TEST_CASE("Rectangle Size Math Operations", "[rect][size][math]", RECT_SIZE_TYPES)
 {
     const TestType big_width   = TestType(123);
     const TestType big_height  = TestType(235);
@@ -529,6 +544,23 @@ TEMPLATE_TEST_CASE("Rectangle Math Operations", "[rect][size][math]", RECT_SIZE_
 
 TEMPLATE_TEST_CASE("Rectangle Size Conversion to Other Types", "[rect][size][conv]", RECT_SIZE_TYPES)
 {
+    if constexpr (std::is_floating_point_v<TestType>)
+    {
+        SECTION("Conversion to integer size")
+        {
+            const RectSize<TestType> test_size(1, 2);
+            CHECK(static_cast<RectSize<uint32_t>>(test_size) == RectSize<uint32_t>(1, 2));
+        }
+    }
+    else
+    {
+        SECTION("Conversion to floating point size")
+        {
+            const RectSize<TestType> test_size(1, 2);
+            CHECK(static_cast<RectSize<float>>(test_size) == RectSize<float>(1.F, 2.F));
+        }
+    }
+
     SECTION("Conversion to boolean")
     {
         CHECK_FALSE(static_cast<bool>(RectSize<TestType>()));
