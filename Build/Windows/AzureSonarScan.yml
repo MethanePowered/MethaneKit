@@ -31,7 +31,7 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | $(sonar.ScannerVersion)'
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(sonar.ScannerVersion)"'
       path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
