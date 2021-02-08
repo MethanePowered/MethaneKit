@@ -311,7 +311,7 @@ void RenderStateDX::Reset(const Settings& settings)
     rasterizer_desc.CullMode              = ConvertRasterizerCullModeToD3D12(settings.rasterizer.cull_mode);
     rasterizer_desc.FrontCounterClockwise = settings.rasterizer.is_front_counter_clockwise;
     rasterizer_desc.MultisampleEnable     = settings.rasterizer.sample_count > 1;
-    rasterizer_desc.ForcedSampleCount     = !settings.GetDepth().enabled && !settings.stencil.enabled ? settings.rasterizer.sample_count : 0;
+    rasterizer_desc.ForcedSampleCount     = !settings.depth.enabled && !settings.stencil.enabled ? settings.rasterizer.sample_count : 0;
 
     // Set Blending state descriptor
     CD3DX12_BLEND_DESC blend_desc(D3D12_DEFAULT);
@@ -342,9 +342,9 @@ void RenderStateDX::Reset(const Settings& settings)
 
     // Set depth and stencil state descriptor
     CD3DX12_DEPTH_STENCIL_DESC depth_stencil_desc(D3D12_DEFAULT);
-    depth_stencil_desc.DepthEnable      = settings.GetDepth().enabled;
-    depth_stencil_desc.DepthWriteMask   = settings.GetDepth().write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    depth_stencil_desc.DepthFunc        = TypeConverterDX::CompareFunctionToD3D(settings.GetDepth().compare);
+    depth_stencil_desc.DepthEnable      = settings.depth.enabled;
+    depth_stencil_desc.DepthWriteMask   = settings.depth.write_enabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    depth_stencil_desc.DepthFunc        = TypeConverterDX::CompareFunctionToD3D(settings.depth.compare);
     depth_stencil_desc.StencilEnable    = settings.stencil.enabled;
     depth_stencil_desc.StencilReadMask  = settings.stencil.read_mask;
     depth_stencil_desc.StencilWriteMask = settings.stencil.write_mask;
@@ -372,7 +372,7 @@ void RenderStateDX::Reset(const Settings& settings)
         m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::PixelFormatToDxgi(color_format);
     }
     m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = settings.GetDepth().enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
 
     m_cp_pipeline_state.Reset();
 }

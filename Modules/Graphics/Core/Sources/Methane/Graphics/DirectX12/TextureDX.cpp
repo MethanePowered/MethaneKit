@@ -422,8 +422,8 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
 
         const D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         DirectX::Image& base_mip_image = sub_resource_images[sub_resource_raw_index];
-        base_mip_image.GetWidth()           = settings.dimensions.GetWidth();
-        base_mip_image.GetHeight()          = settings.dimensions.GetHeight();
+        base_mip_image.width           = settings.dimensions.GetWidth();
+        base_mip_image.height          = settings.dimensions.GetHeight();
         base_mip_image.format          = tex_desc.Format;
         base_mip_image.rowPitch        = dx_sub_resource.RowPitch;
         base_mip_image.slicePitch      = dx_sub_resource.SlicePitch;
@@ -431,9 +431,9 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     }
 
     DirectX::TexMetadata tex_metadata{ };
-    tex_metadata.GetWidth()     = settings.dimensions.GetWidth();
-    tex_metadata.GetHeight()    = settings.dimensions.GetHeight();
-    tex_metadata.GetDepth()   = is_cube_texture ? 1 : settings.dimensions.GetDepth();
+    tex_metadata.width     = settings.dimensions.GetWidth();
+    tex_metadata.height    = settings.dimensions.GetHeight();
+    tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.GetDepth();
     tex_metadata.arraySize = is_cube_texture ? settings.dimensions.GetDepth() : settings.array_length;
     tex_metadata.mipLevels = sub_resource_count.GetMipLevelsCount();
     tex_metadata.format    = tex_desc.Format;
@@ -441,7 +441,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     tex_metadata.miscFlags = is_cube_texture ? DirectX::TEX_MISC_TEXTURECUBE : 0;
 
     const SubResource::Count tex_metadata_subres_count(
-        static_cast<Data::Size>(tex_metadata.GetDepth()),
+        static_cast<Data::Size>(tex_metadata.depth),
         static_cast<Data::Size>(tex_metadata.arraySize),
         static_cast<Data::Size>(tex_metadata.mipLevels)
     );
@@ -450,7 +450,7 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
                                            tex_metadata, DirectX::TEX_FILTER_DEFAULT,
                                            sub_resource_count.GetMipLevelsCount(), scratch_image));
 
-    for (uint32_t depth = 0; depth < tex_metadata.GetDepth(); ++depth)
+    for (uint32_t depth = 0; depth < tex_metadata.depth; ++depth)
     {
         for (uint32_t item = 0; item < tex_metadata.arraySize; ++item)
         {

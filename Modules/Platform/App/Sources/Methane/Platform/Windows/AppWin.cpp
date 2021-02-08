@@ -79,21 +79,17 @@ int AppWin::Run(const RunArgs& args)
     Windows::GetDesktopResolution(desktop_width, desktop_height);
 
     const Settings& app_settings = GetPlatformAppSettings();
-
-    Data::FrameSize frame_size;
-    frame_size.GetWidth()  = app_settings.GetWidth() < 1.0
-                      ? static_cast<uint32_t>(desktop_width * app_settings.GetWidth())
-                      : static_cast<uint32_t>(app_settings.GetWidth());
-    frame_size.GetHeight() = app_settings.GetHeight() < 1.0
-                      ? static_cast<uint32_t>(desktop_height * app_settings.GetHeight())
-                      : static_cast<uint32_t>(app_settings.GetHeight());
+    const Data::FrameSize frame_size(
+        app_settings.width  < 1.0 ? static_cast<uint32_t>(desktop_width * app_settings.width)   : static_cast<uint32_t>(app_settings.width),
+        app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * app_settings.height) : static_cast<uint32_t>(app_settings.height)
+    );
 
     RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.GetWidth()), static_cast<LONG>(frame_size.GetHeight()) };
     AdjustWindowRect(&window_rect, WS_OVERLAPPEDWINDOW, FALSE);
-    const Data::FrameSize window_size(static_cast<uint32_t>(window_rect.right - window_rect.left),
+    const Data::FrameSize window_size(static_cast<uint32_t>(window_rect.right  - window_rect.left),
                                       static_cast<uint32_t>(window_rect.bottom - window_rect.top));
 
-    // Create the window and store a handle to it.
+    // Create the window and store a handle to it
     m_env.window_handle = CreateWindowEx(0,
         g_window_class,
         nowide::widen(app_settings.name).c_str(),
