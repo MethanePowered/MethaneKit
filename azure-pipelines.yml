@@ -42,6 +42,7 @@ variables:
   sonar.Sources: 'Apps,Modules'
   sonar.Tests: 'Tests'
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
+  sonar.ScannerVersion: '4.4.0.2170'
 
   buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
