@@ -21,8 +21,6 @@ Unit-tests of the RectSize data type
 
 ******************************************************************************/
 
-#include "TestHelpers.hpp"
-
 #include <Methane/Data/Rect.hpp>
 
 #include <catch2/catch.hpp>

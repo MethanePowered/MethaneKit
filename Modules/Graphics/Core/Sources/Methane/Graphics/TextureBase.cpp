@@ -66,7 +66,7 @@ Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t arra
     Settings settings;
     settings.type           = Type::Texture;
     settings.dimension_type = array_length == 1 ? DimensionType::Cube : DimensionType::CubeArray;
-    settings.dimensions     = Dimensions(dimension_size, dimension_size, 6);
+    settings.dimensions     = Dimensions(dimension_size, dimension_size, 6U);
     settings.array_length   = array_length;
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
