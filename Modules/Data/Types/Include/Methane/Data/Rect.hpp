@@ -367,10 +367,10 @@ struct Rect
     Rect(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
     Rect(T x, T y, D w, D h) : origin(x, y), size(w, h) { }
 
-    T GetLeft() const   { return origin.GetX(); }
-    T GetRight() const  { return origin.GetX() + RoundCast<T>(size.GetWidth()); }
-    T GetTop() const    { return origin.GetY(); }
-    T GetBottom() const { return origin.GetY() + RoundCast<T>(size.GetHeight()); }
+    T GetLeft() const noexcept   { return origin.GetX(); }
+    T GetRight() const noexcept  { return origin.GetX() + RoundCast<T>(size.GetWidth()); }
+    T GetTop() const noexcept    { return origin.GetY(); }
+    T GetBottom() const noexcept { return origin.GetY() + RoundCast<T>(size.GetHeight()); }
 
     bool operator==(const Rect& other) const noexcept
     {
@@ -383,7 +383,7 @@ struct Rect
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
@@ -391,7 +391,7 @@ struct Rect
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(M divisor) const
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
@@ -399,22 +399,22 @@ struct Rect
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator*=(M multiplier)
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
         origin *= multiplier;
-        size *= multiplier;
+        size   *= multiplier;
         return *this;
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator/=(M divisor)
+    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
         origin /= divisor;
-        size /= divisor;
+        size   /= divisor;
         return *this;
     }
 

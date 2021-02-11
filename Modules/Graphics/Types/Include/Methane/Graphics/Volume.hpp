@@ -318,30 +318,75 @@ struct Volume
     Point origin;
     Size  size;
 
+    Volume() = default;
+    explicit Volume(const Size& size) noexcept : size(size) { }
+    explicit Volume(const Point& origin) noexcept : origin(origin) { }
+    Volume(const Point& origin, const Size& size) noexcept : origin(origin), size(size) { }
+    Volume(T x, T y, T z, D w, D h, D d) : origin(x, y, z), size(w, h, d) { }
+
+    T GetLeft() const noexcept   { return origin.GetX(); }
+    T GetRight() const noexcept  { return origin.GetX() + Data::RoundCast<T>(size.GetWidth()); }
+    T GetTop() const noexcept    { return origin.GetY(); }
+    T GetBottom() const noexcept { return origin.GetY() + Data::RoundCast<T>(size.GetHeight()); }
+    T GetNear() const noexcept   { return origin.GetZ(); }
+    T GetFar() const noexcept    { return origin.GetZ() + Data::RoundCast<T>(size.GetDepth()); }
+
     bool operator==(const Volume& other) const noexcept
-    { return std::tie(origin, size) == std::tie(other.origin, other.size); }
+    {
+        return std::tie(origin, size) == std::tie(other.origin, other.size);
+    }
 
     bool operator!=(const Volume& other) const noexcept
-    { return std::tie(origin, size) != std::tie(other.origin, other.size); }
+    {
+        return std::tie(origin, size) != std::tie(other.origin, other.size);
+    }
 
     template<typename M>
-    Volume<T, D> operator*(M multiplier) const noexcept
-    { return Volume<T, D>{ origin * multiplier, size * multiplier }; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
+        return Volume<T, D>{ origin * multiplier, size * multiplier };
+    }
 
     template<typename M>
-    Volume<T, D> operator/(M divisor) const noexcept
-    { return Volume<T, D>{ origin / divisor, size / divisor }; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
+        return Volume<T, D>{ origin / divisor, size / divisor };
+    }
 
     template<typename M>
-    Volume<T, D>& operator*=(M multiplier) noexcept
-    { origin *= multiplier; size *= multiplier; return *this; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
+        origin *= multiplier;
+        size   *= multiplier;
+        return *this;
+    }
 
     template<typename M>
-    Volume<T, D>& operator/=(M divisor) noexcept
-    { origin /= divisor; size /= divisor; return *this; }
+    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
+    {
+        if constexpr (std::is_signed_v<M>)
+            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
+        origin /= divisor;
+        size   /= divisor;
+        return *this;
+    }
+
+    template<typename V, typename K, typename = std::enable_if_t<!std::is_same_v<T, V> || !std::is_same_v<D, K>>>
+    explicit operator Volume<V, K>() const
+    {
+        return Volume<V, K>(static_cast<Point3T<V>>(origin), static_cast<VolumeSize<K>>(size));
+    }
 
     explicit operator std::string() const
-    { return fmt::format("Vm[{}, {}]", origin, size); }
+    {
+        return fmt::format("Vol[{} : {}]", origin, size);
+    }
 };
 
 using Dimensions = VolumeSize<uint32_t>;

@@ -21,8 +21,6 @@ Unit-tests of the Rect data type
 
 ******************************************************************************/
 
-#include "TestHelpers.hpp"
-
 #include <Methane/Data/Rect.hpp>
 #include <Methane/Data/TypeFormatters.hpp>
 
