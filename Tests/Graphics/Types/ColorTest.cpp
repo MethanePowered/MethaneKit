@@ -36,13 +36,13 @@ using namespace Methane::Data;
     (int32_t,  3), (int32_t,  4)
 
 template<typename T, size_t size, typename V = T, typename = std::enable_if_t<3 <= size && size <= 4>>
-void CheckColor(const Color<T, size>& color, const std::array<V, size>& components)
+void CheckColor(const Color<T, size>& color, const std::array<V, size>& components, float epsilon = std::numeric_limits<float>::epsilon() * 100.f)
 {
-    CHECK(color.GetRed<V>()   == Approx(components[0]));
-    CHECK(color.GetGreen<V>() == Approx(components[1]));
-    CHECK(color.GetBlue<V>()  == Approx(components[2]));
+    CHECK(color.template GetRed<V>()   == Approx(components[0]).epsilon(epsilon));
+    CHECK(color.template GetGreen<V>() == Approx(components[1]).epsilon(epsilon));
+    CHECK(color.template GetBlue<V>()  == Approx(components[2]).epsilon(epsilon));
     if constexpr (size > 3)
-        CHECK(color.GetAlpha<V>() == Approx(components[3]));
+        CHECK(color.template GetAlpha<V>() == Approx(components[3]).epsilon(epsilon));
 }
 
 template<typename T, size_t size>
@@ -57,6 +57,15 @@ std::array<T, size> CreateColorComponents(double step_ratio = 1.0 / (size + 1))
         CHECK(values[i] <= component_max);
     }
     return values;
+}
+
+template<typename T>
+uint8_t GetColorComponentAsByte(T color_component)
+{
+    if constexpr (std::is_floating_point_v<T>)
+        return RoundCast<uint8_t>(color_component * 255.0);
+    else
+        return RoundCast<uint8_t>(static_cast<double>(color_component) * 255.0 / static_cast<double>(std::numeric_limits<T>::max()));
 }
 
 TEMPLATE_TEST_CASE_SIG("Color Initialization", "[color][init]", COLOR_TYPES_MATRIX)
@@ -180,5 +189,89 @@ TEMPLATE_TEST_CASE_SIG("Color Initialization", "[color][init]", COLOR_TYPES_MATR
         Color<T, size> color(test_color_arr);
         Color<T, size> copy_color = std::move(color);
         CheckColor(copy_color, test_color_arr);
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG("Color Component Accessors", "[color][accessors]", COLOR_TYPES_MATRIX)
+{
+    const auto test_color_arr = CreateColorComponents<T, size>();
+    const Color<T, size> test_color(test_color_arr);
+
+    SECTION("Red component getter")
+    {
+        CHECK(test_color.GetRed() == Approx(test_color_arr[0]));
+        CHECK(test_color.template GetRed<uint8_t>() == GetColorComponentAsByte(test_color_arr[0]));
+    }
+
+    SECTION("Green component getter")
+    {
+        CHECK(test_color.GetGreen() == Approx(test_color_arr[1]));
+        CHECK(test_color.template GetGreen<uint8_t>() == GetColorComponentAsByte(test_color_arr[1]));
+    }
+
+    SECTION("Blue component getter")
+    {
+        CHECK(test_color.GetBlue() == Approx(test_color_arr[2]));
+        CHECK(test_color.template GetBlue<uint8_t>() == GetColorComponentAsByte(test_color_arr[2]));
+    }
+
+    if constexpr (size == 4)
+    {
+        SECTION("Alpha component getter")
+        {
+            CHECK(test_color.GetAlpha() == Approx(test_color_arr[3]));
+            CHECK(test_color.template GetAlpha<uint8_t>() == GetColorComponentAsByte(test_color_arr[3]));
+        }
+    }
+
+    SECTION("Indexed component getters")
+    {
+        for(size_t component_index = 0; component_index < size; ++component_index)
+        {
+            CHECK(test_color.Get(component_index) == Approx(test_color_arr[component_index]));
+            CHECK(test_color.template Get<uint8_t>(component_index) == GetColorComponentAsByte(test_color_arr[component_index]));
+        }
+    }
+
+    SECTION("Component channel setters with original type")
+    {
+        Color<T, size> color;
+        CHECK_NOTHROW(color.SetRed(test_color_arr[0]));
+        CHECK_NOTHROW(color.SetGreen(test_color_arr[1]));
+        CHECK_NOTHROW(color.SetBlue(test_color_arr[2]));
+        if constexpr (size == 4)
+            CHECK_NOTHROW(color.SetAlpha(test_color_arr[3]));
+        CheckColor(color, test_color_arr);
+    }
+
+    SECTION("Component channel setters with byte")
+    {
+        Color<T, size> color;
+        CHECK_NOTHROW(color.template SetRed<uint8_t>(GetColorComponentAsByte(test_color_arr[0])));
+        CHECK_NOTHROW(color.template SetGreen<uint8_t>(GetColorComponentAsByte(test_color_arr[1])));
+        CHECK_NOTHROW(color.template SetBlue<uint8_t>(GetColorComponentAsByte(test_color_arr[2])));
+        if constexpr (size == 4)
+            CHECK_NOTHROW(color.template SetAlpha<uint8_t>(GetColorComponentAsByte(test_color_arr[3])));
+        CheckColor(color, test_color_arr, 0.01F);
+    }
+
+    SECTION("Indexed component setters with original type")
+    {
+        Color<T, size> color;
+        for(size_t component_index = 0; component_index < size; ++component_index)
+        {
+            CHECK_NOTHROW(color.Set(component_index, test_color_arr[component_index]));
+        }
+        CheckColor(color, test_color_arr);
+    }
+
+    SECTION("Indexed component setters with byte")
+    {
+        Color<T, size> color;
+        for(size_t component_index = 0; component_index < size; ++component_index)
+        {
+            CHECK_NOTHROW(color.template Set<uint8_t>(component_index, GetColorComponentAsByte(test_color_arr[component_index])));
+        }
+        CheckColor(color, test_color_arr, 0.01F);
     }
 }
