@@ -90,7 +90,7 @@ T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
 }
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
-HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components)
+HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noexcept
 {
     META_FUNCTION_TASK();
     if constexpr (size == 2)

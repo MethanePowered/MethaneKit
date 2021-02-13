@@ -65,15 +65,4 @@ std::array<T, size> DoPerComponent(const std::array<T, size>& left, const std::a
     return result;
 }
 
-template<typename T, size_t size>
-HlslVector<T, size> CreateHlslVector(const std::array <T, size>& components)
-{
-    if constexpr (size == 2)
-        return HlslVector<T, 2>(components[0], components[1]);
-    if constexpr (size == 3)
-        return HlslVector<T, 3>(components[0], components[1], components[2]);
-    if constexpr (size == 4)
-        return HlslVector<T, 4>(components[0], components[1], components[2], components[3]);
-}
-
 } // namespace Methane::Data
