@@ -78,12 +78,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_location.IsInitialized(), "can not clear render target attachment without texture");
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_location.GetTexture().GetSettings().pixel_format);
-        const std::array<float, 4> clear_color_components{
-            color_attachment.clear_color.GetRf(),
-            color_attachment.clear_color.GetGf(),
-            color_attachment.clear_color.GetBf(),
-            color_attachment.clear_color.GetAf()
-        };
+        const std::array<float, 4> clear_color_components = color_attachment.clear_color.AsArray();
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
     }
 }
@@ -136,7 +131,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_location))
-    , clear_color{ color_attach.clear_color.GetRf(), color_attach.clear_color.GetGf(), color_attach.clear_color.GetBf(), color_attach.clear_color.GetAf() }
+    , clear_color(color_attach.clear_color.AsArray())
 {
     META_FUNCTION_TASK();
 }

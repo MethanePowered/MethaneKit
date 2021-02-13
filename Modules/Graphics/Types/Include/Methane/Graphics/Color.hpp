@@ -27,6 +27,8 @@ Color wrapper type based on HLSL++ vector.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <string_view>
+#include <array>
 #include <cstdint>
 
 namespace Methane::Graphics
@@ -43,7 +45,7 @@ public:
     Color() = default;
 
     template<typename... Args, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<Args>...>>>
-    Color(Args... args)
+    Color(Args... args) // NOSONAR - do not use explicit
         : m_components(ComponentCast<T>(args)...)
     {
         CheckComponentsRange();
@@ -76,6 +78,15 @@ public:
 
     [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
     [[nodiscard]] const VectorType& AsVector() const noexcept   { return m_components; }
+
+    template<typename V = T>
+    [[nodiscard]] std::array<V, size> AsArray() const noexcept
+    {
+        if constexpr (size == 4)
+            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>(), GetAlpha<V>() };
+        else
+            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>() };
+    }
 
     [[nodiscard]] size_t GetSize() const noexcept { return Size; }
 
