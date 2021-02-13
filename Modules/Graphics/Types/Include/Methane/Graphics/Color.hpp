@@ -23,7 +23,6 @@ Color wrapper type based on HLSL++ vector.
 
 #pragma once
 
-#include <Methane/Data/Types.h>
 #include <Methane/Data/Vector.hpp>
 #include <Methane/Checks.hpp>
 
@@ -33,131 +32,192 @@ Color wrapper type based on HLSL++ vector.
 namespace Methane::Graphics
 {
 
-template<Data::Size vector_size, typename = std::enable_if_t<3 <= vector_size && vector_size <= 4>>
-class ColorF
+template<typename T, size_t size, typename = std::enable_if_t<3 <= size && size <= 4>>
+class Color
 {
 public:
-    using VectorType = Data::HlslVector<float, vector_size>;
+    using ComponentType = T;
+    using VectorType = Data::HlslVector<ComponentType, size>;
+    static constexpr size_t Size = size;
 
-    static constexpr Data::Size Size = vector_size;
+    Color() = default;
 
-    ColorF() = default;
-    ColorF(float r, float g, float b) noexcept : m_components(r, g, b) { }
+    template<typename... Args, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<Args>...>>>
+    Color(Args... args)
+        : m_components(ComponentCast<T>(args)...)
+    {
+        CheckComponentsRange();
+    }
 
-    template<Data::Size sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    ColorF(float r, float g, float b, float a) noexcept : m_components(r, g, b, a) { }
+    template<size_t sz = size, typename = std::enable_if_t<sz < size>>
+    Color(const Color<T, sz>& color, T a)
+        : m_components(color.AsVector(), a)
+    {
+        CheckComponentsRange();
+    }
 
-    template<Data::Size sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    ColorF(const ColorF<3>& color, float a) noexcept : m_components(color.AsVector(), a) { }
+    template<size_t sz, typename... Args, typename = std::enable_if_t<sz < size>>
+    explicit Color(const Data::HlslVector<T, sz>& components, Args&&... args)
+        : m_components(components, std::forward<Args>(args)...)
+    {
+        CheckComponentsRange();
+    }
 
-    template<typename... Args>
-    explicit ColorF(const VectorType& components, Args&&... args) noexcept : m_components(components, std::forward<Args>(args)...) { }
+    explicit Color(VectorType&& components)
+        : m_components(std::move(components))
+    {
+        CheckComponentsRange();
+    }
 
-    explicit ColorF(VectorType&& components) noexcept : m_components(std::move(components)) { }
+    [[nodiscard]] bool operator==(const Color& other) const noexcept  { return hlslpp::all(m_components == other.m_components); }
+    [[nodiscard]] bool operator!=(const Color& other) const noexcept  { return !operator==(other); }
 
-    [[nodiscard]] bool operator==(const ColorF& other) const noexcept  { return hlslpp::all(m_components == other.m_components); }
-    [[nodiscard]] bool operator!=(const ColorF& other) const noexcept  { return hlslpp::any(m_components != other.m_components); }
+    [[nodiscard]] T operator[](size_t component_index) const { return Get(component_index); }
 
-    [[nodiscard]] float operator[](Data::Index component_index) const
+    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
+    [[nodiscard]] const VectorType& AsVector() const noexcept   { return m_components; }
+
+    [[nodiscard]] size_t GetSize() const noexcept { return Size; }
+
+    template<typename V = T>
+    [[nodiscard]] V GetRed() const noexcept   { return ComponentCast<V, T>(m_components.r); }
+
+    template<typename V = T>
+    [[nodiscard]] T GetGreen() const noexcept { return ComponentCast<V, T>(m_components.g); }
+
+    template<typename V = T>
+    [[nodiscard]] T GetBlue() const noexcept  { return ComponentCast<V, T>(m_components.b); }
+
+    template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    [[nodiscard]] float GetAlpha() const noexcept { return ComponentCast<V, T>(m_components.a); }
+
+    template<typename V = T>
+    void SetRed(V r)   { CheckComponentRange(r, "Red");   m_components.r = ComponentCast<T, V>(r); }
+
+    template<typename V = T>
+    void SetGreen(V g) { CheckComponentRange(g, "Green"); m_components.g = ComponentCast<T, V>(g); }
+
+    template<typename V = T>
+    void SetBlue(V b)  { CheckComponentRange(b, "Blue");  m_components.b = ComponentCast<T, V>(b); }
+
+    template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    void SetAlpha(V a) { CheckComponentRange(a, "Alpha"); m_components.a = ComponentCast<T, V>(a); }
+
+    template<typename V = T>
+    [[nodiscard]] V Get(size_t component_index) const
     {
         META_CHECK_ARG_LESS(component_index, Size);
         switch(component_index)
         {
-        case 0: return m_components.r;
-        case 1: return m_components.g;
-        case 2: return m_components.b;
-        case 3: if constexpr (vector_size == 4) return m_components.a;
+        case 0: return GetRed<V>();
+        case 1: return GetGreen<V>();
+        case 2: return GetBlue<V>();
+        case 3: if constexpr (size == 4) return GetAlpha<V>();
         default: META_UNEXPECTED_ARG_RETURN(component_index, 0.f);
         }
     }
 
-    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
-    [[nodiscard]] const VectorType& AsVector() const noexcept { return m_components; }
-
-    [[nodiscard]] Data::Size GetSize() const noexcept { return Size; }
-
-    [[nodiscard]] float GetRf() const noexcept { return m_components.r; }
-    [[nodiscard]] float GetGf() const noexcept { return m_components.g; }
-    [[nodiscard]] float GetBf() const noexcept { return m_components.b; }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    [[nodiscard]] float GetAf() const noexcept { return m_components.a; }
-
-    [[nodiscard]] float GetNormRf() const noexcept { return GetNormColorComponent(GetRf()); }
-    [[nodiscard]] float GetNormGf() const noexcept { return GetNormColorComponent(GetGf()); }
-    [[nodiscard]] float GetNormBf() const noexcept { return GetNormColorComponent(GetBf()); }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    [[nodiscard]] float GetNormAf() const noexcept { return GetNormColorComponent(GetAf()); }
-
-    [[nodiscard]] uint8_t GetRu() const noexcept { return GetUintColorComponent(GetNormRf()); }
-    [[nodiscard]] uint8_t GetGu() const noexcept { return GetUintColorComponent(GetNormGf()); }
-    [[nodiscard]] uint8_t GetBu() const noexcept { return GetUintColorComponent(GetNormBf()); }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    [[nodiscard]] uint8_t GetAu() const noexcept { return GetUintColorComponent(GetNormAf()); }
-
-    void Set(Data::Index component_index, float value)
+    template<typename V = T>
+    void Set(size_t component_index, V value)
     {
         META_CHECK_ARG_LESS(component_index, Size);
-        META_CHECK_ARG_RANGE(value, s_float_range.first, s_float_range.second);
         switch(component_index)
         {
-        case 0: m_components.r = value; break;
-        case 1: m_components.g = value; break;
-        case 2: m_components.b = value; break;
-        case 3: if constexpr (vector_size == 4) { m_components.a = value; break; }
+        case 0: SetRed<V>(value); break;
+        case 1: SetGreen<V>(value); break;
+        case 2: SetBlue<V>(value); break;
+        case 3: if constexpr (size == 4) { SetAlpha<V>(value); } break;
         default: META_UNEXPECTED_ARG(component_index);
         }
     }
 
-    void SetR(float r) { META_CHECK_ARG_RANGE(r, s_float_range.first, s_float_range.second); m_components.r = r; }
-    void SetG(float g) { META_CHECK_ARG_RANGE(g, s_float_range.first, s_float_range.second); m_components.g = g; }
-    void SetB(float b) { META_CHECK_ARG_RANGE(b, s_float_range.first, s_float_range.second); m_components.b = b; }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    void SetA(float a) { META_CHECK_ARG_RANGE(a, s_float_range.first, s_float_range.second); m_components.a = a; }
-
-    void Set(Data::Index component_index, uint8_t value) { Set(component_index, GetFloatColorComponent(value)); }
-    void SetR(uint8_t r) { m_components.r = GetFloatColorComponent(r); }
-    void SetG(uint8_t g) { m_components.g = GetFloatColorComponent(g); }
-    void SetB(uint8_t b) { m_components.b = GetFloatColorComponent(b); }
-
-    template<size_t sz = vector_size, typename = std::enable_if_t<sz == 4>>
-    void SetA(uint8_t a) { m_components.a = GetFloatColorComponent(a); }
-
     [[nodiscard]] explicit operator std::string() const noexcept
     {
-        if constexpr (vector_size == 3)
-            return fmt::format("C(r:{:d}, g:{:d}, b:{:d})", GetRu(), GetGu(), GetBu());
+        if constexpr (size == 3)
+            return fmt::format("C(r:{:d}, g:{:d}, b:{:d})",
+                               GetRed<uint8_t>(), GetGreen<uint8_t>(), GetBlue<uint8_t>());
         else
-            return fmt::format("C(r:{:d}, g:{:d}, b:{:d}, a:{:a})", GetRu(), GetGu(), GetBu(), GetAu());
+            return fmt::format("C(r:{:d}, g:{:d}, b:{:d}, a:{:d})",
+                               GetRed<uint8_t>(), GetGreen<uint8_t>(), GetBlue<uint8_t>(), GetAlpha<uint8_t>());
+    }
+
+    template<typename V = T>
+    static constexpr std::pair<V, V> GetComponentRange()
+    {
+        if constexpr (std::is_floating_point_v<V>)
+            return { V(0), V(1) };
+        else
+            return { V(0), std::numeric_limits<V>::max() };
+    }
+
+    template<typename V = T>
+    static constexpr V GetComponentMax()
+    {
+        if constexpr (std::is_floating_point_v<V>)
+            return V(1);
+        else
+            return std::numeric_limits<V>::max();
     }
 
 private:
-    [[nodiscard]] inline float GetNormColorComponent(float component) const noexcept
+    template<typename V, typename S>
+    static constexpr V ComponentCast(S component) noexcept
     {
-        return std::max(s_float_range.first, std::min(s_float_range.second, component));
+        if constexpr (std::is_same_v<S, V>)
+        {
+            return component;
+        }
+        else
+        {
+            if constexpr (std::is_floating_point_v<S>)
+            {
+                if constexpr (std::is_floating_point_v<V>)
+                    return static_cast<V>(component);
+                else
+                    return Data::RoundCast<V>(component * static_cast<S>(GetComponentMax<V>()));
+            }
+            else
+            {
+                if constexpr (std::is_floating_point_v<V>)
+                    return static_cast<V>(component) / static_cast<V>(GetComponentMax<S>());
+                else
+                    return Data::RoundCast<V>(static_cast<double>(component) * static_cast<double>(GetComponentMax<V>()) / static_cast<double>(GetComponentMax<S>()));
+            }
+        }
     }
 
-    [[nodiscard]] inline uint8_t GetUintColorComponent(float component) const noexcept
+    template<typename V>
+    static void CheckComponentRange(V component, std::string_view name)
     {
-        return static_cast<uint8_t>(std::round(component * static_cast<float>(s_uint_component_max)));
+        static const std::pair<V, V> s_component_range = GetComponentRange<V>();
+        META_CHECK_ARG_RANGE_INC_DESCR(component, s_component_range.first, s_component_range.second, "for {} color component", name);
     }
 
-    [[nodiscard]] inline float GetFloatColorComponent(uint8_t component) const
+    void CheckComponentsRange()
     {
-        META_CHECK_ARG_RANGE(component, 0, s_uint_component_max);
-        return static_cast<float>(component) / static_cast<float>(s_uint_component_max);
+        CheckComponentRange<T>(m_components.r, "Red");
+        CheckComponentRange<T>(m_components.g, "Green");
+        CheckComponentRange<T>(m_components.b, "Blue");
+        if constexpr (size == 4)
+            CheckComponentRange<T>(m_components.a, "Alpha");
     }
 
     VectorType m_components;
-
-    static constexpr std::pair<float, float> s_float_range{ 0.F, 1.F + std::numeric_limits<float>::epsilon() };
-    static constexpr uint8_t s_uint_component_max = std::numeric_limits<uint8_t>::max();
 };
 
+template<size_t size>
+using ColorF = Color<float, size>;
 using Color3F = ColorF<3>;
 using Color4F = ColorF<4>;
+
+template<size_t size>
+using ColorB = Color<uint8_t, size>;
+using Color3B = ColorB<3>;
+using Color4B = ColorB<4>;
+
+template<size_t size>
+using ColorU  = Color<uint32_t, size>;
+using Color3U = ColorU<3>;
+using Color4U = ColorU<4>;
 
 } // namespace Methane::Graphics

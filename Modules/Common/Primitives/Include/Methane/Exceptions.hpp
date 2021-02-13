@@ -110,8 +110,8 @@ class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_ran
 public:
     using DecayType = typename std::decay_t<T>;
 
-    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, RangeType range, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {})", typeid(T).name(), value, range.first, range.second), description)
+    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, RangeType range, bool range_end_inclusive = false, const std::string& description = "")
+        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {}{}", typeid(T).name(), value, range.first, range.second, range_end_inclusive ? ']' : ')'), description)
         , m_value(std::move(value))
         , m_range(std::move(range))
     { }

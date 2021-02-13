@@ -386,10 +386,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
     if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
     {
         const Settings& settings = GetSettings();
-        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()
-                                    green:settings.blending_color.GetGf()
-                                     blue:settings.blending_color.GetBf()
-                                    alpha:settings.blending_color.GetAf()];
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRed()
+                                    green:settings.blending_color.GetGreen()
+                                     blue:settings.blending_color.GetBlue()
+                                    alpha:settings.blending_color.GetAlpha()];
     }
 }
 
