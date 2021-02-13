@@ -7,6 +7,7 @@ add_executable(${TARGET}
     Main.cpp
     VolumeSizeTest.cpp
     VolumeTest.cpp
+    ColorTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

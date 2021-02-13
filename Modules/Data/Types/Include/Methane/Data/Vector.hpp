@@ -41,25 +41,29 @@ namespace Methane::Data
 namespace Internal
 {
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
 struct HlslVectorMap
 {
     using Type = void;
 };
 
+template<> struct HlslVectorMap<int32_t, 1> { using Type = hlslpp::int1; };
 template<> struct HlslVectorMap<int32_t, 2> { using Type = hlslpp::int2; };
 template<> struct HlslVectorMap<int32_t, 3> { using Type = hlslpp::int3; };
 template<> struct HlslVectorMap<int32_t, 4> { using Type = hlslpp::int4; };
 
+template<> struct HlslVectorMap<uint32_t, 1> { using Type = hlslpp::uint1; };
 template<> struct HlslVectorMap<uint32_t, 2> { using Type = hlslpp::uint2; };
 template<> struct HlslVectorMap<uint32_t, 3> { using Type = hlslpp::uint3; };
 template<> struct HlslVectorMap<uint32_t, 4> { using Type = hlslpp::uint4; };
 
+template<> struct HlslVectorMap<float, 1> { using Type = hlslpp::float1; };
 template<> struct HlslVectorMap<float, 2> { using Type = hlslpp::float2; };
 template<> struct HlslVectorMap<float, 3> { using Type = hlslpp::float3; };
 template<> struct HlslVectorMap<float, 4> { using Type = hlslpp::float4; };
 
 #ifdef HLSLPP_DOUBLE
+template<> struct HlslVectorMap<double, 1> { using Type = hlslpp::double1; };
 template<> struct HlslVectorMap<double, 2> { using Type = hlslpp::double2; };
 template<> struct HlslVectorMap<double, 3> { using Type = hlslpp::double3; };
 template<> struct HlslVectorMap<double, 4> { using Type = hlslpp::double4; };
@@ -67,8 +71,35 @@ template<> struct HlslVectorMap<double, 4> { using Type = hlslpp::double4; };
 
 } // namespace Internal
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
 using HlslVector = typename Internal::HlslVectorMap<T, size>::Type;
+
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
+T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS(index, size);
+    switch(index)
+    {
+    case 0: return vec.x;
+    case 1: return vec.y;
+    case 2: if constexpr (size >= 3) return vec.z; break;
+    case 3: if constexpr (size == 4) return vec.w; break;
+    default: META_UNEXPECTED_ARG(index);
+    }
+}
+
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components)
+{
+    META_FUNCTION_TASK();
+    if constexpr (size == 2)
+        return HlslVector<T, 2>(components[0], components[1]);
+    if constexpr (size == 3)
+        return HlslVector<T, 3>(components[0], components[1], components[2]);
+    if constexpr (size == 4)
+        return HlslVector<T, 4>(components[0], components[1], components[2], components[3]);
+}
 
 template<typename T, typename V, typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<V>>>
 constexpr T RoundCast(V value) noexcept
@@ -304,20 +335,5 @@ private:
 using RawVector2F = RawVector<float, 2>;
 using RawVector3F = RawVector<float, 3>;
 using RawVector4F = RawVector<float, 4>;
-
-template<typename T, size_t size>
-T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, size);
-    switch(index)
-    {
-    case 0: return vec.x;
-    case 1: return vec.y;
-    case 2: if constexpr (size >= 3) return vec.z; break;
-    case 3: if constexpr (size == 4) return vec.w; break;
-    default: META_UNEXPECTED_ARG(index);
-    }
-}
 
 } // namespace Methane::Data

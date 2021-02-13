@@ -58,9 +58,14 @@ public:
         CheckComponentsRange();
     }
 
-    template<size_t sz, typename... Args, typename = std::enable_if_t<sz < size>>
-    explicit Color(const Data::HlslVector<T, sz>& components, Args&&... args)
-        : m_components(components, std::forward<Args>(args)...)
+    explicit Color(const std::array<T, size>& components)
+        : m_components(Data::CreateHlslVector(components))
+    {
+        CheckComponentsRange();
+    }
+
+    explicit Color(const VectorType& components)
+        : m_components(components)
     {
         CheckComponentsRange();
     }
@@ -94,13 +99,13 @@ public:
     [[nodiscard]] V GetRed() const noexcept   { return ComponentCast<V, T>(m_components.r); }
 
     template<typename V = T>
-    [[nodiscard]] T GetGreen() const noexcept { return ComponentCast<V, T>(m_components.g); }
+    [[nodiscard]] V GetGreen() const noexcept { return ComponentCast<V, T>(m_components.g); }
 
     template<typename V = T>
-    [[nodiscard]] T GetBlue() const noexcept  { return ComponentCast<V, T>(m_components.b); }
+    [[nodiscard]] V GetBlue() const noexcept  { return ComponentCast<V, T>(m_components.b); }
 
     template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    [[nodiscard]] float GetAlpha() const noexcept { return ComponentCast<V, T>(m_components.a); }
+    [[nodiscard]] V GetAlpha() const noexcept { return ComponentCast<V, T>(m_components.a); }
 
     template<typename V = T>
     void SetRed(V r)   { CheckComponentRange(r, "Red");   m_components.r = ComponentCast<T, V>(r); }

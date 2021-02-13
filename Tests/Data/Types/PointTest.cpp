@@ -30,7 +30,7 @@ Unit-tests of the Point data type wrapping HLSL++ vector
 
 using namespace Methane::Data;
 
-template<typename T, size_t size, typename PointType = Point<T, size>, typename = std::enable_if_t<2 <= size && size <= 4>>
+template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)
 {
     CHECK(point.GetX() == Approx(components[0]));
@@ -104,8 +104,7 @@ TEMPLATE_TEST_CASE_SIG("Point Initialization", "[point][init]", VECTOR_TYPES_MAT
     SECTION("Move assignment initialization")
     {
         Point<T, size> point(test_arr);
-        Point<T, size> copy_point;
-        copy_point = std::move(point);
+        Point<T, size> copy_point = std::move(point);
         CheckPoint(copy_point, test_arr);
     }
 
