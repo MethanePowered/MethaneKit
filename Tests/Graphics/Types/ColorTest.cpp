@@ -100,6 +100,23 @@ TEMPLATE_TEST_CASE_SIG("Color Initialization", "[color][init]", COLOR_TYPES_MATR
             else
                 CheckColor(Color<T, 4>(uint_color_arr[0], uint_color_arr[1], uint_color_arr[2], uint_color_arr[3]), uint_color_arr);
         }
+
+        SECTION("Exception on initialization with components greater than 1.0")
+        {
+            if constexpr (size == 3)
+            {
+                CHECK_THROWS(Color<T, 3>(2.0, test_color_arr[1], test_color_arr[2]));
+                CHECK_THROWS(Color<T, 3>(test_color_arr[0], 2.0, test_color_arr[2]));
+                CHECK_THROWS(Color<T, 3>(test_color_arr[0], test_color_arr[1], 2.0));
+            }
+            else
+            {
+                CHECK_THROWS(Color<T, 4>(2.0, test_color_arr[1], test_color_arr[2], test_color_arr[3]));
+                CHECK_THROWS(Color<T, 4>(test_color_arr[0], 2.0, test_color_arr[2], test_color_arr[3]));
+                CHECK_THROWS(Color<T, 4>(test_color_arr[0], test_color_arr[1], 2.0, test_color_arr[3]));
+                CHECK_THROWS(Color<T, 4>(test_color_arr[0], test_color_arr[1], test_color_arr[2], 2.0));
+            }
+        }
     }
     else
     {
@@ -228,6 +245,7 @@ TEMPLATE_TEST_CASE_SIG("Color Component Accessors", "[color][accessors]", COLOR_
     {
         for(size_t component_index = 0; component_index < size; ++component_index)
         {
+            CHECK(test_color[component_index] == Approx(test_color_arr[component_index]));
             CHECK(test_color.Get(component_index) == Approx(test_color_arr[component_index]));
             CHECK(test_color.template Get<uint8_t>(component_index) == GetColorComponentAsByte(test_color_arr[component_index]));
         }
@@ -244,6 +262,30 @@ TEMPLATE_TEST_CASE_SIG("Color Component Accessors", "[color][accessors]", COLOR_
         CheckColor(color, test_color_arr);
     }
 
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        SECTION("Exception on channel set with value greater 1.0")
+        {
+            Color<T, size> color(test_color_arr);
+            CHECK_THROWS_AS(color.SetRed(2.0), Methane::ArgumentExceptionBase<std::out_of_range>);
+            CHECK_THROWS_AS(color.SetGreen(2.0), Methane::ArgumentExceptionBase<std::out_of_range>);
+            CHECK_THROWS_AS(color.SetBlue(2.0), Methane::ArgumentExceptionBase<std::out_of_range>);
+            if constexpr (size == 4)
+                CHECK_THROWS_AS(color.SetAlpha(2.0), Methane::ArgumentExceptionBase<std::out_of_range>);
+            CheckColor(color, test_color_arr);
+        }
+
+        SECTION("Exception on indexed setter with value greater 1.0")
+        {
+            Color<T, size> color(test_color_arr);
+            for(size_t component_index = 0; component_index < color.GetSize(); ++component_index)
+            {
+                CHECK_THROWS_AS(color.Set(component_index, 2.0), Methane::ArgumentExceptionBase<std::out_of_range>);
+            }
+            CheckColor(color, test_color_arr);
+        }
+    }
+
     SECTION("Component channel setters with byte")
     {
         Color<T, size> color;
@@ -258,7 +300,7 @@ TEMPLATE_TEST_CASE_SIG("Color Component Accessors", "[color][accessors]", COLOR_
     SECTION("Indexed component setters with original type")
     {
         Color<T, size> color;
-        for(size_t component_index = 0; component_index < size; ++component_index)
+        for(size_t component_index = 0; component_index < color.GetSize(); ++component_index)
         {
             CHECK_NOTHROW(color.Set(component_index, test_color_arr[component_index]));
         }
@@ -268,10 +310,75 @@ TEMPLATE_TEST_CASE_SIG("Color Component Accessors", "[color][accessors]", COLOR_
     SECTION("Indexed component setters with byte")
     {
         Color<T, size> color;
-        for(size_t component_index = 0; component_index < size; ++component_index)
+        for(size_t component_index = 0; component_index < color.GetSize(); ++component_index)
         {
             CHECK_NOTHROW(color.template Set<uint8_t>(component_index, GetColorComponentAsByte(test_color_arr[component_index])));
         }
         CheckColor(color, test_color_arr, 0.01F);
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG("Color Conversions to Other Types", "[color][convert]", COLOR_TYPES_MATRIX)
+{
+    const auto test_color_arr = CreateColorComponents<T, size>();
+    const Color<T, size> test_color(test_color_arr);
+
+    SECTION("Convert to array")
+    {
+        CHECK(test_color.AsArray() == test_color_arr);
+    }
+
+    SECTION("Convert to HLSL vector")
+    {
+        CHECK(hlslpp::all(test_color.AsVector() == CreateHlslVector(test_color_arr)));
+    }
+
+    SECTION("Cast to HLSL vector")
+    {
+        CHECK(hlslpp::all(static_cast<HlslVector<T, size>>(test_color) == CreateHlslVector(test_color_arr)));
+    }
+
+    SECTION("Cast to color of other type")
+    {
+        if constexpr (std::is_floating_point_v<T>)
+            CheckColor(static_cast<Color<uint32_t, size>>(test_color), test_color_arr);
+        else
+            CheckColor(static_cast<Color<float, size>>(test_color), test_color_arr);
+    }
+
+    SECTION("Cast to string")
+    {
+        if constexpr (size == 3)
+            CHECK(static_cast<std::string>(test_color) == "C(r:64, g:128, b:191)");
+        else
+            CHECK(static_cast<std::string>(test_color) == "C(r:51, g:102, b:153, a:204)");
+    }
+}
+
+TEMPLATE_TEST_CASE_SIG("Color Comparison", "[color][compare]", COLOR_TYPES_MATRIX)
+{
+    const auto test_color_arr = CreateColorComponents<T, size>();
+    const Color<T, size> test_color(test_color_arr);
+
+    SECTION("Equality")
+    {
+        CHECK(test_color == Color<T, size>(test_color_arr));
+        CHECK_FALSE(test_color == Color<T, size>(test_color_arr).template SetRed<double>(1.0));
+        CHECK_FALSE(test_color == Color<T, size>(test_color_arr).template SetGreen<double>(1.0));
+        CHECK_FALSE(test_color == Color<T, size>(test_color_arr).template SetBlue<double>(1.0));
+        if constexpr (size == 4)
+            CHECK_FALSE(test_color == Color<T, size>(test_color_arr).template SetAlpha<double>(1.0));
+        CHECK_FALSE(test_color == Color<T, size>());
+    }
+
+    SECTION("Inequality")
+    {
+        CHECK_FALSE(test_color != Color<T, size>(test_color_arr));
+        CHECK(test_color != Color<T, size>(test_color_arr).template SetRed<double>(1.0));
+        CHECK(test_color != Color<T, size>(test_color_arr).template SetGreen<double>(1.0));
+        CHECK(test_color != Color<T, size>(test_color_arr).template SetBlue<double>(1.0));
+        if constexpr (size == 4)
+            CHECK(test_color != Color<T, size>(test_color_arr).template SetAlpha<double>(1.0));
+        CHECK(test_color != Color<T, size>());
     }
 }

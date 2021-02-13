@@ -79,20 +79,6 @@ public:
     [[nodiscard]] bool operator==(const Color& other) const noexcept  { return hlslpp::all(m_components == other.m_components); }
     [[nodiscard]] bool operator!=(const Color& other) const noexcept  { return !operator==(other); }
 
-    [[nodiscard]] T operator[](size_t component_index) const { return Get(component_index); }
-
-    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
-    [[nodiscard]] const VectorType& AsVector() const noexcept   { return m_components; }
-
-    template<typename V = T>
-    [[nodiscard]] std::array<V, size> AsArray() const noexcept
-    {
-        if constexpr (size == 4)
-            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>(), GetAlpha<V>() };
-        else
-            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>() };
-    }
-
     [[nodiscard]] size_t GetSize() const noexcept { return Size; }
 
     template<typename V = T>
@@ -108,16 +94,36 @@ public:
     [[nodiscard]] V GetAlpha() const noexcept { return ComponentCast<V, T>(m_components.a); }
 
     template<typename V = T>
-    void SetRed(V r)   { CheckComponentRange(r, "Red");   m_components.r = ComponentCast<T, V>(r); }
+    Color& SetRed(V r)
+    {
+        CheckComponentRange(r, "Red");
+        m_components.r = ComponentCast<T, V>(r);
+        return *this;
+    }
 
     template<typename V = T>
-    void SetGreen(V g) { CheckComponentRange(g, "Green"); m_components.g = ComponentCast<T, V>(g); }
+    Color& SetGreen(V g)
+    {
+        CheckComponentRange(g, "Green");
+        m_components.g = ComponentCast<T, V>(g);
+        return *this;
+    }
 
     template<typename V = T>
-    void SetBlue(V b)  { CheckComponentRange(b, "Blue");  m_components.b = ComponentCast<T, V>(b); }
+    Color& SetBlue(V b)
+    {
+        CheckComponentRange(b, "Blue");
+        m_components.b = ComponentCast<T, V>(b);
+        return *this;
+    }
 
     template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    void SetAlpha(V a) { CheckComponentRange(a, "Alpha"); m_components.a = ComponentCast<T, V>(a); }
+    Color& SetAlpha(V a)
+    {
+        CheckComponentRange(a, "Alpha");
+        m_components.a = ComponentCast<T, V>(a);
+        return *this;
+    }
 
     template<typename V = T>
     [[nodiscard]] V Get(size_t component_index) const
@@ -134,7 +140,7 @@ public:
     }
 
     template<typename V = T>
-    void Set(size_t component_index, V value)
+    Color& Set(size_t component_index, V value)
     {
         META_CHECK_ARG_LESS(component_index, Size);
         switch(component_index)
@@ -145,6 +151,30 @@ public:
         case 3: if constexpr (size == 4) { SetAlpha<V>(value); } break;
         default: META_UNEXPECTED_ARG(component_index);
         }
+        return *this;
+    }
+
+    [[nodiscard]] T operator[](size_t component_index) const { return Get(component_index); }
+
+    [[nodiscard]] explicit operator VectorType() const noexcept { return m_components; }
+    [[nodiscard]] const VectorType& AsVector() const noexcept   { return m_components; }
+
+    template<typename V = T>
+    [[nodiscard]] std::array<V, size> AsArray() const noexcept
+    {
+        if constexpr (size == 4)
+            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>(), GetAlpha<V>() };
+        else
+            return { GetRed<V>(), GetGreen<V>(), GetBlue<V>() };
+    }
+
+    template<typename V>
+    [[nodiscard]] explicit operator Color<V, size>() const
+    {
+        if constexpr (size == 3)
+            return Color<V, 3>(GetRed(), GetGreen(), GetBlue());
+        else
+            return Color<V, 4>(GetRed(), GetGreen(), GetBlue(), GetAlpha());
     }
 
     [[nodiscard]] explicit operator std::string() const noexcept
