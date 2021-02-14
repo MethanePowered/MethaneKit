@@ -108,8 +108,8 @@ bool Badge::SetRect(const UnitRect& ui_rect)
 UnitRect Badge::GetBadgeRectInFrame(const Context& ui_context, const UnitSize& frame_size, const Settings& settings)
 {
     return GetBadgeRectInFrame(frame_size,
-                               ui_context.ConvertToUnits(settings.size,    frame_size.units),
-                               ui_context.ConvertToUnits(settings.margins, frame_size.units),
+                               ui_context.ConvertToUnits(settings.size,    frame_size.GetUnits()),
+                               ui_context.ConvertToUnits(settings.margins, frame_size.GetUnits()),
                                settings.corner);
 }
 
@@ -117,23 +117,23 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
                                     const UnitPoint& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(frame_size.units, frame_size.units == badge_size.units && badge_size.units == badge_margins.units,
+    META_CHECK_ARG_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
                          "frame size, badge size and margins units must be equal");
 
     switch(frame_corner)
     {
     case FrameCorner::TopLeft:
-        return UnitRect(frame_size.units, badge_margins, badge_size);
+        return UnitRect(frame_size.GetUnits(), badge_margins, badge_size);
 
     case FrameCorner::TopRight:
-        return UnitRect(frame_size.units, gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetX(), badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetX(), badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomLeft:
-        return UnitRect(frame_size.units, gfx::FramePoint(badge_margins.GetX(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetX(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomRight:
         return UnitRect(
-            frame_size.units,
+            frame_size.GetUnits(),
             gfx::FramePoint(frame_size.GetWidth()  - badge_size.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight()) - badge_margins,
             badge_size
         );

@@ -245,7 +245,7 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
 {
     META_FUNCTION_TASK();
     const UnitRect& ui_curr_rect_px  = GetRectInPixels();
-    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
+    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.GetUnits());
     const UnitRect  ui_rect_in_px    = GetUIContext().ConvertToPixels(ui_rect);
     const bool      ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
     const bool      ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;

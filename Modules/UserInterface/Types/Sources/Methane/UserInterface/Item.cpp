@@ -39,21 +39,21 @@ Item::Item(Context& ui_context, const UnitRect& ui_rect)
 UnitPoint Item::GetRelOriginInDots() const noexcept
 {
     META_FUNCTION_TASK();
-    assert(m_rel_origin_px.units == Units::Pixels);
+    assert(m_rel_origin_px.GetUnits() == Units::Pixels);
     return m_ui_context.ConvertToDots(m_rel_origin_px);
 }
 
 UnitPoint Item::GetRelOriginInUnits(Units units) const noexcept
 {
     META_FUNCTION_TASK();
-    assert(m_rel_origin_px.units == Units::Pixels);
+    assert(m_rel_origin_px.GetUnits() == Units::Pixels);
     return m_ui_context.ConvertToUnits(m_rel_origin_px, units);
 }
 
 UnitRect Item::GetRectInDots() const noexcept
 {
     META_FUNCTION_TASK();
-    assert(m_abs_rect_px.units == Units::Pixels);
+    assert(m_abs_rect_px.GetUnits() == Units::Pixels);
     return m_ui_context.ConvertToDots(m_abs_rect_px);
 }
 
@@ -88,15 +88,15 @@ void Item::SetRelOrigin(const UnitPoint& rel_origin)
 bool Item::SetOrigin(const UnitPoint& origin)
 {
     META_FUNCTION_TASK();
-    assert(m_abs_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_abs_rect_px.units, m_ui_context.ConvertToPixels(origin), m_abs_rect_px.size));
+    assert(m_abs_rect_px.GetUnits() == Units::Pixels);
+    return SetRect(UnitRect(m_abs_rect_px.GetUnits(), m_ui_context.ConvertToPixels(origin), m_abs_rect_px.size));
 }
 
 bool Item::SetSize(const UnitSize& size)
 {
     META_FUNCTION_TASK();
-    assert(m_abs_rect_px.units == Units::Pixels);
-    return SetRect(UnitRect(m_abs_rect_px.units, m_abs_rect_px.origin, m_ui_context.ConvertToPixels(size)));
+    assert(m_abs_rect_px.GetUnits() == Units::Pixels);
+    return SetRect(UnitRect(m_abs_rect_px.GetUnits(), m_abs_rect_px.origin, m_ui_context.ConvertToPixels(size)));
 }
 
 } // namespace Methane::UserInterface

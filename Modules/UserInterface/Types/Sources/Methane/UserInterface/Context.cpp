@@ -96,13 +96,13 @@ UnitRect Context::ConvertToDots(const FloatRect& rect) const noexcept
 UnitPoint Context::ConvertToPixels(const UnitPoint& point) const noexcept
 {
     META_FUNCTION_TASK();
-    return point.units == Units::Pixels ? point : UnitPoint(Units::Pixels, point * m_dots_to_pixels_factor);
+    return point.GetUnits() == Units::Pixels ? point : UnitPoint(Units::Pixels, point * m_dots_to_pixels_factor);
 }
 
 UnitPoint Context::ConvertToDots(const UnitPoint& point) const noexcept
 {
     META_FUNCTION_TASK();
-    return point.units == Units::Dots ? point : UnitPoint(Units::Dots, point / m_dots_to_pixels_factor);
+    return point.GetUnits() == Units::Dots ? point : UnitPoint(Units::Dots, point / m_dots_to_pixels_factor);
 }
 
 UnitPoint Context::ConvertToDots(const FramePoint& point_px) const noexcept
@@ -114,13 +114,13 @@ UnitPoint Context::ConvertToDots(const FramePoint& point_px) const noexcept
 UnitSize Context::ConvertToPixels(const UnitSize& size) const noexcept
 {
     META_FUNCTION_TASK();
-    return size.units == Units::Pixels ? size : UnitSize(Units::Pixels, size * m_dots_to_pixels_factor);
+    return size.GetUnits() == Units::Pixels ? size : UnitSize(Units::Pixels, size * m_dots_to_pixels_factor);
 }
 
 UnitSize Context::ConvertToDots(const UnitSize& size) const noexcept
 {
     META_FUNCTION_TASK();
-    return size.units == Units::Dots ? size : UnitSize(Units::Dots, size / m_dots_to_pixels_factor);
+    return size.GetUnits() == Units::Dots ? size : UnitSize(Units::Dots, size / m_dots_to_pixels_factor);
 }
 
 UnitSize Context::ConvertToDots(const FrameSize& size_px) const noexcept
@@ -132,13 +132,13 @@ UnitSize Context::ConvertToDots(const FrameSize& size_px) const noexcept
 UnitRect Context::ConvertToPixels(const UnitRect& rect) const noexcept
 {
     META_FUNCTION_TASK();
-    return rect.units == Units::Pixels ? rect : UnitRect(Units::Pixels, rect  * m_dots_to_pixels_factor);
+    return rect.GetUnits() == Units::Pixels ? rect : UnitRect(Units::Pixels, rect  * m_dots_to_pixels_factor);
 }
 
 UnitRect Context::ConvertToDots(const UnitRect& rect) const noexcept
 {
     META_FUNCTION_TASK();
-    return rect.units == Units::Dots ? rect : UnitRect(Units::Dots, rect / m_dots_to_pixels_factor);
+    return rect.GetUnits() == Units::Dots ? rect : UnitRect(Units::Dots, rect / m_dots_to_pixels_factor);
 }
 
 UnitRect Context::ConvertToDots(const FrameRect& rect_px) const noexcept
