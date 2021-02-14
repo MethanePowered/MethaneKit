@@ -25,17 +25,17 @@ Unit-tests of the Unit Types
 
 #include <catch2/catch.hpp>
 
-using namespace Methane::Data;
+using namespace Methane;
 using namespace Methane::UserInterface;
 
-#define POINT_BASE_TYPES FramePoint, FloatPoint
-#define SIZE_BASE_TYPES  FrameSize,  FloatSize
-#define RECT_BASE_TYPES  FrameRect,  FloatRect
+#define POINT_BASE_TYPES Data::FramePoint, Data::FloatPoint
+#define SIZE_BASE_TYPES  Data::FrameSize,  Data::FloatSize
+#define RECT_BASE_TYPES  Data::FrameRect,  Data::FloatRect
 
 #define ALL_BASE_TYPES POINT_BASE_TYPES, SIZE_BASE_TYPES, RECT_BASE_TYPES
 
 template<typename T>
-void CheckUnitType(const UnitType<Methane::Data::Point2T<T>>& unit_point, const Methane::Data::Point2T<T>& orig_point, Units units)
+void CheckUnitType(const UnitType<Data::Point2T<T>>& unit_point, const Data::Point2T<T>& orig_point, Units units)
 {
     CHECK(unit_point.GetUnits() == units);
     CHECK(unit_point.GetX() == orig_point.GetX());
@@ -43,7 +43,7 @@ void CheckUnitType(const UnitType<Methane::Data::Point2T<T>>& unit_point, const 
 }
 
 template<typename T>
-void CheckUnitType(const UnitType<RectSize<T>>& unit_size, const RectSize<T>& orig_size, Units units)
+void CheckUnitType(const UnitType<Data::RectSize<T>>& unit_size, const Data::RectSize<T>& orig_size, Units units)
 {
     CHECK(unit_size.GetUnits()  == units);
     CHECK(unit_size.GetWidth()  == orig_size.GetWidth());
@@ -51,7 +51,7 @@ void CheckUnitType(const UnitType<RectSize<T>>& unit_size, const RectSize<T>& or
 }
 
 template<typename T, typename D>
-void CheckUnitType(const UnitType<Rect<T, D>>& unit_rect, const Rect<T, D>& orig_rect, Units units)
+void CheckUnitType(const UnitType<Data::Rect<T, D>>& unit_rect, const Data::Rect<T, D>& orig_rect, Units units)
 {
     CHECK(unit_rect.GetUnits()  == units);
     CHECK(unit_rect.origin.GetX() == orig_rect.origin.GetX());
@@ -61,13 +61,13 @@ void CheckUnitType(const UnitType<Rect<T, D>>& unit_rect, const Rect<T, D>& orig
 }
 
 template<typename T>
-void GetTestItem(Methane::Data::Point2T<T>& test_item) { test_item = Methane::Data::Point2T<T>(12, 23); }
+void GetTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(12, 23); }
 
 template<typename T>
-void GetTestItem(Methane::Data::RectSize<T>& test_item) { test_item = Methane::Data::RectSize<T>(123, 234); }
+void GetTestItem(Data::RectSize<T>& test_item) { test_item = Data::RectSize<T>(123, 234); }
 
 template<typename T, typename D>
-void GetTestItem(Methane::Data::Rect<T, D>& test_item) { test_item = Methane::Data::Rect<T, D>(12, 23, 123, 234); }
+void GetTestItem(Data::Rect<T, D>& test_item) { test_item = Data::Rect<T, D>(12, 23, 123, 234); }
 
 template<typename TestType>
 TestType GetTestItem() { TestType test_item; GetTestItem(test_item); return test_item; }
