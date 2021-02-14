@@ -1,25 +1,22 @@
 include(CTest)
 include(Catch)
 
-set(TARGET MethaneDataTypesTest)
+set(TARGET MethaneUserInterfaceTypesTest)
 
 add_executable(${TARGET}
     Main.cpp
-    RawVectorTest.cpp
-    PointTest.cpp
-    RectSizeTest.cpp
-    RectTest.cpp
+    UnitTypesTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_link_libraries(${TARGET}
     PRIVATE
-    MethaneDataTypes
-    MethaneBuildOptions
-    MethanePrecompiledExtraHeaders
-    $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-    Catch2
+        MethaneUserInterfaceTypes
+        MethaneBuildOptions
+        MethanePrecompiledExtraHeaders
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
+        Catch2
 )
 
 if (METHANE_RUN_TESTS_DURING_BUILD)

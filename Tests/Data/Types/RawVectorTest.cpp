@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Data/Types/VectorTest.cpp
+FILE: Tests/Data/Types/RawVectorTest.cpp
 Unit-tests of the RawVector data type
 
 ******************************************************************************/
