@@ -57,6 +57,12 @@ enum class Units : uint8_t
 template<typename BaseType>
 class UnitType : public BaseType
 {
+    template<typename T, typename V, typename R>
+    using EnableReturnTypeIf = std::enable_if_t<std::is_same_v<V, T>, R>;
+
+    template<typename T, typename R>
+    using EnableReturnType = EnableReturnTypeIf<T, std::decay_t<R>, R>;
+
 public:
     using BaseType::BaseType;
     explicit UnitType(const BaseType& base) noexcept     : BaseType(base) { }
@@ -95,24 +101,30 @@ public:
     template<typename T> UnitType& operator*=(T&& multiplier) noexcept      { BaseType::operator*=(std::forward<T>(multiplier)); return *this; }
     template<typename T> UnitType& operator/=(T&& divisor) noexcept         { BaseType::operator/=(std::forward<T>(divisor)); return *this; }
 
-    template<typename T, typename V, typename R>
-    using EnableReturnTypeIf = std::enable_if_t<std::is_same_v<V, T>, R>;
+    template<typename T = BaseType, typename D = typename T::DimensionType>
+    EnableReturnType<T, Data::RectSize<D>&>       AsSize() noexcept         { return static_cast<BaseType&>(*this); }
 
-    template<typename T, typename R>
-    using EnableReturnType = EnableReturnTypeIf<T, std::decay_t<R>, R>;
+    template<typename T = BaseType, typename D = typename T::DimensionType>
+    EnableReturnType<T, const Data::RectSize<D>&> AsSize() const noexcept   { return static_cast<const BaseType&>(*this); }
 
-    template<typename T = BaseType> EnableReturnType<T, FrameSize&>        AsSize() noexcept        { return static_cast<FrameSize&>(*this); }
-    template<typename T = BaseType> EnableReturnType<T, const FrameSize&>  AsSize() const noexcept  { return static_cast<const FrameSize&>(*this); }
+    template<typename T = BaseType, typename C = typename T::CoordinateType>
+    EnableReturnType<T, Data::Point2T<C>&>        AsPoint() noexcept        { return static_cast<BaseType&>(*this); }
 
-    template<typename T = BaseType> EnableReturnType<T, FramePoint&>       AsPoint() noexcept       { return static_cast<FramePoint&>(*this); }
-    template<typename T = BaseType> EnableReturnType<T, const FramePoint&> AsPoint() const noexcept { return static_cast<const FramePoint&>(*this); }
+    template<typename T = BaseType, typename C = typename T::CoordinateType>
+    EnableReturnType<T, const Data::Point2T<C>&>  AsPoint() const noexcept  { return static_cast<const BaseType&>(*this); }
 
-    template<typename T = BaseType> EnableReturnType<T, FrameRect&>        AsRect() noexcept        { return static_cast<FrameRect&>(*this); }
-    template<typename T = BaseType> EnableReturnType<T, const FrameRect&>  AsRect() const noexcept  { return static_cast<const FrameRect&>(*this); }
+    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
+    EnableReturnType<T, Data::Rect<C, D>&>        AsRect() noexcept         { return static_cast<BaseType&>(*this); }
 
-    template<typename T = BaseType> EnableReturnTypeIf<T, FrameRect, UnitType<FramePoint>> GetUnitOrigin() const noexcept { return UnitType<FramePoint>(m_units, FrameRect::origin); }
-    template<typename T = BaseType> EnableReturnTypeIf<T, FrameRect, UnitType<FrameSize>>  GetUnitSize() const noexcept   { return UnitType<FrameSize>(m_units, FrameRect::size); }
-    
+    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
+    EnableReturnType<T, const Data::Rect<C, D>&>  AsRect() const noexcept   { return static_cast<const BaseType&>(*this); }
+
+    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
+    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::Point2T<C>>> GetUnitOrigin() const noexcept { return UnitType<Data::Point2T<C>>(m_units, BaseType::origin); }
+
+    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
+    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept { return UnitType<Data::RectSize<D>>(m_units, BaseType::size); }
+
 private:
     Units m_units = Units::Pixels;
 };

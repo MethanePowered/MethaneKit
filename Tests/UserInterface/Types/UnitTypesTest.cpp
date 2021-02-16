@@ -61,18 +61,30 @@ void CheckUnitType(const UnitType<Data::Rect<T, D>>& unit_rect, const Data::Rect
 }
 
 template<typename T>
-void GetTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(12, 23); }
+void CreateTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(12, 23); }
 
 template<typename T>
-void GetTestItem(Data::RectSize<T>& test_item) { test_item = Data::RectSize<T>(123, 234); }
+void CreateTestItem(Data::RectSize<T>& test_item) { test_item = Methane::Data::RectSize<T>(123, 234); }
 
 template<typename T, typename D>
-void GetTestItem(Data::Rect<T, D>& test_item) { test_item = Data::Rect<T, D>(12, 23, 123, 234); }
+void CreateTestItem(Data::Rect<T, D>& test_item) { test_item = Methane::Data::Rect<T, D>(12, 23, 123, 234); }
 
 template<typename TestType>
-TestType GetTestItem() { TestType test_item; GetTestItem(test_item); return test_item; }
+TestType CreateTestItem() { TestType test_item; CreateTestItem(test_item); return test_item; }
 
-TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][point][init]", ALL_BASE_TYPES)
+template<typename T>
+void CreateTestItem(Units units, UnitType<Data::Point2T<T>>& test_item) { test_item = UnitType<Methane::Data::Point2T<T>>(units, 12, 23); }
+
+template<typename T>
+void CreateTestItem(Units units, UnitType<Data::RectSize<T>>& test_item) { test_item = UnitType<Methane::Data::RectSize<T>>(units, 123, 234); }
+
+template<typename T, typename D>
+void CreateTestItem(Units units, UnitType<Data::Rect<T, D>>& test_item) { test_item = UnitType<Methane::Data::Rect<T, D>>(units, 12, 23, 123, 234); }
+
+template<typename TestType>
+UnitType<TestType> CreateTestItem(Units units) { UnitType<TestType> test_item; CreateTestItem(units, test_item); return test_item; }
+
+TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][type][init]", ALL_BASE_TYPES)
 {
     SECTION("Default constructor initialization")
     {
@@ -81,13 +93,99 @@ TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][point][init]", ALL_BASE_T
 
     SECTION("Initialize with a original type reference")
     {
-        const TestType test_item = GetTestItem<TestType>();
+        const TestType test_item = CreateTestItem<TestType>();
         CheckUnitType(UnitType<TestType>(test_item), test_item, Units::Pixels);
     }
 
     SECTION("Initialize with units and original type reference")
     {
-        const TestType test_item = GetTestItem<TestType>();
+        const TestType test_item = CreateTestItem<TestType>();
         CheckUnitType(UnitType<TestType>(Units::Dots, test_item), test_item, Units::Dots);
+    }
+
+    SECTION("Initialize with units and original type move")
+    {
+        const TestType test_item = CreateTestItem<TestType>();
+        TestType copy_item(test_item);
+        CheckUnitType(UnitType<TestType>(Units::Dots, std::move(copy_item)), test_item, Units::Dots);
+    }
+
+    SECTION("Initialize with units and original type construction arguments")
+    {
+        CheckUnitType(CreateTestItem<TestType>(Units::Dots), CreateTestItem<TestType>(), Units::Dots);
+    }
+
+    if constexpr (std::is_same_v<FramePoint, TestType>)
+    {
+        SECTION("Initialize frame point with frame size")
+        {
+            const UnitSize test_size = CreateTestItem<FrameSize>(Units::Dots);
+            CheckUnitType(UnitType<FramePoint>(test_size), FramePoint(test_size.GetWidth(), test_size.GetHeight()), Units::Dots);
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Point Conversions", "[unit][point][init]", POINT_BASE_TYPES)
+{
+    SECTION("Convert to base point reference")
+    {
+        const TestType     test_point = CreateTestItem<TestType>();
+        UnitType<TestType> unit_point = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_point.AsPoint() == test_point);
+    }
+
+    SECTION("Convert to base point const reference")
+    {
+        const TestType           test_point = CreateTestItem<TestType>();
+        const UnitType<TestType> unit_point = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_point.AsPoint() == test_point);
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Size Conversions", "[unit][size][init]", SIZE_BASE_TYPES)
+{
+    SECTION("Convert to base size reference")
+    {
+        const TestType     test_size = CreateTestItem<TestType>();
+        UnitType<TestType> unit_size = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_size.AsSize() == test_size);
+    }
+
+    SECTION("Convert to base size const reference")
+    {
+        const TestType           test_size = CreateTestItem<TestType>();
+        const UnitType<TestType> unit_size = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_size.AsSize() == test_size);
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Rect Conversions", "[unit][rect][init]", RECT_BASE_TYPES)
+{
+    SECTION("Convert to base rect reference")
+    {
+        const TestType     test_rect = CreateTestItem<TestType>();
+        UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_rect.AsRect() == test_rect);
+    }
+
+    SECTION("Convert to base rect const reference")
+    {
+        const TestType           test_rect = CreateTestItem<TestType>();
+        const UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_rect.AsRect() == test_rect);
+    }
+
+    SECTION("Convert to unit origin")
+    {
+        const auto               unit_point = CreateTestItem<Data::Point2T<typename TestType::CoordinateType>>(Units::Dots);
+        const UnitType<TestType> unit_rect  = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_rect.GetUnitOrigin() == unit_point);
+    }
+
+    SECTION("Convert to unit size")
+    {
+        const auto               unit_size = CreateTestItem<Data::RectSize<typename TestType::DimensionType>>(Units::Dots);
+        const UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_rect.GetUnitSize() == unit_size);
     }
 }
