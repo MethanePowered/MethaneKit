@@ -85,7 +85,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     UpdateTextMesh();
     UpdateConstantsBuffer();
 
-    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsRect();
+    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
 
     static const std::string s_state_name = "Text Render State";

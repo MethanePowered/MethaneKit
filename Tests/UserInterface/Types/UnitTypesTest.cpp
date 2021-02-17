@@ -125,56 +125,25 @@ TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][type][init]", ALL_BASE_TY
     }
 }
 
-TEMPLATE_TEST_CASE("Unit Point Conversions", "[unit][point][init]", POINT_BASE_TYPES)
+TEMPLATE_TEST_CASE("Unit Type Conversions", "[unit][type][convert]", ALL_BASE_TYPES)
 {
-    SECTION("Convert to base point reference")
+    SECTION("Convert to base type reference")
     {
-        const TestType     test_point = CreateTestItem<TestType>();
-        UnitType<TestType> unit_point = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_point.AsPoint() == test_point);
+        const TestType     base_item = CreateTestItem<TestType>();
+        UnitType<TestType> unit_item = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_item.AsBase() == base_item);
     }
 
-    SECTION("Convert to base point const reference")
+    SECTION("Convert to base type const reference")
     {
-        const TestType           test_point = CreateTestItem<TestType>();
-        const UnitType<TestType> unit_point = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_point.AsPoint() == test_point);
+        const TestType           base_item = CreateTestItem<TestType>();
+        const UnitType<TestType> unit_item = CreateTestItem<TestType>(Units::Dots);
+        CHECK(unit_item.AsBase() == base_item);
     }
 }
 
-TEMPLATE_TEST_CASE("Unit Size Conversions", "[unit][size][init]", SIZE_BASE_TYPES)
+TEMPLATE_TEST_CASE("Unit Rect Conversions", "[unit][rect][convert]", RECT_BASE_TYPES)
 {
-    SECTION("Convert to base size reference")
-    {
-        const TestType     test_size = CreateTestItem<TestType>();
-        UnitType<TestType> unit_size = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_size.AsSize() == test_size);
-    }
-
-    SECTION("Convert to base size const reference")
-    {
-        const TestType           test_size = CreateTestItem<TestType>();
-        const UnitType<TestType> unit_size = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_size.AsSize() == test_size);
-    }
-}
-
-TEMPLATE_TEST_CASE("Unit Rect Conversions", "[unit][rect][init]", RECT_BASE_TYPES)
-{
-    SECTION("Convert to base rect reference")
-    {
-        const TestType     test_rect = CreateTestItem<TestType>();
-        UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_rect.AsRect() == test_rect);
-    }
-
-    SECTION("Convert to base rect const reference")
-    {
-        const TestType           test_rect = CreateTestItem<TestType>();
-        const UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
-        CHECK(unit_rect.AsRect() == test_rect);
-    }
-
     SECTION("Convert to unit origin")
     {
         const auto               unit_point = CreateTestItem<Data::Point2T<typename TestType::CoordinateType>>(Units::Dots);

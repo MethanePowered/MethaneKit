@@ -101,23 +101,8 @@ public:
     template<typename T> UnitType& operator*=(T&& multiplier) noexcept      { BaseType::operator*=(std::forward<T>(multiplier)); return *this; }
     template<typename T> UnitType& operator/=(T&& divisor) noexcept         { BaseType::operator/=(std::forward<T>(divisor)); return *this; }
 
-    template<typename T = BaseType, typename D = typename T::DimensionType>
-    EnableReturnType<T, Data::RectSize<D>&>       AsSize() noexcept         { return static_cast<BaseType&>(*this); }
-
-    template<typename T = BaseType, typename D = typename T::DimensionType>
-    EnableReturnType<T, const Data::RectSize<D>&> AsSize() const noexcept   { return static_cast<const BaseType&>(*this); }
-
-    template<typename T = BaseType, typename C = typename T::CoordinateType>
-    EnableReturnType<T, Data::Point2T<C>&>        AsPoint() noexcept        { return static_cast<BaseType&>(*this); }
-
-    template<typename T = BaseType, typename C = typename T::CoordinateType>
-    EnableReturnType<T, const Data::Point2T<C>&>  AsPoint() const noexcept  { return static_cast<const BaseType&>(*this); }
-
-    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnType<T, Data::Rect<C, D>&>        AsRect() noexcept         { return static_cast<BaseType&>(*this); }
-
-    template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnType<T, const Data::Rect<C, D>&>  AsRect() const noexcept   { return static_cast<const BaseType&>(*this); }
+    BaseType&       AsBase() noexcept         { return static_cast<BaseType&>(*this); }
+    const BaseType& AsBase() const noexcept   { return static_cast<const BaseType&>(*this); }
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
     EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::Point2T<C>>> GetUnitOrigin() const noexcept { return UnitType<Data::Point2T<C>>(m_units, BaseType::origin); }

@@ -44,7 +44,7 @@ Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Se
         ScreenQuad::Settings
         {
             settings.name,
-            GetRectInPixels().AsRect(),
+            GetRectInPixels().AsBase(),
             true, // alpha_blending_enabled
             settings.blend_color,
             settings.texture_mode,
