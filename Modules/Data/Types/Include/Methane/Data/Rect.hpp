@@ -426,7 +426,7 @@ struct Rect
 
     explicit operator std::string() const
     {
-        return fmt::format("Rect[{} : {}]", origin, size);
+        return fmt::format("Rect[{} : {}]", static_cast<std::string>(origin), static_cast<std::string>(size));
     }
 };
 

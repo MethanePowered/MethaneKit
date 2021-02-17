@@ -81,15 +81,13 @@ public:
 
     Units GetUnits() const noexcept { return m_units; }
 
-    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), magic_enum::enum_name(m_units)); }
-
     template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(other) && m_units == other.GetUnits(); }
     template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(other) || m_units != other.GetUnits(); }
 
-    template<typename T> bool operator<=(const T& other) const noexcept     { return m_units == other.GetUnits() && BaseType::operator<=(other); }
-    template<typename T> bool operator<(const T& other) const noexcept      { return m_units == other.GetUnits() && BaseType::operator<(other); }
-    template<typename T> bool operator>=(const T& other) const noexcept     { return m_units == other.GetUnits() && BaseType::operator>=(other); }
-    template<typename T> bool operator>(const T& other) const noexcept      { return m_units == other.GetUnits() && BaseType::operator>(other); }
+    template<typename T> bool operator<=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<=(other); }
+    template<typename T> bool operator<(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<(other);  }
+    template<typename T> bool operator>=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>=(other); }
+    template<typename T> bool operator>(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>(other);  }
 
     template<typename T> UnitType operator+(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator+(other)); }
     template<typename T> UnitType operator-(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator-(other)); }
@@ -109,6 +107,8 @@ public:
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
     EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept { return UnitType<Data::RectSize<D>>(m_units, BaseType::size); }
+
+    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), magic_enum::enum_name(m_units)); }
 
 private:
     Units m_units = Units::Pixels;

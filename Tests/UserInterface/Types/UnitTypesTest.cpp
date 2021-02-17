@@ -60,29 +60,40 @@ void CheckUnitType(const UnitType<Data::Rect<T, D>>& unit_rect, const Data::Rect
     CHECK(unit_rect.size.GetHeight() == orig_rect.size.GetHeight());
 }
 
-template<typename T>
-void CreateTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(T(12), T(23)); }
+template<typename T, typename S>
+T GetShiftedValue(T value, S shift) { return value + static_cast<T>(shift); }
 
-template<typename T>
-void CreateTestItem(Data::RectSize<T>& test_item) { test_item = Methane::Data::RectSize<T>(T(123), T(234)); }
+template<typename T, typename S>
+void CreateTestItem(Data::Point2T<T>& test_item, S shift)
+{ test_item = Data::Point2T<T>(GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift)); }
 
-template<typename T, typename D>
-void CreateTestItem(Data::Rect<T, D>& test_item) { test_item = Methane::Data::Rect<T, D>(T(12), T(23), D(123), D(234)); }
+template<typename T, typename S>
+void CreateTestItem(Data::RectSize<T>& test_item, S shift)
+{ test_item = Methane::Data::RectSize<T>(GetShiftedValue(T(123), shift), GetShiftedValue(T(234), shift)); }
 
-template<typename TestType>
-TestType CreateTestItem() { TestType test_item; CreateTestItem(test_item); return test_item; }
+template<typename T, typename D, typename S>
+void CreateTestItem(Data::Rect<T, D>& test_item, S shift)
+{ test_item = Methane::Data::Rect<T, D>(GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift), GetShiftedValue(D(123), shift), GetShiftedValue(D(234), shift)); }
 
-template<typename T>
-void CreateTestItem(Units units, UnitType<Data::Point2T<T>>& test_item) { test_item = UnitType<Methane::Data::Point2T<T>>(units, T(12), T(23)); }
+template<typename TestType, typename S = int32_t>
+TestType CreateTestItem(S shift = 0)
+{ TestType test_item; CreateTestItem(test_item, shift); return test_item; }
 
-template<typename T>
-void CreateTestItem(Units units, UnitType<Data::RectSize<T>>& test_item) { test_item = UnitType<Methane::Data::RectSize<T>>(units, T(123), T(234)); }
+template<typename T, typename S>
+void CreateUnitItem(Units units, UnitType<Data::Point2T<T>>& test_item, S shift)
+{ test_item = UnitType<Methane::Data::Point2T<T>>(units, GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift)); }
 
-template<typename T, typename D>
-void CreateTestItem(Units units, UnitType<Data::Rect<T, D>>& test_item) { test_item = UnitType<Methane::Data::Rect<T, D>>(units, T(12), T(23), D(123), D(234)); }
+template<typename T, typename S>
+void CreateUnitItem(Units units, UnitType<Data::RectSize<T>>& test_item, S shift)
+{ test_item = UnitType<Methane::Data::RectSize<T>>(units, GetShiftedValue(T(123), shift), GetShiftedValue(T(234), shift)); }
 
-template<typename TestType>
-UnitType<TestType> CreateTestItem(Units units) { UnitType<TestType> test_item; CreateTestItem(units, test_item); return test_item; }
+template<typename T, typename D, typename S>
+void CreateUnitItem(Units units, UnitType<Data::Rect<T, D>>& test_item, S shift)
+{ test_item = UnitType<Methane::Data::Rect<T, D>>(units, GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift), GetShiftedValue(D(123), shift), GetShiftedValue(D(234), shift)); }
+
+template<typename TestType, typename S = int32_t>
+UnitType<TestType> CreateUnitItem(Units units, S shift = 0)
+{ UnitType<TestType> test_item; CreateUnitItem(units, test_item, shift); return test_item; }
 
 TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][type][init]", ALL_BASE_TYPES)
 {
@@ -112,14 +123,14 @@ TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][type][init]", ALL_BASE_TY
 
     SECTION("Initialize with units and original type construction arguments")
     {
-        CheckUnitType(CreateTestItem<TestType>(Units::Dots), CreateTestItem<TestType>(), Units::Dots);
+        CheckUnitType(CreateUnitItem<TestType>(Units::Dots), CreateTestItem<TestType>(), Units::Dots);
     }
 
     if constexpr (std::is_same_v<FramePoint, TestType>)
     {
         SECTION("Initialize frame point with frame size")
         {
-            const UnitSize test_size = CreateTestItem<FrameSize>(Units::Dots);
+            const UnitSize test_size = CreateUnitItem<FrameSize>(Units::Dots);
             CheckUnitType(UnitType<FramePoint>(test_size), FramePoint(test_size.GetWidth(), test_size.GetHeight()), Units::Dots);
         }
     }
@@ -130,31 +141,106 @@ TEMPLATE_TEST_CASE("Unit Type Conversions", "[unit][type][convert]", ALL_BASE_TY
     SECTION("Convert to base type reference")
     {
         const TestType     base_item = CreateTestItem<TestType>();
-        UnitType<TestType> unit_item = CreateTestItem<TestType>(Units::Dots);
+        UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Dots);
         CHECK(unit_item.AsBase() == base_item);
     }
 
     SECTION("Convert to base type const reference")
     {
         const TestType           base_item = CreateTestItem<TestType>();
-        const UnitType<TestType> unit_item = CreateTestItem<TestType>(Units::Dots);
+        const UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Dots);
         CHECK(unit_item.AsBase() == base_item);
+    }
+
+    SECTION("Convert Pixels type to string")
+    {
+        const UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Pixels);
+        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in Pixels";
+        CHECK(static_cast<std::string>(unit_item) == unit_str);
+    }
+
+    SECTION("Convert Dots type to string")
+    {
+        const UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Dots);
+        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in Dots";
+        CHECK(static_cast<std::string>(unit_item) == unit_str);
     }
 }
 
 TEMPLATE_TEST_CASE("Unit Rect Conversions", "[unit][rect][convert]", RECT_BASE_TYPES)
 {
+    using CoordType = typename TestType::CoordinateType;
+    using DimType   = typename TestType::DimensionType;
+
     SECTION("Convert to unit origin")
     {
-        const auto               unit_point = CreateTestItem<Data::Point2T<typename TestType::CoordinateType>>(Units::Dots);
-        const UnitType<TestType> unit_rect  = CreateTestItem<TestType>(Units::Dots);
+        const auto               unit_point = CreateUnitItem<Data::Point2T<CoordType>>(Units::Dots);
+        const UnitType<TestType> unit_rect  = CreateUnitItem<TestType>(Units::Dots);
         CHECK(unit_rect.GetUnitOrigin() == unit_point);
     }
 
     SECTION("Convert to unit size")
     {
-        const auto               unit_size = CreateTestItem<Data::RectSize<typename TestType::DimensionType>>(Units::Dots);
-        const UnitType<TestType> unit_rect = CreateTestItem<TestType>(Units::Dots);
+        const auto               unit_size = CreateUnitItem<Data::RectSize<DimType>>(Units::Dots);
+        const UnitType<TestType> unit_rect = CreateUnitItem<TestType>(Units::Dots);
         CHECK(unit_rect.GetUnitSize() == unit_size);
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Types Strict Comparison", "[unit][type][compare]", ALL_BASE_TYPES)
+{
+    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots, 0);
+    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels, 0);
+    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 10);
+    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 10);
+
+    SECTION("Equality")
+    {
+        CHECK(dot_item_a == CreateUnitItem<TestType>(Units::Dots, 0));
+        CHECK_FALSE(dot_item_a == dot_item_b);
+        CHECK_FALSE(dot_item_a == pix_item_a);
+    }
+
+    SECTION("Inequality")
+    {
+        CHECK_FALSE(dot_item_a != CreateUnitItem<TestType>(Units::Dots, 0));
+        CHECK(dot_item_a != dot_item_b);
+        CHECK(dot_item_a != pix_item_a);
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Types Non-Strict Comparison", "[unit][type][compare]", POINT_BASE_TYPES, SIZE_BASE_TYPES)
+{
+    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots, 0);
+    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels, 0);
+    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 10);
+    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 10);
+
+    SECTION("Less")
+    {
+        CHECK(dot_item_a < dot_item_b);
+        CHECK(pix_item_a < pix_item_b);
+        CHECK_THROWS(dot_item_a < pix_item_b);
+    }
+
+    SECTION("Less or equal")
+    {
+        CHECK(dot_item_a <= dot_item_b);
+        CHECK(pix_item_a <= pix_item_b);
+        CHECK_THROWS(dot_item_a <= pix_item_b);
+    }
+
+    SECTION("Greater")
+    {
+        CHECK(dot_item_b > dot_item_a);
+        CHECK(pix_item_b > pix_item_a);
+        CHECK_THROWS(dot_item_b > pix_item_a);
+    }
+
+    SECTION("Greater or equal")
+    {
+        CHECK(dot_item_b >= dot_item_a);
+        CHECK(pix_item_b >= pix_item_a);
+        CHECK_THROWS(dot_item_b >= pix_item_a);
     }
 }
