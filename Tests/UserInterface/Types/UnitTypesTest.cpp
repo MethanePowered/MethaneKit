@@ -61,25 +61,25 @@ void CheckUnitType(const UnitType<Data::Rect<T, D>>& unit_rect, const Data::Rect
 }
 
 template<typename T>
-void CreateTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(12, 23); }
+void CreateTestItem(Data::Point2T<T>& test_item) { test_item = Data::Point2T<T>(T(12), T(23)); }
 
 template<typename T>
-void CreateTestItem(Data::RectSize<T>& test_item) { test_item = Methane::Data::RectSize<T>(123, 234); }
+void CreateTestItem(Data::RectSize<T>& test_item) { test_item = Methane::Data::RectSize<T>(T(123), T(234)); }
 
 template<typename T, typename D>
-void CreateTestItem(Data::Rect<T, D>& test_item) { test_item = Methane::Data::Rect<T, D>(12, 23, 123, 234); }
+void CreateTestItem(Data::Rect<T, D>& test_item) { test_item = Methane::Data::Rect<T, D>(T(12), T(23), D(123), D(234)); }
 
 template<typename TestType>
 TestType CreateTestItem() { TestType test_item; CreateTestItem(test_item); return test_item; }
 
 template<typename T>
-void CreateTestItem(Units units, UnitType<Data::Point2T<T>>& test_item) { test_item = UnitType<Methane::Data::Point2T<T>>(units, 12, 23); }
+void CreateTestItem(Units units, UnitType<Data::Point2T<T>>& test_item) { test_item = UnitType<Methane::Data::Point2T<T>>(units, T(12), T(23)); }
 
 template<typename T>
-void CreateTestItem(Units units, UnitType<Data::RectSize<T>>& test_item) { test_item = UnitType<Methane::Data::RectSize<T>>(units, 123, 234); }
+void CreateTestItem(Units units, UnitType<Data::RectSize<T>>& test_item) { test_item = UnitType<Methane::Data::RectSize<T>>(units, T(123), T(234)); }
 
 template<typename T, typename D>
-void CreateTestItem(Units units, UnitType<Data::Rect<T, D>>& test_item) { test_item = UnitType<Methane::Data::Rect<T, D>>(units, 12, 23, 123, 234); }
+void CreateTestItem(Units units, UnitType<Data::Rect<T, D>>& test_item) { test_item = UnitType<Methane::Data::Rect<T, D>>(units, T(12), T(23), D(123), D(234)); }
 
 template<typename TestType>
 UnitType<TestType> CreateTestItem(Units units) { UnitType<TestType> test_item; CreateTestItem(units, test_item); return test_item; }
