@@ -192,7 +192,6 @@ TEMPLATE_TEST_CASE("Unit Types Strict Comparison", "[unit][type][compare]", ALL_
     const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots, 0);
     const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels, 0);
     const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 10);
-    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 10);
 
     SECTION("Equality")
     {
