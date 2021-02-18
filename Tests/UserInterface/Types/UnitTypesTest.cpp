@@ -61,39 +61,39 @@ void CheckUnitType(const UnitType<Data::Rect<T, D>>& unit_rect, const Data::Rect
 }
 
 template<typename T, typename S>
-T GetShiftedValue(T value, S shift) { return value + static_cast<T>(shift); }
+T GetShiftedValue(T value, S mult) { return value * static_cast<T>(mult); }
 
 template<typename T, typename S>
-void CreateTestItem(Data::Point2T<T>& test_item, S shift)
-{ test_item = Data::Point2T<T>(GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift)); }
+void CreateTestItem(Data::Point2T<T>& test_item, S mult)
+{ test_item = Data::Point2T<T>(GetShiftedValue(T(12), mult), GetShiftedValue(T(23), mult)); }
 
 template<typename T, typename S>
-void CreateTestItem(Data::RectSize<T>& test_item, S shift)
-{ test_item = Methane::Data::RectSize<T>(GetShiftedValue(T(123), shift), GetShiftedValue(T(234), shift)); }
+void CreateTestItem(Data::RectSize<T>& test_item, S mult)
+{ test_item = Methane::Data::RectSize<T>(GetShiftedValue(T(123), mult), GetShiftedValue(T(234), mult)); }
 
 template<typename T, typename D, typename S>
-void CreateTestItem(Data::Rect<T, D>& test_item, S shift)
-{ test_item = Methane::Data::Rect<T, D>(GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift), GetShiftedValue(D(123), shift), GetShiftedValue(D(234), shift)); }
+void CreateTestItem(Data::Rect<T, D>& test_item, S mult)
+{ test_item = Methane::Data::Rect<T, D>(GetShiftedValue(T(12), mult), GetShiftedValue(T(23), mult), GetShiftedValue(D(123), mult), GetShiftedValue(D(234), mult)); }
 
 template<typename TestType, typename S = int32_t>
-TestType CreateTestItem(S shift = 0)
-{ TestType test_item; CreateTestItem(test_item, shift); return test_item; }
+TestType CreateTestItem(S mult = S(1))
+{ TestType test_item; CreateTestItem(test_item, mult); return test_item; }
 
 template<typename T, typename S>
-void CreateUnitItem(Units units, UnitType<Data::Point2T<T>>& test_item, S shift)
-{ test_item = UnitType<Methane::Data::Point2T<T>>(units, GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift)); }
+void CreateUnitItem(Units units, UnitType<Data::Point2T<T>>& test_item, S mult)
+{ test_item = UnitType<Methane::Data::Point2T<T>>(units, GetShiftedValue(T(12), mult), GetShiftedValue(T(23), mult)); }
 
 template<typename T, typename S>
-void CreateUnitItem(Units units, UnitType<Data::RectSize<T>>& test_item, S shift)
-{ test_item = UnitType<Methane::Data::RectSize<T>>(units, GetShiftedValue(T(123), shift), GetShiftedValue(T(234), shift)); }
+void CreateUnitItem(Units units, UnitType<Data::RectSize<T>>& test_item, S mult)
+{ test_item = UnitType<Methane::Data::RectSize<T>>(units, GetShiftedValue(T(123), mult), GetShiftedValue(T(234), mult)); }
 
 template<typename T, typename D, typename S>
-void CreateUnitItem(Units units, UnitType<Data::Rect<T, D>>& test_item, S shift)
-{ test_item = UnitType<Methane::Data::Rect<T, D>>(units, GetShiftedValue(T(12), shift), GetShiftedValue(T(23), shift), GetShiftedValue(D(123), shift), GetShiftedValue(D(234), shift)); }
+void CreateUnitItem(Units units, UnitType<Data::Rect<T, D>>& test_item, S mult)
+{ test_item = UnitType<Methane::Data::Rect<T, D>>(units, GetShiftedValue(T(12), mult), GetShiftedValue(T(23), mult), GetShiftedValue(D(123), mult), GetShiftedValue(D(234), mult)); }
 
 template<typename TestType, typename S = int32_t>
-UnitType<TestType> CreateUnitItem(Units units, S shift = 0)
-{ UnitType<TestType> test_item; CreateUnitItem(units, test_item, shift); return test_item; }
+UnitType<TestType> CreateUnitItem(Units units, S mult = S(1))
+{ UnitType<TestType> test_item; CreateUnitItem(units, test_item, mult); return test_item; }
 
 TEMPLATE_TEST_CASE("Unit Type Initialization", "[unit][type][init]", ALL_BASE_TYPES)
 {
@@ -189,20 +189,20 @@ TEMPLATE_TEST_CASE("Unit Rect Conversions", "[unit][rect][convert]", RECT_BASE_T
 
 TEMPLATE_TEST_CASE("Unit Types Strict Comparison", "[unit][type][compare]", ALL_BASE_TYPES)
 {
-    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots, 0);
-    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels, 0);
-    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 10);
+    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots);
+    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels);
+    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 2);
 
     SECTION("Equality")
     {
-        CHECK(dot_item_a == CreateUnitItem<TestType>(Units::Dots, 0));
+        CHECK(dot_item_a == CreateUnitItem<TestType>(Units::Dots));
         CHECK_FALSE(dot_item_a == dot_item_b);
         CHECK_FALSE(dot_item_a == pix_item_a);
     }
 
     SECTION("Inequality")
     {
-        CHECK_FALSE(dot_item_a != CreateUnitItem<TestType>(Units::Dots, 0));
+        CHECK_FALSE(dot_item_a != CreateUnitItem<TestType>(Units::Dots));
         CHECK(dot_item_a != dot_item_b);
         CHECK(dot_item_a != pix_item_a);
     }
@@ -210,10 +210,10 @@ TEMPLATE_TEST_CASE("Unit Types Strict Comparison", "[unit][type][compare]", ALL_
 
 TEMPLATE_TEST_CASE("Unit Types Non-Strict Comparison", "[unit][type][compare]", POINT_BASE_TYPES, SIZE_BASE_TYPES)
 {
-    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots, 0);
-    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels, 0);
-    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 10);
-    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 10);
+    const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots);
+    const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels);
+    const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 2);
+    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 2);
 
     SECTION("Less")
     {
@@ -241,5 +241,70 @@ TEMPLATE_TEST_CASE("Unit Types Non-Strict Comparison", "[unit][type][compare]", 
         CHECK(dot_item_b >= dot_item_a);
         CHECK(pix_item_b >= pix_item_a);
         CHECK_THROWS(dot_item_b >= pix_item_a);
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Type Math Scalar Operations", "[unit][type][math]", ALL_BASE_TYPES)
+{
+    SECTION("Multiplication by scalar")
+    {
+        const UnitType<TestType> test_item = CreateUnitItem<TestType>(Units::Dots);
+        CHECK(test_item * 2 == CreateUnitItem<TestType>(Units::Dots, 2));
+    }
+
+    SECTION("Division by scalar")
+    {
+        const UnitType<TestType> test_item = CreateUnitItem<TestType>(Units::Dots, 2);
+        CHECK(test_item / 2 == CreateUnitItem<TestType>(Units::Dots));
+    }
+
+    SECTION("Inplace multiplication by scalar")
+    {
+        UnitType<TestType> test_item = CreateUnitItem<TestType>(Units::Dots);
+        test_item *= 2;
+        CHECK(test_item == CreateUnitItem<TestType>(Units::Dots, 2));
+    }
+
+    SECTION("Inplace division by scalar")
+    {
+        UnitType<TestType> test_item = CreateUnitItem<TestType>(Units::Dots, 2);
+        test_item /= 2;
+        CHECK(test_item == CreateUnitItem<TestType>(Units::Dots));
+    }
+}
+
+TEMPLATE_TEST_CASE("Unit Type Math Additive Operations", "[unit][type][math]", POINT_BASE_TYPES, SIZE_BASE_TYPES)
+{
+    const UnitType<TestType> test_item_1px = CreateUnitItem<TestType>(Units::Pixels, 1);
+    const UnitType<TestType> test_item_2px = CreateUnitItem<TestType>(Units::Pixels, 2);
+    const UnitType<TestType> test_item_3px = CreateUnitItem<TestType>(Units::Pixels, 3);
+    const UnitType<TestType> test_item_2dt = CreateUnitItem<TestType>(Units::Dots, 2);
+
+    SECTION("Addition")
+    {
+        CHECK(test_item_1px + test_item_2px == test_item_3px);
+        CHECK_THROWS(test_item_1px + test_item_2dt);
+    }
+
+    SECTION("Subtraction")
+    {
+        CHECK(test_item_3px - test_item_1px == test_item_2px);
+        CHECK_THROWS(test_item_2dt - test_item_1px);
+    }
+
+    SECTION("Inplace Addition")
+    {
+        UnitType<TestType> test_item_px = CreateUnitItem<TestType>(Units::Pixels, 1);
+        test_item_px += test_item_2px;
+        CHECK(test_item_px == test_item_3px);
+        CHECK_THROWS(test_item_px += test_item_2dt);
+    }
+
+    SECTION("Inplace Subtraction")
+    {
+        UnitType<TestType> test_item_px = CreateUnitItem<TestType>(Units::Pixels, 3);
+        test_item_px -= test_item_1px;
+        CHECK(test_item_px == test_item_2px);
+        CHECK_THROWS(test_item_px -= test_item_2dt);
     }
 }
