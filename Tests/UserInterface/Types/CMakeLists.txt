@@ -6,6 +6,8 @@ set(TARGET MethaneUserInterfaceTypesTest)
 add_executable(${TARGET}
     Main.cpp
     UnitTypesTest.cpp
+    FakeRenderContext.hpp
+    ContextTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
@@ -13,6 +15,8 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneUserInterfaceTypes
+        MethaneGraphicsPrimitives
+        MethaneGraphicsCore
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>

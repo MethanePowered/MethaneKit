@@ -59,7 +59,7 @@ public:
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
     tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    Object::Registry& GetObjectsRegistry() noexcept override                     { return m_objects_cache; }
+    Object::Registry& GetObjectsRegistry() noexcept override                  { return m_objects_cache; }
     void              RequestDeferredAction(DeferredAction action) const noexcept override;
     void              CompleteInitialization() override;
     bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
