@@ -7,6 +7,7 @@ get_module_dirs("Methane/Graphics")
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/TypeConverters.hpp
+    ${INCLUDE_DIR}/TypeInvariants.hpp
     ${INCLUDE_DIR}/Point.hpp
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Volume.hpp

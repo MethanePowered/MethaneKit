@@ -177,7 +177,7 @@ TEMPLATE_PRODUCT_TEST_CASE("Volume Math Operations", "[volume][math]", RECT_TYPE
     }
 }
 
-TEMPLATE_PRODUCT_TEST_CASE("Volume Conversion to Other Types", "[volume][conv]", RECT_TYPES_PRODUCT)
+TEMPLATE_PRODUCT_TEST_CASE("Volume Conversion to Other Types", "[volume][convert]", RECT_TYPES_PRODUCT)
 {
     using PointType = typename TestType::Point;
     using SizeType  = typename TestType::Size;

@@ -39,7 +39,7 @@ Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::stri
 }
 
 Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Settings& settings)
-    : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeInPixels(), settings))
+    : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeIn<Units::Pixels>(), settings))
     , ScreenQuad(ui_context.GetRenderContext(), texture_ptr,
         ScreenQuad::Settings
         {
@@ -51,7 +51,7 @@ Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Se
         }
     )
     , m_settings(settings)
-    , m_frame_size(ui_context.GetFrameSizeInPixels())
+    , m_frame_size(ui_context.GetFrameSizeIn<Units::Pixels>())
 {
     META_FUNCTION_TASK();
 }

@@ -12,6 +12,7 @@ set(HEADERS
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Chunk.hpp
     ${INCLUDE_DIR}/TimeRange.hpp
+    ${INCLUDE_DIR}/TypeInvariants.hpp
     ${INCLUDE_DIR}/TypeFormatters.hpp
 )
 

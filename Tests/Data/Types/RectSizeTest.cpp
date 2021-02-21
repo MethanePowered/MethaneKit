@@ -540,7 +540,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Math Operations", "[rect][size][math]", RECT_
     }
 }
 
-TEMPLATE_TEST_CASE("Rectangle Size Conversion to Other Types", "[rect][size][conv]", RECT_SIZE_TYPES)
+TEMPLATE_TEST_CASE("Rectangle Size Conversion to Other Types", "[rect][size][convert]", RECT_SIZE_TYPES)
 {
     if constexpr (std::is_floating_point_v<TestType>)
     {

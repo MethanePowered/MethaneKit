@@ -69,7 +69,7 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
     gui::Font::ConvertUtf8To32(
         "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす"),
 
-    // 2: hitchhicker's guide quote
+    // 2: hitchhiker's guide quote
     gui::Font::ConvertUtf8To32(
         "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
         "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
@@ -298,7 +298,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
-        const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
+        const gui::UnitSize atlas_size = GetUIContext().ConvertTo<gui::Units::Dots>(badge_atlas_ptr->GetTexture().GetSettings().dimensions.AsRectSize());
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
         badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);
     }

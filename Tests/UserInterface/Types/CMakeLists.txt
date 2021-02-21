@@ -5,6 +5,7 @@ set(TARGET MethaneUserInterfaceTypesTest)
 
 add_executable(${TARGET}
     Main.cpp
+    UnitTypeCatchHelpers.hpp
     UnitTypesTest.cpp
     FakeRenderContext.hpp
     ContextTest.cpp

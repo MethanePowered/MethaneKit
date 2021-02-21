@@ -36,7 +36,7 @@ Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
         ScreenQuad::Settings
         {
             settings.name,
-            ui_context.ConvertToPixels(ui_rect).AsBase(),
+            ui_context.ConvertTo<Units::Pixels>(ui_rect).AsBase(),
             true, // alpha_blending_enabled
             settings.background_color,
             TextureMode::Disabled
@@ -55,7 +55,7 @@ bool Panel::SetRect(const UnitRect& ui_rect)
         return false;
 
     gfx::ScreenQuad::SetScreenRect(
-        GetUIContext().ConvertToPixels(ui_rect),
+        GetUIContext().ConvertTo<Units::Pixels>(ui_rect),
         GetUIContext().GetRenderContext().GetSettings().frame_size);
     return true;
 }

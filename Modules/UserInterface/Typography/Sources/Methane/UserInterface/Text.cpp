@@ -79,7 +79,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_font_ptr->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-    m_frame_rect = GetUIContext().ConvertToPixels(m_settings.rect);
+    m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
     UpdateTextMesh();
@@ -222,7 +222,7 @@ void Text::SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect
     }
 
     m_is_viewport_dirty = true;
-    Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
+    Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -238,7 +238,7 @@ bool Text::SetRect(const UnitRect& ui_rect)
     }
 
     m_is_viewport_dirty = true;
-    return Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
+    return Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
 }
 
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
@@ -246,7 +246,7 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
     META_FUNCTION_TASK();
     const UnitRect& ui_curr_rect_px  = GetRectInPixels();
     const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.GetUnits());
-    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertToPixels(ui_rect);
+    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertTo<Units::Pixels>(ui_rect);
     const bool      ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
     const bool      ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;
 

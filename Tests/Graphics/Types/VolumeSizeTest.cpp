@@ -629,13 +629,14 @@ TEMPLATE_TEST_CASE("Volume Size Math Operations", "[volume][size][math]", VOLUME
     }
 }
 
-TEMPLATE_TEST_CASE("Volume Size Conversion to Other Types", "[volume][size][conv]", VOLUME_SIZE_TYPES)
+TEMPLATE_TEST_CASE("Volume Size Conversion to Other Types", "[volume][size][convert]", VOLUME_SIZE_TYPES)
 {
+    const VolumeSize<TestType> test_size(TestType(1), TestType(2), TestType(3));
+
     if constexpr (std::is_floating_point_v<TestType>)
     {
         SECTION("Conversion to integer size")
         {
-            const VolumeSize<TestType> test_size(1, 2, 3);
             CHECK(static_cast<VolumeSize<uint32_t>>(test_size) == VolumeSize<uint32_t>(1U, 2U, 3U));
         }
     }
@@ -643,21 +644,32 @@ TEMPLATE_TEST_CASE("Volume Size Conversion to Other Types", "[volume][size][conv
     {
         SECTION("Conversion to floating point size")
         {
-            const VolumeSize<TestType> test_size(1, 2, 3);
             CHECK(static_cast<VolumeSize<float>>(test_size) == VolumeSize<float>(1.F, 2.F, 3.F));
         }
+    }
+
+    SECTION("Conversion to mutable rect size")
+    {
+        VolumeSize<TestType> mutable_size = test_size;
+        mutable_size.AsRectSize().SetWidth(TestType(3));
+        CHECK(mutable_size.AsRectSize() == RectSize<TestType>(TestType(3), TestType(2)));
+    }
+
+    SECTION("Conversion to const rect size")
+    {
+        CHECK(test_size.AsRectSize() == RectSize<TestType>(TestType(1), TestType(2)));
     }
 
     SECTION("Conversion to boolean")
     {
         CHECK_FALSE(static_cast<bool>(VolumeSize<TestType>()));
         CHECK_FALSE(static_cast<bool>(VolumeSize<TestType>(TestType(1), TestType(0), TestType(0))));
-        CHECK(static_cast<bool>(VolumeSize<TestType>(TestType(1), TestType(2), TestType(3))));
+        CHECK(static_cast<bool>(test_size));
     }
 
     SECTION("Conversion to string")
     {
-        CHECK(static_cast<std::string>(VolumeSize<TestType>(TestType(1), TestType(2), TestType(3))) == "Sz(1 x 2 x 3)");
+        CHECK(static_cast<std::string>(test_size) == "Sz(1 x 2 x 3)");
     }
 }
 

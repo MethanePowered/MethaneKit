@@ -85,7 +85,7 @@ void AppBase::InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& f
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(render_context);
     m_frame_size    = UnitSize(Units::Pixels, frame_size);
-    m_text_margins  = m_ui_context_ptr->ConvertToPixels(m_app_settings.text_margins);
+    m_text_margins  = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
 
     // Create Methane logo badge
     if (m_app_settings.show_logo_badge)

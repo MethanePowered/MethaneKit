@@ -55,12 +55,12 @@ inline uint32_t GetTextHeightInDots(const Context& ui_context, const Font& font)
 
 inline uint32_t GetFpsTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
-    return std::max(GetTextHeightInDots(ui_context, major_font), GetTextHeightInDots(ui_context, minor_font) * 2U + ui_context.ConvertToDots(text_margins).GetHeight());
+    return std::max(GetTextHeightInDots(ui_context, major_font), GetTextHeightInDots(ui_context, minor_font) * 2U + ui_context.ConvertTo<Units::Dots>(text_margins).GetHeight());
 }
 
 inline uint32_t GetTimingTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
-    return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertToDots(text_margins).GetHeight()) / 2U;
+    return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertTo<Units::Dots>(text_margins).GetHeight()) / 2U;
 }
 
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
@@ -238,7 +238,7 @@ Text& HeadsUpDisplay::GetTextBlock(TextBlock block) const
 void HeadsUpDisplay::LayoutTextBlocks()
 {
     META_FUNCTION_TASK();
-    const UnitSize text_margins_in_dots = GetUIContext().ConvertToDots(m_settings.text_margins);
+    const UnitSize text_margins_in_dots = GetUIContext().ConvertTo<Units::Dots>(m_settings.text_margins);
 
     // Layout left column text blocks
     const FrameSize help_size          = GetTextBlock(TextBlock::HelpKey).GetRectInDots().size;

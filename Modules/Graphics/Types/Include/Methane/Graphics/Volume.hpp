@@ -292,6 +292,9 @@ public:
     D GetPixelsCount() const noexcept { return m_depth * RectSize<D>::GetPixelsCount(); }
     D GetLongestSide() const noexcept { return std::max(m_depth, RectSize<D>::GetLongestSide()); }
 
+    RectSize<D>& AsRectSize() noexcept             { return static_cast<RectSize<D>&>(*this); }
+    const RectSize<D>& AsRectSize() const noexcept { return static_cast<const RectSize<D>&>(*this); }
+
     explicit operator bool() const noexcept { return RectSize<D>::operator bool() && m_depth; }
 
     template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>>>

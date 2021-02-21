@@ -81,8 +81,8 @@ public:
 
     Units GetUnits() const noexcept { return m_units; }
 
-    template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(other) && m_units == other.GetUnits(); }
-    template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(other) || m_units != other.GetUnits(); }
+    template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(static_cast<const BaseType&>(other)) && m_units == other.GetUnits(); }
+    template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(static_cast<const BaseType&>(other)) || m_units != other.GetUnits(); }
 
     template<typename T> bool operator<=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<=(other); }
     template<typename T> bool operator<(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<(other);  }

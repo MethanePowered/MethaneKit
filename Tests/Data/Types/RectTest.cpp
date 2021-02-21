@@ -177,7 +177,7 @@ TEMPLATE_PRODUCT_TEST_CASE("Rectangle Math Operations", "[rect][math]", RECT_TYP
     }
 }
 
-TEMPLATE_PRODUCT_TEST_CASE("Rectangle Conversion to Other Types", "[rect][conv]", RECT_TYPES_PRODUCT)
+TEMPLATE_PRODUCT_TEST_CASE("Rectangle Conversion to Other Types", "[rect][convert]", RECT_TYPES_PRODUCT)
 {
     using PointType = typename TestType::Point;
     using SizeType  = typename TestType::Size;
