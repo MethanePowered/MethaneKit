@@ -125,7 +125,6 @@ TEMPLATE_TEST_CASE("Unit Types Comparison", "[unit][type][compare]", ALL_BASE_TY
     const UnitType<TestType> dot_item_a = CreateUnitItem<TestType>(Units::Dots);
     const UnitType<TestType> pix_item_a = CreateUnitItem<TestType>(Units::Pixels);
     const UnitType<TestType> dot_item_b = CreateUnitItem<TestType>(Units::Dots, 2);
-    const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 2);
 
     SECTION("Equality")
     {
@@ -144,6 +143,8 @@ TEMPLATE_TEST_CASE("Unit Types Comparison", "[unit][type][compare]", ALL_BASE_TY
     if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point ||
                   Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
     {
+        const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 2);
+
         SECTION("Less")
         {
             CHECK(dot_item_a < dot_item_b);
@@ -176,9 +177,6 @@ TEMPLATE_TEST_CASE("Unit Types Comparison", "[unit][type][compare]", ALL_BASE_TY
 
 TEMPLATE_TEST_CASE("Unit Type Math Operations", "[unit][type][math]", ALL_BASE_TYPES)
 {
-    const UnitType<TestType> test_item_1px = CreateUnitItem<TestType>(Units::Pixels, 1);
-    const UnitType<TestType> test_item_2px = CreateUnitItem<TestType>(Units::Pixels, 2);
-    const UnitType<TestType> test_item_3px = CreateUnitItem<TestType>(Units::Pixels, 3);
     const UnitType<TestType> test_item_1dt = CreateUnitItem<TestType>(Units::Dots, 1);
     const UnitType<TestType> test_item_2dt = CreateUnitItem<TestType>(Units::Dots, 2);
 
@@ -209,6 +207,10 @@ TEMPLATE_TEST_CASE("Unit Type Math Operations", "[unit][type][math]", ALL_BASE_T
     if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point ||
                   Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
     {
+        const UnitType<TestType> test_item_1px = CreateUnitItem<TestType>(Units::Pixels, 1);
+        const UnitType<TestType> test_item_2px = CreateUnitItem<TestType>(Units::Pixels, 2);
+        const UnitType<TestType> test_item_3px = CreateUnitItem<TestType>(Units::Pixels, 3);
+
         SECTION("Addition")
         {
             CHECK(test_item_1px + test_item_2px == test_item_3px);
