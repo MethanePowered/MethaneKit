@@ -80,7 +80,7 @@ ImageLoader::ImageData::~ImageData()
     if (m_pixels_release_required)
     {
         // We assume that image data was loaded with STB load call and was not copied to container, so it must be freed
-        stbi_image_free(const_cast<Data::RawPtr>(m_pixels.GetDataPtr()));
+        stbi_image_free(const_cast<Data::RawPtr>(m_pixels.GetDataPtr())); // NOSONAR
     }
 #endif
 }
@@ -192,7 +192,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
             constexpr uint32_t desired_channels_count = 4;
             ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
-            std::scoped_lock<LockableBase(std::mutex)> data_lock(data_mutex);
+            std::scoped_lock data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
         }
     );

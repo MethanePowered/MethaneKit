@@ -165,7 +165,7 @@ bool AppBase::Render()
     {
         // No need to render frames while window is minimized.
         // Sleep thread for a while to not heat CPU by running the message loop
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // NOSONAR - false positive
         return false;
     }
 

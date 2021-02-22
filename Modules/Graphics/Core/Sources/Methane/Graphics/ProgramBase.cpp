@@ -127,7 +127,7 @@ ProgramBase::~ProgramBase()
 {
     META_FUNCTION_TASK();
 
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
     for (const auto& [heap_type, heap_reservation] : m_constant_descriptor_range_by_heap_type)
     {
         if (heap_reservation.range.IsEmpty())
@@ -188,7 +188,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
 const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
     if (auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);

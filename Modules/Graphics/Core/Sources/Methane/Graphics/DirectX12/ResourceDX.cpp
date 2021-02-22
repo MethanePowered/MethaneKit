@@ -100,7 +100,7 @@ D3D12_RESOURCE_STATES IResourceDX::GetNativeResourceState(State resource_state)
 D3D12_RESOURCE_BARRIER IResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    switch (id.GetType())
+    switch (id.GetType()) // NOSONAR
     {
     case Barrier::Type::Transition:
         return CD3DX12_RESOURCE_BARRIER::Transition(

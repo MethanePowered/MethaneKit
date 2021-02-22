@@ -443,7 +443,7 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
 
 ShadowCubeApp::RenderPassState::RenderPassState(bool is_final_pass, const std::string& debug_group_name)
     : is_final_pass(is_final_pass)
-    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
+    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name)) // NOSONAR
 {
     META_UNUSED(debug_group_name);
 }

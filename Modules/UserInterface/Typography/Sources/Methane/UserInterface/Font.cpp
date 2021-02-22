@@ -341,7 +341,7 @@ void Font::Library::Clear()
 }
 
 Font::Library::Library()
-    : m_impl_ptr(std::make_unique<Impl>())
+    : m_impl_ptr(std::make_unique<Impl>()) // NOSONAR
 {
     META_FUNCTION_TASK();
 }

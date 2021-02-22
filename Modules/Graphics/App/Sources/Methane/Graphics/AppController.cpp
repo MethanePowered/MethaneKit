@@ -49,7 +49,7 @@ void AppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Key
 void AppController::OnKeyboardStateAction(AppAction action)
 {
     META_FUNCTION_TASK();
-    switch(action)
+    switch(action) // NOSONAR
     {
     case AppAction::SwitchAnimations:
         m_application.SetAnimationsEnabled(!m_application.GetGraphicsAppSettings().animations_enabled);

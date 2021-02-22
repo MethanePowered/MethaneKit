@@ -164,7 +164,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
     // Add HUD text blocks as children to the base panel container
     for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        AddChild(*text_ptr);
+        AddChild(*text_ptr); // NOSONAR - method is not overridable in final class
     }
 
     // Reset timer behind so that HUD is filled with actual values on first update

@@ -62,7 +62,7 @@ public:
     template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
     void ResetToSeconds(T seconds) noexcept
     {
-        Reset(std::chrono::duration_cast<TimeDuration>(std::chrono::duration<T>(seconds)));
+        Reset(std::chrono::duration_cast<TimeDuration>(std::chrono::duration<T>(seconds))); // NOSONAR
     }
 
 protected:

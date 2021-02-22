@@ -294,7 +294,7 @@ RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& setting
     : RenderStateBase(context, settings)
 {
     META_FUNCTION_TASK();
-    Reset(settings);
+    Reset(settings); // NOSONAR - method is not overridable in final class
 }
 
 void RenderStateDX::Reset(const Settings& settings)

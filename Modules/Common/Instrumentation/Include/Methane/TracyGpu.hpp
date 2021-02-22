@@ -149,7 +149,7 @@ public:
 private:
     tracy_force_inline QueryId NextQueryId()
     {
-        std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_query_mutex);
+        std::scoped_lock lock_guard(m_query_mutex);
         m_query_id = (m_query_id + 1) % m_query_count;
         return m_query_id;
     }

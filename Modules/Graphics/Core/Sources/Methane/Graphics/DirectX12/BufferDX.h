@@ -101,7 +101,7 @@ public:
             );
 
             META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-            stdext::checked_array_iterator<Data::RawPtr> target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+            stdext::checked_array_iterator target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
             std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
             if (sub_resource.HasDataRange())
@@ -165,7 +165,7 @@ public:
 
         META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
 
-        stdext::checked_array_iterator<Data::RawPtr> source_data_it(p_sub_resource_data, data_end);
+        stdext::checked_array_iterator source_data_it(p_sub_resource_data, data_end);
         Data::Bytes sub_resource_data(data_length, {});
         std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
 

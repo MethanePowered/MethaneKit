@@ -91,7 +91,7 @@ public:
     };
 
     template<typename StringType>
-    struct Settings
+    struct Settings // NOSONAR
     {
         const std::string name;
         StringType        text;

@@ -89,7 +89,7 @@ void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, De
 }
 
 template<typename ResetCommandListFn>
-void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn)
+void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
 {
     CommandListBase::Reset();
 

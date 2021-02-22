@@ -73,7 +73,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng()); // NOSONAR
 
-                std::scoped_lock<LockableBase(std::mutex)> lock_guard(data_mutex);
+                std::scoped_lock lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
@@ -344,13 +344,14 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Update");
 
-    const hlslpp::float3&   eye_position     = m_settings.view_camera.GetOrientation().eye;
-    const hlslpp::float4x4& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
     const float elapsed_radians = gfx::ConstFloat::Pi * static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
-        std::bind(&AsteroidsArray::UpdateAsteroidUniforms, this, std::placeholders::_1, view_proj_matrix, eye_position, elapsed_radians),
+        [this, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
+        {
+            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetViewProjMatrix(), m_settings.view_camera.GetOrientation().eye, elapsed_radians);
+        },
         Data::GetParallelChunkSizeAsInt(m_content_state_ptr->parameters.size(), 5)
     );
 

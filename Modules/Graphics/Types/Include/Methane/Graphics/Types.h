@@ -29,6 +29,7 @@ Methane primitive graphics types.
 #include <string>
 #include <cstdint>
 
+// NOSONAR
 #define META_UNIFORM_ALIGN alignas(Methane::Graphics::g_uniform_alignment)
 
 namespace Methane::Graphics
