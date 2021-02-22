@@ -25,7 +25,7 @@ Unit-tests of the User Interface Context
 #include "UnitTypeCatchHelpers.hpp"
 
 #include <Methane/UserInterface/Context.h>
-#include <Methane/Data/TypeInvariants.hpp>
+#include <Methane/UserInterface/TypeTraits.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -112,23 +112,23 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
         CHECK(ui_context.ConvertToUnits(item_2pix.AsBase(), Units::Dots) == item_1dot);
     }
 
-    if constexpr (Data::TypeInvariants<TestType>::is_floating_point)
+    if constexpr (TypeTraits<TestType>::is_floating_point)
     {
         const UnitType<TestType> item_ratio = CreateUnitItem<TestType>(Units::Pixels, 0.001);
 
         SECTION("Convert from base Ratio to Pixels")
         {
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::Point)
             {
                 const auto result_dots = UnitPoint(Units::Pixels, 23, 25);
                 CHECK(ui_context.ConvertRatioTo<Units::Pixels>(item_ratio.AsBase()) == result_dots);
             }
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::RectSize)
             {
                 const auto result_dots = UnitSize(Units::Pixels, 236, 253);
                 CHECK(ui_context.ConvertRatioTo<Units::Pixels>(item_ratio.AsBase()) == result_dots);
             }
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Rect)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::Rect)
             {
                 const auto result_dots = UnitRect(Units::Pixels, 23, 25, 236, 253);
                 CHECK(ui_context.ConvertRatioTo<Units::Pixels>(item_ratio.AsBase()) == result_dots);
@@ -137,17 +137,17 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
 
         SECTION("Convert from base Ratio to Dots")
         {
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::Point)
             {
                 const auto result_dots = UnitPoint(Units::Dots, 12, 12);
                 CHECK(ui_context.ConvertRatioTo<Units::Dots>(item_ratio.AsBase()) == result_dots);
             }
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::RectSize)
             {
                 const auto result_dots = UnitSize(Units::Dots, 118, 126);
                 CHECK(ui_context.ConvertRatioTo<Units::Dots>(item_ratio.AsBase()) == result_dots);
             }
-            if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Rect)
+            if constexpr (TypeTraits<TestType>::type_of == TypeOf::Rect)
             {
                 const auto result_dots = UnitRect(Units::Dots, 12, 12, 118, 126);
                 CHECK(ui_context.ConvertRatioTo<Units::Dots>(item_ratio.AsBase()) == result_dots);

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,9 +24,10 @@ Methane user interface context used by all widgets for rendering.
 #pragma once
 
 #include "Types.hpp"
+#include "TypeTraits.hpp"
 
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Data/TypeInvariants.hpp>
+#include <Methane/Data/TypeTraits.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Memory.hpp>
 
@@ -106,22 +107,10 @@ public:
             return UnitType<BaseType>(Units::Dots, value_px / m_dots_to_pixels_factor);
     }
 
-    template<typename BaseType>
-    [[nodiscard]] UnitType<BaseType> ConvertToUnits(const BaseType& value_px, Units units) const noexcept
+    template<typename ValueType>
+    [[nodiscard]] std::conditional_t<TypeTraits<ValueType>::is_unit_type, ValueType, UnitType<ValueType>> ConvertToUnits(const ValueType& value, Units units) const noexcept
     {
         META_FUNCTION_TASK();
-        switch(units)
-        {
-        case Units::Pixels: return ConvertTo<Units::Pixels>(value_px);
-        case Units::Dots:   return ConvertTo<Units::Dots>(value_px);
-        default:            return { };
-        }
-    }
-
-    // TODO: merge with the above template function: it should be possible if return type is resolved correctly
-    template<typename BaseType>
-    [[nodiscard]] UnitType<BaseType> ConvertToUnits(const UnitType<BaseType>& value, Units units) const noexcept
-    {
         switch(units)
         {
         case Units::Pixels: return ConvertTo<Units::Pixels>(value);

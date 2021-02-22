@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/TypeInvariants.hpp
-Common Methane Data type compile-time invariants
+FILE: Methane/Data/TypeTraits.hpp
+Methane data type traits available compile-time.
 
 ******************************************************************************/
 
@@ -25,7 +25,7 @@ Common Methane Data type compile-time invariants
 
 #include "Types.h"
 
-namespace Methane::Data
+namespace Methane
 {
     enum class TypeOf
     {
@@ -41,214 +41,235 @@ namespace Methane::Data
     };
 
     template<typename Type>
-    struct TypeInvariants
+    struct TypeTraits
     {
         using ScalarType = void;
 
-        static constexpr TypeOf type_of = TypeOf::Undefined;
+        static constexpr TypeOf type_of           = TypeOf::Undefined;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 0;
     };
 
     template<typename T, size_t size>
-    struct TypeInvariants<Point<T, size>>
+    struct TypeTraits<Data::Point<T, size>>
     {
         using ScalarType = T;
 
-        static constexpr TypeOf type_of = TypeOf::Point;
+        static constexpr TypeOf type_of           = TypeOf::Point;
         static constexpr bool   is_floating_point = std::is_floating_point_v<T>;
-        static constexpr size_t dimensions_count = size;
+        static constexpr bool   is_unit_type      = false;
+        static constexpr size_t dimensions_count  = size;
     };
 
     template<typename D>
-    struct TypeInvariants<RectSize<D>>
+    struct TypeTraits<Data::RectSize<D>>
     {
         using ScalarType = D;
 
-        static constexpr TypeOf type_of = TypeOf::RectSize;
+        static constexpr TypeOf type_of           = TypeOf::RectSize;
         static constexpr bool   is_floating_point = std::is_floating_point_v<D>;
-        static constexpr size_t dimensions_count = 2;
+        static constexpr bool   is_unit_type      = false;
+        static constexpr size_t dimensions_count  = 2;
     };
 
     template<typename T, typename D>
-    struct TypeInvariants<Rect<T, D>>
+    struct TypeTraits<Data::Rect<T, D>>
     {
         using ScalarType = T;
 
-        static constexpr TypeOf type_of = TypeOf::Rect;
+        static constexpr TypeOf type_of           = TypeOf::Rect;
         static constexpr bool   is_floating_point = std::is_floating_point_v<T> && std::is_floating_point_v<D>;
-        static constexpr size_t dimensions_count = 2;
+        static constexpr bool   is_unit_type      = false;
+        static constexpr size_t dimensions_count  = 2;
     };
 
 
     template<typename T, size_t size>
-    struct TypeInvariants<RawVector<T, size>>
+    struct TypeTraits<Data::RawVector<T, size>>
     {
         using ScalarType = T;
 
-        static constexpr TypeOf type_of = TypeOf::RawVector;
+        static constexpr TypeOf type_of           = TypeOf::RawVector;
         static constexpr bool   is_floating_point = std::is_floating_point_v<T>;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = size;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::int1>
+    struct TypeTraits<hlslpp::int1>
     {
         using ScalarType = int32_t;
 
         static constexpr TypeOf type_of = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 1;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::int2>
+    struct TypeTraits<hlslpp::int2>
     {
         using ScalarType = int32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 2;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::int3>
+    struct TypeTraits<hlslpp::int3>
     {
         using ScalarType = int32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 3;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::int4>
+    struct TypeTraits<hlslpp::int4>
     {
         using ScalarType = int32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 4;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::uint1>
+    struct TypeTraits<hlslpp::uint1>
     {
         using ScalarType = uint32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 1;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::uint2>
+    struct TypeTraits<hlslpp::uint2>
     {
         using ScalarType = uint32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 2;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::uint3>
+    struct TypeTraits<hlslpp::uint3>
     {
         using ScalarType = uint32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 3;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::uint4>
+    struct TypeTraits<hlslpp::uint4>
     {
         using ScalarType = uint32_t;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = false;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 4;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::float1>
+    struct TypeTraits<hlslpp::float1>
     {
         using ScalarType = float;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 1;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::float2>
+    struct TypeTraits<hlslpp::float2>
     {
         using ScalarType = float;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 2;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::float3>
+    struct TypeTraits<hlslpp::float3>
     {
         using ScalarType = float;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 3;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::float4>
+    struct TypeTraits<hlslpp::float4>
     {
         using ScalarType = float;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 4;
     };
 
 #ifdef HLSLPP_DOUBLE
     template<>
-    struct TypeInvariants<hlslpp::double1>
+    struct TypeTraits<hlslpp::double1>
     {
         using ScalarType = double;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 1;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::double2>
+    struct TypeTraits<hlslpp::double2>
     {
         using ScalarType = double;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 2;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::double3>
+    struct TypeTraits<hlslpp::double3>
     {
         using ScalarType = double;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 3;
     };
 
     template<>
-    struct TypeInvariants<hlslpp::double4>
+    struct TypeTraits<hlslpp::double4>
     {
         using ScalarType = double;
 
-        static constexpr TypeOf type_of = TypeOf::HlslVector;
+        static constexpr TypeOf type_of           = TypeOf::HlslVector;
         static constexpr bool   is_floating_point = true;
+        static constexpr bool   is_unit_type      = false;
         static constexpr size_t dimensions_count  = 4;
     };
 #endif // defined(HLSLPP_DOUBLE)

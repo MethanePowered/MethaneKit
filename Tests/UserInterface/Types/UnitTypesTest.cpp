@@ -23,7 +23,7 @@ Unit-tests of the Unit Types
 
 #include "UnitTypeCatchHelpers.hpp"
 
-#include <Methane/Data/TypeInvariants.hpp>
+#include <Methane/Data/TypeTraits.hpp>
 
 using namespace Methane;
 using namespace Methane::UserInterface;
@@ -99,7 +99,7 @@ TEMPLATE_TEST_CASE("Unit Type Conversions", "[unit][type][convert]", ALL_BASE_TY
         CHECK(static_cast<std::string>(unit_item) == unit_str);
     }
 
-    if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Rect)
+    if constexpr (TypeTraits<TestType>::type_of == TypeOf::Rect)
     {
         using CoordType = typename TestType::CoordinateType;
         using DimType   = typename TestType::DimensionType;
@@ -140,8 +140,8 @@ TEMPLATE_TEST_CASE("Unit Types Comparison", "[unit][type][compare]", ALL_BASE_TY
         CHECK(dot_item_a != pix_item_a);
     }
 
-    if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point ||
-                  Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
+    if constexpr (TypeTraits<TestType>::type_of == TypeOf::Point ||
+                  TypeTraits<TestType>::type_of == TypeOf::RectSize)
     {
         const UnitType<TestType> pix_item_b = CreateUnitItem<TestType>(Units::Pixels, 2);
 
@@ -204,8 +204,8 @@ TEMPLATE_TEST_CASE("Unit Type Math Operations", "[unit][type][math]", ALL_BASE_T
         CHECK(test_item == CreateUnitItem<TestType>(Units::Dots));
     }
 
-    if constexpr (Data::TypeInvariants<TestType>::type_of == Data::TypeOf::Point ||
-                  Data::TypeInvariants<TestType>::type_of == Data::TypeOf::RectSize)
+    if constexpr (TypeTraits<TestType>::type_of == TypeOf::Point ||
+                  TypeTraits<TestType>::type_of == TypeOf::RectSize)
     {
         const UnitType<TestType> test_item_1px = CreateUnitItem<TestType>(Units::Pixels, 1);
         const UnitType<TestType> test_item_2px = CreateUnitItem<TestType>(Units::Pixels, 2);

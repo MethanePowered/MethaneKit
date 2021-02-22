@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/TypeInvariants.hpp
-Methane Graphics type compile-time invariants
+FILE: Methane/Graphics/TypeTraits.hpp
+Methane graphics type traits available compile-time.
 
 ******************************************************************************/
 
@@ -26,44 +26,42 @@ Methane Graphics type compile-time invariants
 #include "Volume.hpp"
 #include "Color.hpp"
 
-#include <Methane/Data/TypeInvariants.hpp>
+#include <Methane/Data/TypeTraits.hpp>
 
-namespace Methane::Graphics
+namespace Methane
 {
-
-using TypeOf = Data::TypeOf;
-
-template<typename Type>
-using TypeInvariants = Data::TypeInvariants<Type>;
 
 template<typename D>
-struct TypeInvariants<VolumeSize<D>>
+struct TypeTraits<Graphics::VolumeSize<D>>
 {
-    using ScalarType = T;
+    using ScalarType = D;
 
-    static constexpr TypeOf type_of = TypeOf::VolumeSize;
+    static constexpr TypeOf type_of           = TypeOf::VolumeSize;
     static constexpr bool   is_floating_point = std::is_floating_point_v<D>;
-    static constexpr size_t dimensions_count = 3;
+    static constexpr bool   is_unit_type      = false;
+    static constexpr size_t dimensions_count  = 3;
 };
 
 template<typename T, typename D>
-struct TypeInvariants<Volume<T, D>>
+struct TypeTraits<Graphics::Volume<T, D>>
 {
     using ScalarType = T;
 
-    static constexpr TypeOf type_of = TypeOf::Volume;
+    static constexpr TypeOf type_of           = TypeOf::Volume;
     static constexpr bool   is_floating_point = std::is_floating_point_v<T> && std::is_floating_point_v<D>;
-    static constexpr size_t dimensions_count = 3;
+    static constexpr bool   is_unit_type      = false;
+    static constexpr size_t dimensions_count  = 3;
 };
 
 template<typename T, size_t size>
-struct TypeInvariants<Color<T, size>>
+struct TypeTraits<Graphics::Color<T, size>>
 {
     using ScalarType = T;
 
-    static constexpr TypeOf type_of = TypeOf::Color;
+    static constexpr TypeOf type_of           = TypeOf::Color;
     static constexpr bool   is_floating_point = std::is_floating_point_v<T>;
-    static constexpr size_t dimensions_count = size;
+    static constexpr bool   is_unit_type      = false;
+    static constexpr size_t dimensions_count  = size;
 };
 
 } // namespace Methane::Graphics

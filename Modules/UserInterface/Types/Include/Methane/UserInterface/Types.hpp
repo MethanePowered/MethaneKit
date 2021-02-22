@@ -64,6 +64,8 @@ class UnitType : public BaseType
     using EnableReturnType = EnableReturnTypeIf<T, std::decay_t<R>, R>;
 
 public:
+    using Base = BaseType;
+
     using BaseType::BaseType;
     explicit UnitType(const BaseType& base) noexcept     : BaseType(base) { }
     UnitType(Units units, const BaseType& base) noexcept : BaseType(base), m_units(units) { }
