@@ -62,6 +62,7 @@ which make modern graphics programming easy and convenient in a platform and API
 - **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
   - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
+  - **HLSL++ Math** C++ library with HLSL-like syntax with vector-instruction optimizations for different platforms
 - **Modern Graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
   - Render state and program configuration with compact initialization syntax
   - Program binding objects partially initialized with help of shader reflection implement efficient binding of shader arguments to resources
@@ -97,7 +98,8 @@ For detailed features description and development plans please refer to [Modules
 
 ### Tutorials
 
-Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation. Other tutorials will be documented soon.
+Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation
+and continue with others.
 
 | <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
 | ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
@@ -294,4 +296,4 @@ All external dependencies of Methane Kit are listed in [MethaneExternals](https:
 
 Methane Kit is distributed under [Apache 2.0 License](LICENSE): it is free to use and open for contributions!
 
-*Copyright 2019-2020 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
+*Copyright 2019-2021 © Evgeny Gorodetskiy* [![Follow](https://img.shields.io/twitter/follow/egorodet.svg?style=social)](https://twitter.com/egorodet)
