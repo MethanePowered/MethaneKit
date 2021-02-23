@@ -62,34 +62,38 @@ which make modern graphics programming easy and convenient in a platform and API
 - **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
   - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
-  - **HLSL++ Math** C++ library with HLSL-like syntax with vector-instruction optimizations for different platforms
+  - **HLSL++ Math** library with [HLSL-like syntax](https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-reference) in C++
+    and vector-instruction optimizations for different platforms
 - **Modern Graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
   - Render state and program configuration with compact initialization syntax
-  - Program binding objects partially initialized with help of shader reflection implement efficient binding of shader arguments to resources
-  - Automatic resource state tracking used for resource transition barriers setup
-  - Resources are automatically retained from destroying while they in use on GPU with shared pointers in command list state
+  - Program binding objects implement efficient binding of shader arguments to resources
+  - Automatic resource state tracking used for automatic resource transition barriers setup
+  - Resources are automatically retained from destroying while in use on GPU with shared pointers in command list state
   - Command list execution state tracking with optional GPU timestamps query on completion
   - Parallel render command list for multi-threaded render commands encoding in single render pass
   - Multiple command queues execution on GPU with synchronization using fences
-  - Private GPU resources asynchronously updated via shared resource implicitly through the upload command list
-  - Registry of named graphics objects used for reusing render states and graphics resources between UI items
+  - Private GPU resources asynchronously updated through the upload command list and shared resource
+  - Registry of named graphics objects enabling reuse of render states and graphics resources between renderer objects
 - **Graphics primitives and extensions**:
-  - Graphics application base class with per-frame resource management, frame buffers resizing and other routine operations
+  - Graphics application base class with per-frame resource management and frame buffers resizing enable effective triple buffering
   - Camera primitive and interactive arc-ball camera
   - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
-  - Perlin Noise generation
+  - Perlin Noise generator
   - Screen-quad and sky-box rendering extension classes
-  - Texture image loader currently implemented with STB (planned for replacement with OpenImageIO, partially supported under the hood)
+  - Texture loader (currently implemented with STB, planned for replacement with OpenImageIO)
 - **User Interface**:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
   - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
   - Widgets library (under development)
-- **Application infrastructure**:
+- **Platform Infrastructure**:
+  - Base application with window management and input handling
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
   - Range Set implementation
-- **Integrated API instrumentation** for performance analysis with [trace profiling tools](#trace-profiling-tools)
+- **Integrated debugging and profiling capabilities**:
+  - Library instrumentation for performance analysis with [trace profiling tools](#trace-profiling-tools)
+  - Debug names for all GPU objects and debug regions for graphics API calls for use with [frame profiling tools](#frame-profiling-and-debugging-tools)
 - **Continuous integration** with automated multi-platform builds, unit-tests and 
 [Sonar Cloud](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) static code analysis
 in [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/)
