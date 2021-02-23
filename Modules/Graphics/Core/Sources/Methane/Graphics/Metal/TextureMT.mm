@@ -112,7 +112,7 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 }
 
 TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT<TextureBase>(context, settings, descriptor_by_usage)
+    : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
@@ -124,7 +124,7 @@ TextureMT::TextureMT(ContextBase& context, const Settings& settings, const Descr
 void TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    TextureBase::SetName(name);
+    ResourceMT::SetName(name);
     m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
 }
 
@@ -134,7 +134,7 @@ void TextureMT::SetData(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
-    TextureBase::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources);
 
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.RetainResource(*this);

@@ -72,7 +72,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferVK::BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK<BufferBase>(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
@@ -81,13 +81,13 @@ BufferVK::BufferVK(ContextBase& context, const Settings& settings, const Descrip
 void BufferVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetName(name);
+    ResourceVK::SetName(name);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources);
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

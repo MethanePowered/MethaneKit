@@ -216,7 +216,7 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
 }
 
 ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
-    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
+    : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
@@ -236,7 +236,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
 void ImageTextureDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    TextureBase::SetName(name);
+    ResourceDX::SetName(name);
 
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
     m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
@@ -352,7 +352,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
 
-    TextureBase::SetData(sub_resources);
+    ResourceDX::SetData(sub_resources);
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);

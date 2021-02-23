@@ -85,7 +85,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT<BufferBase>(context, settings, descriptor_by_usage)
+    : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {
@@ -96,7 +96,7 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 void BufferMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetName(name);
+    ResourceMT::SetName(name);
 
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
@@ -104,7 +104,7 @@ void BufferMT::SetName(const std::string& name)
 void BufferMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources);
 
     switch(GetSettings().storage_mode)
     {

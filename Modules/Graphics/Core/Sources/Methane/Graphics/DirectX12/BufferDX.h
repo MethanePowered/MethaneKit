@@ -43,7 +43,7 @@ class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
     BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
-        : ResourceDX<BufferBase>(context, settings, descriptor_by_usage)
+        : ResourceDX(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
         using namespace magic_enum::bitwise_operators;
@@ -70,7 +70,7 @@ public:
     void SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        BufferBase::SetName(name);
+        ResourceDX::SetName(name);
 
         if (m_cp_upload_resource)
         {
@@ -82,7 +82,7 @@ public:
     void SetData(const SubResources& sub_resources) override
     {
         META_FUNCTION_TASK();
-        BufferBase::SetData(sub_resources);
+        ResourceDX::SetData(sub_resources);
 
         const CD3DX12_RANGE zero_read_range(0U, 0U);
         const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;

@@ -97,7 +97,7 @@ Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings
 }
 
 SamplerMT::SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT<SamplerBase>(context, settings, descriptor_by_usage)
+    : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_sampler_desc([[MTLSamplerDescriptor alloc] init])
 {
     META_FUNCTION_TASK();
@@ -135,7 +135,7 @@ void SamplerMT::SetName(const std::string& name)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
 
-    SamplerBase::SetName(name);
+    ResourceMT::SetName(name);
 
     m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
 

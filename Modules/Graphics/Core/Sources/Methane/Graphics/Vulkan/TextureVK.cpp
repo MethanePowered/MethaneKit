@@ -71,25 +71,22 @@ Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint
 }
 
 TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 }
 
 void TextureVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
-    TextureBase::SetName(name);
+    ResourceVK::SetName(name);
 }
 
 void TextureVK::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-
-    TextureBase::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources);
     
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {

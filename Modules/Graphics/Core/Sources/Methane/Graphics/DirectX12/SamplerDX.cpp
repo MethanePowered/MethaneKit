@@ -211,7 +211,7 @@ Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings
 }
 
 SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceDX<SamplerBase>(context, settings, descriptor_by_usage)
+    : ResourceDX(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
