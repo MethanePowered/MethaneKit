@@ -111,7 +111,9 @@ void RenderTargetTextureDX::Initialize()
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
         settings.dimensions.GetWidth(),
-        settings.dimensions.GetHeight()
+        settings.dimensions.GetHeight(),
+        1, // array size
+        1  // mip levels
     );
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
@@ -129,18 +131,17 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 
 DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                                        const std::optional<DepthStencil>& clear_depth_stencil)
-    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
+    : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
-        settings.dimensions.GetWidth(), settings.dimensions.GetHeight()
+        settings.dimensions.GetWidth(), settings.dimensions.GetHeight(),
+        1, // array size
+        1  // mip levels
     );
-
-    tex_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     using namespace magic_enum::bitwise_operators;
     if (magic_enum::flags::enum_contains(settings.usage_mask & Usage::RenderTarget))
@@ -211,6 +212,7 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
     dsv_desc.Format        = view_write_format;
     dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
+    dsv_desc.Texture2D.MipSlice = 0;
 
     cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
 }
