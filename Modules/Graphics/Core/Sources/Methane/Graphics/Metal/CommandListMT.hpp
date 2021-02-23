@@ -216,7 +216,7 @@ private:
     id<MTLCommandBuffer> m_mtl_cmd_buffer = nil;
     MTLCommandEncoderId  m_mtl_cmd_encoder = nil;
     NSString*            m_ns_name = nil;
-    mutable TracyLockable(std::mutex, m_cmd_buffer_mutex);
+    mutable TracyLockable(std::mutex, m_cmd_buffer_mutex)
 };
 
 } // namespace Methane::Graphics

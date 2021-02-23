@@ -82,7 +82,6 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Initialization", "[vector][init]", VECTOR_TYP
 
     SECTION("Initialization with HLSL vector")
     {
-
         const HlslVector<T, size> hlsl_vec = CreateHlslVector(raw_arr);
         CheckRawVector(RawVector<T, size>(hlsl_vec), raw_arr);
     }

@@ -79,8 +79,8 @@ private:
     bool                      m_deferred_heap_allocation = false;
     ContextBase&              m_context;
     DescriptorHeapTypes       m_descriptor_heap_types;
-    TracyLockable(std::mutex, m_program_bindings_mutex);
     WeakPtrs<ProgramBindings> m_program_bindings;
+    TracyLockable(std::mutex, m_program_bindings_mutex)
 };
 
 } // namespace Methane::Graphics

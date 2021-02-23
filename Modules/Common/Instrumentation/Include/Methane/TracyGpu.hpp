@@ -162,7 +162,7 @@ private:
     const uint8_t               m_id;
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
     QueryId                     m_query_id    = 0U;
-    TracyLockable(std::mutex,   m_query_mutex);
+    TracyLockable(std::mutex,   m_query_mutex)
 
 #else // TRACY_GPU_ENABLE
 

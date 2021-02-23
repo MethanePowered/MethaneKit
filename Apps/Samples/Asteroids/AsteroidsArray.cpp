@@ -56,11 +56,11 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
 
-    std::mt19937 rng(random_seed);
-
     m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
 
-    TracyLockable(std::mutex, data_mutex);
+    std::mt19937 rng(random_seed);
+    TracyLockable(std::mutex, data_mutex)
+
     for (uint32_t subdivision_index = 0; subdivision_index < m_subdivisions_count; ++subdivision_index)
     {
         Asteroid::Mesh base_mesh(subdivision_index, false);

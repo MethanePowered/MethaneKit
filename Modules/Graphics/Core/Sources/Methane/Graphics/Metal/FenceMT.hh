@@ -57,7 +57,7 @@ private:
 
     id<MTLSharedEvent>          m_mtl_event;
     MTLSharedEventListener*     m_mtl_event_listener;
-    TracyLockable(std::mutex,   m_wait_mutex);
+    TracyLockable(std::mutex,   m_wait_mutex)
     std::condition_variable_any m_wait_condition_var;
     bool                        m_is_signalled = false;
 };

@@ -150,8 +150,8 @@ private:
     uint32_t                    m_committed_frame_index = 0;
     CompletedCallback           m_completed_callback;
     State                       m_state = State::Pending;
-    mutable TracyLockable(std::mutex, m_state_mutex);
-    TracyLockable(std::mutex,   m_state_change_mutex);
+    mutable TracyLockable(std::mutex, m_state_mutex)
+    TracyLockable(std::mutex,   m_state_change_mutex)
     std::condition_variable_any m_state_change_condition_var;
 
     TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
