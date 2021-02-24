@@ -217,7 +217,7 @@ void RenderContextDX::Present()
     ContextDX<RenderContextBase>::Present();
 
     // Preset frame to screen
-    const uint32_t present_flags  = 0; // DXGI_PRESENT_DO_NOT_WAIT
+    const uint32_t present_flags  = GetPresentFlags();
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
     META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);

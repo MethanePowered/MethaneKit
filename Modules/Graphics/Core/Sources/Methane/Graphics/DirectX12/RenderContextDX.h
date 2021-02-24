@@ -64,7 +64,8 @@ protected:
     uint32_t GetNextFrameBufferIndex() override;
 
 private:
-    inline uint32_t GetPresentVSyncInterval() const { return GetSettings().vsync_enabled ? 1 : 0; }
+    inline uint32_t GetPresentVSyncInterval() const noexcept { return GetSettings().vsync_enabled ? 1 : 0; }
+    inline uint32_t GetPresentFlags() const noexcept         { return GetSettings().vsync_enabled ? 0 : DXGI_PRESENT_ALLOW_TEARING; }
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
