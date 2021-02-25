@@ -189,7 +189,7 @@ private:
 
     explicit GpuContext(const Settings&) { }
 
-    void SetName(std::string_view) noexcept { }
+    void SetName(std::string_view) const noexcept { /* empty method when Tracy GPU is disabled */ }
 
 #endif // TRACY_GPU_ENABLE
 };
