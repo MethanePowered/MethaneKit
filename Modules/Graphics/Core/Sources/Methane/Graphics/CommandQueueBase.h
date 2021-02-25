@@ -48,6 +48,9 @@ public:
     CommandQueueBase(ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueBase() override;
 
+    // Object interface
+    void SetName(const std::string& name) override;
+
     // CommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
     CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }

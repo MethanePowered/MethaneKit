@@ -41,6 +41,15 @@ CommandQueueBase::~CommandQueueBase()
     META_FUNCTION_TASK();
 }
 
+void CommandQueueBase::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (m_tracy_gpu_context_ptr)
+    {
+        m_tracy_gpu_context_ptr->SetName(name);
+    }
+}
+
 void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();

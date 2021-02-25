@@ -27,12 +27,13 @@ Tracy GPU instrumentation helpers
 #include <Tracy.hpp>
 #include <client/TracyProfiler.hpp>
 #include <client/TracyCallstack.hpp>
+#include <common/TracyAlloc.hpp>
 #endif
 
 #include <Methane/Checks.hpp>
 
-#include <assert.h>
 #include <stdlib.h>
+#include <string_view>
 #include <mutex>
 
 namespace Methane::Tracy
@@ -121,7 +122,8 @@ public:
     explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
     {
-        assert(m_id != 255);
+        META_CHECK_ARG_LESS_DESCR(m_id, 255, "Tracy GPU context count is exceeding the maximum 255.");
+
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,              tracy::QueueType::GpuNewContext);
         tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_timestamp);
@@ -139,22 +141,41 @@ public:
         {
             memset(&item->gpuNewContext.thread, 0, sizeof(item->gpuNewContext.thread));
         }
+        FinishSerialItem(*item);
+    }
 
-#ifdef TRACY_ON_DEMAND
-        tracy::GetProfiler().DeferItem(*item);
-#endif
-        tracy:: Profiler::QueueSerialFinish();
+    void SetName(std::string_view name) noexcept
+    {
+        const auto name_ptr = reinterpret_cast<char*>(tracy::tracy_malloc(name.length()));
+        memcpy(name_ptr, name.data(), name.length());
+
+        auto item = tracy::Profiler::QueueSerial();
+        tracy::MemWrite(&item->hdr.type,                  tracy::QueueType::GpuContextName);
+        tracy::MemWrite(&item->gpuContextNameFat.context, m_id);
+        tracy::MemWrite(&item->gpuContextNameFat.ptr,     reinterpret_cast<uint64_t>(name_ptr));
+        tracy::MemWrite(&item->gpuContextNameFat.size,    static_cast<uint16_t>(name.length()));
+        FinishSerialItem(*item);
     }
 
 private:
-    tracy_force_inline QueryId NextQueryId()
+    tracy_force_inline void FinishSerialItem(const tracy::QueueItem& item) const noexcept
+    {
+#ifdef TRACY_ON_DEMAND
+        tracy::GetProfiler().DeferItem(item);
+#else
+        (void)item;
+#endif
+        tracy::Profiler::QueueSerialFinish();
+    }
+
+    tracy_force_inline QueryId NextQueryId() noexcept
     {
         std::scoped_lock lock_guard(m_query_mutex);
         m_query_id = (m_query_id + 1) % m_query_count;
         return m_query_id;
     }
 
-    tracy_force_inline uint8_t GetId() const
+    tracy_force_inline uint8_t GetId() const noexcept
     {
         return m_id;
     }
@@ -167,6 +188,8 @@ private:
 #else // TRACY_GPU_ENABLE
 
     explicit GpuContext(const Settings&) { }
+
+    void SetName(std::string_view) noexcept { }
 
 #endif // TRACY_GPU_ENABLE
 };
@@ -239,7 +262,7 @@ public:
             return;
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
-        META_CHECK_ARG_RANGE_DESCR(gpu_begin_timestamp, 0, gpu_end_timestamp + 1, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
+        META_CHECK_ARG_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
 
         auto begin_item = tracy::Profiler::QueueSerial();
