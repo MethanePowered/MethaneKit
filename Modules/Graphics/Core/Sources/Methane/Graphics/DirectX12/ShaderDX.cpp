@@ -53,7 +53,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
     case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
-    default: META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(input_type, Resource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Resource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 
@@ -75,7 +75,7 @@ static std::string GetShaderInputTypeName(D3D_SHADER_INPUT_TYPE input_type)
     case D3D_SIT_UAV_APPEND_STRUCTURED:         return "UAV Append Structured";
     case D3D_SIT_UAV_CONSUME_STRUCTURED:        return "UAV Consume Structured";
     case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER: return "UAV RW Structured with Counter";
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(input_type, "Unknown");
+    default:                                    META_UNEXPECTED_ARG_RETURN(input_type, "Unknown");
     }
 }
 
@@ -97,7 +97,7 @@ static std::string GetSRVDimensionName(D3D_SRV_DIMENSION srv_dimension)
     case D3D_SRV_DIMENSION_TEXTURECUBE:         return "Texture Cube";
     case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:    return "Texture Cube Array";
     case D3D_SRV_DIMENSION_BUFFEREX:            return "Buffer EX";
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(srv_dimension, "Unknown");
+    default:                                    META_UNEXPECTED_ARG_RETURN(srv_dimension, "Unknown");
     }
 }
 
@@ -119,6 +119,7 @@ static std::string GetReturnTypeName(D3D_RESOURCE_RETURN_TYPE return_type)
     }
 }
 
+[[nodiscard]]
 static std::string GetValueTypeName(D3D_NAME value_type)
 {
     META_FUNCTION_TASK();
@@ -149,10 +150,11 @@ static std::string GetValueTypeName(D3D_NAME value_type)
     case D3D_NAME_DEPTH_LESS_EQUAL:                 return "Depth Less Equal";
     case D3D_NAME_STENCIL_REF:                      return "Stencil Ref";
     case D3D_NAME_INNER_COVERAGE:                   return "Inner Coverage";
-    default:                                        META_UNEXPECTED_ENUM_ARG_RETURN(value_type, "Unknown");
+    default:                                        META_UNEXPECTED_ARG_RETURN(value_type, "Unknown");
     }
 }
 
+[[nodiscard]]
 static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_type)
 {
     META_FUNCTION_TASK();
@@ -162,11 +164,13 @@ static std::string GetComponentTypeName(D3D_REGISTER_COMPONENT_TYPE component_ty
     case D3D_REGISTER_COMPONENT_UINT32:     return "UInt32";
     case D3D_REGISTER_COMPONENT_SINT32:     return "SInt32";
     case D3D_REGISTER_COMPONENT_FLOAT32:    return "Float32";
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(component_type, "Unknown");
+    default:                                META_UNEXPECTED_ARG_RETURN(component_type, "Unknown");
     }
 }
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
+
+[[nodiscard]]
 static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type)
 {
     META_FUNCTION_TASK();
@@ -174,7 +178,7 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     {
     case StepType::PerVertex:     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     case StepType::PerInstance:   return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                      META_UNEXPECTED_ENUM_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
+    default:                      META_UNEXPECTED_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
     }
 }
 

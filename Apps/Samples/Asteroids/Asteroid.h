@@ -27,19 +27,21 @@ Random generated asteroid model with mesh and texture ready for rendering.
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
 
+#include <utility>
+
 namespace Methane::Samples
 {
 
 namespace gfx = Graphics;
 
-struct SHADER_STRUCT_ALIGN AsteroidUniforms
+struct META_UNIFORM_ALIGN AsteroidUniforms
 {
-    SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-    SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-    SHADER_FIELD_ALIGN gfx::Color3f   deep_color;
-    SHADER_FIELD_ALIGN gfx::Color3f   shallow_color;
-    SHADER_FIELD_ALIGN gfx::Vector2f  depth_range;
-    SHADER_FIELD_ALIGN uint32_t       texture_index;
+    hlslpp::float4x4 model_matrix;
+    hlslpp::float4x4 mvp_matrix;
+    hlslpp::float3   deep_color;
+    hlslpp::float3   shallow_color;
+    hlslpp::float2   depth_range;
+    uint32_t         texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -61,20 +63,22 @@ public:
     class Mesh : public gfx::IcosahedronMesh<Vertex>
     {
     public:
+        using DepthRange = std::pair<float, float>;
+
         Mesh(uint32_t subdivisions_count, bool randomize);
 
         void Randomize(uint32_t random_seed = 1337);
 
-        [[nodiscard]] const gfx::Vector2f& GetDepthRange() const { return m_depth_range; }
+        [[nodiscard]] const DepthRange& GetDepthRange() const { return m_depth_range; }
 
     private:
-        gfx::Vector2f m_depth_range;
+        DepthRange m_depth_range;
     };
 
     struct Colors
     {
-        gfx::Color3f deep;
-        gfx::Color3f shallow;
+        gfx::Color3F deep;
+        gfx::Color3F shallow;
     };
 
     struct Parameters
@@ -83,13 +87,13 @@ public:
         const uint32_t       mesh_instance_index;
         const uint32_t       texture_index;
         const Colors         colors;
-        const gfx::Matrix44f scale_translate_matrix;
-        const gfx::Vector3f  spin_axis;
-        const float          scale;
-        const float          orbit_speed;
-        const float          spin_speed;
-        const float          spin_angle_rad;
-        const float          orbit_angle_rad;
+        const hlslpp::float4x4 scale_translate_matrix;
+        const hlslpp::float3   spin_axis;
+        const float            scale;
+        const float            orbit_speed;
+        const float            spin_speed;
+        const float            spin_angle_rad;
+        const float            orbit_angle_rad;
     };
 
     struct TextureNoiseParameters

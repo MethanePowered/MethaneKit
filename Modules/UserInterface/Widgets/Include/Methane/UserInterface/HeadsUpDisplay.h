@@ -53,11 +53,11 @@ public:
         Font::Description         minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
         UnitPoint                 position            { Units::Dots, 20, 20 };
         UnitSize                  text_margins        { Units::Dots, 16, 8  };
-        Color4f                   text_color          { 1.F,  1.F,  1.F,  1.F   };
-        Color4f                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
-        Color4f                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };
-        Color4f                   help_color          { 1.F,  1.F,  0.0F, 1.F   };
-        Color4f                   background_color    { 0.F,  0.F,  0.F,  0.66F };
+        Color4F                   text_color          { 1.F,  1.F,  1.F,  1.F   };
+        Color4F                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
+        Color4F                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };
+        Color4F                   help_color          { 1.F,  1.F,  0.0F, 1.F   };
+        Color4F                   background_color    { 0.F,  0.F,  0.F,  0.66F };
         Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
         double                    update_interval_sec = 0.33;
     };
@@ -66,7 +66,7 @@ public:
 
     const Settings& GetHudSettings() const { return m_settings; }
 
-    void SetTextColor(const Color4f& text_color);
+    void SetTextColor(const Color4F& text_color);
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);

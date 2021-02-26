@@ -40,7 +40,7 @@ static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction stor
         case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
         case RenderPass::Attachment::StoreAction::Store:      return MTLStoreActionStore;
         case RenderPass::Attachment::StoreAction::Resolve:    return MTLStoreActionMultisampleResolve;
-        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(store_action, MTLStoreActionUnknown);
+        default:                                              META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
     }
 }
 
@@ -52,7 +52,7 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
         case RenderPass::Attachment::LoadAction::DontCare:    return MTLLoadActionDontCare;
         case RenderPass::Attachment::LoadAction::Load:        return MTLLoadActionLoad;
         case RenderPass::Attachment::LoadAction::Clear:       return MTLLoadActionClear;
-        default:                                              META_UNEXPECTED_ENUM_ARG_RETURN(load_action, MTLLoadActionDontCare);
+        default:                                              META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
 }
 

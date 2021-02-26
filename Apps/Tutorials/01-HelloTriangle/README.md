@@ -55,7 +55,7 @@ public:
                 FrameSize(),                     // - frame_size placeholder: set in InitContext
                 PixelFormat::BGRA8Unorm,         // - color_format
                 PixelFormat::Unknown,            // - depth_stencil_format
-                Color4f(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
+                Color4F(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
             }
         })
     { }
@@ -104,14 +104,14 @@ public:
     {
         GraphicsApp::Init();
 
-        struct Vertex { Vector3f position; Vector3f color; };
+        struct Vertex { RawVector3F position; RawVector3F color; };
         const std::array<Vertex, 3> triangle_vertices{ {
             { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
             { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
             { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
         } };
 
-        const Data::Size vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
+        const auto vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
         Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
         vertex_buffer_ptr->SetData(
             Resource::SubResources
@@ -193,8 +193,8 @@ class HelloTriangleApp final : public GraphicsApp
         if (!GraphicsApp::Render())
             return false;
 
-        HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->ResetWithState(m_render_state_ptr);
+        const HelloTriangleFrame& frame = GetCurrentFrame();
+        frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);

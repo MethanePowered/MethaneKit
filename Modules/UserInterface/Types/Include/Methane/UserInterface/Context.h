@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@ Methane user interface context used by all widgets for rendering.
 #pragma once
 
 #include "Types.hpp"
+#include "TypeTraits.hpp"
 
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Data/TypeTraits.hpp>
+#include <Methane/Instrumentation.h>
 #include <Methane/Memory.hpp>
 
 #include <map>
-
-namespace Methane::Graphics
-{
-struct RenderContext;
-struct Object;
-}
 
 namespace Methane::UserInterface
 {
@@ -45,76 +43,105 @@ class Context
 public:
     explicit Context(gfx::RenderContext& render_context) noexcept;
 
-    [[nodiscard]] const gfx::RenderContext& GetRenderContext() const noexcept         { return m_render_context; }
-    [[nodiscard]] gfx::RenderContext&       GetRenderContext() noexcept               { return m_render_context; }
+    [[nodiscard]] const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    [[nodiscard]] gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_context; }
 
-    [[nodiscard]] float     GetDotsToPixelsFactor() const noexcept                    { return m_dots_to_pixels_factor; }
-    [[nodiscard]] uint32_t  GetFontResolutionDpi() const noexcept                     { return m_font_resolution_dpi; }
-    [[nodiscard]] const FrameSize& GetFrameSize() const noexcept;
+    [[nodiscard]] decltype(auto)   GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
+    [[nodiscard]] uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
+    [[nodiscard]] const FrameSize& GetFrameSize() const noexcept              { return m_render_context.GetSettings().frame_size; }
 
-    [[nodiscard]] UnitSize  GetFrameSizeInPixels() const noexcept                     { return UnitSize(Units::Pixels, GetFrameSize()); }
-    [[nodiscard]] UnitSize  GetFrameSizeInDots() const noexcept                       { return UnitSize(Units::Dots, GetFrameSize() / m_dots_to_pixels_factor); }
+    template<Units units>
+    [[nodiscard]] UnitSize  GetFrameSizeIn() const noexcept
+    {
+        META_FUNCTION_TASK();
+        if constexpr (units == Units::Pixels)
+            return UnitSize(Units::Pixels, GetFrameSize());
+        else
+            return UnitSize(Units::Dots, GetFrameSize() / m_dots_to_pixels_factor);
+    }
     [[nodiscard]] UnitSize  GetFrameSizeInUnits(Units units) const noexcept;
 
-    [[nodiscard]] UnitPoint ConvertToPixels(const FloatPoint& point) const noexcept;
-    [[nodiscard]] UnitPoint ConvertToDots(const FloatPoint& point) const noexcept;
-
-    [[nodiscard]] UnitSize  ConvertToPixels(const FloatSize& fsize) const noexcept;
-    [[nodiscard]] UnitSize  ConvertToDots(const FloatSize& fsize) const noexcept;
-
-    [[nodiscard]] UnitRect  ConvertToPixels(const FloatRect& rect) const noexcept;
-    [[nodiscard]] UnitRect  ConvertToDots(const FloatRect& rect) const noexcept;
-
-    [[nodiscard]] UnitPoint ConvertToPixels(const UnitPoint& point) const noexcept;
-    [[nodiscard]] UnitPoint ConvertToDots(const UnitPoint& point) const noexcept;
-    [[nodiscard]] UnitPoint ConvertToDots(const FramePoint& point_px) const noexcept;
-
-    [[nodiscard]] UnitSize  ConvertToPixels(const UnitSize& size) const noexcept;
-    [[nodiscard]] UnitSize  ConvertToDots(const UnitSize& size) const noexcept;
-    [[nodiscard]] UnitSize  ConvertToDots(const FrameSize& size_px) const noexcept;
-
-    [[nodiscard]] UnitRect  ConvertToPixels(const UnitRect& rect) const noexcept;
-    [[nodiscard]] UnitRect  ConvertToDots(const UnitRect& rect) const noexcept;
-    [[nodiscard]] UnitRect  ConvertToDots(const FrameRect& rect_px) const noexcept;
-
-    [[nodiscard]] UnitPoint ConvertToUnits(const FramePoint& point_px, Units units) const noexcept;
-    [[nodiscard]] UnitSize  ConvertToUnits(const FrameSize&  size_px,  Units units) const noexcept;
-    [[nodiscard]] UnitRect  ConvertToUnits(const FrameRect&  rect_px,  Units units) const noexcept;
-
-    template<typename IntegralT>
-    [[nodiscard]] std::enable_if_t<std::is_integral_v<IntegralT>, IntegralT> ConvertPixelsToDots(const IntegralT& pixels) const noexcept
+    template<Units units, typename BaseType>
+    [[nodiscard]] UnitType<BaseType> ConvertTo(const UnitType<BaseType>& value) const noexcept
     {
-        return static_cast<IntegralT>(std::round(static_cast<float>(pixels) / m_dots_to_pixels_factor));
+        META_FUNCTION_TASK();
+        if (value.GetUnits() == units)
+            return value;
+
+        if constexpr (units == Units::Pixels)
+            return UnitType<BaseType>(Units::Pixels, value * m_dots_to_pixels_factor);
+        else
+            return UnitType<BaseType>(Units::Dots,   value / m_dots_to_pixels_factor);
     }
 
-    template<typename IntegralT>
-    [[nodiscard]] std::enable_if_t<std::is_integral_v<IntegralT>, IntegralT> ConvertDotsToPixels(const IntegralT& dots) const noexcept
+    template<Units units>
+    [[nodiscard]] UnitPoint ConvertRatioTo(const FloatPoint& point) const noexcept
     {
-        return static_cast<IntegralT>(std::round(static_cast<float>(dots) * m_dots_to_pixels_factor));
+        META_FUNCTION_TASK();
+        return UnitPoint(GetFrameSizeIn<units>() * point);
     }
 
-    template<typename UnitType>
-    [[nodiscard]] UnitType ConvertToUnits(const UnitType& value, Units units) const noexcept
+    template<Units units>
+    [[nodiscard]] UnitSize  ConvertRatioTo(const FloatSize& fsize) const noexcept
     {
+        META_FUNCTION_TASK();
+        return GetFrameSizeIn<units>() * fsize;
+    }
+
+    template<Units units>
+    UnitRect ConvertRatioTo(const FloatRect& rect) const noexcept
+    {
+        META_FUNCTION_TASK();
+        const UnitSize frame_size_in_units = GetFrameSizeIn<units>();
+        const UnitSize origin_in_units = frame_size_in_units * rect.origin;
+        return UnitRect(units, FramePoint(origin_in_units.GetWidth(), origin_in_units.GetHeight()), frame_size_in_units * rect.size);
+    }
+
+    template<Units units, typename BaseType>
+    [[nodiscard]] UnitType<BaseType> ConvertTo(const BaseType& value_px) const noexcept
+    {
+        META_FUNCTION_TASK();
+        if constexpr (units == Units::Pixels)
+            return UnitType<BaseType>(Units::Pixels, value_px);
+        else
+            return UnitType<BaseType>(Units::Dots, value_px / m_dots_to_pixels_factor);
+    }
+
+    template<typename ValueType>
+    [[nodiscard]] std::conditional_t<TypeTraits<ValueType>::is_unit_type, ValueType, UnitType<ValueType>> ConvertToUnits(const ValueType& value, Units units) const noexcept
+    {
+        META_FUNCTION_TASK();
         switch(units)
         {
-        case Units::Pixels: return ConvertToPixels(value);
-        case Units::Dots:   return ConvertToDots(value);
-        default:            return UnitType();
+        case Units::Pixels: return ConvertTo<Units::Pixels>(value);
+        case Units::Dots:   return ConvertTo<Units::Dots>(value);
+        default:            return { };
         }
     }
 
-    template<typename UnitType>
-    [[nodiscard]] bool AreEqual(const UnitType& left, const UnitType& right) const noexcept
+    template<typename ScalarType>
+    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertPixelsToDots(ScalarType pixels) const noexcept
     {
-        if (left.units == right.units)
-            return left == right;
-        return left == ConverToUnits(right, left.units);
+        return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(pixels) / m_dots_to_pixels_factor);
+    }
+
+    template<typename ScalarType>
+    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertDotsToPixels(ScalarType dots) const noexcept
+    {
+        return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(dots) * m_dots_to_pixels_factor);
+    }
+
+    template<typename BaseType>
+    [[nodiscard]] bool AreEqual(const UnitType<BaseType>& left, const UnitType<BaseType>& right) const noexcept
+    {
+        return left.GetUnits() == right.GetUnits()
+             ? left == right
+             : left == ConvertToUnits(right, left.GetUnits());
     }
 
 private:
     gfx::RenderContext&  m_render_context;
-    float                m_dots_to_pixels_factor;
+    double               m_dots_to_pixels_factor;
     uint32_t             m_font_resolution_dpi;
 };
 

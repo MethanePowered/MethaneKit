@@ -38,7 +38,6 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         MethaneInstrumentation
-        CML
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

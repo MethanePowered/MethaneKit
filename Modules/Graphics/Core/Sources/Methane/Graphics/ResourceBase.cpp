@@ -513,7 +513,7 @@ DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Us
                 : DescriptorHeap::Type::RenderTargets;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined, "resource usage does not map to descriptor heap");
+        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined, "resource usage does not map to descriptor heap");
     }
 }
 

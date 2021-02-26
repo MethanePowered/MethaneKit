@@ -78,12 +78,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(color_attachment.texture_location.IsInitialized(), "can not clear render target attachment without texture");
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(color_attachment.texture_location.GetTexture().GetSettings().pixel_format);
-        const std::array<float, 4> clear_color_components{
-            color_attachment.clear_color.GetRf(),
-            color_attachment.clear_color.GetGf(),
-            color_attachment.clear_color.GetBf(),
-            color_attachment.clear_color.GetAf()
-        };
+        const std::array<float, 4> clear_color_components = color_attachment.clear_color.AsArray();
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
     }
 }
@@ -118,7 +113,7 @@ D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPassDX::AccessDesc::GetBeginningAc
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
+    default:                                META_UNEXPECTED_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
@@ -130,13 +125,13 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
-    default:                                 META_UNEXPECTED_ENUM_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+    default:                                 META_UNEXPECTED_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const RenderPass::ColorAttachment& color_attach)
     : cpu_handle(GetRenderTargetTextureCpuDescriptor(color_attach.texture_location))
-    , clear_color{ color_attach.clear_color.GetRf(), color_attach.clear_color.GetGf(), color_attach.clear_color.GetBf(), color_attach.clear_color.GetAf() }
+    , clear_color(color_attach.clear_color.AsArray())
 {
     META_FUNCTION_TASK();
 }
@@ -169,7 +164,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access acc
     case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
+    default:                                  META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
 

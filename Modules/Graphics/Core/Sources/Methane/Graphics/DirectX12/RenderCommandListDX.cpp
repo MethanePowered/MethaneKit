@@ -50,7 +50,7 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     case RenderCommandList::Primitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case RenderCommandList::Primitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     case RenderCommandList::Primitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                                           META_UNEXPECTED_ENUM_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+    default:                                           META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
 }
 

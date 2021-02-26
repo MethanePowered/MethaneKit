@@ -40,8 +40,8 @@ public:
         Eye,
     };
 
-    ArcBallCamera(Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
-    ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    explicit ArcBallCamera(Pivot pivot = Pivot::Aim) noexcept;
+    explicit ArcBallCamera(const Camera& view_camera, Pivot pivot = Pivot::Aim) noexcept;
 
     // Parameters
     inline Pivot GetPivot() const noexcept                      { return m_pivot; }
@@ -52,31 +52,36 @@ public:
     inline float GetRadiusInPixels() const noexcept             { return GetRadiusInPixels(GetScreenSize()); }
 
     // Mouse action handlers
-    void MousePress(const Data::Point2i& mouse_screen_pos) noexcept;
-    void MouseDrag(const Data::Point2i& mouse_screen_pos);
+    void MousePress(const Data::Point2I& mouse_screen_pos) noexcept;
+    void MouseDrag(const Data::Point2I& mouse_screen_pos);
 
 protected:
-    Vector3f GetNormalizedSphereProjection(const Data::Point2i& mouse_screen_pos, bool is_primary) const noexcept;
+    struct SphereProjection
+    {
+        hlslpp::float3 vector;
+        bool           inside = false;
+    };
+    SphereProjection GetNormalizedSphereProjection(const Data::Point2I& mouse_screen_pos, bool is_primary) const noexcept;
 
     inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
-    { return std::min(screen_size.width, screen_size.height) * m_radius_ratio / 2.F; }
+    { return std::min(screen_size.GetWidth(), screen_size.GetHeight()) * m_radius_ratio / 2.F; }
 
     inline bool          IsExternalViewCamera() const noexcept  { return m_p_view_camera; }
     inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
     inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
 
-    void ApplyLookDirection(const Vector3f& look_dir);
-    void RotateInView(const Vector3f& view_axis, float angle_rad, const Orientation& base_orientation);
-    void RotateInView(const Vector3f& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
+    void ApplyLookDirection(const hlslpp::float3& look_dir);
+    void RotateInView(const hlslpp::float3& view_axis, float angle_rad, const Orientation& base_orientation);
+    void RotateInView(const hlslpp::float3& view_axis, float angle_rad) { RotateInView(view_axis, angle_rad, GetOrientation()); }
 
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
-    const Camera* m_p_view_camera             = nullptr;
-    Pivot         m_pivot;
-    float         m_radius_ratio              = 0.9F;
-    Vector3f      m_mouse_pressed_on_sphere   { };
-    Orientation   m_mouse_pressed_orientation { };
+    const Camera*    m_p_view_camera             = nullptr;
+    Pivot            m_pivot;
+    float            m_radius_ratio              = 0.9F;
+    SphereProjection m_mouse_pressed_on_sphere   { };
+    Orientation      m_mouse_pressed_orientation { };
 };
 
 } // namespace Methane::Graphics

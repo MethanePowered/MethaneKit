@@ -18,11 +18,12 @@ limitations under the License.
 
 FILE: Methane/Data/Types.h
 Common Methane primitive data types
-u
+
 ******************************************************************************/
 
 #pragma once
 
+#include "Vector.hpp"
 #include "Point.hpp"
 #include "Rect.hpp"
 

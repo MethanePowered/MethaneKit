@@ -36,7 +36,7 @@ namespace Methane::Tutorials
 struct FontSettings
 {
     gui::Font::Description desc;
-    gfx::Color3f           color;
+    gfx::Color3F           color;
 };
 
 constexpr int32_t g_margin_size_in_dots  = 32;
@@ -49,8 +49,8 @@ static const std::array<FontSettings, g_text_blocks_count> g_font_settings { {
     { { "Calligraphic", "Fonts/Playball/Playball-Regular.ttf",             20U }, { 0.5F, 1.F,  0.5F } }
 } };
 
-static const gfx::Color3f g_misc_font_color { 1.F, 1.F, 1.F };
-static const std::map<std::string, gfx::Color3f, std::less<>> g_font_color_by_name   {
+static const gfx::Color3F g_misc_font_color { 1.F, 1.F, 1.F };
+static const std::map<std::string, gfx::Color3F, std::less<>> g_font_color_by_name   {
     { g_font_settings[0].desc.name, g_font_settings[0].color },
     { g_font_settings[1].desc.name, g_font_settings[1].color },
     { g_font_settings[2].desc.name, g_font_settings[2].color },
@@ -69,7 +69,7 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
     gui::Font::ConvertUtf8To32(
         "いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす"),
 
-    // 2: hitchhicker's guide quote
+    // 2: hitchhiker's guide quote
     gui::Font::ConvertUtf8To32(
         "A towel is about the most massively useful thing an interstellar hitchhiker can have. " \
         "Partly it has great practical value. You can wrap it around you for warmth as you bound across the cold moons of Jaglan Beta; " \
@@ -98,16 +98,16 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
 {
     return gui::UnitRect(
         gui::Units::Dots,
-        gfx::Point2i
+        gfx::Point2I
         {
             g_margin_size_in_dots,
             vertical_pos_in_dots
         },
         gfx::FrameSize
         {
-            frame_size_in_dots.width - 2 * g_margin_size_in_dots,
+            frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots,
             block_index == g_text_blocks_count - 1
-                ? frame_size_in_dots.height - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
+                ? frame_size_in_dots.GetHeight() - vertical_pos_in_dots - g_margin_size_in_dots  // last text block fills all available space
                 : 0U                                                                        // other text blocks have calculated height
         }
     );
@@ -165,7 +165,7 @@ void TypographyApp::Init()
     UserInterfaceApp::Init();
 
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
-    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    const uint32_t frame_width_without_margins = frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
@@ -197,11 +197,11 @@ void TypographyApp::Init()
                     gui::UnitRect
                     {
                         gui::Units::Dots,
-                        gfx::Point2i { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        gfx::Point2I { g_margin_size_in_dots, vertical_text_pos_in_dots },
                         gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
-                    gfx::Color4f(font_settings.color, 1.F),
+                    gfx::Color4F(font_settings.color, 1.F),
                     m_settings.is_incremental_text_update
                 }
             )
@@ -226,7 +226,7 @@ void TypographyApp::Init()
 Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
-    const gui::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
+    const gui::Color3F& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
@@ -237,7 +237,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
             gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
             gui::Badge::FrameCorner::BottomLeft,
             gui::UnitPoint(gui::Units::Dots, 16U, 16U),
-            gui::Color4f(font_color, 0.5F),
+            gui::Color4F(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
     );
@@ -298,9 +298,9 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
-        const gui::UnitSize atlas_size = GetUIContext().ConvertToDots(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(badge_atlas_ptr->GetTexture().GetSettings().dimensions)));
+        const gui::UnitSize atlas_size = GetUIContext().ConvertTo<gui::Units::Dots>(badge_atlas_ptr->GetTexture().GetSettings().dimensions.AsRectSize());
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.width + g_margin_size_in_dots, 0U);
+        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);
     }
 }
 
@@ -318,7 +318,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         const Ptr<gui::Text>& text_ptr = m_texts[block_index];
         const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
         m_text_update_duration = UpdateTextRect(*text_ptr, text_block_rect);
-        vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.height + g_margin_size_in_dots;
+        vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.GetHeight() + g_margin_size_in_dots;
     }
 
     LayoutFontAtlasBadges(frame_size);

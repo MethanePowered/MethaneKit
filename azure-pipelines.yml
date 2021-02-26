@@ -42,6 +42,7 @@ variables:
   sonar.Sources: 'Apps,Modules'
   sonar.Tests: 'Tests'
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
+  sonar.ScannerVersion: '4.4.0.2170'
 
   buildReleaseCmakeFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
@@ -155,6 +156,7 @@ jobs:
   - template: Build/Windows/AzureBuild.yml
 
 - job: Windows_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'windows-2019'
@@ -174,6 +176,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
     sonar.BuildCommand: MSBuild.exe INSTALL.vcxproj /p:Configuration=$(configuration) /p:Platform=$(platform) /t:Rebuild
+    sonar.Verbose: false
 
   steps:
     - template: Build/Windows/AzureSonarScan.yml
@@ -217,6 +220,7 @@ jobs:
   - template: Build/Posix/AzureBuild.yml
 
 - job: MacOS_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'macOS-10.15'
@@ -236,6 +240,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
     sonar.BuildCommand: xcodebuild -project MethaneKit.xcodeproj -target install -configuration $(configuration) build
+    sonar.Verbose: false
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml
@@ -286,6 +291,7 @@ jobs:
   - template: Build/Posix/AzureBuild.yml
 
 - job: Ubuntu_Sonar_Scan
+  continueOnError: true
 
   pool:
     vmImage: 'ubuntu-20.04'
@@ -305,6 +311,7 @@ jobs:
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
     sonar.BuildCommand: make install
+    sonar.Verbose: false
 
   steps:
     - template: Build/Posix/AzureSonarScan.yml

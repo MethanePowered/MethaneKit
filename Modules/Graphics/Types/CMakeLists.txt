@@ -7,6 +7,7 @@ get_module_dirs("Methane/Graphics")
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/TypeConverters.hpp
+    ${INCLUDE_DIR}/TypeTraits.hpp
     ${INCLUDE_DIR}/Point.hpp
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Volume.hpp
@@ -34,6 +35,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataTypes
+        HLSLpp
     PRIVATE
         MethaneBuildOptions
         MethaneInstrumentation

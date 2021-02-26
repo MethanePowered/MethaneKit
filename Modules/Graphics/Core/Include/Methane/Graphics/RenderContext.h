@@ -47,7 +47,7 @@ struct RenderContext : virtual Context
         FrameSize                   frame_size;
         PixelFormat                 color_format            = PixelFormat::BGRA8Unorm;
         PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
-        std::optional<Color4f>      clear_color;
+        std::optional<Color4F>      clear_color;
         std::optional<DepthStencil> clear_depth_stencil;
         uint32_t                    frame_buffers_count     = 3U;
         bool                        vsync_enabled           = true;

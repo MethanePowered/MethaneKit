@@ -111,20 +111,16 @@ bool Planet::Update(double elapsed_seconds, double)
 {
     META_FUNCTION_TASK();
 
-    gfx::Matrix44f model_scale_matrix;
-    cml::matrix_uniform_scale(model_scale_matrix, m_settings.scale);
-
-    gfx::Matrix44f model_translate_matrix;
-    cml::matrix_translation(model_translate_matrix, m_settings.position);
-
-    gfx::Matrix44f model_rotation_matrix;
-    cml::matrix_rotation_world_y(model_rotation_matrix, -m_settings.spin_velocity_rps * elapsed_seconds);
+    const hlslpp::float4x4 model_scale_matrix     = hlslpp::float4x4::scale(m_settings.scale);
+    const hlslpp::float4x4 model_translate_matrix = hlslpp::float4x4::translation(m_settings.position);
+    const hlslpp::float4x4 model_rotation_matrix  = hlslpp::float4x4::rotation_y(static_cast<float>(-m_settings.spin_velocity_rps * elapsed_seconds));
+    const hlslpp::float4x4 model_matrix           = hlslpp::mul(hlslpp::mul(model_scale_matrix, model_rotation_matrix), model_translate_matrix);
 
     Uniforms uniforms{};
-    uniforms.eye_position   = gfx::Vector4f(m_settings.view_camera.GetOrientation().eye, 1.F);
+    uniforms.eye_position   = hlslpp::float4(m_settings.view_camera.GetOrientation().eye, 1.F);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
-    uniforms.model_matrix   = model_scale_matrix * model_rotation_matrix * model_translate_matrix;
-    uniforms.mvp_matrix     = uniforms.model_matrix * m_settings.view_camera.GetViewProjMatrix();
+    uniforms.model_matrix   = hlslpp::transpose(model_matrix);
+    uniforms.mvp_matrix     = hlslpp::transpose(hlslpp::mul(model_matrix, m_settings.view_camera.GetViewProjMatrix()));
 
     m_mesh_buffers.SetFinalPassUniforms(std::move(uniforms));
     return true;

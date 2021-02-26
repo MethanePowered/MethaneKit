@@ -88,7 +88,7 @@ private:
     const Shader::Types                 m_shader_types;
     ProgramBindings::ArgumentBindings   m_binding_by_argument;
     DescriptorRangeByHeapType           m_constant_descriptor_range_by_heap_type;
-    TracyLockable(std::mutex,           m_constant_descriptor_ranges_reservation_mutex);
+    TracyLockable(std::mutex,           m_constant_descriptor_ranges_reservation_mutex)
 };
 
 } // namespace Methane::Graphics

@@ -72,8 +72,13 @@ public:
             BaseMeshT::AddVertex(std::move(vertex));
         }
 
-        const bool reverse_indices = (g_axis_orientation == cml::AxisOrientation::left_handed  && ((face_type == FaceType::XY && m_depth_pos >= 0) || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0))) ||
-                                     (g_axis_orientation == cml::AxisOrientation::right_handed && ((face_type == FaceType::XY && m_depth_pos < 0)  || ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0)));
+#if defined(HLSLPP_COORDINATES) && HLSLPP_COORDINATES == 0 // HLSLPP_COORDINATES_LEFT_HANDED
+        const bool reverse_indices = (face_type == FaceType::XY && m_depth_pos >= 0) ||
+                                     ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos < 0);
+#else
+        const bool reverse_indices = (face_type == FaceType::XY && m_depth_pos < 0) ||
+                                     ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0);
+#endif
 
         const size_t face_indices_count = Mesh::GetFaceIndicesCount();
         Mesh::ResizeIndices(face_indices_count);
@@ -97,20 +102,20 @@ private:
         case FaceType::XY: vertex_position = Mesh::Position(pos_2d[0] * m_width, pos_2d[1] * m_height, m_depth_pos); break;
         case FaceType::XZ: vertex_position = Mesh::Position(pos_2d[0] * m_width, m_depth_pos, pos_2d[1] * m_height); break;
         case FaceType::YZ: vertex_position = Mesh::Position(m_depth_pos, pos_2d[1] * m_width, pos_2d[0] * m_height); break;
-        default:           META_UNEXPECTED_ENUM_ARG(face_type);
+        default:           META_UNEXPECTED_ARG(face_type);
         }
     }
 
     void InitVertexNormal(const FaceType& face_type, VType& vertex)
     {
-        Mesh::Normal      & vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
+        Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
         const float depth_norm      = m_depth_pos ? m_depth_pos / abs(m_depth_pos) : 1.F;
         switch (face_type)
         {
         case FaceType::XY: vertex_normal = Mesh::Normal(0.F, 0.F, depth_norm); break;
         case FaceType::XZ: vertex_normal = Mesh::Normal(0.F, depth_norm, 0.F); break;
         case FaceType::YZ: vertex_normal = Mesh::Normal(depth_norm, 0.F, 0.F); break;
-        default:           META_UNEXPECTED_ENUM_ARG(face_type);
+        default:           META_UNEXPECTED_ARG(face_type);
         }
     }
 

@@ -27,7 +27,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Graphics/Mesh/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
-#include <cml/mathlib/mathlib.h>
 #include <magic_enum.hpp>
 
 namespace Methane::Tutorials
@@ -78,8 +77,8 @@ void ShadowCubeApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize({
-        static_cast<float>(context_settings.frame_size.width),
-        static_cast<float>(context_settings.frame_size.height)
+        static_cast<float>(context_settings.frame_size.GetWidth()),
+        static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
@@ -325,8 +324,8 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         return false;
 
     m_view_camera.Resize({
-        static_cast<float>(frame_size.width),
-        static_cast<float>(frame_size.height)
+        static_cast<float>(frame_size.GetWidth()),
+        static_cast<float>(frame_size.GetHeight())
     });
 
     return true;
@@ -344,52 +343,40 @@ bool ShadowCubeApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    gfx::Matrix44f scale_matrix;
-    cml::matrix_uniform_scale(scale_matrix, m_scene_scale);
-
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const gfx::Matrix44f s_homogen_to_texture_coords_matrix = ([]()
-    {
-        gfx::Matrix44f shadow_scale_matrix;
-        cml::matrix_scale(shadow_scale_matrix, 0.5F, -0.5F, 1.F);
-
-        gfx::Matrix44f shadow_translate_matrix;
-        cml::matrix_translation(shadow_translate_matrix, 0.5F, 0.5F, 0.F);
-
-        return shadow_scale_matrix * shadow_translate_matrix;
-    })();
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
+    hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
+
     // Cube model matrix
-    gfx::Matrix44f cube_model_matrix;
-    cml::matrix_translation(cube_model_matrix, gfx::Vector3f(0.F, 0.5F, 0.F)); // move up by half of cube model height
-    cube_model_matrix = cube_model_matrix * scale_matrix;
+    hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
 
     // Update Cube uniforms
     m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
-        cube_model_matrix,
-        cube_model_matrix * m_view_camera.GetViewProjMatrix(),
-        cube_model_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+        hlslpp::transpose(cube_model_matrix),
+        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
+        hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
     m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
-        cube_model_matrix,
-        cube_model_matrix * m_light_camera.GetViewProjMatrix(),
-        gfx::Matrix44f()
+        hlslpp::transpose(cube_model_matrix),
+        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
+        hlslpp::float4x4()
     });
 
     // Update Floor uniforms
     m_floor_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
-        scale_matrix,
-        scale_matrix * m_view_camera.GetViewProjMatrix(),
-        scale_matrix * m_light_camera.GetViewProjMatrix() * s_homogen_to_texture_coords_matrix
+        hlslpp::transpose(scale_matrix),
+        hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
+        hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
     m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
-        scale_matrix,
-        scale_matrix * m_light_camera.GetViewProjMatrix(),
-        gfx::Matrix44f()
+        hlslpp::transpose(scale_matrix),
+        hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
+        hlslpp::float4x4()
     });
     
     return true;
@@ -419,7 +406,7 @@ bool ShadowCubeApp::Render()
     return true;
 }
 
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
+void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
@@ -454,14 +441,14 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
-ShadowCubeApp::RenderPass::RenderPass(bool is_final_pass, const std::string& debug_group_name)
+ShadowCubeApp::RenderPassState::RenderPassState(bool is_final_pass, const std::string& debug_group_name)
     : is_final_pass(is_final_pass)
-    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name))
+    , debug_group_ptr(META_DEBUG_GROUP_CREATE(debug_group_name)) // NOSONAR
 {
     META_UNUSED(debug_group_name);
 }
 
-void ShadowCubeApp::RenderPass::Release()
+void ShadowCubeApp::RenderPassState::Release()
 {
     render_state_ptr.reset();
     view_state_ptr.reset();

@@ -93,14 +93,14 @@ D3D12_RESOURCE_STATES IResourceDX::GetNativeResourceState(State resource_state)
     case State::GenericRead:               return D3D12_RESOURCE_STATE_GENERIC_READ;
     case State::Present:                   return D3D12_RESOURCE_STATE_PRESENT;
     case State::Predication:               return D3D12_RESOURCE_STATE_PREDICATION;
-    default:                               META_UNEXPECTED_ENUM_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
+    default:                               META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
     }
 }
 
 D3D12_RESOURCE_BARRIER IResourceDX::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    switch (id.GetType())
+    switch (id.GetType()) // NOSONAR
     {
     case Barrier::Type::Transition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
@@ -110,7 +110,7 @@ D3D12_RESOURCE_BARRIER IResourceDX::GetNativeResourceBarrier(const Barrier::Id& 
         );
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(id.GetType(), D3D12_RESOURCE_BARRIER());
+        META_UNEXPECTED_ARG_RETURN(id.GetType(), D3D12_RESOURCE_BARRIER());
     }
 }
 

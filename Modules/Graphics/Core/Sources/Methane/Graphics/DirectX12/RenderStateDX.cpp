@@ -65,7 +65,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
     {
     case RasterizerFillMode::Solid:     return D3D12_FILL_MODE_SOLID;
     case RasterizerFillMode::Wireframe: return D3D12_FILL_MODE_WIREFRAME;
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
+    default:                            META_UNEXPECTED_ARG_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
     }
 }
 
@@ -80,7 +80,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
     case RasterizerCullMode::None:      return D3D12_CULL_MODE_NONE;
     case RasterizerCullMode::Front:     return D3D12_CULL_MODE_FRONT;
     case RasterizerCullMode::Back:      return D3D12_CULL_MODE_BACK;
-    default:                            META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
+    default:                            META_UNEXPECTED_ARG_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
     }
 }
 
@@ -116,7 +116,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
     case BlendOp::ReverseSubtract:  return D3D12_BLEND_OP_REV_SUBTRACT;
     case BlendOp::Minimum:          return D3D12_BLEND_OP_MIN;
     case BlendOp::Maximum:          return D3D12_BLEND_OP_MAX;
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
+    default:                        META_UNEXPECTED_ARG_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
     }
 }
 
@@ -147,7 +147,7 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
     case BlendFactor::OneMinusSource1Color:     return D3D12_BLEND_INV_SRC1_COLOR;
     case BlendFactor::Source1Alpha:             return D3D12_BLEND_SRC1_ALPHA;
     case BlendFactor::OneMinusSource1Alpha:     return D3D12_BLEND_INV_SRC1_ALPHA;
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, D3D12_BLEND_ZERO);
+    default:                                    META_UNEXPECTED_ARG_RETURN(blend_factor, D3D12_BLEND_ZERO);
     }
 }
 
@@ -167,7 +167,7 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Ope
     case StencilOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
     case StencilOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
     case StencilOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
+    default:                                META_UNEXPECTED_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
 }
 
@@ -190,8 +190,8 @@ static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
 {
     META_FUNCTION_TASK();
     return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
-                            static_cast<float>(viewport.size.width), static_cast<float>(viewport.size.height),
-                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.depth));
+                            static_cast<float>(viewport.size.GetWidth()), static_cast<float>(viewport.size.GetHeight()),
+                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.GetDepth()));
 }
 
 [[nodiscard]]
@@ -199,8 +199,8 @@ static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 {
     META_FUNCTION_TASK();
     return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
-                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.width),
-                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.height));
+                        static_cast<LONG>(scissor_rect.origin.GetX() + scissor_rect.size.GetWidth()),
+                        static_cast<LONG>(scissor_rect.origin.GetY() + scissor_rect.size.GetHeight()));
 }
 
 [[nodiscard]]
@@ -294,7 +294,7 @@ RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& setting
     : RenderStateBase(context, settings)
 {
     META_FUNCTION_TASK();
-    Reset(settings);
+    Reset(settings); // NOSONAR - method is not overridable in final class
 }
 
 void RenderStateDX::Reset(const Settings& settings)

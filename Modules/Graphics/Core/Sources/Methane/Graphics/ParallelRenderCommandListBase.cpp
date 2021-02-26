@@ -43,7 +43,7 @@ namespace Methane::Graphics
 
 inline std::string GetThreadCommandListName(std::string_view name, Data::Index index)
 {
-    return fmt::format("{} [Thread {}", name, index);
+    return fmt::format("{} - Thread {}", name, index);
 }
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
@@ -89,7 +89,7 @@ void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, De
 }
 
 template<typename ResetCommandListFn>
-void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn)
+void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
 {
     CommandListBase::Reset();
 

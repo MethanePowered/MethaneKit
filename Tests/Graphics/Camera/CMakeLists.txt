@@ -1,5 +1,5 @@
 include(CTest)
-include(ParseAndAddCatchTests)
+include(Catch)
 
 set(TARGET MethaneGraphicsCameraTest)
 
@@ -15,6 +15,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsCamera
         MethaneBuildOptions
         MethanePrecompiledHeaders
+        MethaneTestsCatchHelpers
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2
 )
@@ -36,4 +37,4 @@ install(TARGETS ${TARGET}
         COMPONENT Test
 )
 
-ParseAndAddCatchTests(${TARGET})
+catch_discover_tests(${TARGET})

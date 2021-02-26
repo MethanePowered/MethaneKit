@@ -28,7 +28,6 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <magic_enum.hpp>
-#include <cml/mathlib/mathlib.h>
 
 namespace Methane::Tutorials
 {
@@ -51,8 +50,10 @@ TexturedCubeApp::TexturedCubeApp()
         Samples::GetGraphicsAppSettings("Methane Textured Cube"), {},
         "Methane tutorial of textured cube rendering")
 {
-    m_shader_uniforms.light_position = gfx::Vector3f(0.F, 20.F, -25.F);
+    m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
+
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(m_cube_scale);
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -70,11 +71,31 @@ void TexturedCubeApp::Init()
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_camera.Resize({
-        static_cast<float>(context_settings.frame_size.width),
-        static_cast<float>(context_settings.frame_size.height)
+        static_cast<float>(context_settings.frame_size.GetWidth()),
+        static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
+
+    // Create vertex buffer for cube mesh
+    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
+    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
+    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+
+    // Create index buffer for cube mesh
+    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
+    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr->SetName("Cube Index Buffer");
+    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
+
+    // Create constants buffer for frame rendering
+    const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
+    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr->SetName("Constants Buffer");
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create render state with program
     gfx::RenderState::Settings state_settings;
@@ -109,6 +130,7 @@ void TexturedCubeApp::Init()
     );
     state_settings.program_ptr->SetName("Textured Phong Lighting");
     state_settings.depth.enabled = true;
+
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
@@ -127,26 +149,6 @@ void TexturedCubeApp::Init()
             gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
         }
     );
-
-    // Create vertex buffer for cube mesh
-    const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
-    const Data::Size vertex_size      = cube_mesh.GetVertexSize();
-    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
-    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
-    // Create index buffer for cube mesh
-    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetName("Cube Index Buffer");
-    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
-
-    // Create constants buffer for frame rendering
-    const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
-    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
-    m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
 
     // Create frame buffer data
     const Data::Size uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
@@ -175,9 +177,9 @@ void TexturedCubeApp::Init()
 
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    gfx::Matrix33f light_rotate_matrix;
-    cml::matrix_rotation_axis_angle(light_rotate_matrix, m_camera.GetOrientation().up, cml::rad(360.F * delta_seconds / 4.F));
-    m_shader_uniforms.light_position = m_shader_uniforms.light_position * light_rotate_matrix;
+    const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
+    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
+    m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;
 }
@@ -189,8 +191,8 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
         return false;
 
     m_camera.Resize({
-        static_cast<float>(frame_size.width),
-        static_cast<float>(frame_size.height)
+        static_cast<float>(frame_size.GetWidth()),
+        static_cast<float>(frame_size.GetHeight())
     });
 
     return true;
@@ -202,12 +204,8 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    gfx::Matrix44f model_matrix;
-    cml::matrix_uniform_scale(model_matrix, m_cube_scale);
-
-    m_shader_uniforms.mvp_matrix     = model_matrix * m_camera.GetViewProjMatrix();
-    m_shader_uniforms.model_matrix   = model_matrix;
-    m_shader_uniforms.eye_position   = gfx::Vector4f(m_camera.GetOrientation().eye, 1.F);
+    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
+    m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
     
     return true;
 }

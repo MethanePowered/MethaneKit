@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-struct IResourceDX : virtual Resource
+struct IResourceDX : virtual Resource // NOSONAR
 {
 public:
     using Barrier  = ResourceBase::Barrier;

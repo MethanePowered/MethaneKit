@@ -45,7 +45,7 @@ PSInput SkyboxVS(VSInput input)
 {
     PSInput output;
 
-    output.position   = mul(g_skybox_uniforms.mvp_matrix, float4(input.position, 0.0f));
+    output.position   = mul(float4(input.position, 0.0f), g_skybox_uniforms.mvp_matrix);
     output.position.z = 0.0f;
     output.uvw        = input.position;
 

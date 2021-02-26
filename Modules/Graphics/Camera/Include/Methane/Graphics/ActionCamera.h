@@ -75,8 +75,8 @@ public:
 
     using DistanceRange = std::pair<float /*min_distance*/, float /*max_distance*/>;
 
-    ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
-    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim, cml::AxisOrientation axis_orientation = g_axis_orientation) noexcept;
+    explicit ActionCamera(Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
+    ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot = Pivot::Aim) noexcept;
 
     // Parameters
     uint32_t GetZoomStepsCount() const noexcept                             { return m_zoom_steps_count; }
@@ -95,9 +95,9 @@ public:
     void   SetKeyboardActionDurationSec(double min_duration_sec) noexcept   { m_keyboard_action_duration_sec = min_duration_sec; }
 
     // Mouse action handlers
-    void OnMousePressed(const Data::Point2i& mouse_screen_pos, MouseAction mouse_action) noexcept;
-    void OnMouseDragged(const Data::Point2i& mouse_screen_pos);
-    void OnMouseReleased(const Data::Point2i&) noexcept;
+    void OnMousePressed(const Data::Point2I& mouse_screen_pos, MouseAction mouse_action) noexcept;
+    void OnMouseDragged(const Data::Point2I& mouse_screen_pos);
+    void OnMouseReleased(const Data::Point2I&) noexcept;
     void OnMouseScrolled(float scroll_delta);
 
     // Keyboard action handlers
@@ -111,15 +111,15 @@ public:
 protected:
     using KeyboardActionAnimations  = std::map<KeyboardAction, WeakPtr<Data::Animation>>;
 
-    void Move(const Vector3f& move_vector) noexcept;
+    void Move(const hlslpp::float3& move_vector) noexcept;
     void Zoom(float zoom_factor) noexcept;
 
     inline double GetAccelerationFactor(double elapsed_seconds) const noexcept { return std::max(1.0, elapsed_seconds / m_keyboard_action_duration_sec); }
     
-    void StartRotateAction(KeyboardAction rotate_action, const Vector3f& rotation_axis,
+    void StartRotateAction(KeyboardAction rotate_action, const hlslpp::float3& rotation_axis,
                            double duration_sec = std::numeric_limits<double>::max());
     
-    void StartMoveAction(KeyboardAction move_action, const Vector3f& move_direction_in_view,
+    void StartMoveAction(KeyboardAction move_action, const hlslpp::float3& move_direction_in_view,
                          double duration_sec = std::numeric_limits<double>::max());
     
     void StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second,
@@ -136,7 +136,7 @@ private:
     float                    m_rotate_angle_per_second      = 15.F;
     double                   m_keyboard_action_duration_sec = 0.3;
     MouseAction              m_mouse_action                 = MouseAction::None;
-    Vector3f                 m_mouse_pressed_in_world       { };
+    hlslpp::float3           m_mouse_pressed_in_world       { };
     KeyboardActionAnimations m_keyboard_action_animations;
 };
 

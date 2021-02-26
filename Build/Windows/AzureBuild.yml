@@ -49,6 +49,7 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishTestResults@2
+    continueOnError: true
     inputs:
       testResultsFormat: 'JUnit'
       testResultsFiles:  '**\*_result.xml'

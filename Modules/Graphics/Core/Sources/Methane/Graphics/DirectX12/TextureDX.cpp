@@ -44,17 +44,17 @@ namespace Methane::Graphics
 static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noexcept
 {
     META_FUNCTION_TASK();
-    const D3D12_SRV_DIMENSION flat_dimension = tex_dimensions.height == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D : D3D12_SRV_DIMENSION_TEXTURE2D;
-    return tex_dimensions.depth == 1 ? flat_dimension : D3D12_SRV_DIMENSION_TEXTURE3D;
+    const D3D12_SRV_DIMENSION flat_dimension = tex_dimensions.GetHeight() == 1 ? D3D12_SRV_DIMENSION_TEXTURE1D : D3D12_SRV_DIMENSION_TEXTURE2D;
+    return tex_dimensions.GetDepth() == 1 ? flat_dimension : D3D12_SRV_DIMENSION_TEXTURE3D;
 }
 
 [[nodiscard]]
 static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(tex_dimensions.depth, 1, "depth-stencil view can not be created for 3D texture");
-    return  tex_dimensions.height == 1 ? D3D12_DSV_DIMENSION_TEXTURE1D
-                                       : D3D12_DSV_DIMENSION_TEXTURE2D;
+    META_CHECK_ARG_EQUAL_DESCR(tex_dimensions.GetDepth(), 1, "depth-stencil view can not be created for 3D texture");
+    return  tex_dimensions.GetHeight() == 1 ? D3D12_DSV_DIMENSION_TEXTURE1D
+                                            : D3D12_DSV_DIMENSION_TEXTURE2D;
 }
 
 Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
@@ -64,8 +64,8 @@ Ptr<Texture> Texture::CreateRenderTarget(RenderContext& render_context, const Se
     {
     case Texture::Type::Texture:            return std::make_shared<RenderTargetTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage);
     case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<RenderContextBase&>(render_context), settings, descriptor_by_usage, render_context.GetSettings().clear_depth_stencil);
-    case Texture::Type::FrameBuffer:        META_UNEXPECTED_ENUM_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
-    default:                                META_UNEXPECTED_ENUM_ARG_RETURN(settings.type, nullptr);
+    case Texture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
+    default:                                META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
 }
 
@@ -106,12 +106,14 @@ void RenderTargetTextureDX::Initialize()
 
     const Settings& settings = GetSettings();
     META_CHECK_ARG_NOT_ZERO_DESCR(settings.dimensions, "all render target texture dimensions can not be zero");
-    META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.depth, 1, "render target texture can have 2D dimensions only");
+    META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1, "render target texture can have 2D dimensions only");
 
     D3D12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
-        settings.dimensions.width,
-        settings.dimensions.height
+        settings.dimensions.GetWidth(),
+        settings.dimensions.GetHeight(),
+        1, // array size
+        1  // mip levels
     );
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
@@ -129,18 +131,17 @@ void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
 
 DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                                        const std::optional<DepthStencil>& clear_depth_stencil)
-    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
+    : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     InitializeDefaultDescriptors();
 
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ResourceBase),
-        settings.dimensions.width, settings.dimensions.height
+        settings.dimensions.GetWidth(), settings.dimensions.GetHeight(),
+        1, // array size
+        1  // mip levels
     );
-
-    tex_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     using namespace magic_enum::bitwise_operators;
     if (magic_enum::flags::enum_contains(settings.usage_mask & Usage::RenderTarget))
@@ -181,7 +182,7 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
         case DescriptorHeap::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
         case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
-            META_UNEXPECTED_ENUM_ARG_DESCR(descriptor_heap_type,
+            META_UNEXPECTED_ARG_DESCR(descriptor_heap_type,
                                            "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
                                            magic_enum::flags::enum_name(usage),
                                            magic_enum::flags::enum_name(descriptor_heap_type));
@@ -211,12 +212,13 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
     dsv_desc.Format        = view_write_format;
     dsv_desc.ViewDimension = GetDsvDimension(settings.dimensions);
+    dsv_desc.Texture2D.MipSlice = 0;
 
     cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
 ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
-    : ResourceDX<TextureBase>(render_context, settings, descriptor_by_usage)
+    : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
@@ -236,7 +238,7 @@ ImageTextureDX::TextureDX(ContextBase& render_context, const Settings& settings,
 void ImageTextureDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    TextureBase::SetName(name);
+    ResourceDX::SetName(name);
 
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
     m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
@@ -245,9 +247,9 @@ void ImageTextureDX::SetName(const std::string& name)
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
 {
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.depth, 1);
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.width, 1);
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.height, 1);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetDepth(), 1);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
+    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
 
     D3D12_RESOURCE_DESC tex_desc{};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
@@ -261,10 +263,10 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         [[fallthrough]];
 
     case DimensionType::Tex1DArray:
-        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.height == 1 && settings.dimensions.depth == 1, "1D textures must have height and depth dimensions equal to 1");
+        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.GetHeight() == 1 && settings.dimensions.GetDepth() == 1, "1D textures must have height and depth dimensions equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
-            settings.dimensions.width,
+            settings.dimensions.GetWidth(),
             static_cast<UINT16>(sub_resource_count.GetArraySize()),
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
@@ -277,7 +279,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     case DimensionType::Tex2DMultisample:
-        META_UNEXPECTED_ENUM_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
+        META_UNEXPECTED_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
 
     case DimensionType::Tex2D:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 2D texture must have array length equal to 1");
@@ -285,11 +287,11 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         [[fallthrough]];
 
     case DimensionType::Tex2DArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.depth, 1, "2D textures must have depth dimension equal to 1");
+        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1, "2D textures must have depth dimension equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
-            settings.dimensions.width,
-            settings.dimensions.height,
+            settings.dimensions.GetWidth(),
+            settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetArraySize()),
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
@@ -305,8 +307,8 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 3D texture must have array length equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
-            settings.dimensions.width,
-            settings.dimensions.height,
+            settings.dimensions.GetWidth(),
+            settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetDepth()),
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
@@ -320,11 +322,11 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         [[fallthrough]];
 
     case DimensionType::CubeArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.depth, 6, "Cube textures depth dimension must be equal to 6");
+        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverterDX::PixelFormatToDxgi(settings.pixel_format),
-            settings.dimensions.width,
-            settings.dimensions.height,
+            settings.dimensions.GetWidth(),
+            settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetDepth() * sub_resource_count.GetArraySize()),
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
@@ -338,7 +340,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(settings.dimension_type);
+        META_UNEXPECTED_ARG(settings.dimension_type);
     }
 
     srv_desc.Format                  = tex_desc.Format;
@@ -352,7 +354,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
 
-    TextureBase::SetData(sub_resources);
+    ResourceDX::SetData(sub_resources);
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
@@ -369,8 +371,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.GetDataPtr();
-        dx_sub_resource.RowPitch   = settings.dimensions.width  * pixel_size;
-        dx_sub_resource.SlicePitch = settings.dimensions.height * dx_sub_resource.RowPitch;
+        dx_sub_resource.RowPitch   = settings.dimensions.GetWidth()  * pixel_size;
+        dx_sub_resource.SlicePitch = settings.dimensions.GetHeight() * dx_sub_resource.RowPitch;
 
         META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
                                               "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
@@ -422,8 +424,8 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
 
         const D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         DirectX::Image& base_mip_image = sub_resource_images[sub_resource_raw_index];
-        base_mip_image.width           = settings.dimensions.width;
-        base_mip_image.height          = settings.dimensions.height;
+        base_mip_image.width           = settings.dimensions.GetWidth();
+        base_mip_image.height          = settings.dimensions.GetHeight();
         base_mip_image.format          = tex_desc.Format;
         base_mip_image.rowPitch        = dx_sub_resource.RowPitch;
         base_mip_image.slicePitch      = dx_sub_resource.SlicePitch;
@@ -431,10 +433,10 @@ void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_s
     }
 
     DirectX::TexMetadata tex_metadata{ };
-    tex_metadata.width     = settings.dimensions.width;
-    tex_metadata.height    = settings.dimensions.height;
-    tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.depth;
-    tex_metadata.arraySize = is_cube_texture ? settings.dimensions.depth : settings.array_length;
+    tex_metadata.width     = settings.dimensions.GetWidth();
+    tex_metadata.height    = settings.dimensions.GetHeight();
+    tex_metadata.depth     = is_cube_texture ? 1 : settings.dimensions.GetDepth();
+    tex_metadata.arraySize = is_cube_texture ? settings.dimensions.GetDepth() : settings.array_length;
     tex_metadata.mipLevels = sub_resource_count.GetMipLevelsCount();
     tex_metadata.format    = tex_desc.Format;
     tex_metadata.dimension = static_cast<DirectX::TEX_DIMENSION>(tex_desc.Dimension);

@@ -43,15 +43,6 @@ FenceVK::FenceVK(CommandQueueBase& command_queue)
     : FenceBase(command_queue)
 {
     META_FUNCTION_TASK();
-
-    // TODO: create native fence object
-}
-
-FenceVK::~FenceVK()
-{
-    META_FUNCTION_TASK();
-
-    // TODO: release native fence object
 }
 
 void FenceVK::Signal()
@@ -59,8 +50,6 @@ void FenceVK::Signal()
     META_FUNCTION_TASK();
 
     FenceBase::Signal();
-
-    // TODO: signal native fence object
 }
 
 void FenceVK::WaitOnCpu()
@@ -68,16 +57,12 @@ void FenceVK::WaitOnCpu()
     META_FUNCTION_TASK();
 
     FenceBase::WaitOnCpu();
-
-    // TODO: wait on CPU for native fence object
 }
 
 void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
-
-    // TODO: wait on GPU for native fence object
 }
 
 void FenceVK::SetName(const std::string& name)
@@ -87,8 +72,6 @@ void FenceVK::SetName(const std::string& name)
         return;
 
    ObjectBase::SetName(name);
-
-    // TODO: set name of native fence object
 }
 
 CommandQueueVK& FenceVK::GetCommandQueueVK()

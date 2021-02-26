@@ -15,8 +15,8 @@ The following settings are available:
 |--------------------------|--------------------------|--------------------------|-------------------|-----------------------|
 | heads_up_display_mode    | HeadsUpDisplayMode       | WindowTitle              | -i,--hud          | HUD displaying mode: Hidden, WindowTitle, UserInterface |
 | show_logo_badge          | bool                     | true                     |                   | Flag to show logo badge |
-| logo_badge_color         | Color4f                  | { 1.F, 1.F, 1.F, 0.15F } |                   | Logo badge color |
-| text_color               | Color4f                  | { 1.F, 1.F, 1.F, 1.F }   |                   | Default text color in UI panels |
+| logo_badge_color         | Color4F                  | { 1.F, 1.F, 1.F, 0.15F } |                   | Logo badge color |
+| text_color               | Color4F                  | { 1.F, 1.F, 1.F, 1.F }   |                   | Default text color in UI panels |
 | text_margins             | UnitPoint                | { 20, 20, Units::Dots }  |                   | Text panel margins |
 | main_font                | Font::Description        | { "Main",  "RobotoMono-Regular.ttf", 11U } | | Main font parameters |
 | hud_settings             | HeadsUpDisplay::Settings | default                  |                   | HUD settings |

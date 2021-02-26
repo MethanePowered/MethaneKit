@@ -46,23 +46,23 @@ class Planet
 public:
     struct Settings
     {
-        const gfx::Camera&              view_camera;
-        const gfx::Camera&              light_camera;
-        std::string                     texture_path;
-        gfx::Vector3f                   position;
-        float                           scale;
-        float                           spin_velocity_rps   = 0.3F; // (rps = radians per second)
-        bool                            depth_reversed      = false;
+        const gfx::Camera&        view_camera;
+        const gfx::Camera&        light_camera;
+        std::string               texture_path;
+        hlslpp::float3            position;
+        float                     scale;
+        float                     spin_velocity_rps   = 0.3F; // (rps = radians per second)
+        bool                      depth_reversed      = false;
         gfx::ImageLoader::Options image_options       = gfx::ImageLoader::Options::None;
-        float                           lod_bias            = 0.F;
+        float                     lod_bias            = 0.F;
     };
 
-    struct SHADER_STRUCT_ALIGN Uniforms
+    struct META_UNIFORM_ALIGN Uniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
+        hlslpp::float4   eye_position;
+        hlslpp::float3   light_position;
+        hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 model_matrix;
     };
 
     Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);

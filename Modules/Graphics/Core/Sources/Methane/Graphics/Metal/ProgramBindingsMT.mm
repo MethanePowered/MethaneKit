@@ -49,7 +49,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+        default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -63,7 +63,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data()   offsets:buffer_offsets.data() withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentBuffers:mtl_buffers.data() offsets:buffer_offsets.data() withRange:args_range]; break;
-    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -75,7 +75,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+        default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -89,7 +89,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexTextures:mtl_textures.data()   withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentTextures:mtl_textures.data() withRange:args_range]; break;
-    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -101,7 +101,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
     {
         case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler   atIndex:arg_index]; break;
         case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerState:mtl_sampler atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+        default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -115,7 +115,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
     {
     case Shader::Type::Vertex: [mtl_cmd_encoder setVertexSamplerStates:mtl_samplers.data()   withRange:args_range]; break;
     case Shader::Type::Pixel:  [mtl_cmd_encoder setFragmentSamplerStates:mtl_samplers.data() withRange:args_range]; break;
-    default:                   META_UNEXPECTED_ENUM_ARG(shader_type);
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -220,7 +220,7 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
         }
         break;
 
-    default: META_UNEXPECTED_ENUM_ARG(m_settings_mt.resource_type);
+    default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
     }
 }
 
@@ -273,7 +273,7 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
                 SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 
-            default: META_UNEXPECTED_ENUM_ARG(metal_argument_binding.GetSettingsMT().resource_type);
+            default: META_UNEXPECTED_ARG(metal_argument_binding.GetSettingsMT().resource_type);
         }
     }
 }

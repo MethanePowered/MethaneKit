@@ -48,7 +48,7 @@ struct Constants
 
 struct Uniforms
 {
-    float4   eye_position;
+    float3   eye_position;
     float3   light_position;
     float4x4 mvp_matrix;
     float4x4 model_matrix;
@@ -61,12 +61,12 @@ SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
-    const float4 position = float4(input.position, 1.0F);
+    const float4 position = float4(input.position, 1.F);
 
     PSInput output;
-    output.position       = mul(g_uniforms.mvp_matrix, position);
-    output.world_position = mul(g_uniforms.model_matrix, position).xyz;
-    output.world_normal   = normalize(mul(g_uniforms.model_matrix, float4(input.normal, 0.0)).xyz);
+    output.position       = mul(position, g_uniforms.mvp_matrix);
+    output.world_position = mul(position, g_uniforms.model_matrix).xyz;
+    output.world_normal   = normalize(mul(float4(input.normal, 0.F), g_uniforms.model_matrix).xyz);
     output.texcoord       = input.texcoord;
 
     return output;

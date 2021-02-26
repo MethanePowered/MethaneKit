@@ -37,7 +37,7 @@ MTLIndexType TypeConverterMT::DataFormatToMetalIndexType(PixelFormat data_format
     {
         case PixelFormat::R32Uint:       return MTLIndexTypeUInt32;
         case PixelFormat::R16Uint:       return MTLIndexTypeUInt16;
-        default:                         META_UNEXPECTED_ENUM_ARG_RETURN(data_format, MTLIndexTypeUInt32);
+        default:                         META_UNEXPECTED_ARG_RETURN(data_format, MTLIndexTypeUInt32);
     }
 }
 
@@ -116,7 +116,7 @@ MTLPixelFormat TypeConverterMT::DataFormatToMetalPixelType(PixelFormat data_form
     // MTLPixelFormatDepth32Float_Stencil8;
     // MTLPixelFormatX32_Stencil8;
     // MTLPixelFormatX24_Stencil8;
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(data_format, MTLPixelFormatInvalid);
+    default: META_UNEXPECTED_ARG_RETURN(data_format, MTLPixelFormatInvalid);
     }
 }
 
@@ -166,7 +166,7 @@ MTLVertexFormat TypeConverterMT::MetalDataTypeToVertexFormat(MTLDataType data_ty
         case MTLDataTypeUChar3:     return normalized ? MTLVertexFormatUChar3 : MTLVertexFormatUChar3Normalized;
         case MTLDataTypeUChar4:     return normalized ? MTLVertexFormatUChar4 : MTLVertexFormatUChar4Normalized;
 
-        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(data_type, MTLVertexFormatInvalid);
+        default:                    META_UNEXPECTED_ARG_RETURN(data_type, MTLVertexFormatInvalid);
     }
 }
 
@@ -252,14 +252,14 @@ uint32_t TypeConverterMT::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
             return 4;
 
         default:
-            META_UNEXPECTED_ENUM_ARG_RETURN(vertex_format, 0);
+            META_UNEXPECTED_ARG_RETURN(vertex_format, 0);
     }
 }
 
-MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4f& color) noexcept
+MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4F& color) noexcept
 {
     META_FUNCTION_TASK();
-    return MTLClearColorMake(color.GetRf(), color.GetGf(), color.GetBf(), color.GetAf());
+    return MTLClearColorMake(color.GetRed(), color.GetGreen(), color.GetBlue(), color.GetAlpha());
 }
 
 NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
@@ -268,18 +268,18 @@ NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
     return CreateNSRect(rect.size, rect.origin);
 }
 
-NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2i& origin) noexcept
+NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2I& origin) noexcept
 {
     META_FUNCTION_TASK();
-    return NSMakeRect(origin.GetX(), origin.GetY(), size.width, size.height);
+    return NSMakeRect(origin.GetX(), origin.GetY(), size.GetWidth(), size.GetHeight());
 }
 
 FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
 {
     META_FUNCTION_TASK();
     return FrameRect {
-        Point2i(static_cast<uint32_t>(rect.origin.x), static_cast<uint32_t>(rect.origin.y)),
-        FrameSize(static_cast<uint32_t>(rect.size.width), static_cast<uint32_t>(rect.size.height))
+        Point2I(rect.origin.x, rect.origin.y),
+        FrameSize(rect.size.width, rect.size.height)
     };
 }
 
@@ -296,7 +296,7 @@ MTLCompareFunction TypeConverterMT::CompareFunctionToMetal(Compare compare_func)
         case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
         case Compare::Equal:        return MTLCompareFunctionEqual;
         case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
-        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(compare_func, MTLCompareFunctionNever);
+        default:                    META_UNEXPECTED_ARG_RETURN(compare_func, MTLCompareFunctionNever);
     }
 }
 

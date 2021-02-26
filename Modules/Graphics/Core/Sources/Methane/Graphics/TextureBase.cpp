@@ -43,9 +43,9 @@ Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_
     META_FUNCTION_TASK();
 
     Settings settings;
-    if (dimensions.height == 1)
+    if (dimensions.GetHeight() == 1)
         settings.dimension_type = array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray;
-    else if (dimensions.depth == 1)
+    else if (dimensions.GetDepth() == 1)
         settings.dimension_type = array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray;
     else
         settings.dimension_type = DimensionType::Tex3D;
@@ -66,7 +66,7 @@ Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t arra
     Settings settings;
     settings.type           = Type::Texture;
     settings.dimension_type = array_length == 1 ? DimensionType::Cube : DimensionType::CubeArray;
-    settings.dimensions     = Dimensions(dimension_size, dimension_size, 6);
+    settings.dimensions     = Dimensions(dimension_size, dimension_size, 6U);
     settings.array_length   = array_length;
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
@@ -115,7 +115,7 @@ TextureBase::TextureBase(ContextBase& context, const Settings& settings, const D
     ValidateDimensions(m_settings.dimension_type, m_settings.dimensions, m_settings.mipmapped);
     SetSubResourceCount(
         SubResource::Count(
-            settings.dimensions.depth,
+            settings.dimensions.GetDepth(),
             settings.array_length,
             settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1U
         )
@@ -132,22 +132,22 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
     {
     case DimensionType::Cube:
     case DimensionType::CubeArray:
-        META_CHECK_ARG_DESCR(dimensions, dimensions.width == dimensions.height && dimensions.depth == 6, "cube texture must have equal width and height dimensions and depth equal to 6");
+        META_CHECK_ARG_DESCR(dimensions, dimensions.GetWidth() == dimensions.GetHeight() && dimensions.GetDepth() == 6, "cube texture must have equal width and height dimensions and depth equal to 6");
         [[fallthrough]];
     case DimensionType::Tex3D:
-        META_CHECK_ARG_DESCR(dimensions.depth, !mipmapped || !(dimensions.depth % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");
+        META_CHECK_ARG_DESCR(dimensions.GetDepth(), !mipmapped || !(dimensions.GetDepth() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");
         [[fallthrough]];
     case DimensionType::Tex2D:
     case DimensionType::Tex2DArray:
     case DimensionType::Tex2DMultisample:
-        META_CHECK_ARG_DESCR(dimensions.height, !mipmapped || !(dimensions.height % 2), "all dimensions of the mip-mapped texture should be a power of 2, but height is not");
+        META_CHECK_ARG_DESCR(dimensions.GetHeight(), !mipmapped || !(dimensions.GetHeight() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but height is not");
         [[fallthrough]];
     case DimensionType::Tex1D:
     case DimensionType::Tex1DArray:
-        META_CHECK_ARG_DESCR(dimensions.width, !mipmapped || !(dimensions.width % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
+        META_CHECK_ARG_DESCR(dimensions.GetWidth(), !mipmapped || !(dimensions.GetWidth() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
         break;
     default:
-        META_UNEXPECTED_ENUM_ARG(dimension_type);
+        META_UNEXPECTED_ARG(dimension_type);
     }
 }
 
@@ -178,8 +178,8 @@ Data::Size TextureBase::CalculateSubResourceDataSize(const SubResource::Index& s
 
     const double mip_divider = std::pow(2.0, sub_resource_index.GetMipLevel());
     const Data::FrameSize mip_frame_size(
-        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.width) / mip_divider)),
-        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.height) / mip_divider))
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.GetWidth()) / mip_divider)),
+        static_cast<uint32_t>(std::ceil(static_cast<double>(m_settings.dimensions.GetHeight()) / mip_divider))
     );
     return pixel_size * mip_frame_size.GetPixelsCount();
 }

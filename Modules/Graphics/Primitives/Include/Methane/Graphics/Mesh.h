@@ -23,7 +23,8 @@ Abstract mesh class
 
 #pragma once
 
-#include <Methane/Graphics/Types.h>
+#include <Methane/Data/Types.h>
+#include <Methane/Data/Vector.hpp>
 
 #include <magic_enum.hpp>
 #include <vector>
@@ -36,11 +37,11 @@ namespace Methane::Graphics
 class Mesh
 {
 public:
-    using Position   = Vector3f;
-    using Position2D = Vector2f;
-    using Normal     = Vector3f;
-    using Color      = Vector4f;
-    using TexCoord   = Vector2f;
+    using Position   = Data::RawVector3F;
+    using Position2D = Data::RawVector2F;
+    using Normal     = Data::RawVector3F;
+    using Color      = Data::RawVector4F;
+    using TexCoord   = Data::RawVector2F;
     using Index      = uint16_t;
     using Indices    = std::vector<Index>;
 
@@ -116,6 +117,12 @@ public:
     [[nodiscard]] Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
 
 protected:
+    using HlslPosition   = Position::HlslVectorType;
+    using HlslPosition2D = Position2D::HlslVectorType;
+    using HlslNormal     = Normal::HlslVectorType;
+    using HlslColor      = Color::HlslVectorType;
+    using HlslTexCoord   = TexCoord::HlslVectorType;
+
     struct Edge
     {
         const Mesh::Index first_index;

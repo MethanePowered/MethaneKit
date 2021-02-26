@@ -116,7 +116,7 @@ void CommandListBase::PopDebugGroup()
 void CommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
     META_LOG("{} Command list '{}' RESET commands encoding", magic_enum::enum_name(m_type), GetName());
@@ -168,7 +168,7 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 void CommandListBase::Commit()
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
                                "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
@@ -190,7 +190,7 @@ void CommandListBase::Commit()
 void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
 {
     META_FUNCTION_TASK();
-    std::unique_lock<LockableBase(std::mutex)> pending_state_lock(m_state_change_mutex);
+    std::unique_lock pending_state_lock(m_state_change_mutex);
     const auto is_completed = [this] { return m_state != State::Executing; };
     if (is_completed())
         return;
@@ -203,14 +203,14 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     }
     else
     {
-        m_state_change_condition_var.wait_for(pending_state_lock, std::chrono::milliseconds(timeout_ms), is_completed);
+        m_state_change_condition_var.wait_for(pending_state_lock, std::chrono::milliseconds(timeout_ms), is_completed); // NOSONAR - false positive
     }
 }
 
 void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Committed,
                                "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
@@ -238,7 +238,7 @@ void CommandListBase::Complete(uint32_t frame_index)
 
 void CommandListBase::CompleteInternal(uint32_t frame_index)
 {
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Executing,
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
@@ -279,7 +279,7 @@ void CommandListBase::ClearOpenDebugGroups()
 void CommandListBase::SetCommandListState(State state)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_state_mutex);
+    std::scoped_lock lock_guard(m_state_mutex);
     SetCommandListStateNoLock(state);
 }
 

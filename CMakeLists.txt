@@ -62,7 +62,6 @@ list(APPEND CMAKE_MODULE_PATH
 )
 
 include(MethaneUtils)
-include(ParseAndAddCatchTests)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)

@@ -125,7 +125,7 @@ private:
     Data::Size                m_allocated_size = 0;
     ResourcePtrs              m_resources;
     RangeSet                  m_free_ranges;
-    TracyLockable(std::mutex, m_modification_mutex);
+    TracyLockable(std::mutex, m_modification_mutex)
 };
 
 } // namespace Methane::Graphics

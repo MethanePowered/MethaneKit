@@ -39,19 +39,19 @@ Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::stri
 }
 
 Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Settings& settings)
-    : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeInPixels(), settings))
+    : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeIn<Units::Pixels>(), settings))
     , ScreenQuad(ui_context.GetRenderContext(), texture_ptr,
         ScreenQuad::Settings
         {
             settings.name,
-            GetRectInPixels().AsRect(),
+            GetRectInPixels().AsBase(),
             true, // alpha_blending_enabled
             settings.blend_color,
             settings.texture_mode,
         }
     )
     , m_settings(settings)
-    , m_frame_size(ui_context.GetFrameSizeInPixels())
+    , m_frame_size(ui_context.GetFrameSizeIn<Units::Pixels>())
 {
     META_FUNCTION_TASK();
 }
@@ -108,8 +108,8 @@ bool Badge::SetRect(const UnitRect& ui_rect)
 UnitRect Badge::GetBadgeRectInFrame(const Context& ui_context, const UnitSize& frame_size, const Settings& settings)
 {
     return GetBadgeRectInFrame(frame_size,
-                               ui_context.ConvertToUnits(settings.size,    frame_size.units),
-                               ui_context.ConvertToUnits(settings.margins, frame_size.units),
+                               ui_context.ConvertToUnits(settings.size,    frame_size.GetUnits()),
+                               ui_context.ConvertToUnits(settings.margins, frame_size.GetUnits()),
                                settings.corner);
 }
 
@@ -117,29 +117,29 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
                                     const UnitPoint& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(frame_size.units, frame_size.units == badge_size.units && badge_size.units == badge_margins.units,
+    META_CHECK_ARG_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
                          "frame size, badge size and margins units must be equal");
 
     switch(frame_corner)
     {
     case FrameCorner::TopLeft:
-        return UnitRect(frame_size.units, badge_margins, badge_size);
+        return UnitRect(frame_size.GetUnits(), badge_margins, badge_size);
 
     case FrameCorner::TopRight:
-        return UnitRect(frame_size.units, gfx::FramePoint(frame_size.width - badge_size.width - badge_margins.GetX(), badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetX(), badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomLeft:
-        return UnitRect(frame_size.units, gfx::FramePoint(badge_margins.GetX(), frame_size.height - badge_size.height - badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetX(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetY()), badge_size);
 
     case FrameCorner::BottomRight:
         return UnitRect(
-            frame_size.units,
-            gfx::FramePoint(frame_size.width  - badge_size.width, frame_size.height - badge_size.height) - badge_margins,
+            frame_size.GetUnits(),
+            gfx::FramePoint(frame_size.GetWidth()  - badge_size.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight()) - badge_margins,
             badge_size
         );
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(frame_corner, UnitRect());
+        META_UNEXPECTED_ARG_RETURN(frame_corner, UnitRect());
     }
 }
 

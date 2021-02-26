@@ -75,25 +75,25 @@ protected:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    struct SHADER_STRUCT_ALIGN Constants
+    struct META_UNIFORM_ALIGN Constants
     {
-        SHADER_FIELD_ALIGN gfx::Color4f   light_color;
-        SHADER_FIELD_PACK  float          light_power;
-        SHADER_FIELD_PACK  float          light_ambient_factor;
-        SHADER_FIELD_PACK  float          light_specular_factor;
+        hlslpp::float4 light_color;
+        float          light_power;
+        float          light_ambient_factor;
+        float          light_specular_factor;
     };
 
-    struct SHADER_STRUCT_ALIGN SceneUniforms
+    struct META_UNIFORM_ALIGN SceneUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Vector4f  eye_position;
-        SHADER_FIELD_ALIGN gfx::Vector3f  light_position;
+        hlslpp::float4 eye_position;
+        hlslpp::float3 light_position;
     };
 
-    struct SHADER_STRUCT_ALIGN MeshUniforms
+    struct META_UNIFORM_ALIGN MeshUniforms
     {
-        SHADER_FIELD_ALIGN gfx::Matrix44f model_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f mvp_matrix;
-        SHADER_FIELD_ALIGN gfx::Matrix44f shadow_mvpx_matrix;
+        hlslpp::float4x4 model_matrix;
+        hlslpp::float4x4 mvp_matrix;
+        hlslpp::float4x4 shadow_mvpx_matrix;
     };
 
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<MeshUniforms>;
@@ -114,9 +114,9 @@ private:
         };
     };
 
-    struct RenderPass
+    struct RenderPassState
     {
-        RenderPass(bool is_final_pass, const std::string& command_group_name);
+        RenderPassState(bool is_final_pass, const std::string& command_group_name);
         void Release();
 
         const bool                              is_final_pass;
@@ -126,14 +126,14 @@ private:
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderScene(const RenderPass& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
+    void RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
 
-    const float                 m_scene_scale       = 15.F;
+    const float                 m_scene_scale = 15.F;
     const Constants             m_scene_constants{
-        gfx::Color4f(1.F, 1.F, 0.74F, 1.F),         // - light_color
-        700.F,                                      // - light_power
-        0.04F,                                      // - light_ambient_factor
-        30.F                                        // - light_specular_factor
+        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
+        700.F,                    // - light_power
+        0.04F,                    // - light_ambient_factor
+        30.F                      // - light_specular_factor
     };
     SceneUniforms               m_scene_uniforms{ };
     gfx::Resource::SubResources m_scene_uniforms_subresources{
@@ -146,8 +146,8 @@ private:
     Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
-    RenderPass                  m_shadow_pass { false, "Shadow Render Pass" };
-    RenderPass                  m_final_pass  { true, "Final Render Pass" };
+    RenderPassState             m_shadow_pass { false, "Shadow Render Pass" };
+    RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };
 
 } // namespace Methane::Tutorials

@@ -37,7 +37,7 @@ NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
         case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
         case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
-        default:                                  META_UNEXPECTED_ENUM_ARG_RETURN(msg_type, NSAlertStyleInformational);
+        default:                                  META_UNEXPECTED_ARG_RETURN(msg_type, NSAlertStyleInformational);
     }
 }
 

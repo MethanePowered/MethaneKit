@@ -222,7 +222,7 @@ public:
         Depth        depth;
         Stencil      stencil;
         Blending     blending;
-        Color4f      blending_color;
+        Color4F      blending_color;
 
         [[nodiscard]] static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
         [[nodiscard]] bool operator==(const Settings& other) const noexcept;

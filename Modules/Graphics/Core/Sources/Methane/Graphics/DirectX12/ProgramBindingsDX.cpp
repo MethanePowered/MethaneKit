@@ -405,7 +405,7 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(binding_type);
+        META_UNEXPECTED_ARG(binding_type);
     }
 }
 

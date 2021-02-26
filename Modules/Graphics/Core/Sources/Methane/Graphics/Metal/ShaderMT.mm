@@ -40,7 +40,9 @@ namespace Methane::Graphics
 {
 
 using StepType = ProgramBase::InputBufferLayout::StepType;
-static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
+
+[[nodiscard]]
+static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 {
     META_FUNCTION_TASK();
     switch(step_type)
@@ -48,10 +50,11 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type) noexcept
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
         case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
         case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
-        default:                    META_UNEXPECTED_ENUM_ARG_RETURN(step_type, MTLVertexStepFunctionPerVertex);
+        default:                    META_UNEXPECTED_ARG_RETURN(step_type, MTLVertexStepFunctionPerVertex);
     }
 }
 
+[[nodiscard]]
 static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
@@ -60,12 +63,13 @@ static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg
     case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
     case MTLArgumentTypeTexture:    return Resource::Type::Texture;
     case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, Resource::Type::Buffer);
+    default:                        META_UNEXPECTED_ARG_RETURN(mtl_arg_type, Resource::Type::Buffer);
     }
 }
 
 #ifndef NDEBUG
 
+[[nodiscard]]
 static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
@@ -75,10 +79,11 @@ static std::string GetMetalArgumentTypeName(MTLArgumentType mtl_arg_type)
         case MTLArgumentTypeThreadgroupMemory:  return "Thread-group Memory";
         case MTLArgumentTypeTexture:            return "Texture";
         case MTLArgumentTypeSampler:            return "Sampler";
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_type, "Unknown");
+        default:                                META_UNEXPECTED_ARG_RETURN(mtl_arg_type, "Unknown");
     }
 }
 
+[[nodiscard]]
 static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 {
     META_FUNCTION_TASK();
@@ -87,11 +92,11 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
         case MTLArgumentAccessReadOnly:     return "R";
         case MTLArgumentAccessReadWrite:    return "RW";
         case MTLArgumentAccessWriteOnly:    return "W";
-        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(mtl_arg_access, "Unknown");
+        default:                            META_UNEXPECTED_ARG_RETURN(mtl_arg_access, "Unknown");
     }
 }
-#endif
 
+#endif // ifndef NDEBUG
 
 Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
 {

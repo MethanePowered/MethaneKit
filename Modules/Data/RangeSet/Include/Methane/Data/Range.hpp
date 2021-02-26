@@ -46,14 +46,16 @@ public:
     Range(Range&&) noexcept = default;
     ~Range() = default;
 
-    Range<ScalarT>& operator=(const Range<ScalarT>& other) noexcept        { m_start = other.m_start; m_end = other.m_end; return *this; }
-    [[nodiscard]] bool            operator==(const Range<ScalarT>& other) const noexcept { return m_start == other.m_start && m_end == other.m_end; }
-    [[nodiscard]] bool            operator!=(const Range<ScalarT>& other) const noexcept { return !operator==(other); }
-    [[nodiscard]] bool            operator< (const Range<ScalarT>& other) const noexcept { return m_end  <= other.m_start; }
-    [[nodiscard]] bool            operator> (const Range<ScalarT>& other) const noexcept { return m_start > other.end; }
+    Range<ScalarT>&    operator=(const Range<ScalarT>& other) noexcept        { m_start = other.m_start; m_end = other.m_end; return *this; }
+    [[nodiscard]] bool operator==(const Range<ScalarT>& other) const noexcept { return m_start == other.m_start && m_end == other.m_end; }
+    [[nodiscard]] bool operator!=(const Range<ScalarT>& other) const noexcept { return !operator==(other); }
+    [[nodiscard]] bool operator< (const Range<ScalarT>& other) const noexcept { return m_end  <= other.m_start; }
+    [[nodiscard]] bool operator> (const Range<ScalarT>& other) const noexcept { return m_start > other.end; }
 
     [[nodiscard]] ScalarT GetStart() const noexcept                           { return m_start; }
     [[nodiscard]] ScalarT GetEnd() const noexcept                             { return m_end; }
+    [[nodiscard]] ScalarT GetMin() const noexcept                             { return m_start; }
+    [[nodiscard]] ScalarT GetMax() const noexcept                             { return m_end; }
     [[nodiscard]] ScalarT GetLength() const noexcept                          { return m_end - m_start; }
     [[nodiscard]] bool    IsEmpty() const noexcept                            { return m_start == m_end; }
 

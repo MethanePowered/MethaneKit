@@ -63,7 +63,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        META_UNEXPECTED_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
     }
 }
 
@@ -134,7 +134,7 @@ void CommandQueueDX::Execute(CommandListSet& command_lists, const CommandList::C
     }
 
     auto& dx_command_lists = static_cast<CommandListSetDX&>(command_lists);
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock lock_guard(m_executing_command_lists_mutex);
     m_executing_command_lists.push(std::static_pointer_cast<CommandListSetDX>(dx_command_lists.GetPtr()));
     m_execution_waiting_condition_var.notify_one();
 }
@@ -153,7 +153,7 @@ void CommandQueueDX::SetName(const std::string& name)
 void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock lock_guard(m_executing_command_lists_mutex);
     while (!m_executing_command_lists.empty() &&
           (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
     {
@@ -182,7 +182,7 @@ void CommandQueueDX::WaitForExecution() noexcept
     {
         do
         {
-            std::unique_lock<LockableBase(std::mutex)> lock(m_execution_waiting_mutex);
+            std::unique_lock lock(m_execution_waiting_mutex);
             m_execution_waiting_condition_var.wait(lock,
                 [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
             );
@@ -216,7 +216,7 @@ void CommandQueueDX::WaitForExecution() noexcept
 const Ptr<CommandListSetDX>& CommandQueueDX::GetNextExecutingCommandListSet() const
 {
     META_FUNCTION_TASK();
-    std::scoped_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::scoped_lock lock_guard(m_executing_command_lists_mutex);
 
     static const Ptr<CommandListSetDX> s_empty_command_list_set_ptr;
 
@@ -230,7 +230,7 @@ const Ptr<CommandListSetDX>& CommandQueueDX::GetNextExecutingCommandListSet() co
 void CommandQueueDX::CompleteCommandListSetExecution(CommandListSetDX& executing_command_list_set)
 {
     META_FUNCTION_TASK();
-    std::unique_lock<LockableBase(std::mutex)> lock_guard(m_executing_command_lists_mutex);
+    std::unique_lock lock_guard(m_executing_command_lists_mutex);
 
     executing_command_list_set.Complete();
 

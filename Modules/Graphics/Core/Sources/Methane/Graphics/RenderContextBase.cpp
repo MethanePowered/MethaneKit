@@ -50,7 +50,7 @@ void RenderContextBase::WaitForGpu(WaitFor wait_for)
     case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
     case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in ContextBase::WaitForGpu
-    default: META_UNEXPECTED_ENUM_ARG(wait_for);
+    default: META_UNEXPECTED_ARG(wait_for);
     }
 }
 

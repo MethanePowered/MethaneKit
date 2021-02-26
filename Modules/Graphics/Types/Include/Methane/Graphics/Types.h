@@ -24,38 +24,18 @@ Methane primitive graphics types.
 #pragma once
 
 #include <Methane/Data/Types.h>
-
-#include <cml/vector.h>
-#include <cml/matrix.h>
-#include <cml/mathlib/constants.h>
+#include <Methane/Data/Constants.hpp>
 
 #include <string>
 #include <cstdint>
 
-#define SHADER_STRUCT_ALIGNMENT 256
-#define SHADER_STRUCT_ALIGN alignas(SHADER_STRUCT_ALIGNMENT)
-#define SHADER_FIELD_ALIGN  alignas(16)
-#define SHADER_FIELD_PACK   alignas(4)
+// NOSONAR
+#define META_UNIFORM_ALIGN alignas(Methane::Graphics::g_uniform_alignment)
 
 namespace Methane::Graphics
 {
 
-constexpr cml::AxisOrientation g_axis_orientation = cml::AxisOrientation::left_handed;
-
-// Use row-major order matrices for DirectX
-using Matrix22i = cml::matrix22i_r;
-using Matrix33i = cml::matrix33i_r;
-using Matrix44i = cml::matrix44i_r;
-using Matrix22f = cml::matrix22f_r;
-using Matrix33f = cml::matrix33f_r;
-using Matrix44f = cml::matrix44f_r;
-
-using Vector2i = cml::vector2i;
-using Vector3i = cml::vector3i;
-using Vector4i = cml::vector4i;
-using Vector2f = cml::vector2f;
-using Vector3f = cml::vector3f;
-using Vector4f = cml::vector4f;
+constexpr size_t g_uniform_alignment = 256;
 
 using Depth = float;
 using Stencil = uint8_t;
@@ -64,6 +44,20 @@ using DepthStencil = std::pair<Depth, Stencil>;
 using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;
 using Frequency = Data::Frequency;
+
+template<typename T, size_t size>
+using HlslVector = Data::HlslVector<T, size>;
+
+template<typename T, size_t size>
+using RawVector = Data::RawVector<T, size>;
+using RawVector2F = Data::RawVector2F;
+using RawVector3F = Data::RawVector3F;
+using RawVector4F = Data::RawVector4F;
+
+template<typename T>
+using Constants   = Data::Constants<T>;
+using ConstFloat  = Data::ConstFloat;
+using ConstDouble = Data::ConstDouble;
 
 enum class PixelFormat : uint32_t
 {

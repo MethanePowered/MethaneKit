@@ -59,7 +59,7 @@ class App
     : public Graphics::AppBase
     , public IAppType
 {
-    static_assert(std::is_base_of<AppFrame, FrameT>::value, "Application Frame type must be derived from AppFrame.");
+    static_assert(std::is_base_of_v<AppFrame, FrameT>, "Application Frame type must be derived from AppFrame.");
 
 public:
     explicit App(const AppSettings& settings)

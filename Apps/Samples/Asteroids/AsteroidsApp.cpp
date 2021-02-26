@@ -194,8 +194,8 @@ void AsteroidsApp::Init()
 
     gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.width),
-                                          static_cast<float>(context_settings.frame_size.height));
+    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.GetWidth()),
+                                          static_cast<float>(context_settings.frame_size.GetHeight()));
     m_view_camera.Resize(float_rect_size);
 
     // Create sky-box
@@ -220,7 +220,7 @@ void AsteroidsApp::Init()
         m_view_camera,
         m_light_camera,
         "Textures/Planet/Mars.jpg",             // texture_path
-        gfx::Vector3f(0.F, 0.F, 0.F),           // position
+        hlslpp::float3(0.F, 0.F, 0.F),          // position
         m_scene_scale * 3.F,                    // scale
         0.1F,                                   // spin_velocity_rps
         true,                                   // depth_reversed
@@ -332,7 +332,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         frame.final_screen_pass_ptr->Update(final_pass_settings);
     }
 
-    m_view_camera.Resize({ static_cast<float>(frame_size.width), static_cast<float>(frame_size.height) });
+    m_view_camera.Resize({ static_cast<float>(frame_size.GetWidth()), static_cast<float>(frame_size.GetHeight()) });
 
     return true;
 }
@@ -346,7 +346,7 @@ bool AsteroidsApp::Update()
         return false;
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = gfx::Vector4f(m_view_camera.GetOrientation().eye, 1.F);
+    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
     m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
 
     m_sky_box_ptr->Update();

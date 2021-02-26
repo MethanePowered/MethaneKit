@@ -53,7 +53,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledExtraHeaders
         MethanePlatformUtils
         PerlinNoise
-        CML
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

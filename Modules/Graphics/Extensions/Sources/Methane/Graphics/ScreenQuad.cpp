@@ -33,9 +33,9 @@ Screen Quad rendering primitive.
 namespace Methane::Graphics
 {
 
-struct SHADER_STRUCT_ALIGN ScreenQuadConstants
+struct META_UNIFORM_ALIGN ScreenQuadConstants
 {
-    SHADER_FIELD_ALIGN Color4f blend_color;
+    Color4F blend_color;
 };
 
 struct ScreenQuadVertex
@@ -208,7 +208,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     UpdateConstantsBuffer();
 }
 
-void ScreenQuad::SetBlendColor(const Color4f& blend_color)
+void ScreenQuad::SetBlendColor(const Color4F& blend_color)
 {
     META_FUNCTION_TASK();
     if (m_settings.blend_color == blend_color)
@@ -314,7 +314,7 @@ Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode 
         break;
 
     default:
-        META_UNEXPECTED_ENUM_ARG(texture_mode);
+        META_UNEXPECTED_ARG(texture_mode);
     }
 
     return macro_definitions;

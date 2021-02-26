@@ -34,18 +34,18 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 namespace Methane::Samples
 {
 
-static gfx::Vector3f GetRandomDirection(std::mt19937& rng)
+static hlslpp::float3 GetRandomDirection(std::mt19937& rng)
 {
     META_FUNCTION_TASK();
 
     std::normal_distribution<float> distribution;
-    gfx::Vector3f direction;
+    hlslpp::float3 direction;
     do
     {
         direction = { distribution(rng), distribution(rng), distribution(rng) };
     }
-    while (direction.length_squared() <= std::numeric_limits<float>::min());
-    return cml::normalize(direction);
+    while (static_cast<float>(hlslpp::length(direction)) <= std::numeric_limits<float>::min());
+    return hlslpp::normalize(direction);
 }
 
 AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t instance_count, uint32_t subdivisions_count, uint32_t random_seed)
@@ -56,11 +56,11 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::UberMesh::UberMesh");
 
-    std::mt19937 rng(random_seed);
-
     m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
 
-    TracyLockable(std::mutex, data_mutex);
+    std::mt19937 rng(random_seed);
+    TracyLockable(std::mutex, data_mutex)
+
     for (uint32_t subdivision_index = 0; subdivision_index < m_subdivisions_count; ++subdivision_index)
     {
         Asteroid::Mesh base_mesh(subdivision_index, false);
@@ -73,7 +73,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng()); // NOSONAR
 
-                std::scoped_lock<LockableBase(std::mutex)> lock_guard(data_mutex);
+                std::scoped_lock lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
@@ -103,7 +103,7 @@ uint32_t AsteroidsArray::UberMesh::GetSubsetSubdivision(uint32_t subset_index) c
     return subdivision_index;
 }
 
-const gfx::Vector2f& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
+const Asteroid::Mesh::DepthRange& AsteroidsArray::UberMesh::GetSubsetDepthRange(uint32_t subset_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(subset_index, GetSubsetCount());
@@ -172,18 +172,14 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
         const float         asteroid_orbit_height = orbit_height_distribution(rng);
         const float         asteroid_scale_ratio  = scale_distribution(rng);
         const float         asteroid_scale        = asteroid_scale_ratio * settings.scale;
-        const gfx::Vector3f asteroid_scale_ratios = gfx::Vector3f(scale_proportion_distribution(rng),
-                                                                  scale_proportion_distribution(rng),
-                                                                  scale_proportion_distribution(rng)) * asteroid_scale_ratio;
+        const hlslpp::float3 asteroid_scale_ratios = hlslpp::float3(scale_proportion_distribution(rng),
+                                                                    scale_proportion_distribution(rng),
+                                                                    scale_proportion_distribution(rng)) * asteroid_scale_ratio;
 
-        gfx::Matrix44f translation_matrix;
-        cml::matrix_translation(translation_matrix, asteroid_orbit_radius, asteroid_orbit_height, 0.F);
-
-        gfx::Matrix44f scale_matrix;
-        cml::matrix_scale(scale_matrix, asteroid_scale_ratios * settings.scale);
-
-        gfx::Matrix44f scale_translate_matrix = scale_matrix * translation_matrix;
-
+        hlslpp::float4x4 scale_translate_matrix = hlslpp::mul(
+            hlslpp::float4x4::scale(asteroid_scale_ratios * settings.scale),
+            hlslpp::float4x4::translation(asteroid_orbit_radius, asteroid_orbit_height, 0.F)
+        );
         Asteroid::Colors asteroid_colors = normal_distribution(rng) <= 1.F
                                          ? Asteroid::GetAsteroidIceColors(colors_distribution(rng), colors_distribution(rng))
                                          : Asteroid::GetAsteroidRockColors(colors_distribution(rng), colors_distribution(rng));
@@ -200,8 +196,8 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                 asteroid_scale,
                 orbit_velocity_distribution(rng) / (asteroid_scale * asteroid_orbit_radius),
                 spin_velocity_distribution(rng)  / asteroid_scale,
-                cml::constants<float>::pi() * normal_distribution(rng),
-                cml::constants<float>::pi() * normal_distribution(rng) * 2.F
+                gfx::ConstFloat::Pi * normal_distribution(rng),
+                gfx::ConstFloat::Pi * normal_distribution(rng) * 2.F
             }
         );
     }
@@ -348,13 +344,14 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Update");
 
-    const gfx::Vector3f&  eye_position     = m_settings.view_camera.GetOrientation().eye;
-    const gfx::Matrix44f& view_proj_matrix = m_settings.view_camera.GetViewProjMatrix();
-    const float elapsed_radians = cml::constants<float>::pi()* static_cast<float>(elapsed_seconds);
+    const float elapsed_radians = gfx::ConstFloat::Pi * static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
-        std::bind(&AsteroidsArray::UpdateAsteroidUniforms, this, std::placeholders::_1, view_proj_matrix, eye_position, elapsed_radians),
+        [this, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
+        {
+            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetViewProjMatrix(), m_settings.view_camera.GetOrientation().eye, elapsed_radians);
+        },
         Data::GetParallelChunkSizeAsInt(m_content_state_ptr->parameters.size(), 5)
     );
 
@@ -417,30 +414,27 @@ uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
     return m_mesh_subset_by_instance_index[instance_index];
 }
 
-void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const gfx::Matrix44f& view_proj_matrix, const gfx::Vector3f& eye_position, float elapsed_radians)
+void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float4x4& view_proj_matrix, const hlslpp::float3& eye_position, float elapsed_radians)
 {
     META_FUNCTION_TASK();
 
     const float spin_angle_rad  = asteroid_parameters.spin_angle_rad  + asteroid_parameters.spin_speed  * elapsed_radians;
     const float orbit_angle_rad = asteroid_parameters.orbit_angle_rad - asteroid_parameters.orbit_speed * elapsed_radians;
 
-    gfx::Matrix44f spin_rotation_matrix;
-    cml::matrix_rotation_axis_angle(spin_rotation_matrix, asteroid_parameters.spin_axis, spin_angle_rad);
+    const hlslpp::float4x4 spin_rotation_matrix  = hlslpp::float4x4::rotation_axis(asteroid_parameters.spin_axis, spin_angle_rad);
+    const hlslpp::float4x4 orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
 
-    gfx::Matrix44f orbit_rotation_matrix;
-    cml::matrix_rotation_world_y(orbit_rotation_matrix, orbit_angle_rad);
+    const hlslpp::float4x4 model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
+    const hlslpp::float4x4 mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);
 
-    const gfx::Matrix44f    model_matrix = spin_rotation_matrix * asteroid_parameters.scale_translate_matrix * orbit_rotation_matrix;
-    const gfx::Matrix44f    mvp_matrix   = model_matrix * view_proj_matrix;
-
-    const gfx::Vector3f     asteroid_position(model_matrix(3, 0), model_matrix(3, 1), model_matrix(3, 2));
-    const float distance_to_eye            = (eye_position - asteroid_position).length();
+    const hlslpp::float3 asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
+    const float distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
     const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
     const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
     const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
     const uint32_t          mesh_subset_index       = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
-    const gfx::Vector2f&    mesh_subset_depth_range = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+    const auto&    [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
     const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled
                                                     ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
                                                     : asteroid_parameters.colors;
@@ -450,11 +444,11 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     SetFinalPassUniforms(
         AsteroidUniforms
         {
-            model_matrix,
-            mvp_matrix,
-            asteroid_colors.deep,
-            asteroid_colors.shallow,
-            mesh_subset_depth_range,
+            hlslpp::transpose(model_matrix),
+            hlslpp::transpose(mvp_matrix),
+            asteroid_colors.deep.AsVector(),
+            asteroid_colors.shallow.AsVector(),
+            hlslpp::float2(mesh_depth_min, mesh_depth_max),
             asteroid_parameters.texture_index
         },
         asteroid_parameters.index

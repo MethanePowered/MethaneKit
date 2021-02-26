@@ -43,7 +43,7 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
     {
     case Buffer::StorageMode::Managed: return MTLResourceStorageModeManaged;
     case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
-    default: META_UNEXPECTED_ENUM_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
+    default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
 
@@ -85,7 +85,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
 }
 
 BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT<BufferBase>(context, settings, descriptor_by_usage)
+    : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {
@@ -96,7 +96,7 @@ BufferMT::BufferMT(ContextBase& context, const Settings& settings, const Descrip
 void BufferMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetName(name);
+    ResourceMT::SetName(name);
 
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
@@ -104,13 +104,13 @@ void BufferMT::SetName(const std::string& name)
 void BufferMT::SetData(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    BufferBase::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources);
 
     switch(GetSettings().storage_mode)
     {
     case Buffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
     case Buffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
-    default: META_UNEXPECTED_ENUM_ARG(GetSettings().storage_mode);
+    default: META_UNEXPECTED_ARG(GetSettings().storage_mode);
     }
 }
 

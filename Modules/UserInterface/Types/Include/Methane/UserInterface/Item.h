@@ -52,9 +52,11 @@ public:
     Ptr<Item>        GetPtr()                                           { return shared_from_this(); }
     const Context&   GetUIContext() const noexcept                      { return m_ui_context; }
     Context&         GetUIContext() noexcept                            { return m_ui_context; }
+
     const UnitPoint& GetRelOriginInPixels() const noexcept              { return m_rel_origin_px; }
     UnitPoint        GetRelOriginInDots() const noexcept;
     UnitPoint        GetRelOriginInUnits(Units units) const noexcept;
+
     const UnitRect&  GetRectInPixels() const noexcept                   { return m_abs_rect_px; }
     UnitRect         GetRectInDots() const noexcept;
     UnitRect         GetRectInUnits(Units units) const noexcept;

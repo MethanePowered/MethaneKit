@@ -182,13 +182,13 @@ public:
         // All glyph metrics are multiplied by 64, so we reverse them back
         return Char(char_code,
             {
-                gfx::Point2i(),
+                gfx::Point2I(),
                 gfx::FrameSize(static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.width  / g_ft_dots_in_pixel),
                                static_cast<uint32_t>(m_ft_face_rec.glyph->metrics.height / g_ft_dots_in_pixel))
             },
-            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
+            gfx::Point2I(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingX  / g_ft_dots_in_pixel),
                         -static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiBearingY  / g_ft_dots_in_pixel)),
-            gfx::Point2i(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
+            gfx::Point2I(static_cast<int32_t>(m_ft_face_rec.glyph->metrics.horiAdvance   / g_ft_dots_in_pixel),
                          static_cast<int32_t>(m_ft_face_rec.glyph->metrics.vertAdvance   / g_ft_dots_in_pixel)),
             std::make_unique<Char::Glyph>(ft_glyph, char_index)
         );
@@ -341,7 +341,7 @@ void Font::Library::Clear()
 }
 
 Font::Library::Library()
-    : m_impl_ptr(std::make_unique<Impl>())
+    : m_impl_ptr(std::make_unique<Impl>()) // NOSONAR
 {
     META_FUNCTION_TASK();
 }
@@ -476,14 +476,14 @@ const Font::Char& Font::AddChar(Char::Code char_code)
     META_CHECK_ARG_DESCR(static_cast<uint32_t>(char_code), font_char_it != m_char_by_code.end(), "font character was not added to character map");
 
     Char& new_font_char = font_char_it->second;
-    m_max_glyph_size.width  = std::max(m_max_glyph_size.width,  new_font_char.GetRect().size.width);
-    m_max_glyph_size.height = std::max(m_max_glyph_size.height, new_font_char.GetRect().size.height);
+    m_max_glyph_size.SetWidth( std::max(m_max_glyph_size.GetWidth(),  new_font_char.GetRect().size.GetWidth()));
+    m_max_glyph_size.SetHeight(std::max(m_max_glyph_size.GetHeight(), new_font_char.GetRect().size.GetHeight()));
 
     // Attempt to pack new char into existing atlas
     if (m_atlas_pack_ptr && m_atlas_pack_ptr->TryPack(new_font_char))
     {
         // Draw char to existing atlas bitmap and update textures
-        new_font_char.DrawToAtlas(m_atlas_bitmap, m_atlas_pack_ptr->GetSize().width);
+        new_font_char.DrawToAtlas(m_atlas_bitmap, m_atlas_pack_ptr->GetSize().GetWidth());
         UpdateAtlasTextures(true);
         return new_font_char;
     }
@@ -690,7 +690,7 @@ bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
     // Render glyphs to atlas bitmap
     for (const auto& [char_code, character] : m_char_by_code)
     {
-        character.DrawToAtlas(m_atlas_bitmap, atlas_size.width);
+        character.DrawToAtlas(m_atlas_bitmap, atlas_size.GetWidth());
     }
 
     UpdateAtlasTextures(deferred_textures_update);
@@ -730,7 +730,7 @@ void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture
 
     const gfx::FrameSize atlas_size = m_atlas_pack_ptr->GetSize();
     if (const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;
-        texture_dimensions.width != atlas_size.width || texture_dimensions.height != atlas_size.height)
+        texture_dimensions.GetWidth() != atlas_size.GetWidth() || texture_dimensions.GetHeight() != atlas_size.GetHeight())
     {
         const Ptr<gfx::Texture> old_texture_ptr = atlas_texture.texture_ptr;
         atlas_texture.texture_ptr = CreateAtlasTexture(context, false).texture_ptr;
@@ -804,14 +804,14 @@ Font::Char::Char(Code code)
     META_FUNCTION_TASK();
 }
 
-Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr)
+Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance, UniquePtr<Glyph>&& glyph_ptr)
     : m_code(code)
     , m_type_mask(GetType(code))
     , m_rect(std::move(rect))
     , m_offset(std::move(offset))
     , m_advance(std::move(advance))
-    , m_visual_size(IsWhiteSpace() ? m_advance.GetX() : m_offset.GetX() + m_rect.size.width,
-                    IsWhiteSpace() ? m_advance.GetY() : m_offset.GetY() + m_rect.size.height)
+    , m_visual_size(IsWhiteSpace() ? m_advance.GetX() : m_offset.GetX() + m_rect.size.GetWidth(),
+                    IsWhiteSpace() ? m_advance.GetY() : m_offset.GetY() + m_rect.size.GetHeight())
     , m_glyph_ptr(std::move(glyph_ptr))
 {
     META_FUNCTION_TASK();
@@ -834,8 +834,8 @@ void Font::Char::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_strid
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap;
-    META_CHECK_ARG_EQUAL(ft_bitmap.width, m_rect.size.width);
-    META_CHECK_ARG_EQUAL(ft_bitmap.rows, m_rect.size.height);
+    META_CHECK_ARG_EQUAL(ft_bitmap.width, m_rect.size.GetWidth());
+    META_CHECK_ARG_EQUAL(ft_bitmap.rows, m_rect.size.GetHeight());
 
     // Copy glyph pixels to output bitmap row-by-row
     for (uint32_t y = 0; y < ft_bitmap.rows; y++)

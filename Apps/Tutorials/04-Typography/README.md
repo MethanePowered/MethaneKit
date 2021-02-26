@@ -112,7 +112,7 @@ position in DPI-independent Dot units.
 
 ```cpp
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
-    const uint32_t frame_width_without_margins = frame_size_in_dots.width - 2 * g_margin_size_in_dots;
+    const uint32_t frame_width_without_margins = frame_size_in_dots.GetWidth() - 2 * g_margin_size_in_dots;
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
 
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
@@ -179,11 +179,11 @@ method, font object which was created previously and text settings:
                     gui::UnitRect
                     {
                         gui::Units::Dots,
-                        gfx::Point2i { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        gfx::Point2I { g_margin_size_in_dots, vertical_text_pos_in_dots },
                         gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
-                    gfx::Color4f(font_settings.color, 1.F),
+                    gfx::Color4F(font_settings.color, 1.F),
                     m_settings.is_incremental_text_update
                 }
             )
@@ -232,7 +232,7 @@ Font atlas badge bound to atlas texture is created with helper method `Typograph
 Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
-    const gui::Color3f& font_color = font_color_by_name_it != g_font_color_by_name.end()
+    const gui::Color3F& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
@@ -243,7 +243,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
             gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
             gui::Badge::FrameCorner::BottomLeft,
             gui::UnitPoint(gui::Units::Dots, 16U, 16U),
-            gui::Color4f(font_color, 0.5F),
+            gui::Color4F(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
     );

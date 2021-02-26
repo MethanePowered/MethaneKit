@@ -41,7 +41,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type)
     case DescriptorHeap::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     case DescriptorHeap::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     case DescriptorHeap::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
+    default:                                    META_UNEXPECTED_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     }
 }
 

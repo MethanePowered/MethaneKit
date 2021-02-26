@@ -24,7 +24,6 @@ Methane text mesh generation helper.
 #pragma once
 
 #include <Methane/UserInterface/Text.h>
-
 #include <Methane/Graphics/Types.h>
 
 #include <vector>
@@ -39,8 +38,8 @@ class TextMesh
 public:
     struct Vertex
     {
-        gfx::Vector2f position;
-        gfx::Vector2f texcoord;
+        Data::RawVector2F position;
+        Data::RawVector2F texcoord;
     };
 
     using Index         = uint16_t;

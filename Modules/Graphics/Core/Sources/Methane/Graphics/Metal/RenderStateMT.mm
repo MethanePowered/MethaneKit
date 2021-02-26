@@ -47,7 +47,7 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
         case RasterizerCullMode::None:  return MTLCullModeNone;
         case RasterizerCullMode::Back:  return MTLCullModeBack;
         case RasterizerCullMode::Front: return MTLCullModeFront;
-        default:                        META_UNEXPECTED_ENUM_ARG_RETURN(cull_mode, MTLCullModeNone);
+        default:                        META_UNEXPECTED_ARG_RETURN(cull_mode, MTLCullModeNone);
     }
 }
 
@@ -60,7 +60,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     {
         case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
         case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
-        default:                            META_UNEXPECTED_ENUM_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
+        default:                            META_UNEXPECTED_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
 }
     
@@ -95,7 +95,7 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default:                        META_UNEXPECTED_ENUM_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
+    default:                        META_UNEXPECTED_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
     }
 }
 
@@ -125,7 +125,7 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default:                                    META_UNEXPECTED_ENUM_ARG_RETURN(blend_factor, MTLBlendFactorZero);
+    default:                                    META_UNEXPECTED_ARG_RETURN(blend_factor, MTLBlendFactorZero);
     }
 }
 
@@ -144,7 +144,7 @@ static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::
         case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                                META_UNEXPECTED_ENUM_ARG_RETURN(operation, MTLStencilOperationKeep);
+        default:                                META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
     }
 }
 
@@ -184,10 +184,10 @@ static std::vector<MTLViewport> ConvertViewportsToMetal(const Viewports& viewpor
         MTLViewport mtl_viewport{ };
         mtl_viewport.originX = viewport.origin.GetX();
         mtl_viewport.originY = viewport.origin.GetY();
-        mtl_viewport.width   = viewport.size.width;
-        mtl_viewport.height  = viewport.size.height;
+        mtl_viewport.width   = viewport.size.GetWidth();
+        mtl_viewport.height  = viewport.size.GetHeight();
         mtl_viewport.znear   = viewport.origin.GetZ();
-        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.depth;
+        mtl_viewport.zfar    = viewport.origin.GetZ() + viewport.size.GetDepth();
         mtl_viewports.emplace_back(std::move(mtl_viewport));
     }
 
@@ -205,8 +205,8 @@ static std::vector<MTLScissorRect> ConvertScissorRectsToMetal(const ScissorRects
         MTLScissorRect mtl_scissor_rect{};
         mtl_scissor_rect.x      = static_cast<NSUInteger>(scissor_rect.origin.GetX());
         mtl_scissor_rect.y      = static_cast<NSUInteger>(scissor_rect.origin.GetY());
-        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.width);
-        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.height);
+        mtl_scissor_rect.width  = static_cast<NSUInteger>(scissor_rect.size.GetWidth());
+        mtl_scissor_rect.height = static_cast<NSUInteger>(scissor_rect.size.GetHeight());
         mtl_scissor_rects.emplace_back(std::move(mtl_scissor_rect));
     }
 
@@ -386,10 +386,10 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
     if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
     {
         const Settings& settings = GetSettings();
-        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRf()
-                                    green:settings.blending_color.GetGf()
-                                     blue:settings.blending_color.GetBf()
-                                    alpha:settings.blending_color.GetAf()];
+        [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRed()
+                                    green:settings.blending_color.GetGreen()
+                                     blue:settings.blending_color.GetBlue()
+                                    alpha:settings.blending_color.GetAlpha()];
     }
 }
 

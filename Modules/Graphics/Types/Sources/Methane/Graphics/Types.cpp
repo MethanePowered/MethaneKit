@@ -43,8 +43,8 @@ ScissorRect GetFrameScissorRect(const FrameRect& frame_rect, const FrameSize& re
     return {
         ScissorRect::Point(static_cast<uint32_t>(std::max(0, frame_rect.origin.GetX())),
                            static_cast<uint32_t>(std::max(0, frame_rect.origin.GetY()))),
-        ScissorRect::Size(GetNormalizedDimensionSize(frame_rect.origin.GetX(), frame_rect.size.width,  render_attachment_size.width),
-                          GetNormalizedDimensionSize(frame_rect.origin.GetY(), frame_rect.size.height, render_attachment_size.height))
+        ScissorRect::Size(GetNormalizedDimensionSize(frame_rect.origin.GetX(), frame_rect.size.GetWidth(),  render_attachment_size.GetWidth()),
+                          GetNormalizedDimensionSize(frame_rect.origin.GetY(), frame_rect.size.GetHeight(), render_attachment_size.GetHeight()))
     };
 }
 
@@ -53,7 +53,7 @@ ScissorRect GetFrameScissorRect(const FrameSize& frame_size)
     META_FUNCTION_TASK();
     return ScissorRect {
         ScissorRect::Point(0U, 0U),
-        ScissorRect::Size(frame_size.width, frame_size.height)
+        ScissorRect::Size(frame_size.GetWidth(), frame_size.GetHeight())
     };
 }
 
@@ -62,7 +62,7 @@ Viewport GetFrameViewport(const FrameRect& frame_rect)
     META_FUNCTION_TASK();
     return Viewport{
         Viewport::Point(static_cast<double>(frame_rect.origin.GetX()), static_cast<double>(frame_rect.origin.GetY()), 0.0),
-        Viewport::Size(static_cast<double>(frame_rect.size.width), static_cast<double>(frame_rect.size.height), 1.0)
+        Viewport::Size(static_cast<double>(frame_rect.size.GetWidth()), static_cast<double>(frame_rect.size.GetHeight()), 1.0)
     };
 }
 
@@ -71,7 +71,7 @@ Viewport GetFrameViewport(const FrameSize& frame_size)
     META_FUNCTION_TASK();
     return Viewport {
         Viewport::Point(0.0, 0.0, 0.0),
-        Viewport::Size(static_cast<double>(frame_size.width), static_cast<double>(frame_size.height), 1.0)
+        Viewport::Size(static_cast<double>(frame_size.GetWidth()), static_cast<double>(frame_size.GetHeight()), 1.0)
     };
 }
 
@@ -106,7 +106,7 @@ Data::Size GetPixelSize(PixelFormat pixel_format)
         return 1;
 
     default:
-        META_UNEXPECTED_ENUM_ARG_RETURN(pixel_format, 0);
+        META_UNEXPECTED_ARG_RETURN(pixel_format, 0);
     }
 }
 

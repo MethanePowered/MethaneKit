@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Point.hpp
-3D Point type based on cml::vector
+Point types based on HLSL++ vector
 
 ******************************************************************************/
 
@@ -29,19 +29,19 @@ namespace Methane::Graphics
 {
 
 template<typename T>
-using Point2T = Data::PointT<T, 2>;
+using Point2T = Data::Point<T, 2>;
 
-using Point2i = Point2T<int32_t>;
-using Point2u = Point2T<uint32_t>;
-using Point2f = Point2T<float>;
-using Point2d = Point2T<double>;
+using Point2I = Point2T<int32_t>;
+using Point2U = Point2T<uint32_t>;
+using Point2F = Point2T<float>;
+using Point2D = Point2T<double>;
 
 template<typename T>
-using Point3T = Data::PointT<T, 3>;
+using Point3T = Data::Point<T, 3>;
 
-using Point3i = Point3T<int32_t>;
-using Point3u = Point3T<uint32_t>;
-using Point3f = Point3T<float>;
-using Point3d = Point3T<double>;
+using Point3I = Point3T<int32_t>;
+using Point3U = Point3T<uint32_t>;
+using Point3F = Point3T<float>;
+using Point3D = Point3T<double>;
 
 } // namespace Methane::Graphics

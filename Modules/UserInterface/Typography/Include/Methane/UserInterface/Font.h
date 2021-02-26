@@ -147,7 +147,7 @@ public:
 
         Char() = default;
         explicit Char(Code code);
-        Char(Code code, gfx::FrameRect rect, gfx::Point2i offset, gfx::Point2i advance, UniquePtr<Glyph>&& glyph_ptr);
+        Char(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance, UniquePtr<Glyph>&& glyph_ptr);
 
         [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
         [[nodiscard]] bool                  IsLineBreak() const noexcept    { using namespace magic_enum::bitwise_operators;
@@ -155,8 +155,8 @@ public:
         [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { using namespace magic_enum::bitwise_operators;
                                                                               return magic_enum::flags::enum_contains(m_type_mask & Type::Whitespace); }
         [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
-        [[nodiscard]] const gfx::Point2i&   GetOffset() const noexcept      { return m_offset; }
-        [[nodiscard]] const gfx::Point2i&   GetAdvance() const noexcept     { return m_advance; }
+        [[nodiscard]] const gfx::Point2I&   GetOffset() const noexcept      { return m_offset; }
+        [[nodiscard]] const gfx::Point2I&   GetAdvance() const noexcept     { return m_advance; }
         [[nodiscard]] const gfx::FrameSize& GetVisualSize() const noexcept  { return m_visual_size; }
 
         [[nodiscard]] bool operator<(const Char& other) const noexcept      { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
@@ -170,8 +170,8 @@ public:
         const Code       m_code = 0U;
         const Type       m_type_mask = Type::Unknown;
         gfx::FrameRect   m_rect;
-        gfx::Point2i     m_offset;
-        gfx::Point2i     m_advance;
+        gfx::Point2I     m_offset;
+        gfx::Point2I     m_advance;
         gfx::FrameSize   m_visual_size;
         UniquePtr<Glyph> m_glyph_ptr;
     };

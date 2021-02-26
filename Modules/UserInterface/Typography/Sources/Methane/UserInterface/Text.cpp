@@ -40,20 +40,19 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <cml/mathlib/mathlib.h>
 #include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
 
-struct SHADER_STRUCT_ALIGN Text::Constants
+struct META_UNIFORM_ALIGN Text::Constants
 {
-    SHADER_FIELD_ALIGN gfx::Color4f color;
+    gfx::Color4F color;
 };
 
-struct SHADER_STRUCT_ALIGN Text::Uniforms
+struct META_UNIFORM_ALIGN Text::Uniforms
 {
-    SHADER_FIELD_ALIGN gfx::Matrix44f vp_matrix;
+    hlslpp::float4x4 vp_matrix;
 };
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
@@ -80,13 +79,13 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_font_ptr->Connect(*this);
 
     const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
-    m_frame_rect = GetUIContext().ConvertToPixels(m_settings.rect);
+    m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
     UpdateTextMesh();
     UpdateConstantsBuffer();
 
-    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsRect();
+    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
 
     static const std::string s_state_name = "Text Render State";
@@ -223,7 +222,7 @@ void Text::SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect
     }
 
     m_is_viewport_dirty = true;
-    Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
+    Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
 }
 
 bool Text::SetRect(const UnitRect& ui_rect)
@@ -239,15 +238,15 @@ bool Text::SetRect(const UnitRect& ui_rect)
     }
 
     m_is_viewport_dirty = true;
-    return Item::SetRect(GetUIContext().ConvertToPixels(m_frame_rect));
+    return Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
 }
 
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
 {
     META_FUNCTION_TASK();
     const UnitRect& ui_curr_rect_px  = GetRectInPixels();
-    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.units);
-    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertToPixels(ui_rect);
+    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.GetUnits());
+    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertTo<Units::Pixels>(ui_rect);
     const bool      ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
     const bool      ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;
 
@@ -263,7 +262,7 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
     return { ui_rect_changed, ui_size_changed };
 }
 
-void Text::SetColor(const gfx::Color4f& color)
+void Text::SetColor(const gfx::Color4F& color)
 {
     META_FUNCTION_TASK();
     if (m_settings.color == color)
@@ -520,14 +519,12 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     const gfx::FrameSize& content_size = text_mesh.GetContentSize();
     META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
-    gfx::Matrix44f scale_text_matrix;
-    cml::matrix_scale_2D(scale_text_matrix, 2.F / static_cast<float>(content_size.width), 2.F / static_cast<float>(content_size.height));
-
-    gfx::Matrix44f translate_text_matrix;
-    cml::matrix_translation_2D(translate_text_matrix, -1.F, 1.F);
-
     Uniforms uniforms{
-        scale_text_matrix * translate_text_matrix
+        hlslpp::mul(
+            hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.GetWidth()),
+                                    2.F / static_cast<float>(content_size.GetHeight()),
+                                    1.F),
+            hlslpp::float4x4::translation(-1.F, 1.F, 0.F))
     };
 
     const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
@@ -657,30 +654,30 @@ FrameRect Text::GetAlignedViewportRect() const
     {
         // Apply vertical offset to make top of content match the rect top coordinate
         const uint32_t content_top_offset = m_text_mesh_ptr->GetContentTopOffset();
-        META_CHECK_ARG_LESS(content_top_offset, content_size.height + 1);
+        META_CHECK_ARG_LESS(content_top_offset, content_size.GetHeight() + 1);
 
-        content_size.height -= content_top_offset;
+        content_size.SetHeight(content_size.GetHeight() - content_top_offset);
         viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
     }
 
-    if (content_size.width != m_frame_rect.size.width)
+    if (content_size.GetWidth() != m_frame_rect.size.GetWidth())
     {
         switch (m_settings.layout.horizontal_alignment)
         {
         case HorizontalAlignment::Left:   break;
-        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width)); break;
-        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.width - content_size.width) / 2); break;
-        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.horizontal_alignment);
+        case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
+        case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
+        default:                          META_UNEXPECTED_ARG(m_settings.layout.horizontal_alignment);
         }
     }
-    if (content_size.height != m_frame_rect.size.height)
+    if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
     {
         switch (m_settings.layout.vertical_alignment)
         {
         case VerticalAlignment::Top:      break;
-        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height)); break;
-        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.height - content_size.height) / 2); break;
-        default:                          META_UNEXPECTED_ENUM_ARG(m_settings.layout.vertical_alignment);
+        case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
+        case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
+        default:                          META_UNEXPECTED_ARG(m_settings.layout.vertical_alignment);
         }
     }
 
