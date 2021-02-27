@@ -215,35 +215,22 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    const bool apply_constant_resource_bindings   = apply_behavior != ApplyBehavior::ConstantOnce || !p_applied_program_bindings;
-    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
+    Program::ArgumentAccessor::Type apply_access_mask = Program::ArgumentAccessor::Type::Mutable;
+    if (apply_behavior != ApplyBehavior::ConstantOnce || !p_applied_program_bindings)
+        apply_access_mask |= Program::ArgumentAccessor::Type::Constant;
 
     // Set resource transition barriers before applying resource bindings
+    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
     if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers) &&
-        ApplyResourceStates(apply_constant_resource_bindings) &&
+        ApplyResourceStates(apply_access_mask) &&
         m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
     {
         command_list_dx.SetResourceBarriersDX(*m_resource_transition_barriers_ptr);
     }
 
     // Apply root parameter bindings after resource barriers
-
-    if (apply_constant_resource_bindings)
-    {
-        for (const RootParameterBinding& root_parameter_binding : m_constant_root_parameter_bindings)
-        {
-            ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
-        }
-    }
-
-    for(const RootParameterBinding& root_parameter_binding : m_variadic_root_parameter_bindings)
-    {
-        if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly) &&
-            p_applied_program_bindings && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
-            continue;
-
-        ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
-    }
+    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, p_applied_program_bindings,
+                               magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly));
 }
 
 template<typename FuncType>
@@ -273,40 +260,30 @@ void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_functio
     }
 }
 
-void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding)
+void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentAccessor& argument_accessor, const RootParameterBinding& root_parameter_binding)
 {
     META_FUNCTION_TASK();
-    if (argument_desc.IsConstant())
-    {
-        m_constant_root_parameter_bindings.emplace_back(root_parameter_binding);
-    }
-    else
-    {
-        m_variadic_root_parameter_bindings.emplace_back(root_parameter_binding);
-    }
+    m_root_parameter_bindings_by_access[magic_enum::enum_index(argument_accessor.GetAccessorType()).value()].emplace_back(root_parameter_binding);
 }
 
-void ProgramBindingsDX::AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state)
+void ProgramBindingsDX::AddResourceState(const Program::ArgumentAccessor& argument_accessor, ResourceState resource_state)
 {
     META_FUNCTION_TASK();
-    if (argument_desc.IsConstant())
-    {
-        m_constant_resource_states.emplace_back(std::move(resource_state));
-    }
-    else
-    {
-        m_variadic_resource_states.emplace_back(std::move(resource_state));
-    }
+    m_resource_states_by_access[magic_enum::enum_index(argument_accessor.GetAccessorType()).value()].emplace_back(resource_state);
 }
 
 void ProgramBindingsDX::UpdateRootParameterBindings()
 {
     META_FUNCTION_TASK();
+    for(RootParameterBindings& root_parameter_bindings : m_root_parameter_bindings_by_access)
+    {
+        root_parameter_bindings.clear();
+    }
 
-    m_constant_root_parameter_bindings.clear();
-    m_variadic_root_parameter_bindings.clear();
-    m_constant_resource_states.clear();
-    m_variadic_resource_states.clear();
+    for(ResourceStates& resource_states : m_resource_states_by_access)
+    {
+        resource_states.clear();
+    }
 
     ForEachArgumentBinding(std::bind(&ProgramBindingsDX::AddRootParameterBindingsForArgument, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -363,27 +340,49 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
     }
 }
 
-bool ProgramBindingsDX::ApplyResourceStates(bool apply_constant_resource_states) const
+bool ProgramBindingsDX::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const
 {
     META_FUNCTION_TASK();
-    bool resource_states_changed = false;
+    using namespace magic_enum::bitwise_operators;
 
-    if (apply_constant_resource_states)
+    bool resource_states_changed = false;
+    for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
     {
-        for(const ResourceState& resource_state : m_constant_resource_states)
+        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
+            continue;
+
+        const ResourceStates& resource_states = m_resource_states_by_access[magic_enum::enum_index(access_type).value()];
+        for(const ResourceState& resource_state : resource_states)
         {
             META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
             resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
         }
     }
 
-    for(const ResourceState& resource_state : m_variadic_resource_states)
-    {
-        META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
-        resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
-    }
-
     return resource_states_changed;
+}
+
+void ProgramBindingsDX::ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+                                                   const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const
+{
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
+    for(Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
+    {
+        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
+            continue;
+
+        const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
+        for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
+        {
+            if (access_type == Program::ArgumentAccessor::Type::Mutable && apply_changes_only &&
+                p_applied_program_bindings && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
+                continue;
+
+            ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
+        }
+    }
 }
 
 void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const

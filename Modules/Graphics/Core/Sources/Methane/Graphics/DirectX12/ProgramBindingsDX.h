@@ -30,7 +30,9 @@ DirectX 12 implementation of the program bindings interface.
 #include <wrl.h>
 #include <d3d12.h>
 
+#include <magic_enum.hpp>
 #include <functional>
+#include <array>
 
 namespace Methane::Graphics
 {
@@ -128,18 +130,20 @@ private:
     void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    bool ApplyResourceStates(bool apply_constant_resource_states) const;
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
+    void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+                                    const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
     void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
-    RootParameterBindings m_constant_root_parameter_bindings;
-    RootParameterBindings m_variadic_root_parameter_bindings;
+    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
 
     using ResourceStates = std::vector<ResourceState>;
-    ResourceStates        m_constant_resource_states;
-    ResourceStates        m_variadic_resource_states;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    ResourceStatesByAccess m_resource_states_by_access;
 
     mutable Ptr<ResourceBase::Barriers> m_resource_transition_barriers_ptr;
 };
