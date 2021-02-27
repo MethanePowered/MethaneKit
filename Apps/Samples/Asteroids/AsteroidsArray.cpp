@@ -240,12 +240,12 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
             gfx::Program::ArgumentDescriptions
             {
                 { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Addressable },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::None        },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::Mutable     },
                 { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant    },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant    },
                 { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
                                                                      ? gfx::Program::Argument::Modifiers::Constant
-                                                                     : gfx::Program::Argument::Modifiers::None      },
+                                                                     : gfx::Program::Argument::Modifiers::Mutable   },
             },
             gfx::PixelFormats
             {

@@ -81,12 +81,12 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     const RenderContext::Settings&          context_settings              = context.GetSettings();
     const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentDescriptions           program_argument_descriptions = {
-        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::None }
+        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", Program::Argument::Modifiers::None);
+        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", Program::Argument::Modifiers::Mutable);
         program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
     }
 

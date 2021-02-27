@@ -68,7 +68,7 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
             },
             Program::ArgumentDescriptions
             {
-                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::Argument::Modifiers::None     },
+                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::Argument::Modifiers::Mutable     },
                 { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::Argument::Modifiers::Constant },
                 { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::Argument::Modifiers::Constant },
             },

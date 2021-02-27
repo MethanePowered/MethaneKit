@@ -81,7 +81,7 @@ struct Program : virtual Object
 
         enum class Modifiers : uint32_t
         {
-            None        = 0U,
+            Mutable     = 0U,
             Constant    = 1U << 0U,
             Addressable = 1U << 1U,
             All         = ~0U
@@ -111,9 +111,9 @@ struct Program : virtual Object
         const Modifiers modifiers;
 
         ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
-                     Modifiers modifiers_mask = Modifiers::None) noexcept;
+                     Modifiers modifiers_mask = Modifiers::Mutable) noexcept;
         ArgumentDesc(const Argument& argument,
-                     Modifiers modifiers_mask = Modifiers::None) noexcept;
+                     Modifiers modifiers_mask = Modifiers::Mutable) noexcept;
         ArgumentDesc(const ArgumentDesc& argument_desc) = default;
         ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
 
