@@ -118,7 +118,7 @@ ShaderMT::~ShaderMT()
     [m_mtl_function release];
 }
 
-ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentDescriptions& argument_accessors) const
+ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
@@ -142,9 +142,9 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
         }
         
         const Program::Argument shader_argument(GetType(), argument_name);
-        const auto argument_desc_it = Program::FindArgumentDescription(argument_accessors, shader_argument);
-        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_accessors.end()
-                                                  ? Program::ArgumentDesc(shader_argument)
+        const auto argument_desc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Program::ArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
+                                                  ? Program::ArgumentAccessor(shader_argument)
                                                   : *argument_desc_it;
         
         argument_bindings.emplace_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
