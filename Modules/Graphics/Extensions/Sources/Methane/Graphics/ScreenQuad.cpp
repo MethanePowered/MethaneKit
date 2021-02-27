@@ -79,15 +79,15 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
 
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const RenderContext::Settings&          context_settings              = context.GetSettings();
-    const Shader::MacroDefinitions          ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-    Program::ArgumentDescriptions           program_argument_descriptions = {
-        { { Shader::Type::Pixel, "g_constants" }, Program::Argument::Modifiers::Mutable }
+    const Shader::MacroDefinitions ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
+    Program::ArgumentAccessors     program_argument_accessors = {
+        { { Shader::Type::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_texture", Program::Argument::Modifiers::Mutable);
-        program_argument_descriptions.emplace(Shader::Type::Pixel, "g_sampler", Program::Argument::Modifiers::Constant);
+        program_argument_accessors.emplace(Shader::Type::Pixel, "g_texture", Program::ArgumentAccessor::Type::Mutable);
+        program_argument_accessors.emplace(Shader::Type::Pixel, "g_sampler", Program::ArgumentAccessor::Type::Constant);
     }
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
@@ -111,7 +111,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
                         Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                program_argument_descriptions,
+                program_argument_accessors,
                 PixelFormats
                 {
                     context_settings.color_format

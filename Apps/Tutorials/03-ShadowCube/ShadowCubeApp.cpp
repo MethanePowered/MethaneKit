@@ -148,15 +148,15 @@ void ShadowCubeApp::Init()
                     gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Mutable  },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::Mutable  },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::Argument::Modifiers::Mutable  },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::Mutable  },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             gfx::PixelFormats
             {
@@ -186,9 +186,9 @@ void ShadowCubeApp::Init()
                 gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Mutable },
+                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
             },
             gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
             context_settings.depth_stencil_format

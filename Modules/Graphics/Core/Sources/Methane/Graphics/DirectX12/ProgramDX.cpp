@@ -138,7 +138,7 @@ ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
     META_FUNCTION_TASK();
-    InitArgumentBindings(settings.argument_descriptions);
+    InitArgumentBindings(settings.argument_accessors);
     InitRootSignature();
 }
 
@@ -170,7 +170,7 @@ void ProgramDX::InitRootSignature()
 
         auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
-        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.shader_type);
+        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.GetShaderType());
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
         root_parameters.emplace_back();

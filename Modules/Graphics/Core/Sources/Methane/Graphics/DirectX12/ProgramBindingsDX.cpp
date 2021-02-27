@@ -110,8 +110,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         const IResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
-                                   magic_enum::flags::enum_name(descriptor_heap_type), m_settings_dx.argument.name,
-                                   magic_enum::flags::enum_name(m_settings_dx.argument.shader_type));
+                                   magic_enum::flags::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
+                                   magic_enum::flags::enum_name(m_settings_dx.argument.GetShaderType()));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         cp_native_device->CopyDescriptorsSimple(
@@ -273,7 +273,7 @@ void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_functio
     }
 }
 
-void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, const RootParameterBinding& root_parameter_binding)
+void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding)
 {
     META_FUNCTION_TASK();
     if (argument_desc.IsConstant())
@@ -286,7 +286,7 @@ void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentDesc& arg
     }
 }
 
-void ProgramBindingsDX::AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state)
+void ProgramBindingsDX::AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     if (argument_desc.IsConstant())
@@ -347,12 +347,12 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
             });
         }
 
-        const ResourceBase::State non_pixel_resource_state = binding_settings.argument.shader_type == Shader::Type::Vertex &&
+        const ResourceBase::State non_pixel_resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Vertex &&
                                                              binding_settings.resource_type == Resource::Type::Buffer
                                                            ? ResourceBase::State::VertexAndConstantBuffer
                                                            : ResourceBase::State::NonPixelShaderResource;
 
-        const ResourceBase::State resource_state = binding_settings.argument.shader_type == Shader::Type::Pixel
+        const ResourceBase::State resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Pixel
                                                  ? ResourceBase::State::PixelShaderResource
                                                  : non_pixel_resource_state;
 

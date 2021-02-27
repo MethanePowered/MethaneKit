@@ -85,7 +85,7 @@ void HelloTriangleApp::Init()
                             gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                         }
                     },
-                    gfx::Program::ArgumentDescriptions { },
+                    gfx::Program::ArgumentAccessors { },
                     gfx::PixelFormats { GetRenderContext().GetSettings().color_format }
                 }
             )

@@ -40,7 +40,7 @@ public:
     ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings);
 
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const override;
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
 
 private:
     IContextVK& GetContextVK() noexcept;

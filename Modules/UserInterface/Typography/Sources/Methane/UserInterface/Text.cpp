@@ -108,12 +108,12 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                         gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                     }
                 },
-                gfx::Program::ArgumentDescriptions
+                gfx::Program::ArgumentAccessors
                 {
-                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
                 gfx::PixelFormats
                 {

@@ -63,7 +63,7 @@ public:
     Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
 protected:
-    void InitArgumentBindings(const ArgumentDescriptions& argument_descriptions);
+    void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
     const ProgramBindings::ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 

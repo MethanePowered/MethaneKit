@@ -235,7 +235,7 @@ ShaderDX::ShaderDX(Type type, ContextBase& context, const Settings& settings)
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const
+ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_reflection);
@@ -256,9 +256,9 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const Program::Argument shader_argument(GetType(), binding_desc.Name);
-        const auto argument_desc_it = Program::FindArgumentDescription(argument_descriptions, shader_argument);
-        const Program::ArgumentDesc argument_desc = argument_desc_it == argument_descriptions.end()
-                                                  ? Program::ArgumentDesc(shader_argument)
+        const auto                                       argument_desc_it            = Program::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Program::ArgumentAccessor                  argument_desc               = argument_desc_it == argument_accessors.end()
+                                                  ? Program::ArgumentAccessor(shader_argument)
                                                   : *argument_desc_it;
         const ProgramBindingsDX::ArgumentBindingDX::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
                                                   ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
@@ -295,7 +295,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
                << ", space="        << binding_desc.Space
                << ", flags="        << binding_desc.uFlags
                << ", id="           << binding_desc.uID;
-        if (argument_desc_it == argument_descriptions.end())
+        if (argument_desc_it == argument_accessors.end())
         {
             log_ss << ", no user argument description was found, using default";
         }

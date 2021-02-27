@@ -64,8 +64,9 @@ struct Program : virtual Object
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;
 
-    struct Argument
+    class Argument
     {
+    public:
         class NotFoundException : public std::invalid_argument
         {
         public:
@@ -76,63 +77,64 @@ struct Program : virtual Object
 
         private:
             const Program& m_program;
-            const UniquePtr<Argument> m_argument_ptr;
+            UniquePtr<Argument> m_argument_ptr;
         };
 
-        enum class Modifiers : uint32_t
+        struct Hash
         {
-            Mutable     = 0U,
-            Constant    = 1U << 0U,
-            Addressable = 1U << 1U,
-            All         = ~0U
+            [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.m_hash; }
         };
-
-        const Shader::Type shader_type;
-        const std::string  name;
-        const size_t       hash;
 
         Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
-        Argument(const Argument& argument) = default;
-        Argument(Argument&& argument) noexcept = default;
+
+        [[nodiscard]] Shader::Type       GetShaderType() const noexcept { return m_shader_type; }
+        [[nodiscard]] const std::string& GetName() const noexcept       { return m_name; }
+        [[nodiscard]] size_t             GetHash() const noexcept       { return m_hash; }
 
         [[nodiscard]] bool operator==(const Argument& other) const noexcept;
         [[nodiscard]] explicit operator std::string() const noexcept;
 
-        struct Hash
-        {
-            [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.hash; }
-        };
+    private:
+        Shader::Type m_shader_type;
+        std::string  m_name;
+        size_t       m_hash;
     };
 
     using Arguments = std::unordered_set<Argument, Argument::Hash>;
 
-    struct ArgumentDesc : Argument
+    class ArgumentAccessor : public Argument
     {
-        const Modifiers modifiers;
+    public:
+        enum class Type : uint32_t
+        {
+            Mutable  = 0U,
+            Constant = 1U
+        };
 
-        ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
-                     Modifiers modifiers_mask = Modifiers::Mutable) noexcept;
-        ArgumentDesc(const Argument& argument,
-                     Modifiers modifiers_mask = Modifiers::Mutable) noexcept;
-        ArgumentDesc(const ArgumentDesc& argument_desc) = default;
-        ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
+        ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+        ArgumentAccessor(const Argument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
-        [[nodiscard]] inline bool IsConstant() const    { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Constant); }
-        [[nodiscard]] inline bool IsAddressable() const { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Addressable); }
+        [[nodiscard]] Type GetAccessorType() const noexcept { return m_accessor_type; }
+        [[nodiscard]] bool IsAddressable() const noexcept   { return m_addressable; }
+        [[nodiscard]] bool IsConstant() const noexcept      { return m_accessor_type == Type::Constant; }
+
+    private:
+        Type m_accessor_type = Type::Mutable;
+        bool m_addressable   = false;
     };
 
-    using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;
-    static ArgumentDescriptions::const_iterator FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument);
+    using ArgumentAccessors = std::unordered_set<ArgumentAccessor, ArgumentAccessor::Hash>;
+    static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
     using Shaders = Ptrs<Shader>;
 
     // Program settings
     struct Settings
     {
-        Shaders              shaders;
-        InputBufferLayouts   input_buffer_layouts;
-        ArgumentDescriptions argument_descriptions;
-        PixelFormats         color_formats;
-        PixelFormat          depth_format = PixelFormat::Unknown;
+        Shaders            shaders;
+        InputBufferLayouts input_buffer_layouts;
+        ArgumentAccessors  argument_accessors;
+        PixelFormats       color_formats;
+        PixelFormat        depth_format = PixelFormat::Unknown;
     };
 
     // Create Program instance

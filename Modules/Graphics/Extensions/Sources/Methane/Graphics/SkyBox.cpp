@@ -66,11 +66,11 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
                     Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            Program::ArgumentDescriptions
+            Program::ArgumentAccessors
             {
-                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::Argument::Modifiers::Mutable     },
-                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::Argument::Modifiers::Constant },
-                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::Argument::Modifiers::Constant },
+                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::Mutable     },
+                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant },
+                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant },
             },
             PixelFormats
             {

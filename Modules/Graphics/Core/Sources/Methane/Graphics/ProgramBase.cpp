@@ -36,9 +36,9 @@ namespace Methane::Graphics
 static const std::hash<std::string> g_argument_name_hash;
 
 Program::Argument::Argument(Shader::Type shader_type, const std::string& argument_name) noexcept
-    : shader_type(shader_type)
-    , name(argument_name)
-    , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
+    : m_shader_type(shader_type)
+    , m_name(argument_name)
+    , m_hash(g_argument_name_hash(m_name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     META_FUNCTION_TASK();
 }
@@ -46,44 +46,46 @@ Program::Argument::Argument(Shader::Type shader_type, const std::string& argumen
 bool Program::Argument::operator==(const Argument& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(hash, shader_type, name) ==
-           std::tie(other.hash, other.shader_type, other.name);
+    return std::tie(m_hash, m_shader_type, m_name) ==
+           std::tie(other.m_hash, other.m_shader_type, other.m_name);
 }
 
 Program::Argument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} {}", magic_enum::flags::enum_name(shader_type), name);
+    return fmt::format("{} {}", magic_enum::flags::enum_name(m_shader_type), m_name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers modifiers) noexcept
+Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type, bool addressable) noexcept
     : Argument(shader_type, argument_name)
-    , modifiers(modifiers)
+    , m_accessor_type(accessor_type)
+    , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers modifiers) noexcept
+Program::ArgumentAccessor::ArgumentAccessor(const Argument& argument, Type accessor_type, bool addressable) noexcept
     : Argument(argument)
-    , modifiers(modifiers)
+    , m_accessor_type(accessor_type)
+    , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument)
+Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument)
 {
     META_FUNCTION_TASK();
-    if (const auto argument_desc_it = argument_descriptions.find(argument);
-        argument_desc_it != argument_descriptions.end())
+    if (const auto argument_desc_it = argument_accessors.find(argument);
+        argument_desc_it != argument_accessors.end())
         return argument_desc_it;
 
-    const Argument all_shaders_argument(Shader::Type::All, argument.name);
-    return argument_descriptions.find(all_shaders_argument);
+    const Argument all_shaders_argument(Shader::Type::All, argument.GetName());
+    return argument_accessors.find(all_shaders_argument);
 }
 
 Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
-                                        program.GetName(), argument.name, magic_enum::flags::enum_name(argument.shader_type)))
+                                        program.GetName(), argument.GetName(), magic_enum::flags::enum_name(argument.GetShaderType())))
     , m_program(program)
     , m_argument_ptr(std::make_unique<Program::Argument>(argument))
 {
@@ -137,7 +139,7 @@ ProgramBase::~ProgramBase()
     }
 }
 
-void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_descriptions)
+void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();
 
@@ -151,13 +153,13 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         const Shader::Type shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
         
-        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_descriptions);
+        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_accessors);
         for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binging_ptr : argument_bindings)
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
             m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
-            shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
+            shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }
     }
     

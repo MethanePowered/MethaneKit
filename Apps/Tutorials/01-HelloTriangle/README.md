@@ -139,7 +139,7 @@ public:
                                 Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" },
                             }
                         },
-                        Program::ArgumentDescriptions { },
+                        Program::ArgumentAccessors { },
                         PixelFormats { GetRenderContext().GetSettings().color_format }
                     }
                 )

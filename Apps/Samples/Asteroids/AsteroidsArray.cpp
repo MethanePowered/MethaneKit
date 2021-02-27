@@ -237,15 +237,15 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
             {
                 gfx::Program::InputBufferLayout { state.uber_mesh.GetVertexLayout().GetSemantics() }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Addressable },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::Mutable     },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant    },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant    },
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::Mutable     },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant    },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant    },
                 { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
-                                                                     ? gfx::Program::Argument::Modifiers::Constant
-                                                                     : gfx::Program::Argument::Modifiers::Mutable   },
+                                                                     ? gfx::Program::ArgumentAccessor::Type::Constant
+                                                                     : gfx::Program::ArgumentAccessor::Type::Mutable   },
             },
             gfx::PixelFormats
             {

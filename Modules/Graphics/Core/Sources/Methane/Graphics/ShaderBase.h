@@ -51,7 +51,7 @@ public:
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
-    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
+    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const = 0;
 
     Ptr<ShaderBase> GetPtr() { return shared_from_this(); }
 

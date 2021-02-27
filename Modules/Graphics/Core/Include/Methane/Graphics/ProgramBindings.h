@@ -42,8 +42,8 @@ struct ProgramBindings
         // ArgumentBinding settings
         struct Settings
         {
-            Program::ArgumentDesc argument;
-            Resource::Type        resource_type;
+            Program::ArgumentAccessor argument;
+            Resource::Type            resource_type;
             uint32_t              resource_count = 1;
         };
 

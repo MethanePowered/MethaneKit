@@ -124,8 +124,8 @@ private:
 
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
-    void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, const RootParameterBinding& root_parameter_binding);
-    void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
+    void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
+    void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
     bool ApplyResourceStates(bool apply_constant_resource_states) const;

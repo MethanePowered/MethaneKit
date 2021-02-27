@@ -77,7 +77,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
         META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
                                   magic_enum::enum_name(resource_location.GetResource().GetResourceType()),
-                                  m_settings.argument.name, magic_enum::enum_name(bound_resource_type));
+                                  m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
         const Resource::Usage resource_usage_mask = resource_location.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
@@ -149,7 +149,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
     for (const auto& [program_argument, argument_binding_ptr] : other_program_bindings.m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
 
         // NOTE: constant resource bindings are reusing single binding-object for the whole program,
         //       so there's no need in setting its value, since it was already set by the original resource binding
@@ -218,7 +218,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
 
         const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*argument_binding_ptr);
         const auto& binding_settings = argument_binding.GetSettings();
@@ -315,7 +315,7 @@ Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
     Program::Arguments unbound_arguments;
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.name);
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
 
         if (argument_binding_ptr->GetResourceLocations().empty())
         {
