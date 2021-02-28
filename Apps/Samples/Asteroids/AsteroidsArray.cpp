@@ -240,12 +240,12 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
             gfx::Program::ArgumentAccessors
             {
                 { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::Mutable     },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant    },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant    },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
                 { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
                                                                      ? gfx::Program::ArgumentAccessor::Type::Constant
-                                                                     : gfx::Program::ArgumentAccessor::Type::Mutable   },
+                                                                     : gfx::Program::ArgumentAccessor::Type::Mutable     },
             },
             gfx::PixelFormats
             {
@@ -317,17 +317,17 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     });
 
     tf::Taskflow task_flow;
-    task_flow.for_each_index_guided(1, static_cast<int>(m_settings.instance_count), 1,
-        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr](const int asteroid_index)
+    task_flow.for_each_index_guided(1U, m_settings.instance_count, 1U,
+        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr](const uint32_t asteroid_index)
         {
-            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
+            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
-                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
+                { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
             };
             if (!m_settings.textures_array_enabled)
             {
                 set_resource_location_by_argument.insert(
-                    { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(static_cast<uint32_t>(asteroid_index)) } } }
+                    { { gfx::Shader::Type::Pixel, "g_face_textures" }, { { GetInstanceTexturePtr(asteroid_index) } } }
                 );
             }
             program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);

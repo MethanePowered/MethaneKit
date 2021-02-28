@@ -107,8 +107,9 @@ struct Program : virtual Object
     public:
         enum class Type : uint32_t
         {
-            Mutable  = 1U << 0U,
-            Constant = 1U << 1U
+            Mutable       = 1U << 0U,
+            Constant      = 1U << 1U,
+            FrameConstant = 1U << 2U,
         };
 
         ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;

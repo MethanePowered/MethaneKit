@@ -64,7 +64,7 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX&
     META_FUNCTION_TASK();
     if (m_p_descriptor_heap_reservation)
     {
-        META_CHECK_ARG_TRUE(m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
+        META_CHECK_ARG_TRUE( m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
         META_CHECK_ARG_EQUAL(m_p_descriptor_heap_reservation->heap.get().GetSettings().type, m_descriptor_range.heap_type);
     }
 }
@@ -217,7 +217,10 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
 
     Program::ArgumentAccessor::Type apply_access_mask = Program::ArgumentAccessor::Type::Mutable;
     if (apply_behavior != ApplyBehavior::ConstantOnce || !p_applied_program_bindings)
+    {
         apply_access_mask |= Program::ArgumentAccessor::Type::Constant;
+        apply_access_mask |= Program::ArgumentAccessor::Type::FrameConstant;
+    }
 
     // Set resource transition barriers before applying resource bindings
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();

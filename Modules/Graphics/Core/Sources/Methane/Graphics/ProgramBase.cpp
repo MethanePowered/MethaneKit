@@ -209,7 +209,7 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
     return m_constant_descriptor_range_by_heap_type.try_emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
 }
 
-Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
+Shader& ProgramBase::GetShaderRef(Shader::Type shader_type) const
 {
     META_FUNCTION_TASK();
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);

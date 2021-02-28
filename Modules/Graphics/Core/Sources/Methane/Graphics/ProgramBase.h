@@ -67,7 +67,7 @@ protected:
     const ProgramBindings::ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
 
-    Shader& GetShaderRef(Shader::Type shader_type);
+    Shader& GetShaderRef(Shader::Type shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
 
     using ShadersByType = std::array<Ptr<Shader>, magic_enum::enum_count<Shader::Type>() - 1>;

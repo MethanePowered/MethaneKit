@@ -119,7 +119,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
 
     const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
     DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-    uint32_t& descriptor_offset = argument_binding.GetSettings().argument.IsConstant()
+    uint32_t& descriptor_offset = bind_settings.argument.IsConstant()
                                 ? descriptor_offsets.constant_offset
                                 : descriptor_offsets.mutable_offset;
     argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
@@ -224,13 +224,13 @@ const IContextDX& ProgramDX::GetContextDX() const noexcept
     return static_cast<const IContextDX&>(GetContext());
 }
 
-ShaderDX& ProgramDX::GetVertexShaderDX() noexcept
+ShaderDX& ProgramDX::GetVertexShaderDX() const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Vertex));
 }
 
-ShaderDX& ProgramDX::GetPixelShaderDX() noexcept
+ShaderDX& ProgramDX::GetPixelShaderDX() const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Pixel));

@@ -49,8 +49,8 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    ShaderDX& GetVertexShaderDX() noexcept;
-    ShaderDX& GetPixelShaderDX() noexcept;
+    ShaderDX& GetVertexShaderDX() const;
+    ShaderDX& GetPixelShaderDX() const;
 
     const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
