@@ -44,6 +44,7 @@ CommandQueueBase::~CommandQueueBase()
 void CommandQueueBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    ObjectBase::SetName(name);
     if (m_tracy_gpu_context_ptr)
     {
         m_tracy_gpu_context_ptr->SetName(name);
