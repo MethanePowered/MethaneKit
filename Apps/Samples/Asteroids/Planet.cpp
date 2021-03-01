@@ -96,9 +96,9 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
 Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const
 {
     META_FUNCTION_TASK();
-
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
+
     return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr            } } },
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
@@ -126,7 +126,7 @@ bool Planet::Update(double elapsed_seconds, double)
     return true;
 }
 
-void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");

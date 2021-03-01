@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,10 +24,24 @@ Math primitive functions.
 #pragma once
 
 #include <type_traits>
-#include <thread>
+#include <cmath>
 
 namespace Methane::Data
 {
+
+template<typename T, typename V, typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<V>>>
+constexpr T RoundCast(V value) noexcept
+{
+    if constexpr (std::is_same_v<T, V>)
+        return value;
+    else
+    {
+        if constexpr (std::is_integral_v<T> && std::is_floating_point_v<V>)
+            return static_cast<T>(std::round(value));
+        else
+            return static_cast<T>(value);
+    }
+}
 
 template<typename T>
 std::enable_if_t<std::is_arithmetic_v<T>, T> AbsSubtract(T a, T b)
@@ -49,19 +63,6 @@ std::enable_if_t<std::is_signed_v<T>, T> DivCeil(T numerator, T denominator)
         return res.quot >= 0 ? (res.quot + 1) : (res.quot - 1);
 
     return res.quot;
-}
-
-template<typename T>
-std::enable_if_t<std::is_integral_v<T>, T> GetParallelChunkSize(T items_count, T thread_granularity = 1)
-{
-    const size_t hw_theads_count = std::thread::hardware_concurrency();
-    return Data::DivCeil(items_count, static_cast<T>(hw_theads_count) * thread_granularity);
-}
-
-template<typename T, typename G = T>
-std::enable_if_t<std::is_integral_v<T>, int> GetParallelChunkSizeAsInt(T items_count, G thread_granularity = 1)
-{
-    return static_cast<int>(GetParallelChunkSize(items_count, static_cast<T>(thread_granularity)));
 }
 
 } // namespace Methane::Data

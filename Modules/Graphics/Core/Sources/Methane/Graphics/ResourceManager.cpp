@@ -25,7 +25,7 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 #include "ContextBase.h"
 
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -107,7 +107,7 @@ void ResourceManager::CompleteInitialization()
             META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
             static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
         },
-        Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
+        Data::GetParallelChunkSize(m_program_bindings.size(), 3)
     );
     m_context.GetParallelExecutor().run(task_flow).get();
 }

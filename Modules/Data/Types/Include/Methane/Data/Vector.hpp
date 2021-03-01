@@ -28,6 +28,8 @@ Template vector type for arithmetic scalar type and fixed size:
 
 #pragma once
 
+#include "Math.hpp"
+
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -99,20 +101,6 @@ HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noex
         return HlslVector<T, 3>(components[0], components[1], components[2]);
     if constexpr (size == 4)
         return HlslVector<T, 4>(components[0], components[1], components[2], components[3]);
-}
-
-template<typename T, typename V, typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<V>>>
-constexpr T RoundCast(V value) noexcept
-{
-    if constexpr (std::is_same_v<T, V>)
-        return value;
-    else
-    {
-        if constexpr (std::is_integral_v<T> && std::is_floating_point_v<V>)
-            return static_cast<T>(std::round(value));
-        else
-            return static_cast<T>(value);
-    }
 }
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>

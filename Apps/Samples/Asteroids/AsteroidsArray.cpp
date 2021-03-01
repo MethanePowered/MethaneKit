@@ -25,7 +25,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -67,8 +67,8 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
         base_mesh.Spherify();
 
         tf::Taskflow task_flow;
-        task_flow.for_each_index_guided(0, static_cast<int>(m_instance_count), 1,
-            [this, &rng, &data_mutex, &base_mesh](const int)
+        task_flow.for_each_index_guided(0U, m_instance_count, 1U,
+            [this, &rng, &data_mutex, &base_mesh](const uint32_t)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng()); // NOSONAR
@@ -77,7 +77,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
-            Data::GetParallelChunkSizeAsInt(m_instance_count, 5)
+            Data::GetParallelChunkSize(m_instance_count, 5)
         );
         parallel_executor.run(task_flow).get();
     }
@@ -137,7 +137,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         },
-        Data::GetParallelChunkSizeAsInt(texture_array_subresources.size(), 5)
+        Data::GetParallelChunkSize(texture_array_subresources.size(), 5)
     );
     parallel_executor.run(task_flow).get();
 
@@ -332,7 +332,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
             }
             program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
         },
-        Data::GetParallelChunkSizeAsInt(m_settings.instance_count, 5)
+        Data::GetParallelChunkSize(m_settings.instance_count, 5)
     );
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
     
@@ -352,7 +352,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
         {
             UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetViewProjMatrix(), m_settings.view_camera.GetOrientation().eye, elapsed_radians);
         },
-        Data::GetParallelChunkSizeAsInt(m_content_state_ptr->parameters.size(), 5)
+        Data::GetParallelChunkSize(m_content_state_ptr->parameters.size(), 5)
     );
 
     GetRenderContext().GetParallelExecutor().run(update_task_flow).get();

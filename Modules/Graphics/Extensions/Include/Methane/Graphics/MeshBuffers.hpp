@@ -161,8 +161,8 @@ public:
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
-        render_task_flow.for_each_index_guided(0, static_cast<int>(render_cmd_lists.size()), 1,
-            [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings, bindings_apply_behavior](const int cmd_list_index)
+        render_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
+            [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings, bindings_apply_behavior](const uint32_t cmd_list_index)
             {
                 const Ptr<RenderCommandList>& render_command_list_ptr = render_cmd_lists[cmd_list_index];
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
@@ -175,7 +175,7 @@ public:
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index);
             },
-            Data::GetParallelChunkSizeAsInt(render_cmd_lists.size(), 5)
+            Data::GetParallelChunkSize(render_cmd_lists.size(), 5)
         );
         m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }
