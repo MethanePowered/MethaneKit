@@ -24,6 +24,7 @@ Math primitive functions.
 #pragma once
 
 #include <type_traits>
+#include <cstdlib>
 #include <cmath>
 
 namespace Methane::Data

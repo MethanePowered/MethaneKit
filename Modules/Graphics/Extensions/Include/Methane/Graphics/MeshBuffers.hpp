@@ -34,7 +34,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AlignedAllocator.hpp>
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
