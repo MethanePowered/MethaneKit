@@ -36,12 +36,12 @@ namespace gfx = Graphics;
 
 struct META_UNIFORM_ALIGN AsteroidUniforms
 {
-    hlslpp::float4x4 model_matrix;
-    hlslpp::float4x4 mvp_matrix;
-    hlslpp::float3   deep_color;
-    hlslpp::float3   shallow_color;
-    hlslpp::float2   depth_range;
-    uint32_t         texture_index;
+    hlslpp::float4x4  model_matrix;
+    gfx::Color3F      deep_color;
+    gfx::Color3F      shallow_color;
+    float             depth_min;
+    float             depth_max;
+    uint32_t          texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -83,10 +83,10 @@ public:
 
     struct Parameters
     {
-        const uint32_t       index;
-        const uint32_t       mesh_instance_index;
-        const uint32_t       texture_index;
-        const Colors         colors;
+        const uint32_t         index;
+        const uint32_t         mesh_instance_index;
+        const uint32_t         texture_index;
+        const Colors           colors;
         const hlslpp::float4x4 scale_translate_matrix;
         const hlslpp::float3   spin_axis;
         const float            scale;

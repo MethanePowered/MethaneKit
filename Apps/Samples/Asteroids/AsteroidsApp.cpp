@@ -346,8 +346,9 @@ bool AsteroidsApp::Update()
         return false;
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+    m_scene_uniforms.view_proj_matrix = hlslpp::transpose(m_view_camera.GetViewProjMatrix());
+    m_scene_uniforms.eye_position     = m_view_camera.GetOrientation().eye;
+    m_scene_uniforms.light_position   = m_light_camera.GetOrientation().eye;
 
     m_sky_box_ptr->Update();
     return true;

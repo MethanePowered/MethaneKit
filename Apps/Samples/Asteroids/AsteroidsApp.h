@@ -94,8 +94,9 @@ private:
 
     struct META_UNIFORM_ALIGN SceneUniforms
     {
-        hlslpp::float4  eye_position;
-        hlslpp::float3  light_position;
+        hlslpp::float4x4 view_proj_matrix;
+        hlslpp::float3   eye_position;
+        hlslpp::float3   light_position;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds) const;

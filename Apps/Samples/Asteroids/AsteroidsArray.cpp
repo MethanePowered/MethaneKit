@@ -220,7 +220,6 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
@@ -240,7 +239,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
             gfx::Program::ArgumentAccessors
             {
                 { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::All,    "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
                 { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
                 { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
@@ -310,7 +309,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer_ptr, GetUniformsBufferOffset(0) } } },
-        { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { scene_uniforms_buffer_ptr } } },
+        { { gfx::Shader::Type::All,    "g_scene_uniforms" }, { { scene_uniforms_buffer_ptr } } },
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { constants_buffer_ptr      } } },
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations        },
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr     } } },
@@ -350,7 +349,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
         [this, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
         {
-            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetViewProjMatrix(), m_settings.view_camera.GetOrientation().eye, elapsed_radians);
+            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetOrientation().eye, elapsed_radians);
         },
         Data::GetParallelChunkSize(m_content_state_ptr->parameters.size(), 5)
     );
@@ -414,7 +413,7 @@ uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
     return m_mesh_subset_by_instance_index[instance_index];
 }
 
-void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float4x4& view_proj_matrix, const hlslpp::float3& eye_position, float elapsed_radians)
+void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians)
 {
     META_FUNCTION_TASK();
 
@@ -425,19 +424,17 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     const hlslpp::float4x4 orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
 
     const hlslpp::float4x4 model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
-    const hlslpp::float4x4 mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);
+    const hlslpp::float3   asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
+    const float            distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
+    const float            relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
-    const hlslpp::float3 asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
-    const float distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
-    const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
-
-    const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
-    const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
-    const uint32_t          mesh_subset_index       = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
-    const auto&    [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
-    const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled
-                                                    ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
-                                                    : asteroid_parameters.colors;
+    const float    mesh_subdiv_float        = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
+    const uint32_t mesh_subdivision_index   = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
+    const uint32_t mesh_subset_index        = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
+    const auto&   [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+    const Asteroid::Colors& asteroid_colors = m_mesh_lod_coloring_enabled
+                                            ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
+                                            : asteroid_parameters.colors;
 
     m_mesh_subset_by_instance_index[asteroid_parameters.index] = mesh_subset_index;
 
@@ -445,10 +442,10 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
         AsteroidUniforms
         {
             hlslpp::transpose(model_matrix),
-            hlslpp::transpose(mvp_matrix),
-            asteroid_colors.deep.AsVector(),
-            asteroid_colors.shallow.AsVector(),
-            hlslpp::float2(mesh_depth_min, mesh_depth_max),
+            asteroid_colors.deep,
+            asteroid_colors.shallow,
+            mesh_depth_min,
+            mesh_depth_max,
             asteroid_parameters.texture_index
         },
         asteroid_parameters.index

@@ -40,7 +40,7 @@ struct VSInput
 struct PSInput
 {
     float4 position          : SV_POSITION;
-    float3 world_position    : POSITION0;
+    float4 world_position    : POSITION0;
     float3 world_normal      : NORMAL;
     float3 albedo            : ALBEDO;
     float3 uvw               : UVFACE;
@@ -57,39 +57,42 @@ struct Constants
 
 struct SceneUniforms
 {
-    float4   eye_position;
+    float4x4 view_proj_matrix;
+    float3   eye_position;
     float3   light_position;
 };
 
-struct MeshUniforms
+struct AsteroidUniforms
 {
     float4x4 model_matrix;
-    float4x4 mvp_matrix;
     float3   deep_color;
     float3   shallow_color;
-    float2   depth_range;
+    float    padding;
+    float    depth_min;
+    float    depth_max;
     uint     texture_index;
 };
 
-ConstantBuffer<Constants>     g_constants                     : register(b1);
-ConstantBuffer<SceneUniforms> g_scene_uniforms                : register(b2);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms                 : register(b3);
-Texture2DArray<float4>        g_face_textures[TEXTURES_COUNT] : register(t1);
-SamplerState                  g_texture_sampler               : register(s1);
+ConstantBuffer<Constants>        g_constants                     : register(b1);
+ConstantBuffer<SceneUniforms>    g_scene_uniforms                : register(b2);
+ConstantBuffer<AsteroidUniforms> g_mesh_uniforms                 : register(b3);
+Texture2DArray<float4>           g_face_textures[TEXTURES_COUNT] : register(t1);
+SamplerState                     g_texture_sampler               : register(s1);
 
 PSInput AsteroidVS(VSInput input)
 {
     const float4 position = float4(input.position, 1.0F);
-    const float  depth    = linstep(g_mesh_uniforms.depth_range.x, g_mesh_uniforms.depth_range.y, length(input.position.xyz));
+    const float  depth    = linstep(g_mesh_uniforms.depth_min, g_mesh_uniforms.depth_max, length(input.position.xyz));
 
     PSInput output;
-    output.position          = mul(position, g_mesh_uniforms.mvp_matrix);
-    output.world_position    = mul(position, g_mesh_uniforms.model_matrix).xyz;
+    output.world_position    = mul(position, g_mesh_uniforms.model_matrix);
+    output.position          = mul(output.world_position, g_scene_uniforms.view_proj_matrix);
+
     output.world_normal      = normalize(mul(float4(input.normal, 0.0), g_mesh_uniforms.model_matrix).xyz);
     output.albedo            = lerp(g_mesh_uniforms.deep_color, g_mesh_uniforms.shallow_color, depth);
 
     // Prepare coordinates and blending weights for tri-planar projection texturing
-    output.uvw               = input.position / g_mesh_uniforms.depth_range.y * 0.5F + 0.5F;
+    output.uvw               = input.position / g_mesh_uniforms.depth_max * 0.5F + 0.5F;
     output.face_blend_weights = abs(normalize(input.position));
     output.face_blend_weights = saturate((output.face_blend_weights - 0.2F) * 7.0F);
     output.face_blend_weights /= (output.face_blend_weights.x + output.face_blend_weights.y + output.face_blend_weights.z).xxx;
@@ -99,8 +102,8 @@ PSInput AsteroidVS(VSInput input)
 
 float4 AsteroidPS(PSInput input) : SV_TARGET
 {
-    const float3 fragment_to_light  = normalize(g_scene_uniforms.light_position - input.world_position);
-    const float3 fragment_to_eye    = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
+    const float3 fragment_to_light  = normalize(g_scene_uniforms.light_position - input.world_position.xyz);
+    const float3 fragment_to_eye    = normalize(g_scene_uniforms.eye_position - input.world_position.xyz);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
     // Tri-planar projection sampling
