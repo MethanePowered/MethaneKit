@@ -117,12 +117,15 @@ void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const R
 void ParallelRenderCommandListBase::Commit()
 {
     META_FUNCTION_TASK();
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
-    {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Commit();
-    }
-
+    tf::Taskflow commit_task_flow;
+    commit_task_flow.for_each(m_parallel_command_lists.begin(), m_parallel_command_lists.end(),
+        [](const Ptr<RenderCommandList>& render_command_list_ptr)
+        {
+            META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+            render_command_list_ptr->Commit();
+        }
+    );
+    GetCommandQueueBase().GetContext().GetParallelExecutor().run(commit_task_flow).get();
     CommandListBase::Commit();
 }
 
