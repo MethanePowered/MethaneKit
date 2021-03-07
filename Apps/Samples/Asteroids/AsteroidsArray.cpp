@@ -29,6 +29,7 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <future>
 #include <cmath>
 
 namespace Methane::Samples
@@ -366,14 +367,14 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
-    buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
-                      gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, true);
+    BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance, gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, true);
+    uniforms_update_future.wait();
 }
 
 void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
@@ -384,14 +385,14 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
-    buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
-                              gfx::ProgramBindings::ApplyBehavior::ConstantOnce, true);
+    BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance, gfx::ProgramBindings::ApplyBehavior::ConstantOnce, true);
+    uniforms_update_future.wait();
 }
 
 float AsteroidsArray::GetMinMeshLodScreenSize() const
