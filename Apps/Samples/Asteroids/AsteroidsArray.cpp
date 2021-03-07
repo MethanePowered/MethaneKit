@@ -373,7 +373,7 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
-                      gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
+                      gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, true);
 }
 
 void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
@@ -391,7 +391,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
-                              gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
+                              gfx::ProgramBindings::ApplyBehavior::ConstantOnce, true);
 }
 
 float AsteroidsArray::GetMinMeshLodScreenSize() const

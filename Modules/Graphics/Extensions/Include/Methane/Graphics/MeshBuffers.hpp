@@ -117,16 +117,16 @@ public:
 
     void Draw(RenderCommandList& cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
               ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
-              uint32_t first_instance_index = 0)
+              uint32_t first_instance_index = 0, bool retain_bindings_once = false)
     {
-        Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(), bindings_apply_behavior, first_instance_index);
+        Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(), bindings_apply_behavior, first_instance_index, retain_bindings_once);
     }
 
     void Draw(RenderCommandList& cmd_list,
               const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_begin,
               const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_end,
               ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
-              uint32_t first_instance_index = 0)
+              uint32_t first_instance_index = 0, bool retain_bindings_once = false)
     {
         META_FUNCTION_TASK();
         cmd_list.SetVertexBuffers(GetVertexBuffers());
@@ -145,7 +145,14 @@ public:
             META_CHECK_ARG_LESS(subset_index, m_mesh_subsets.size());
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
+            using namespace magic_enum::bitwise_operators;
+            ProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
+            if (!retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin)
+                apply_behavior |= ProgramBindings::ApplyBehavior::RetainResources;
+            else
+                apply_behavior &= ~ProgramBindings::ApplyBehavior::RetainResources;
+
+            cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
@@ -154,7 +161,8 @@ public:
     }
 
     void DrawParallel(const ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
-                      ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental)
+                      ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+                      bool retain_bindings_once = false)
     {
         META_FUNCTION_TASK();
         const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
@@ -162,7 +170,7 @@ public:
 
         tf::Taskflow render_task_flow;
         render_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
-            [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings, bindings_apply_behavior](const uint32_t cmd_list_index)
+            [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings, bindings_apply_behavior, retain_bindings_once](const uint32_t cmd_list_index)
             {
                 const Ptr<RenderCommandList>& render_command_list_ptr = render_cmd_lists[cmd_list_index];
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
@@ -173,7 +181,7 @@ public:
                 Draw(*render_command_list_ptr,
                      instance_program_bindings.begin() + begin_instance_index,
                      instance_program_bindings.begin() + end_instance_index,
-                     bindings_apply_behavior, begin_instance_index);
+                     bindings_apply_behavior, begin_instance_index, retain_bindings_once);
             },
             Data::GetParallelChunkSize(render_cmd_lists.size(), 5)
         );

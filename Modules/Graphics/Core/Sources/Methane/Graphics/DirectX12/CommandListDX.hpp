@@ -162,12 +162,16 @@ public:
     void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
     {
         META_FUNCTION_TASK();
+        using namespace magic_enum::bitwise_operators;
+
         CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
         if (command_state.program_bindings_ptr.get() == &program_bindings)
             return;
 
         auto& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
         program_bindings_dx.Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
+        if (!magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
+            return;
 
         Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_dx.GetBasePtr();
         command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
