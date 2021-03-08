@@ -426,16 +426,18 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
     if (!p_heap_reservation)
         return;
 
-    const auto&                               dx_descriptor_heap     = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
-    const ArgumentBindingDX::DescriptorRange& descriptor_range       = argument_binding.GetDescriptorRange();
-    const DescriptorHeap::Type                heap_type              = dx_descriptor_heap.GetSettings().type;
-    const bool                                is_constant_bindinig   = argument_binding.GetSettings().argument.IsConstant();
-    const uint32_t                            descriptor_range_start = p_heap_reservation->GetRange(is_constant_bindinig).GetStart();
-    const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type       = dx_descriptor_heap.GetNativeDescriptorHeapType();
+    using AcceessType = Program::ArgumentAccessor::Type;
+
+    const auto&                               dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
+    const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
+    const Program::ArgumentAccessor::Type     access_type        = argument_binding.GetSettings().argument.GetAccessorType();
+    const DescriptorHeap::Type                heap_type          = dx_descriptor_heap.GetSettings().type;
+    const DescriptorHeap::Range&              heap_range         = p_heap_reservation->GetRange(access_type == AcceessType::Constant || access_type == AcceessType::FrameConstant);
+    const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(p_heap_reservation);
     META_CHECK_ARG_NOT_NULL(d3d12_device);
-    META_CHECK_ARG_LESS_DESCR(descriptor_range.offset, p_heap_reservation->GetRange(is_constant_bindinig).GetLength(),
+    META_CHECK_ARG_LESS_DESCR(descriptor_range.offset, heap_range.GetLength(),
                               "descriptor range offset is out of reserved descriptor range bounds");
 
     uint32_t resource_index = 0;
@@ -447,7 +449,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
                              magic_enum::flags::enum_name(resource_location_dx.GetResourceDX().GetUsage()),
                              magic_enum::flags::enum_name(dx_descriptor_heap.GetSettings().type));
 
-        const uint32_t descriptor_index = descriptor_range_start + descriptor_range.offset + resource_index;
+        const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
         META_LOG("  - Resource '{}' range [{}, {}), descriptor {}", resource_location_dx.GetResourceDX().GetName(),
                  descriptor_range.offset, descriptor_range.offset + descriptor_range.count, descriptor_index);
 

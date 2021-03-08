@@ -22,7 +22,7 @@ Base implementation of the program bindings interface.
 ******************************************************************************/
 
 #include "ProgramBindingsBase.h"
-#include "ContextBase.h"
+#include "RenderContextBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Checks.hpp>
@@ -31,12 +31,29 @@ Base implementation of the program bindings interface.
 
 #include <fmt/ranges.h>
 #include <magic_enum.hpp>
+#include <array>
 
 namespace Methane::Graphics
 {
 
-ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException()
-    : std::logic_error("Can not modify constant program argument binding.")
+DescriptorsCountByAccess::DescriptorsCountByAccess()
+{
+    std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
+}
+
+uint32_t& DescriptorsCountByAccess::operator[](Program::ArgumentAccessor::Type access_type)
+{
+    return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
+}
+
+uint32_t DescriptorsCountByAccess::operator[](Program::ArgumentAccessor::Type access_type) const
+{
+    return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
+}
+
+ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const Program::Argument& argument)
+    : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
+                                   argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
 {
     META_FUNCTION_TASK();
 }
@@ -63,7 +80,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
         return;
 
     if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
-        throw ConstantModificationException();
+        throw ConstantModificationException(GetSettings().argument);
 
     META_CHECK_ARG_NOT_EMPTY_DESCR(resource_locations, "can not set empty resources for resource binding");
 
@@ -178,9 +195,10 @@ ProgramBindingsBase::~ProgramBindingsBase()
         if (!heap_reservation_opt)
             continue;
 
-        if (!heap_reservation_opt->mutable_range.IsEmpty())
+        const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
+        if (!mutable_descriptor_range.IsEmpty())
         {
-            heap_reservation_opt->heap.get().ReleaseRange(heap_reservation_opt->mutable_range);
+            heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
         }
 
         heap_reservation_opt.reset();
@@ -204,18 +222,14 @@ Program& ProgramBindingsBase::GetProgram()
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 {
     META_FUNCTION_TASK();
-
-    struct DescriptorsCount
-    {
-        uint32_t constant_count = 0;
-        uint32_t mutable_count = 0;
-    };
-
     META_CHECK_ARG_NOT_NULL(m_program_ptr);
     const auto& program = static_cast<const ProgramBase&>(GetProgram());
+    const uint32_t frame_buffers_count = program.GetContext().GetType() == Context::Type::Render
+                                       ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
+                                       : 1U;
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
-    std::map<DescriptorHeap::Type, DescriptorsCount> descriptors_count_by_heap_type;
+    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -238,44 +252,46 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         if (binding_settings.argument.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type heap_type = argument_binding.GetDescriptorHeapType();
-        DescriptorsCount& descriptors = descriptors_count_by_heap_type[heap_type];
-        if (binding_settings.argument.IsConstant())
-        {
-            descriptors.constant_count += binding_settings.resource_count;
-        }
+        const DescriptorHeap::Type            heap_type   = argument_binding.GetDescriptorHeapType();
+        const Program::ArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
+        DescriptorsCountByAccess&             descr_count = descriptors_count_by_heap_type[heap_type];
+
+        if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
+            descr_count[Program::ArgumentAccessor::Type::Constant] += binding_settings.resource_count * frame_buffers_count;
         else
-        {
-            descriptors.mutable_count += binding_settings.resource_count;
-        }
+            descr_count[access_type] += binding_settings.resource_count;
     }
 
     // Reserve descriptor ranges in heaps for resource bindings state
     const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
-    for (const auto& [heap_type, descriptors] : descriptors_count_by_heap_type)
+    for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
         std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
-            descriptor_heap_reservation_opt.emplace(
-                resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type),
-                DescriptorHeap::Range(0, 0),
-                DescriptorHeap::Range(0, 0)
-            );
+            descriptor_heap_reservation_opt.emplace(resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type));
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
         META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
         META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
-        if (descriptors.constant_count > 0)
+        for (Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
         {
-            heap_reservation.constant_range = static_cast<ProgramBase&>(*m_program_ptr).ReserveConstantDescriptorRange(heap_reservation.heap.get(), descriptors.constant_count);
-        }
-        if (descriptors.mutable_count > 0)
-        {
-            heap_reservation.mutable_range = heap_reservation.heap.get().ReserveRange(descriptors.mutable_count);
-            META_CHECK_ARG_NOT_ZERO_DESCR(heap_reservation.mutable_range, "failed to reserve mutable descriptor heap range, descriptor heap is not big enough");
+            const uint32_t accessor_descr_count = descriptors_count[access_type];
+            if (!accessor_descr_count)
+                continue;
+
+            DescriptorHeap::Range& descriptor_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
+            if (access_type == Program::ArgumentAccessor::Type::Mutable)
+            {
+                descriptor_range = heap_reservation.heap.get().ReserveRange(accessor_descr_count);
+                META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "failed to reserve mutable descriptor heap range, descriptor heap is not big enough");
+            }
+            else
+            {
+                descriptor_range = static_cast<ProgramBase&>(*m_program_ptr).ReserveConstantDescriptorRange(heap_reservation.heap.get(), accessor_descr_count);
+            }
         }
     }
 }

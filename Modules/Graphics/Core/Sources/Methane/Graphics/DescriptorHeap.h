@@ -79,13 +79,16 @@ public:
 
     struct Reservation
     {
+        static constexpr size_t ranges_count = 3;
+        using Ranges = std::array<Range, ranges_count>;
+
         Ref<DescriptorHeap> heap;
-        Range constant_range;
-        Range mutable_range;
+        Ranges              ranges;
 
-        Reservation(const Ref<DescriptorHeap>& in_heap, const Range& in_constant_range, const Range& in_mutable_range);
+        Reservation(const Ref<DescriptorHeap>& heap);
+        Reservation(const Ref<DescriptorHeap>& heap, const Ranges& ranges);
 
-        [[nodiscard]] const Range& GetRange(bool is_constant) const noexcept { return is_constant ? constant_range : mutable_range; }
+        [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }
     };
 
     static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);

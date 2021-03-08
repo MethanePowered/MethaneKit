@@ -44,13 +44,13 @@ struct ProgramBindings
         {
             Program::ArgumentAccessor argument;
             Resource::Type            resource_type;
-            uint32_t              resource_count = 1;
+            uint32_t                  resource_count = 1;
         };
 
         class ConstantModificationException : public std::logic_error
         {
         public:
-            ConstantModificationException();
+            ConstantModificationException(const Program::Argument& argument);
         };
 
         // ArgumentBinding interface
@@ -80,7 +80,7 @@ struct ProgramBindings
     public:
         UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
 
-        [[nodiscard]] const Program& GetProgram() const noexcept { return m_program; }
+        [[nodiscard]] const Program&            GetProgram() const noexcept { return m_program; }
         [[nodiscard]] const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
     private:

@@ -40,12 +40,6 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics
 {
 
-struct DescriptorOffsets
-{
-    uint32_t constant_offset = 0;
-    uint32_t mutable_offset = 0;
-};
-
 [[nodiscard]]
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
@@ -101,7 +95,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 };
 
 static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptor_ranges, std::vector<CD3DX12_ROOT_PARAMETER1>& root_parameters,
-                                          std::map<DescriptorHeap::Type, DescriptorOffsets>& descriptor_offset_by_heap_type,
+                                          std::map<DescriptorHeap::Type, DescriptorsCountByAccess>& descriptor_offset_by_heap_type,
                                           ProgramBindingsDX::ArgumentBindingDX& argument_binding,
                                           const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& bind_settings,
                                           const D3D12_SHADER_VISIBILITY& shader_visibility)
@@ -118,10 +112,8 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
 
     const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
-    DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-    uint32_t& descriptor_offset = bind_settings.argument.IsConstant()
-                                ? descriptor_offsets.constant_offset
-                                : descriptor_offsets.mutable_offset;
+    DescriptorsCountByAccess& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
+    uint32_t& descriptor_offset = descriptor_offsets[bind_settings.argument.GetAccessorType()];
     argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
 
     descriptor_offset += bind_settings.resource_count;
@@ -163,7 +155,7 @@ void ProgramDX::InitRootSignature()
     descriptor_ranges.reserve(binding_by_argument.size());
     root_parameters.reserve(binding_by_argument.size());
 
-    std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
+    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptor_offset_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);

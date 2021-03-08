@@ -114,4 +114,16 @@ private:
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
 };
 
+class DescriptorsCountByAccess
+{
+public:
+    DescriptorsCountByAccess();
+
+    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
+    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
+
+private:
+    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
+};
+
 } // namespace Methane::Graphics
