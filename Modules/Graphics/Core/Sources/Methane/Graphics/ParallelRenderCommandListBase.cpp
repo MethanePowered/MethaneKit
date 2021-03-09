@@ -67,24 +67,24 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
 void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, p_debug_group](const uint32_t command_list_index)
+    ResetImpl(p_debug_group, [this, p_debug_group](const Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
 void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](size_t command_list_index)
+    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
@@ -109,7 +109,7 @@ void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const R
                                           Data::GetParallelChunkSize(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
-    for(size_t command_list_index = 0U; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+    for(Data::Index command_list_index = 0U; command_list_index < static_cast<Data::Index>(m_parallel_command_lists.size()); ++command_list_index)
         reset_command_list_fn(command_list_index);
 #endif
 }

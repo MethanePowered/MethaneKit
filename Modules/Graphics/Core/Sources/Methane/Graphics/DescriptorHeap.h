@@ -85,7 +85,7 @@ public:
         Ref<DescriptorHeap> heap;
         Ranges              ranges;
 
-        Reservation(const Ref<DescriptorHeap>& heap);
+        explicit Reservation(const Ref<DescriptorHeap>& heap);
         Reservation(const Ref<DescriptorHeap>& heap, const Ranges& ranges);
 
         [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }

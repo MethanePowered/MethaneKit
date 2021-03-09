@@ -195,8 +195,8 @@ ProgramBindingsBase::~ProgramBindingsBase()
         if (!heap_reservation_opt)
             continue;
 
-        const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
-        if (!mutable_descriptor_range.IsEmpty())
+        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
+            !mutable_descriptor_range.IsEmpty())
         {
             heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
         }

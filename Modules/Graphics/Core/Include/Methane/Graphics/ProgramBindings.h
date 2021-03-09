@@ -50,7 +50,7 @@ struct ProgramBindings
         class ConstantModificationException : public std::logic_error
         {
         public:
-            ConstantModificationException(const Program::Argument& argument);
+            explicit ConstantModificationException(const Program::Argument& argument);
         };
 
         // ArgumentBinding interface
