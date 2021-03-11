@@ -62,10 +62,10 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant  },
+                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant       },
+                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
+                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
             },
             gfx::PixelFormats
             {
@@ -93,7 +93,7 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
     Update(0.0, 0.0);
 }
 
-Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
@@ -104,7 +104,7 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr          } } },
-    });
+    }, frame_index);
 }
 
 bool Planet::Update(double elapsed_seconds, double)

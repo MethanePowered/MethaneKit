@@ -74,16 +74,17 @@ public:
         Resource::Locations m_resource_locations;
     };
 
-    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {});
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {}, const Opt<Data::Index>& frame_index = {});
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
     ~ProgramBindingsBase() override;
 
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
-    const Program::Arguments& GetArguments() const  { return m_arguments; }
     const Program&            GetProgram() const;
+    const Program::Arguments& GetArguments() const noexcept  { return m_arguments; }
+    Data::Index               GetFrameIndex() const noexcept { return m_frame_index; }
 
     // ProgramBindings interface
     const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const override;
@@ -109,6 +110,7 @@ private:
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
 
     const Ptr<Program>              m_program_ptr;
+    Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
     BindingByArgument               m_binding_by_argument;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;

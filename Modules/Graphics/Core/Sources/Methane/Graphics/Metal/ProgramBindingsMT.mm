@@ -159,16 +159,16 @@ static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& pro
     }
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument, frame_index);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument, frame_index);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -224,14 +224,14 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     }
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }

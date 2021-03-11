@@ -31,16 +31,16 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument);
+    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -63,14 +63,14 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     ArgumentBindingBase::SetResourceLocations(resource_locations);
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
+ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument)
+ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }

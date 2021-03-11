@@ -68,9 +68,9 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
             },
             Program::ArgumentAccessors
             {
-                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::Mutable     },
-                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant },
-                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant },
+                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant },
+                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
+                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
             },
             PixelFormats
             {
@@ -98,7 +98,7 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr) const
+Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
@@ -107,7 +107,7 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
         { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { uniforms_buffer_ptr            } } },
         { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_texture_sampler_ptr          } } },
-    });
+    }, frame_index);
 }
 
 void SkyBox::Update()

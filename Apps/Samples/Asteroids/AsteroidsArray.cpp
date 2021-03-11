@@ -294,7 +294,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
-                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr) const
+                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
+                                                                 Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
@@ -314,11 +315,11 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { constants_buffer_ptr      } } },
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations        },
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr     } } },
-    });
+    }, frame_index);
 
     tf::Taskflow task_flow;
     task_flow.for_each_index_guided(1U, m_settings.instance_count, 1U,
-        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr](const uint32_t asteroid_index)
+        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, frame_index](const uint32_t asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
@@ -330,7 +331,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
                     { { gfx::Shader::Type::Pixel, "g_face_textures" }, { { GetInstanceTexturePtr(asteroid_index) } } }
                 );
             }
-            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
+            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument, frame_index);
         },
         Data::GetParallelChunkSize(m_settings.instance_count, 5)
     );

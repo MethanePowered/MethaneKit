@@ -144,8 +144,9 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     return false;
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
     : m_program_ptr(program_ptr)
+    , m_frame_index(frame_index)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO(program_ptr);
@@ -155,9 +156,10 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
     VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
     : ObjectBase(other_program_bindings)
     , m_program_ptr(other_program_bindings.m_program_ptr)
+    , m_frame_index(frame_index ? *frame_index : other_program_bindings.m_frame_index)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();

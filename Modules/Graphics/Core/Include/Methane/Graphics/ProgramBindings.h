@@ -89,8 +89,8 @@ struct ProgramBindings
     };
 
     // Create ProgramBindings instance
-    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
+    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // ProgramBindings interface
     [[nodiscard]] virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
