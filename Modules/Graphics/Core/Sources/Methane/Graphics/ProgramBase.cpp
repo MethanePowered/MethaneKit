@@ -22,13 +22,14 @@ Base implementation of the program interface.
 ******************************************************************************/
 
 #include "ProgramBase.h"
-#include "ContextBase.h"
+#include "RenderContextBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <magic_enum.hpp>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -128,9 +129,8 @@ ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
 ProgramBase::~ProgramBase()
 {
     META_FUNCTION_TASK();
-
     std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (const auto& [heap_type, heap_reservation] : m_constant_descriptor_range_by_heap_type)
+    for (const auto& [heap_and_access_type, heap_reservation] : m_constant_descriptor_range_by_heap_and_access_type)
     {
         if (heap_reservation.range.IsEmpty())
             continue;
@@ -142,7 +142,6 @@ ProgramBase::~ProgramBase()
 void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();
-
     Shader::Types all_shader_types;
     std::map<std::string, Shader::Types, std::less<>> shader_types_by_argument_name_map;
     
@@ -169,7 +168,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
         if (shader_types != all_shader_types)
             continue;
 
-        Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
+        Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_ptr;
         for(Shader::Type shader_type : all_shader_types)
         {
             const Argument argument{ shader_type, argument_name };
@@ -185,18 +184,69 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
         m_binding_by_argument.try_emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
+
+    if (m_context.GetType() != Context::Type::Render)
+        return;
+
+    // Create frame-constant argument bindings only when program is created in render context
+    m_frame_bindings_by_argument.clear();
+    auto& render_context = static_cast<RenderContextBase&>(m_context);
+    const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
+    META_CHECK_ARG_GREATER_OR_EQUAL(frame_buffers_count, 2);
+
+    for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
+    {
+        if (!argument_binding_ptr->GetSettings().argument.IsFrameConstant())
+            continue;
+
+        Ptrs<ProgramBindingsBase::ArgumentBindingBase> per_frame_argument_bindings(frame_buffers_count);
+        per_frame_argument_bindings[0] = argument_binding_ptr;
+        for(uint32_t frame_index = 1; frame_index < frame_buffers_count; ++frame_index)
+        {
+            per_frame_argument_bindings[frame_index] = ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);
+        }
+        m_frame_bindings_by_argument.try_emplace(program_argument, std::move(per_frame_argument_bindings));
+    }
 }
 
-const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length)
+Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+
+    const Program::ArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
+    switch(argument_accessor.GetAccessorType())
+    {
+    case ArgumentAccessor::Type::Mutable:       return ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);
+    case ArgumentAccessor::Type::Constant:      return argument_binding_ptr;
+    case ArgumentAccessor::Type::FrameConstant:
+    {
+        const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
+        META_CHECK_ARG_TRUE_DESCR(argument_frame_bindings_it != m_frame_bindings_by_argument.end(), "can not find frame-constant argument binding in program");
+        return argument_frame_bindings_it->second.at(frame_index);
+    }
+    default: META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);
+    }
+}
+
+DescriptorHeap::Range ProgramBase::ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
+{
+    META_FUNCTION_TASK();
+    if (access_type == ArgumentAccessor::Type::Mutable)
+    {
+        DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
+        META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+        return descriptor_range;
+    }
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
-    if (auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);
-        constant_descriptor_range_by_heap_type_it != m_constant_descriptor_range_by_heap_type.end())
+    const auto heap_and_access_type      = std::make_pair(heap_type, access_type);
+
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    if (auto constant_descriptor_range_it = m_constant_descriptor_range_by_heap_and_access_type.find(heap_and_access_type);
+        constant_descriptor_range_it != m_constant_descriptor_range_by_heap_and_access_type.end())
     {
-        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
+        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
         META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
                                   "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
         META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
@@ -204,9 +254,10 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         return heap_reservation.range;
     }
 
-    DescriptorHeap::Range const_desc_range = heap.ReserveRange(range_length);
-    META_CHECK_ARG_NOT_ZERO_DESCR(const_desc_range, "Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
-    return m_constant_descriptor_range_by_heap_type.try_emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
+    DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
+    META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+    m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
+    return descriptor_range;
 }
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type) const

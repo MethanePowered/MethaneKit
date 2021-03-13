@@ -83,7 +83,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     }
 
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
-                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.IsConstant()).GetStart()
+                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
                                                       : std::numeric_limits<uint32_t>::max();
     const DescriptorHeapDX*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
                                                       ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
@@ -266,13 +266,13 @@ void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_functio
 void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentAccessor& argument_accessor, const RootParameterBinding& root_parameter_binding)
 {
     META_FUNCTION_TASK();
-    m_root_parameter_bindings_by_access[magic_enum::enum_index(argument_accessor.GetAccessorType()).value()].emplace_back(root_parameter_binding);
+    m_root_parameter_bindings_by_access[argument_accessor.GetAccessorIndex()].emplace_back(root_parameter_binding);
 }
 
 void ProgramBindingsDX::AddResourceState(const Program::ArgumentAccessor& argument_accessor, ResourceState resource_state)
 {
     META_FUNCTION_TASK();
-    m_resource_states_by_access[magic_enum::enum_index(argument_accessor.GetAccessorType()).value()].emplace_back(resource_state);
+    m_resource_states_by_access[argument_accessor.GetAccessorIndex()].emplace_back(resource_state);
 }
 
 void ProgramBindingsDX::UpdateRootParameterBindings()
@@ -304,7 +304,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
         META_CHECK_ARG_NOT_NULL_DESCR(p_heap_reservation, "descriptor heap reservation is not available for \"Descriptor Table\" resource binding");
         const auto&              dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
         const DXDescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
-        const uint32_t           descriptor_index   = p_heap_reservation->GetRange(binding_settings.argument.IsConstant()).GetStart() + descriptor_range.offset;
+        const uint32_t           descriptor_index   = p_heap_reservation->GetRange(binding_settings.argument.GetAccessorIndex()).GetStart() + descriptor_range.offset;
 
         AddRootParameterBinding(binding_settings.argument, {
             argument_binding,
@@ -430,9 +430,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
 
     const auto&                               dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
     const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
-    const Program::ArgumentAccessor::Type     access_type        = argument_binding.GetSettings().argument.GetAccessorType();
     const DescriptorHeap::Type                heap_type          = dx_descriptor_heap.GetSettings().type;
-    const DescriptorHeap::Range&              heap_range         = p_heap_reservation->GetRange(access_type == AcceessType::Constant || access_type == AcceessType::FrameConstant);
+    const DescriptorHeap::Range&              heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
     const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(p_heap_reservation);

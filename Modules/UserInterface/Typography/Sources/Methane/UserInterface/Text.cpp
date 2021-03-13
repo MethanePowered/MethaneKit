@@ -460,7 +460,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" })->SetResourceLocations({ { m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_atlas_texture_ptr } });
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Atlas;
@@ -536,7 +536,7 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" })->SetResourceLocations({ { m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });

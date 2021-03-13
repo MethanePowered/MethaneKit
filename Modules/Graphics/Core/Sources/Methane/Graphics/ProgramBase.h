@@ -27,6 +27,7 @@ Base implementation of the program interface.
 #include <Methane/Instrumentation.h>
 
 #include "ShaderBase.h"
+#include "ProgramBindingsBase.h"
 #include "DescriptorHeap.h"
 
 #include <magic_enum.hpp>
@@ -63,9 +64,13 @@ public:
     Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
 protected:
+    using FrameArgumentBindings = std::unordered_map<Program::Argument, Ptrs<ProgramBindingsBase::ArgumentBindingBase>, Program::Argument::Hash>;
+
     void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
-    const ProgramBindings::ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const DescriptorHeap::Range& ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length);
+    const ProgramBindingsBase::ArgumentBindings&   GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
+    const FrameArgumentBindings&                   GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
+    Ptr<ProgramBindingsBase::ArgumentBindingBase>  CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
+    DescriptorHeap::Range ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
@@ -80,15 +85,16 @@ private:
         DescriptorHeap::Range range;
     };
 
-    using DescriptorRangeByHeapType = std::map<DescriptorHeap::Type, DescriptorHeapReservation>;
+    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
-    ContextBase&                        m_context;
-    const Settings                      m_settings;
-    const ShadersByType                 m_shaders_by_type;
-    const Shader::Types                 m_shader_types;
-    ProgramBindings::ArgumentBindings   m_binding_by_argument;
-    DescriptorRangeByHeapType           m_constant_descriptor_range_by_heap_type;
-    TracyLockable(std::mutex,           m_constant_descriptor_ranges_reservation_mutex)
+    ContextBase&                          m_context;
+    const Settings                        m_settings;
+    const ShadersByType                   m_shaders_by_type;
+    const Shader::Types                   m_shader_types;
+    ProgramBindingsBase::ArgumentBindings m_binding_by_argument;
+    FrameArgumentBindings                 m_frame_bindings_by_argument;
+    DescriptorRangeByHeapAndAccessType    m_constant_descriptor_range_by_heap_and_access_type;
+    TracyLockable(std::mutex,             m_constant_descriptor_ranges_reservation_mutex)
 };
 
 } // namespace Methane::Graphics

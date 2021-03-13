@@ -151,7 +151,7 @@ void ProgramDX::InitRootSignature()
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
     std::vector<CD3DX12_ROOT_PARAMETER1>   root_parameters;
 
-    const ProgramBindings::ArgumentBindings& binding_by_argument = GetArgumentBindings();
+    const ProgramBindingsBase::ArgumentBindings& binding_by_argument = GetArgumentBindings();
     descriptor_ranges.reserve(binding_by_argument.size());
     root_parameters.reserve(binding_by_argument.size());
 
@@ -183,6 +183,17 @@ void ProgramDX::InitRootSignature()
 
         default:
             META_UNEXPECTED_ARG(bind_settings.type);
+        }
+    }
+
+    // Replicate descriptor ranges for all frame-constant argument binding instances
+    for (const auto& [program_argument, frame_argument_bindings] : GetFrameArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_EMPTY(frame_argument_bindings);
+        const auto& initial_frame_binding = static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings.front());
+        for(size_t frame_index = 1; frame_index < frame_argument_bindings.size(); ++frame_index)
+        {
+            static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings[frame_index]).SetDescriptorRange(initial_frame_binding.GetDescriptorRange());
         }
     }
 

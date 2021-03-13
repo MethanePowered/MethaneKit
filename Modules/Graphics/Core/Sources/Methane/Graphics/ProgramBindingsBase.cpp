@@ -132,13 +132,10 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     if (!check_binding_value_changes)
         return false;
 
-    const Ptr<ProgramBindings::ArgumentBinding>& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
-    if (!previous_argument_argument_binding)
-        return false;
-
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (previous_argument_argument_binding->GetResourceLocations() == m_resource_locations)
+    ProgramBindings::ArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
+    if (previous_argument_argument_binding.GetResourceLocations() == m_resource_locations)
         return true;
 
     return false;
@@ -235,37 +232,30 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
-
-        const auto& argument_binding = static_cast<const ArgumentBindingBase&>(*argument_binding_ptr);
-        const auto& binding_settings = argument_binding.GetSettings();
         m_arguments.insert(program_argument);
-
         if (!m_binding_by_argument.count(program_argument))
         {
-            m_binding_by_argument.try_emplace(
-                program_argument,
-                binding_settings.argument.IsConstant()
-                    ? argument_binding_ptr
-                    : ArgumentBindingBase::CreateCopy(argument_binding)
-            );
+            m_binding_by_argument.try_emplace(program_argument, program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
+        const auto& binding_settings = argument_binding_ptr->GetSettings();
         if (binding_settings.argument.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type            heap_type   = argument_binding.GetDescriptorHeapType();
+        const DescriptorHeap::Type            heap_type   = argument_binding_ptr->GetDescriptorHeapType();
         const Program::ArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
-        DescriptorsCountByAccess&             descr_count = descriptors_count_by_heap_type[heap_type];
 
+        uint32_t resources_count = binding_settings.resource_count;
         if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
-            descr_count[Program::ArgumentAccessor::Type::Constant] += binding_settings.resource_count * frame_buffers_count;
-        else
-            descr_count[access_type] += binding_settings.resource_count;
+            resources_count *= frame_buffers_count;
+
+        descriptors_count_by_heap_type[heap_type][access_type] += resources_count;
     }
 
     // Reserve descriptor ranges in heaps for resource bindings state
     const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
+    ProgramBase& mutable_program = static_cast<ProgramBase&>(*m_program_ptr);
     for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
         std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
@@ -284,16 +274,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
             if (!accessor_descr_count)
                 continue;
 
-            DescriptorHeap::Range& descriptor_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
-            if (access_type == Program::ArgumentAccessor::Type::Mutable)
-            {
-                descriptor_range = heap_reservation.heap.get().ReserveRange(accessor_descr_count);
-                META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "failed to reserve mutable descriptor heap range, descriptor heap is not big enough");
-            }
-            else
-            {
-                descriptor_range = static_cast<ProgramBase&>(*m_program_ptr).ReserveConstantDescriptorRange(heap_reservation.heap.get(), accessor_descr_count);
-            }
+            heap_reservation.ranges[magic_enum::enum_index(access_type).value()] = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
         }
     }
 }
@@ -301,30 +282,20 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const
 {
     META_FUNCTION_TASK();
-
     for (const auto& [program_argument, resource_locations] : resource_locations_by_argument)
     {
-        const Ptr<ArgumentBinding>& binding_ptr = Get(program_argument);
-        if (!binding_ptr)
-        {
-#ifdef PROGRAM_IGNORE_MISSING_ARGUMENTS
-            continue;
-#else
-            throw Program::Argument::NotFoundException(*m_program_ptr, program_argument);
-#endif
-        }
-        binding_ptr->SetResourceLocations(resource_locations);
+        Get(program_argument).SetResourceLocations(resource_locations);
     }
 }
 
-const Ptr<ProgramBindings::ArgumentBinding>& ProgramBindingsBase::Get(const Program::Argument& shader_argument) const
+ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const Program::Argument& shader_argument) const
 {
     META_FUNCTION_TASK();
+    const auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
+    if (binding_by_argument_it == m_binding_by_argument.end())
+        throw Program::Argument::NotFoundException(*m_program_ptr, shader_argument);
 
-    static const Ptr<ArgumentBinding> s_empty_argument_binding_ptr;
-    auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
-    return binding_by_argument_it != m_binding_by_argument.end()
-         ? binding_by_argument_it->second : s_empty_argument_binding_ptr;
+    return *binding_by_argument_it->second;
 }
 
 Program::Arguments ProgramBindingsBase::GetUnboundArguments() const

@@ -78,8 +78,8 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     }
 
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
-    const RenderContext::Settings&          context_settings              = context.GetSettings();
-    const Shader::MacroDefinitions ps_macro_definitions          = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
+    const RenderContext::Settings& context_settings           = context.GetSettings();
+    const Shader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentAccessors     program_argument_accessors = {
         { { Shader::Type::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
     };
@@ -254,11 +254,7 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
         return;
 
     m_texture_ptr = texture_ptr;
-
-    const Ptr<ProgramBindings::ArgumentBinding>& texture_binding_ptr = m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" });
-    META_CHECK_ARG_NOT_NULL_DESCR(texture_binding_ptr, "can not find screen quad texture argument binding");
-
-    texture_binding_ptr->SetResourceLocations({ { m_texture_ptr } });
+    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_texture_ptr } });
 }
 
 const Texture& ScreenQuad::GetTexture() const

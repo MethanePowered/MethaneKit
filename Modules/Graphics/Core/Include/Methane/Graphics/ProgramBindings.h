@@ -60,9 +60,7 @@ struct ProgramBindings
 
         virtual ~ArgumentBinding() = default;
     };
-
-    using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ProgramBindings::ArgumentBinding>, Program::Argument::Hash>;
-
+    
     enum class ApplyBehavior : uint32_t
     {
         Indifferent     = 0U,        // All bindings will be applied indifferently of the previous binding values
@@ -93,7 +91,7 @@ struct ProgramBindings
     [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // ProgramBindings interface
-    [[nodiscard]] virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual ArgumentBinding& Get(const Program::Argument& shader_argument) const = 0;
 
     virtual ~ProgramBindings() = default;
 };

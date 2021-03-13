@@ -74,6 +74,8 @@ public:
         Resource::Locations m_resource_locations;
     };
 
+    using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ArgumentBindingBase>, Program::Argument::Hash>;
+
     ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {}, const Opt<Data::Index>& frame_index = {});
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
@@ -87,7 +89,7 @@ public:
     Data::Index               GetFrameIndex() const noexcept { return m_frame_index; }
 
     // ProgramBindings interface
-    const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const override;
+    ArgumentBinding& Get(const Program::Argument& shader_argument) const override;
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;
@@ -101,9 +103,7 @@ protected:
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
     void VerifyAllArgumentsAreBoundToResources() const;
 
-    using BindingByArgument = std::unordered_map<Program::Argument, Ptr<ArgumentBinding>, Program::Argument::Hash>;
-    const BindingByArgument& GetArgumentBindings() const { return m_binding_by_argument; }
-
+    const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const std::optional<DescriptorHeap::Reservation>& GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const;
 
 private:
@@ -112,7 +112,7 @@ private:
     const Ptr<Program>              m_program_ptr;
     Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
-    BindingByArgument               m_binding_by_argument;
+    ArgumentBindings                m_binding_by_argument;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
 };
 
