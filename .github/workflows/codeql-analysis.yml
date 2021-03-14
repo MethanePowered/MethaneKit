@@ -1,0 +1,55 @@
+# Static code analysis workflow with CodeQL
+
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+    - '.github/**/codeql-*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Tests/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+    - '.github/**/codeql-*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Tests/**'
+  schedule:
+    - cron: '20 23 * * 3'
+
+jobs:
+  analyze:
+    name: Analyze
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      NAME: CodeQL-${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+        config-file: ./.github/codeql/codeql-config.yml
+
+    - run: |
+       mkdir -p Build/Output && cd Build/Output
+       cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE=Debug -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
+       cmake --build .
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1

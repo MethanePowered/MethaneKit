@@ -1,0 +1,13 @@
+name: "Methane Kit CodeQL Config"
+
+queries:
+  - uses: security-and-quality
+
+paths:
+  - Apps
+  - Modules
+paths-ignore:
+  - Externals
+  - Tests
+  - CMake
+  
