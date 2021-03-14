@@ -223,9 +223,9 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_program_ptr);
     const auto& program = static_cast<const ProgramBase&>(GetProgram());
-    const uint32_t frame_buffers_count = program.GetContext().GetType() == Context::Type::Render
-                                       ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
-                                       : 1U;
+    const uint32_t frames_count = program.GetContext().GetType() == Context::Type::Render
+                                ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
+                                : 1U;
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
     std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
@@ -243,12 +243,15 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         if (binding_settings.argument.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type            heap_type   = argument_binding_ptr->GetDescriptorHeapType();
+        const DescriptorHeap::Type            heap_type = argument_binding_ptr->GetDescriptorHeapType();
         const Program::ArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
 
         uint32_t resources_count = binding_settings.resource_count;
         if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
-            resources_count *= frame_buffers_count;
+        {
+            // For Frame Constant bindings we reserve descriptors range for all frames at once
+            resources_count *= frames_count;
+        }
 
         descriptors_count_by_heap_type[heap_type][access_type] += resources_count;
     }
@@ -274,7 +277,17 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
             if (!accessor_descr_count)
                 continue;
 
-            heap_reservation.ranges[magic_enum::enum_index(access_type).value()] = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
+            DescriptorHeap::Range& heap_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
+            heap_range = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
+
+            if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
+            {
+                // Since Frame Constant binding range was reserved for all frames at once
+                // we need to take only one sub-range related to the frame of current bindings
+                const Data::Index frame_range_length = heap_range.GetLength() / frames_count;
+                const Data::Index frame_range_start  = heap_range.GetStart() + frame_range_length * m_frame_index;
+                heap_range = DescriptorHeap::Range(frame_range_start, frame_range_start + frame_range_length);
+            }
         }
     }
 }

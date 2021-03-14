@@ -191,9 +191,13 @@ void ProgramDX::InitRootSignature()
     {
         META_CHECK_ARG_NOT_EMPTY(frame_argument_bindings);
         const auto& initial_frame_binding = static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings.front());
+        const ProgramBindingsDX::ArgumentBindingDX::DescriptorRange& descriptor_range = initial_frame_binding.GetDescriptorRange();
+
         for(size_t frame_index = 1; frame_index < frame_argument_bindings.size(); ++frame_index)
         {
-            static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings[frame_index]).SetDescriptorRange(initial_frame_binding.GetDescriptorRange());
+            auto& argument_binding_dx = static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings[frame_index]);
+            argument_binding_dx.SetRootParameterIndex(initial_frame_binding.GetRootParameterIndex());
+            argument_binding_dx.SetDescriptorRange(descriptor_range);
         }
     }
 

@@ -297,7 +297,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
     using DXBindingType     = ArgumentBindingDX::Type;
     using DXDescriptorRange = ArgumentBindingDX::DescriptorRange;
 
-    const ArgumentBindingDX::SettingsDX binding_settings = argument_binding.GetSettingsDX();
+    const ArgumentBindingDX::SettingsDX& binding_settings = argument_binding.GetSettingsDX();
 
     if (binding_settings.type == DXBindingType::DescriptorTable)
     {
