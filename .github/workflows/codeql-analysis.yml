@@ -5,10 +5,18 @@ name: "CodeQL"
 on:
   push:
     branches: [ master, develop ]
+    paths:
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Tests/**'
   pull_request:
     branches: [ master ]
+    paths:
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Tests/**'
   schedule:
-    - cron: '20 22 * * 3'
+    - cron: '20 23 * * 3'
 
 jobs:
   analyze:
@@ -18,7 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        language: [ 'cpp' ]
 
     runs-on: ${{ matrix.os }}
 
@@ -34,7 +41,8 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        languages: ${{ matrix.language }}
+        languages: cpp
+        config-file: ./.github/codeql/codeql-config.yml
 
     - run: |
        mkdir -p Build/Output && cd Build/Output
