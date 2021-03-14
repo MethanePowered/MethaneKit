@@ -1,0 +1,39 @@
+# Static code analysis workflow with CodeQL
+
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '20 22 * * 3'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+
+    - run: |
+       mkdir Build/Output/Ubuntu-Debug/Build
+       cd Build/Output/Ubuntu-Debug/Build
+       cmake -G Unix Makefiles -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=../Install -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../../../..
+       make install
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
