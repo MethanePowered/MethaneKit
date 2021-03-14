@@ -13,12 +13,17 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         language: [ 'cpp' ]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      NAME: CodeQL-${{ matrix.os }}
 
     steps:
     - name: Checkout repository
@@ -30,10 +35,9 @@ jobs:
         languages: ${{ matrix.language }}
 
     - run: |
-       mkdir Build/Output/Ubuntu-Debug/Build
-       cd Build/Output/Ubuntu-Debug/Build
-       cmake -G Unix Makefiles -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=../Install -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../../../..
-       make install
+       mkdir -p Build/Output && cd Build/Output
+       cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE=Debug -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
+       cmake --build .
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
