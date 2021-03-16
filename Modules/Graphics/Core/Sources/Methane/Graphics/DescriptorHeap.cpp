@@ -81,7 +81,7 @@ Data::Index DescriptorHeap::AddResource(const ResourceBase& resource)
     {
         META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1,
                                   "{} descriptor heap is full, no free space to add a resource",
-                                  magic_enum::flags::enum_name(m_settings.type));
+                                  magic_enum::enum_name(m_settings.type));
     }
     else if (m_resources.size() >= m_settings.size)
     {

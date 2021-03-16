@@ -183,9 +183,9 @@ DepthStencilBufferTextureDX::TextureDX(ContextBase& render_context, const Settin
         case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
             META_UNEXPECTED_ARG_DESCR(descriptor_heap_type,
-                                           "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
-                                           magic_enum::flags::enum_name(usage),
-                                           magic_enum::flags::enum_name(descriptor_heap_type));
+                                      "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",
+                                      magic_enum::enum_name(usage),
+                                      magic_enum::enum_name(descriptor_heap_type));
         }
     }
 }

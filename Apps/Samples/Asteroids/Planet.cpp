@@ -80,7 +80,7 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
     m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     
-    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
+    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
     m_texture_sampler_ptr = gfx::Sampler::Create(context, {
         gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),

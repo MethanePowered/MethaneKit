@@ -29,12 +29,17 @@ Badge widget displaying texture in specific corner of the screen.
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
+#include <fmt/format.h>
 
 namespace Methane::UserInterface
 {
 
 Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings)
-    : Badge(ui_context, gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(), image_path), settings)
+    : Badge(ui_context,
+            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(),
+                                                                 image_path, gfx::ImageLoader::Options::None,
+                                                                 fmt::format("{} Texture", settings.name)),
+            settings)
 {
 }
 

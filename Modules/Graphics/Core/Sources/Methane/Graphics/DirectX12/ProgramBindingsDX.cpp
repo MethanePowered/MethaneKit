@@ -110,8 +110,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         const IResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
-                                   magic_enum::flags::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
-                                   magic_enum::flags::enum_name(m_settings_dx.argument.GetShaderType()));
+                                   magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
+                                   magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         cp_native_device->CopyDescriptorsSimple(
@@ -133,8 +133,8 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRa
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
     META_CHECK_ARG_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
                                "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
-                               magic_enum::flags::enum_name(descriptor_range.heap_type),
-                               magic_enum::flags::enum_name(expected_heap_type));
+                               magic_enum::enum_name(descriptor_range.heap_type),
+                               magic_enum::enum_name(expected_heap_type));
     META_CHECK_ARG_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
                               "descriptor range size {} will not fit bound shader resources count {}",
                               descriptor_range.count, m_settings_dx.resource_count);
@@ -148,7 +148,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const De
     META_CHECK_ARG_NAME_DESCR("p_reservation",
                               !p_reservation || (p_reservation->heap.get().IsShaderVisible() && p_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type),
                               "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
-                              magic_enum::flags::enum_name(m_descriptor_range.heap_type));
+                              magic_enum::enum_name(m_descriptor_range.heap_type));
     m_p_descriptor_heap_reservation = p_reservation;
 }
 
@@ -445,11 +445,13 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
         const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
         META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
                              "can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
-                             magic_enum::flags::enum_name(resource_location_dx.GetResourceDX().GetUsage()),
-                             magic_enum::flags::enum_name(dx_descriptor_heap.GetSettings().type));
+                             magic_enum::enum_name(resource_location_dx.GetResourceDX().GetUsage()),
+                             magic_enum::enum_name(dx_descriptor_heap.GetSettings().type));
 
         const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
-        META_LOG("  - Resource '{}' range [{}, {}), descriptor {}", resource_location_dx.GetResourceDX().GetName(),
+        META_LOG("  - Resource '{}' binding with {} access has descriptor heap range [{}, {}), CPU descriptor index {}",
+                 resource_location_dx.GetResourceDX().GetName(),
+                 magic_enum::enum_name(argument_binding.GetSettings().argument.GetAccessorType()),
                  descriptor_range.offset, descriptor_range.offset + descriptor_range.count, descriptor_index);
 
         d3d12_device->CopyDescriptorsSimple(1,

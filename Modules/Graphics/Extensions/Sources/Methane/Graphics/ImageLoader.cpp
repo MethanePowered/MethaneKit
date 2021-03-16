@@ -161,7 +161,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options) const
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -169,12 +169,13 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
     Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
 
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options) const
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -218,6 +219,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFa
     using namespace magic_enum::bitwise_operators;
     const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
     Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.GetWidth(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources);
 
     return texture_ptr;

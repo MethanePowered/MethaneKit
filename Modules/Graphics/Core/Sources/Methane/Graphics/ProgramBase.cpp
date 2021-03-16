@@ -54,7 +54,7 @@ bool Program::Argument::operator==(const Argument& other) const noexcept
 Program::Argument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} {}", magic_enum::flags::enum_name(m_shader_type), m_name);
+    return fmt::format("{} {}", magic_enum::enum_name(m_shader_type), m_name);
 }
 
 Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type, bool addressable) noexcept
@@ -86,7 +86,7 @@ Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const A
 
 Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
-                                        program.GetName(), argument.GetName(), magic_enum::flags::enum_name(argument.GetShaderType())))
+                                        program.GetName(), argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
     , m_program(program)
     , m_argument_ptr(std::make_unique<Program::Argument>(argument))
 {
@@ -264,7 +264,7 @@ Shader& ProgramBase::GetShaderRef(Shader::Type shader_type) const
 {
     META_FUNCTION_TASK();
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);
-    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::flags::enum_name(shader_type), GetName());
+    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::enum_name(shader_type), GetName());
     return *shader_ptr;
 }
 

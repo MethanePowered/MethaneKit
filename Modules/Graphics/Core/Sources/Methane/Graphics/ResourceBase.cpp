@@ -441,7 +441,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
                          "resource '{}' does not support '{}' usage",
-                         GetName(), magic_enum::flags::enum_name(usage));
+                         GetName(), magic_enum::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -523,7 +523,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage usage) cons
     auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
     META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
                          "Resource '{}' does not have descriptor for usage '{}'",
-                         GetName(), magic_enum::flags::enum_name(usage));
+                         GetName(), magic_enum::enum_name(usage));
     return descriptor_by_usage_it->second;
 }
 
@@ -544,7 +544,8 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    const std::string res_name = GetName();
+    META_LOG("Resource '{}' state changed from {} to {}", res_name, magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {

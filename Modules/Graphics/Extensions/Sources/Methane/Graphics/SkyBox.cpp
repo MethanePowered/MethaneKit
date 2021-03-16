@@ -46,7 +46,7 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
 {
     META_FUNCTION_TASK();
 
-    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options));
+    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Milky Way Cube Texture"));
 
     const RenderContext::Settings& context_settings = context.GetSettings();
 

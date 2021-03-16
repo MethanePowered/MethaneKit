@@ -175,7 +175,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
-    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::flags::enum_name(type));
+    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::enum_name(type));
 
     return desc_heaps[heap_index];
 }
@@ -187,7 +187,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
                          "can not get reference to 'Undefined' descriptor heap");
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::flags::enum_name(type), heap_index);
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::enum_name(type), heap_index);
 
     return *resource_heap_ptr;
 }
@@ -219,7 +219,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", magic_enum::flags::enum_name(type));
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", magic_enum::enum_name(type));
 
     return *resource_heap_ptr;
 }
@@ -259,8 +259,8 @@ void ResourceManager::ForEachDescriptorHeap(FuncType process_heap) const
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             META_CHECK_ARG_EQUAL_DESCR(heap_type, desc_heaps_type,
                                        "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
-                                       magic_enum::flags::enum_name(heap_type),
-                                       magic_enum::flags::enum_name(desc_heaps_type));
+                                       magic_enum::enum_name(heap_type),
+                                       magic_enum::enum_name(desc_heaps_type));
             process_heap(*desc_heap_ptr);
         }
         META_UNUSED(desc_heaps_type);
