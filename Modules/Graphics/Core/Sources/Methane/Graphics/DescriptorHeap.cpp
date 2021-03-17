@@ -64,7 +64,6 @@ DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
 DescriptorHeap::~DescriptorHeap()
 {
     META_FUNCTION_TASK();
-
     std::scoped_lock lock_guard(m_modification_mutex);
 
     // All descriptor ranges must be released when heap is destroyed

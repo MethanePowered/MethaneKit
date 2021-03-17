@@ -88,7 +88,6 @@ private:
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
     Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<ResourceBase::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 template<>

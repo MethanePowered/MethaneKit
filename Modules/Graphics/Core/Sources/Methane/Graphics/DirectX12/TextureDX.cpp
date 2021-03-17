@@ -388,7 +388,6 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
     upload_cmd_list.RetainResource(*this);
 
-    const ResourceBase::State final_texture_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
     if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
     {
         upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
@@ -397,11 +396,6 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
-
-    if (SetState(final_texture_state, m_upload_end_transition_barriers_ptr) && m_upload_end_transition_barriers_ptr)
-    {
-        upload_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
-    }
 
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }

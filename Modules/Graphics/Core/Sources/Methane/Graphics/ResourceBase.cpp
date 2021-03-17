@@ -541,11 +541,11 @@ DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
 bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_state_mutex);
     if (m_state == state)
         return false;
 
-    const std::string res_name = GetName();
-    META_LOG("Resource '{}' state changed from {} to {}", res_name, magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {

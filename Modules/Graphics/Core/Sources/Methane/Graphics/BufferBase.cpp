@@ -82,4 +82,15 @@ Buffer& BufferSetBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
+bool BufferSetBase::SetState(ResourceBase::State state)
+{
+    META_FUNCTION_TASK();
+    bool state_changed = false;
+    for(const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        state_changed |= static_cast<BufferBase&>(buffer_ref.get()).SetState(state, m_setup_transition_barriers);
+    }
+    return state_changed;
+}
+
 } // namespace Methane::Graphics

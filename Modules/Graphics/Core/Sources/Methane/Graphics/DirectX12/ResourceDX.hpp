@@ -71,7 +71,6 @@ public:
     }
 
     // IResourceDX overrides
-
     ID3D12Resource&                     GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
     ID3D12Resource*                     GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
     const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept final                            { return m_cp_resource; }

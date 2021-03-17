@@ -30,6 +30,7 @@ Base implementation of the resource interface.
 
 #include <set>
 #include <map>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -189,6 +190,7 @@ public:
     [[nodiscard]] State GetState() const noexcept { return m_state;  }
     bool SetState(State state, Ptr<Barriers>& out_barriers);
 
+    [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
     [[nodiscard]] static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
@@ -216,6 +218,8 @@ private:
     bool               m_sub_resource_count_constant = false;
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;
+    Ptr<Barriers>      m_setup_transition_barriers_ptr;
+    TracyLockable(std::mutex, m_state_mutex)
 };
 
 } // namespace Methane::Graphics

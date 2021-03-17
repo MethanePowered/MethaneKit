@@ -151,7 +151,13 @@ void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
     if (!magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::VertexBuffers))
         return;
 
-    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = static_cast<const BufferSetDX&>(vertex_buffers).GetNativeVertexBufferViews();
+    BufferSetDX& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
+    if (dx_vertex_buffer_set.SetState(ResourceBase::State::VertexAndConstantBuffer) && dx_vertex_buffer_set.GetSetupTransitionBarriers())
+    {
+        SetResourceBarriers(*dx_vertex_buffer_set.GetSetupTransitionBarriers());
+    }
+
+    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = dx_vertex_buffer_set.GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
     drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
 }
@@ -163,7 +169,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    const IndexBufferDX& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
+    auto& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
     if (!index_count)
     {
         index_count = dx_index_buffer.GetFormattedItemsCount();
@@ -181,6 +187,11 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
     }
     if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::IndexBuffer))
     {
+        Ptr<ResourceBase::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+        if (dx_index_buffer.SetState(ResourceBase::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+        {
+            SetResourceBarriers(*buffer_setup_barriers_ptr);
+        }
         dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
         drawing_state.changes &= ~DrawingState::Changes::IndexBuffer;
     }
