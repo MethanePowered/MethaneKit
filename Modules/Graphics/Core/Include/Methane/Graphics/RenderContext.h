@@ -52,7 +52,7 @@ struct RenderContext : virtual Context
         uint32_t                    frame_buffers_count     = 3U;
         bool                        vsync_enabled           = true;
         bool                        is_full_screen          = false;
-        bool                        is_emulated_render_pass = false; // Windows only
+        Options                     options_mask            = Options::Default;
         uint32_t                    unsync_max_fps          = 1000U; // MacOS only
     };
 

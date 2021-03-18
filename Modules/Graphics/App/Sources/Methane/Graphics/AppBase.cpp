@@ -34,6 +34,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -47,11 +48,18 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     , m_image_loader(textures_provider)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
     add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
     add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
     add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
-    add_flag("-e,--emulated-render-pass", m_initial_context_settings.is_emulated_render_pass, "Render pass emulation on Windows");
+
+#ifdef _WIN32
+    add_flag("-e,--emulated-render-pass",
+             [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= Context::Options::EmulatedRenderPassOnWindows; },
+             "Render pass emulation with traditional DX API");
+#endif
 }
 
 void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size)

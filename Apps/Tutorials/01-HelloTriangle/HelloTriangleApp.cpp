@@ -30,7 +30,7 @@ namespace Methane::Tutorials
 
 HelloTriangleApp::HelloTriangleApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Hello Triangle", false /* animations */, false /* depth */), {},
+        Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::AppOptions::None), {},
         "Methane tutorial of simple triangle rendering")
 {
 }

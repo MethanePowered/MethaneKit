@@ -23,11 +23,23 @@ DirectX 12 implementation of the blit command list interface.
 
 #include "BlitCommandListDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandQueueBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics
 {
+
+static D3D12_COMMAND_LIST_TYPE GetBlitCommandListNativeType(Context::Options options)
+{
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+    return magic_enum::flags::enum_contains(options & Context::Options::BlitWithCopyQueueOnWindows)
+         ? D3D12_COMMAND_LIST_TYPE_COPY
+         : D3D12_COMMAND_LIST_TYPE_DIRECT;
+}
 
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& cmd_queue)
 {
@@ -35,8 +47,8 @@ Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& cmd_queue)
     return std::make_shared<BlitCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
 }
 
-BlitCommandListDX::BlitCommandListDX(CommandQueueBase& cmd_buffer)
-    : CommandListDX<CommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT /*TODO: D3D12_COMMAND_LIST_TYPE_COPY*/, cmd_buffer, Type::Blit)
+BlitCommandListDX::BlitCommandListDX(CommandQueueBase& cmd_queue)
+    : CommandListDX<CommandListBase>(GetBlitCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Blit)
 {
     META_FUNCTION_TASK();
 }

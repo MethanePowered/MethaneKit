@@ -149,6 +149,7 @@ public:
 
     // Context interface
     [[nodiscard]] Type GetType() const noexcept override                            { return Type::Render; }
+    [[nodiscard]] Options GetOptions() const noexcept override                      { return Options::Default; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override       { return m_executor; }
     [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override          { return m_object_registry; }
     void RequestDeferredAction(DeferredAction) const noexcept override              { }

@@ -40,6 +40,7 @@ public:
     RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // Context interface
+    [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
     void WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface
