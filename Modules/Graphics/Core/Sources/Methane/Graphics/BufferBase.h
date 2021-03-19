@@ -63,8 +63,8 @@ public:
     const Refs<Buffer>& GetRefs() const noexcept final  { return m_refs; }
     Buffer&             operator[](Data::Index index) const final;
 
-    [[nodiscard]] bool  SetState(ResourceBase::State state);
-    [[nodiscard]] const Ptr<ResourceBase::Barriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
+    [[nodiscard]] bool  SetState(Resource::State state);
+    [[nodiscard]] const Ptr<Resource::Barriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
     [[nodiscard]] const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:
@@ -72,7 +72,7 @@ private:
     Refs<Buffer>                m_refs;
     Ptrs<Buffer>                m_ptrs;
     RawPtrs<BufferBase>         m_raw_ptrs;
-    Ptr<ResourceBase::Barriers> m_setup_transition_barriers;
+    Ptr<Resource::Barriers> m_setup_transition_barriers;
 };
 
 } // namespace Methane::Graphics

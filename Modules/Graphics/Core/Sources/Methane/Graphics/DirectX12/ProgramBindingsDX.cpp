@@ -327,13 +327,13 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
             });
         }
 
-        const ResourceBase::State non_pixel_resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Vertex &&
+        const Resource::State non_pixel_resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Vertex &&
                                                              binding_settings.resource_type == Resource::Type::Buffer
-                                                           ? ResourceBase::State::VertexAndConstantBuffer
-                                                           : ResourceBase::State::NonPixelShaderResource;
+                                                           ? Resource::State::VertexAndConstantBuffer
+                                                           : Resource::State::NonPixelShaderResource;
 
-        const ResourceBase::State resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Pixel
-                                                 ? ResourceBase::State::PixelShaderResource
+        const Resource::State resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Pixel
+                                                 ? Resource::State::PixelShaderResource
                                                  : non_pixel_resource_state;
 
         AddResourceState(binding_settings.argument, {

@@ -121,7 +121,7 @@ private:
     struct ResourceState
     {
         Ptr<ResourceBase>     resource_ptr;
-        ResourceBase::State   state;
+        Resource::State   state;
     };
 
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
@@ -145,7 +145,7 @@ private:
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
     ResourceStatesByAccess m_resource_states_by_access;
 
-    mutable Ptr<ResourceBase::Barriers> m_resource_transition_barriers_ptr;
+    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

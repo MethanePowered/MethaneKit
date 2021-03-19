@@ -36,7 +36,7 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-class RenderContextBase;
+class ContextBase;
 
 class CommandQueueBase
     : public ObjectBase

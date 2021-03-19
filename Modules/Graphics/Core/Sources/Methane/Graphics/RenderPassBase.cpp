@@ -119,7 +119,7 @@ void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
-    SetAttachmentStates(ResourceBase::State::RenderTarget, ResourceBase::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
+    SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
     m_is_begun = true;
 }
 
@@ -130,7 +130,7 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
 
     if (m_settings.is_final_pass)
     {
-        SetAttachmentStates(ResourceBase::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
+        SetAttachmentStates(Resource::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
     }
     m_is_begun = false;
 }
@@ -138,17 +138,17 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
 void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    Ptr<ResourceBase::Barriers> transition_barriers_ptr;
+    Ptr<Resource::Barriers> transition_barriers_ptr;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == ResourceBase::State::Common)
-            color_texture_ref.get().SetState(ResourceBase::State::Present, transition_barriers_ptr);
+        if (color_texture_ref.get().GetState() == Resource::State::Common)
+            color_texture_ref.get().SetState(Resource::State::Present, transition_barriers_ptr);
     }
 }
 
-void RenderPassBase::SetAttachmentStates(const std::optional<ResourceBase::State>& color_state,
-                                         const std::optional<ResourceBase::State>& depth_state,
-                                         Ptr<ResourceBase::Barriers>& transition_barriers_ptr,
+void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& color_state,
+                                         const std::optional<Resource::State>& depth_state,
+                                         Ptr<Resource::Barriers>& transition_barriers_ptr,
                                          RenderCommandListBase& render_command_list) const
 {
     META_FUNCTION_TASK();

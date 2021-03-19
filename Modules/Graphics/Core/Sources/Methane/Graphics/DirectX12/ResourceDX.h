@@ -36,9 +36,9 @@ namespace wrl = Microsoft::WRL;
 struct IResourceDX : virtual Resource // NOSONAR
 {
 public:
-    using Barrier  = ResourceBase::Barrier;
-    using Barriers = ResourceBase::Barriers;
-    using State    = ResourceBase::State;
+    using Barrier  = Resource::Barrier;
+    using Barriers = Resource::Barriers;
+    using State    = Resource::State;
 
     class BarriersDX final : public Barriers
     {

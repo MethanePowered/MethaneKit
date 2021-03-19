@@ -126,7 +126,7 @@ public:
 
     // CommandListBase interface
 
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { }
+    void SetResourceBarriers(const Resource::Barriers&) override { }
 
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override
     {

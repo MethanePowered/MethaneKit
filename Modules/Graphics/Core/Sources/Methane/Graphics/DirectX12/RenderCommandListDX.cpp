@@ -152,7 +152,7 @@ void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
         return;
 
     BufferSetDX& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
-    if (dx_vertex_buffer_set.SetState(ResourceBase::State::VertexAndConstantBuffer) && dx_vertex_buffer_set.GetSetupTransitionBarriers())
+    if (dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && dx_vertex_buffer_set.GetSetupTransitionBarriers())
     {
         SetResourceBarriers(*dx_vertex_buffer_set.GetSetupTransitionBarriers());
     }
@@ -187,8 +187,8 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
     }
     if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::IndexBuffer))
     {
-        Ptr<ResourceBase::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
-        if (dx_index_buffer.SetState(ResourceBase::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+        Ptr<Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+        if (dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
         {
             SetResourceBarriers(*buffer_setup_barriers_ptr);
         }

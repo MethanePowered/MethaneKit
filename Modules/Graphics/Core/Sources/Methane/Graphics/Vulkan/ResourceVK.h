@@ -33,10 +33,10 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class ResourceBarriersVK : public ResourceBase::Barriers
+class ResourceBarriersVK : public Resource::Barriers
 {
 public:
-    explicit ResourceBarriersVK(const Set& barriers) : ResourceBase::Barriers(barriers) {}
+    explicit ResourceBarriersVK(const Set& barriers) : Resource::Barriers(barriers) {}
 };
 
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>

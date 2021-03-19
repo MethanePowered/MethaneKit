@@ -34,7 +34,7 @@ DirectX 12 implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Ptr<ResourceBase::Barriers> ResourceBase::Barriers::Create(const Set& barriers)
+Ptr<Resource::Barriers> Resource::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<IResourceDX::BarriersDX>(barriers);
@@ -55,7 +55,7 @@ IResourceDX::BarriersDX::BarriersDX(const Set& barriers)
 bool IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    bool changed = ResourceBase::Barriers::AddStateChange(id, state_change);
+    bool changed = Resource::Barriers::AddStateChange(id, state_change);
     if (changed)
     {
         m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));

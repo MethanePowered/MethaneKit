@@ -87,7 +87,7 @@ private:
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const;
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-    Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
 };
 
 template<>

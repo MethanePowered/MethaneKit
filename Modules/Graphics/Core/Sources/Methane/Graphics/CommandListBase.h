@@ -24,7 +24,6 @@ Base implementation of the command list interface.
 #pragma once
 
 #include "ObjectBase.h"
-#include "ResourceBase.h"
 
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
@@ -93,7 +92,6 @@ public:
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
-    virtual void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) = 0;
     virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
     virtual void Complete(uint32_t frame_index); // Called from command queue thread, which is tracking GPU execution
 

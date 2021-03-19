@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class ResourceBarriersMT final : public ResourceBase::Barriers
+class ResourceBarriersMT final : public Resource::Barriers
 {
 public:
     explicit ResourceBarriersMT(const Set& barriers) : Barriers(barriers) {}

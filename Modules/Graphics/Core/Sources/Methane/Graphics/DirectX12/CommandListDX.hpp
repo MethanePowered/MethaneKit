@@ -125,7 +125,7 @@ public:
 
     // CommandListBase interface
 
-    void SetResourceBarriers(const ResourceBase::Barriers& resource_barriers) final
+    void SetResourceBarriers(const Resource::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         if (resource_barriers.IsEmpty())
@@ -208,7 +208,7 @@ public:
 
     // ICommandListDX interface
 
-    void SetResourceBarriersDX(const ResourceBase::Barriers& resource_barriers) final { SetResourceBarriers(resource_barriers); }
+    void SetResourceBarriersDX(const Resource::Barriers& resource_barriers) final { SetResourceBarriers(resource_barriers); }
     CommandQueueDX&             GetCommandQueueDX() final                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const final
     {
