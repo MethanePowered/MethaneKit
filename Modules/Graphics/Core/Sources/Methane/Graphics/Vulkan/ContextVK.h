@@ -23,6 +23,7 @@ Vulkan context accessor interface for template class ContextMT<ContextBaseT>
 
 #pragma once
 
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
@@ -34,7 +35,7 @@ class CommandQueueVK;
 struct IContextVK
 {
     virtual DeviceVK&       GetDeviceVK() noexcept = 0;
-    virtual CommandQueueVK& GetUploadCommandQueueVK() noexcept = 0;
+    virtual CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) = 0;
 
     virtual ~IContextVK() = default;
 };

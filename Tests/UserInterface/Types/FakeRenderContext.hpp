@@ -133,54 +133,61 @@ public:
     { }
 
     // RenderContext interface
-    [[nodiscard]] bool ReadyToRender() const override                               { return false; }
-    void Resize(const FrameSize&) override                                          { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Present() override                                                         { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Platform::AppView GetAppView() const override                     { return { }; }
-    [[nodiscard]] CommandQueue&     GetRenderCommandQueue() override                { return m_render_command_queue; }
-    [[nodiscard]] const Settings&   GetSettings() const noexcept override           { return m_settings; }
-    [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override   { return 0U; }
-    [[nodiscard]] uint32_t          GetFrameIndex() const noexcept override         { return 0U; }
-    [[nodiscard]] float             GetContentScalingFactor() const override        { return m_content_scale; }
-    [[nodiscard]] uint32_t          GetFontResolutionDpi() const override           { return m_font_dpi; }
-    [[nodiscard]] const FpsCounter& GetFpsCounter() const noexcept override         { return m_fps_counter; }
-    bool SetVSyncEnabled(bool vsync_enabled) override                               { m_settings.vsync_enabled = vsync_enabled; return true; }
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override                { m_settings.frame_buffers_count = frame_buffers_count; return true; }
-    bool SetFullScreen(bool is_full_screen) override                                { m_settings.is_full_screen = is_full_screen; return true; }
+    [[nodiscard]] bool ReadyToRender() const override                                   { return false; }
+    void Resize(const FrameSize&) override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Present() override                                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Platform::AppView GetAppView() const override                         { return { }; }
+    [[nodiscard]] const Settings&   GetSettings() const noexcept override               { return m_settings; }
+    [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override       { return 0U; }
+    [[nodiscard]] uint32_t          GetFrameIndex() const noexcept override             { return 0U; }
+    [[nodiscard]] float             GetContentScalingFactor() const override            { return m_content_scale; }
+    [[nodiscard]] uint32_t          GetFontResolutionDpi() const override               { return m_font_dpi; }
+    [[nodiscard]] const FpsCounter& GetFpsCounter() const noexcept override             { return m_fps_counter; }
+    bool SetVSyncEnabled(bool vsync_enabled) override                                   { m_settings.vsync_enabled = vsync_enabled; return true; }
+    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override                    { m_settings.frame_buffers_count = frame_buffers_count; return true; }
+    bool SetFullScreen(bool is_full_screen) override                                    { m_settings.is_full_screen = is_full_screen; return true; }
 
     // Context interface
-    [[nodiscard]] Type GetType() const noexcept override                            { return Type::Render; }
-    [[nodiscard]] Options GetOptions() const noexcept override                      { return Options::Default; }
-    [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override       { return m_executor; }
-    [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override          { return m_object_registry; }
-    void RequestDeferredAction(DeferredAction) const noexcept override              { }
-    void CompleteInitialization() override                                          { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] bool IsCompletingInitialization() const noexcept override         { return false; }
-    void WaitForGpu(WaitFor) override                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(Device&) override                                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset() override                                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Device&          GetDevice() override                             { return m_fake_device; }
-    [[nodiscard]] CommandQueue&    GetUploadCommandQueue() override                 { return m_upload_command_queue; }
-    [[nodiscard]] BlitCommandList& GetUploadCommandList() override                  { return m_upload_command_list; }
-    [[nodiscard]] CommandListSet&  GetUploadCommandListSet() override               { return m_upload_command_list_set; }
+    [[nodiscard]] Type GetType() const noexcept override                                { return Type::Render; }
+    [[nodiscard]] Options GetOptions() const noexcept override                          { return Options::Default; }
+    [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override           { return m_executor; }
+    [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override              { return m_object_registry; }
+    void RequestDeferredAction(DeferredAction) const noexcept override                  { }
+    void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
+    void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Device& GetDevice() override                                          { return m_fake_device; }
+    [[nodiscard]] CommandQueue& GetDefaultCommandQueue(CommandList::Type type) override { return m_default_command_queues[magic_enum::enum_index(type).value()]; }
+    [[nodiscard]] CommandQueue& GetRenderCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Render); }
+    [[nodiscard]] CommandQueue& GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
+    [[nodiscard]] BlitCommandList& GetUploadCommandList() override                      { return m_upload_command_list; }
+    [[nodiscard]] CommandListSet& GetUploadCommandListSet() override                    { return m_upload_command_list_set; }
 
     // Object interface
-    void SetName(const std::string&) override                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] const std::string& GetName() const noexcept override              { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                              { return nullptr; }
+    void SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] const std::string& GetName() const noexcept override                  { static std::string name; return name; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return nullptr; }
 
 private:
-    Settings             m_settings;
-    float                m_content_scale;
-    uint32_t             m_font_dpi;
-    FakeDevice           m_fake_device;
-    FakeCommandQueue     m_render_command_queue { CommandList::Type::Render };
-    FakeCommandQueue     m_upload_command_queue { CommandList::Type::Blit };
-    FakeBlitCommandList  m_upload_command_list  { m_upload_command_queue };
-    FakeCommandListSet   m_upload_command_list_set;
-    FpsCounter           m_fps_counter;
-    FakeObjectRegistry   m_object_registry;
-    mutable tf::Executor m_executor;
+    using FakeCommandQueueByType = std::array<FakeCommandQueue, magic_enum::enum_count<CommandList::Type>()>;
+
+    Settings               m_settings;
+    float                  m_content_scale;
+    uint32_t               m_font_dpi;
+    FakeDevice             m_fake_device;
+    FakeCommandQueueByType m_default_command_queues{{
+        { CommandList::Type::Blit           },
+        { CommandList::Type::Render         },
+        { CommandList::Type::ParallelRender },
+    }};
+    FakeCommandQueue       m_upload_command_queue { CommandList::Type::Blit };
+    FakeBlitCommandList    m_upload_command_list  { m_upload_command_queue };
+    FakeCommandListSet     m_upload_command_list_set;
+    FpsCounter             m_fps_counter;
+    FakeObjectRegistry     m_object_registry;
+    mutable tf::Executor   m_executor;
 };
 
 } // namespace Methane::Graphics

@@ -65,13 +65,13 @@ struct RenderContext : virtual Context
     virtual void Present() = 0;
 
     [[nodiscard]] virtual Platform::AppView GetAppView() const = 0;
-    [[nodiscard]] virtual CommandQueue&     GetRenderCommandQueue() = 0;
     [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
     [[nodiscard]] virtual float             GetContentScalingFactor() const = 0;
     [[nodiscard]] virtual uint32_t          GetFontResolutionDpi() const = 0;
     [[nodiscard]] virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
+    [[nodiscard]] virtual CommandQueue&     GetRenderCommandQueue() = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;

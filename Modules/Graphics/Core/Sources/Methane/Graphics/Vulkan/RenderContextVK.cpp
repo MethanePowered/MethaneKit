@@ -111,10 +111,4 @@ uint32_t RenderContextVK::GetFontResolutionDpi() const
     return 96U;
 }
 
-CommandQueueVK& RenderContextVK::GetRenderCommandQueueVK()
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueVK&>(ContextVK<RenderContextBase>::GetRenderCommandQueue());
-}
-
 } // namespace Methane::Graphics

@@ -46,11 +46,11 @@ public:
     // RenderContext interface
     void              Resize(const FrameSize& frame_size) override;
     void              Present() override;
-    CommandQueue&     GetRenderCommandQueue() override;
     const Settings&   GetSettings() const noexcept final            { return m_settings; }
     uint32_t          GetFrameBufferIndex() const noexcept final    { return m_frame_buffer_index;  }
     uint32_t          GetFrameIndex() const noexcept final          { return m_frame_index; }
     const FpsCounter& GetFpsCounter() const noexcept final          { return m_fps_counter; }
+    CommandQueue&     GetRenderCommandQueue() final                 { return GetDefaultCommandQueue(CommandList::Type::Render); }
     bool              SetVSyncEnabled(bool vsync_enabled) override;
     bool              SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     bool              SetFullScreen(bool is_full_screen) override;

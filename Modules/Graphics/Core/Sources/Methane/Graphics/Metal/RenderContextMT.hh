@@ -57,8 +57,7 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
-    id<CAMetalDrawable> GetNativeDrawable()       { return m_app_view.currentDrawable; }
-    CommandQueueMT&     GetRenderCommandQueueMT();
+    id<CAMetalDrawable> GetNativeDrawable() { return m_app_view.currentDrawable; }
 
     void OnGpuExecutionCompleted();
 

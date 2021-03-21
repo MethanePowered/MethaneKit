@@ -103,26 +103,19 @@ RenderContextDX::~RenderContextDX()
 void RenderContextDX::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-
     ContextDX<RenderContextBase>::WaitForGpu(wait_for);
 
+    std::optional<Data::Index> frame_buffer_index;
+    CommandList::Type cl_type = CommandList::Type::Render;
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:
-        GetRenderCommandQueueDX().CompleteExecution();
-        break;
-
-    case WaitFor::FramePresented:
-        GetRenderCommandQueueDX().CompleteExecution(GetFrameBufferIndex());
-        break;
-
-    case WaitFor::ResourcesUploaded:
-        GetUploadCommandQueueDX().CompleteExecution();
-        break;
-
-    default:
-        META_UNEXPECTED_ARG(wait_for);
+    case WaitFor::RenderComplete: break;
+    case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
+    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Blit; break;
+    default: META_UNEXPECTED_ARG(wait_for);
     }
+
+    GetDefaultCommandQueueDX(cl_type).CompleteExecution(frame_buffer_index);
 }
 
 void RenderContextDX::Release()
@@ -172,7 +165,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     }
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
-    ID3D12CommandQueue& dx_command_queue = GetRenderCommandQueueDX().GetNativeCommandQueue();
+    ID3D12CommandQueue& dx_command_queue = GetDefaultCommandQueueDX(CommandList::Type::Render).GetNativeCommandQueue();
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
     META_CHECK_ARG_NOT_NULL(cp_swap_chain);
 
@@ -245,12 +238,6 @@ uint32_t RenderContextDX::GetFontResolutionDpi() const
     META_CHECK_ARG_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
                                "we assume that horizontal and vertical font resolutions are equal");
     return dpi_y;
-}
-
-CommandQueueDX& RenderContextDX::GetRenderCommandQueueDX()
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueDX&>(GetRenderCommandQueue());
 }
 
 uint32_t RenderContextDX::GetNextFrameBufferIndex()

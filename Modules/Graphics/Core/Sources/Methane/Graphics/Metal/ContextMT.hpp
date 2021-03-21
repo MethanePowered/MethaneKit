@@ -63,10 +63,10 @@ public:
         return static_cast<DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueMT& GetUploadCommandQueueMT() noexcept final
+    CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());
+        return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandQueue(type));
     }
 
     const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override

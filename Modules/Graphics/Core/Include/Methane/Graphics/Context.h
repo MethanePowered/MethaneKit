@@ -24,6 +24,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #pragma once
 
 #include "Object.h"
+#include "CommandList.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -97,6 +98,7 @@ struct Context
     virtual void Reset() = 0;
 
     [[nodiscard]] virtual Device&          GetDevice() = 0;
+    [[nodiscard]] virtual CommandQueue&    GetDefaultCommandQueue(CommandList::Type type) = 0;
     [[nodiscard]] virtual CommandQueue&    GetUploadCommandQueue() = 0;
     [[nodiscard]] virtual BlitCommandList& GetUploadCommandList() = 0;
     [[nodiscard]] virtual CommandListSet&  GetUploadCommandListSet() = 0;

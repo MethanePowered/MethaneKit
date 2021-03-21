@@ -207,10 +207,4 @@ uint32_t RenderContextMT::GetFontResolutionDpi() const
     return 72U * GetContentScalingFactor();
 }
 
-CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueMT&>(ContextMT<RenderContextBase>::GetRenderCommandQueue());
-}
-
 } // namespace Methane::Graphics

@@ -31,7 +31,8 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include <memory>
+#include <array>
+#include <magic_enum.hpp>
 
 namespace tf
 {
@@ -66,7 +67,8 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(Device& device) override;
     void              Reset() override;
-    CommandQueue&     GetUploadCommandQueue() override;
+    CommandQueue&     GetDefaultCommandQueue(CommandList::Type type) override;
+    CommandQueue&     GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
     BlitCommandList&  GetUploadCommandList() override;
     CommandListSet&   GetUploadCommandListSet() override;
     Device&           GetDevice() override;
@@ -81,7 +83,7 @@ public:
     DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
     ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
     const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
-    CommandQueueBase&       GetUploadCommandQueueBase();
+    CommandQueueBase&       GetDefaultCommandQueueBase(CommandList::Type type);
     DeviceBase&             GetDeviceBase();
     const DeviceBase&       GetDeviceBase() const;
 
@@ -96,13 +98,15 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
+    using CommandQueuePtrByType = std::array<Ptr<CommandQueue>, magic_enum::enum_count<CommandList::Type>()>;
+
     const Type                m_type;
     Ptr<DeviceBase>           m_device_ptr;
     tf::Executor&             m_parallel_executor;
     ObjectBase::RegistryBase  m_objects_cache;
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
-    Ptr<CommandQueue>         m_upload_cmd_queue_ptr;
+    CommandQueuePtrByType     m_default_cmd_queue_ptr_by_type;
     Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
     Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
     Ptr<Fence>                m_upload_fence_ptr;

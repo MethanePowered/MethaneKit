@@ -234,18 +234,6 @@ uint32_t RenderContextBase::GetNextFrameBufferIndex()
     return (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
 }
 
-CommandQueue& RenderContextBase::GetRenderCommandQueue()
-{
-    META_FUNCTION_TASK();
-    if (!m_render_cmd_queue_ptr)
-    {
-        static const std::string s_command_queue_name = "Render Command Queue";
-        m_render_cmd_queue_ptr = CommandQueue::Create(*this, CommandList::Type::Render);
-        m_render_cmd_queue_ptr->SetName(s_command_queue_name);
-    }
-    return *m_render_cmd_queue_ptr;
-}
-
 bool RenderContextBase::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();

@@ -31,18 +31,18 @@ Base implementation of the context interface.
 namespace Methane::Graphics
 {
 
+static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_queue_names = {{
+    "Upload Command Queue",
+    "Render Command Queue",
+    "Render Command Queue 2"
+}};
+
 #ifdef METHANE_LOGGING_ENABLED
-static std::string GetWaitForName(Context::WaitFor wait_for)
-{
-    META_FUNCTION_TASK();
-    switch (wait_for)
-    {
-    case Context::WaitFor::RenderComplete:      return "Render Complete";
-    case Context::WaitFor::FramePresented:      return "Frame Present";
-    case Context::WaitFor::ResourcesUploaded:   return "Resources Upload";
-    default:                                    META_UNEXPECTED_ARG_RETURN(wait_for, "");
-    }
-}
+static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()> g_wait_for_names = {{
+    "Render Complete",
+    "Frame Present",
+    "Resources Upload"
+}};
 #endif
 
 ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
@@ -89,7 +89,7 @@ void ContextBase::CompleteInitialization()
 void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    META_LOG("Context '{}' is WAITING for {}", GetName(), GetWaitForName(wait_for));
+    META_LOG("Context '{}' is WAITING for {}", GetName(), g_wait_for_names[magic_enum::enum_index(wait_for).value()]);
 
     if (wait_for == WaitFor::ResourcesUploaded)
     {
@@ -143,10 +143,12 @@ void ContextBase::Release()
     META_LOG("Context '{}' RELEASE", GetName());
 
     m_device_ptr.reset();
-    m_upload_cmd_queue_ptr.reset();
     m_upload_cmd_list_ptr.reset();
     m_upload_cmd_lists_ptr.reset();
     m_upload_fence_ptr.reset();
+
+    for(Ptr<CommandQueue>& cmd_queue_ptr : m_default_cmd_queue_ptr_by_type)
+        cmd_queue_ptr.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 
@@ -162,7 +164,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     META_LOG("Context '{}' INITIALIZE", GetName());
 
     m_device_ptr = device.GetDevicePtr();
-    m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
+    m_upload_fence_ptr = Fence::Create(GetDefaultCommandQueue(CommandList::Type::Blit));
 
     if (const std::string& context_name = GetName();
         !context_name.empty())
@@ -185,18 +187,17 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     }
 }
 
-CommandQueue& ContextBase::GetUploadCommandQueue()
+CommandQueue& ContextBase::GetDefaultCommandQueue(CommandList::Type type)
 {
     META_FUNCTION_TASK();
-    if (m_upload_cmd_queue_ptr)
-        return *m_upload_cmd_queue_ptr;
+    Ptr<CommandQueue>& cmd_queue_ptr = m_default_cmd_queue_ptr_by_type[magic_enum::enum_index(type).value()];
+    if (cmd_queue_ptr)
+        return *cmd_queue_ptr;
 
-    static const std::string s_command_queue_name = "Upload Command Queue";
+    cmd_queue_ptr = CommandQueue::Create(*this, type);
+    cmd_queue_ptr->SetName(g_default_command_queue_names[magic_enum::enum_index(type).value()]);
 
-    m_upload_cmd_queue_ptr = CommandQueue::Create(*this, CommandList::Type::Blit);
-    m_upload_cmd_queue_ptr->SetName(s_command_queue_name);
-
-    return *m_upload_cmd_queue_ptr;
+    return *cmd_queue_ptr;
 }
 
 BlitCommandList& ContextBase::GetUploadCommandList()
@@ -204,8 +205,8 @@ BlitCommandList& ContextBase::GetUploadCommandList()
     META_FUNCTION_TASK();
     if (!m_upload_cmd_list_ptr)
     {
-        static const std::string s_command_list_name = "Upload Command List";
-        m_upload_cmd_list_ptr = BlitCommandList::Create(GetUploadCommandQueue());
+        static const std::string s_command_list_name = "Upload BLIT Command List";
+        m_upload_cmd_list_ptr = BlitCommandList::Create(GetDefaultCommandQueue(CommandList::Type::Blit));
         m_upload_cmd_list_ptr->SetName(s_command_list_name);
     }
     else
@@ -243,10 +244,10 @@ Device& ContextBase::GetDevice()
     return *m_device_ptr;
 }
     
-CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
+CommandQueueBase& ContextBase::GetDefaultCommandQueueBase(CommandList::Type type)
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
+    return static_cast<CommandQueueBase&>(GetDefaultCommandQueue(type));
 }
 
 DeviceBase& ContextBase::GetDeviceBase()
@@ -289,7 +290,7 @@ bool ContextBase::UploadResources()
         GetUploadCommandList().Commit();
 
     META_LOG("Context '{}' UPLOAD resources", GetName());
-    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
+    GetDefaultCommandQueue(CommandList::Type::Blit).Execute(GetUploadCommandListSet());
     return true;
 }
 

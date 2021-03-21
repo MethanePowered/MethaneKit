@@ -80,10 +80,10 @@ public:
         return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueVK& GetUploadCommandQueueVK() noexcept final
+    CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<CommandQueueVK&>(ContextBase::GetUploadCommandQueue());
+        return dynamic_cast<CommandQueueVK&>(ContextBase::GetDefaultCommandQueue(type));
     }
 };
 
