@@ -34,9 +34,10 @@ Methane resource interface: base class of all GPU resources.
 
 #include <magic_enum.hpp>
 #include <string>
+#include <array>
 #include <vector>
 #include <map>
-#include <array>
+#include <set>
 #include <optional>
 
 namespace Methane::Graphics
