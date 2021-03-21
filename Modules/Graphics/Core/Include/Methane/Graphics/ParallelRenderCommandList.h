@@ -36,6 +36,8 @@ struct RenderPass;
 
 struct ParallelRenderCommandList : virtual CommandList
 {
+    static constexpr Type type = Type::ParallelRender;
+
     // Create ParallelRenderCommandList instance
     [[nodiscard]] static Ptr<ParallelRenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
     

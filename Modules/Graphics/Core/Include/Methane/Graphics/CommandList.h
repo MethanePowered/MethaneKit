@@ -42,6 +42,7 @@ struct CommandList : virtual Object
 {
     enum class Type
     {
+        Sync,
         Blit,
         Render,
         ParallelRender,
@@ -123,4 +124,5 @@ struct CommandListSet
 #endif
 
 #define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string& */group_name) \
+    META_UNUSED(group_name); \
     static const Methane::Ptr<Methane::Graphics::CommandList::DebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

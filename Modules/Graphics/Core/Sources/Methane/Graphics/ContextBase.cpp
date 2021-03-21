@@ -25,6 +25,7 @@ Base implementation of the context interface.
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
 
+#include <Methane/Graphics/SyncCommandList.h>
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Instrumentation.h>
 
@@ -32,6 +33,7 @@ namespace Methane::Graphics
 {
 
 static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_queue_names = {{
+    "Sync Command Queue",
     "Upload Command Queue",
     "Render Command Queue",
     "Render Command Queue 2"
@@ -200,30 +202,45 @@ CommandQueue& ContextBase::GetDefaultCommandQueue(CommandList::Type type)
     return *cmd_queue_ptr;
 }
 
+SyncCommandList& ContextBase::GetSyncCommandList()
+{
+    META_FUNCTION_TASK();
+    static const std::string s_command_list_name = "Sync Command List";
+    static const std::string s_debug_group_name  = "Synchronization";
+    return PrepareCommandListForEncoding(m_sync_cmd_list_ptr, s_command_list_name, s_debug_group_name);
+}
+
 BlitCommandList& ContextBase::GetUploadCommandList()
 {
     META_FUNCTION_TASK();
-    if (!m_upload_cmd_list_ptr)
-    {
-        static const std::string s_command_list_name = "Upload BLIT Command List";
-        m_upload_cmd_list_ptr = BlitCommandList::Create(GetDefaultCommandQueue(CommandList::Type::Blit));
-        m_upload_cmd_list_ptr->SetName(s_command_list_name);
-    }
-    else
+    static const std::string s_command_list_name = "Upload Command List";
+    static const std::string s_debug_group_name  = "Upload Resources";
+    return PrepareCommandListForEncoding(m_upload_cmd_list_ptr, s_command_list_name, s_debug_group_name);
+}
+
+template<typename CommandListType>
+CommandListType& ContextBase::PrepareCommandListForEncoding(Ptr<CommandListType>& command_list_ptr, const std::string& name, const std::string& debug_group_name)
+{
+    if (command_list_ptr)
     {
         // FIXME: while with wait timeout are used as a workaround for occasional deadlock on command list wait for completion
         //  reproduced at high rate of resource updates (on typography tutorial)
-        while(m_upload_cmd_list_ptr->GetState() == CommandList::State::Executing)
-            m_upload_cmd_list_ptr->WaitUntilCompleted(16);
+        while(command_list_ptr->GetState() == CommandList::State::Executing)
+            command_list_ptr->WaitUntilCompleted(16);
     }
-
-    if (m_upload_cmd_list_ptr->GetState() == CommandList::State::Pending)
+    else
     {
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, "Upload Resources");
-        m_upload_cmd_list_ptr->Reset(s_debug_region_name.get());
+        command_list_ptr = CommandListType::Create(GetDefaultCommandQueue(CommandListType::type));
+        command_list_ptr->SetName(name);
     }
 
-    return *m_upload_cmd_list_ptr;
+    if (command_list_ptr->GetState() == CommandList::State::Pending)
+    {
+        META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, debug_group_name);
+        command_list_ptr->Reset(s_debug_region_name.get());
+    }
+
+    return *command_list_ptr;
 }
 
 CommandListSet& ContextBase::GetUploadCommandListSet()
@@ -233,7 +250,12 @@ CommandListSet& ContextBase::GetUploadCommandListSet()
         std::addressof((*m_upload_cmd_lists_ptr)[0]) == std::addressof(GetUploadCommandList()))
         return *m_upload_cmd_lists_ptr;
 
-    m_upload_cmd_lists_ptr = CommandListSet::Create({ GetUploadCommandList() });
+    Refs<CommandList> command_list_refs;
+    if (m_sync_cmd_list_ptr)
+        command_list_refs.emplace_back(GetSyncCommandList());
+    command_list_refs.emplace_back(GetUploadCommandList());
+
+    m_upload_cmd_lists_ptr = CommandListSet::Create(command_list_refs);
     return *m_upload_cmd_lists_ptr;
 }
 

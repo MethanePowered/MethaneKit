@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,26 +16,29 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/BlitCommandList.h
-Methane BLIT command list interface.
+FILE: Methane/Graphics/DirectX12/SyncCommandListDX.cpp
+DirectX 12 implementation of the synchronization command list interface.
 
 ******************************************************************************/
 
-#pragma once
+#include "SyncCommandListDX.h"
 
-#include "CommandList.h"
-
-#include <Methane/Memory.hpp>
+#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList
+Ptr<SyncCommandList> SyncCommandList::Create(CommandQueue& cmd_queue)
 {
-    static constexpr Type type = Type::Blit;
+    META_FUNCTION_TASK();
+    return std::make_shared<SyncCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
+}
 
-    // Create BlitCommandList instance
-    [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
-};
+SyncCommandListDX::SyncCommandListDX(CommandQueueBase& cmd_queue)
+    : CommandListDX<CommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue, Type::Sync)
+{
+    META_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,26 +16,26 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/BlitCommandList.h
-Methane BLIT command list interface.
+FILE: Methane/Graphics/DirectX12/SyncCommandListDX.h
+DirectX 12 implementation of the synchronization command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandList.h"
+#include "CommandListDX.hpp"
 
-#include <Methane/Memory.hpp>
+#include <Methane/Graphics/SyncCommandList.h>
 
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList
+class SyncCommandListDX final
+    : public CommandListDX<CommandListBase>
+    , public SyncCommandList
 {
-    static constexpr Type type = Type::Blit;
-
-    // Create BlitCommandList instance
-    [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
+public:
+    explicit SyncCommandListDX(CommandQueueBase& cmd_buffer);
 };
 
 } // namespace Methane::Graphics

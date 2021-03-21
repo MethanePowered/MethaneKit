@@ -32,6 +32,7 @@ Base implementation of the context interface.
 #include <Methane/Data/Emitter.hpp>
 
 #include <array>
+#include <string>
 #include <magic_enum.hpp>
 
 namespace tf
@@ -67,11 +68,13 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(Device& device) override;
     void              Reset() override;
-    CommandQueue&     GetDefaultCommandQueue(CommandList::Type type) override;
-    CommandQueue&     GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
-    BlitCommandList&  GetUploadCommandList() override;
-    CommandListSet&   GetUploadCommandListSet() override;
-    Device&           GetDevice() override;
+    CommandQueue&     GetDefaultCommandQueue(CommandList::Type type) final;
+    CommandQueue&     GetSyncCommandQueue() final                             { return GetDefaultCommandQueue(CommandList::Type::Sync); }
+    CommandQueue&     GetUploadCommandQueue() final                           { return GetDefaultCommandQueue(CommandList::Type::Blit); }
+    SyncCommandList&  GetSyncCommandList() final;
+    BlitCommandList&  GetUploadCommandList() final;
+    CommandListSet&   GetUploadCommandListSet() final;
+    Device&           GetDevice() final;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
@@ -100,6 +103,9 @@ protected:
 private:
     using CommandQueuePtrByType = std::array<Ptr<CommandQueue>, magic_enum::enum_count<CommandList::Type>()>;
 
+    template<typename CommandListType>
+    CommandListType& PrepareCommandListForEncoding(Ptr<CommandListType>& command_list_ptr, const std::string& name, const std::string& debug_group_name);
+
     const Type                m_type;
     Ptr<DeviceBase>           m_device_ptr;
     tf::Executor&             m_parallel_executor;
@@ -107,6 +113,7 @@ private:
     ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
     ResourceManager           m_resource_manager;
     CommandQueuePtrByType     m_default_cmd_queue_ptr_by_type;
+    Ptr<SyncCommandList>      m_sync_cmd_list_ptr;
     Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
     Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
     Ptr<Fence>                m_upload_fence_ptr;

@@ -42,6 +42,7 @@ namespace Methane::Graphics
 
 struct Device;
 struct CommandQueue;
+struct SyncCommandList;
 struct BlitCommandList;
 struct CommandListSet;
 struct Context;
@@ -99,7 +100,9 @@ struct Context
 
     [[nodiscard]] virtual Device&          GetDevice() = 0;
     [[nodiscard]] virtual CommandQueue&    GetDefaultCommandQueue(CommandList::Type type) = 0;
+    [[nodiscard]] virtual CommandQueue&    GetSyncCommandQueue() = 0;
     [[nodiscard]] virtual CommandQueue&    GetUploadCommandQueue() = 0;
+    [[nodiscard]] virtual SyncCommandList& GetSyncCommandList() = 0;
     [[nodiscard]] virtual BlitCommandList& GetUploadCommandList() = 0;
     [[nodiscard]] virtual CommandListSet&  GetUploadCommandListSet() = 0;
 };

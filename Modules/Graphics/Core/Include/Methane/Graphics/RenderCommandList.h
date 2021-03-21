@@ -37,6 +37,8 @@ struct ParallelRenderCommandList;
 
 struct RenderCommandList : virtual CommandList
 {
+    static constexpr Type type = Type::Render;
+
     enum class Primitive
     {
         Point,

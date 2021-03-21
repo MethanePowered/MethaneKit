@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,26 +16,20 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/BlitCommandList.h
-Methane BLIT command list interface.
+FILE: Methane/Graphics/Metal/SyncCommandListMT.mm
+Metal implementation of the synchronization command list interface.
 
 ******************************************************************************/
 
-#pragma once
-
-#include "CommandList.h"
-
-#include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList
+Ptr<SyncCommandList> SyncCommandList::Create(CommandQueue& command_queue)
 {
-    static constexpr Type type = Type::Blit;
-
-    // Create BlitCommandList instance
-    [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
-};
+    META_FUNCTION_TASK();
+    return nullptr; // Synchronization command list is not used with Metal
+}
 
 } // namespace Methane::Graphics
