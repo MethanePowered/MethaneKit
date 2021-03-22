@@ -21,12 +21,13 @@ Metal implementation of the synchronization command list interface.
 
 ******************************************************************************/
 
+#include <Methane/Graphics/SyncCommandList.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<SyncCommandList> SyncCommandList::Create(CommandQueue& command_queue)
+Ptr<SyncCommandList> SyncCommandList::Create(CommandQueue&)
 {
     META_FUNCTION_TASK();
     return nullptr; // Synchronization command list is not used with Metal
