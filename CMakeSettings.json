@@ -1,1101 +1,906 @@
 ﻿{
-	"configurations": [
-		{
-			"name": "x86-MSVC-Debug",
-			"generator": "Ninja",
-			"configurationType": "Debug",
-			"inheritEnvironments": [ "msvc_x86" ],
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x86-MSVC-Release",
-			"generator": "Ninja",
-			"configurationType": "Release",
-			"inheritEnvironments": [ "msvc_x86" ],
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x86-MSVC-ReleaseDbg-Profiling",
-			"generator": "Ninja",
-			"configurationType": "RelWithDebInfo",
-			"inheritEnvironments": [ "msvc_x86" ],
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "True",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x64-MSVC-Debug",
-			"generator": "Ninja",
-			"configurationType": "Debug",
-			"inheritEnvironments": [ "msvc_x64_x64" ],
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x64-MSVC-Release",
-			"generator": "Ninja",
-			"configurationType": "Release",
-			"inheritEnvironments": [ "msvc_x64_x64" ],
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x64-MSVC-ReleaseDbg-Profiling",
-			"generator": "Ninja",
-			"configurationType": "RelWithDebInfo",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "msvc_x64_x64" ],
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "True",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "x64-Clang-Debug",
-			"generator": "Ninja",
-			"configurationType": "Debug",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "clang_cl_x64" ],
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "CMAKE_CXX_FLAGS",
-					"value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
-					"type": "STRING"
-				}
-			]
-		},
-		{
-			"name": "x64-Clang-Release",
-			"generator": "Ninja",
-			"configurationType": "Release",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "clang_cl_x64" ],
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "CMAKE_CXX_FLAGS",
-					"value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
-					"type": "STRING"
-				}
-			]
-		},
-		{
-			"name": "x64-Clang-ReleaseDbg-Profiling",
-			"generator": "Ninja",
-			"configurationType": "RelWithDebInfo",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
-			"buildCommandArgs": "-v",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "clang_cl_x64" ],
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "CMAKE_CXX_FLAGS",
-					"value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
-					"type": "STRING"
-				}
-			]
-		},
-		{
-			"name": "WSL-GCC-Debug",
-			"generator": "Unix Makefiles",
-			"configurationType": "Debug",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\out\\install\\${name}",
-			"cmakeExecutable": "/usr/bin/cmake",
-			"cmakeCommandArgs": "",
-			"buildCommandArgs": "-j 10",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "linux_x64" ],
-			"wslPath": "${defaultWSLPath}",
-			"addressSanitizerRuntimeFlags": "detect_leaks=0",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "WSL-GCC-Release",
-			"generator": "Unix Makefiles",
-			"configurationType": "Release",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\out\\install\\${name}",
-			"cmakeExecutable": "/usr/bin/cmake",
-			"cmakeCommandArgs": "",
-			"buildCommandArgs": "-j 10",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "linux_x64" ],
-			"wslPath": "${defaultWSLPath}",
-			"addressSanitizerRuntimeFlags": "detect_leaks=0",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "WSL-Clang-Debug",
-			"generator": "Unix Makefiles",
-			"configurationType": "Debug",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\out\\install\\${name}",
-			"cmakeExecutable": "/usr/bin/cmake",
-			"cmakeCommandArgs": "",
-			"buildCommandArgs": "-j 10",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "linux_clang_x64" ],
-			"wslPath": "${defaultWSLPath}",
-			"addressSanitizerRuntimeFlags": "detect_leaks=0",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		},
-		{
-			"name": "WSL-Clang-Release",
-			"generator": "Unix Makefiles",
-			"configurationType": "Release",
-			"buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
-			"installRoot": "${projectDir}\\out\\install\\${name}",
-			"cmakeExecutable": "/usr/bin/cmake",
-			"cmakeCommandArgs": "",
-			"buildCommandArgs": "-j 10",
-			"ctestCommandArgs": "",
-			"inheritEnvironments": [ "linux_clang_x64" ],
-			"wslPath": "${defaultWSLPath}",
-			"addressSanitizerRuntimeFlags": "detect_leaks=0",
-			"variables": [
-				{
-					"name": "METHANE_APPS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TESTS_BUILD_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CHECKS_ENABLED",
-					"value": "true",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SHADERS_CODEVIEW_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_USE_OPEN_IMAGE_IO",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_RUN_TESTS_DURING_BUILD",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_CODE_COVERAGE_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_LOGGING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_SCOPE_TIMERS_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
-					"value": "True",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_ITT_METADATA_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ENABLED",
-					"value": "False",
-					"type": "BOOL"
-				},
-				{
-					"name": "METHANE_TRACY_PROFILING_ON_DEMAND",
-					"value": "False",
-					"type": "BOOL"
-				}
-			]
-		}
-	]
+    "configurations": [
+        {
+            "name": "x86-MSVC-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x86-MSVC-Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x86-MSVC-ReleaseDbg-Profiling",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-MSVC-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-MSVC-Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-MSVC-ReleaseDbg-Profiling",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-Clang-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "clang_cl_x64" ],
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "CMAKE_CXX_FLAGS",
+                    "value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
+            "name": "x64-Clang-Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "clang_cl_x64" ],
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "CMAKE_CXX_FLAGS",
+                    "value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
+            "name": "x64-Clang-ReleaseDbg-Profiling",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Install",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "clang_cl_x64" ],
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "CMAKE_CXX_FLAGS",
+                    "value": "-ftime-trace -m64 -fdiagnostics-absolute-paths  /DWIN32 /D_WINDOWS /W3 /GR /EHsc",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
+            "name": "WSL-GCC-Debug",
+            "generator": "Unix Makefiles",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "WSL-GCC-Release",
+            "generator": "Unix Makefiles",
+            "configurationType": "Release",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "WSL-Clang-Debug",
+            "generator": "Unix Makefiles",
+            "configurationType": "Debug",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_clang_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "WSL-Clang-Release",
+            "generator": "Unix Makefiles",
+            "configurationType": "Release",
+            "buildRoot": "${projectDir}\\Build\\Output\\VisualStudio\\${name}\\Build",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeExecutable": "/usr/bin/cmake",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-j 10",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "linux_clang_x64" ],
+            "wslPath": "${defaultWSLPath}",
+            "addressSanitizerRuntimeFlags": "detect_leaks=0",
+            "variables": [
+                {
+                    "name": "METHANE_SHADERS_CODEVIEW_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_RUN_TESTS_DURING_BUILD",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_CODE_COVERAGE_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_LOGGING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_SCOPE_TIMERS_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_INSTRUMENTATION_ENABLED",
+                    "value": "True",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_ITT_METADATA_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_GPU_INSTRUMENTATION_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ENABLED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "METHANE_TRACY_PROFILING_ON_DEMAND",
+                    "value": "False",
+                    "type": "BOOL"
+                }
+            ]
+        }
+    ]
 }

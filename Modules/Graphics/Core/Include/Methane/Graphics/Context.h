@@ -84,7 +84,7 @@ struct Context
         None                        = 0U,
         BlitWithCopyQueueOnWindows  = 1U << 0U, // Blit command lists are created with COPY type instead of DIRECT (requires manual resource states transitions)
         EmulatedRenderPassOnWindows = 1U << 1U, // Render passes are emulated with traditional DX API API, instead of using native DX render-pass API
-        Default                     = 0U //BlitWithCopyQueueOnWindows
+        Default                     = BlitWithCopyQueueOnWindows
     };
 
     // Context interface
