@@ -163,10 +163,11 @@ public:
     [[nodiscard]] Device& GetDevice() override                                          { return m_fake_device; }
     [[nodiscard]] CommandQueue& GetDefaultCommandQueue(CommandList::Type type) override { return m_default_command_queues[magic_enum::enum_index(type).value()]; }
     [[nodiscard]] CommandQueue& GetRenderCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Render); }
-    [[nodiscard]] CommandQueue& GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
     [[nodiscard]] CommandQueue& GetSyncCommandQueue() override                          { return GetDefaultCommandQueue(CommandList::Type::Sync); }
+    [[nodiscard]] CommandQueue& GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
     [[nodiscard]] SyncCommandList& GetSyncCommandList() override                        { return m_sync_command_list; }
     [[nodiscard]] BlitCommandList& GetUploadCommandList() override                      { return m_upload_command_list; }
+    [[nodiscard]] CommandListSet& GetSyncCommandListSet() override                      { return m_sync_command_list_set; }
     [[nodiscard]] CommandListSet& GetUploadCommandListSet() override                    { return m_upload_command_list_set; }
 
     // Object interface
@@ -189,6 +190,7 @@ private:
     }};
     FakeSyncCommandList    m_sync_command_list    { m_default_command_queues[magic_enum::enum_index(CommandList::Type::Sync).value()] };
     FakeBlitCommandList    m_upload_command_list  { m_default_command_queues[magic_enum::enum_index(CommandList::Type::Blit).value()] };
+    FakeCommandListSet     m_sync_command_list_set;
     FakeCommandListSet     m_upload_command_list_set;
     FpsCounter             m_fps_counter;
     FakeObjectRegistry     m_object_registry;

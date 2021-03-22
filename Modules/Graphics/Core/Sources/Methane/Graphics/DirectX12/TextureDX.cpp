@@ -385,18 +385,11 @@ void ImageTextureDX::SetData(const SubResources& sub_resources)
         GenerateMipLevels(dx_sub_resources, scratch_image);
     }
 
-    auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
-    upload_cmd_list.RetainResource(*this);
-
-    if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
-    {
-        upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
-    }
-
+    // Upload texture subresources data to GPU via intermediate upload resource
+    BlitCommandListDX& upload_cmd_list = PrepareResourceUpload();
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
-
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

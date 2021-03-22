@@ -56,13 +56,15 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
     }
 }
 
-static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type)
+static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
 {
     META_FUNCTION_TASK();
     switch (query_buffer_type)
     {
-    case QueryBuffer::Type::Timestamp: return D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-    //D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
+    case QueryBuffer::Type::Timestamp:
+        return d3d_command_list_type == D3D12_COMMAND_LIST_TYPE_COPY
+             ? D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
+             : D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     //D3D12_QUERY_HEAP_TYPE_OCCLUSION
     //D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS
     default:
@@ -127,7 +129,7 @@ QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type, Data::Siz
     , m_context_dx(dynamic_cast<IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
-    , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type), max_query_count))
+    , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))
 {
     META_FUNCTION_TASK();
 }

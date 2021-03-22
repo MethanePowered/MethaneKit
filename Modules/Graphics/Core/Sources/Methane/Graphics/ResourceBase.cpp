@@ -549,7 +549,6 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 
     if (m_state != State::Common)
     {
-        META_CHECK_ARG_NOT_EQUAL_DESCR(state, State::Common, "resource can not be transitioned to 'Common' state");
         if (!out_barriers || !out_barriers->HasTransition(*this, m_state, state))
         {
             out_barriers = Barriers::Create();

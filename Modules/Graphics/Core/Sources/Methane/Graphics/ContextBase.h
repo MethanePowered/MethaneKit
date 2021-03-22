@@ -74,6 +74,7 @@ public:
     SyncCommandList&  GetSyncCommandList() final;
     BlitCommandList&  GetUploadCommandList() final;
     CommandListSet&   GetUploadCommandListSet() final;
+    CommandListSet&   GetSyncCommandListSet() final;
     Device&           GetDevice() final;
 
     // ContextBase interface
@@ -93,7 +94,8 @@ public:
 protected:
     void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
-    Fence& GetUploadFence() const;
+    Fence& GetUploadFence();
+    Fence& GetSyncFence();
 
     // ContextBase interface
     virtual bool UploadResources();
@@ -115,7 +117,9 @@ private:
     CommandQueuePtrByType     m_default_cmd_queue_ptr_by_type;
     Ptr<SyncCommandList>      m_sync_cmd_list_ptr;
     Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
-    Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
+    Ptr<CommandListSet>       m_sync_cmd_list_set_ptr;
+    Ptr<CommandListSet>       m_upload_cmd_list_set_ptr;
+    Ptr<Fence>                m_sync_fence_ptr;
     Ptr<Fence>                m_upload_fence_ptr;
     mutable DeferredAction    m_requested_action = DeferredAction::None;
     mutable bool              m_is_completing_initialization = false;

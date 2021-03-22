@@ -81,9 +81,10 @@ struct Context
 
     enum class Options : uint32_t
     {
-        Default = 0U,
+        None                        = 0U,
         BlitWithCopyQueueOnWindows  = 1U << 0U, // Blit command lists are created with COPY type instead of DIRECT (requires manual resource states transitions)
         EmulatedRenderPassOnWindows = 1U << 1U, // Render passes are emulated with traditional DX API API, instead of using native DX render-pass API
+        Default                     = 0U //BlitWithCopyQueueOnWindows
     };
 
     // Context interface
@@ -105,6 +106,7 @@ struct Context
     [[nodiscard]] virtual SyncCommandList& GetSyncCommandList() = 0;
     [[nodiscard]] virtual BlitCommandList& GetUploadCommandList() = 0;
     [[nodiscard]] virtual CommandListSet&  GetUploadCommandListSet() = 0;
+    [[nodiscard]] virtual CommandListSet&  GetSyncCommandListSet() = 0;
 };
 
 } // namespace Methane::Graphics

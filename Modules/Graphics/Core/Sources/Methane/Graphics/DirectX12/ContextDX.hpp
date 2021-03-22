@@ -90,7 +90,7 @@ public:
         {
             D3D12_QUERY_HEAP_DESC query_heap_desc{};
             query_heap_desc.Count = max_query_count;
-            query_heap_desc.Type  = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+            query_heap_desc.Type  = type;
             ThrowIfFailed(GetDeviceDX().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
                           GetDeviceDX().GetNativeDevice().Get());
         }

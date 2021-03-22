@@ -96,9 +96,8 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     if (wait_for == WaitFor::ResourcesUploaded)
     {
         META_SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
-        META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
         OnGpuWaitStart(wait_for);
-        m_upload_fence_ptr->FlushOnCpu();
+        GetUploadFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     }
 }
@@ -145,8 +144,11 @@ void ContextBase::Release()
     META_LOG("Context '{}' RELEASE", GetName());
 
     m_device_ptr.reset();
+    m_sync_cmd_list_ptr.reset();
     m_upload_cmd_list_ptr.reset();
-    m_upload_cmd_lists_ptr.reset();
+    m_sync_cmd_list_set_ptr.reset();
+    m_upload_cmd_list_set_ptr.reset();
+    m_sync_fence_ptr.reset();
     m_upload_fence_ptr.reset();
 
     for(Ptr<CommandQueue>& cmd_queue_ptr : m_default_cmd_queue_ptr_by_type)
@@ -166,8 +168,6 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     META_LOG("Context '{}' INITIALIZE", GetName());
 
     m_device_ptr = device.GetDevicePtr();
-    m_upload_fence_ptr = Fence::Create(GetDefaultCommandQueue(CommandList::Type::Blit));
-
     if (const std::string& context_name = GetName();
         !context_name.empty())
     {
@@ -243,20 +243,26 @@ CommandListType& ContextBase::PrepareCommandListForEncoding(Ptr<CommandListType>
     return *command_list_ptr;
 }
 
+CommandListSet& ContextBase::GetSyncCommandListSet()
+{
+    META_FUNCTION_TASK();
+    if (m_sync_cmd_list_set_ptr && m_sync_cmd_list_set_ptr->GetCount() == 1 &&
+        std::addressof((*m_sync_cmd_list_set_ptr)[0]) == std::addressof(GetSyncCommandList()))
+        return *m_sync_cmd_list_set_ptr;
+
+    m_sync_cmd_list_set_ptr = CommandListSet::Create({ GetSyncCommandList() });
+    return *m_sync_cmd_list_set_ptr;
+}
+
 CommandListSet& ContextBase::GetUploadCommandListSet()
 {
     META_FUNCTION_TASK();
-    if (m_upload_cmd_lists_ptr && m_upload_cmd_lists_ptr->GetCount() == 1 &&
-        std::addressof((*m_upload_cmd_lists_ptr)[0]) == std::addressof(GetUploadCommandList()))
-        return *m_upload_cmd_lists_ptr;
+    if (m_upload_cmd_list_set_ptr && m_upload_cmd_list_set_ptr->GetCount() == 1 &&
+        std::addressof((*m_upload_cmd_list_set_ptr)[0]) == std::addressof(GetUploadCommandList()))
+        return *m_upload_cmd_list_set_ptr;
 
-    Refs<CommandList> command_list_refs;
-    if (m_sync_cmd_list_ptr)
-        command_list_refs.emplace_back(GetSyncCommandList());
-    command_list_refs.emplace_back(GetUploadCommandList());
-
-    m_upload_cmd_lists_ptr = CommandListSet::Create(command_list_refs);
-    return *m_upload_cmd_lists_ptr;
+    m_upload_cmd_list_set_ptr = CommandListSet::Create({ GetUploadCommandList() });
+    return *m_upload_cmd_list_set_ptr;
 }
 
 Device& ContextBase::GetDevice()
@@ -289,10 +295,13 @@ void ContextBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     ObjectBase::SetName(name);
-    GetDevice().SetName(name + " Device");
+    GetDevice().SetName(fmt::format("{} Device", name));
 
     if (m_upload_fence_ptr)
-        m_upload_fence_ptr->SetName(name + " Upload Fence");
+        m_upload_fence_ptr->SetName(fmt::format("{} Upload Completed Fence", name));
+
+    if (m_sync_fence_ptr)
+        m_sync_fence_ptr->SetName(fmt::format("{} Resources Synchronization Completed Fence", name));
 }
 
 bool ContextBase::UploadResources()
@@ -300,6 +309,21 @@ bool ContextBase::UploadResources()
     META_FUNCTION_TASK();
     if (!m_upload_cmd_list_ptr)
         return false;
+
+    bool is_resources_synchronization = false;
+    if (m_sync_cmd_list_ptr)
+    {
+        if (m_sync_cmd_list_ptr->GetState() == CommandList::State::Encoding)
+            GetSyncCommandList().Commit();
+
+        if (m_sync_cmd_list_ptr->GetState() == CommandList::State::Committed)
+        {
+            META_LOG("Context '{}' SYNCHRONIZE resources", GetName());
+            GetSyncCommandQueue().Execute(GetSyncCommandListSet());
+            GetSyncFence().Signal();
+            is_resources_synchronization = true;
+        }
+    }
 
     CommandList::State upload_cmd_state = m_upload_cmd_list_ptr->GetState();
     if (upload_cmd_state == CommandList::State::Pending)
@@ -311,8 +335,14 @@ bool ContextBase::UploadResources()
     if (upload_cmd_state == CommandList::State::Encoding)
         GetUploadCommandList().Commit();
 
+    if (is_resources_synchronization)
+    {
+        // Upload command queue waits for resources synchronization completion in sync command queue
+        GetSyncFence().WaitOnGpu(GetUploadCommandQueue());
+    }
+
     META_LOG("Context '{}' UPLOAD resources", GetName());
-    GetDefaultCommandQueue(CommandList::Type::Blit).Execute(GetUploadCommandListSet());
+    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
     return true;
 }
 
@@ -335,10 +365,26 @@ void ContextBase::SetDevice(DeviceBase& device)
     m_device_ptr = device.GetDevicePtr();
 }
 
-Fence& ContextBase::GetUploadFence() const
+Fence& ContextBase::GetUploadFence()
 {
-    META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
+    META_FUNCTION_TASK();
+    if (!m_upload_fence_ptr)
+    {
+        m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
+        m_upload_fence_ptr->SetName(fmt::format("{} Resources Upload Completed Fence", GetName()));
+    }
     return *m_upload_fence_ptr;
+}
+
+Fence& ContextBase::GetSyncFence()
+{
+    META_FUNCTION_TASK();
+    if (!m_sync_fence_ptr)
+    {
+        m_sync_fence_ptr = Fence::Create(GetSyncCommandQueue());
+        m_sync_fence_ptr->SetName(fmt::format("{} Resources Synchronization Completed Fence", GetName()));
+    }
+    return *m_sync_fence_ptr;
 }
 
 } // namespace Methane::Graphics

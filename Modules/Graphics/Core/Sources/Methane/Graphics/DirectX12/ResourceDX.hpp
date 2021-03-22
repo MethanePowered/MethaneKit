@@ -26,6 +26,8 @@ DirectX 12 implementation of the resource interface.
 #include "ResourceDX.h"
 #include "DescriptorHeapDX.h"
 #include "RenderContextDX.h"
+#include "BlitCommandListDX.h"
+#include "SyncCommandListDX.h"
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/ResourceBase.h>
@@ -126,8 +128,33 @@ protected:
         );
     }
 
+    BlitCommandListDX& PrepareResourceUpload()
+    {
+        META_FUNCTION_TASK();
+        auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+        upload_cmd_list.RetainResource(*this);
+
+        // When upload command list has COPY type, before transitioning resource to CopyDest state prior copying,
+        // first it has to be be transitioned to Common state with synchronization command list of DIRECT type.
+        // This is required due to DX12 limitation of using only copy-related resource barrier states in command lists of COPY type.
+        if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
+            SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
+        {
+            GetContext().GetSyncCommandList().SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
+        }
+
+        if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
+        {
+            upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
+        }
+
+        return upload_cmd_list;
+    }
+
 private:
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
+    Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
+    Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics
