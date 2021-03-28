@@ -114,7 +114,7 @@ public:
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr });
         }
 
@@ -133,7 +133,7 @@ public:
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.render_cmd_list_ptr->Commit();
 
-        GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
         GetRenderContext().Present();
 
         return true;

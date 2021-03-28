@@ -64,6 +64,9 @@ public:
         Changes                  changes             = Changes::None;
     };
 
+    static Ptr<RenderCommandList> CreateForSynchronization(CommandQueue& cmd_queue);
+
+    explicit RenderCommandListBase(CommandQueueBase& command_queue);
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
     explicit RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
     
@@ -85,6 +88,8 @@ public:
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
+    bool            HasPass() const noexcept    { return !!m_render_pass_ptr; }
+    RenderPassBase* GetPassPtr() const noexcept { return m_render_pass_ptr.get(); }
     RenderPassBase& GetPass();
 
 protected:

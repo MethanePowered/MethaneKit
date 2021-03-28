@@ -46,8 +46,10 @@ namespace Methane::Graphics
 {
 
 class DeviceBase;
-struct CommandQueue;
 class CommandQueueBase;
+struct CommandQueue;
+struct CommandList;
+struct CommandListSet;
 
 class ContextBase
     : public ObjectBase
@@ -68,13 +70,8 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(Device& device) override;
     void              Reset() override;
-    CommandQueue&     GetDefaultCommandQueue(CommandList::Type type) final;
-    CommandQueue&     GetSyncCommandQueue() final                             { return GetDefaultCommandQueue(CommandList::Type::Sync); }
-    CommandQueue&     GetUploadCommandQueue() final                           { return GetDefaultCommandQueue(CommandList::Type::Blit); }
-    SyncCommandList&  GetSyncCommandList() final;
-    BlitCommandList&  GetUploadCommandList() final;
-    CommandListSet&   GetUploadCommandListSet() final;
-    CommandListSet&   GetSyncCommandListSet() final;
+    CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
+    CommandKit&       GetDefaultCommandKit(CommandQueue& cmd_queue) const final;
     Device&           GetDevice() final;
 
     // ContextBase interface
@@ -87,15 +84,12 @@ public:
     DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
     ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
     const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
-    CommandQueueBase&       GetDefaultCommandQueueBase(CommandList::Type type);
     DeviceBase&             GetDeviceBase();
     const DeviceBase&       GetDeviceBase() const;
 
 protected:
     void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
-    Fence& GetUploadFence();
-    Fence& GetSyncFence();
 
     // ContextBase interface
     virtual bool UploadResources();
@@ -103,26 +97,19 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandQueuePtrByType = std::array<Ptr<CommandQueue>, magic_enum::enum_count<CommandList::Type>()>;
+    using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
+    using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
 
-    template<typename CommandListType>
-    CommandListType& PrepareCommandListForEncoding(Ptr<CommandListType>& command_list_ptr, const std::string& name, const std::string& debug_group_name);
-
-    const Type                m_type;
-    Ptr<DeviceBase>           m_device_ptr;
-    tf::Executor&             m_parallel_executor;
-    ObjectBase::RegistryBase  m_objects_cache;
-    ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
-    ResourceManager           m_resource_manager;
-    CommandQueuePtrByType     m_default_cmd_queue_ptr_by_type;
-    Ptr<SyncCommandList>      m_sync_cmd_list_ptr;
-    Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
-    Ptr<CommandListSet>       m_sync_cmd_list_set_ptr;
-    Ptr<CommandListSet>       m_upload_cmd_list_set_ptr;
-    Ptr<Fence>                m_sync_fence_ptr;
-    Ptr<Fence>                m_upload_fence_ptr;
-    mutable DeferredAction    m_requested_action = DeferredAction::None;
-    mutable bool              m_is_completing_initialization = false;
+    const Type                  m_type;
+    Ptr<DeviceBase>             m_device_ptr;
+    tf::Executor&               m_parallel_executor;
+    ObjectBase::RegistryBase    m_objects_cache;
+    ResourceManager::Settings   m_resource_manager_init_settings{ true, {}, {} };
+    ResourceManager             m_resource_manager;
+    mutable CommandKitPtrByType m_default_command_kit_ptrs;
+    mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction      m_requested_action = DeferredAction::None;
+    mutable bool                m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

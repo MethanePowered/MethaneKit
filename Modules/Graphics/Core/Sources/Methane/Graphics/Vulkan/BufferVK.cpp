@@ -84,10 +84,10 @@ void BufferVK::SetName(const std::string& name)
     ResourceVK::SetName(name);
 }
 
-void BufferVK::SetData(const SubResources& sub_resources)
+void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources, sync_cmd_queue);
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

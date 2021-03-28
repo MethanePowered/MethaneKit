@@ -28,6 +28,7 @@ Methane text rendering primitive.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
@@ -488,7 +489,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
-    });
+    }, &render_context.GetRenderCommandKit().GetQueue());
 
     // Update index buffer
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -506,7 +507,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
-    });
+    }, &render_context.GetRenderCommandKit().GetQueue());
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Mesh;
@@ -539,7 +540,13 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
             m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { m_uniforms_buffer_ptr } });
         }
     }
-    m_uniforms_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
+    m_uniforms_buffer_ptr->SetData(
+        gfx::Resource::SubResources
+        {
+            { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }
+        },
+        &render_context.GetRenderCommandKit().GetQueue()
+    );
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Uniforms;
@@ -633,9 +640,13 @@ void Text::UpdateConstantsBuffer()
         m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
         m_const_buffer_ptr->SetName(m_settings.name + " Text Constants Buffer");
     }
-    m_const_buffer_ptr->SetData({
-        gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
-    });
+    m_const_buffer_ptr->SetData(
+        gfx::Resource::SubResources
+        {
+            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
+        },
+        &GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
+    );
 }
 
 FrameRect Text::GetAlignedViewportRect() const

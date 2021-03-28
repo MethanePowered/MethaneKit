@@ -27,10 +27,10 @@ DirectX 12 implementation of the resource interface.
 #include "DescriptorHeapDX.h"
 #include "RenderContextDX.h"
 #include "BlitCommandListDX.h"
-#include "SyncCommandListDX.h"
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -128,10 +128,10 @@ protected:
         );
     }
 
-    BlitCommandListDX& PrepareResourceUpload()
+    BlitCommandListDX& PrepareResourceUpload(CommandQueue* sync_cmd_queue)
     {
         META_FUNCTION_TASK();
-        auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
+        auto& upload_cmd_list = dynamic_cast<BlitCommandListDX&>(GetContext().GetUploadCommandKit().GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         // When upload command list has COPY type, before transitioning resource to CopyDest state prior copying,
@@ -140,7 +140,10 @@ protected:
         if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
             SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
         {
-            GetContext().GetSyncCommandList().SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
+            CommandList& sync_cmd_list = sync_cmd_queue
+                                       ? GetContext().GetDefaultCommandKit(*sync_cmd_queue).GetListForEncoding()
+                                       : upload_cmd_list;
+            sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
         }
 
         if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)

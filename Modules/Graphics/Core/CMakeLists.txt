@@ -45,8 +45,6 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/SyncCommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/SyncCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
@@ -107,7 +105,6 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
-        ${SOURCES_GRAPHICS_DIR}/SyncCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
@@ -162,8 +159,6 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/SyncCommandListVK.h
-        ${SOURCES_GRAPHICS_DIR}/SyncCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
@@ -188,9 +183,9 @@ set(HEADERS
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/CommandKit.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
-    ${INCLUDE_DIR}/SyncCommandList.h
     ${INCLUDE_DIR}/BlitCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
@@ -230,6 +225,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/SamplerBase.cpp
     ${SOURCES_DIR}/RenderPassBase.h
     ${SOURCES_DIR}/RenderPassBase.cpp
+    ${SOURCES_DIR}/CommandKitBase.h
+    ${SOURCES_DIR}/CommandKitBase.cpp
     ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h

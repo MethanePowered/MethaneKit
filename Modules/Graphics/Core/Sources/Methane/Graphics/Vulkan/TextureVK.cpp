@@ -83,10 +83,10 @@ void TextureVK::SetName(const std::string& name)
     ResourceVK::SetName(name);
 }
 
-void TextureVK::SetData(const SubResources& sub_resources)
+void TextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources, sync_cmd_queue);
     
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {

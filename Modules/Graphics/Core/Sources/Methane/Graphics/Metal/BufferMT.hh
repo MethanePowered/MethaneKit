@@ -38,7 +38,7 @@ public:
     BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    void SetData(const SubResources& sub_resources) override;
+    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
 
     // Object interface
     void SetName(const std::string& name) override;

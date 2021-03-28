@@ -259,18 +259,18 @@ void AsteroidsApp::Init()
         frame.final_screen_pass_ptr = gfx::RenderPass::Create(context, final_screen_pass_settings);
 
         // Create parallel command list for asteroids rendering
-        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
         frame.parallel_cmd_list_ptr->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.parallel_cmd_list_ptr->SetName(IndexedName("Parallel Rendering", frame.index));
         frame.parallel_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
-        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
         frame.serial_cmd_list_ptr->SetName(IndexedName("Serial Rendering", frame.index));
         frame.serial_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
-        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.final_screen_pass_ptr);
+        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.final_screen_pass_ptr);
         frame.final_cmd_list_ptr->SetName(IndexedName("Final Rendering", frame.index));
         frame.final_cmd_list_ptr->SetValidationEnabled(false);
 
@@ -393,7 +393,7 @@ bool AsteroidsApp::Render()
     frame.final_cmd_list_ptr->Commit();
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

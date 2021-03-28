@@ -66,8 +66,20 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
-RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_buffer, render_pass)
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue& cmd_queue)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
+}
+
+RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_queue)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue)
+{
+    META_FUNCTION_TASK();
+}
+
+RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass)
+    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue, render_pass)
 {
     META_FUNCTION_TASK();
 }
@@ -129,7 +141,10 @@ void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
     META_FUNCTION_TASK();
     ResetNative();
     RenderCommandListBase::Reset(p_debug_group);
-    ResetRenderPass();
+    if (HasPass())
+    {
+        ResetRenderPass();
+    }
 }
 
 void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
@@ -137,7 +152,10 @@ void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* 
     META_FUNCTION_TASK();
     ResetNative(std::static_pointer_cast<RenderStateDX>(static_cast<RenderStateBase&>(render_state).GetBasePtr()));
     RenderCommandListBase::ResetWithState(render_state, p_debug_group);
-    ResetRenderPass();
+    if (HasPass())
+    {
+        ResetRenderPass();
+    }
 }
 
 void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
@@ -226,10 +244,10 @@ void RenderCommandListDX::Commit()
         return;
     }
 
-    if (RenderPassDX& pass_dx = GetPassDX();
-        pass_dx.IsBegun())
+    if (RenderPassDX* pass_dx = static_cast<RenderPassDX*>(GetPassPtr());
+        pass_dx && pass_dx->IsBegun())
     {
-        pass_dx.End(*this);
+        pass_dx->End(*this);
     }
 
     CommandListDX<RenderCommandListBase>::Commit();

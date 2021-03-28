@@ -37,6 +37,12 @@ Base implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
+RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue)
+    : CommandListBase(command_queue, Type::Render)
+{
+    META_FUNCTION_TASK();
+}
+
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
     , m_render_pass_ptr(pass.GetRenderPassPtr())
@@ -57,7 +63,10 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListBase::Reset(p_debug_group);
-    m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
+    if (m_render_pass_ptr)
+    {
+        m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
+    }
 }
 
 void RenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
@@ -247,7 +256,7 @@ RenderPassBase& RenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
-    return static_cast<RenderPassBase&>(*m_render_pass_ptr);
+    return *m_render_pass_ptr;
 }
 
 } // namespace Methane::Graphics

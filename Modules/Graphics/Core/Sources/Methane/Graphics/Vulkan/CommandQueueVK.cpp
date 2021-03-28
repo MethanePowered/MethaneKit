@@ -58,7 +58,7 @@ void CommandQueueVK::SetName(const std::string& name)
 IContextVK& CommandQueueVK::GetContextVK() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContext());
+    return static_cast<IContextVK&>(GetContextBase());
 }
 
 } // namespace Methane::Graphics

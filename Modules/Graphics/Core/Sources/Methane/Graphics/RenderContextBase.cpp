@@ -25,6 +25,7 @@ Base implementation of the render context interface.
 #include "DeviceBase.h"
 
 #include <Methane/Graphics/TypeFormatters.hpp>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -61,7 +62,7 @@ void RenderContextBase::WaitForGpuRenderComplete()
 
     OnGpuWaitStart(WaitFor::RenderComplete);
     GetRenderFence().FlushOnCpu();
-    GetUploadFence().FlushOnCpu();
+    GetUploadCommandKit().GetFence().FlushOnCpu();
     OnGpuWaitComplete(WaitFor::RenderComplete);
 }
 
@@ -110,16 +111,13 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
-    const Ptr<Fence>& current_fence_ptr = GetCurrentFrameFencePtr();
-    META_CHECK_ARG_NOT_NULL(current_fence_ptr);
-    return *current_fence_ptr;
+    return GetRenderCommandKit().GetFence(m_frame_buffer_index + 1);;
 }
 
 Fence& RenderContextBase::GetRenderFence() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_render_fence_ptr);
-    return *m_render_fence_ptr;
+    return GetRenderCommandKit().GetFence(0U);
 }
 
 void RenderContextBase::ResetWithSettings(const Settings& settings)
@@ -139,49 +137,14 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-
     ContextBase::Initialize(device, deferred_heap_allocation, false);
 
-    m_frame_fences.clear();
-    for (uint32_t frame_index = 0; frame_index < m_settings.frame_buffers_count; ++frame_index)
-    {
-        m_frame_fences.emplace_back(Fence::Create(GetRenderCommandQueue()));
-    }
-
-    m_render_fence_ptr = Fence::Create(GetRenderCommandQueue());
     m_frame_index = 0U;
 
     if (is_callback_emitted)
     {
         Emit(&IContextCallback::OnContextInitialized, *this);
     }
-}
-
-void RenderContextBase::Release()
-{
-    META_FUNCTION_TASK();
-
-    m_render_fence_ptr.reset();
-    m_frame_fences.clear();
-    m_render_cmd_queue_ptr.reset();
-
-    ContextBase::Release();
-}
-
-void RenderContextBase::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    ContextBase::SetName(name);
-
-    for (uint32_t frame_index = 0; frame_index < m_frame_fences.size(); ++frame_index)
-    {
-        const Ptr<Fence>& frame_fence_ptr = m_frame_fences[frame_index];
-        META_CHECK_ARG_NOT_NULL(frame_fence_ptr);
-        frame_fence_ptr->SetName(name + " Frame " + std::to_string(frame_index) + " Fence");
-    }
-
-    if (m_render_fence_ptr)
-        m_render_fence_ptr->SetName(name + " Render Fence");
 }
 
 bool RenderContextBase::UploadResources()
@@ -191,7 +154,7 @@ bool RenderContextBase::UploadResources()
         return false;
 
     // Render commands will wait for resources uploading completion in upload queue
-    GetUploadFence().FlushOnGpu(GetRenderCommandQueue());
+    GetUploadCommandKit().GetFence().FlushOnGpu(GetRenderCommandKit().GetQueue());
     return true;
 }
 

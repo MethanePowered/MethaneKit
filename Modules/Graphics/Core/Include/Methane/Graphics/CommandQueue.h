@@ -38,7 +38,8 @@ struct CommandQueue : virtual Object
     [[nodiscard]] static Ptr<CommandQueue> Create(Context& context, CommandList::Type command_lists_type);
 
     // CommandQueue interface
-    [[nodiscard]] virtual CommandList::Type GetCommandListsType() const noexcept = 0;
+    [[nodiscard]] virtual Context& GetContext() noexcept = 0;
+    [[nodiscard]] virtual CommandList::Type GetCommandListType() const noexcept = 0;
     virtual void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
 };
 

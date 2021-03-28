@@ -57,9 +57,6 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
 
     switch(command_list_type)
     {
-    case CommandList::Type::Sync:
-        return D3D12_COMMAND_LIST_TYPE_DIRECT;
-
     case CommandList::Type::Blit:
         return magic_enum::flags::enum_contains(options & Context::Options::BlitWithCopyQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_COPY
@@ -173,7 +170,7 @@ void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_i
 IContextDX& CommandQueueDX::GetContextDX() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
+    return static_cast<IContextDX&>(GetContextBase());
 }
 
 ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()

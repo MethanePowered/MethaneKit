@@ -71,11 +71,12 @@ struct RenderContext : virtual Context
     [[nodiscard]] virtual float             GetContentScalingFactor() const = 0;
     [[nodiscard]] virtual uint32_t          GetFontResolutionDpi() const = 0;
     [[nodiscard]] virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
-    [[nodiscard]] virtual CommandQueue&     GetRenderCommandQueue() = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
     virtual bool SetFullScreen(bool is_full_screen) = 0;
+
+    [[nodiscard]] inline CommandKit& GetRenderCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Render); }
 };
 
 } // namespace Methane::Graphics

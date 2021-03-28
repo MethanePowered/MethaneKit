@@ -28,6 +28,7 @@ DirectX 12 base template implementation of the context interface.
 #include "ContextDX.h"
 #include "CommandQueueDX.h"
 
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -79,7 +80,7 @@ public:
     // IContextDX interface
 
     const DeviceDX& GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
-    CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandQueue(type)); }
+    CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) final
     {

@@ -24,6 +24,7 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/UserInterface/Font.h>
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
@@ -739,9 +740,13 @@ void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture
     else
     {
         // TODO: Update only a region of atlas texture containing character bitmap
-        atlas_texture.texture_ptr->SetData({
-            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
-        });
+        atlas_texture.texture_ptr->SetData(
+            gfx::Resource::SubResources
+            {
+                gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+            },
+            &context.GetDefaultCommandKit(gfx::CommandList::Type::Render).GetQueue()
+        );
     }
 
     atlas_texture.is_update_required = false;

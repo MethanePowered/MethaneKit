@@ -42,7 +42,6 @@ struct CommandList : virtual Object
 {
     enum class Type
     {
-        Sync,
         Blit,
         Render,
         ParallelRender,

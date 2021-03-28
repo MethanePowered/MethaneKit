@@ -25,8 +25,8 @@ Fake render context used for UI types testing
 
 #include <Methane/Exceptions.hpp>
 #include <Methane/Graphics/Device.h>
-#include <Methane/Graphics/SyncCommandList.h>
 #include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/FpsCounter.h>
@@ -61,12 +61,14 @@ public:
 class FakeCommandQueue : public CommandQueue
 {
 public:
-    FakeCommandQueue(CommandList::Type type)
-        : m_type(type)
+    FakeCommandQueue(Context& context, CommandList::Type type)
+        : m_context(context)
+        , m_type(type)
     { }
 
     // CommandQueue interface
-    [[nodiscard]] CommandList::Type GetCommandListsType() const noexcept override { return m_type; }
+    [[nodiscard]] Context&          GetContext() noexcept override                { return m_context; }
+    [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // Object interface
@@ -75,6 +77,7 @@ public:
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return nullptr; }
 
 private:
+    Context& m_context;
     CommandList::Type m_type;
 };
 
@@ -120,8 +123,7 @@ private:
     CommandQueue& m_command_queue;
 };
 
-using FakeBlitCommandList = FakeCommandList<BlitCommandList, CommandList::Type::Blit>;
-using FakeSyncCommandList = FakeCommandList<SyncCommandList, CommandList::Type::Sync>;
+using FakeBlitCommandList   = FakeCommandList<BlitCommandList,   CommandList::Type::Blit>;
 
 class FakeRenderContext
     : public RenderContext
@@ -160,15 +162,10 @@ public:
     void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+
     [[nodiscard]] Device& GetDevice() override                                          { return m_fake_device; }
-    [[nodiscard]] CommandQueue& GetDefaultCommandQueue(CommandList::Type type) override { return m_default_command_queues[magic_enum::enum_index(type).value()]; }
-    [[nodiscard]] CommandQueue& GetRenderCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Render); }
-    [[nodiscard]] CommandQueue& GetSyncCommandQueue() override                          { return GetDefaultCommandQueue(CommandList::Type::Sync); }
-    [[nodiscard]] CommandQueue& GetUploadCommandQueue() override                        { return GetDefaultCommandQueue(CommandList::Type::Blit); }
-    [[nodiscard]] SyncCommandList& GetSyncCommandList() override                        { return m_sync_command_list; }
-    [[nodiscard]] BlitCommandList& GetUploadCommandList() override                      { return m_upload_command_list; }
-    [[nodiscard]] CommandListSet& GetSyncCommandListSet() override                      { return m_sync_command_list_set; }
-    [[nodiscard]] CommandListSet& GetUploadCommandListSet() override                    { return m_upload_command_list_set; }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // Object interface
     void SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
@@ -176,22 +173,10 @@ public:
     [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return nullptr; }
 
 private:
-    using FakeCommandQueueByType = std::array<FakeCommandQueue, magic_enum::enum_count<CommandList::Type>()>;
-
     Settings               m_settings;
     float                  m_content_scale;
     uint32_t               m_font_dpi;
     FakeDevice             m_fake_device;
-    FakeCommandQueueByType m_default_command_queues{{
-        { CommandList::Type::Sync           },
-        { CommandList::Type::Blit           },
-        { CommandList::Type::Render         },
-        { CommandList::Type::ParallelRender },
-    }};
-    FakeSyncCommandList    m_sync_command_list    { m_default_command_queues[magic_enum::enum_index(CommandList::Type::Sync).value()] };
-    FakeBlitCommandList    m_upload_command_list  { m_default_command_queues[magic_enum::enum_index(CommandList::Type::Blit).value()] };
-    FakeCommandListSet     m_sync_command_list_set;
-    FakeCommandListSet     m_upload_command_list_set;
     FpsCounter             m_fps_counter;
     FakeObjectRegistry     m_object_registry;
     mutable tf::Executor   m_executor;

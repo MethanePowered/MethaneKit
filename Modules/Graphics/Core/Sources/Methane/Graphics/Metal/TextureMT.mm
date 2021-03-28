@@ -128,13 +128,13 @@ void TextureMT::SetName(const std::string& name)
     m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
 }
 
-void TextureMT::SetData(const SubResources& sub_resources)
+void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
-    ResourceMT::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources, sync_cmd_queue);
 
     BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.RetainResource(*this);

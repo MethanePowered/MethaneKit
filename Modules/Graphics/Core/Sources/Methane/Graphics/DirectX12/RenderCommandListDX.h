@@ -36,7 +36,8 @@ class RenderStateDX;
 class RenderCommandListDX final : public CommandListDX<RenderCommandListBase>
 {
 public:
-    RenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
+    explicit RenderCommandListDX(CommandQueueBase& cmd_queue);
+    RenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
     explicit RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
     // CommandList interface

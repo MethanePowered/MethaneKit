@@ -24,6 +24,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/ScreenQuad.h>
 
 #include <Methane/Graphics/Mesh/QuadMesh.hpp>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
@@ -281,12 +282,16 @@ void ScreenQuad::UpdateConstantsBuffer() const
         m_settings.blend_color
     };
 
-    m_const_buffer_ptr->SetData({
+    m_const_buffer_ptr->SetData(
+        Resource::SubResources
         {
-            reinterpret_cast<Data::ConstRawPtr>(&constants),
-            static_cast<Data::Size>(sizeof(constants))
-        }
-    });
+            {
+                reinterpret_cast<Data::ConstRawPtr>(&constants),
+                static_cast<Data::Size>(sizeof(constants))
+            }
+        },
+        &m_context.GetRenderCommandKit().GetQueue()
+    );
 }
 
 Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)

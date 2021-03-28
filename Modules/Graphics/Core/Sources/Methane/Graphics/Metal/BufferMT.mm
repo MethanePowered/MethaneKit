@@ -101,10 +101,10 @@ void BufferMT::SetName(const std::string& name)
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
-void BufferMT::SetData(const SubResources& sub_resources)
+void BufferMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceMT::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources, sync_cmd_queue);
 
     switch(GetSettings().storage_mode)
     {

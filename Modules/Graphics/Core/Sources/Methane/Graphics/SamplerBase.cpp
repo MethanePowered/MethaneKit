@@ -54,7 +54,7 @@ SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const D
     META_FUNCTION_TASK();
 }
 
-void SamplerBase::SetData(const SubResources&)
+void SamplerBase::SetData(const SubResources&, CommandQueue*)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
 }

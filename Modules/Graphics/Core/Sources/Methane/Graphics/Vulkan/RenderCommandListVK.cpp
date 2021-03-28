@@ -49,6 +49,12 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
+{
+    META_FUNCTION_TASK();
+    return nullptr;
+}
+
 RenderCommandListVK::RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : RenderCommandListBase(command_queue, render_pass)
 {

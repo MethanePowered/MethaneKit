@@ -44,6 +44,7 @@ namespace Methane::Graphics
 {
 
 struct Context;
+struct CommandQueue;
 class DescriptorHeap;
 
 struct Resource : virtual Object
@@ -314,7 +315,7 @@ struct Resource : virtual Object
 
     // Resource interface
     virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
-    virtual void SetData(const SubResources& sub_resources) = 0;
+    virtual void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue = nullptr) = 0;
     [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;

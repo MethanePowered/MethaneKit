@@ -25,19 +25,17 @@ Base implementation of the context interface.
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
 
-#include <Methane/Graphics/SyncCommandList.h>
-#include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_queue_names = {{
-    "Sync Command Queue",
-    "Upload Command Queue",
-    "Render Command Queue",
-    "Render Command Queue 2"
-}};
+static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_kit_names = { {
+    "Upload",
+    "Render",
+    "Parallel Render"
+} };
 
 #ifdef METHANE_LOGGING_ENABLED
 static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()> g_wait_for_names = {{
@@ -84,7 +82,7 @@ void ContextBase::CompleteInitialization()
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
 
-    m_requested_action = DeferredAction::None;
+    m_requested_action             = DeferredAction::None;
     m_is_completing_initialization = false;
 }
 
@@ -97,7 +95,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     {
         META_SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
         OnGpuWaitStart(wait_for);
-        GetUploadFence().FlushOnCpu();
+        GetUploadCommandKit().GetFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     }
 }
@@ -119,7 +117,7 @@ void ContextBase::Reset()
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> device_ptr = m_device_ptr;
+    Ptr <DeviceBase> device_ptr = m_device_ptr;
     Release();
     Initialize(*device_ptr, true);
 }
@@ -144,20 +142,14 @@ void ContextBase::Release()
     META_LOG("Context '{}' RELEASE", GetName());
 
     m_device_ptr.reset();
-    m_sync_cmd_list_ptr.reset();
-    m_upload_cmd_list_ptr.reset();
-    m_sync_cmd_list_set_ptr.reset();
-    m_upload_cmd_list_set_ptr.reset();
-    m_sync_fence_ptr.reset();
-    m_upload_fence_ptr.reset();
 
-    for(Ptr<CommandQueue>& cmd_queue_ptr : m_default_cmd_queue_ptr_by_type)
-        cmd_queue_ptr.reset();
+    for (Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+        cmd_kit_ptr.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 
-    m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
-    m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
+    m_resource_manager_init_settings.default_heap_sizes        = m_resource_manager.GetDescriptorHeapSizes(true, false);
+    m_resource_manager_init_settings.shader_visible_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true, true);
 
     m_resource_manager.Release();
 }
@@ -189,80 +181,29 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     }
 }
 
-CommandQueue& ContextBase::GetDefaultCommandQueue(CommandList::Type type)
+CommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
 {
     META_FUNCTION_TASK();
-    Ptr<CommandQueue>& cmd_queue_ptr = m_default_cmd_queue_ptr_by_type[magic_enum::enum_index(type).value()];
-    if (cmd_queue_ptr)
-        return *cmd_queue_ptr;
+    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
+    if (cmd_kit_ptr)
+        return *cmd_kit_ptr;
 
-    cmd_queue_ptr = CommandQueue::Create(*this, type);
-    cmd_queue_ptr->SetName(g_default_command_queue_names[magic_enum::enum_index(type).value()]);
+    cmd_kit_ptr = CommandKit::Create(const_cast<ContextBase&>(*this), type);
+    cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
 
-    return *cmd_queue_ptr;
+    m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;
+    return *cmd_kit_ptr;
 }
 
-SyncCommandList& ContextBase::GetSyncCommandList()
+CommandKit& ContextBase::GetDefaultCommandKit(CommandQueue& cmd_queue) const
 {
     META_FUNCTION_TASK();
-    static const std::string s_command_list_name = "Sync Command List";
-    static const std::string s_debug_group_name  = "Synchronization";
-    return PrepareCommandListForEncoding(m_sync_cmd_list_ptr, s_command_list_name, s_debug_group_name);
-}
+    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
+    if (cmd_kit_ptr)
+        return *cmd_kit_ptr;
 
-BlitCommandList& ContextBase::GetUploadCommandList()
-{
-    META_FUNCTION_TASK();
-    static const std::string s_command_list_name = "Upload Command List";
-    static const std::string s_debug_group_name  = "Upload Resources";
-    return PrepareCommandListForEncoding(m_upload_cmd_list_ptr, s_command_list_name, s_debug_group_name);
-}
-
-template<typename CommandListType>
-CommandListType& ContextBase::PrepareCommandListForEncoding(Ptr<CommandListType>& command_list_ptr, const std::string& name, const std::string& debug_group_name)
-{
-    if (command_list_ptr)
-    {
-        // FIXME: while with wait timeout are used as a workaround for occasional deadlock on command list wait for completion
-        //  reproduced at high rate of resource updates (on typography tutorial)
-        while(command_list_ptr->GetState() == CommandList::State::Executing)
-            command_list_ptr->WaitUntilCompleted(16);
-    }
-    else
-    {
-        command_list_ptr = CommandListType::Create(GetDefaultCommandQueue(CommandListType::type));
-        command_list_ptr->SetName(name);
-    }
-
-    if (command_list_ptr->GetState() == CommandList::State::Pending)
-    {
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, debug_group_name);
-        command_list_ptr->Reset(s_debug_region_name.get());
-    }
-
-    return *command_list_ptr;
-}
-
-CommandListSet& ContextBase::GetSyncCommandListSet()
-{
-    META_FUNCTION_TASK();
-    if (m_sync_cmd_list_set_ptr && m_sync_cmd_list_set_ptr->GetCount() == 1 &&
-        std::addressof((*m_sync_cmd_list_set_ptr)[0]) == std::addressof(GetSyncCommandList()))
-        return *m_sync_cmd_list_set_ptr;
-
-    m_sync_cmd_list_set_ptr = CommandListSet::Create({ GetSyncCommandList() });
-    return *m_sync_cmd_list_set_ptr;
-}
-
-CommandListSet& ContextBase::GetUploadCommandListSet()
-{
-    META_FUNCTION_TASK();
-    if (m_upload_cmd_list_set_ptr && m_upload_cmd_list_set_ptr->GetCount() == 1 &&
-        std::addressof((*m_upload_cmd_list_set_ptr)[0]) == std::addressof(GetUploadCommandList()))
-        return *m_upload_cmd_list_set_ptr;
-
-    m_upload_cmd_list_set_ptr = CommandListSet::Create({ GetUploadCommandList() });
-    return *m_upload_cmd_list_set_ptr;
+    cmd_kit_ptr = CommandKit::Create(cmd_queue);
+    return *cmd_kit_ptr;
 }
 
 Device& ContextBase::GetDevice()
@@ -270,12 +211,6 @@ Device& ContextBase::GetDevice()
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
-}
-    
-CommandQueueBase& ContextBase::GetDefaultCommandQueueBase(CommandList::Type type)
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueBase&>(GetDefaultCommandQueue(type));
 }
 
 DeviceBase& ContextBase::GetDeviceBase()
@@ -296,36 +231,44 @@ void ContextBase::SetName(const std::string& name)
     META_FUNCTION_TASK();
     ObjectBase::SetName(name);
     GetDevice().SetName(fmt::format("{} Device", name));
-
-    if (m_upload_fence_ptr)
-        m_upload_fence_ptr->SetName(fmt::format("{} Upload Completed Fence", name));
-
-    if (m_sync_fence_ptr)
-        m_sync_fence_ptr->SetName(fmt::format("{} Resources Synchronization Completed Fence", name));
+    for(const Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    {
+        if (cmd_kit_ptr)
+            cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
+    }
 }
 
 bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-    if (!m_upload_cmd_list_ptr)
+    CommandKit& upload_cmd_kit = GetUploadCommandKit();
+    if (!upload_cmd_kit.HasList())
         return false;
 
+    // Execute all default command lists for all queues except the upload command list
     bool is_resources_synchronization = false;
-    if (m_sync_cmd_list_ptr)
+    for(auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
-        if (m_sync_cmd_list_ptr->GetState() == CommandList::State::Encoding)
-            GetSyncCommandList().Commit();
+        if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
+            continue;
 
-        if (m_sync_cmd_list_ptr->GetState() == CommandList::State::Committed)
-        {
-            META_LOG("Context '{}' SYNCHRONIZE resources", GetName());
-            GetSyncCommandQueue().Execute(GetSyncCommandListSet());
-            GetSyncFence().Signal();
-            is_resources_synchronization = true;
-        }
+        CommandList& cmd_list = cmd_kit_ptr->GetList();
+        const CommandList::State cmd_list_state = cmd_list.GetState();
+        if (cmd_list_state == CommandList::State::Pending ||
+            cmd_list_state == CommandList::State::Executing)
+            continue;
+
+        if (cmd_list_state == CommandList::State::Encoding)
+            cmd_list.Commit();
+
+        META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
+        cmd_kit_ptr->GetQueue().Execute(cmd_kit_ptr->GetListSet());
+        cmd_kit_ptr->GetFence().Signal();
+        is_resources_synchronization = true;
     }
 
-    CommandList::State upload_cmd_state = m_upload_cmd_list_ptr->GetState();
+    CommandList& upload_cmd_list = upload_cmd_kit.GetList();
+    const CommandList::State upload_cmd_state = upload_cmd_list.GetState();
     if (upload_cmd_state == CommandList::State::Pending)
         return false;
 
@@ -333,16 +276,22 @@ bool ContextBase::UploadResources()
         return true;
 
     if (upload_cmd_state == CommandList::State::Encoding)
-        GetUploadCommandList().Commit();
+        upload_cmd_list.Commit();
 
     if (is_resources_synchronization)
     {
-        // Upload command queue waits for resources synchronization completion in sync command queue
-        GetSyncFence().WaitOnGpu(GetUploadCommandQueue());
+        // Upload command queue waits for resources synchronization completion in other command queues
+        for(auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
+        {
+            if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
+                continue;
+
+            cmd_kit_ptr->GetFence().WaitOnGpu(upload_cmd_kit.GetQueue());
+        }
     }
 
     META_LOG("Context '{}' UPLOAD resources", GetName());
-    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
+    upload_cmd_kit.GetQueue().Execute(upload_cmd_kit.GetListSet());
     return true;
 }
 
@@ -363,28 +312,6 @@ void ContextBase::SetDevice(DeviceBase& device)
 {
     META_FUNCTION_TASK();
     m_device_ptr = device.GetDevicePtr();
-}
-
-Fence& ContextBase::GetUploadFence()
-{
-    META_FUNCTION_TASK();
-    if (!m_upload_fence_ptr)
-    {
-        m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
-        m_upload_fence_ptr->SetName(fmt::format("{} Resources Upload Completed Fence", GetName()));
-    }
-    return *m_upload_fence_ptr;
-}
-
-Fence& ContextBase::GetSyncFence()
-{
-    META_FUNCTION_TASK();
-    if (!m_sync_fence_ptr)
-    {
-        m_sync_fence_ptr = Fence::Create(GetSyncCommandQueue());
-        m_sync_fence_ptr->SetName(fmt::format("{} Resources Synchronization Completed Fence", GetName()));
-    }
-    return *m_sync_fence_ptr;
 }
 
 } // namespace Methane::Graphics

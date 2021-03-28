@@ -52,11 +52,12 @@ public:
     void SetName(const std::string& name) override;
 
     // CommandQueue interface
+    [[nodiscard]] Context&          GetContext() noexcept override;
+    [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override { return m_command_lists_type; }
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
-    CommandList::Type GetCommandListsType() const noexcept override { return m_command_lists_type; }
 
-    Ptr<CommandQueueBase> GetCommandQueuePtr()          { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
-    ContextBase&          GetContext() const noexcept   { return m_context; }
+    Ptr<CommandQueueBase> GetCommandQueuePtr()            { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
+    ContextBase&          GetContextBase() const noexcept { return m_context; }
     Tracy::GpuContext&    GetTracyContext();
 
 protected:

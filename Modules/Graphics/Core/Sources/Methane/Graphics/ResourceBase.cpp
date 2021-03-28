@@ -445,7 +445,7 @@ const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
     return descriptor_by_usage_it->second;
 }
 
-void ResourceBase::SetData(const SubResources& sub_resources)
+void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue*)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");
