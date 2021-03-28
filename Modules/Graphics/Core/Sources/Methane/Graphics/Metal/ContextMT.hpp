@@ -28,6 +28,7 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
@@ -66,7 +67,7 @@ public:
     CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandQueue(type));
+        return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
     }
 
     const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override

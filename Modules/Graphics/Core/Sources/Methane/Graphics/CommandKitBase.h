@@ -44,8 +44,8 @@ public:
     void SetName(const std::string& name) override;
 
     // CommandKit interface
-    [[nodiscard]] Context&          GetContext() noexcept override      { return m_context; }
-    [[nodiscard]] CommandList::Type GetListType() const noexcept        { return m_cmd_list_type; }
+    [[nodiscard]] Context&          GetContext() noexcept override        { return m_context; }
+    [[nodiscard]] CommandList::Type GetListType() const noexcept override { return m_cmd_list_type; }
     [[nodiscard]] CommandQueue&     GetQueue() const override;
     [[nodiscard]] bool              HasList(uint32_t cmd_list_id) const noexcept override;
     [[nodiscard]] bool              HasListWithState(CommandList::State cmd_list_state, uint32_t cmd_list_id) const noexcept override;

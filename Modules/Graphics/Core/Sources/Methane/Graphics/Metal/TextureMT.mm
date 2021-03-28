@@ -26,6 +26,7 @@ Metal implementation of the texture interface.
 #include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -136,7 +137,7 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cm
 
     ResourceMT::SetData(sub_resources, sync_cmd_queue);
 
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    BlitCommandListMT& blit_command_list = dynamic_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
@@ -179,7 +180,7 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cm
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        GenerateMipLevels();
+        GenerateMipLevels(blit_command_list);
     }
 }
 
@@ -190,12 +191,10 @@ void TextureMT::UpdateFrameBuffer()
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
-void TextureMT::GenerateMipLevels()
+void TextureMT::GenerateMipLevels(BlitCommandListMT& blit_command_list)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
-
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.Reset(s_debug_group.get());
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();

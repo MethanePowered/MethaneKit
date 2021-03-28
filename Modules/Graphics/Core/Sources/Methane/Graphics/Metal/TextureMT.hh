@@ -34,6 +34,7 @@ namespace Methane::Graphics
 {
 
 class RenderContextMT;
+class BlitCommandListMT;
 
 class TextureMT final : public ResourceMT<TextureBase>
 {
@@ -51,7 +52,7 @@ public:
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
 private:
-    void GenerateMipLevels();
+    void GenerateMipLevels(BlitCommandListMT& blit_command_list);
     RenderContextMT& GetRenderContextMT();
 
     MTLTextureUsage       GetNativeTextureUsage();

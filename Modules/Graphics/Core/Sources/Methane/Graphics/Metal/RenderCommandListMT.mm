@@ -63,7 +63,7 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListMT>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue& cmd_queue)
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
 {
     META_FUNCTION_TASK();
     return nullptr;
