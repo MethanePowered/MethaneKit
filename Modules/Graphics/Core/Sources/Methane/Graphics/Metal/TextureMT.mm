@@ -182,6 +182,8 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cm
     {
         GenerateMipLevels(blit_command_list);
     }
+
+    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 void TextureMT::UpdateFrameBuffer()
@@ -202,8 +204,6 @@ void TextureMT::GenerateMipLevels(BlitCommandListMT& blit_command_list)
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
 
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
-
-    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 RenderContextMT& TextureMT::GetRenderContextMT()
