@@ -61,6 +61,7 @@ public:
     Buffer::Type        GetType() const noexcept final  { return m_buffers_type; }
     Data::Size          GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<Buffer>& GetRefs() const noexcept final  { return m_refs; }
+    std::string         GetNames() const noexcept final;
     Buffer&             operator[](Data::Index index) const final;
 
     [[nodiscard]] bool  SetState(Resource::State state);

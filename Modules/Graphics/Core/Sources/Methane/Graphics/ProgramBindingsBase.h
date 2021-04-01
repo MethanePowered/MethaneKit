@@ -84,11 +84,11 @@ public:
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
-    const Program&            GetProgram() const;
     const Program::Arguments& GetArguments() const noexcept  { return m_arguments; }
     Data::Index               GetFrameIndex() const noexcept { return m_frame_index; }
 
     // ProgramBindings interface
+    Program&         GetProgram() const override;
     ArgumentBinding& Get(const Program::Argument& shader_argument) const override;
 
     // ProgramBindingsBase interface

@@ -204,7 +204,7 @@ ProgramBindingsBase::~ProgramBindingsBase()
     }
 }
 
-const Program& ProgramBindingsBase::GetProgram() const
+Program& ProgramBindingsBase::GetProgram() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_program_ptr);

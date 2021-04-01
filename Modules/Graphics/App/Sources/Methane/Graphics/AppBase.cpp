@@ -65,6 +65,8 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
 void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
+    META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
+
     const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
     META_CHECK_ARG_NOT_EMPTY(devices);
 
@@ -91,6 +93,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
 void AppBase::Init()
 {
     META_FUNCTION_TASK();
+    META_LOG("\n======================== APP INITIALIZATION ========================");
 
     if (!m_settings.animations_enabled)
     {
@@ -137,6 +140,8 @@ bool AppBase::Resize(const FrameSize& frame_size, bool is_minimized)
     if (!Platform::App::Resize(frame_size, is_minimized))
         return false;
 
+    META_LOG("\n========================== FRAMES RESIZING ==========================");
+
     m_initial_context_settings.frame_size = frame_size;
 
     // Update viewports and scissor rects state
@@ -151,6 +156,8 @@ bool AppBase::Update()
     META_FUNCTION_TASK();
     if (Platform::App::IsMinimized())
         return false;
+
+    META_LOG("\n=========================== FRAME UPDATING ==========================");
 
     System::Get().CheckForChanges();
 
@@ -180,6 +187,8 @@ bool AppBase::Render()
     META_CHECK_ARG_NOT_NULL_DESCR(m_context_ptr, "RenderContext is not initialized before rendering.");
     if (!m_context_ptr->ReadyToRender())
         return false;
+
+    META_LOG("\n========================== FRAME RENDERING ==========================");
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_context_ptr->WaitForGpu(Context::WaitFor::FramePresented);

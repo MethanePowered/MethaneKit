@@ -80,6 +80,7 @@ struct BufferSet
     [[nodiscard]] virtual Buffer::Type        GetType() const noexcept = 0;
     [[nodiscard]] virtual Data::Size          GetCount() const noexcept = 0;
     [[nodiscard]] virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
+    [[nodiscard]] virtual std::string         GetNames() const noexcept = 0;
     [[nodiscard]] virtual Buffer&             operator[](Data::Index index) const = 0;
 
     virtual ~BufferSet() = default;

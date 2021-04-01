@@ -119,7 +119,8 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
-    META_LOG("{} Command list '{}' RESET commands encoding", magic_enum::enum_name(m_type), GetName());
+    META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
+             p_debug_group ? fmt::format("with debug group '{}'", p_debug_group->GetName()) : "");
 
     SetCommandListStateNoLock(State::Encoding);
 
@@ -156,6 +157,8 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     META_FUNCTION_TASK();
     if (m_command_state.program_bindings_ptr.get() == &program_bindings)
         return;
+
+    META_LOG("{} Command list '{}' set program '{}' resource bindings", magic_enum::enum_name(GetType()), GetName(), program_bindings.GetProgram().GetName());
 
     auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     program_bindings_base.Apply(*this, apply_behavior);

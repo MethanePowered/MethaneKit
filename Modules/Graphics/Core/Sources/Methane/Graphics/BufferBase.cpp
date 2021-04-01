@@ -29,6 +29,7 @@ Base implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
+#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -72,6 +73,21 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
         m_ptrs.emplace_back(buffer_base.GetBufferPtr());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));
     }
+}
+
+std::string BufferSetBase::GetNames() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    bool is_empty = true;
+    for (const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        if (!is_empty)
+            ss << ", ";
+        ss << "'" << buffer_ref.get().GetName() << "'";
+        is_empty = false;
+    }
+    return ss.str();
 }
 
 Buffer& BufferSetBase::operator[](Data::Index index) const
