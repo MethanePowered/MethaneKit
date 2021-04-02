@@ -132,7 +132,7 @@ public:
         if (resource_barriers.IsEmpty())
             return;
 
-        META_LOG("{} Command list '{}' set resource barriers:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
+        META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
         const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const IResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
@@ -158,25 +158,6 @@ public:
             m_begin_timestamp_query_ptr->InsertTimestamp();
 
         CommandListBase::Reset(p_debug_group);
-    }
-
-    void SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
-    {
-        META_FUNCTION_TASK();
-        using namespace magic_enum::bitwise_operators;
-
-        CommandListBase::CommandState& command_state = CommandListBase::GetCommandState();
-        if (command_state.program_bindings_ptr.get() == &program_bindings)
-            return;
-
-        auto& program_bindings_dx = static_cast<ProgramBindingsDX&>(program_bindings);
-        program_bindings_dx.Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
-        if (!magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
-            return;
-
-        Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_dx.GetBasePtr();
-        command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
-        CommandListBase::RetainResource(std::move(program_bindings_object_ptr));
     }
 
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const final
@@ -219,6 +200,12 @@ public:
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_cp_command_list_4.Get(); }
 
 protected:
+    void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
+    {
+        // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
+        static_cast<ProgramBindingsDX&>(program_bindings).Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
+    }
+
     bool IsNativeCommitted() const             { return m_is_native_committed; }
     void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 

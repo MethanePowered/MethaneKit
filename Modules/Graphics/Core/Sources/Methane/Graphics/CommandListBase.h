@@ -116,6 +116,7 @@ public:
 
 protected:
     virtual void ResetCommandState();
+    virtual void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior);
 
     CommandState&       GetCommandState()           { return m_command_state; }
     const CommandState& GetCommandState() const     { return m_command_state; }

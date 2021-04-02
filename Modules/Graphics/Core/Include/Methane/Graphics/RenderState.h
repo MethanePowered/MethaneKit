@@ -46,6 +46,7 @@ struct ViewState
 
         [[nodiscard]] bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
         [[nodiscard]] bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     // Create ViewState instance

@@ -29,9 +29,26 @@ Base implementation of the program bindings interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
-#include <fmt/ranges.h>
 #include <magic_enum.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <array>
+
+template<>
+struct fmt::formatter<Methane::Graphics::Program::ArgumentAccessor>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Program::ArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<Methane::Graphics::Resource::Location>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Resource::Location& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
 
 namespace Methane::Graphics
 {
@@ -105,6 +122,12 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     }
 
     m_resource_locations = resource_locations;
+}
+
+ProgramBindingsBase::ArgumentBindingBase::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_locations, ", "));
 }
 
 DescriptorHeap::Type ProgramBindingsBase::ArgumentBindingBase::GetDescriptorHeapType() const
@@ -309,6 +332,25 @@ ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const Program::Argume
         throw Program::Argument::NotFoundException(*m_program_ptr, shader_argument);
 
     return *binding_by_argument_it->second;
+}
+
+ProgramBindingsBase::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    bool is_first = true;
+    std::stringstream ss;
+
+    for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
+    {
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        if (!is_first)
+            ss << ";\n";
+        ss << "  - " << static_cast<std::string>(*argument_binding_ptr);
+        is_first = false;
+    }
+    ss << ".";
+
+    return ss.str();
 }
 
 Program::Arguments ProgramBindingsBase::GetUnboundArguments() const

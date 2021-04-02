@@ -57,6 +57,7 @@ struct ProgramBindings
         [[nodiscard]] virtual const Settings&            GetSettings() const noexcept = 0;
         [[nodiscard]] virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
         virtual void SetResourceLocations(const Resource::Locations& resource_locations) = 0;
+        [[nodiscard]] virtual explicit operator std::string() const = 0;
 
         virtual ~ArgumentBinding() = default;
     };
@@ -93,6 +94,7 @@ struct ProgramBindings
     // ProgramBindings interface
     [[nodiscard]] virtual Program&         GetProgram() const = 0;
     [[nodiscard]] virtual ArgumentBinding& Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual explicit operator std::string() const = 0;
 
     virtual ~ProgramBindings() = default;
 };

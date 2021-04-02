@@ -90,7 +90,7 @@ void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugG
 void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)
 {
     META_FUNCTION_TASK();
-    META_LOG("{} Command list '{}' set render state '{}'", magic_enum::enum_name(GetType()), GetName(), render_state.GetName());
+    META_LOG("{} Command list '{}' SET RENDER STATE '{}'", magic_enum::enum_name(GetType()), GetName(), render_state.GetName());
 
     using namespace magic_enum::bitwise_operators;
 
@@ -132,11 +132,11 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
 
     if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
     {
-        META_LOG("{} Command list '{}' view state was already set up", magic_enum::enum_name(GetType()), GetName());
+        META_LOG("{} Command list '{}' view state is already set up", magic_enum::enum_name(GetType()), GetName());
         return;
     }
 
-    META_LOG("{} Command list '{}' set view state", magic_enum::enum_name(GetType()), GetName());
+    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.p_view_state->GetSettings()));
     drawing_state.p_view_state->Apply(*this);
 }
 
@@ -159,7 +159,7 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
         return;
     }
 
-    META_LOG("{} Command list '{}' set vertex buffers {}", magic_enum::enum_name(GetType()), GetName(), vertex_buffers.GetNames());
+    META_LOG("{} Command list '{}' SET VERTEX BUFFERS {}", magic_enum::enum_name(GetType()), GetName(), vertex_buffers.GetNames());
 
     using namespace magic_enum::bitwise_operators;
     Ptr<ObjectBase> vertex_buffer_set_object_ptr = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
@@ -190,7 +190,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
         ValidateDrawVertexBuffers(start_vertex);
     }
 
-    META_LOG("{} Command list '{}' draw indexed with vertex buffers {} and index buffer '{}' using {} primive type, {} indices from {} index and {} vertex with {} instances count from {} instance",
+    META_LOG("{} Command list '{}' DRAW INDEXED with vertex buffers {} and index buffer '{}' using {} primive type, {} indices from {} index and {} vertex with {} instances count from {} instance",
              magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(), index_buffer.GetName(),
              magic_enum::enum_name(primitive_type), index_count, start_index, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);
@@ -212,7 +212,7 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
         ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
 
-    META_LOG("{} Command list '{}' draw with vertex buffers {} using {} primive type, {} vertices from {} vertex with {} instances count from {} instance",
+    META_LOG("{} Command list '{}' DRAW with vertex buffers {} using {} primive type, {} vertices from {} vertex with {} instances count from {} instance",
         magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(),
         magic_enum::enum_name(primitive_type), vertex_count, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);

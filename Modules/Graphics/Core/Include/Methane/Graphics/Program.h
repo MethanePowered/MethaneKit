@@ -120,6 +120,7 @@ struct Program : virtual Object
         [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
         [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
         [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }
+        [[nodiscard]] explicit operator std::string() const noexcept;
 
     private:
         Type m_accessor_type = Type::Mutable;

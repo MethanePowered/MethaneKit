@@ -54,7 +54,7 @@ bool Program::Argument::operator==(const Argument& other) const noexcept
 Program::Argument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} {}", magic_enum::enum_name(m_shader_type), m_name);
+    return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
 }
 
 Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type, bool addressable) noexcept
@@ -71,6 +71,12 @@ Program::ArgumentAccessor::ArgumentAccessor(const Argument& argument, Type acces
     , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
+}
+
+Program::ArgumentAccessor::operator std::string() const noexcept
+{
+    META_FUNCTION_TASK();
+    return fmt::format("{} ({}{})", Argument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
 }
 
 Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument)

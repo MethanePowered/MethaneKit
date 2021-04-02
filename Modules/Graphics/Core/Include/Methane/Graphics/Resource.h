@@ -192,6 +192,7 @@ struct Resource : virtual Object
         Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset = 0U);
 
         [[nodiscard]] bool operator==(const Location& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
 
         [[nodiscard]] bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
         [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }

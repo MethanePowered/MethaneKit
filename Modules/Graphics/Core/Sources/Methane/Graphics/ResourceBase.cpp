@@ -232,11 +232,20 @@ Resource::Barriers::operator std::string() const noexcept
     return ss.str();
 }
 
+Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
+    : heap(in_heap)
+    , index(in_index)
+{
+    META_FUNCTION_TASK();
+}
+
 Resource::Location::Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset)
     : m_resource_ptr(resource_ptr)
     , m_subresource_index(subresource_index)
     , m_offset(offset)
 {
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_resource_ptr);
 }
 
 Resource& Resource::Location::GetResource() const
@@ -244,18 +253,20 @@ Resource& Resource::Location::GetResource() const
     META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not get resource from uninitialized resource location");
     return *m_resource_ptr;
 }
-
-Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
-    : heap(in_heap)
-    , index(in_index)
-{
-    META_FUNCTION_TASK();
-}
     
 bool Resource::Location::operator==(const Location& other) const noexcept
 {
+    META_FUNCTION_TASK();
     return std::tie(m_resource_ptr, m_subresource_index, m_offset) ==
            std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
+}
+
+Resource::Location::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("{} '{}' subresource {} with offset {}",
+                       magic_enum::enum_name(m_resource_ptr->GetResourceType()),
+                       m_resource_ptr->GetName(), m_subresource_index, m_offset);
 }
 
 Resource::SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept

@@ -58,6 +58,7 @@ public:
         const Settings&            GetSettings() const noexcept override            { return m_settings; }
         const Resource::Locations& GetResourceLocations() const noexcept override   { return m_resource_locations; }
         void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
+        explicit operator std::string() const override;
 
         DescriptorHeap::Type       GetDescriptorHeapType() const;
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
@@ -90,6 +91,7 @@ public:
     // ProgramBindings interface
     Program&         GetProgram() const override;
     ArgumentBinding& Get(const Program::Argument& shader_argument) const override;
+    explicit operator std::string() const override;
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;

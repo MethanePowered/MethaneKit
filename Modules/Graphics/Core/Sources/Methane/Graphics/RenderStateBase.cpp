@@ -23,10 +23,13 @@ Base implementation of the render state interface.
 
 #include "RenderStateBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 namespace Methane::Graphics
 {
@@ -82,6 +85,12 @@ bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     Validate(scissor_rects);
     m_settings.scissor_rects = scissor_rects;
     return true;
+}
+
+ViewState::Settings::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("  - Viewports: {}\n  - Scissor Rects: {}", fmt::join(viewports, ", "), fmt::join(scissor_rects, ", "));
 }
 
 bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
