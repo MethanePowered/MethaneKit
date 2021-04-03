@@ -39,6 +39,22 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
+static Resource::State GetBoundResourceState(const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& binding_settings)
+{
+    META_FUNCTION_TASK();
+    if (binding_settings.argument.IsConstant() && binding_settings.resource_type == Resource::Type::Buffer)
+        return Resource::State::VertexAndConstantBuffer;
+
+    const Shader::Type shader_type = binding_settings.argument.GetShaderType();
+    switch(shader_type)
+    {
+    case Shader::Type::All:
+    case Shader::Type::Vertex:  return Resource::State::NonPixelShaderResource;
+    case Shader::Type::Pixel:   return Resource::State::PixelShaderResource;
+    default: META_UNEXPECTED_ARG_RETURN(shader_type, Resource::State::Common);
+    }
+}
+
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
 {
     META_FUNCTION_TASK();
@@ -327,18 +343,9 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
             });
         }
 
-        const Resource::State non_pixel_resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Vertex &&
-                                                             binding_settings.resource_type == Resource::Type::Buffer
-                                                           ? Resource::State::VertexAndConstantBuffer
-                                                           : Resource::State::NonPixelShaderResource;
-
-        const Resource::State resource_state = binding_settings.argument.GetShaderType() == Shader::Type::Pixel
-                                                 ? Resource::State::PixelShaderResource
-                                                 : non_pixel_resource_state;
-
         AddResourceState(binding_settings.argument, {
             std::dynamic_pointer_cast<ResourceBase>(resource_location_dx.GetResourcePtr()),
-            resource_state
+            GetBoundResourceState(binding_settings)
         });
     }
 }

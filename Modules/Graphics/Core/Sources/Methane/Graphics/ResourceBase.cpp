@@ -166,6 +166,8 @@ Resource::Barriers::Barriers(const Set& barriers)
 Resource::Barriers::Set Resource::Barriers::GetSet() const noexcept
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_barriers_mutex);
+
     Set barriers;
     std::transform(m_barriers_map.begin(), m_barriers_map.end(), std::inserter(barriers, barriers.begin()),
         [](const auto& barrier_pair)
@@ -179,6 +181,8 @@ Resource::Barriers::Set Resource::Barriers::GetSet() const noexcept
 bool Resource::Barriers::Has(Barrier::Type type, const Resource& resource, State before, State after)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_barriers_mutex);
+
     const auto barrier_it = m_barriers_map.find(Barrier::Id(type, resource));
     if (barrier_it == m_barriers_map.end())
         return false;
@@ -192,34 +196,33 @@ bool Resource::Barriers::HasTransition(const Resource& resource, State before, S
     return Has(Barrier::Type::Transition, resource, before, after);
 }
 
-bool Resource::Barriers::Add(Barrier::Type type, const Resource& resource, State before, State after)
+Resource::Barriers::AddResult Resource::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    return AddStateChange(Barrier::Id(type, resource), Barrier::StateChange(before, after));
-}
+    std::scoped_lock lock_guard(m_barriers_mutex);
 
-bool Resource::Barriers::AddTransition(const Resource& resource, State before, State after)
-{
-    META_FUNCTION_TASK();
-    return AddStateChange(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));
-}
-
-bool Resource::Barriers::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
-{
-    META_FUNCTION_TASK();
     const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(id, state_change);
     if (barrier_added)
-        return true;
-    else if (barrier_id_and_state_change_it->second == state_change)
-        return false;
+        return AddResult::Added;
+    
+    if (barrier_id_and_state_change_it->second == state_change)
+        return AddResult::Existing;
 
     barrier_id_and_state_change_it->second = state_change;
-    return true;
+    return AddResult::Updated;
+}
+
+bool Resource::Barriers::Remove(const Barrier::Id& id)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_barriers_mutex);
+    return m_barriers_map.erase(id);
 }
 
 Resource::Barriers::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_barriers_mutex);
     std::stringstream ss;
     for(auto barrier_pair_it = m_barriers_map.begin(); barrier_pair_it != m_barriers_map.end(); ++barrier_pair_it)
     {
@@ -245,7 +248,6 @@ Resource::Location::Location(const Ptr<Resource>& resource_ptr, const SubResourc
     , m_offset(offset)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_resource_ptr);
 }
 
 Resource& Resource::Location::GetResource() const
@@ -564,16 +566,18 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
     if (m_state == state)
+    {
+        if (out_barriers)
+            out_barriers->RemoveTransition(*this);
         return false;
+    }
 
     META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {
-        if (!out_barriers || !out_barriers->HasTransition(*this, m_state, state))
-        {
+        if (!out_barriers)
             out_barriers = Barriers::Create();
-        }
         out_barriers->AddTransition(*this, m_state, state);
     }
 

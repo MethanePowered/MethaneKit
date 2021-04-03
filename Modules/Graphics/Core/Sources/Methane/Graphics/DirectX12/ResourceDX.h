@@ -40,16 +40,25 @@ public:
     using Barriers = Resource::Barriers;
     using State    = Resource::State;
 
-    class BarriersDX final : public Barriers
+    class BarriersDX final
+        : public Barriers
+        , private Data::Receiver<IResourceCallback>
     {
     public:
         explicit BarriersDX(const Set& barriers);
 
-        bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+        // Barriers overrides
+        AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
+        bool      Remove(const Barrier::Id& id) override;
 
         [[nodiscard]] const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
 
     private:
+        // IResourceCallback
+        void OnResourceReleased(const Resource& resource) override;
+
+        void UpdateNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
+
         std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
     };
 

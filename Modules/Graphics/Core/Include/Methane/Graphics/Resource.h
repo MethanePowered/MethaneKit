@@ -28,6 +28,7 @@ Methane resource interface: base class of all GPU resources.
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Chunk.hpp>
 #include <Methane/Data/Range.hpp>
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Graphics/Types.h>
 
 #include <fmt/format.h>
@@ -38,6 +39,7 @@ Methane resource interface: base class of all GPU resources.
 #include <vector>
 #include <map>
 #include <set>
+#include <mutex>
 #include <optional>
 
 namespace Methane::Graphics
@@ -45,9 +47,19 @@ namespace Methane::Graphics
 
 struct Context;
 struct CommandQueue;
+struct Resource;
 class DescriptorHeap;
 
-struct Resource : virtual Object
+struct IResourceCallback
+{
+    virtual void OnResourceReleased(const Resource& resource) = 0;
+
+    virtual ~IResourceCallback() = default;
+};
+
+struct Resource
+    : virtual Object
+    , virtual Data::IEmitter<IResourceCallback>
 {
     enum class Type
     {
@@ -290,6 +302,13 @@ struct Resource : virtual Object
         using Set = std::set<Barrier>;
         using Map = std::map<Barrier::Id, Barrier::StateChange>;
 
+        enum class AddResult
+        {
+            Existing,
+            Added,
+            Updated
+        };
+
         [[nodiscard]] static Ptr<Barriers> Create(const Set& barriers = {});
         [[nodiscard]] static Ptr<Barriers> CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after);
 
@@ -300,9 +319,13 @@ struct Resource : virtual Object
         [[nodiscard]] bool Has(Barrier::Type type, const Resource& resource, State before, State after);
         [[nodiscard]] bool HasTransition(const Resource& resource, State before, State after);
 
-        bool Add(Barrier::Type type, const Resource& resource, State before, State after);
-        bool AddTransition(const Resource& resource, State before, State after);
-        virtual bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
+        AddResult Add(Barrier::Type type, const Resource& resource, State before, State after) { return AddStateChange(Barrier::Id(type, resource), Barrier::StateChange(before, after)); }
+        AddResult AddTransition(const Resource& resource, State before, State after)           { return AddStateChange(Barrier::Id(Barrier::Type::Transition, resource), Barrier::StateChange(before, after));}
+        bool      Remove(Barrier::Type type, const Resource& resource)                         { return Remove(Barrier::Id(type, resource)); }
+        bool      RemoveTransition(const Resource& resource)                                   { return Remove(Barrier::Id(Barrier::Type::Transition, resource)); }
+
+        virtual AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
+        virtual bool      Remove(const Barrier::Id& id);
 
         virtual ~Barriers() = default;
 
@@ -311,8 +334,11 @@ struct Resource : virtual Object
     protected:
         explicit Barriers(const Set& barriers);
 
+        std::recursive_mutex& GetMutex() { return m_barriers_mutex; }
+
     private:
-        Map  m_barriers_map;
+        Map m_barriers_map;
+        mutable std::recursive_mutex m_barriers_mutex;
     };
 
     // Resource interface

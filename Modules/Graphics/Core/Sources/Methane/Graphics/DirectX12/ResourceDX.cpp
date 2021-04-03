@@ -30,9 +30,41 @@ DirectX 12 implementation of the resource interface.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
+
+static D3D12_RESOURCE_BARRIER_TYPE GetNativeBarrierType(Resource::Barrier::Type barrier_type)
+{
+    META_FUNCTION_TASK();
+    switch (barrier_type) // NOSONAR
+    {
+    case Resource::Barrier::Type::Transition: return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    default: META_UNEXPECTED_ARG_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
+    }
+}
+
+static std::function<bool(const D3D12_RESOURCE_BARRIER&)> GetNativeResourceBarrierPredicate(D3D12_RESOURCE_BARRIER_TYPE native_barrier_type, const ID3D12Resource* native_resource_ptr)
+{
+    META_FUNCTION_TASK();
+    switch (native_barrier_type)
+    {
+    case D3D12_RESOURCE_BARRIER_TYPE_TRANSITION:
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
+        { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION && native_resource_barrier.Transition.pResource == native_resource_ptr; };
+
+    case D3D12_RESOURCE_BARRIER_TYPE_UAV:
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
+        { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_UAV && native_resource_barrier.UAV.pResource == native_resource_ptr; };
+
+    case D3D12_RESOURCE_BARRIER_TYPE_ALIASING:
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
+        { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_ALIASING && native_resource_barrier.Aliasing.pResourceBefore == native_resource_ptr; };
+
+    default: META_UNEXPECTED_ARG_RETURN(native_barrier_type, nullptr);
+    }
+}
 
 Ptr<Resource::Barriers> Resource::Barriers::Create(const Set& barriers)
 {
@@ -52,15 +84,68 @@ IResourceDX::BarriersDX::BarriersDX(const Set& barriers)
     );
 }
 
-bool IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
+Resource::Barriers::AddResult IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    bool changed = Resource::Barriers::AddStateChange(id, state_change);
-    if (changed)
+    std::scoped_lock lock_guard(GetMutex());
+
+    const AddResult result = Resource::Barriers::AddStateChange(id, state_change);
+    switch (result)
     {
+    case AddResult::Added:
+        const_cast<Resource&>(id.GetResource()).Connect(*this);
         m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));
+        break;
+
+    case AddResult::Updated:
+        UpdateNativeResourceBarrier(id, state_change);
+        break;
+
+    case AddResult::Existing: break;
+    default: META_UNEXPECTED_ARG_RETURN(result, result);
     }
-    return changed;
+    return result;
+}
+
+bool IResourceDX::BarriersDX::Remove(const Barrier::Id& id)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(GetMutex());
+
+    if (!Barriers::Remove(id))
+        return false;
+
+    const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource();
+    const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(), GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
+    META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
+    m_native_resource_barriers.erase(native_resource_barrier_it);
+    return true;
+}
+
+void IResourceDX::BarriersDX::OnResourceReleased(const Resource& resource)
+{
+    META_FUNCTION_TASK();
+    RemoveTransition(resource);
+}
+
+void IResourceDX::BarriersDX::UpdateNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
+{
+    META_FUNCTION_TASK();
+    const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource();
+    const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(), GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
+    META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
+
+    switch (native_barrier_type)
+    {
+    case D3D12_RESOURCE_BARRIER_TYPE_TRANSITION:
+        native_resource_barrier_it->Transition.StateBefore = GetNativeResourceState(state_change.GetStateBefore());
+        native_resource_barrier_it->Transition.StateAfter  = GetNativeResourceState(state_change.GetStateAfter());
+        break;
+
+    default: META_UNEXPECTED_ARG_RETURN(native_barrier_type, nullptr);
+    }
 }
 
 IResourceDX::LocationDX::LocationDX(const Location& location)

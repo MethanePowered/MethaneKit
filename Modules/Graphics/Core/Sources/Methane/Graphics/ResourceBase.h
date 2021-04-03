@@ -24,6 +24,7 @@ Base implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
@@ -47,6 +48,7 @@ struct IResourceBase
 class ResourceBase
     : public virtual Resource
     , public ObjectBase
+    , public Data::Emitter<IResourceCallback>
 {
 public:
     ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);

@@ -57,17 +57,17 @@ public:
 
         struct SettingsDX : Settings
         {
-            Type                      type;
-            D3D_SHADER_INPUT_TYPE     input_type;
-            uint32_t                  point;
-            uint32_t                  space;
+            Type                  type;
+            D3D_SHADER_INPUT_TYPE input_type;
+            uint32_t              point;
+            uint32_t              space;
         };
 
         struct DescriptorRange
         {
-            DescriptorHeap::Type heap_type = DescriptorHeap::Type::Undefined;
-            uint32_t             offset    = 0;
-            uint32_t             count     = 0;
+            DescriptorHeap::Type  heap_type = DescriptorHeap::Type::Undefined;
+            uint32_t              offset    = 0;
+            uint32_t              count     = 0;
         };
 
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
@@ -120,7 +120,7 @@ private:
 
     struct ResourceState
     {
-        Ptr<ResourceBase>     resource_ptr;
+        Ptr<ResourceBase> resource_ptr;
         Resource::State   state;
     };
 

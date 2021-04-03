@@ -142,9 +142,12 @@ bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) 
 RenderState::Blending::RenderTarget::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("    - Render Target blending: blend={}, write_mask={}, rgb_blend_op={}, alpha_blend_op={}, "
+    if (!blend_enabled)
+        return "    - Render Target blending is disabled";
+
+    return fmt::format("    - Render Target blending: write_mask={}, rgb_blend_op={}, alpha_blend_op={}, "
                        "source_rgb_blend_factor={}, source_alpha_blend_factor={}, dest_rgb_blend_factor={}, dest_alpha_blend_factor={}",
-                       blend_enabled, Data::GetBitMaskFlagNames(write_mask),
+                       Data::GetBitMaskFlagNames(write_mask),
                        magic_enum::enum_name(rgb_blend_op), magic_enum::enum_name(alpha_blend_op),
                        magic_enum::enum_name(source_rgb_blend_factor), magic_enum::enum_name(source_alpha_blend_factor),
                        magic_enum::enum_name(dest_rgb_blend_factor), magic_enum::enum_name(dest_alpha_blend_factor));
