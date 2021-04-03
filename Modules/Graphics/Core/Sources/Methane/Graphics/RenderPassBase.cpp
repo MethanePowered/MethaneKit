@@ -25,8 +25,20 @@ Base implementation of the render pass interface.
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
+#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
+
+#include <magic_enum.hpp>
+#include <fmt/format.h>
+
+template<>
+struct fmt::formatter<Methane::Graphics::RenderPass::ColorAttachment>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::RenderPass::ColorAttachment& ca, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(ca)); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
 
 namespace Methane::Graphics
 {
@@ -34,46 +46,122 @@ namespace Methane::Graphics
 bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return texture_location == other.texture_location &&
-           load_action       == other.load_action &&
-           store_action      == other.store_action;
+    return std::tie(texture_location, load_action, store_action) ==
+           std::tie(other.texture_location, other.load_action, other.store_action);
+}
+
+bool RenderPass::Attachment::operator!=(const RenderPass::Attachment& other) const
+{
+    META_FUNCTION_TASK();
+    return std::tie(texture_location, load_action, store_action) !=
+           std::tie(other.texture_location, other.load_action, other.store_action);
+}
+
+RenderPass::Attachment::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("attachment for {}, load={}, store={}",
+                       static_cast<std::string>(texture_location),
+                       magic_enum::enum_name(load_action),
+                       magic_enum::enum_name(store_action));
 }
 
 bool RenderPass::ColorAttachment::operator==(const RenderPass::ColorAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) &&
-           clear_color == other.clear_color;
+    return Attachment::operator==(other) && clear_color == other.clear_color;
+}
+
+bool RenderPass::ColorAttachment::operator!=(const RenderPass::ColorAttachment& other) const
+{
+    META_FUNCTION_TASK();
+    return Attachment::operator!=(other) || clear_color != other.clear_color;
+}
+
+RenderPass::ColorAttachment::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!texture_location.IsInitialized())
+        return "  - No color attachment";
+
+    return fmt::format("  - Color {}, clear_color={}",
+                       Attachment::operator std::string(),
+                       static_cast<std::string>(clear_color));
 }
 
 bool RenderPass::DepthAttachment::operator==(const RenderPass::DepthAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) &&
-           clear_value == other.clear_value;
+    return Attachment::operator==(other) && clear_value == other.clear_value;
+}
+
+bool RenderPass::DepthAttachment::operator!=(const RenderPass::DepthAttachment& other) const
+{
+    META_FUNCTION_TASK();
+    return Attachment::operator!=(other) || clear_value != other.clear_value;
+}
+
+RenderPass::DepthAttachment::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!texture_location.IsInitialized())
+        return "  - No depth attachment";
+
+    return fmt::format("  - Depth {}, clear_value={}",
+                       Attachment::operator std::string(),
+                       clear_value);
 }
 
 bool RenderPass::StencilAttachment::operator==(const RenderPass::StencilAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) &&
-           clear_value == other.clear_value;
+    return Attachment::operator==(other) && clear_value == other.clear_value;
+}
+
+bool RenderPass::StencilAttachment::operator!=(const RenderPass::StencilAttachment& other) const
+{
+    META_FUNCTION_TASK();
+    return Attachment::operator!=(other) || clear_value != other.clear_value;
+}
+
+RenderPass::StencilAttachment::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!texture_location.IsInitialized())
+        return "  - No stencil attachment";
+
+    return fmt::format("  - Stencil {}, clear_value={}",
+                       Attachment::operator std::string(),
+                       clear_value);
 }
 
 bool RenderPass::Settings::operator==(const Settings& other) const
 {
     META_FUNCTION_TASK();
-    return color_attachments  == other.color_attachments &&
-           depth_attachment   == other.depth_attachment &&
-           stencil_attachment == other.stencil_attachment &&
-           shader_access_mask == other.shader_access_mask &&
-           is_final_pass      == other.is_final_pass;
+    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) ==
+           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
 }
 
 bool RenderPass::Settings::operator!=(const Settings& other) const
 {
     META_FUNCTION_TASK();
-    return !operator==(other);
+    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) !=
+           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
+}
+
+RenderPass::Settings::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    std::string color_attachments_str = "  - No color attachments";
+    if (!color_attachments.empty())
+        color_attachments_str = fmt::format("{}", fmt::join(color_attachments, ";\n"));
+
+    return fmt::format("{};\n{};\n{};\n  - shader_access_mask={}, {} pass.",
+                       color_attachments_str,
+                       static_cast<std::string>(depth_attachment),
+                       static_cast<std::string>(stencil_attachment),
+                       Data::GetBitMaskFlagNames(shader_access_mask),
+                       (is_final_pass ? "final" : "intermediate"));
 }
 
 RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)

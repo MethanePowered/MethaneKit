@@ -60,6 +60,8 @@ struct RenderPass : virtual Object
         StoreAction        store_action = StoreAction::DontCare;
 
         [[nodiscard]] bool operator==(const Attachment& other) const;
+        [[nodiscard]] bool operator!=(const Attachment& other) const;
+        [[nodiscard]] explicit operator std::string() const;
     };
     
     struct ColorAttachment : Attachment
@@ -69,6 +71,8 @@ struct RenderPass : virtual Object
         ColorAttachment(const Attachment& attach, const Color4F& in_clear_color = Color4F()) : Attachment(attach), clear_color(in_clear_color) { }
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
+        [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
+        [[nodiscard]] explicit operator std::string() const;
     };
     
     using ColorAttachments = std::vector<ColorAttachment>;
@@ -81,6 +85,8 @@ struct RenderPass : virtual Object
         DepthAttachment(const Attachment& attach, Depth in_clear_value = 1.F) : Attachment(attach), clear_value(in_clear_value) { }
 
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
+        [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
+        [[nodiscard]] explicit operator std::string() const;
     };
     
     struct StencilAttachment : Attachment
@@ -91,6 +97,8 @@ struct RenderPass : virtual Object
         StencilAttachment(const Attachment& attach, Stencil in_clear_value = 0U) : Attachment(attach), clear_value(in_clear_value) { }
 
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
+        [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     enum class Access : uint32_t
@@ -113,6 +121,7 @@ struct RenderPass : virtual Object
 
         [[nodiscard]] bool operator==(const Settings& other) const;
         [[nodiscard]] bool operator!=(const Settings& other) const;
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     // Create RenderPass instance

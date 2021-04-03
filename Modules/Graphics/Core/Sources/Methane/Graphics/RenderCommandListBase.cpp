@@ -65,6 +65,7 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
     CommandListBase::Reset(p_debug_group);
     if (m_render_pass_ptr)
     {
+        META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetSettings()));
         m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
     }
 }

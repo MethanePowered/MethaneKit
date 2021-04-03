@@ -261,9 +261,19 @@ bool Resource::Location::operator==(const Location& other) const noexcept
            std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
 }
 
+bool Resource::Location::operator!=(const Location& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(m_resource_ptr, m_subresource_index, m_offset) !=
+           std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
+}
+
 Resource::Location::operator std::string() const
 {
     META_FUNCTION_TASK();
+    if (!m_resource_ptr)
+        return "Null resource location";
+
     return fmt::format("{} '{}' subresource {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
                        m_resource_ptr->GetName(), m_subresource_index, m_offset);

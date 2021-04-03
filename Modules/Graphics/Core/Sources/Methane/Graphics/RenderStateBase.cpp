@@ -186,8 +186,11 @@ bool RenderState::Depth::operator!=(const Depth& other) const noexcept
 RenderState::Depth::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("  - Depth: enabled={}, write_enabled={}, compare={}",
-                       enabled, write_enabled, magic_enum::enum_name(compare));
+    if (!enabled)
+        return "  - Depth is disabled";
+
+    return fmt::format("  - Depth is enabled: write_enabled={}, compare={}",
+                       write_enabled, magic_enum::enum_name(compare));
 }
 
 bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
@@ -228,8 +231,11 @@ bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
 RenderState::Stencil::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("  - Stencil: enabled={}, read_mask={:x}, write_mask={:x}, face operations:\n    - Front {};\n    - Back {}.",
-                       enabled, read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
+    if (!enabled)
+        return "  - Stencil is disabled";
+
+    return fmt::format("  - Stencil is enabled: read_mask={:x}, write_mask={:x}, face operations:\n    - Front {};\n    - Back {}.",
+                       read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
 RenderState::Groups RenderState::Settings::Compare(const Settings& left, const Settings& right, Groups compare_groups) noexcept
