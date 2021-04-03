@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugG
 void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)
 {
     META_FUNCTION_TASK();
-    META_LOG("{} Command list '{}' SET RENDER STATE '{}'", magic_enum::enum_name(GetType()), GetName(), render_state.GetName());
+    META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
 
     using namespace magic_enum::bitwise_operators;
 
