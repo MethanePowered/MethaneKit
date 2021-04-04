@@ -121,7 +121,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
                                   "can not set resource location with non-zero offset to non-addressable resource binding");
     }
 
-    Data::Emitter<IArgumentBindingCallback>::Emit(&IArgumentBindingCallback::OnProgramArgumentBindingResourceLocationsChanged, std::cref(*this), std::cref(m_resource_locations), std::cref(resource_locations));
+    Data::Emitter<ProgramBindings::IArgumentBindingCallback>::Emit(&ProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceLocationsChanged, std::cref(*this), std::cref(m_resource_locations), std::cref(resource_locations));
 
     m_resource_locations = resource_locations;
 }
