@@ -252,6 +252,37 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
                                magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly));
 }
 
+// ProgramBindings::IArgumentBindingCallback
+void ProgramBindingsDX::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations)
+{
+    META_FUNCTION_TASK();
+    if (!m_resource_transition_barriers_ptr)
+        return;
+
+    // Find resources that are not used anymore for resource binding
+    std::set<Resource*> processed_resources;
+    for(const Resource::Location& old_resource_location : old_resource_locations)
+    {
+        if (!old_resource_location.IsInitialized() || old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
+             processed_resources.count(old_resource_location.GetResourcePtr().get()))
+            continue;
+
+        // Check if resource is still used in new resource locations
+        const auto new_resource_location_it = std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
+            [&old_resource_location](const Resource::Location& new_resource_location)
+            { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
+        );
+        if (new_resource_location_it != new_resource_locations.end())
+        {
+            processed_resources.insert(old_resource_location.GetResourcePtr().get());
+            continue;
+        }
+
+        // Remove unused resources from transition barriers applied for program bindings:
+        m_resource_transition_barriers_ptr->RemoveTransition(old_resource_location.GetResource());
+    }
+}
+
 template<typename FuncType>
 void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_function) const
 {
@@ -342,6 +373,10 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
                 resource_location_dx.GetNativeGpuAddress()
             });
         }
+
+        // Samplers do not have underlying resource and do not need state changing
+        if (binding_settings.resource_type == Resource::Type::Sampler)
+            continue;
 
         AddResourceState(binding_settings.argument, {
             std::dynamic_pointer_cast<ResourceBase>(resource_location_dx.GetResourcePtr()),

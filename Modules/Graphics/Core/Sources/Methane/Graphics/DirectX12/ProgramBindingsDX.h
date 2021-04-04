@@ -109,6 +109,10 @@ public:
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
+protected:
+    // ProgramBindings::IArgumentBindingCallback
+    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) override;
+
 private:
     struct RootParameterBinding
     {

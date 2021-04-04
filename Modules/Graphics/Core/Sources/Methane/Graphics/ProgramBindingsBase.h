@@ -25,6 +25,7 @@ Base implementation of the program bindings interface.
 
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include "DescriptorHeap.h"
 #include "CommandListBase.h"
@@ -42,10 +43,12 @@ class CommandListBase;
 class ProgramBindingsBase
     : public ProgramBindings
     , public ObjectBase
+    , public Data::Receiver<ProgramBindings::IArgumentBindingCallback>
 {
 public:
     class ArgumentBindingBase
         : public ArgumentBinding
+        , public Data::Emitter<ProgramBindings::IArgumentBindingCallback>
         , public std::enable_shared_from_this<ArgumentBindingBase>
     {
     public:
@@ -100,6 +103,9 @@ public:
     Program::Arguments GetUnboundArguments() const;
 
 protected:
+    // ProgramBindings::IArgumentBindingCallback
+    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override { }
+
     Program& GetProgram();
     void ReserveDescriptorHeapRanges();
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;

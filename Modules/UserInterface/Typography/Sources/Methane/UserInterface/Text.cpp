@@ -381,10 +381,11 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(gfx::RenderContext& render_context, const gfx::RenderState& render_state,
+Text::FrameResources::FrameResources(uint32_t frame_index, gfx::RenderContext& render_context, const gfx::RenderState& render_state,
                                      const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
                                      const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
-     : m_atlas_texture_ptr(atlas_texture_ptr)
+    : m_frame_index(frame_index)
+    , m_atlas_texture_ptr(atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
     UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
@@ -481,7 +482,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     {
         const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
         Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
-        vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer", text_name));
+        vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
         m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
@@ -499,7 +500,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
         m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
-        m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer", text_name));
+        m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
     m_index_buffer_ptr->SetData({
@@ -533,7 +534,7 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     if (!m_uniforms_buffer_ptr)
     {
         m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
-        m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer", text_name));
+        m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
         {
@@ -567,7 +568,7 @@ void Text::InitializeFrameResources()
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
-            render_context, *m_render_state_ptr,
+            frame_buffer_index, render_context, *m_render_state_ptr,
             m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
             *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
         );
@@ -638,7 +639,7 @@ void Text::UpdateConstantsBuffer()
     if (!m_const_buffer_ptr)
     {
         m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
-        m_const_buffer_ptr->SetName(m_settings.name + " Text Constants Buffer");
+        m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
     m_const_buffer_ptr->SetData(
         gfx::Resource::SubResources

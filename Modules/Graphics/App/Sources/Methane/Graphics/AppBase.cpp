@@ -157,7 +157,7 @@ bool AppBase::Update()
     if (Platform::App::IsMinimized())
         return false;
 
-    META_LOG("\n=========================== FRAME UPDATING ==========================");
+    META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context_ptr->GetFrameIndex() : 0U);
 
     System::Get().CheckForChanges();
 
@@ -188,7 +188,7 @@ bool AppBase::Render()
     if (!m_context_ptr->ReadyToRender())
         return false;
 
-    META_LOG("\n========================== FRAME RENDERING ==========================");
+    META_LOG("\n========================= FRAME {} RENDERING =========================", m_context_ptr->GetFrameIndex());
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_context_ptr->WaitForGpu(Context::WaitFor::FramePresented);

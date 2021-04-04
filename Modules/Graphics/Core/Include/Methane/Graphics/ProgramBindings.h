@@ -26,6 +26,7 @@ Methane program bindings interface for resources binding to program arguments.
 #include "Program.h"
 #include "Resource.h"
 
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
 
 #include <string>
@@ -37,7 +38,16 @@ namespace Methane::Graphics
 
 struct ProgramBindings
 {
-    struct ArgumentBinding
+    struct ArgumentBinding;
+
+    struct IArgumentBindingCallback
+    {
+        virtual void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) = 0;
+
+        virtual ~IArgumentBindingCallback() = default;
+    };
+
+    struct ArgumentBinding : virtual Data::IEmitter<IArgumentBindingCallback>
     {
         // ArgumentBinding settings
         struct Settings

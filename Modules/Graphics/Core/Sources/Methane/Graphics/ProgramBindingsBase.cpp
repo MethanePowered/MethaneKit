@@ -121,6 +121,8 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
                                   "can not set resource location with non-zero offset to non-addressable resource binding");
     }
 
+    Data::Emitter<IArgumentBindingCallback>::Emit(&IArgumentBindingCallback::OnProgramArgumentBindingResourceLocationsChanged, std::cref(*this), std::cref(m_resource_locations), std::cref(resource_locations));
+
     m_resource_locations = resource_locations;
 }
 
@@ -258,7 +260,10 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
         m_arguments.insert(program_argument);
         if (!m_binding_by_argument.count(program_argument))
         {
-            m_binding_by_argument.try_emplace(program_argument, program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index));
+            Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
+            if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Program::ArgumentAccessor::Type::Mutable)
+                argument_binding_instance_ptr->Connect(*this);
+            m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
         }
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource

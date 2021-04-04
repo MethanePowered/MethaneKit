@@ -77,8 +77,9 @@ IResourceDX::BarriersDX::BarriersDX(const Set& barriers)
 {
     META_FUNCTION_TASK();
     std::transform(barriers.begin(), barriers.end(), std::back_inserter(m_native_resource_barriers),
-        [](const Barrier& resource_barrier)
+        [this](const Barrier& resource_barrier)
         {
+            const_cast<Resource&>(resource_barrier.GetId().GetResource()).Connect(*this);
             return GetNativeResourceBarrier(resource_barrier);
         }
     );
@@ -120,6 +121,8 @@ bool IResourceDX::BarriersDX::Remove(const Barrier::Id& id)
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(), GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
     m_native_resource_barriers.erase(native_resource_barrier_it);
+    const_cast<Resource&>(id.GetResource()).Disconnect(*this);
+
     return true;
 }
 
