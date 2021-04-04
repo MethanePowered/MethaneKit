@@ -13,11 +13,5 @@
     "C_Cpp.default.intelliSenseMode": "clang-x64",
     "files.exclude": {
         "Build/Output": true
-    },
-    "cpp.buildConfigurations": [
-        {
-            "name": "",
-            "directory": ""
-        }
-    ]
+    }
 }
