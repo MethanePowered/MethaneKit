@@ -180,6 +180,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
     : ObjectBase(other_program_bindings)
+    , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_frame_index(frame_index ? *frame_index : other_program_bindings.m_frame_index)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
