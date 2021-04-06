@@ -88,7 +88,7 @@ IResourceDX::BarriersDX::BarriersDX(const Set& barriers)
 Resource::Barriers::AddResult IResourceDX::BarriersDX::AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(GetMutex());
+    const auto lock_guard = Resource::Barriers::Lock();
 
     const AddResult result = Resource::Barriers::AddStateChange(id, state_change);
     switch (result)
@@ -111,8 +111,7 @@ Resource::Barriers::AddResult IResourceDX::BarriersDX::AddStateChange(const Barr
 bool IResourceDX::BarriersDX::Remove(const Barrier::Id& id)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(GetMutex());
-
+    const auto lock_guard = Resource::Barriers::Lock();
     if (!Barriers::Remove(id))
         return false;
 

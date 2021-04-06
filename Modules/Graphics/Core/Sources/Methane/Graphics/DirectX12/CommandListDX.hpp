@@ -129,6 +129,7 @@ public:
     void SetResourceBarriers(const Resource::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
+        const auto lock_guard = resource_barriers.Lock();
         if (resource_barriers.IsEmpty())
             return;
 

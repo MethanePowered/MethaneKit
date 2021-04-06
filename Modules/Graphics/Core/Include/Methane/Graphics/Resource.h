@@ -327,6 +327,8 @@ struct Resource
         virtual AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
         virtual bool      Remove(const Barrier::Id& id);
 
+        std::scoped_lock<std::recursive_mutex> Lock() const { return std::scoped_lock<std::recursive_mutex>(m_barriers_mutex); }
+
         virtual ~Barriers() = default;
 
         [[nodiscard]] explicit operator std::string() const noexcept;
@@ -334,11 +336,9 @@ struct Resource
     protected:
         explicit Barriers(const Set& barriers);
 
-        std::recursive_mutex& GetMutex() { return m_barriers_mutex; }
-
     private:
         Map m_barriers_map;
-        mutable std::recursive_mutex m_barriers_mutex;
+        mutable TracyLockable(std::recursive_mutex, m_barriers_mutex);
     };
 
     // Resource interface
