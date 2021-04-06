@@ -327,7 +327,7 @@ struct Resource
         virtual AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
         virtual bool      Remove(const Barrier::Id& id);
 
-        std::scoped_lock<std::recursive_mutex> Lock() const { return std::scoped_lock<std::recursive_mutex>(m_barriers_mutex); }
+        auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
 
         virtual ~Barriers() = default;
 
