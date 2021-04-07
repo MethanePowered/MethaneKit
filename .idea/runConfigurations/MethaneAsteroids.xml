@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MethaneAsteroids" type="CMakeRunConfiguration" factoryName="Application" folderName="Samples" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneAsteroids" CONFIG_NAME="Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneAsteroids">
+  <configuration default="false" name="MethaneAsteroids" type="CMakeRunConfiguration" factoryName="Application" folderName="Samples" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneAsteroids" CONFIG_NAME="MSVC Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneAsteroids">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
