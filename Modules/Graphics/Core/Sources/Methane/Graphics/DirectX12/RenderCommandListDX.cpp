@@ -158,61 +158,64 @@ void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* 
     }
 }
 
-void RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers)
+bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    RenderCommandListBase::SetVertexBuffers(vertex_buffers);
-
-    DrawingState& drawing_state = GetDrawingState();
-    if (!magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::VertexBuffers))
-        return;
+    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+        return false;
 
     BufferSetDX& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
-    if (dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && dx_vertex_buffer_set.GetSetupTransitionBarriers())
+    const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
+    if (set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && buffer_set_setup_barriers_ptr)
     {
-        SetResourceBarriers(*dx_vertex_buffer_set.GetSetupTransitionBarriers());
+        SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& vertex_buffer_views = dx_vertex_buffer_set.GetNativeVertexBufferViews();
     GetNativeCommandListRef().IASetVertexBuffers(0, static_cast<UINT>(vertex_buffer_views.size()), vertex_buffer_views.data());
-    drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
+    return true;
 }
 
-void RenderCommandListDX::DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+bool RenderCommandListDX::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+{
+    META_FUNCTION_TASK();
+    if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
+        return false;
+
+    IndexBufferDX&            dx_index_buffer           = static_cast<IndexBufferDX&>(index_buffer);
+    Ptr <Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+    if (set_resource_barriers && dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+    {
+        SetResourceBarriers(*buffer_setup_barriers_ptr);
+    }
+
+    GetNativeCommandListRef().IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+    return true;
+}
+
+
+void RenderCommandListDX::DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
 
-    auto& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
-    if (!index_count)
+    DrawingState& drawing_state = GetDrawingState();
+    if (index_count == 0 && drawing_state.index_buffer_ptr)
     {
-        index_count = dx_index_buffer.GetFormattedItemsCount();
+        index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
+    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
+    using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    DrawingState& drawing_state = GetDrawingState();
     if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
         drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
-    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::IndexBuffer))
-    {
-        Ptr<Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
-        if (dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
-        {
-            SetResourceBarriers(*buffer_setup_barriers_ptr);
-        }
-        dx_command_list.IASetIndexBuffer(&dx_index_buffer.GetNativeView());
-        drawing_state.changes &= ~DrawingState::Changes::IndexBuffer;
-    }
+
     dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
@@ -220,10 +223,9 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
+    using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     if (DrawingState& drawing_state = GetDrawingState();
         magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))

@@ -353,7 +353,8 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, frame_resources.GetIndexBuffer());
+    cmd_list.SetIndexBuffer(frame_resources.GetIndexBuffer());
+    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
 }
 
 void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr)

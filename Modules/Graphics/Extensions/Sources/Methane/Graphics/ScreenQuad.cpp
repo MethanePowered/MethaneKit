@@ -272,7 +272,8 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_de
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(*m_const_program_bindings_ptr);
     cmd_list.SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, *m_index_buffer_ptr);
+    cmd_list.SetIndexBuffer(*m_index_buffer_ptr);
+    cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle);
 }
 
 void ScreenQuad::UpdateConstantsBuffer() const

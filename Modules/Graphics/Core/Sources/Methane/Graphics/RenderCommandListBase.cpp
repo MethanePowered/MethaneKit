@@ -97,7 +97,7 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 
     VerifyEncodingState();
 
-    const bool         render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
+    const bool    render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
     RenderState::Groups changed_states = m_drawing_state.render_state_ptr ? RenderState::Groups::None : RenderState::Groups::All;
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
@@ -141,9 +141,11 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
     drawing_state.p_view_state->Apply(*this);
 }
 
-void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
+bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
+    META_UNUSED(set_resource_barriers);
+
     VerifyEncodingState();
 
     if (m_is_validation_enabled)
@@ -156,21 +158,48 @@ void RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers)
     DrawingState&  drawing_state = GetDrawingState();
     if (drawing_state.vertex_buffer_set_ptr.get() == std::addressof(vertex_buffers))
     {
-        META_LOG("{} Command list '{}' vertex buffers {} are already set up", magic_enum::enum_name(GetType()), GetName(), vertex_buffers.GetNames());
-        return;
+        META_LOG("{} Command list '{}' vertex buffers {} are already set up",
+                 magic_enum::enum_name(GetType()), GetName(), vertex_buffers.GetNames());
+        return false;
     }
 
     META_LOG("{} Command list '{}' SET VERTEX BUFFERS {}", magic_enum::enum_name(GetType()), GetName(), vertex_buffers.GetNames());
 
-    using namespace magic_enum::bitwise_operators;
     Ptr<ObjectBase> vertex_buffer_set_object_ptr = static_cast<BufferSetBase&>(vertex_buffers).GetBasePtr();
     drawing_state.vertex_buffer_set_ptr = std::static_pointer_cast<BufferSetBase>(vertex_buffer_set_object_ptr);
-    drawing_state.changes |= DrawingState::Changes::VertexBuffers;
     RetainResource(vertex_buffer_set_object_ptr);
+    return true;
 }
 
-void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
-                                        uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+bool RenderCommandListBase::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(set_resource_barriers);
+
+    VerifyEncodingState();
+
+    if (m_is_validation_enabled)
+    {
+        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
+                                  "can not set with index buffer of type '{}' where 'Index' buffer is required",
+                                  magic_enum::enum_name(index_buffer.GetSettings().type));
+    }
+
+    DrawingState& drawing_state = GetDrawingState();
+    if (drawing_state.index_buffer_ptr.get() == std::addressof(index_buffer))
+    {
+        META_LOG("{} Command list '{}' index buffer {} is already set up",
+                 magic_enum::enum_name(GetType()), GetName(), index_buffer.GetName());
+        return false;
+    }
+
+    Ptr<ObjectBase> index_buffer_object_ptr = static_cast<BufferBase&>(index_buffer).GetBasePtr();
+    drawing_state.index_buffer_ptr = std::static_pointer_cast<BufferBase>(index_buffer_object_ptr);
+    RetainResource(index_buffer_object_ptr);
+    return true;
+}
+
+void RenderCommandListBase::DrawIndexed(Primitive primitive_type, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                         uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
@@ -178,11 +207,11 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
-                                  "can not draw with index buffer of type '{}' when 'Index' buffer is required",
-                                  magic_enum::enum_name(index_buffer.GetSettings().type));
+        const DrawingState& drawing_state = GetDrawingState();
+        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.index_buffer_ptr, "index buffer must be set before indexed draw call");
+        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
 
-        const uint32_t formatted_items_count = index_buffer.GetFormattedItemsCount();
+        const uint32_t formatted_items_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
         META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
         META_CHECK_ARG_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
         META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
@@ -196,7 +225,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, Buffer& index_
              magic_enum::enum_name(primitive_type), index_count, start_index, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);
 
-    UpdateDrawingState(primitive_type, &index_buffer);
+    UpdateDrawingState(primitive_type);
 }
 
 void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
@@ -207,6 +236,8 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
 
     if (m_is_validation_enabled)
     {
+        const DrawingState& drawing_state = GetDrawingState();
+        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
         META_CHECK_ARG_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
         META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
 
@@ -238,26 +269,16 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 
-void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer)
+void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     DrawingState& drawing_state = GetDrawingState();
+    if (drawing_state.opt_primitive_type && *drawing_state.opt_primitive_type == primitive_type)
+        return;
 
-    if (p_index_buffer && (!drawing_state.index_buffer_ptr || drawing_state.index_buffer_ptr.get() != p_index_buffer))
-    {
-        Ptr<ObjectBase> index_buffer_object_ptr = static_cast<BufferBase&>(*p_index_buffer).GetBasePtr();
-        drawing_state.index_buffer_ptr = std::static_pointer_cast<BufferBase>(index_buffer_object_ptr);
-        drawing_state.changes |= DrawingState::Changes::IndexBuffer;
-        RetainResource(index_buffer_object_ptr);
-    }
-
-    if (!drawing_state.opt_primitive_type || *drawing_state.opt_primitive_type != primitive_type)
-    {
-        drawing_state.changes |= DrawingState::Changes::PrimitiveType;
-        drawing_state.opt_primitive_type = primitive_type;
-    }
+    using namespace magic_enum::bitwise_operators;
+    drawing_state.changes |= DrawingState::Changes::PrimitiveType;
+    drawing_state.opt_primitive_type = primitive_type;
 }
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count) const

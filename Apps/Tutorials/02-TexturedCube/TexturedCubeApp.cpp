@@ -224,7 +224,8 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_index_buffer_ptr);
+    frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
+    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

@@ -109,7 +109,8 @@ public:
         const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
         cmd_list.SetProgramBindings(program_bindings);
         cmd_list.SetVertexBuffers(GetVertexBuffers());
-        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, GetIndexBuffer(),
+        cmd_list.SetIndexBuffer(GetIndexBuffer());
+        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle,
                              mesh_subset.indices.count, mesh_subset.indices.offset,
                              mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                              instance_count, start_instance);
@@ -130,8 +131,8 @@ public:
     {
         META_FUNCTION_TASK();
         cmd_list.SetVertexBuffers(GetVertexBuffers());
+        cmd_list.SetIndexBuffer(GetIndexBuffer());
 
-        Buffer& index_buffer = GetIndexBuffer();
         for (Ptrs<ProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
              instance_program_bindings_it != instance_program_bindings_end;
              ++instance_program_bindings_it)
@@ -153,7 +154,7 @@ public:
                 apply_behavior &= ~ProgramBindings::ApplyBehavior::RetainResources;
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
-            cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle, index_buffer,
+            cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
