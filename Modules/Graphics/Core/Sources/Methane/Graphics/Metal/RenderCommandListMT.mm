@@ -168,9 +168,6 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, uint32_t index_count,
                              instanceCount: instance_count
                                 baseVertex: start_vertex
                               baseInstance: start_instance];
-
-    using namespace magic_enum::bitwise_operators;
-    drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
 }
 
 void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -189,9 +186,6 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
                         vertexCount: vertex_count
                       instanceCount: instance_count
                        baseInstance: start_instance];
-
-    using namespace magic_enum::bitwise_operators;
-    drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
 }
 
 RenderPassMT& RenderCommandListMT::GetRenderPassMT()
