@@ -327,6 +327,7 @@ struct Resource
         virtual AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
         virtual bool      Remove(const Barrier::Id& id);
 
+        void UpdateResourceStates();
         auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
 
         virtual ~Barriers() = default;
@@ -342,6 +343,7 @@ struct Resource
     };
 
     // Resource interface
+    virtual bool SetState(State state) = 0;
     virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
     virtual void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue = nullptr) = 0;
     [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;

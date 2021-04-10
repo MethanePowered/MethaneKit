@@ -295,7 +295,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
-                                                                 Data::Index frame_index) const
+                                                                 Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
@@ -306,7 +306,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
 
     const gfx::Resource::Locations face_texture_locations = m_settings.textures_array_enabled
                                                           ? gfx::Resource::CreateLocations(m_unique_textures)
-                                                          : gfx::Resource::Locations{ { GetInstanceTexturePtr(0) } };
+                                                          : gfx::Resource::Locations{ { GetInstanceTexturePtr() } };
     
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
@@ -336,8 +336,39 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         Data::GetParallelChunkSize(m_settings.instance_count, 5)
     );
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
-    
+
     return program_bindings_array;
+}
+
+Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(const gfx::Buffer& constants_buffer)
+{
+    META_FUNCTION_TASK();
+
+    Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = gfx::Resource::Barriers::Create({
+        { gfx::Resource::Barrier::Type::Transition, constants_buffer, gfx::Resource::State::CopyDest, gfx::Resource::State::VertexAndConstantBuffer },
+        { gfx::Resource::Barrier::Type::Transition, GetIndexBuffer(), gfx::Resource::State::CopyDest, gfx::Resource::State::IndexBuffer             },
+    });
+
+    const gfx::BufferSet& vertex_buffer_set = GetVertexBuffers();
+    for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
+    {
+        beginning_resource_barriers_ptr->AddTransition(vertex_buffer_set[vertex_buffer_index], gfx::Resource::State::CopyDest, gfx::Resource::State::VertexAndConstantBuffer);
+    }
+
+    if (m_settings.textures_array_enabled)
+    {
+        for(const Ptr<gfx::Texture>& texture_ptr : m_unique_textures)
+        {
+            META_CHECK_ARG_NOT_NULL(texture_ptr);
+            beginning_resource_barriers_ptr->AddTransition(*texture_ptr, gfx::Resource::State::CopyDest, gfx::Resource::State::PixelShaderResource);
+        }
+    }
+    else
+    {
+        beginning_resource_barriers_ptr->AddTransition(GetInstanceTexture(), gfx::Resource::State::CopyDest, gfx::Resource::State::PixelShaderResource);
+    }
+
+    return beginning_resource_barriers_ptr;
 }
 
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
@@ -368,13 +399,22 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
+
+    // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance, gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, true);
+    BaseBuffers::Draw(
+        cmd_list, buffer_bindings.program_bindings_per_instance,
+        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, // Constant bindings are applied once mutable always, resource barriers are not set to reduce overhead
+        true,   // Bound resources are not retained by command lists to reduce overhead from the huge amount of bindings
+        false   // Do not set resource barriers for Vertex and Index buffers since their state does not change and to reduce runtime overhead
+    );
+
+    // Make sure that uniforms have finished uploading to GPU
     uniforms_update_future.wait();
 }
 
@@ -386,13 +426,20 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
+
+    // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
     auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance, gfx::ProgramBindings::ApplyBehavior::ConstantOnce, true);
+    BaseBuffers::DrawParallel(
+        parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
+        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, // Constant bindings are applied once mutable always, resource barriers are not set to reduce overhead
+        true,   // Bound resources are not retained by command lists to reduce overhead from the huge amount of bindings
+        false   // Do not set resource barriers for Vertex and Index buffers since their state does not change and to reduce runtime overhead
+    );
     uniforms_update_future.wait();
 }
 

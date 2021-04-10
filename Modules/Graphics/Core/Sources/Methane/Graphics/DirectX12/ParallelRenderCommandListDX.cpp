@@ -90,6 +90,18 @@ void ParallelRenderCommandListDX::ResetWithState(RenderState& render_state, Debu
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
+void ParallelRenderCommandListDX::SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers)
+{
+    META_FUNCTION_TASK();
+    m_beginning_command_list.SetResourceBarriers(resource_barriers);
+}
+
+void ParallelRenderCommandListDX::SetEndingResourceBarriers(const Resource::Barriers& resource_barriers)
+{
+    META_FUNCTION_TASK();
+    m_ending_command_list.SetResourceBarriers(resource_barriers);
+}
+
 void ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

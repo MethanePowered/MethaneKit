@@ -219,6 +219,17 @@ bool Resource::Barriers::Remove(const Barrier::Id& id)
     return m_barriers_map.erase(id);
 }
 
+void Resource::Barriers::UpdateResourceStates()
+{
+    META_FUNCTION_TASK();
+    for(const auto& [barrier_id, state_change] : m_barriers_map)
+    {
+        META_CHECK_ARG_EQUAL_DESCR(barrier_id.GetResource().GetState(), state_change.GetStateBefore(),
+                                   "state of resource '{}' does not match with transition barrier 'before' state", barrier_id.GetResource().GetName());
+        const_cast<Resource&>(barrier_id.GetResource()).SetState(state_change.GetStateAfter());
+    }
+}
+
 Resource::Barriers::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
@@ -581,6 +592,18 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
         out_barriers->AddTransition(*this, m_state, state);
     }
 
+    m_state = state;
+    return true;
+}
+
+bool ResourceBase::SetState(State state)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_state_mutex);
+    if (m_state == state)
+        return false;
+
+    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
     m_state = state;
     return true;
 }

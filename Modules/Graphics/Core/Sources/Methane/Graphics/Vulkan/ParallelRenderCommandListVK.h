@@ -40,6 +40,8 @@ public:
     // ParallelRenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void SetBeginningResourceBarriers(const Resource::Barriers&) override { }
+    void SetEndingResourceBarriers(const Resource::Barriers&) override { }
 
     // CommandList interface
     void Commit() override;

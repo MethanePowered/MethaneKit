@@ -67,6 +67,7 @@ public:
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
     bool SetState(State state, Ptr<Barriers>& out_barriers) final;
+    bool SetState(State state) final;
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
     void InitializeDefaultDescriptors();
