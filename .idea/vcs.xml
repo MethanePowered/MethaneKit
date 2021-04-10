@@ -6,6 +6,7 @@
     <mapping directory="$PROJECT_DIR$/Externals/BoostNowide" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CLI11" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CLI11/extern/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/CLI11/tests/mesonTest/subprojects/CLI11" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMRC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMakeModules" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Catch2" vcs="Git" />

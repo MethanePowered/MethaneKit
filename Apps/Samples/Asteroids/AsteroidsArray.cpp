@@ -295,7 +295,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
-                                                                 Data::Index frame_index)
+                                                                 Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
@@ -340,19 +340,25 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     return program_bindings_array;
 }
 
-Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(const gfx::Buffer& constants_buffer)
+Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(const gfx::Buffer& constants_buffer) const
 {
     META_FUNCTION_TASK();
 
+#ifdef _WIN32
+    const gfx::Resource::State prev_state = gfx::Resource::State::CopyDest;
+#else
+    const gfx::Resource::State prev_state = gfx::Resource::State::Common;
+#endif
+
     Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = gfx::Resource::Barriers::Create({
-        { gfx::Resource::Barrier::Type::Transition, constants_buffer, gfx::Resource::State::CopyDest, gfx::Resource::State::VertexAndConstantBuffer },
-        { gfx::Resource::Barrier::Type::Transition, GetIndexBuffer(), gfx::Resource::State::CopyDest, gfx::Resource::State::IndexBuffer             },
+        { gfx::Resource::Barrier::Type::Transition, constants_buffer, prev_state, gfx::Resource::State::VertexAndConstantBuffer },
+        { gfx::Resource::Barrier::Type::Transition, GetIndexBuffer(), prev_state, gfx::Resource::State::IndexBuffer             },
     });
 
     const gfx::BufferSet& vertex_buffer_set = GetVertexBuffers();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
     {
-        beginning_resource_barriers_ptr->AddTransition(vertex_buffer_set[vertex_buffer_index], gfx::Resource::State::CopyDest, gfx::Resource::State::VertexAndConstantBuffer);
+        beginning_resource_barriers_ptr->AddTransition(vertex_buffer_set[vertex_buffer_index], prev_state, gfx::Resource::State::VertexAndConstantBuffer);
     }
 
     if (m_settings.textures_array_enabled)
@@ -360,12 +366,12 @@ Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(con
         for(const Ptr<gfx::Texture>& texture_ptr : m_unique_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);
-            beginning_resource_barriers_ptr->AddTransition(*texture_ptr, gfx::Resource::State::CopyDest, gfx::Resource::State::PixelShaderResource);
+            beginning_resource_barriers_ptr->AddTransition(*texture_ptr, prev_state, gfx::Resource::State::PixelShaderResource);
         }
     }
     else
     {
-        beginning_resource_barriers_ptr->AddTransition(GetInstanceTexture(), gfx::Resource::State::CopyDest, gfx::Resource::State::PixelShaderResource);
+        beginning_resource_barriers_ptr->AddTransition(GetInstanceTexture(), prev_state, gfx::Resource::State::PixelShaderResource);
     }
 
     return beginning_resource_barriers_ptr;
