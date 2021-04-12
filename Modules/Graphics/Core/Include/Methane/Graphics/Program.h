@@ -30,13 +30,9 @@ pipeline via state object and used to create resource binding objects.
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
 
-#include <magic_enum.hpp>
 #include <vector>
 #include <string>
 #include <unordered_set>
-#include <unordered_map>
-
-//#define PROGRAM_IGNORE_MISSING_ARGUMENTS
 
 namespace Methane::Graphics
 {
@@ -115,8 +111,8 @@ struct Program : virtual Object
         ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
         ArgumentAccessor(const Argument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
+        [[nodiscard]] size_t GetAccessorIndex() const noexcept;
         [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_accessor_type; }
-        [[nodiscard]] size_t GetAccessorIndex() const noexcept { return magic_enum::enum_index(m_accessor_type).value(); }
         [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
         [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
         [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }

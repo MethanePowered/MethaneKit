@@ -73,6 +73,11 @@ Program::ArgumentAccessor::ArgumentAccessor(const Argument& argument, Type acces
     META_FUNCTION_TASK();
 }
 
+size_t Program::ArgumentAccessor::GetAccessorIndex() const noexcept
+{
+    return magic_enum::enum_index(m_accessor_type).value();
+}
+
 Program::ArgumentAccessor::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();

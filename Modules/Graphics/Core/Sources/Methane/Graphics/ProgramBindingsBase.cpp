@@ -379,13 +379,11 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
 {
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
-#ifndef PROGRAM_IGNORE_MISSING_ARGUMENTS
     if (Program::Arguments unbound_arguments = GetUnboundArguments();
         !unbound_arguments.empty())
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
-#endif
 }
 
 const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
