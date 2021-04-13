@@ -27,7 +27,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
         ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
@@ -179,6 +180,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
+    ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/SubResource.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/Texture.h
@@ -217,6 +219,7 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
     ${SOURCES_DIR}/SubResource.cpp
+    ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
     ${SOURCES_DIR}/BufferBase.h

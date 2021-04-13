@@ -23,6 +23,8 @@ DirectX 12 implementation of the resource interface.
 
 #pragma once
 
+#include "ResourceBarriersDX.h"
+
 #include <Methane/Graphics/ResourceBase.h>
 
 #include <wrl.h>
@@ -36,37 +38,18 @@ namespace wrl = Microsoft::WRL;
 struct IResourceDX : virtual Resource // NOSONAR
 {
 public:
-    using Barrier  = Resource::Barrier;
-    using Barriers = Resource::Barriers;
-    using State    = Resource::State;
-
-    class BarriersDX final
-        : public Barriers
-        , private Data::Receiver<IResourceCallback>
-    {
-    public:
-        explicit BarriersDX(const Set& barriers);
-
-        // Barriers overrides
-        AddResult AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change) override;
-        bool      Remove(const Barrier::Id& id) override;
-
-        [[nodiscard]] const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const { return m_native_resource_barriers; }
-
-    private:
-        // IResourceCallback
-        void OnResourceReleased(const Resource& resource) override;
-
-        void UpdateNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
-
-        std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
-    };
+    using Barrier    = Resource::Barrier;
+    using Barriers   = Resource::Barriers;
+    using State      = Resource::State;
+    using BarriersDX = ResourceBarriersDX;
 
     class LocationDX final : public Location
     {
     public:
-        explicit LocationDX(const Location& location);
-        ~LocationDX() = default;
+        explicit LocationDX(const Location& location)
+            : Location(location)
+            , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
+        { }
 
         [[nodiscard]] IResourceDX&              GetResourceDX() const noexcept       { return m_resource_dx.get(); }
         [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
