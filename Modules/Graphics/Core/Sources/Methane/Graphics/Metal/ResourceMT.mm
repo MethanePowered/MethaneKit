@@ -26,6 +26,14 @@ Metal implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+class ResourceBarriersMT final : public ResourceBarriers
+{
+public:
+    explicit ResourceBarriersMT(const Set& barriers)
+        : ResourceBarriers(barriers)
+    { }
+};
+
 Ptr<Resource::Barriers> Resource::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();

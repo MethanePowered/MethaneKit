@@ -35,12 +35,6 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class ResourceBarriersMT final : public Resource::Barriers
-{
-public:
-    explicit ResourceBarriersMT(const Set& barriers) : Barriers(barriers) {}
-};
-
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
 class ResourceMT : public ReourceBaseType
 {
