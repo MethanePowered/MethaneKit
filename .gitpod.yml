@@ -1,3 +1,14 @@
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: true
+    addBadge: false
+    addLabel: false
+
 vscode:
   extensions:
     - ms-vscode.cmake-tools@1.2.3:qLtqI3aUcEBX9EpuK0ZCyw==

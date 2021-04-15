@@ -1,18 +1,21 @@
 # Methane Kit <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-purple.svg?style=flat)](https://github.com/egorodet/MethaneKit/issues)
-[![Join the chat at https://gitter.im/MethaneKit/community](https://badges.gitter.im/MethaneKit/community.svg)](https://gitter.im/MethaneKit/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **Easy to use modern 3D graphics abstraction API in C++17 for cross-platform applications development:**
 - **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS, Vulkan on Linux will be enabled soon.
 - **Simplifies modern graphics programming** with object-oriented higher-level graphics API inspired by simplicity of Apple's Metal and common shaders code in HLSL 6.
 - **Provides cross-platform application infrastructure** from CMake-based toolchain to platform independent application and user input classes.
 
-Click **"Open in Gitpod" button** above to explore Methane Kit codebase right away in a familiar VSCode-like IDE environment in your web-browser with navigation by symbols and cloud-build.
-Download [release builds](https://github.com/egorodet/MethaneKit/releases) with built samples and tutorials to try them out.
-Also you can get [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) **build artifacts** to test latest versions from `develop` branch. For manual build instruction see topic [Building from Sources](#building-from-sources) described below. Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation.
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
+
+- Click "Open in Gitpod" button to explore project code right away in VSCode IDE running in web-browser with navigation by symbols and cloud-builds.
+- Download [release builds](https://github.com/egorodet/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out.
+- Check latest build status, tests, code coverage and analysis results or get build artifacts from [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI and [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
+- See [Building from Sources](#building-from-sources) topic for manual build instructions.
+- Start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) and other tutorials documentation.
 
 |     Platform     | Graphics API |  Master Build Status  |  Develop Build Status  |
 | ---------------- | -------------| --------------------- | ---------------------- |
