@@ -98,7 +98,7 @@ void CommandKitBase::SetName(const std::string& name)
     {
         const Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_id];
         if (fence_ptr)
-            fence_ptr->SetName(fmt::format("{} Fence", GetName()));
+            fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     }
 }
 

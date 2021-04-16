@@ -68,8 +68,6 @@ struct ProgramBindings
         [[nodiscard]] virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
         virtual void SetResourceLocations(const Resource::Locations& resource_locations) = 0;
         [[nodiscard]] virtual explicit operator std::string() const = 0;
-
-        virtual ~ArgumentBinding() = default;
     };
     
     enum class ApplyBehavior : uint32_t

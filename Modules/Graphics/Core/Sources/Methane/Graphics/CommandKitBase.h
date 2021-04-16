@@ -38,7 +38,7 @@ class CommandKitBase final
 {
 public:
     CommandKitBase(Context& context, CommandList::Type cmd_list_type);
-    CommandKitBase(CommandQueue& cmd_queue);
+    explicit CommandKitBase(CommandQueue& cmd_queue);
 
     // Object overrides
     void SetName(const std::string& name) override;

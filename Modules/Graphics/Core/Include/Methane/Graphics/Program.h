@@ -82,13 +82,14 @@ struct Program : virtual Object
         };
 
         Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
+        virtual ~Argument() = default;
 
         [[nodiscard]] Shader::Type       GetShaderType() const noexcept { return m_shader_type; }
         [[nodiscard]] const std::string& GetName() const noexcept       { return m_name; }
         [[nodiscard]] size_t             GetHash() const noexcept       { return m_hash; }
 
         [[nodiscard]] bool operator==(const Argument& other) const noexcept;
-        [[nodiscard]] explicit operator std::string() const noexcept;
+        [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
     private:
         Shader::Type m_shader_type;
@@ -116,7 +117,7 @@ struct Program : virtual Object
         [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
         [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
         [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }
-        [[nodiscard]] explicit operator std::string() const noexcept;
+        [[nodiscard]] explicit operator std::string() const noexcept final;
 
     private:
         Type m_accessor_type = Type::Mutable;

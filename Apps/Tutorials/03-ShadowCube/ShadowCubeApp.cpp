@@ -248,11 +248,9 @@ void ShadowCubeApp::Init()
             { // No color attachments
             },
             gfx::RenderPass::DepthAttachment(
-                {
-                    gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
-                    gfx::RenderPass::Attachment::LoadAction::Clear,
-                    gfx::RenderPass::Attachment::StoreAction::Store,
-                },
+                gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
+                gfx::RenderPass::Attachment::LoadAction::Clear,
+                gfx::RenderPass::Attachment::StoreAction::Store,
                 context_settings.clear_depth_stencil->first
             ),
             gfx::RenderPass::StencilAttachment(),

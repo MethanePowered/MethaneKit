@@ -59,20 +59,29 @@ struct RenderPass : virtual Object
         LoadAction         load_action  = LoadAction::DontCare;
         StoreAction        store_action = StoreAction::DontCare;
 
+        Attachment() = default;
+        Attachment(Texture::Location&& texture_location,
+                   LoadAction          load_action  = LoadAction::DontCare,
+                   StoreAction         store_action = StoreAction::DontCare);
+        virtual ~Attachment() = default;
+
         [[nodiscard]] bool operator==(const Attachment& other) const;
         [[nodiscard]] bool operator!=(const Attachment& other) const;
-        [[nodiscard]] explicit operator std::string() const;
+        [[nodiscard]] virtual explicit operator std::string() const;
     };
     
     struct ColorAttachment : Attachment
     {
         Color4F clear_color;
         
-        ColorAttachment(const Attachment& attach, const Color4F& in_clear_color = Color4F()) : Attachment(attach), clear_color(in_clear_color) { }
+        ColorAttachment(Texture::Location&& texture_location,
+                        LoadAction          load_action  = LoadAction::DontCare,
+                        StoreAction         store_action = StoreAction::DontCare,
+                        const Color4F&      clear_color  = Color4F());
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
         [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const;
+        [[nodiscard]] explicit operator std::string() const final;
     };
     
     using ColorAttachments = std::vector<ColorAttachment>;
@@ -82,11 +91,14 @@ struct RenderPass : virtual Object
         Depth clear_value = 1.F;
         
         DepthAttachment() = default;
-        DepthAttachment(const Attachment& attach, Depth in_clear_value = 1.F) : Attachment(attach), clear_value(in_clear_value) { }
+        DepthAttachment(Texture::Location&& texture_location,
+                        LoadAction          load_action  = LoadAction::DontCare,
+                        StoreAction         store_action = StoreAction::DontCare,
+                        Depth               clear_value  = 1.F);
 
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
         [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const;
+        [[nodiscard]] explicit operator std::string() const final;
     };
     
     struct StencilAttachment : Attachment
@@ -94,11 +106,14 @@ struct RenderPass : virtual Object
         Stencil clear_value = 0U;
         
         StencilAttachment() = default;
-        StencilAttachment(const Attachment& attach, Stencil in_clear_value = 0U) : Attachment(attach), clear_value(in_clear_value) { }
+        StencilAttachment(Texture::Location&& texture_location,
+                          LoadAction          load_action  = LoadAction::DontCare,
+                          StoreAction         store_action = StoreAction::DontCare,
+                          Stencil             clear_value  = 0U);
 
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
         [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const;
+        [[nodiscard]] explicit operator std::string() const final;
     };
 
     enum class Access : uint32_t

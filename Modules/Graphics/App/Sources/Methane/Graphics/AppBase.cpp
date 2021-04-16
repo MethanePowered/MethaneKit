@@ -251,24 +251,20 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
     return RenderPass::Create(*m_context_ptr, {
         {
             RenderPass::ColorAttachment(
-                {
-                    Texture::Location{ frame_buffer_texture },
-                    context_settings.clear_color.has_value()
-                        ? RenderPass::Attachment::LoadAction::Clear
-                        : RenderPass::Attachment::LoadAction::DontCare,
-                    RenderPass::Attachment::StoreAction::Store,
-                },
+                Texture::Location{ frame_buffer_texture },
+                context_settings.clear_color.has_value()
+                    ? RenderPass::Attachment::LoadAction::Clear
+                    : RenderPass::Attachment::LoadAction::DontCare,
+                RenderPass::Attachment::StoreAction::Store,
                 context_settings.clear_color.value_or(Color4F())
             )
         },
         RenderPass::DepthAttachment(
-            {
-                Texture::Location{ m_depth_texture_ptr },
-                context_settings.clear_depth_stencil.has_value()
-                    ? RenderPass::Attachment::LoadAction::Clear
-                    : RenderPass::Attachment::LoadAction::DontCare,
-                RenderPass::Attachment::StoreAction::DontCare,
-            },
+            Texture::Location{ m_depth_texture_ptr },
+            context_settings.clear_depth_stencil.has_value()
+                ? RenderPass::Attachment::LoadAction::Clear
+                : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::DontCare,
             context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
         ),
         RenderPass::StencilAttachment(),

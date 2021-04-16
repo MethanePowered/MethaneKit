@@ -36,7 +36,7 @@ enum class AppOptions : uint32_t
     DepthBuffer = 1U << 0U,
     Animations  = 1U << 1U,
     Fullscreen  = 1U << 2U,
-    Default     = static_cast<uint32_t>(DepthBuffer) | static_cast<uint32_t>(Animations)
+    Default     = DepthBuffer | Animations
 };
 
 [[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(

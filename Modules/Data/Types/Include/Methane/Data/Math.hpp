@@ -51,19 +51,20 @@ std::enable_if_t<std::is_arithmetic_v<T>, T> AbsSubtract(T a, T b)
 }
 
 template<typename T>
-std::enable_if_t<std::is_unsigned_v<T>, T> DivCeil(T numerator, T denominator)
+T DivCeil(T numerator, T denominator)
 {
-    return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;
-}
+    if constexpr (std::is_signed_v<T>)
+    {
+        std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
+        if (res.rem)
+            return res.quot >= 0 ? (res.quot + 1) : (res.quot - 1);
 
-template<typename T>
-std::enable_if_t<std::is_signed_v<T>, T> DivCeil(T numerator, T denominator)
-{
-    std::div_t res = std::div(static_cast<int32_t>(numerator), static_cast<int32_t>(denominator));
-    if (res.rem)
-        return res.quot >= 0 ? (res.quot + 1) : (res.quot - 1);
-
-    return res.quot;
+        return res.quot;
+    }
+    else
+    {
+        return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;
+    }
 }
 
 } // namespace Methane::Data

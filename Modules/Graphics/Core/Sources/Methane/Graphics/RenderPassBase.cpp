@@ -164,6 +164,35 @@ RenderPass::Settings::operator std::string() const
                        (is_final_pass ? "final" : "intermediate"));
 }
 
+RenderPass::Attachment::Attachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action)
+    : texture_location(std::move(texture_location))
+    , load_action(load_action)
+    , store_action(store_action)
+{
+    META_FUNCTION_TASK();
+}
+
+RenderPass::ColorAttachment::ColorAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
+    : Attachment(std::move(texture_location), load_action, store_action)
+    , clear_color(clear_color)
+{
+    META_FUNCTION_TASK();
+}
+
+RenderPass::DepthAttachment::DepthAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, Depth clear_value)
+    : Attachment(std::move(texture_location), load_action, store_action)
+    , clear_value(clear_value)
+{
+    META_FUNCTION_TASK();
+}
+
+RenderPass::StencilAttachment::StencilAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, Stencil clear_value)
+    : Attachment(std::move(texture_location), load_action, store_action)
+    , clear_value(clear_value)
+{
+    META_FUNCTION_TASK();
+}
+
 RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)
     : m_render_context(context)
     , m_settings(settings)
