@@ -101,7 +101,7 @@ void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Asteroids", Samples::AppOptions::Default, gfx::Context::Options::Default,
+        Samples::GetGraphicsAppSettings("Methane Asteroids", Samples::AppOptions::Default, gfx::Context::Options::None,
                                         0.F /* depth clear */, { /* color clearing disabled */ }),
         { HeadsUpDisplayMode::UserInterface, true },
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")

@@ -59,6 +59,9 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     add_flag("-e,--emulated-render-pass",
              [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= Context::Options::EmulatedRenderPassOnWindows; },
              "Render pass emulation with traditional DX API");
+    add_flag("-q,--blit-with-direct-queue",
+             [this](int64_t is_direct) { if (is_direct) m_initial_context_settings.options_mask |= Context::Options::BlitWithDirectQueueOnWindows; },
+             "Blit command lists and queues use DIRECT instead of COPY type in DX API");
 #endif
 }
 

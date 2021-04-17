@@ -42,7 +42,7 @@ enum class AppOptions : uint32_t
 [[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(
                                                 const std::string& app_name,
                                                 AppOptions app_options = AppOptions::Default,
-                                                Graphics::Context::Options context_options = Graphics::Context::Options::Default,
+                                                Graphics::Context::Options context_options = Graphics::Context::Options::None,
                                                 float clear_depth = 1.F,
                                                 std::optional<Graphics::Color4F> clear_color = Graphics::Color4F(0.0F, 0.2F, 0.4F, 1.0F))
 {

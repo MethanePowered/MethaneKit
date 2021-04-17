@@ -78,10 +78,9 @@ struct Context
 
     enum class Options : uint32_t
     {
-        None                        = 0U,
-        BlitWithCopyQueueOnWindows  = 1U << 0U, // Blit command lists are created with COPY type instead of DIRECT (requires manual resource states transitions)
-        EmulatedRenderPassOnWindows = 1U << 1U, // Render passes are emulated with traditional DX API API, instead of using native DX render-pass API
-        Default                     = BlitWithCopyQueueOnWindows
+        None                         = 0U,
+        BlitWithDirectQueueOnWindows = 1U << 0U, // Blit command lists and queues in DX API are created with DIRECT type instead of COPY type
+        EmulatedRenderPassOnWindows  = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
     };
 
     // Context interface

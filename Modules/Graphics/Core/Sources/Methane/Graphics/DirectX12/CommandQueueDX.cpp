@@ -58,9 +58,9 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
     switch(command_list_type)
     {
     case CommandList::Type::Blit:
-        return magic_enum::flags::enum_contains(options & Context::Options::BlitWithCopyQueueOnWindows)
-             ? D3D12_COMMAND_LIST_TYPE_COPY
-             : D3D12_COMMAND_LIST_TYPE_DIRECT;
+        return magic_enum::flags::enum_contains(options & Context::Options::BlitWithDirectQueueOnWindows)
+             ? D3D12_COMMAND_LIST_TYPE_DIRECT
+             : D3D12_COMMAND_LIST_TYPE_COPY;
 
     case CommandList::Type::Render:
     case CommandList::Type::ParallelRender:
