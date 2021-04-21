@@ -211,13 +211,14 @@ bool ResourceBarriers::Remove(const ResourceBarrier::Id& id)
     return m_barriers_map.erase(id);
 }
 
-void ResourceBarriers::UpdateResourceStates()
+void ResourceBarriers::UpdateResourceStates() const
 {
     META_FUNCTION_TASK();
     for(const auto& [barrier_id, state_change] : m_barriers_map)
     {
         META_CHECK_ARG_EQUAL_DESCR(barrier_id.GetResource().GetState(), state_change.GetStateBefore(),
-                                   "state of resource '{}' does not match with transition barrier 'before' state", barrier_id.GetResource().GetName());
+                                   "state of resource '{}' does not match with transition barrier 'before' state",
+                                   barrier_id.GetResource().GetName());
         const_cast<Resource&>(barrier_id.GetResource()).SetState(state_change.GetStateAfter());
     }
 }

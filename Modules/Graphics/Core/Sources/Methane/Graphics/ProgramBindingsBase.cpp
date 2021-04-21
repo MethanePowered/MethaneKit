@@ -145,7 +145,6 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
                                                                 bool check_binding_value_changes) const
 {
     META_FUNCTION_TASK();
-
     if (std::addressof(applied_program_bindings.GetProgram()) != std::addressof(program))
         return false;
 
@@ -159,8 +158,8 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
 
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    ProgramBindings::ArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
-    if (previous_argument_argument_binding.GetResourceLocations() == m_resource_locations)
+    if (const ProgramBindings::ArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
+        previous_argument_argument_binding.GetResourceLocations() == m_resource_locations)
         return true;
 
     return false;
@@ -182,7 +181,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     : ObjectBase(other_program_bindings)
     , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
-    , m_frame_index(frame_index ? *frame_index : other_program_bindings.m_frame_index)
+    , m_frame_index(frame_index.value_or(other_program_bindings.m_frame_index))
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
@@ -244,6 +243,12 @@ Program& ProgramBindingsBase::GetProgram()
     return *m_program_ptr;
 }
 
+void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&)
+{
+    META_FUNCTION_TASK();
+    // Implementation is API specific, not handled by default
+}
+
 void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 {
     META_FUNCTION_TASK();
@@ -287,7 +292,7 @@ void ProgramBindingsBase::ReserveDescriptorHeapRanges()
 
     // Reserve descriptor ranges in heaps for resource bindings state
     const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
-    ProgramBase& mutable_program = static_cast<ProgramBase&>(*m_program_ptr);
+    auto& mutable_program = static_cast<ProgramBase&>(*m_program_ptr);
     for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
         std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];

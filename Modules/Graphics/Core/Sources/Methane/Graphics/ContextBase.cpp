@@ -247,7 +247,7 @@ bool ContextBase::UploadResources()
 
     // Execute all default command lists for all queues except the upload command list
     bool is_resources_synchronization = false;
-    for(auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
+    for(const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
         if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
             continue;
@@ -281,7 +281,7 @@ bool ContextBase::UploadResources()
     if (is_resources_synchronization)
     {
         // Upload command queue waits for resources synchronization completion in other command queues
-        for(auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
+        for(const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
         {
             if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
                 continue;

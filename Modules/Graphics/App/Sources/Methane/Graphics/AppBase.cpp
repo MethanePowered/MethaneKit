@@ -85,7 +85,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
     m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
-    m_context_ptr->SetName("App Render Context");
+    m_context_ptr->SetName("Graphics Context");
     m_context_ptr->Connect(*this);
 
     AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });

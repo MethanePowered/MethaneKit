@@ -382,16 +382,14 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(uint32_t frame_index, gfx::RenderContext& render_context, const gfx::RenderState& render_state,
-                                     const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
-                                     const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
+Text::FrameResources::FrameResources(uint32_t frame_index,  const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier)
     : m_frame_index(frame_index)
-    , m_atlas_texture_ptr(atlas_texture_ptr)
+    , m_atlas_texture_ptr(common_resources.atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
-    UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
-    UpdateUniformsBuffer(render_context, text_mesh, text_name);
-    InitializeProgramBindings(render_state, const_buffer_ptr, atlas_sampler_ptr);
+    UpdateMeshBuffers(common_resources.render_context, common_resources.text_mesh, text_name, reservation_multiplier);
+    UpdateUniformsBuffer(common_resources.render_context, common_resources.text_mesh, text_name);
+    InitializeProgramBindings(common_resources.render_state, common_resources.const_buffer_ptr, common_resources.atlas_sampler_ptr);
 }
 
 void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
@@ -569,9 +567,18 @@ void Text::InitializeFrameResources()
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
-            frame_buffer_index, render_context, *m_render_state_ptr,
-            m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
-            *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
+            frame_buffer_index,
+            CommonResourceRefs
+            {
+                render_context,
+                *m_render_state_ptr,
+                m_const_buffer_ptr,
+                atlas_texture_ptr,
+                m_atlas_sampler_ptr,
+                *m_text_mesh_ptr
+            },
+            m_settings.name,
+            m_settings.mesh_buffers_reservation_multiplier
         );
     }
 }

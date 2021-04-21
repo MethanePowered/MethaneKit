@@ -97,8 +97,8 @@ public:
         StringType        text;
         UnitRect          rect;
         Layout            layout;
-        Color4F           color                { 1.F, 1.F, 1.F, 1.F };
-        bool              incremental_update   = true;
+        Color4F           color { 1.F, 1.F, 1.F, 1.F };
+        bool              incremental_update = true;
         bool              adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
@@ -142,6 +142,16 @@ private:
     struct Constants;
     struct Uniforms;
 
+    struct CommonResourceRefs
+    {
+        gfx::RenderContext&      render_context;
+        const gfx::RenderState&  render_state;
+        const Ptr<gfx::Buffer>&  const_buffer_ptr;
+        const Ptr<gfx::Texture>& atlas_texture_ptr;
+        const Ptr<gfx::Sampler>& atlas_sampler_ptr;
+        const TextMesh&          text_mesh;
+    };
+
     class FrameResources
     {
     public:
@@ -154,9 +164,7 @@ private:
             All      = ~0U
         };
 
-        FrameResources(uint32_t frame_index, gfx::RenderContext& render_context, const gfx::RenderState& render_state,
-                       const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
-                       const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier);
+        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier);
 
         void SetDirty(DirtyFlags dirty_flags) noexcept;
 

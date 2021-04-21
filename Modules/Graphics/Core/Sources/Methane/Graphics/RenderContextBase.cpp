@@ -111,7 +111,7 @@ void RenderContextBase::OnCpuPresentComplete(bool signal_frame_fence)
 Fence& RenderContextBase::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
-    return GetRenderCommandKit().GetFence(m_frame_buffer_index + 1);;
+    return GetRenderCommandKit().GetFence(m_frame_buffer_index + 1);
 }
 
 Fence& RenderContextBase::GetRenderFence() const

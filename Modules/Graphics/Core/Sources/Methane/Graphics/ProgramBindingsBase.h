@@ -104,7 +104,7 @@ public:
 
 protected:
     // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override { }
+    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
 
     Program& GetProgram();
     void ReserveDescriptorHeapRanges();

@@ -227,8 +227,6 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
                                "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
-
-    // FIXME: fix frame index check independent from command list type
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
                                "{} command list '{}' committed on frame {} can not be executed on frame {}",
                                magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
@@ -257,7 +255,6 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
-    // FIXME: fix frame index check independent from command list type
     META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
                                "{} command list '{}' committed on frame {} can not be completed on frame {}",
                                magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);

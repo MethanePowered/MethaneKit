@@ -157,7 +157,7 @@ public:
     virtual bool      Remove(const ResourceBarrier::Id& id);
     virtual ~ResourceBarriers() = default;
 
-    void UpdateResourceStates();
+    void UpdateResourceStates() const;
     auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
 
     [[nodiscard]] explicit operator std::string() const noexcept;

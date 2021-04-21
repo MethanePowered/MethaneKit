@@ -201,7 +201,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();
-    auto& render_context = static_cast<RenderContextBase&>(m_context);
+    const auto& render_context = static_cast<RenderContextBase&>(m_context);
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     META_CHECK_ARG_GREATER_OR_EQUAL(frame_buffers_count, 2);
 
@@ -220,6 +220,14 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
     }
 }
 
+const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const
+{
+    META_FUNCTION_TASK();
+    const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
+    META_CHECK_ARG_TRUE_DESCR(argument_frame_bindings_it != m_frame_bindings_by_argument.end(), "can not find frame-constant argument binding in program");
+    return argument_frame_bindings_it->second.at(frame_index);
+}
+
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
@@ -230,13 +238,8 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBinding
     {
     case ArgumentAccessor::Type::Mutable:       return ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);
     case ArgumentAccessor::Type::Constant:      return argument_binding_ptr;
-    case ArgumentAccessor::Type::FrameConstant:
-    {
-        const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
-        META_CHECK_ARG_TRUE_DESCR(argument_frame_bindings_it != m_frame_bindings_by_argument.end(), "can not find frame-constant argument binding in program");
-        return argument_frame_bindings_it->second.at(frame_index);
-    }
-    default: META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);
+    case ArgumentAccessor::Type::FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
+    default:                                    META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);
     }
 }
 

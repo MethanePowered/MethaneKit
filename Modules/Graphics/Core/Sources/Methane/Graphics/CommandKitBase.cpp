@@ -152,8 +152,8 @@ CommandList& CommandKitBase::GetListForEncoding(uint32_t cmd_list_id, std::strin
     META_FUNCTION_TASK();
     CommandList& cmd_list = GetList(cmd_list_id);
 
-    // FIXME: while with wait timeout are used as a workaround for occasional deadlock on command list wait for completion
-    //  reproduced at high rate of resource updates (on typography tutorial)
+    // FIXME: loop with wait timeout iterations is used to workaround sporadic deadlock on command list wait for completion
+    //        reproduced at high rate of resource updates (in typography tutorial)
     while(cmd_list.GetState() == CommandList::State::Executing)
         cmd_list.WaitUntilCompleted(16);
 
