@@ -129,7 +129,7 @@ ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
     std::transform(barriers.begin(), barriers.end(), std::back_inserter(m_native_resource_barriers),
                    [this](const ResourceBarrier& resource_barrier)
                    {
-                       const_cast<Resource&>(resource_barrier.GetId().GetResource()).Connect(*this);
+                       resource_barrier.GetId().GetResource().Connect(*this);
                        return GetNativeResourceBarrier(resource_barrier);
                    }
     );
@@ -144,7 +144,7 @@ ResourceBarriers::AddResult ResourceBarriersDX::AddStateChange(const ResourceBar
     switch (result)
     {
     case AddResult::Added:
-        const_cast<Resource&>(id.GetResource()).Connect(*this);
+        id.GetResource().Connect(*this);
         m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));
         break;
 
@@ -173,12 +173,12 @@ bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
     m_native_resource_barriers.erase(native_resource_barrier_it);
-    const_cast<Resource&>(id.GetResource()).Disconnect(*this);
+    id.GetResource().Disconnect(*this);
 
     return true;
 }
 
-void ResourceBarriersDX::OnResourceReleased(const Resource& resource)
+void ResourceBarriersDX::OnResourceReleased(Resource& resource)
 {
     META_FUNCTION_TASK();
     RemoveTransition(resource);

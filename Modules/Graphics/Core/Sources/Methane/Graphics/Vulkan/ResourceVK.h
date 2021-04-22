@@ -53,7 +53,7 @@ public:
     ~ResourceVK() override
     {
         // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::cref(*this));
+        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
 protected:

@@ -340,7 +340,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     return program_bindings_array;
 }
 
-Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(const gfx::Buffer& constants_buffer) const
+Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(gfx::Buffer& constants_buffer)
 {
     META_FUNCTION_TASK();
 

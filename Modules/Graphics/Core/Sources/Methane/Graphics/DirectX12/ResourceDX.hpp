@@ -62,7 +62,7 @@ public:
     ~ResourceDX() override
     {
         // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::cref(*this));
+        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
     void ForceReleaseResource() { m_cp_resource.Reset(); }
@@ -79,15 +79,15 @@ public:
     }
 
     // IResourceDX overrides
-    ID3D12Resource&                     GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
-    ID3D12Resource*                     GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
-    const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept final                            { return m_cp_resource; }
-    D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept final                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
-    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(Usage usage) const noexcept final     { return GetNativeCpuDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
-    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage usage) const noexcept final     { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
-    D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
-    DescriptorHeap::Types               GetDescriptorHeapTypes() const noexcept final                             { return GetUsedDescriptorHeapTypes(); }
+    ID3D12Resource&                    GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
+    ID3D12Resource*                    GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
+    const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final                            { return m_cp_resource; }
+    D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
+    D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeCpuDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
+    D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
+    D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
+    DescriptorHeap::Types              GetDescriptorHeapTypes() const noexcept final                             { return GetUsedDescriptorHeapTypes(); }
 
 protected:
     IContextDX& GetContextDX() noexcept { return static_cast<IContextDX&>(GetContextBase()); }

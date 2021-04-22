@@ -32,7 +32,7 @@ Methane resource barriers for manual or automatic resource state synchronization
 namespace Methane::Graphics
 {
 
-ResourceBarrier::Id::Id(Type type, const Resource& resource) noexcept
+ResourceBarrier::Id::Id(Type type, Resource& resource) noexcept
     : m_type(type)
     , m_resource_ref(resource)
 {
@@ -93,7 +93,7 @@ ResourceBarrier::ResourceBarrier(const Id& id, const StateChange& state_change)
     META_FUNCTION_TASK();
 }
 
-ResourceBarrier::ResourceBarrier(Type type, const Resource& resource, ResourceState state_before, ResourceState state_after)
+ResourceBarrier::ResourceBarrier(Type type, Resource& resource, ResourceState state_before, ResourceState state_after)
     : ResourceBarrier(Id(type, resource), StateChange(state_before, state_after))
 {
     META_FUNCTION_TASK();
@@ -128,11 +128,11 @@ ResourceBarrier::operator std::string() const noexcept
                        magic_enum::enum_name(m_state_change.GetStateAfter()));
 }
 
-Ptr<ResourceBarriers> ResourceBarriers::CreateTransition(const Refs<const Resource>& resources, ResourceState state_before, ResourceState state_after)
+Ptr<ResourceBarriers> ResourceBarriers::CreateTransition(const Refs<Resource>& resources, ResourceState state_before, ResourceState state_after)
 {
     META_FUNCTION_TASK();
     std::set<ResourceBarrier> resource_barriers;
-    for (const Ref<const Resource>& resource_ref : resources)
+    for (const Ref<Resource>& resource_ref : resources)
     {
         resource_barriers.emplace(
             ResourceBarrier::Type::Transition,
@@ -170,7 +170,7 @@ ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
     return barriers;
 }
 
-bool ResourceBarriers::Has(ResourceBarrier::Type type, const Resource& resource, ResourceState before, ResourceState after)
+bool ResourceBarriers::Has(ResourceBarrier::Type type, Resource& resource, ResourceState before, ResourceState after)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -182,7 +182,7 @@ bool ResourceBarriers::Has(ResourceBarrier::Type type, const Resource& resource,
     return barrier_it->second == ResourceBarrier::StateChange(before, after);
 }
 
-bool ResourceBarriers::HasTransition(const Resource& resource, ResourceState before, ResourceState after)
+bool ResourceBarriers::HasTransition(Resource& resource, ResourceState before, ResourceState after)
 {
     META_FUNCTION_TASK();
     return Has(ResourceBarrier::Type::Transition, resource, before, after);
@@ -219,7 +219,7 @@ void ResourceBarriers::UpdateResourceStates() const
         META_CHECK_ARG_EQUAL_DESCR(barrier_id.GetResource().GetState(), state_change.GetStateBefore(),
                                    "state of resource '{}' does not match with transition barrier 'before' state",
                                    barrier_id.GetResource().GetName());
-        const_cast<Resource&>(barrier_id.GetResource()).SetState(state_change.GetStateAfter());
+        barrier_id.GetResource().SetState(state_change.GetStateAfter());
     }
 }
 

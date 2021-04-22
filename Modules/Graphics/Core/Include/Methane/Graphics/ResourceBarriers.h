@@ -70,7 +70,7 @@ public:
     class Id
     {
     public:
-        Id(Type type, const Resource& resource) noexcept;
+        Id(Type type, Resource& resource) noexcept;
         Id(const Id& id) noexcept = default;
 
         Id& operator=(const Id&) noexcept = default;
@@ -79,12 +79,12 @@ public:
         [[nodiscard]] bool operator==(const Id& other) const noexcept;
         [[nodiscard]] bool operator!=(const Id& other) const noexcept;
 
-        [[nodiscard]] Type            GetType() const noexcept     { return m_type; }
-        [[nodiscard]] const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
+        [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
+        [[nodiscard]] Resource& GetResource() const noexcept { return m_resource_ref.get(); }
 
     private:
         Type                m_type;
-        Ref<const Resource> m_resource_ref;
+        Ref<Resource> m_resource_ref;
     };
 
     class StateChange
@@ -108,7 +108,7 @@ public:
     };
 
     ResourceBarrier(const Id& id, const StateChange& state_change);
-    ResourceBarrier(Type type, const Resource& resource, ResourceState state_before, ResourceState state_after);
+    ResourceBarrier(Type type, Resource& resource, ResourceState state_before, ResourceState state_after);
     ResourceBarrier(const ResourceBarrier&) = default;
 
     ResourceBarrier& operator=(const ResourceBarrier& barrier) noexcept = default;
@@ -139,19 +139,19 @@ public:
     };
 
     [[nodiscard]] static Ptr<ResourceBarriers> Create(const Set& barriers = {});
-    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransition(const Refs<const Resource>& resources, ResourceState state_before, ResourceState state_after);
+    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransition(const Refs<Resource>& resources, ResourceState state_before, ResourceState state_after);
 
     [[nodiscard]] bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
     [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
     [[nodiscard]] Set        GetSet() const noexcept;
 
-    [[nodiscard]] bool Has(ResourceBarrier::Type type, const Resource& resource, ResourceState before, ResourceState after);
-    [[nodiscard]] bool HasTransition(const Resource& resource, ResourceState before, ResourceState after);
+    [[nodiscard]] bool Has(ResourceBarrier::Type type, Resource& resource, ResourceState before, ResourceState after);
+    [[nodiscard]] bool HasTransition(Resource& resource, ResourceState before, ResourceState after);
 
-    AddResult Add(ResourceBarrier::Type type, const Resource& resource, ResourceState before, ResourceState after) { return AddStateChange(ResourceBarrier::Id(type, resource), ResourceBarrier::StateChange(before, after)); }
-    AddResult AddTransition(const Resource& resource, ResourceState before, ResourceState after)                   { return AddStateChange(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource), ResourceBarrier::StateChange(before, after)); }
-    bool      Remove(ResourceBarrier::Type type, const Resource& resource)                         { return Remove(ResourceBarrier::Id(type, resource)); }
-    bool      RemoveTransition(const Resource& resource)                                           { return Remove(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource)); }
+    AddResult Add(ResourceBarrier::Type type, Resource& resource, ResourceState before, ResourceState after) { return AddStateChange(ResourceBarrier::Id(type, resource), ResourceBarrier::StateChange(before, after)); }
+    AddResult AddTransition(Resource& resource, ResourceState before, ResourceState after)                   { return AddStateChange(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource), ResourceBarrier::StateChange(before, after)); }
+    bool      Remove(ResourceBarrier::Type type, Resource& resource)                                         { return Remove(ResourceBarrier::Id(type, resource)); }
+    bool      RemoveTransition(Resource& resource)                                                           { return Remove(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource)); }
 
     virtual AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     virtual bool      Remove(const ResourceBarrier::Id& id);

@@ -41,7 +41,7 @@ class DescriptorHeap;
 
 struct IResourceCallback
 {
-    virtual void OnResourceReleased(const Resource& resource) = 0;
+    virtual void OnResourceReleased(Resource& resource) = 0;
 
     virtual ~IResourceCallback() = default;
 };

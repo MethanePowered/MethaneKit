@@ -110,7 +110,7 @@ public:
                                                      const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
                                                      Data::Index frame_index) const;
 
-    Ptr<gfx::Resource::Barriers> CreateBeginningResourceBarriers(const gfx::Buffer& constants_buffer) const;
+    Ptr<gfx::Resource::Barriers> CreateBeginningResourceBarriers(gfx::Buffer& constants_buffer);
 
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);

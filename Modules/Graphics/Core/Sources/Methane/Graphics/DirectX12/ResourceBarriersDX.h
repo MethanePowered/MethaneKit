@@ -48,7 +48,7 @@ public:
 
 private:
     // IResourceCallback
-    void OnResourceReleased(const Resource& resource) override;
+    void OnResourceReleased(Resource& resource) override;
 
     void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
 
