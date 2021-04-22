@@ -34,13 +34,13 @@ struct IContextVK;
 class CommandQueueVK final : public CommandQueueBase
 {
 public:
-    CommandQueueVK(ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueVK() override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
-    IContextVK& GetContextVK() noexcept;
+    const IContextVK& GetContextVK() const noexcept;
 
 private:
     void Reset();

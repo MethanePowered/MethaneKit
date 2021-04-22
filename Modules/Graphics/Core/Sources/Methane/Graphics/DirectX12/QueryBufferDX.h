@@ -62,19 +62,19 @@ public:
     QueryBufferDX(CommandQueueDX& command_queue, Type type,
                   Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
 
-    CommandQueueDX&  GetCommandQueueDX() noexcept;
-    IContextDX&      GetContextDX() noexcept                { return m_context_dx; }
-    IResourceDX&     GetResultResourceDX() const noexcept   { return m_result_resource_dx; }
-    D3D12_QUERY_TYPE GetNativeQueryType() const noexcept    { return m_native_query_type; }
-    ID3D12QueryHeap& GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
+    CommandQueueDX&   GetCommandQueueDX() noexcept;
+    const IContextDX& GetContextDX() const noexcept          { return m_context_dx; }
+    IResourceDX&      GetResultResourceDX() const noexcept   { return m_result_resource_dx; }
+    D3D12_QUERY_TYPE  GetNativeQueryType() const noexcept    { return m_native_query_type; }
+    ID3D12QueryHeap&  GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
 
 protected:
     Buffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
     Ptr<Buffer>       m_result_buffer_ptr;
-    IContextDX &       m_context_dx;
-    IResourceDX&       m_result_resource_dx;
+    const IContextDX& m_context_dx;
+    IResourceDX&      m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;
     ID3D12QueryHeap&  m_native_query_heap;
 };

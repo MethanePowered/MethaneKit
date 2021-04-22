@@ -81,11 +81,10 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
-    ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
-    const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
-    DeviceBase&             GetDeviceBase();
-    const DeviceBase&       GetDeviceBase() const;
+    DeferredAction    GetRequestedAction() const noexcept  { return m_requested_action; }
+    ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
+    DeviceBase&       GetDeviceBase();
+    const DeviceBase& GetDeviceBase() const;
 
 protected:
     void PerformRequestedAction();
@@ -105,7 +104,7 @@ private:
     tf::Executor&               m_parallel_executor;
     ObjectBase::RegistryBase    m_objects_cache;
     ResourceManager::Settings   m_resource_manager_init_settings{ true, {}, {} };
-    ResourceManager             m_resource_manager;
+    mutable ResourceManager     m_resource_manager;
     mutable CommandKitPtrByType m_default_command_kit_ptrs;
     mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
     mutable DeferredAction      m_requested_action = DeferredAction::None;

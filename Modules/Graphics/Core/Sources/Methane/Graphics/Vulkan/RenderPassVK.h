@@ -33,7 +33,7 @@ struct IContextVK;
 class RenderPassVK final : public RenderPassBase
 {
 public:
-    RenderPassVK(RenderContextBase& context, const Settings& settings);
+    RenderPassVK(const RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -41,7 +41,7 @@ public:
     void Reset();
 
 private:
-    IContextVK& GetContextVK() noexcept;
+    const IContextVK& GetContextVK() const noexcept;
 };
 
 } // namespace Methane::Graphics

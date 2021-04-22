@@ -90,15 +90,15 @@ struct Texture : virtual Resource
     };
 
     // Create Texture instance
-    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(RenderContext& context, const Settings& settings,
+    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings,
                                                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(RenderContext& context, uint32_t frame_buffer_index,
+    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, uint32_t frame_buffer_index,
                                                         const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(RenderContext& context,
+    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context,
                                                                const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+    [[nodiscard]] static Ptr<Texture> CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
                                                   const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
+    [[nodiscard]] static Ptr<Texture> CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
                                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Texture interface

@@ -47,7 +47,7 @@ DescriptorHeap::Reservation::Reservation(const Ref<DescriptorHeap>& heap, const 
     META_FUNCTION_TASK();
 }
 
-DescriptorHeap::DescriptorHeap(ContextBase& context, const Settings& settings)
+DescriptorHeap::DescriptorHeap(const ContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
     , m_deferred_size(settings.size)

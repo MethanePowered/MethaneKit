@@ -168,13 +168,13 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access acc
     }
 }
 
-Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassDX>(dynamic_cast<RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPassDX>(dynamic_cast<const RenderContextBase&>(context), settings);
 }
 
-RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
+RenderPassDX::RenderPassDX(const RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();

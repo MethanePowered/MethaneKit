@@ -82,7 +82,7 @@ public:
     const DeviceDX& GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
     CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
 
-    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) final
+    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
@@ -104,7 +104,7 @@ protected:
 
 private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
-    NativeQueryHeaps m_query_heaps;
+    mutable NativeQueryHeaps m_query_heaps;
 };
 
 } // namespace Methane::Graphics

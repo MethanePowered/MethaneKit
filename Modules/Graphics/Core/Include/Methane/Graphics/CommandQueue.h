@@ -35,10 +35,10 @@ namespace Methane::Graphics
 struct CommandQueue : virtual Object
 {
     // Create CommandQueue instance
-    [[nodiscard]] static Ptr<CommandQueue> Create(Context& context, CommandList::Type command_lists_type);
+    [[nodiscard]] static Ptr<CommandQueue> Create(const Context& context, CommandList::Type command_lists_type);
 
     // CommandQueue interface
-    [[nodiscard]] virtual Context& GetContext() noexcept = 0;
+    [[nodiscard]] virtual const Context& GetContext() const noexcept = 0;
     [[nodiscard]] virtual CommandList::Type GetCommandListType() const noexcept = 0;
     virtual void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
 };

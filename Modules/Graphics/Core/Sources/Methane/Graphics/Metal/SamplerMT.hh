@@ -37,7 +37,7 @@ struct IContextMT;
 class SamplerMT final : public ResourceMT<SamplerBase>
 {
 public:
-    SamplerMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
     ~SamplerMT() override;
 
     // Object interface

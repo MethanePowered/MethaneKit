@@ -47,7 +47,7 @@ Sampler::LevelOfDetail::LevelOfDetail(float in_bias, float in_min, float in_max)
 {
 }
 
-SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)
     , m_settings(settings)
 {

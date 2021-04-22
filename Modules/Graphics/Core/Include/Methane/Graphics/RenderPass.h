@@ -140,7 +140,7 @@ struct RenderPass : virtual Object
     };
 
     // Create RenderPass instance
-    [[nodiscard]] static Ptr<RenderPass> Create(RenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderPass> Create(const RenderContext& context, const Settings& settings);
 
     // RenderPass interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

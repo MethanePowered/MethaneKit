@@ -34,7 +34,7 @@ Base implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+BufferBase::BufferBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {

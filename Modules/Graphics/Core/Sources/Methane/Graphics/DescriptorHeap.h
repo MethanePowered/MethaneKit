@@ -91,7 +91,7 @@ public:
         [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }
     };
 
-    static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);
+    static Ptr<DescriptorHeap> Create(const ContextBase& context, const Settings& settings);
     ~DescriptorHeap() override;
 
     // DescriptorHeap interface
@@ -114,15 +114,15 @@ public:
     [[nodiscard]] static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
 
 protected:
-    DescriptorHeap(ContextBase& context, const Settings& settings);
+    DescriptorHeap(const ContextBase& context, const Settings& settings);
 
-    [[nodiscard]] ContextBase& GetContext() { return m_context; }
+    [[nodiscard]] const ContextBase& GetContext() const noexcept { return m_context; }
 
 private:
     using ResourcePtrs = std::vector<const ResourceBase*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    ContextBase&              m_context;
+    const ContextBase&        m_context;
     Settings                  m_settings;
     Data::Size                m_deferred_size;
     Data::Size                m_allocated_size = 0;

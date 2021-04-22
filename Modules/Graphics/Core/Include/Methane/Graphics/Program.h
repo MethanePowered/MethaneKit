@@ -139,7 +139,7 @@ struct Program : virtual Object
     };
 
     // Create Program instance
-    [[nodiscard]] static Ptr<Program> Create(Context& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Program> Create(const Context& context, const Settings& settings);
 
     // Program interface
     [[nodiscard]] virtual const Settings&      GetSettings() const = 0;

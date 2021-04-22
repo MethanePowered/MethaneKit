@@ -58,11 +58,11 @@ struct Buffer : virtual Resource
     };
 
     // Create Buffer instance
-    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
-    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
-    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
+    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride);
+    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format);
+    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(const Context& context, Data::Size size);
 
     // Auxiliary functions
     [[nodiscard]] static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;

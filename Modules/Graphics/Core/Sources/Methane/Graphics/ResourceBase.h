@@ -51,7 +51,7 @@ class ResourceBase
     , public Data::Emitter<IResourceCallback>
 {
 public:
-    ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
@@ -62,10 +62,11 @@ public:
     [[nodiscard]] Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
     [[nodiscard]] const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
     [[nodiscard]] const Descriptor&         GetDescriptor(Usage usage) const final;
-    [[nodiscard]] Context&                  GetContext() noexcept final;
+    [[nodiscard]] const Context&            GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
-    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
+    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                    const std::optional<BytesRange>& data_range = {}) override;
     bool SetState(State state, Ptr<Barriers>& out_barriers) final;
     bool SetState(State state) final;
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
@@ -76,14 +77,14 @@ public:
     [[nodiscard]] static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
-    [[nodiscard]] ContextBase&         GetContextBase()                                       { return m_context; }
+    [[nodiscard]] const ContextBase&   GetContextBase() const noexcept                  { return m_context; }
+    [[nodiscard]] Data::Size           GetInitializedDataSize() const noexcept          { return m_initialized_data_size; }
     [[nodiscard]] DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
     [[nodiscard]] const Descriptor&    GetDescriptorByUsage(Usage usage) const;
-    [[nodiscard]] Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
 
-    void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
-    void                 ValidateSubResource(const SubResource& sub_resource) const;
-    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
+    void  SetSubResourceCount(const SubResource::Count& sub_resource_count);
+    void  ValidateSubResource(const SubResource& sub_resource) const;
+    void  ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
 
     [[nodiscard]] virtual Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
@@ -93,7 +94,7 @@ private:
 
     const Type         m_type;
     const Usage        m_usage_mask;
-    ContextBase&       m_context;
+    const ContextBase& m_context;
     DescriptorByUsage  m_descriptor_by_usage;
     State              m_state = State::Common;
     Data::Size         m_initialized_data_size       = 0U;

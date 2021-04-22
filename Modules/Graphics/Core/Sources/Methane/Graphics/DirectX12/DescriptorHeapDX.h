@@ -38,7 +38,7 @@ struct IContextDX;
 class DescriptorHeapDX final : public DescriptorHeap
 {
 public:
-    DescriptorHeapDX(ContextBase& context, const Settings& settings);
+    DescriptorHeapDX(const ContextBase& context, const Settings& settings);
     ~DescriptorHeapDX() override;
 
     [[nodiscard]] ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_cp_descriptor_heap.Get();  }
@@ -50,7 +50,7 @@ public:
     void Allocate() override;
 
 private:
-    IContextDX& GetContextDX() noexcept;
+    const IContextDX& GetContextDX() const noexcept;
 
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;

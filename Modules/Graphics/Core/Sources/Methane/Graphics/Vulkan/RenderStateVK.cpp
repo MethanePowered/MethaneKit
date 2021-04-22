@@ -83,13 +83,13 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
     META_UNUSED(vulkan_command_list);
 }
 
-Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderStateVK>(dynamic_cast<RenderContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateVK>(dynamic_cast<const RenderContextBase&>(context), state_settings);
 }
 
-RenderStateVK::RenderStateVK(RenderContextBase& context, const Settings& settings)
+RenderStateVK::RenderStateVK(const RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     META_FUNCTION_TASK();
@@ -124,10 +124,10 @@ void RenderStateVK::ResetNativeState()
     META_FUNCTION_TASK();
 }
 
-IContextVK& RenderStateVK::GetContextVK() noexcept
+const IContextVK& RenderStateVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetRenderContext());
+    return static_cast<const IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

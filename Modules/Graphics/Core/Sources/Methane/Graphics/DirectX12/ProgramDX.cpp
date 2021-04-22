@@ -119,13 +119,13 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     descriptor_offset += bind_settings.resource_count;
 }
 
-Ptr<Program> Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramDX>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramDX>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
+ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
@@ -217,12 +217,6 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
     ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
-}
-
-IContextDX& ProgramDX::GetContextDX() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
 }
 
 const IContextDX& ProgramDX::GetContextDX() const noexcept

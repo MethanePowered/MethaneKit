@@ -84,7 +84,7 @@ QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
     , m_free_indices({ { 0U, max_query_count } })
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
-    , m_context(dynamic_cast<Context&>(command_queue.GetContext()))
+    , m_context(dynamic_cast<const Context&>(command_queue.GetContext()))
 {
     META_FUNCTION_TASK();
 }

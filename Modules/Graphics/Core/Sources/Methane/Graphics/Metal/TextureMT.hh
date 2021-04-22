@@ -39,7 +39,7 @@ class BlitCommandListMT;
 class TextureMT final : public ResourceMT<TextureBase>
 {
 public:
-    TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    TextureMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;

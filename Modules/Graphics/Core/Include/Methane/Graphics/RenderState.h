@@ -238,7 +238,7 @@ public:
     };
 
     // Create RenderState instance
-    [[nodiscard]] static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
+    [[nodiscard]] static Ptr<RenderState> Create(const RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;

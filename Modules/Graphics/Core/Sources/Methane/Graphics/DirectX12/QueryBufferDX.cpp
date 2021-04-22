@@ -126,7 +126,7 @@ Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command
 QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type, Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
     : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, buffer_size, query_size)
     , m_result_buffer_ptr(Buffer::CreateReadBackBuffer(GetContext(), buffer_size))
-    , m_context_dx(dynamic_cast<IContextDX&>(GetContext()))
+    , m_context_dx(dynamic_cast<const IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))

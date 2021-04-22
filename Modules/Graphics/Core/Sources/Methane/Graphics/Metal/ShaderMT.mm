@@ -98,13 +98,13 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 
 #endif // ifndef NDEBUG
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ShaderMT::ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings)
+ShaderMT::ShaderMT(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
@@ -225,10 +225,10 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
     return mtl_vertex_desc;
 }
 
-IContextMT& ShaderMT::GetContextMT() noexcept
+const IContextMT& ShaderMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
+    return static_cast<const IContextMT&>(GetContext());
 }
 
 } // namespace Methane::Graphics

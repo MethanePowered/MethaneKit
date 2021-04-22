@@ -109,7 +109,7 @@ struct Resource
     [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
     [[nodiscard]] virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
     [[nodiscard]] virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
-    [[nodiscard]] virtual Context&                  GetContext() noexcept = 0;
+    [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

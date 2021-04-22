@@ -44,7 +44,7 @@ class ResourceVK : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceVK(ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
+    ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -57,7 +57,7 @@ public:
     }
 
 protected:
-    IContextVK& GetContextVK() noexcept
+    const IContextVK& GetContextVK() const noexcept
     {
         return dynamic_cast<IContextVK&>(ResourceBase::GetContextBase());
     }

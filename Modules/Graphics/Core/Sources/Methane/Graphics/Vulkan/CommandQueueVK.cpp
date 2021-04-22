@@ -30,13 +30,13 @@ Vulkan implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
+Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueVK>(dynamic_cast<ContextBase&>(context), command_lists_type);
+    return std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 }
 
-CommandQueueVK::CommandQueueVK(ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueBase(context, command_lists_type)
 {
     META_FUNCTION_TASK();
@@ -55,10 +55,10 @@ void CommandQueueVK::SetName(const std::string& name)
     CommandQueueBase::SetName(name);
 }
 
-IContextVK& CommandQueueVK::GetContextVK() noexcept
+const IContextVK& CommandQueueVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContextBase());
+    return static_cast<const IContextVK&>(GetContextBase());
 }
 
 } // namespace Methane::Graphics

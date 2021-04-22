@@ -40,7 +40,7 @@ class ResourceMT : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceMT(ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
+    ResourceMT(const ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -56,7 +56,7 @@ protected:
     IContextMT& GetContextMT() noexcept
     {
         META_FUNCTION_TASK();
-        return static_cast<IContextMT&>(ResourceBase::GetContextBase());
+        return static_cast<const IContextMT&>(ResourceBase::GetContextBase());
     }
 
     const id<MTLBuffer>& GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)

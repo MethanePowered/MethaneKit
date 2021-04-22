@@ -35,7 +35,7 @@ struct IContextMT;
 class RenderPassMT final : public RenderPassBase
 {
 public:
-    RenderPassMT(RenderContextBase& context, const Settings& settings);
+    RenderPassMT(const RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -45,7 +45,7 @@ public:
     MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
 
 private:
-    IContextMT& GetContextMT() noexcept;
+    const IContextMT& GetContextMT() const noexcept;
     
     MTLRenderPassDescriptor* m_mtl_pass_descriptor;
 };

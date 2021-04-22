@@ -37,7 +37,7 @@ class SamplerBase
     , public ResourceBase
 {
 public:
-    SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Sampler interface
     const Settings& GetSettings() const override { return m_settings; }

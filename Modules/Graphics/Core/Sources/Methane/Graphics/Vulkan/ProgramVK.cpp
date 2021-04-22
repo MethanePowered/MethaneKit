@@ -33,13 +33,13 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program> Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramVK>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramVK>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ProgramVK::ProgramVK(ContextBase& context, const Settings& settings)
+ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
 {
     META_FUNCTION_TASK();
@@ -50,10 +50,10 @@ ProgramVK::~ProgramVK()
     META_FUNCTION_TASK();
 }
 
-IContextVK& ProgramVK::GetContextVK() noexcept
+const IContextVK& ProgramVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContext());
+    return static_cast<const IContextVK&>(GetContext());
 }
 
 ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) noexcept

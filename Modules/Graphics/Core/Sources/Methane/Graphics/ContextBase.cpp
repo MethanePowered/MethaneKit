@@ -188,7 +188,7 @@ CommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
     if (cmd_kit_ptr)
         return *cmd_kit_ptr;
 
-    cmd_kit_ptr = CommandKit::Create(const_cast<ContextBase&>(*this), type);
+    cmd_kit_ptr = CommandKit::Create(*this, type);
     cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
 
     m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;

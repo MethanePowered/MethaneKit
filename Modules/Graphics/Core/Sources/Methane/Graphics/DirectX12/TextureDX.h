@@ -49,7 +49,7 @@ template<typename... ExtraArgs>
 class TextureDX final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
         : ResourceDX<TextureBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -73,7 +73,7 @@ template<>
 class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Object overrides
     void SetName(const std::string& name) override;
@@ -93,7 +93,7 @@ template<>
 class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
 
     // Resource overrides
     void SetData(const SubResources&, CommandQueue*) override

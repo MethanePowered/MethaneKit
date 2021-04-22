@@ -204,13 +204,13 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     }
 }
 
-Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceDX(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();

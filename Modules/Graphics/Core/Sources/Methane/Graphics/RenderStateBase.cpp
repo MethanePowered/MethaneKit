@@ -303,7 +303,7 @@ RenderState::Settings::operator std::string() const
                        static_cast<std::string>(blending_color));
 }
 
-RenderStateBase::RenderStateBase(RenderContextBase& context, const Settings& settings)
+RenderStateBase::RenderStateBase(const RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
 {

@@ -51,7 +51,7 @@ static uint32_t GetCommandListSetId(const std::vector<uint32_t>& cmd_list_ids)
     return set_id;
 }
 
-Ptr<CommandKit> CommandKit::Create(Context& context, CommandList::Type cmd_list_type)
+Ptr<CommandKit> CommandKit::Create(const Context& context, CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(context, cmd_list_type);
@@ -63,7 +63,7 @@ Ptr<CommandKit> CommandKit::Create(CommandQueue& cmd_queue)
     return std::make_shared<CommandKitBase>(cmd_queue);
 }
 
-CommandKitBase::CommandKitBase(Context& context, CommandList::Type cmd_list_type)
+CommandKitBase::CommandKitBase(const Context& context, CommandList::Type cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
 {

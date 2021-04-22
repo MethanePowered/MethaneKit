@@ -44,7 +44,7 @@ class ProgramDX;
 class ShaderDX final : public ShaderBase
 {
 public:
-    ShaderDX(Type type, ContextBase& context, const Settings& settings);
+    ShaderDX(Type type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase overrides
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
@@ -53,7 +53,7 @@ public:
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 private:
-    IContextDX& GetContextDX() noexcept;
+    const IContextDX& GetContextDX() const noexcept;
 
     UniquePtr<Data::Chunk>              m_byte_code_chunk_ptr;
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;

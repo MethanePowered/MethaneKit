@@ -128,7 +128,7 @@ Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
     return shader_types;
 }
 
-ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
+ProgramBase::ProgramBase(const ContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
@@ -201,7 +201,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();
-    const auto& render_context = static_cast<RenderContextBase&>(m_context);
+    const auto& render_context = static_cast<const RenderContextBase&>(m_context);
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     META_CHECK_ARG_GREATER_OR_EQUAL(frame_buffers_count, 2);
 

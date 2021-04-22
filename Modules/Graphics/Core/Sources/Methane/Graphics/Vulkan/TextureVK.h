@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class TextureVK final : public ResourceVK<TextureBase>
 {
 public:
-    TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    TextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;

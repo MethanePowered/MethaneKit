@@ -55,7 +55,7 @@ private:
 class RenderStateMT final : public RenderStateBase
 {
 public:
-    RenderStateMT(RenderContextBase& context, const Settings& settings);
+    RenderStateMT(const RenderContextBase& context, const Settings& settings);
     ~RenderStateMT() override;
     
     // RenderState interface

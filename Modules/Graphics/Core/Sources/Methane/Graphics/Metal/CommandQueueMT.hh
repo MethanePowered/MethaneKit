@@ -36,13 +36,13 @@ class RenderContextMT;
 class CommandQueueMT final : public CommandQueueBase
 {
 public:
-    CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueMT() override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
-    IContextMT& GetContextMT() noexcept;
+    const IContextMT& GetContextMT() const noexcept;
     RenderContextMT& GetRenderContextMT();
     
     id<MTLCommandQueue>&  GetNativeCommandQueue() { return m_mtl_command_queue; }

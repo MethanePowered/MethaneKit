@@ -44,7 +44,7 @@ namespace wrl = Microsoft::WRL;
 class ProgramDX final : public ProgramBase
 {
 public:
-    ProgramDX(ContextBase& context, const Settings& settings);
+    ProgramDX(const ContextBase& context, const Settings& settings);
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -55,7 +55,6 @@ public:
     const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
-    IContextDX& GetContextDX() noexcept;
     const IContextDX& GetContextDX() const noexcept;
 
 private:

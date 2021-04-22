@@ -35,7 +35,7 @@ and deferred releasing of GPU resource.
 namespace Methane::Graphics
 {
 
-inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, ContextBase& context, bool deferred_heap_allocation,
+inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, const ContextBase& context, bool deferred_heap_allocation,
                               const ResourceManager::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
 {
     const auto heap_type_idx = magic_enum::enum_integer(heap_type);

@@ -49,43 +49,43 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
     return vertex_buffer_views;
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<VertexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), stride);
+    return std::make_shared<VertexBufferDX>(dynamic_cast<const ContextBase&>(context), settings, DescriptorByUsage(), stride);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
-    return std::make_shared<IndexBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage(), format);
+    return std::make_shared<IndexBufferDX>(dynamic_cast<const ContextBase&>(context), settings, DescriptorByUsage(), format);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<ConstantBufferDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
-    return std::make_shared<ConstantBufferDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<ConstantBufferDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Buffer> Buffer::CreateReadBackBuffer(Context& context, Data::Size size)
+Ptr<Buffer> Buffer::CreateReadBackBuffer(const Context& context, Data::Size size)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::ReadBack, Usage::ReadBack, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
-    return std::make_shared<ReadBackBufferDX>(dynamic_cast<ContextBase&>(context), settings, DescriptorByUsage());
+    return std::make_shared<ReadBackBufferDX>(dynamic_cast<const ContextBase&>(context), settings, DescriptorByUsage());
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept

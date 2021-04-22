@@ -193,7 +193,7 @@ RenderPass::StencilAttachment::StencilAttachment(Texture::Location&& texture_loc
     META_FUNCTION_TASK();
 }
 
-RenderPassBase::RenderPassBase(RenderContextBase& context, const Settings& settings)
+RenderPassBase::RenderPassBase(const RenderContextBase& context, const Settings& settings)
     : m_render_context(context)
     , m_settings(settings)
 {

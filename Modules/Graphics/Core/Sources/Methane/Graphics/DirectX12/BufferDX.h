@@ -42,7 +42,7 @@ template<typename TViewNative, typename... ExtraViewArgs>
 class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
-    BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
+    BufferDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
         : ResourceDX(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();

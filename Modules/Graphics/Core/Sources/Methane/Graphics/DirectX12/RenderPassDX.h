@@ -41,7 +41,7 @@ class RenderPassDX final
     , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR
 {
 public:
-    RenderPassDX(RenderContextBase& context, const Settings& settings);
+    RenderPassDX(const RenderContextBase& context, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;

@@ -53,7 +53,7 @@ class ResourceDX
 {
 public:
     template<typename SettingsType>
-    ResourceDX(ContextBase& context, const SettingsType& settings, const DescriptorByUsage& descriptor_by_usage)
+    ResourceDX(const ContextBase& context, const SettingsType& settings, const DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -90,7 +90,7 @@ public:
     DescriptorHeap::Types              GetDescriptorHeapTypes() const noexcept final                             { return GetUsedDescriptorHeapTypes(); }
 
 protected:
-    IContextDX& GetContextDX() noexcept { return static_cast<IContextDX&>(GetContextBase()); }
+    const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }
 
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                                         D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
@@ -126,7 +126,7 @@ protected:
         META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
 
         ThrowIfFailed(
-            static_cast<RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
+            static_cast<const RenderContextDX&>(GetContextDX()).GetNativeSwapChain()->GetBuffer(
                 frame_buffer_index,
                 IID_PPV_ARGS(&m_cp_resource)
             ),

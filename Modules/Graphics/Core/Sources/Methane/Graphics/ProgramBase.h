@@ -50,7 +50,7 @@ class ProgramBase
     friend class ProgramBindingsBase;
 
 public:
-    ProgramBase(ContextBase& context, const Settings& settings);
+    ProgramBase(const ContextBase& context, const Settings& settings);
     ~ProgramBase() override;
 
     // Program interface
@@ -59,7 +59,6 @@ public:
     const Ptr<Shader>&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
     bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
 
-    ContextBase&         GetContext()       { return m_context; }
     const ContextBase&   GetContext() const { return m_context; }
     Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
@@ -88,7 +87,7 @@ private:
 
     using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
-    ContextBase&                          m_context;
+    const ContextBase&                    m_context;
     const Settings                        m_settings;
     const ShadersByType                   m_shaders_by_type;
     const Shader::Types                   m_shader_types;

@@ -161,7 +161,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(const Context& context, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -175,7 +175,7 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(Context& context, const std::stri
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(Context& context, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(const Context& context, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 

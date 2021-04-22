@@ -44,7 +44,7 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     META_FUNCTION_TASK();
 }
 
-ResourceBase::ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
@@ -136,7 +136,7 @@ Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(Resource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
-Context& ResourceBase::GetContext() noexcept
+const Context& ResourceBase::GetContext() const noexcept
 {
     META_FUNCTION_TASK();
     return m_context;

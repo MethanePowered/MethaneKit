@@ -35,13 +35,13 @@ Metal implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program> Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramMT>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
+ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_mtl_vertex_desc(GetShaderMT(Shader::Type::Vertex).GetNativeVertexDescriptor(*this))
 {
@@ -90,10 +90,10 @@ ProgramMT::~ProgramMT()
     [m_mtl_vertex_desc release];
 }
 
-IContextMT& ProgramMT::GetContextMT() noexcept
+const IContextMT& ProgramMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
+    return static_cast<const IContextMT&>(GetContext());
 }
 
 ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept

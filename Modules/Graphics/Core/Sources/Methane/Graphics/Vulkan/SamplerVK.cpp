@@ -30,13 +30,13 @@ Vulkan implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-SamplerVK::SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();

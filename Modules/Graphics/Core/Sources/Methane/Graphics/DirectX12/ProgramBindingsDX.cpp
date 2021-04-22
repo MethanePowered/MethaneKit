@@ -199,8 +199,8 @@ ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bind
 void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();
-    ContextBase&     context = static_cast<ProgramBase&>(GetProgram()).GetContext();
-    ResourceManager& resource_manager = context.GetResourceManager();
+    const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
+    ResourceManager&   resource_manager = context.GetResourceManager();
 
     resource_manager.AddProgramBindings(*this);
 

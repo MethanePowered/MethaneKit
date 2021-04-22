@@ -61,13 +61,13 @@ public:
 class FakeCommandQueue : public CommandQueue
 {
 public:
-    FakeCommandQueue(Context& context, CommandList::Type type)
+    FakeCommandQueue(const Context& context, CommandList::Type type)
         : m_context(context)
         , m_type(type)
     { }
 
     // CommandQueue interface
-    [[nodiscard]] Context&          GetContext() noexcept override                { return m_context; }
+    [[nodiscard]] const Context&    GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
@@ -77,7 +77,7 @@ public:
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return nullptr; }
 
 private:
-    Context& m_context;
+    const Context&    m_context;
     CommandList::Type m_type;
 };
 

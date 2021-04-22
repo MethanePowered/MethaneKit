@@ -36,7 +36,7 @@ class ShaderMT;
 class ProgramMT final : public ProgramBase
 {
 public:
-    ProgramMT(ContextBase& context, const Settings& settings);
+    ProgramMT(const ContextBase& context, const Settings& settings);
     ~ProgramMT() override;
 
     ShaderMT& GetShaderMT(Shader::Type shader_type) noexcept;
@@ -45,7 +45,7 @@ public:
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
 
 private:
-    IContextMT& GetContextMT() noexcept;
+    const IContextMT& GetContextMT() const noexcept;
     void SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
     
     MTLVertexDescriptor*         m_mtl_vertex_desc = nil;
