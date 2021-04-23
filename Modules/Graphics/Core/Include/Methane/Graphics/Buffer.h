@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 struct Context;
 
-struct Buffer : virtual Resource
+struct Buffer : virtual Resource // NOSONAR
 {
     enum class Type
     {

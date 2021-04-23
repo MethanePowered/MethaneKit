@@ -30,7 +30,7 @@ Methane BLIT command list interface.
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList
+struct BlitCommandList : virtual CommandList // NOSONAR
 {
     static constexpr Type type = Type::Blit;
 

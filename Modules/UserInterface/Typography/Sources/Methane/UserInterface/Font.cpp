@@ -30,9 +30,8 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <nowide/convert.hpp>
+#include <fmt/format.h>
 #include <magic_enum.hpp>
-#include <map>
 #include <set>
 #include <locale>
 #include <codecvt>
@@ -650,11 +649,11 @@ gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
     return *texture_ptr;
 }
 
-Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred_data_init)
+Font::AtlasTexture Font::CreateAtlasTexture(const gfx::Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
     Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
-    atlas_texture_ptr->SetName(m_settings.description.name + " Font Atlas");
+    atlas_texture_ptr->SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {
         context.RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);

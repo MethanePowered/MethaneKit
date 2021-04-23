@@ -40,7 +40,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandList;
 
-struct Program : virtual Object
+struct Program : virtual Object // NOSONAR
 {
     struct InputBufferLayout
     {

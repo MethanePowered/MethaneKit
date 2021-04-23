@@ -47,7 +47,8 @@ struct ProgramBindings
         virtual ~IArgumentBindingCallback() = default;
     };
 
-    struct ArgumentBinding : virtual Data::IEmitter<IArgumentBindingCallback>
+    struct ArgumentBinding
+        : virtual Data::IEmitter<IArgumentBindingCallback> // NOSONAR
     {
         // ArgumentBinding settings
         struct Settings

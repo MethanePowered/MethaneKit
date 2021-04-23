@@ -32,7 +32,7 @@ namespace Methane::Graphics
 {
 
 class ObjectBase
-    : public virtual Object
+    : public virtual Object // NOSONAR
     , public std::enable_shared_from_this<ObjectBase>
 {
 public:

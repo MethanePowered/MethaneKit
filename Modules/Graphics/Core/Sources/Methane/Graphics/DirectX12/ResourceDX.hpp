@@ -46,15 +46,15 @@ namespace wrl = Microsoft::WRL;
 struct IContextDX;
 class DescriptorHeapDX;
 
-template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
 class ResourceDX
-    : public ReourceBaseType
+    : public ResourceBaseType
     , public IResourceDX
 {
 public:
     template<typename SettingsType>
     ResourceDX(const ContextBase& context, const SettingsType& settings, const DescriptorByUsage& descriptor_by_usage)
-        : ReourceBaseType(context, settings, descriptor_by_usage)
+        : ResourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
     }
@@ -64,6 +64,12 @@ public:
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
+
+    ResourceDX(const ResourceDX&) = delete;
+    ResourceDX(ResourceDX&&) = delete;
+
+    bool operator=(const ResourceDX&) = delete;
+    bool operator=(ResourceDX&&) = delete;
 
     void ForceReleaseResource() { m_cp_resource.Reset(); }
 

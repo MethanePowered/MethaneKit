@@ -33,6 +33,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
+#include <fmt/format.h>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
@@ -74,7 +75,7 @@ public:
 
         if (m_cp_upload_resource)
         {
-            m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
+            m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
         }
     }
 
@@ -119,7 +120,7 @@ public:
             return;
 
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
-        BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }

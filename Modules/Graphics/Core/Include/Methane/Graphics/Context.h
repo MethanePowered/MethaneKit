@@ -54,8 +54,8 @@ struct IContextCallback
 };
 
 struct Context
-    : virtual Object
-    , virtual Data::IEmitter<IContextCallback>
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IContextCallback> // NOSONAR
 {
     enum class Type
     {

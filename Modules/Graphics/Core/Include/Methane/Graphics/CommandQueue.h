@@ -32,7 +32,7 @@ Methane command queue interface: queues are used to execute command lists.
 namespace Methane::Graphics
 {
 
-struct CommandQueue : virtual Object
+struct CommandQueue : virtual Object // NOSONAR
 {
     // Create CommandQueue instance
     [[nodiscard]] static Ptr<CommandQueue> Create(const Context& context, CommandList::Type command_lists_type);

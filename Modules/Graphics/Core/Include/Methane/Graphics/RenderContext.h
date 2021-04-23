@@ -40,7 +40,7 @@ namespace Methane::Graphics
 class FpsCounter;
 struct RenderCommandList;
 
-struct RenderContext : virtual Context
+struct RenderContext : virtual Context // NOSONAR
 {
     struct Settings
     {

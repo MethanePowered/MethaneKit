@@ -133,7 +133,7 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
     default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 
-    // TODO: unsupported filtering types
+    // Other DX texture filtering types, which are currently not supported:
     // D3D12_FILTER_ANISOTROPIC
     // D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT
     // D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR

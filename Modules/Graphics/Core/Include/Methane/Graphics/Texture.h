@@ -32,7 +32,7 @@ Methane graphics interface: graphics texture.
 namespace Methane::Graphics
 {
 
-struct Texture : virtual Resource
+struct Texture : virtual Resource // NOSONAR
 {
     enum class Type : uint32_t
     {

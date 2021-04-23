@@ -100,17 +100,23 @@ static std::function<bool(const D3D12_RESOURCE_BARRIER&)> GetNativeResourceBarri
     switch (native_barrier_type)
     {
     case D3D12_RESOURCE_BARRIER_TYPE_TRANSITION:
-        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
-            { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION && native_resource_barrier.Transition.pResource == native_resource_ptr; };
-
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier)
+               {
+                   return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION &&
+                          native_resource_barrier.Transition.pResource == native_resource_ptr;
+               };
     case D3D12_RESOURCE_BARRIER_TYPE_UAV:
-        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
-            { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_UAV && native_resource_barrier.UAV.pResource == native_resource_ptr; };
-
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier)
+               {
+                   return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_UAV &&
+                          native_resource_barrier.UAV.pResource == native_resource_ptr;
+               };
     case D3D12_RESOURCE_BARRIER_TYPE_ALIASING:
-        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier) -> bool
-            { return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_ALIASING && native_resource_barrier.Aliasing.pResourceBefore == native_resource_ptr; };
-
+        return [native_resource_ptr](const D3D12_RESOURCE_BARRIER& native_resource_barrier)
+               {
+                   return native_resource_barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_ALIASING &&
+                          native_resource_barrier.Aliasing.pResourceBefore == native_resource_ptr;
+               };
     default:
         META_UNEXPECTED_ARG_RETURN(native_barrier_type, nullptr);
     }

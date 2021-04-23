@@ -164,9 +164,9 @@ bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
-    BufferSetDX& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
-    const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
-    if (set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && buffer_set_setup_barriers_ptr)
+    auto& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
+    if (const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -182,9 +182,9 @@ bool RenderCommandListDX::SetIndexBuffer(Buffer& index_buffer, bool set_resource
     if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
-    IndexBufferDX&            dx_index_buffer           = static_cast<IndexBufferDX&>(index_buffer);
-    Ptr <Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
-    if (set_resource_barriers && dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+    auto& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
+    if (Ptr <Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }
@@ -192,7 +192,6 @@ bool RenderCommandListDX::SetIndexBuffer(Buffer& index_buffer, bool set_resource
     GetNativeCommandListRef().IASetIndexBuffer(&dx_index_buffer.GetNativeView());
     return true;
 }
-
 
 void RenderCommandListDX::DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
@@ -246,7 +245,7 @@ void RenderCommandListDX::Commit()
         return;
     }
 
-    if (RenderPassDX* pass_dx = static_cast<RenderPassDX*>(GetPassPtr());
+    if (auto pass_dx = static_cast<RenderPassDX*>(GetPassPtr());
         pass_dx && pass_dx->IsBegun())
     {
         pass_dx->End(*this);

@@ -47,8 +47,8 @@ struct IResourceCallback
 };
 
 struct Resource
-    : virtual Object
-    , virtual Data::IEmitter<IResourceCallback>
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IResourceCallback> // NOSONAR
 {
     enum class Type
     {

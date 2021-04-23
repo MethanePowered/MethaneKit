@@ -46,7 +46,7 @@ struct IResourceBase
 };
 
 class ResourceBase
-    : public virtual Resource
+    : public virtual Resource // NOSONAR
     , public ObjectBase
     , public Data::Emitter<IResourceCallback>
 {

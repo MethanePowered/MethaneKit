@@ -45,7 +45,7 @@ class ProgramBindingsBase;
 
 class CommandListBase
     : public ObjectBase
-    , public virtual CommandList
+    , public virtual CommandList // NOSONAR
 {
     friend class CommandQueueBase;
 

@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 struct Context;
 
-struct Sampler : virtual Resource
+struct Sampler : virtual Resource // NOSONAR
 {
     struct Filter
     {

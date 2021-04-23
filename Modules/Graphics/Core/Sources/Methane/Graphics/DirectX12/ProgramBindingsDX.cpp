@@ -268,11 +268,10 @@ void ProgramBindingsDX::OnProgramArgumentBindingResourceLocationsChanged(const A
             continue;
 
         // Check if resource is still used in new resource locations
-        const auto new_resource_location_it = std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
-            [&old_resource_location](const Resource::Location& new_resource_location)
-            { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
-        );
-        if (new_resource_location_it != new_resource_locations.end())
+        if (std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
+                [&old_resource_location](const Resource::Location& new_resource_location)
+                { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
+            ) != new_resource_locations.end())
         {
             processed_resources.insert(old_resource_location.GetResourcePtr().get());
             continue;

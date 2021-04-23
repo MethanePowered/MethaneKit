@@ -34,6 +34,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <DirectXTex.h>
 
@@ -241,7 +242,7 @@ void ImageTextureDX::SetName(const std::string& name)
     ResourceDX::SetName(name);
 
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
-    m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
+    m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const
@@ -386,7 +387,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue* sy
     }
 
     // Upload texture subresources data to GPU via intermediate upload resource
-    BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+    const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());

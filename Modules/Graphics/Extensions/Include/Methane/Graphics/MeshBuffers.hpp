@@ -39,6 +39,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Checks.hpp>
 
 #include <taskflow/taskflow.hpp>
+#include <fmt/format.h>
 
 #include <memory>
 #include <string>
@@ -70,7 +71,7 @@ public:
         Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(context,
                                                                    static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                                    static_cast<Data::Size>(mesh_data.GetVertexSize()));
-        vertex_buffer_ptr->SetName(mesh_name + " Vertex Buffer");
+        vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
         vertex_buffer_ptr->SetData({
             {
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
@@ -80,7 +81,7 @@ public:
         m_vertex_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
         m_index_ptr = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
-        m_index_ptr->SetName(mesh_name + " Index Buffer");
+        m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
@@ -366,7 +367,7 @@ public:
 
         if (texture_ptr)
         {
-            texture_ptr->SetName(MeshBuffers<UniformsType>::GetMeshName() + " Texture");
+            texture_ptr->SetName(fmt::format("{} Texture", MeshBuffers<UniformsType>::GetMeshName()));
         }
     }
     

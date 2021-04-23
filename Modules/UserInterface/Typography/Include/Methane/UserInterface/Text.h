@@ -178,8 +178,8 @@ private:
         [[nodiscard]] gfx::ProgramBindings& GetProgramBindings() const;
 
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
+        void UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
         void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
 
     private:

@@ -31,6 +31,8 @@ Screen Quad rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
+
 namespace Methane::Graphics
 {
 
@@ -155,7 +157,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
             m_context.GetObjectsRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
         }
 
-        m_texture_ptr->SetName(m_settings.name + " Screen-Quad Texture");
+        m_texture_ptr->SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
     }
 
     static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
@@ -192,7 +194,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
 
     const auto const_buffer_size = static_cast<Data::Size>(sizeof(ScreenQuadConstants));
     m_const_buffer_ptr = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
-    m_const_buffer_ptr->SetName(m_settings.name + " Screen-Quad Constants Buffer");
+    m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {
         { { Shader::Type::Pixel, "g_constants" }, { { m_const_buffer_ptr    } } }

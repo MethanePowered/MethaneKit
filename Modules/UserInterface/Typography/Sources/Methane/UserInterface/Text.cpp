@@ -468,7 +468,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     return true;
 }
 
-void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh,
+void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh,
                                              std::string_view text_name, Data::Size reservation_multiplier)
 {
     META_FUNCTION_TASK();
@@ -513,7 +513,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
-void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
+void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
 {
     META_FUNCTION_TASK();
 

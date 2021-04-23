@@ -28,6 +28,8 @@ Base implementation of the context interface.
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
+#include <fmt/format.h>
+
 namespace Methane::Graphics
 {
 
@@ -163,7 +165,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     if (const std::string& context_name = GetName();
         !context_name.empty())
     {
-        m_device_ptr->SetName(context_name + " Device");
+        m_device_ptr->SetName(fmt::format("{} Device", context_name));
     }
 
     m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;

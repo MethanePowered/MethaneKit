@@ -40,6 +40,7 @@ DirectX 12 base template implementation of the command list interface.
 #include <d3d12.h>
 #include <pix.h>
 #include <nowide/convert.hpp>
+#include <fmt/format.h>
 #include <magic_enum.hpp>
 
 namespace Methane::Graphics
@@ -186,7 +187,7 @@ public:
         m_cp_command_list->SetName(nowide::widen(name).c_str());
 
         META_CHECK_ARG_NOT_NULL(m_cp_command_allocator);
-        m_cp_command_allocator->SetName(nowide::widen(name + " allocator").c_str());
+        m_cp_command_allocator->SetName(nowide::widen(fmt::format("{} allocator", name)).c_str());
 
         CommandListBaseT::SetName(name);
     }

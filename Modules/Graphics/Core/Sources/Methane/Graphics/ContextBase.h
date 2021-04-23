@@ -53,7 +53,7 @@ struct CommandListSet;
 
 class ContextBase
     : public ObjectBase
-    , public virtual Context
+    , public virtual Context // NOSONAR
     , public IContextNT
     , public Data::Emitter<IContextCallback>
 {

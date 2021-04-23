@@ -37,7 +37,7 @@ struct Context;
 struct CommandQueue;
 struct Fence;
 
-struct CommandKit : virtual Object
+struct CommandKit : virtual Object // NOSONAR
 {
     // Create CommandKit instance
     [[nodiscard]] static Ptr<CommandKit> Create(const Context& context, CommandList::Type command_lists_type);

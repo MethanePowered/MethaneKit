@@ -34,7 +34,7 @@ namespace Methane::Graphics
 struct RenderState;
 struct RenderPass;
 
-struct ParallelRenderCommandList : virtual CommandList
+struct ParallelRenderCommandList : virtual CommandList // NOSONAR
 {
     static constexpr Type type = Type::ParallelRender;
 

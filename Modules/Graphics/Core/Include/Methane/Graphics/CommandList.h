@@ -38,7 +38,7 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 
-struct CommandList : virtual Object
+struct CommandList : virtual Object // NOSONAR
 {
     enum class Type
     {
@@ -55,7 +55,7 @@ struct CommandList : virtual Object
         Executing,
     };
 
-    struct DebugGroup : virtual Object
+    struct DebugGroup : virtual Object // NOSONAR
     {
         [[nodiscard]] static Ptr<DebugGroup> Create(const std::string& name);
 

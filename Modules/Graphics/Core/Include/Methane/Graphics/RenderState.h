@@ -61,7 +61,7 @@ struct ViewState
     virtual ~ViewState() = default;
 };
 
-struct RenderState : virtual Object
+struct RenderState : virtual Object // NOSONAR
 {
 public:
     struct Rasterizer

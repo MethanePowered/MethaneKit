@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 
-struct Fence : virtual Object
+struct Fence : virtual Object // NOSONAR
 {
     [[nodiscard]] static Ptr<Fence> Create(CommandQueue& command_queue);
 

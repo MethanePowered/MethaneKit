@@ -37,7 +37,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-struct RenderPass : virtual Object
+struct RenderPass : virtual Object // NOSONAR
 {
     struct Attachment
     {
