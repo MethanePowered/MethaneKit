@@ -68,15 +68,6 @@ public:
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
     }
 
-    // Object interface
-
-    void SetName(const std::string& name) override
-    {
-        META_FUNCTION_TASK();
-        ContextBaseT::SetName(name);
-        GetDevice().SetName(name + " Device");
-    }
-
     // IContextDX interface
 
     const DeviceDX& GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
