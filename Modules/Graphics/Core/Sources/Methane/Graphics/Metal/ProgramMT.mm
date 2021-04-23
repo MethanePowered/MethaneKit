@@ -63,10 +63,10 @@ ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
     mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(ProgramBase::GetSettings().depth_format);
     
-    IContextMT& metal_context = dynamic_cast<IContextMT&>(context);
+    const IContextMT& metal_context = dynamic_cast<const IContextMT&>(context);
     
     NSError* ns_error = nil;
-    id<MTLDevice>& mtl_device = metal_context.GetDeviceMT().GetNativeDevice();
+    const id<MTLDevice>& mtl_device = metal_context.GetDeviceMT().GetNativeDevice();
     m_mtl_dummy_pipeline_state_for_reflection = [mtl_device newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc
                                                                                          options:MTLPipelineOptionArgumentInfo
                                                                                       reflection:&m_mtl_render_pipeline_reflection

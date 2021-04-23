@@ -35,7 +35,7 @@ class DeviceMT;
 class ProgramLibraryMT final
 {
 public:
-    ProgramLibraryMT(DeviceMT& metal_device, const std::string& library_name = "");
+    ProgramLibraryMT(const DeviceMT& metal_device, const std::string& library_name = "");
     ~ProgramLibraryMT();
 
     id<MTLLibrary>& Get() noexcept { return m_mtl_library; }

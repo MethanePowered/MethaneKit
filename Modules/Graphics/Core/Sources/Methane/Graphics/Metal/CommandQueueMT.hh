@@ -43,14 +43,14 @@ public:
     void SetName(const std::string& name) override;
     
     const IContextMT& GetContextMT() const noexcept;
-    RenderContextMT& GetRenderContextMT();
+    const RenderContextMT& GetRenderContextMT() const;
     
-    id<MTLCommandQueue>&  GetNativeCommandQueue() { return m_mtl_command_queue; }
+    const id<MTLCommandQueue>&  GetNativeCommandQueue() const { return m_mtl_command_queue; }
 
 private:
     void Reset();
     
-    id<MTLCommandQueue>  m_mtl_command_queue = nil;
+    id<MTLCommandQueue> m_mtl_command_queue = nil;
 };
 
 } // namespace Methane::Graphics

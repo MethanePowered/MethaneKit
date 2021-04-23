@@ -178,7 +178,7 @@ public:
     }
 
 protected:
-    id<MTLCommandBuffer>& InitializeCommandBuffer()
+    const id<MTLCommandBuffer>& InitializeCommandBuffer()
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
@@ -186,7 +186,7 @@ protected:
         if (m_mtl_cmd_buffer)
             return m_mtl_cmd_buffer;
 
-        id<MTLCommandQueue>& mtl_command_queue = GetCommandQueueMT().GetNativeCommandQueue();
+        const id<MTLCommandQueue>& mtl_command_queue = GetCommandQueueMT().GetNativeCommandQueue();
         META_CHECK_ARG_NOT_NULL(mtl_command_queue);
 
         m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];

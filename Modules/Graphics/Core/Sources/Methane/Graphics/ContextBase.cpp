@@ -206,7 +206,7 @@ CommandKit& ContextBase::GetDefaultCommandKit(CommandQueue& cmd_queue) const
     return *cmd_kit_ptr;
 }
 
-Device& ContextBase::GetDevice()
+const Device& ContextBase::GetDevice() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
@@ -216,21 +216,22 @@ Device& ContextBase::GetDevice()
 DeviceBase& ContextBase::GetDeviceBase()
 {
     META_FUNCTION_TASK();
-    return static_cast<DeviceBase&>(GetDevice());
+    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    return *m_device_ptr;
 }
 
 const DeviceBase& ContextBase::GetDeviceBase() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
-    return static_cast<const DeviceBase&>(*m_device_ptr);
+    return *m_device_ptr;
 }
 
 void ContextBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     ObjectBase::SetName(name);
-    GetDevice().SetName(fmt::format("{} Device", name));
+    GetDeviceBase().SetName(fmt::format("{} Device", name));
     for(const Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)

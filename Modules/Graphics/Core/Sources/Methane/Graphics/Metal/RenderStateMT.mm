@@ -468,10 +468,10 @@ void RenderStateMT::ResetNativeState()
     m_mtl_depth_state = nil;
 }
 
-RenderContextMT& RenderStateMT::GetRenderContextMT()
+const RenderContextMT& RenderStateMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    return dynamic_cast<RenderContextMT&>(GetRenderContext());
+    return dynamic_cast<const RenderContextMT&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

@@ -206,11 +206,11 @@ void TextureMT::GenerateMipLevels(BlitCommandListMT& blit_command_list)
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
 }
 
-RenderContextMT& TextureMT::GetRenderContextMT()
+const RenderContextMT& TextureMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
-    return static_cast<RenderContextMT&>(GetContextMT());
+    return static_cast<const RenderContextMT&>(GetContextMT());
 }
 
 MTLTextureUsage TextureMT::GetNativeTextureUsage()

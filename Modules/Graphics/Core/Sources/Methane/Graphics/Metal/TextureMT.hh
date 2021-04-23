@@ -53,7 +53,7 @@ public:
 
 private:
     void GenerateMipLevels(BlitCommandListMT& blit_command_list);
-    RenderContextMT& GetRenderContextMT();
+    const RenderContextMT& GetRenderContextMT() const;
 
     MTLTextureUsage       GetNativeTextureUsage();
     MTLTextureDescriptor* GetNativeTextureDescriptor();

@@ -53,7 +53,7 @@ public:
     }
 
 protected:
-    IContextMT& GetContextMT() noexcept
+    const IContextMT& GetContextMT() const noexcept
     {
         META_FUNCTION_TASK();
         return static_cast<const IContextMT&>(ResourceBase::GetContextBase());
@@ -68,7 +68,7 @@ protected:
         id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
         if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.GetDataSize())
         {
-            id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
+            const id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
             mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
                                                                     length:sub_resource.GetDataSize()
                                                                    options:MTLResourceStorageModeShared];

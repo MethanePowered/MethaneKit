@@ -77,7 +77,7 @@ public:
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
 private:
-    RenderContextMT& GetRenderContextMT();
+    const RenderContextMT& GetRenderContextMT() const;
     
     void ResetNativeState();
     

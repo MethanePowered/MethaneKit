@@ -72,7 +72,7 @@ public:
     void              Reset() override;
     CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
     CommandKit&       GetDefaultCommandKit(CommandQueue& cmd_queue) const final;
-    Device&           GetDevice() final;
+    const Device&     GetDevice() const final;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);

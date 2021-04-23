@@ -163,7 +163,7 @@ public:
     void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
 
-    [[nodiscard]] Device& GetDevice() override                                          { return m_fake_device; }
+    [[nodiscard]] const Device& GetDevice() const override                              { return m_fake_device; }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { META_FUNCTION_NOT_IMPLEMENTED(); }
 

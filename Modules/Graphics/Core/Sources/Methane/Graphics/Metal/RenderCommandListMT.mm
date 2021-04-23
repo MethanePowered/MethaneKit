@@ -115,7 +115,7 @@ void RenderCommandListMT::ResetCommandEncoder()
         MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!IsCommandBufferInitialized());
         META_CHECK_ARG_NOT_NULL(mtl_render_pass);
 
-        id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
+        const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
         InitializeCommandEncoder([mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass]);
     }
 }

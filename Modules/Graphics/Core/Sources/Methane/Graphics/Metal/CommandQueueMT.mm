@@ -75,12 +75,12 @@ const IContextMT& CommandQueueMT::GetContextMT() const noexcept
     return static_cast<const IContextMT&>(GetContextBase());
 }
 
-RenderContextMT& CommandQueueMT::GetRenderContextMT()
+const RenderContextMT& CommandQueueMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    ContextBase& context = GetContextBase();
+    const ContextBase& context = GetContextBase();
     META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Context::Type::Render, "incompatible context type");
-    return static_cast<RenderContextMT&>(context);
+    return static_cast<const RenderContextMT&>(context);
 }
 
 } // namespace Methane::Graphics
