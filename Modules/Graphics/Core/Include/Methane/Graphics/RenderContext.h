@@ -31,6 +31,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
+#include <Methane/Memory.hpp>
 
 #include <optional>
 
@@ -44,16 +45,16 @@ struct RenderContext : virtual Context // NOSONAR
 {
     struct Settings
     {
-        FrameSize                   frame_size;
-        PixelFormat                 color_format            = PixelFormat::BGRA8Unorm;
-        PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
-        std::optional<Color4F>      clear_color;
-        std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3U;
-        bool                        vsync_enabled           = true;
-        bool                        is_full_screen          = false;
-        Options                     options_mask            = Options::None;
-        uint32_t                    unsync_max_fps          = 1000U; // MacOS only
+        FrameSize         frame_size;
+        PixelFormat       color_format         = PixelFormat::BGRA8Unorm;
+        PixelFormat       depth_stencil_format = PixelFormat::Unknown;
+        Opt<Color4F>      clear_color;
+        Opt<DepthStencil> clear_depth_stencil;
+        uint32_t          frame_buffers_count  = 3U;
+        bool              vsync_enabled        = true;
+        bool              is_full_screen       = false;
+        Options           options_mask         = Options::None;
+        uint32_t          unsync_max_fps       = 1000U; // MacOS only
     };
 
     // Create RenderContext instance

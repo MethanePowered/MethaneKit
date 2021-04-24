@@ -123,8 +123,6 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 void RenderCommandListBase::SetViewState(ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    
-
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();

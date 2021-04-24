@@ -91,7 +91,7 @@ void CommandKitBase::SetName(const std::string& name)
     {
         const Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_id];
         if (cmd_list_ptr)
-            cmd_list_ptr->SetName(fmt::format("{} Utility Command List {}", GetName(), cmd_list_id));
+            cmd_list_ptr->SetName(fmt::format("{} Command List {}", GetName(), cmd_list_id));
     }
 
     for(size_t fence_id = 0; fence_id < m_fence_ptrs.size(); ++fence_id)

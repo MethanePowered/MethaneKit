@@ -67,14 +67,14 @@ private:
                              Ptr<Resource::Barriers>& transition_barriers_ptr,
                              RenderCommandListBase& render_command_list) const;
 
-    const RenderContextBase&    m_render_context;
-    Settings                    m_settings;
-    bool                        m_is_begun = false;
-    mutable Refs<TextureBase>   m_color_attachment_textures;
-    mutable Ptrs<TextureBase>   m_non_frame_buffer_attachment_textures;
-    mutable TextureBase*        m_p_depth_attachment_texture = nullptr;
-    Ptr<Resource::Barriers> m_begin_transition_barriers_ptr;
-    Ptr<Resource::Barriers> m_end_transition_barriers_ptr;
+    const RenderContextBase&  m_render_context;
+    Settings                  m_settings;
+    bool                      m_is_begun = false;
+    mutable Refs<TextureBase> m_color_attachment_textures;
+    mutable Ptrs<TextureBase> m_non_frame_buffer_attachment_textures;
+    mutable TextureBase*      m_p_depth_attachment_texture = nullptr;
+    Ptr<Resource::Barriers>   m_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers>   m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

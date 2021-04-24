@@ -56,6 +56,12 @@ public:
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
+    ResourceVK(const ResourceVK&) = delete;
+    ResourceVK(ResourceVK&&) = delete;
+
+    bool operator=(const ResourceVK&) = delete;
+    bool operator=(ResourceVK&&) = delete;
+
 protected:
     const IContextVK& GetContextVK() const noexcept
     {

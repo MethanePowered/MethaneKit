@@ -62,6 +62,18 @@ void ParallelRenderCommandListVK::ResetWithState(RenderState& render_state, Debu
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
+void ParallelRenderCommandListVK::SetBeginningResourceBarriers(const Resource::Barriers&)
+{
+    META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED();
+}
+
+void ParallelRenderCommandListVK::SetEndingResourceBarriers(const Resource::Barriers&)
+{
+    META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED();
+}
+
 void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();

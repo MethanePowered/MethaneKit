@@ -644,6 +644,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
 
 gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
 {
+    META_FUNCTION_TASK();
     const Ptr<gfx::Texture>& texture_ptr = GetAtlasTexturePtr(context);
     META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "atlas texture is not available for context");
     return *texture_ptr;
@@ -723,7 +724,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     Emit(&IFontCallback::OnFontAtlasUpdated, *this);
 }
 
-void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture)
+void Font::UpdateAtlasTexture(const gfx::Context& context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");

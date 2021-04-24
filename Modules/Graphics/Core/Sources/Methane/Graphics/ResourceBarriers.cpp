@@ -99,7 +99,6 @@ ResourceBarrier::ResourceBarrier(Type type, Resource& resource, ResourceState st
     META_FUNCTION_TASK();
 }
 
-
 bool ResourceBarrier::operator<(const ResourceBarrier& other) const noexcept
 {
     META_FUNCTION_TASK();

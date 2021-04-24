@@ -41,13 +41,13 @@ public:
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // Buffer interface
-    const Settings& GetSettings() const noexcept final       { return m_settings; }
+    const Settings& GetSettings() const noexcept final { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept final;
 
-    Ptr<BufferBase> GetBufferPtr()                           { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
+    Ptr<BufferBase> GetBufferPtr() { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
 
 private:
-    Settings    m_settings;
+    Settings m_settings;
 };
 
 class BufferSetBase
@@ -69,10 +69,10 @@ public:
     [[nodiscard]] const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:
-    const Buffer::Type          m_buffers_type;
-    Refs<Buffer>                m_refs;
-    Ptrs<Buffer>                m_ptrs;
-    RawPtrs<BufferBase>         m_raw_ptrs;
+    const Buffer::Type      m_buffers_type;
+    Refs<Buffer>            m_refs;
+    Ptrs<Buffer>            m_ptrs;
+    RawPtrs<BufferBase>     m_raw_ptrs;
     Ptr<Resource::Barriers> m_setup_transition_barriers;
 };
 

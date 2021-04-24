@@ -232,7 +232,7 @@ private:
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const gfx::Context& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
