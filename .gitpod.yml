@@ -1,3 +1,14 @@
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: true
+    addBadge: false
+    addLabel: false
+
 vscode:
   extensions:
     - twxs.cmake@0.0.17:aQNzlYa74rJFJ5/BnUF1yA==
