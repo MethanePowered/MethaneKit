@@ -145,6 +145,7 @@ void ContextBase::Release()
 
     m_device_ptr.reset();
 
+    m_default_command_kit_ptr_by_queue.clear();
     for (Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
         cmd_kit_ptr.reset();
 
