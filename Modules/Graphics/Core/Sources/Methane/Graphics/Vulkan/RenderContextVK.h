@@ -53,8 +53,6 @@ public:
     // ContextBase overrides
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
-
-    CommandQueueVK& GetRenderCommandQueueVK();
 };
 
 } // namespace Methane::Graphics

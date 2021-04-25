@@ -28,6 +28,7 @@ Vulkan template implementation of the base context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <string>
@@ -80,10 +81,10 @@ public:
         return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueVK& GetUploadCommandQueueVK() noexcept final
+    CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<CommandQueueVK&>(ContextBase::GetUploadCommandQueue());
+        return dynamic_cast<CommandQueueVK&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
     }
 };
 

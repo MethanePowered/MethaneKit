@@ -24,6 +24,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #pragma once
 
 #include "Object.h"
+#include "CommandList.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -40,9 +41,7 @@ namespace Methane::Graphics
 {
 
 struct Device;
-struct CommandQueue;
-struct BlitCommandList;
-struct CommandListSet;
+struct CommandKit;
 struct Context;
 
 struct IContextCallback
@@ -55,8 +54,8 @@ struct IContextCallback
 };
 
 struct Context
-    : virtual Object
-    , virtual Data::IEmitter<IContextCallback>
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IContextCallback> // NOSONAR
 {
     enum class Type
     {
@@ -77,8 +76,16 @@ struct Context
         CompleteInitialization
     };
 
+    enum class Options : uint32_t
+    {
+        None                         = 0U,
+        BlitWithDirectQueueOnWindows = 1U << 0U, // Blit command lists and queues in DX API are created with DIRECT type instead of COPY type
+        EmulatedRenderPassOnWindows  = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    };
+
     // Context interface
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
+    [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
@@ -87,11 +94,10 @@ struct Context
     virtual void WaitForGpu(WaitFor wait_for) = 0;
     virtual void Reset(Device& device) = 0;
     virtual void Reset() = 0;
-
-    [[nodiscard]] virtual Device&          GetDevice() = 0;
-    [[nodiscard]] virtual CommandQueue&    GetUploadCommandQueue() = 0;
-    [[nodiscard]] virtual BlitCommandList& GetUploadCommandList() = 0;
-    [[nodiscard]] virtual CommandListSet&  GetUploadCommandListSet() = 0;
+    [[nodiscard]] virtual const Device& GetDevice() const = 0;
+    [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandList::Type type) const = 0;
+    [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandQueue& cmd_queue) const = 0;
+    [[nodiscard]] inline  CommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Blit); }
 };
 
 } // namespace Methane::Graphics

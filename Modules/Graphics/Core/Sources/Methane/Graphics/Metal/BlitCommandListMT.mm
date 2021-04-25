@@ -43,14 +43,13 @@ BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
 void BlitCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-
     if (IsCommandEncoderInitialized())
     {
         CommandListBase::Reset(p_debug_group);
         return;
     }
 
-    id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
+    const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer blitCommandEncoder]);
     CommandListBase::Reset(p_debug_group);
 }

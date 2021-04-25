@@ -30,10 +30,19 @@ Common application settings for Methane samples and tutorials.
 namespace Methane::Samples
 {
 
+enum class AppOptions : uint32_t
+{
+    None        = 0U,
+    DepthBuffer = 1U << 0U,
+    Animations  = 1U << 1U,
+    Fullscreen  = 1U << 2U,
+    Default     = DepthBuffer | Animations
+};
+
 [[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(
                                                 const std::string& app_name,
-                                                bool animations_enabled = true,
-                                                bool depth_enabled = true,
+                                                AppOptions app_options = AppOptions::Default,
+                                                Graphics::Context::Options context_options = Graphics::Context::Options::None,
                                                 float clear_depth = 1.F,
                                                 std::optional<Graphics::Color4F> clear_color = Graphics::Color4F(0.0F, 0.2F, 0.4F, 1.0F))
 {
@@ -46,6 +55,10 @@ namespace Methane::Samples
 #else
     constexpr bool is_apple = false;
 #endif
+
+    const bool depth_enabled      = magic_enum::flags::enum_contains(app_options & AppOptions::DepthBuffer);
+    const bool animations_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::Animations);
+    const bool is_fullscreen      = magic_enum::flags::enum_contains(app_options & AppOptions::Fullscreen);
 
     return Graphics::AppSettings
     {                                                               // =========================
@@ -72,9 +85,9 @@ namespace Methane::Samples
                 ? DepthStencilOpt({ clear_depth, Stencil(0) })      //     ...
                 : DepthStencilOpt(),                                //     ...
             3U,                                                     //   - frame_buffers_count
-            is_apple,                                             //   - vsync_enabled
-            false,                                                  //   - is_full_screen
-            false,                                                  //   - is_emulated_render_pass
+            is_apple,                                               //   - vsync_enabled
+            is_fullscreen,                                          //   - is_full_screen
+            context_options,                                        //   - options_mask
             1000U,                                                  //   - unsync_max_fps (MacOS only)
         }                                                           // =========================
     };

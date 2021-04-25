@@ -155,9 +155,13 @@ protected:
     FrameT& GetCurrentFrame()
     {
         META_FUNCTION_TASK();
-        const uint32_t frame_index = GetRenderContext().GetFrameBufferIndex();
-        META_CHECK_ARG_LESS(frame_index, m_frames.size());
-        return m_frames[frame_index];
+        return m_frames.at(GetRenderContext().GetFrameBufferIndex());
+    }
+
+    const FrameT& GetCurrentFrame() const
+    {
+        META_FUNCTION_TASK();
+        return m_frames.at(GetRenderContext().GetFrameBufferIndex());
     }
 
     std::vector<FrameT>& GetFrames() noexcept { return m_frames; }

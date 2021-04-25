@@ -51,7 +51,7 @@ class CommandListSetDX;
 class CommandQueueDX final : public CommandQueueBase
 {
 public:
-    CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueDX() override;
 
     // CommandQueue interface
@@ -62,7 +62,7 @@ public:
 
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
-    IContextDX&             GetContextDX() noexcept;
+    const IContextDX&       GetContextDX() const noexcept;
     ID3D12CommandQueue&     GetNativeCommandQueue();
     TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
 

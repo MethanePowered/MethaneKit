@@ -151,7 +151,7 @@ void RenderContextMT::Present()
     META_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Present();
 
-    id<MTLCommandBuffer> mtl_cmd_buffer = [GetRenderCommandQueueMT().GetNativeCommandQueue() commandBuffer];
+    id<MTLCommandBuffer> mtl_cmd_buffer = [GetDefaultCommandQueueMT(CommandList::Type::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
@@ -205,12 +205,6 @@ uint32_t RenderContextMT::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
     return 72U * GetContentScalingFactor();
-}
-
-CommandQueueMT& RenderContextMT::GetRenderCommandQueueMT()
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueMT&>(ContextMT<RenderContextBase>::GetRenderCommandQueue());
 }
 
 } // namespace Methane::Graphics

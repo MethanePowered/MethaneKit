@@ -28,6 +28,7 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 
@@ -57,19 +58,19 @@ public:
 
     // IContextMT overrides
 
-    DeviceMT& GetDeviceMT() noexcept final
+    const DeviceMT& GetDeviceMT() const noexcept final
     {
         META_FUNCTION_TASK();
-        return static_cast<DeviceMT&>(ContextBase::GetDeviceBase());
+        return static_cast<const DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueMT& GetUploadCommandQueueMT() noexcept final
+    CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return static_cast<CommandQueueMT&>(ContextBase::GetUploadCommandQueue());
+        return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
     }
 
-    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) override
+    const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) const override
     {
         META_FUNCTION_TASK();
         const auto library_by_name_it = m_library_by_name.find(library_name);
@@ -94,8 +95,8 @@ protected:
 private:
     using LibraryByName = std::map<std::string, Ptr<ProgramLibraryMT>>;
 
-    LibraryByName m_library_by_name;
-    NSString*     m_ns_name;
+    mutable LibraryByName m_library_by_name;
+    NSString* m_ns_name;
 };
 
 } // namespace Methane::Graphics

@@ -30,13 +30,9 @@ pipeline via state object and used to create resource binding objects.
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
 
-#include <magic_enum.hpp>
 #include <vector>
 #include <string>
 #include <unordered_set>
-#include <unordered_map>
-
-//#define PROGRAM_IGNORE_MISSING_ARGUMENTS
 
 namespace Methane::Graphics
 {
@@ -44,7 +40,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandList;
 
-struct Program : virtual Object
+struct Program : virtual Object // NOSONAR
 {
     struct InputBufferLayout
     {
@@ -64,8 +60,9 @@ struct Program : virtual Object
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;
 
-    struct Argument
+    class Argument
     {
+    public:
         class NotFoundException : public std::invalid_argument
         {
         public:
@@ -76,67 +73,73 @@ struct Program : virtual Object
 
         private:
             const Program& m_program;
-            const UniquePtr<Argument> m_argument_ptr;
+            UniquePtr<Argument> m_argument_ptr;
         };
-
-        enum class Modifiers : uint32_t
-        {
-            None        = 0U,
-            Constant    = 1U << 0U,
-            Addressable = 1U << 1U,
-            All         = ~0U
-        };
-
-        const Shader::Type shader_type;
-        const std::string  name;
-        const size_t       hash;
-
-        Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
-        Argument(const Argument& argument) = default;
-        Argument(Argument&& argument) noexcept = default;
-
-        [[nodiscard]] bool operator==(const Argument& other) const noexcept;
-        [[nodiscard]] explicit operator std::string() const noexcept;
 
         struct Hash
         {
-            [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.hash; }
+            [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.m_hash; }
         };
+
+        Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
+        virtual ~Argument() = default;
+
+        [[nodiscard]] Shader::Type       GetShaderType() const noexcept { return m_shader_type; }
+        [[nodiscard]] const std::string& GetName() const noexcept       { return m_name; }
+        [[nodiscard]] size_t             GetHash() const noexcept       { return m_hash; }
+
+        [[nodiscard]] bool operator==(const Argument& other) const noexcept;
+        [[nodiscard]] virtual explicit operator std::string() const noexcept;
+
+    private:
+        Shader::Type m_shader_type;
+        std::string  m_name;
+        size_t       m_hash;
     };
 
     using Arguments = std::unordered_set<Argument, Argument::Hash>;
 
-    struct ArgumentDesc : Argument
+    class ArgumentAccessor : public Argument
     {
-        const Modifiers modifiers;
+    public:
+        enum class Type : uint32_t
+        {
+            Constant      = 1U << 0U,
+            FrameConstant = 1U << 1U,
+            Mutable       = 1U << 2U,
+        };
 
-        ArgumentDesc(Shader::Type shader_type, const std::string& argument_name,
-                     Modifiers modifiers_mask = Modifiers::None) noexcept;
-        ArgumentDesc(const Argument& argument,
-                     Modifiers modifiers_mask = Modifiers::None) noexcept;
-        ArgumentDesc(const ArgumentDesc& argument_desc) = default;
-        ArgumentDesc(ArgumentDesc&& argument_desc) noexcept = default;
+        ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+        ArgumentAccessor(const Argument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
-        [[nodiscard]] inline bool IsConstant() const    { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Constant); }
-        [[nodiscard]] inline bool IsAddressable() const { using namespace magic_enum::bitwise_operators; return magic_enum::flags::enum_contains(modifiers & Modifiers::Addressable); }
+        [[nodiscard]] size_t GetAccessorIndex() const noexcept;
+        [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_accessor_type; }
+        [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
+        [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
+        [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }
+        [[nodiscard]] explicit operator std::string() const noexcept final;
+
+    private:
+        Type m_accessor_type = Type::Mutable;
+        bool m_addressable   = false;
     };
 
-    using ArgumentDescriptions = std::unordered_set<ArgumentDesc, ArgumentDesc::Hash>;
-    static ArgumentDescriptions::const_iterator FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument);
+    using ArgumentAccessors = std::unordered_set<ArgumentAccessor, ArgumentAccessor::Hash>;
+    static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
     using Shaders = Ptrs<Shader>;
 
     // Program settings
     struct Settings
     {
-        Shaders              shaders;
-        InputBufferLayouts   input_buffer_layouts;
-        ArgumentDescriptions argument_descriptions;
-        PixelFormats         color_formats;
-        PixelFormat          depth_format = PixelFormat::Unknown;
+        Shaders            shaders;
+        InputBufferLayouts input_buffer_layouts;
+        ArgumentAccessors  argument_accessors;
+        PixelFormats       color_formats;
+        PixelFormat        depth_format = PixelFormat::Unknown;
     };
 
     // Create Program instance
-    [[nodiscard]] static Ptr<Program> Create(Context& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Program> Create(const Context& context, const Settings& settings);
 
     // Program interface
     [[nodiscard]] virtual const Settings&      GetSettings() const = 0;

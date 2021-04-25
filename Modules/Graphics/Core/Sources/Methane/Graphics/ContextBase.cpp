@@ -25,24 +25,26 @@ Base implementation of the context interface.
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
 
-#include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
+
+#include <fmt/format.h>
 
 namespace Methane::Graphics
 {
 
+static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_kit_names = { {
+    "Upload",
+    "Render",
+    "Parallel Render"
+} };
+
 #ifdef METHANE_LOGGING_ENABLED
-static std::string GetWaitForName(Context::WaitFor wait_for)
-{
-    META_FUNCTION_TASK();
-    switch (wait_for)
-    {
-    case Context::WaitFor::RenderComplete:      return "Render Complete";
-    case Context::WaitFor::FramePresented:      return "Frame Present";
-    case Context::WaitFor::ResourcesUploaded:   return "Resources Upload";
-    default:                                    META_UNEXPECTED_ARG_RETURN(wait_for, "");
-    }
-}
+static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()> g_wait_for_names = {{
+    "Render Complete",
+    "Frame Present",
+    "Resources Upload"
+}};
 #endif
 
 ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
@@ -82,21 +84,20 @@ void ContextBase::CompleteInitialization()
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_resource_manager.SetDeferredHeapAllocation(true);
 
-    m_requested_action = DeferredAction::None;
+    m_requested_action             = DeferredAction::None;
     m_is_completing_initialization = false;
 }
 
 void ContextBase::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    META_LOG("Context '{}' is WAITING for {}", GetName(), GetWaitForName(wait_for));
+    META_LOG("Context '{}' is WAITING for {}", GetName(), g_wait_for_names[magic_enum::enum_index(wait_for).value()]);
 
     if (wait_for == WaitFor::ResourcesUploaded)
     {
         META_SCOPE_TIMER("ContextBase::WaitForGpu::ResourcesUploaded");
-        META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
         OnGpuWaitStart(wait_for);
-        m_upload_fence_ptr->FlushOnCpu();
+        GetUploadCommandKit().GetFence().FlushOnCpu();
         OnGpuWaitComplete(wait_for);
     }
 }
@@ -118,7 +119,7 @@ void ContextBase::Reset()
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> device_ptr = m_device_ptr;
+    Ptr <DeviceBase> device_ptr = m_device_ptr;
     Release();
     Initialize(*device_ptr, true);
 }
@@ -143,15 +144,15 @@ void ContextBase::Release()
     META_LOG("Context '{}' RELEASE", GetName());
 
     m_device_ptr.reset();
-    m_upload_cmd_queue_ptr.reset();
-    m_upload_cmd_list_ptr.reset();
-    m_upload_cmd_lists_ptr.reset();
-    m_upload_fence_ptr.reset();
+
+    m_default_command_kit_ptr_by_queue.clear();
+    for (Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+        cmd_kit_ptr.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 
-    m_resource_manager_init_settings.default_heap_sizes         = m_resource_manager.GetDescriptorHeapSizes(true, false);
-    m_resource_manager_init_settings.shader_visible_heap_sizes  = m_resource_manager.GetDescriptorHeapSizes(true, true);
+    m_resource_manager_init_settings.default_heap_sizes        = m_resource_manager.GetDescriptorHeapSizes(true, false);
+    m_resource_manager_init_settings.shader_visible_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true, true);
 
     m_resource_manager.Release();
 }
@@ -162,12 +163,10 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     META_LOG("Context '{}' INITIALIZE", GetName());
 
     m_device_ptr = device.GetDevicePtr();
-    m_upload_fence_ptr = Fence::Create(GetUploadCommandQueue());
-
     if (const std::string& context_name = GetName();
         !context_name.empty())
     {
-        m_device_ptr->SetName(context_name + " Device");
+        m_device_ptr->SetName(fmt::format("{} Device", context_name));
     }
 
     m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
@@ -185,100 +184,95 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     }
 }
 
-CommandQueue& ContextBase::GetUploadCommandQueue()
+CommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
 {
     META_FUNCTION_TASK();
-    if (m_upload_cmd_queue_ptr)
-        return *m_upload_cmd_queue_ptr;
+    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
+    if (cmd_kit_ptr)
+        return *cmd_kit_ptr;
 
-    static const std::string s_command_queue_name = "Upload Command Queue";
+    cmd_kit_ptr = CommandKit::Create(*this, type);
+    cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
 
-    m_upload_cmd_queue_ptr = CommandQueue::Create(*this, CommandList::Type::Blit);
-    m_upload_cmd_queue_ptr->SetName(s_command_queue_name);
-
-    return *m_upload_cmd_queue_ptr;
+    m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;
+    return *cmd_kit_ptr;
 }
 
-BlitCommandList& ContextBase::GetUploadCommandList()
+CommandKit& ContextBase::GetDefaultCommandKit(CommandQueue& cmd_queue) const
 {
     META_FUNCTION_TASK();
-    if (!m_upload_cmd_list_ptr)
-    {
-        static const std::string s_command_list_name = "Upload Command List";
-        m_upload_cmd_list_ptr = BlitCommandList::Create(GetUploadCommandQueue());
-        m_upload_cmd_list_ptr->SetName(s_command_list_name);
-    }
-    else
-    {
-        // FIXME: while with wait timeout are used as a workaround for occasional deadlock on command list wait for completion
-        //  reproduced at high rate of resource updates (on typography tutorial)
-        while(m_upload_cmd_list_ptr->GetState() == CommandList::State::Executing)
-            m_upload_cmd_list_ptr->WaitUntilCompleted(16);
-    }
+    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
+    if (cmd_kit_ptr)
+        return *cmd_kit_ptr;
 
-    if (m_upload_cmd_list_ptr->GetState() == CommandList::State::Pending)
-    {
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, "Upload Resources");
-        m_upload_cmd_list_ptr->Reset(s_debug_region_name.get());
-    }
-
-    return *m_upload_cmd_list_ptr;
+    cmd_kit_ptr = CommandKit::Create(cmd_queue);
+    return *cmd_kit_ptr;
 }
 
-CommandListSet& ContextBase::GetUploadCommandListSet()
-{
-    META_FUNCTION_TASK();
-    if (m_upload_cmd_lists_ptr && m_upload_cmd_lists_ptr->GetCount() == 1 &&
-        std::addressof((*m_upload_cmd_lists_ptr)[0]) == std::addressof(GetUploadCommandList()))
-        return *m_upload_cmd_lists_ptr;
-
-    m_upload_cmd_lists_ptr = CommandListSet::Create({ GetUploadCommandList() });
-    return *m_upload_cmd_lists_ptr;
-}
-
-Device& ContextBase::GetDevice()
+const Device& ContextBase::GetDevice() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
-    
-CommandQueueBase& ContextBase::GetUploadCommandQueueBase()
-{
-    META_FUNCTION_TASK();
-    return static_cast<CommandQueueBase&>(GetUploadCommandQueue());
-}
 
 DeviceBase& ContextBase::GetDeviceBase()
 {
     META_FUNCTION_TASK();
-    return static_cast<DeviceBase&>(GetDevice());
+    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    return *m_device_ptr;
 }
 
 const DeviceBase& ContextBase::GetDeviceBase() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
-    return static_cast<const DeviceBase&>(*m_device_ptr);
+    return *m_device_ptr;
 }
 
 void ContextBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     ObjectBase::SetName(name);
-    GetDevice().SetName(name + " Device");
-
-    if (m_upload_fence_ptr)
-        m_upload_fence_ptr->SetName(name + " Upload Fence");
+    GetDeviceBase().SetName(fmt::format("{} Device", name));
+    for(const Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    {
+        if (cmd_kit_ptr)
+            cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
+    }
 }
 
 bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-    if (!m_upload_cmd_list_ptr)
+    CommandKit& upload_cmd_kit = GetUploadCommandKit();
+    if (!upload_cmd_kit.HasList())
         return false;
 
-    CommandList::State upload_cmd_state = m_upload_cmd_list_ptr->GetState();
+    // Execute all default command lists for all queues except the upload command list
+    bool is_resources_synchronization = false;
+    for(const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
+    {
+        if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
+            continue;
+
+        CommandList& cmd_list = cmd_kit_ptr->GetList();
+        const CommandList::State cmd_list_state = cmd_list.GetState();
+        if (cmd_list_state == CommandList::State::Pending ||
+            cmd_list_state == CommandList::State::Executing)
+            continue;
+
+        if (cmd_list_state == CommandList::State::Encoding)
+            cmd_list.Commit();
+
+        META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
+        cmd_kit_ptr->GetQueue().Execute(cmd_kit_ptr->GetListSet());
+        cmd_kit_ptr->GetFence().Signal();
+        is_resources_synchronization = true;
+    }
+
+    CommandList& upload_cmd_list = upload_cmd_kit.GetList();
+    const CommandList::State upload_cmd_state = upload_cmd_list.GetState();
     if (upload_cmd_state == CommandList::State::Pending)
         return false;
 
@@ -286,10 +280,22 @@ bool ContextBase::UploadResources()
         return true;
 
     if (upload_cmd_state == CommandList::State::Encoding)
-        GetUploadCommandList().Commit();
+        upload_cmd_list.Commit();
+
+    if (is_resources_synchronization)
+    {
+        // Upload command queue waits for resources synchronization completion in other command queues
+        for(const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
+        {
+            if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList())
+                continue;
+
+            cmd_kit_ptr->GetFence().WaitOnGpu(upload_cmd_kit.GetQueue());
+        }
+    }
 
     META_LOG("Context '{}' UPLOAD resources", GetName());
-    GetUploadCommandQueue().Execute(GetUploadCommandListSet());
+    upload_cmd_kit.GetQueue().Execute(upload_cmd_kit.GetListSet());
     return true;
 }
 
@@ -310,12 +316,6 @@ void ContextBase::SetDevice(DeviceBase& device)
 {
     META_FUNCTION_TASK();
     m_device_ptr = device.GetDevicePtr();
-}
-
-Fence& ContextBase::GetUploadFence() const
-{
-    META_CHECK_ARG_NOT_NULL(m_upload_fence_ptr);
-    return *m_upload_fence_ptr;
 }
 
 } // namespace Methane::Graphics

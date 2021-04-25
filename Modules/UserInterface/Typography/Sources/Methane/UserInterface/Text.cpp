@@ -28,6 +28,7 @@ Methane text rendering primitive.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
@@ -108,12 +109,12 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                         gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                     }
                 },
-                gfx::Program::ArgumentDescriptions
+                gfx::Program::ArgumentAccessors
                 {
-                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::None     },
-                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::None     },
-                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
                 gfx::PixelFormats
                 {
@@ -352,7 +353,8 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, frame_resources.GetIndexBuffer());
+    cmd_list.SetIndexBuffer(frame_resources.GetIndexBuffer());
+    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
 }
 
 void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr)
@@ -380,15 +382,14 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(gfx::RenderContext& render_context, const gfx::RenderState& render_state,
-                                     const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Texture>& atlas_texture_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr,
-                                     const TextMesh& text_mesh, const std::string& text_name, Data::Size reservation_multiplier)
-     : m_atlas_texture_ptr(atlas_texture_ptr)
+Text::FrameResources::FrameResources(uint32_t frame_index,  const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier)
+    : m_frame_index(frame_index)
+    , m_atlas_texture_ptr(common_resources.atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
-    UpdateMeshBuffers(render_context, text_mesh, text_name, reservation_multiplier);
-    UpdateUniformsBuffer(render_context, text_mesh, text_name);
-    InitializeProgramBindings(render_state, const_buffer_ptr, atlas_sampler_ptr);
+    UpdateMeshBuffers(common_resources.render_context, common_resources.text_mesh, text_name, reservation_multiplier);
+    UpdateUniformsBuffer(common_resources.render_context, common_resources.text_mesh, text_name);
+    InitializeProgramBindings(common_resources.render_state, common_resources.const_buffer_ptr, common_resources.atlas_sampler_ptr);
 }
 
 void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
@@ -460,14 +461,14 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" })->SetResourceLocations({ { m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_atlas_texture_ptr } });
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Atlas;
     return true;
 }
 
-void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context, const TextMesh& text_mesh,
+void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh,
                                              std::string_view text_name, Data::Size reservation_multiplier)
 {
     META_FUNCTION_TASK();
@@ -480,7 +481,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     {
         const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
         Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
-        vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer", text_name));
+        vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
         m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
@@ -488,7 +489,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
-    });
+    }, &render_context.GetRenderCommandKit().GetQueue());
 
     // Update index buffer
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -498,7 +499,7 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
         m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
-        m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer", text_name));
+        m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
     m_index_buffer_ptr->SetData({
@@ -506,13 +507,13 @@ void Text::FrameResources::UpdateMeshBuffers(gfx::RenderContext& render_context,
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
-    });
+    }, &render_context.GetRenderCommandKit().GetQueue());
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
-void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
+void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
 {
     META_FUNCTION_TASK();
 
@@ -532,14 +533,20 @@ void Text::FrameResources::UpdateUniformsBuffer(gfx::RenderContext& render_conte
     if (!m_uniforms_buffer_ptr)
     {
         m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
-        m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer", text_name));
+        m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" })->SetResourceLocations({ { m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { m_uniforms_buffer_ptr } });
         }
     }
-    m_uniforms_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } });
+    m_uniforms_buffer_ptr->SetData(
+        gfx::Resource::SubResources
+        {
+            { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }
+        },
+        &render_context.GetRenderCommandKit().GetQueue()
+    );
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Uniforms;
@@ -560,9 +567,18 @@ void Text::InitializeFrameResources()
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
-            render_context, *m_render_state_ptr,
-            m_const_buffer_ptr, atlas_texture_ptr, m_atlas_sampler_ptr,
-            *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier
+            frame_buffer_index,
+            CommonResourceRefs
+            {
+                render_context,
+                *m_render_state_ptr,
+                m_const_buffer_ptr,
+                atlas_texture_ptr,
+                m_atlas_sampler_ptr,
+                *m_text_mesh_ptr
+            },
+            m_settings.name,
+            m_settings.mesh_buffers_reservation_multiplier
         );
     }
 }
@@ -631,11 +647,15 @@ void Text::UpdateConstantsBuffer()
     if (!m_const_buffer_ptr)
     {
         m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
-        m_const_buffer_ptr->SetName(m_settings.name + " Text Constants Buffer");
+        m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
-    m_const_buffer_ptr->SetData({
-        gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
-    });
+    m_const_buffer_ptr->SetData(
+        gfx::Resource::SubResources
+        {
+            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
+        },
+        &GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
+    );
 }
 
 FrameRect Text::GetAlignedViewportRect() const

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ struct ViewState
 
         [[nodiscard]] bool operator==(const Settings& other) const noexcept { return viewports == other.viewports && scissor_rects == other.scissor_rects; }
         [[nodiscard]] bool operator!=(const Settings& other) const noexcept { return !operator==(other); }
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     // Create ViewState instance
@@ -60,7 +61,7 @@ struct ViewState
     virtual ~ViewState() = default;
 };
 
-struct RenderState : virtual Object
+struct RenderState : virtual Object // NOSONAR
 {
 public:
     struct Rasterizer
@@ -86,6 +87,7 @@ public:
 
         [[nodiscard]] bool operator==(const Rasterizer& other) const noexcept;
         [[nodiscard]] bool operator!=(const Rasterizer& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     struct Blending
@@ -145,6 +147,7 @@ public:
 
             bool operator==(const RenderTarget& other) const noexcept;
             bool operator!=(const RenderTarget& other) const noexcept;
+            [[nodiscard]] explicit operator std::string() const;
         };
 
         // NOTE: If is_independent set to false, only the render_targets[0] members are used
@@ -153,6 +156,7 @@ public:
 
         [[nodiscard]] bool operator==(const Blending& other) const noexcept;
         [[nodiscard]] bool operator!=(const Blending& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
     };
     
     struct Depth
@@ -163,6 +167,7 @@ public:
 
         [[nodiscard]] bool operator==(const Depth& other) const noexcept;
         [[nodiscard]] bool operator!=(const Depth& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
     };
     
     struct Stencil
@@ -187,8 +192,9 @@ public:
             Operation  depth_stencil_pass= Operation::Keep; // Metal only
             Compare    compare           = Compare::Always;
 
-            bool operator==(const FaceOperations& other) const noexcept;
-            bool operator!=(const FaceOperations& other) const noexcept;
+            [[nodiscard]] bool operator==(const FaceOperations& other) const noexcept;
+            [[nodiscard]] bool operator!=(const FaceOperations& other) const noexcept;
+            [[nodiscard]] explicit operator std::string() const;
         };
         
         bool           enabled           = false;
@@ -199,6 +205,7 @@ public:
 
         [[nodiscard]] bool operator==(const Stencil& other) const noexcept;
         [[nodiscard]] bool operator!=(const Stencil& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     enum class Groups : uint32_t
@@ -227,10 +234,11 @@ public:
         [[nodiscard]] static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
         [[nodiscard]] bool operator==(const Settings& other) const noexcept;
         [[nodiscard]] bool operator!=(const Settings& other) const noexcept;
+        [[nodiscard]] explicit operator std::string() const;
     };
 
     // Create RenderState instance
-    [[nodiscard]] static Ptr<RenderState> Create(RenderContext& context, const Settings& state_settings);
+    [[nodiscard]] static Ptr<RenderState> Create(const RenderContext& context, const Settings& state_settings);
 
     // RenderState interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;

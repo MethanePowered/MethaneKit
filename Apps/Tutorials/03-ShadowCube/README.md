@@ -186,7 +186,7 @@ description here.
 - Pixel and vertex shaders are loaded for specific combination of macro definitions enabled during compilation done in build time.
   This macro definitions set is described in `gfx::Shader::MacroDefinitions` variable `textured_shadows_definitions` which
   is passed to `gfx::Shader::CreateVertex/CreatePixel` functions.
-- Configuration of `gfx::Program::ArgumentDescriptions` is more complex than for simple cube mesh and mostly describes
+- Configuration of `gfx::Program::ArgumentAccessors` is more complex than for simple cube mesh and mostly describes
   Pixel-shader specific argument modifiers, except `g_mesh_uniforms` for Vertex-shader.
   `g_constants`, `g_shadow_sampler`, `g_texture_sampler` arguments are described with `Constant` modifier, while
   other arguments have no modifiers meaning that that can change during frames rendering.
@@ -215,15 +215,15 @@ description here.
                     gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable       },
+                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
             },
             gfx::PixelFormats
             {
@@ -259,9 +259,9 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                 gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::None },
+                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
             },
             gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
             context_settings.depth_stencil_format
@@ -345,12 +345,12 @@ rendered depth texture content for the next render pass. Render command list is 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer_ptr } } },
-        });
+        }, frame_index);
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
             { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
-        });
+        }, frame_index);
 
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
@@ -361,11 +361,9 @@ rendered depth texture content for the next render pass. Render command list is 
             { // No color attachments
             },
             gfx::RenderPass::DepthAttachment(
-                {
-                    gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
-                    gfx::RenderPass::Attachment::LoadAction::Clear,
-                    gfx::RenderPass::Attachment::StoreAction::Store,
-                },
+                gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
+                gfx::RenderPass::Attachment::LoadAction::Clear,
+                gfx::RenderPass::Attachment::StoreAction::Store,
                 context_settings.clear_depth_stencil->first
             ),
             gfx::RenderPass::StencilAttachment(),
@@ -374,7 +372,7 @@ rendered depth texture content for the next render pass. Render command list is 
         });
 
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.shadow_pass.pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 ```
 
@@ -406,20 +404,20 @@ application class `Methane::Graphics::App`. Render command list is created bound
             { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { m_shadow_sampler_ptr                        } } },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexturePtr()         } } },
             { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr                       } } },
-        });
+        }, frame_index);
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
             { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer_ptr  } } },
             { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexturePtr()        } } },
-        });
+        }, frame_index);
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
         frame.final_pass.pass_ptr       = frame.screen_pass_ptr;
 
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.final_pass.pass_ptr);
+        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.pass_ptr);
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 ```
 
@@ -553,7 +551,7 @@ bool ShadowCubeApp::Render()
     RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
     
     return true;

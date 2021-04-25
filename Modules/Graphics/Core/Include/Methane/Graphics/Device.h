@@ -46,8 +46,8 @@ struct IDeviceCallback
 };
 
 struct Device
-    : virtual Object
-    , virtual Data::IEmitter<IDeviceCallback>
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IDeviceCallback> // NOSONAR
 {
     enum class Features : uint32_t
     {

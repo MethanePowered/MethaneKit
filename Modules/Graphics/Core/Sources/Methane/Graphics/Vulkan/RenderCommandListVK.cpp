@@ -49,6 +49,12 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
+{
+    META_FUNCTION_TASK();
+    return nullptr;
+}
+
 RenderCommandListVK::RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : RenderCommandListBase(command_queue, render_pass)
 {
@@ -94,30 +100,36 @@ void RenderCommandListVK::PopDebugGroup()
     CommandListBase::PopDebugGroup();
 }
 
-void RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers)
+bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
+    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+        return false;
 
-    RenderCommandListBase::SetVertexBuffers(vertex_buffers);
-
-    using namespace magic_enum::bitwise_operators;
-    if (!magic_enum::flags::enum_contains(GetDrawingState().changes & DrawingState::Changes::VertexBuffers))
-        return;
+    return true;
 }
 
-void RenderCommandListVK::DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+{
+    META_FUNCTION_TASK();
+    if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
+        return false;
+
+    return true;
+}
+
+void RenderCommandListVK::DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    
-    const auto& vulkan_index_buffer = static_cast<const BufferVK&>(index_buffer);
-    if (index_count == 0)
+
+    DrawingState& drawing_state = GetDrawingState();
+    if (index_count == 0 && drawing_state.index_buffer_ptr)
     {
-        index_count = vulkan_index_buffer.GetFormattedItemsCount();
+        index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
+    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 }
 
 void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,

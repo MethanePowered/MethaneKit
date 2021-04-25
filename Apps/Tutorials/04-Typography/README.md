@@ -342,7 +342,7 @@ bool TypographyApp::Render()
     frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

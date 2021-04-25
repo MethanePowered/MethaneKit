@@ -79,16 +79,19 @@ public:
 
     struct Reservation
     {
+        static constexpr size_t ranges_count = 3;
+        using Ranges = std::array<Range, ranges_count>;
+
         Ref<DescriptorHeap> heap;
-        Range constant_range;
-        Range mutable_range;
+        Ranges              ranges;
 
-        Reservation(const Ref<DescriptorHeap>& in_heap, const Range& in_constant_range, const Range& in_mutable_range);
+        explicit Reservation(const Ref<DescriptorHeap>& heap);
+        Reservation(const Ref<DescriptorHeap>& heap, const Ranges& ranges);
 
-        [[nodiscard]] const Range& GetRange(bool is_constant) const noexcept { return is_constant ? constant_range : mutable_range; }
+        [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }
     };
 
-    static Ptr<DescriptorHeap> Create(ContextBase& context, const Settings& settings);
+    static Ptr<DescriptorHeap> Create(const ContextBase& context, const Settings& settings);
     ~DescriptorHeap() override;
 
     // DescriptorHeap interface
@@ -111,15 +114,15 @@ public:
     [[nodiscard]] static bool         IsShaderVisibleHeapType(Type heap_type)         { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
 
 protected:
-    DescriptorHeap(ContextBase& context, const Settings& settings);
+    DescriptorHeap(const ContextBase& context, const Settings& settings);
 
-    [[nodiscard]] ContextBase& GetContext() { return m_context; }
+    [[nodiscard]] const ContextBase& GetContext() const noexcept { return m_context; }
 
 private:
     using ResourcePtrs = std::vector<const ResourceBase*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    ContextBase&              m_context;
+    const ContextBase&        m_context;
     Settings                  m_settings;
     Data::Size                m_deferred_size;
     Data::Size                m_allocated_size = 0;

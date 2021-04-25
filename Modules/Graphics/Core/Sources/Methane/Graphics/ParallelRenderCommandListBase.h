@@ -54,7 +54,7 @@ public:
     const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
+    void SetResourceBarriers(const Resource::Barriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
     void Complete(uint32_t frame_index) override;
 

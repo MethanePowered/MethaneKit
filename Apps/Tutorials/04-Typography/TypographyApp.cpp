@@ -129,7 +129,7 @@ inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& dis
 
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Typography", true /* animations */, false /* depth */),
+        Samples::GetGraphicsAppSettings("Methane Typography", Samples::AppOptions::Animations),
         { gui::IApp::HeadsUpDisplayMode::UserInterface, true },
         "Dynamic text rendering and fonts management tutorial.")
 {
@@ -215,7 +215,7 @@ void TypographyApp::Init()
     // Create per-frame command lists
     for(TypographyFrame& frame : GetFrames())
     {
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Text Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
@@ -456,7 +456,7 @@ bool TypographyApp::Render()
     frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

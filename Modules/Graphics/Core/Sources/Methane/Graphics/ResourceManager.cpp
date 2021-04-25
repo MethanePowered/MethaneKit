@@ -25,7 +25,7 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 #include "ContextBase.h"
 
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -35,7 +35,7 @@ and deferred releasing of GPU resource.
 namespace Methane::Graphics
 {
 
-inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, ContextBase& context, bool deferred_heap_allocation,
+inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, const ContextBase& context, bool deferred_heap_allocation,
                               const ResourceManager::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
 {
     const auto heap_type_idx = magic_enum::enum_integer(heap_type);
@@ -107,7 +107,7 @@ void ResourceManager::CompleteInitialization()
             META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
             static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
         },
-        Data::GetParallelChunkSizeAsInt(m_program_bindings.size(), 3)
+        Data::GetParallelChunkSize(m_program_bindings.size(), 3)
     );
     m_context.GetParallelExecutor().run(task_flow).get();
 }
@@ -175,7 +175,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     }
 
     Ptrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
-    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::flags::enum_name(type));
+    META_CHECK_ARG_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::enum_name(type));
 
     return desc_heaps[heap_index];
 }
@@ -187,7 +187,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
                          "can not get reference to 'Undefined' descriptor heap");
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDescriptorHeapPtr(type, heap_index);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::flags::enum_name(type), heap_index);
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::enum_name(type), heap_index);
 
     return *resource_heap_ptr;
 }
@@ -219,7 +219,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     META_FUNCTION_TASK();
 
     const Ptr<DescriptorHeap>& resource_heap_ptr = GetDefaultShaderVisibleDescriptorHeapPtr(type);
-    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", magic_enum::flags::enum_name(type));
+    META_CHECK_ARG_NOT_NULL_DESCR(resource_heap_ptr, "There is no shader visible descriptor heap of type '{}'", magic_enum::enum_name(type));
 
     return *resource_heap_ptr;
 }
@@ -259,8 +259,8 @@ void ResourceManager::ForEachDescriptorHeap(FuncType process_heap) const
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             META_CHECK_ARG_EQUAL_DESCR(heap_type, desc_heaps_type,
                                        "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
-                                       magic_enum::flags::enum_name(heap_type),
-                                       magic_enum::flags::enum_name(desc_heaps_type));
+                                       magic_enum::enum_name(heap_type),
+                                       magic_enum::enum_name(desc_heaps_type));
             process_heap(*desc_heap_ptr);
         }
         META_UNUSED(desc_heaps_type);

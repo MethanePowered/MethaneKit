@@ -168,17 +168,19 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access acc
     }
 }
 
-Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassDX>(dynamic_cast<RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPassDX>(dynamic_cast<const RenderContextBase&>(context), settings);
 }
 
-RenderPassDX::RenderPassDX(RenderContextBase& context, const Settings& settings)
+RenderPassDX::RenderPassDX(const RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();
-    if (context.GetSettings().is_emulated_render_pass)
+    using namespace magic_enum::bitwise_operators;
+
+    if (magic_enum::flags::enum_contains(context.GetSettings().options_mask & Context::Options::EmulatedRenderPassOnWindows))
     {
         m_is_native_render_pass_available = false;
     }

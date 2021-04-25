@@ -36,18 +36,18 @@ class ProgramMT;
 class ShaderMT final : public ShaderBase
 {
 public:
-    ShaderMT(Shader::Type shader_type, ContextBase& context, const Settings& settings);
+    ShaderMT(Shader::Type shader_type, const ContextBase& context, const Settings& settings);
     ~ShaderMT() override;
     
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const final;
+    ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const final;
     
     id<MTLFunction>& GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;
     void SetNativeArguments(NSArray<MTLArgument*>* mtl_arguments) noexcept  { m_mtl_arguments = mtl_arguments; }
 
 private:
-    IContextMT& GetContextMT() noexcept;
+    const IContextMT& GetContextMT() const noexcept;
 
     id<MTLFunction>        m_mtl_function;
     NSArray<MTLArgument*>* m_mtl_arguments = nil;

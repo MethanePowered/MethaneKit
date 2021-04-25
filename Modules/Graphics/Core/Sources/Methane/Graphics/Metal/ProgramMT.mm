@@ -35,13 +35,13 @@ Metal implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program> Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramMT>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
+ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_mtl_vertex_desc(GetShaderMT(Shader::Type::Vertex).GetNativeVertexDescriptor(*this))
 {
@@ -63,10 +63,10 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
     mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(ProgramBase::GetSettings().depth_format);
     
-    IContextMT& metal_context = dynamic_cast<IContextMT&>(context);
+    const IContextMT& metal_context = dynamic_cast<const IContextMT&>(context);
     
     NSError* ns_error = nil;
-    id<MTLDevice>& mtl_device = metal_context.GetDeviceMT().GetNativeDevice();
+    const id<MTLDevice>& mtl_device = metal_context.GetDeviceMT().GetNativeDevice();
     m_mtl_dummy_pipeline_state_for_reflection = [mtl_device newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc
                                                                                          options:MTLPipelineOptionArgumentInfo
                                                                                       reflection:&m_mtl_render_pipeline_reflection
@@ -80,7 +80,7 @@ ProgramMT::ProgramMT(ContextBase& context, const Settings& settings)
     {
         SetNativeShaderArguments(Shader::Type::Vertex, m_mtl_render_pipeline_reflection.vertexArguments);
         SetNativeShaderArguments(Shader::Type::Pixel,  m_mtl_render_pipeline_reflection.fragmentArguments);
-        InitArgumentBindings(settings.argument_descriptions);
+        InitArgumentBindings(settings.argument_accessors);
     }
 }
 
@@ -90,10 +90,10 @@ ProgramMT::~ProgramMT()
     [m_mtl_vertex_desc release];
 }
 
-IContextMT& ProgramMT::GetContextMT() noexcept
+const IContextMT& ProgramMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
+    return static_cast<const IContextMT&>(GetContext());
 }
 
 ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept

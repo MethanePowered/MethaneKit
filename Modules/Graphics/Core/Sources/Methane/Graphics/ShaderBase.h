@@ -43,7 +43,7 @@ class ShaderBase
     , public std::enable_shared_from_this<ShaderBase>
 {
 public:
-    ShaderBase(Type type, ContextBase& context, const Settings& settings);
+    ShaderBase(Type type, const ContextBase& context, const Settings& settings);
 
     // Shader interface
     Type             GetType() const noexcept override       { return m_type; }
@@ -51,20 +51,19 @@ public:
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
-    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentDescriptions& argument_descriptions) const = 0;
+    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const = 0;
 
     Ptr<ShaderBase> GetPtr() { return shared_from_this(); }
 
 protected:
-    ContextBase&        GetContext()        { return m_context; }
-    const ContextBase&  GetContext() const  { return m_context; }
+    const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
     std::string         GetCompiledEntryFunctionName() const;
 
 private:
-    const Type        m_type;
-    ContextBase&      m_context;
-    const Settings    m_settings;
+    const Type         m_type;
+    const ContextBase& m_context;
+    const Settings     m_settings;
 };
 
 } // namespace Methane::Graphics

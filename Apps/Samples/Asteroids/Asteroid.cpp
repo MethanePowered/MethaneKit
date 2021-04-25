@@ -105,15 +105,13 @@ Asteroid::Asteroid(gfx::RenderContext& context)
     : BaseBuffers(context, Mesh(3, true), "Asteroid")
 {
     META_FUNCTION_TASK();
-
     SetTexture(GenerateTextureArray(context, gfx::Dimensions(256, 256), 1, true, TextureNoiseParameters()));
 }
 
-Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
+Ptr<gfx::Texture> Asteroid::GenerateTextureArray(const gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped,
                                                  const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
-
     const gfx::Resource::SubResources sub_resources = GenerateTextureArraySubresources(dimensions, array_size, noise_parameters);
     Ptr<gfx::Texture> texture_array_ptr = gfx::Texture::CreateImage(context, dimensions, array_size, gfx::PixelFormat::RGBA8Unorm, mipmapped);
     texture_array_ptr->SetData(sub_resources);
@@ -123,7 +121,6 @@ Ptr<gfx::Texture> Asteroid::GenerateTextureArray(gfx::RenderContext& context, co
 gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters)
 {
     META_FUNCTION_TASK();
-
     const gfx::PixelFormat pixel_format = gfx::PixelFormat::RGBA8Unorm;
     const uint32_t         pixel_size   = gfx::GetPixelSize(pixel_format);
     const uint32_t         pixels_count = dimensions.GetPixelsCount();

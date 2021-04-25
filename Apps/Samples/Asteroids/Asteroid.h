@@ -36,12 +36,12 @@ namespace gfx = Graphics;
 
 struct META_UNIFORM_ALIGN AsteroidUniforms
 {
-    hlslpp::float4x4 model_matrix;
-    hlslpp::float4x4 mvp_matrix;
-    hlslpp::float3   deep_color;
-    hlslpp::float3   shallow_color;
-    hlslpp::float2   depth_range;
-    uint32_t         texture_index;
+    hlslpp::float4x4  model_matrix;
+    gfx::Color3F      deep_color;
+    gfx::Color3F      shallow_color;
+    float             depth_min;
+    float             depth_max;
+    uint32_t          texture_index;
 };
 
 class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
@@ -83,10 +83,10 @@ public:
 
     struct Parameters
     {
-        const uint32_t       index;
-        const uint32_t       mesh_instance_index;
-        const uint32_t       texture_index;
-        const Colors         colors;
+        const uint32_t         index;
+        const uint32_t         mesh_instance_index;
+        const uint32_t         texture_index;
+        const Colors           colors;
         const hlslpp::float4x4 scale_translate_matrix;
         const hlslpp::float3   spin_axis;
         const float            scale;
@@ -106,8 +106,10 @@ public:
 
     explicit Asteroid(gfx::RenderContext& context);
     
-    static Ptr<gfx::Texture> GenerateTextureArray(gfx::RenderContext& context, const gfx::Dimensions& dimensions, uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
-    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size, const TextureNoiseParameters& noise_parameters);
+    static Ptr<gfx::Texture> GenerateTextureArray(const gfx::RenderContext& context, const gfx::Dimensions& dimensions,
+                                                  uint32_t array_size, bool mipmapped, const TextureNoiseParameters& noise_parameters);
+    static gfx::Resource::SubResources GenerateTextureArraySubresources(const gfx::Dimensions& dimensions, uint32_t array_size,
+                                                                        const TextureNoiseParameters& noise_parameters);
 
     static constexpr size_t color_schema_size = 6U;
     static Colors GetAsteroidRockColors(uint32_t deep_color_index, uint32_t shallow_color_index);

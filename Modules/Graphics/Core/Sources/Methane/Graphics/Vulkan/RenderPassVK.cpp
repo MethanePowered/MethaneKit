@@ -32,13 +32,13 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassVK>(dynamic_cast<RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPassVK>(dynamic_cast<const RenderContextBase&>(context), settings);
 }
 
-RenderPassVK::RenderPassVK(RenderContextBase& context, const Settings& settings)
+RenderPassVK::RenderPassVK(const RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();
@@ -70,10 +70,10 @@ void RenderPassVK::Reset()
     }
 }
 
-IContextVK& RenderPassVK::GetContextVK() noexcept
+const IContextVK& RenderPassVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetRenderContext());
+    return static_cast<const IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

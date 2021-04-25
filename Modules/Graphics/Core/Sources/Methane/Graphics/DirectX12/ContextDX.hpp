@@ -28,6 +28,7 @@ DirectX 12 base template implementation of the context interface.
 #include "ContextDX.h"
 #include "CommandQueueDX.h"
 
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -67,21 +68,12 @@ public:
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
     }
 
-    // Object interface
-
-    void SetName(const std::string& name) override
-    {
-        META_FUNCTION_TASK();
-        ContextBaseT::SetName(name);
-        GetDevice().SetName(name + " Device");
-    }
-
     // IContextDX interface
 
-    const DeviceDX& GetDeviceDX() const noexcept final       { return static_cast<const DeviceDX&>(GetDeviceBase()); }
-    CommandQueueDX& GetUploadCommandQueueDX() noexcept final { return static_cast<CommandQueueDX&>(GetUploadCommandQueue()); }
+    const DeviceDX& GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
+    CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
 
-    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) final
+    ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
@@ -90,7 +82,7 @@ public:
         {
             D3D12_QUERY_HEAP_DESC query_heap_desc{};
             query_heap_desc.Count = max_query_count;
-            query_heap_desc.Type  = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+            query_heap_desc.Type  = type;
             ThrowIfFailed(GetDeviceDX().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
                           GetDeviceDX().GetNativeDevice().Get());
         }
@@ -103,7 +95,7 @@ protected:
 
 private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
-    NativeQueryHeaps m_query_heaps;
+    mutable NativeQueryHeaps m_query_heaps;
 };
 
 } // namespace Methane::Graphics

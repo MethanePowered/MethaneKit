@@ -93,8 +93,8 @@ public:
     [[nodiscard]] explicit operator std::string() const noexcept { META_FUNCTION_TASK(); return fmt::format("[{}, {})", m_start, m_end); }
 
 private:
-    ScalarT m_start;
-    ScalarT m_end;
+    ScalarT m_start{};
+    ScalarT m_end  {};
 };
 
 } // namespace Methane::Data

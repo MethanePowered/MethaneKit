@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -23,10 +23,22 @@ Base implementation of the render state interface.
 
 #include "RenderStateBase.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
+#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+
+template<>
+struct fmt::formatter<Methane::Graphics::RenderState::Blending::RenderTarget>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::RenderState::Blending::RenderTarget& rt, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rt)); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
 
 namespace Methane::Graphics
 {
@@ -84,6 +96,12 @@ bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     return true;
 }
 
+ViewState::Settings::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("  - Viewports: {};\n  - Scissor Rects: {}.", fmt::join(viewports, ", "), fmt::join(scissor_rects, ", "));
+}
+
 bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -95,6 +113,15 @@ bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
+}
+
+RenderState::Rasterizer::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("  - Rasterizer: front={}, cull={}, fill={}, sample_count={}, alpha_to_coverage={}",
+                       (is_front_counter_clockwise ? "CW" : "CCW"),
+                       magic_enum::enum_name(cull_mode), magic_enum::enum_name(fill_mode),
+                       sample_count, alpha_to_coverage_enabled);
 }
 
 bool RenderState::Blending::RenderTarget::operator==(const RenderTarget& other) const noexcept
@@ -112,6 +139,20 @@ bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) 
     return !operator==(other);
 }
 
+RenderState::Blending::RenderTarget::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!blend_enabled)
+        return "    - Render Target blending is disabled";
+
+    return fmt::format("    - Render Target blending: write_mask={}, rgb_blend_op={}, alpha_blend_op={}, "
+                       "source_rgb_blend_factor={}, source_alpha_blend_factor={}, dest_rgb_blend_factor={}, dest_alpha_blend_factor={}",
+                       Data::GetBitMaskFlagNames(write_mask),
+                       magic_enum::enum_name(rgb_blend_op), magic_enum::enum_name(alpha_blend_op),
+                       magic_enum::enum_name(source_rgb_blend_factor), magic_enum::enum_name(source_alpha_blend_factor),
+                       magic_enum::enum_name(dest_rgb_blend_factor), magic_enum::enum_name(dest_alpha_blend_factor));
+}
+
 bool RenderState::Blending::operator==(const Blending& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -125,6 +166,14 @@ bool RenderState::Blending::operator!=(const Blending& other) const noexcept
     return !operator==(other);
 }
 
+RenderState::Blending::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return is_independent
+         ? fmt::format("  - Blending is independent for render targets:\n{}.", fmt::join(render_targets, ";\n"))
+         : fmt::format("  - Blending is common for all render targets:\n{}.", static_cast<std::string>(render_targets[0]));
+}
+
 bool RenderState::Depth::operator==(const Depth& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -135,6 +184,16 @@ bool RenderState::Depth::operator!=(const Depth& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
+}
+
+RenderState::Depth::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!enabled)
+        return "  - Depth is disabled";
+
+    return fmt::format("  - Depth is enabled: write_enabled={}, compare={}",
+                       write_enabled, magic_enum::enum_name(compare));
 }
 
 bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
@@ -150,6 +209,15 @@ bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& othe
     return !operator==(other);
 }
 
+RenderState::Stencil::FaceOperations::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("face operations: stencil_failure={}, stencil_pass={}, depth_failure={}, depth_stencil_pass={}, compare={}",
+                       magic_enum::enum_name(stencil_failure), magic_enum::enum_name(stencil_pass),
+                       magic_enum::enum_name(depth_failure), magic_enum::enum_name(depth_stencil_pass),
+                       magic_enum::enum_name(compare));
+}
+
 bool RenderState::Stencil::operator==(const Stencil& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -161,6 +229,16 @@ bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
+}
+
+RenderState::Stencil::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    if (!enabled)
+        return "  - Stencil is disabled";
+
+    return fmt::format("  - Stencil is enabled: read_mask={:x}, write_mask={:x}, face operations:\n    - Front {};\n    - Back {}.",
+                       read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
 RenderState::Groups RenderState::Settings::Compare(const Settings& left, const Settings& right, Groups compare_groups) noexcept
@@ -201,17 +279,31 @@ RenderState::Groups RenderState::Settings::Compare(const Settings& left, const S
 
 bool RenderState::Settings::operator==(const Settings& other) const noexcept
 {
+    META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) ==
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
 bool RenderState::Settings::operator!=(const Settings& other) const noexcept
 {
+    META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) !=
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-RenderStateBase::RenderStateBase(RenderContextBase& context, const Settings& settings)
+RenderState::Settings::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("  - Program '{}';\n{};\n{};\n{}\n{}\n  - Blending color: {}.",
+                       program_ptr->GetName(),
+                       static_cast<std::string>(rasterizer),
+                       static_cast<std::string>(depth),
+                       static_cast<std::string>(stencil),
+                       static_cast<std::string>(blending),
+                       static_cast<std::string>(blending_color));
+}
+
+RenderStateBase::RenderStateBase(const RenderContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
 {

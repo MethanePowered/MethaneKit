@@ -33,7 +33,7 @@ class ContextBase;
 class DescriptorHeapVK final : public DescriptorHeap
 {
 public:
-    DescriptorHeapVK(ContextBase& context, const Settings& settings);
+    DescriptorHeapVK(const ContextBase& context, const Settings& settings);
     ~DescriptorHeapVK() override;
 };
 

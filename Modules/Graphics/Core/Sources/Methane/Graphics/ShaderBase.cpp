@@ -46,7 +46,7 @@ std::string Shader::ConvertMacroDefinitionsToString(const MacroDefinitions& macr
     return ss.str();
 }
 
-ShaderBase::ShaderBase(Type type, ContextBase& context, const Settings& settings)
+ShaderBase::ShaderBase(Type type, const ContextBase& context, const Settings& settings)
     : m_type(type)
     , m_context(context)
     , m_settings(settings)

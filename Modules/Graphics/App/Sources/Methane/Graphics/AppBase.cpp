@@ -34,6 +34,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -47,16 +48,28 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     , m_image_loader(textures_provider)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
     add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
     add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
     add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
-    add_flag("-e,--emulated-render-pass", m_initial_context_settings.is_emulated_render_pass, "Render pass emulation on Windows");
+
+#ifdef _WIN32
+    add_flag("-e,--emulated-render-pass",
+             [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= Context::Options::EmulatedRenderPassOnWindows; },
+             "Render pass emulation with traditional DX API");
+    add_flag("-q,--blit-with-direct-queue",
+             [this](int64_t is_direct) { if (is_direct) m_initial_context_settings.options_mask |= Context::Options::BlitWithDirectQueueOnWindows; },
+             "Blit command lists and queues use DIRECT instead of COPY type in DX API");
+#endif
 }
 
 void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
+    META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
+
     const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
     META_CHECK_ARG_NOT_EMPTY(devices);
 
@@ -72,7 +85,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
     m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
-    m_context_ptr->SetName("App Render Context");
+    m_context_ptr->SetName("Graphics Context");
     m_context_ptr->Connect(*this);
 
     AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });
@@ -83,6 +96,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
 void AppBase::Init()
 {
     META_FUNCTION_TASK();
+    META_LOG("\n======================== APP INITIALIZATION ========================");
 
     if (!m_settings.animations_enabled)
     {
@@ -129,6 +143,8 @@ bool AppBase::Resize(const FrameSize& frame_size, bool is_minimized)
     if (!Platform::App::Resize(frame_size, is_minimized))
         return false;
 
+    META_LOG("\n========================== FRAMES RESIZING ==========================");
+
     m_initial_context_settings.frame_size = frame_size;
 
     // Update viewports and scissor rects state
@@ -143,6 +159,8 @@ bool AppBase::Update()
     META_FUNCTION_TASK();
     if (Platform::App::IsMinimized())
         return false;
+
+    META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context_ptr->GetFrameIndex() : 0U);
 
     System::Get().CheckForChanges();
 
@@ -172,6 +190,8 @@ bool AppBase::Render()
     META_CHECK_ARG_NOT_NULL_DESCR(m_context_ptr, "RenderContext is not initialized before rendering.");
     if (!m_context_ptr->ReadyToRender())
         return false;
+
+    META_LOG("\n========================= FRAME {} RENDERING =========================", m_context_ptr->GetFrameIndex());
 
     // Wait for previous frame rendering is completed and switch to next frame
     m_context_ptr->WaitForGpu(Context::WaitFor::FramePresented);
@@ -234,24 +254,20 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer
     return RenderPass::Create(*m_context_ptr, {
         {
             RenderPass::ColorAttachment(
-                {
-                    Texture::Location{ frame_buffer_texture },
-                    context_settings.clear_color.has_value()
-                        ? RenderPass::Attachment::LoadAction::Clear
-                        : RenderPass::Attachment::LoadAction::DontCare,
-                    RenderPass::Attachment::StoreAction::Store,
-                },
+                Texture::Location{ frame_buffer_texture },
+                context_settings.clear_color.has_value()
+                    ? RenderPass::Attachment::LoadAction::Clear
+                    : RenderPass::Attachment::LoadAction::DontCare,
+                RenderPass::Attachment::StoreAction::Store,
                 context_settings.clear_color.value_or(Color4F())
             )
         },
         RenderPass::DepthAttachment(
-            {
-                Texture::Location{ m_depth_texture_ptr },
-                context_settings.clear_depth_stencil.has_value()
-                    ? RenderPass::Attachment::LoadAction::Clear
-                    : RenderPass::Attachment::LoadAction::DontCare,
-                RenderPass::Attachment::StoreAction::DontCare,
-            },
+            Texture::Location{ m_depth_texture_ptr },
+            context_settings.clear_depth_stencil.has_value()
+                ? RenderPass::Attachment::LoadAction::Clear
+                : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::DontCare,
             context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
         ),
         RenderPass::StencilAttachment(),

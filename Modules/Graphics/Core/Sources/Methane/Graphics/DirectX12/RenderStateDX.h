@@ -59,7 +59,7 @@ private:
 class RenderStateDX final : public RenderStateBase
 {
 public:
-    RenderStateDX(RenderContextBase& context, const Settings& settings);
+    RenderStateDX(const RenderContextBase& context, const Settings& settings);
 
     // RenderState interface
     void Reset(const Settings& settings) override;
@@ -75,7 +75,7 @@ public:
 
 private:
     ProgramDX& GetProgramDX();
-    RenderContextDX& GetRenderContextDX();
+    const RenderContextDX& GetRenderContextDX() const noexcept;
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
     wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;

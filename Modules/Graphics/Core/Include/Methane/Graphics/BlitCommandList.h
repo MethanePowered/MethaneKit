@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/BlitCommandList.h
-Methane blit command list interface.
+Methane BLIT command list interface.
 
 ******************************************************************************/
 
@@ -30,8 +30,10 @@ Methane blit command list interface.
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList
+struct BlitCommandList : virtual CommandList // NOSONAR
 {
+    static constexpr Type type = Type::Blit;
+
     // Create BlitCommandList instance
     [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
 };

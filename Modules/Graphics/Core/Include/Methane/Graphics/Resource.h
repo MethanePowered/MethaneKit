@@ -24,28 +24,31 @@ Methane resource interface: base class of all GPU resources.
 #pragma once
 
 #include "Object.h"
+#include "SubResource.h"
+#include "ResourceBarriers.h"
 
 #include <Methane/Memory.hpp>
-#include <Methane/Data/Chunk.hpp>
-#include <Methane/Data/Range.hpp>
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Graphics/Types.h>
-
-#include <fmt/format.h>
-
-#include <magic_enum.hpp>
-#include <string>
-#include <vector>
-#include <map>
-#include <array>
-#include <optional>
 
 namespace Methane::Graphics
 {
 
 struct Context;
+struct CommandQueue;
+struct Resource;
 class DescriptorHeap;
 
-struct Resource : virtual Object
+struct IResourceCallback
+{
+    virtual void OnResourceReleased(Resource& resource) = 0;
+
+    virtual ~IResourceCallback() = default;
+};
+
+struct Resource
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IResourceCallback> // NOSONAR
 {
     enum class Type
     {
@@ -66,11 +69,10 @@ struct Resource : virtual Object
         Addressable  = 1U << 4U,
     };
 
-    static constexpr Usage s_secondary_usage_mask = []() constexpr
-    {
-        using namespace magic_enum::bitwise_operators;
-        return Usage::Addressable | Usage::ReadBack;
-    }();
+    static constexpr Usage s_secondary_usage_mask = static_cast<Usage>(
+        static_cast<uint32_t>(Usage::Addressable) |
+        static_cast<uint32_t>(Usage::ReadBack)
+    );
 
     struct Descriptor
     {
@@ -80,129 +82,34 @@ struct Resource : virtual Object
         Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
     };
 
+    using State         = ResourceState;
     using DescriptorByUsage = std::map<Usage, Descriptor>;
-    using BytesRange = Data::Range<Data::Index>;
-
-    class SubResource : public Data::Chunk
-    {
-    public:
-        class Index;
-
-        class Count
-        {
-        public:
-            explicit Count(Data::Size array_size  = 1U, Data::Size depth  = 1U, Data::Size mip_levels_count = 1U);
-
-            [[nodiscard]] Data::Size GetDepth() const noexcept          { return m_depth; }
-            [[nodiscard]] Data::Size GetArraySize() const noexcept      { return m_array_size; }
-            [[nodiscard]] Data::Size GetMipLevelsCount() const noexcept { return m_mip_levels_count; }
-            [[nodiscard]] Data::Size GetRawCount() const noexcept       { return m_depth * m_array_size * m_mip_levels_count; }
-
-            void operator+=(const Index& other) noexcept;
-            [[nodiscard]] bool operator==(const Count& other) const noexcept;
-            [[nodiscard]] bool operator!=(const Count& other) const noexcept { return !operator==(other); }
-            [[nodiscard]] bool operator<(const Count& other) const noexcept;
-            [[nodiscard]] bool operator>=(const Count& other) const noexcept;
-            [[nodiscard]] explicit operator Index() const noexcept;
-            [[nodiscard]] explicit operator std::string() const noexcept;
-
-        private:
-            Data::Size m_depth;
-            Data::Size m_array_size;
-            Data::Size m_mip_levels_count;
-        };
-
-        class Index
-        {
-        public:
-            explicit Index(Data::Index depth_slice  = 0U, Data::Index array_index  = 0U, Data::Index mip_level = 0U) noexcept;
-            Index(Data::Index raw_index, const Count& count);
-            explicit Index(const Count& count);
-            Index(const Index&) noexcept = default;
-
-            Index& operator=(const Index&) noexcept = default;
-
-            [[nodiscard]] Data::Index GetDepthSlice() const noexcept { return m_depth_slice; }
-            [[nodiscard]] Data::Index GetArrayIndex() const noexcept { return m_array_index; }
-            [[nodiscard]] Data::Index GetMipLevel() const noexcept   { return m_mip_level; }
-            [[nodiscard]] Data::Index GetRawIndex(const Count& count) const noexcept
-            { return (m_array_index * count.GetDepth() + m_depth_slice) * count.GetMipLevelsCount() + m_mip_level; }
-
-            [[nodiscard]] bool operator==(const Index& other) const noexcept;
-            [[nodiscard]] bool operator!=(const Index& other) const noexcept { return !operator==(other); }
-            [[nodiscard]] bool operator<(const Index& other) const noexcept;
-            [[nodiscard]] bool operator>=(const Index& other) const noexcept;
-            [[nodiscard]] bool operator<(const Count& other) const noexcept;
-            [[nodiscard]] bool operator>=(const Count& other) const noexcept;
-            [[nodiscard]] explicit operator std::string() const noexcept;
-
-        private:
-            Data::Index m_depth_slice;
-            Data::Index m_array_index;
-            Data::Index m_mip_level;
-        };
-
-        using BytesRangeOpt = std::optional<BytesRange>;
-
-        explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
-        SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
-        ~SubResource() = default;
-
-        [[nodiscard]] const Index&         GetIndex() const noexcept             { return m_index; }
-        [[nodiscard]] bool                 HasDataRange() const noexcept         { return m_data_range.has_value(); }
-        [[nodiscard]] const BytesRange&    GetDataRange() const                  { return m_data_range.value(); }
-        [[nodiscard]] const BytesRangeOpt& GetDataRangeOptional() const noexcept { return m_data_range; }
-
-    private:
-        Index         m_index;
-        BytesRangeOpt m_data_range;
-    };
-
-    using SubResources = std::vector<SubResource>;
-
-    class Location
-    {
-    public:
-        Location() = default;
-        Location(const Ptr<Resource>& resource_ptr, Data::Size offset = 0U) : Location(resource_ptr, SubResource::Index(), offset) { }
-        Location(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset = 0U);
-
-        [[nodiscard]] bool operator==(const Location& other) const noexcept;
-
-        [[nodiscard]] bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
-        [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
-        [[nodiscard]] Resource&                 GetResource() const;
-        [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
-        [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_offset; }
-
-    private:
-        Ptr<Resource>      m_resource_ptr;
-        SubResource::Index m_subresource_index;
-        Data::Size         m_offset = 0U;
-    };
-
-    using Locations = std::vector<Location>;
+    using BytesRange    = Methane::Graphics::BytesRange;
+    using BytesRangeOpt = Methane::Graphics::BytesRangeOpt;
+    using SubResource   = Methane::Graphics::SubResource;
+    using SubResources  = Methane::Graphics::SubResources;
+    using Location      = Methane::Graphics::ResourceLocation;
+    using Locations     = Methane::Graphics::ResourceLocations;
+    using Barrier       = Methane::Graphics::ResourceBarrier;
+    using Barriers      = Methane::Graphics::ResourceBarriers;
 
     template<typename TResource>
-    static Locations CreateLocations(const std::vector<std::shared_ptr<TResource>>& resources)
-    {
-        Resource::Locations resource_locations;
-        std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
-                       [](const std::shared_ptr<TResource>& resource_ptr) { return Location(resource_ptr); });
-        return resource_locations;
-    }
+    static Locations CreateLocations(const Ptrs<TResource>& resources) { return CreateResourceLocations(resources); }
 
     // Resource interface
-    virtual void SetData(const SubResources& sub_resources) = 0;
-    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) = 0;
+    virtual bool SetState(State state) = 0;
+    virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
+    virtual void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue = nullptr) = 0;
+    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
+    [[nodiscard]] virtual State                     GetState() const noexcept = 0;
     [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
     [[nodiscard]] virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
     [[nodiscard]] virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
-    [[nodiscard]] virtual Context&                  GetContext() noexcept = 0;
+    [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

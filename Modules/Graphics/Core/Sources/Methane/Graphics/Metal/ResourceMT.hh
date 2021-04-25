@@ -35,28 +35,28 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class ResourceBarriersMT final : public ResourceBase::Barriers
-{
-public:
-    explicit ResourceBarriersMT(const Set& barriers) : Barriers(barriers) {}
-};
-
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
 class ResourceMT : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceMT(ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
+    ResourceMT(const ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
     }
 
+    ~ResourceMT() override
+    {
+        // Resource released callback has to be emitted before native resource is released
+        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+    }
+
 protected:
-    IContextMT& GetContextMT() noexcept
+    const IContextMT& GetContextMT() const noexcept
     {
         META_FUNCTION_TASK();
-        return static_cast<IContextMT&>(ResourceBase::GetContextBase());
+        return static_cast<const IContextMT&>(ResourceBase::GetContextBase());
     }
 
     const id<MTLBuffer>& GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
@@ -68,7 +68,7 @@ protected:
         id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
         if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.GetDataSize())
         {
-            id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
+            const id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
             mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
                                                                     length:sub_resource.GetDataSize()
                                                                    options:MTLResourceStorageModeShared];

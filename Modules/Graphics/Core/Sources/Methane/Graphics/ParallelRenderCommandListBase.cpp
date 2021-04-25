@@ -31,7 +31,7 @@ Base implementation of the parallel render command list interface.
 #include "ContextBase.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 
 #include <taskflow/taskflow.hpp>
 #include <fmt/format.h>
@@ -67,24 +67,24 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
 void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, p_debug_group](size_t command_list_index)
+    ResetImpl(p_debug_group, [this, p_debug_group](const Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
 void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](size_t command_list_index)
+    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(static_cast<Data::Index>(command_list_index)) : nullptr);
+        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
@@ -105,11 +105,11 @@ void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const R
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
-    reset_task_flow.for_each_index_guided(0, static_cast<int>(m_parallel_command_lists.size()), 1, reset_command_list_fn,
-                                          Data::GetParallelChunkSizeAsInt(m_parallel_command_lists.size()));
+    reset_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(m_parallel_command_lists.size()), 1U, reset_command_list_fn,
+                                          Data::GetParallelChunkSize(m_parallel_command_lists.size()));
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
-    for(size_t command_list_index = 0U; command_list_index < m_parallel_command_lists.size(); ++command_list_index)
+    for(Data::Index command_list_index = 0U; command_list_index < static_cast<Data::Index>(m_parallel_command_lists.size()); ++command_list_index)
         reset_command_list_fn(command_list_index);
 #endif
 }
@@ -117,12 +117,15 @@ void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const R
 void ParallelRenderCommandListBase::Commit()
 {
     META_FUNCTION_TASK();
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
-    {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Commit();
-    }
-
+    tf::Taskflow commit_task_flow;
+    commit_task_flow.for_each(m_parallel_command_lists.begin(), m_parallel_command_lists.end(),
+        [](const Ptr<RenderCommandList>& render_command_list_ptr)
+        {
+            META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+            render_command_list_ptr->Commit();
+        }
+    );
+    GetCommandQueueBase().GetContext().GetParallelExecutor().run(commit_task_flow).get();
     CommandListBase::Commit();
 }
 

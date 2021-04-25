@@ -55,7 +55,7 @@ private:
 class RenderStateMT final : public RenderStateBase
 {
 public:
-    RenderStateMT(RenderContextBase& context, const Settings& settings);
+    RenderStateMT(const RenderContextBase& context, const Settings& settings);
     ~RenderStateMT() override;
     
     // RenderState interface
@@ -77,7 +77,7 @@ public:
     MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
 private:
-    RenderContextMT& GetRenderContextMT();
+    const RenderContextMT& GetRenderContextMT() const;
     
     void ResetNativeState();
     

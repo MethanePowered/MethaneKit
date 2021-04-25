@@ -36,21 +36,21 @@ class RenderContextMT;
 class CommandQueueMT final : public CommandQueueBase
 {
 public:
-    CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueMT() override;
 
     // Object interface
     void SetName(const std::string& name) override;
     
-    IContextMT& GetContextMT() noexcept;
-    RenderContextMT& GetRenderContextMT();
+    const IContextMT& GetContextMT() const noexcept;
+    const RenderContextMT& GetRenderContextMT() const;
     
-    id<MTLCommandQueue>&  GetNativeCommandQueue() { return m_mtl_command_queue; }
+    const id<MTLCommandQueue>&  GetNativeCommandQueue() const { return m_mtl_command_queue; }
 
 private:
     void Reset();
     
-    id<MTLCommandQueue>  m_mtl_command_queue = nil;
+    id<MTLCommandQueue> m_mtl_command_queue = nil;
 };
 
 } // namespace Methane::Graphics

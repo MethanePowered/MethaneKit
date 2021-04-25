@@ -37,13 +37,13 @@ class SamplerBase
     , public ResourceBase
 {
 public:
-    SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Sampler interface
     const Settings& GetSettings() const override { return m_settings; }
 
     // Resource interface
-    void        SetData(const SubResources& sub_resources) override;
+    void        SetData(const SubResources& sub_resources, CommandQueue*) override;
     Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 private:

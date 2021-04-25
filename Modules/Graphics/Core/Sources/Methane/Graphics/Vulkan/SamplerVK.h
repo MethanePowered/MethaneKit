@@ -35,7 +35,7 @@ struct IContextVK;
 class SamplerVK final : public ResourceVK<SamplerBase>
 {
 public:
-    SamplerVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Object interface
     void SetName(const std::string& name) override;

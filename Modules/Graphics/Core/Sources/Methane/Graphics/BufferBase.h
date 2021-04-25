@@ -35,19 +35,19 @@ class BufferBase
     , public ResourceBase
 {
 public:
-    BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // Buffer interface
-    const Settings& GetSettings() const noexcept final       { return m_settings; }
+    const Settings& GetSettings() const noexcept final { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept final;
 
-    Ptr<BufferBase> GetBufferPtr()                           { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
+    Ptr<BufferBase> GetBufferPtr() { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
 
 private:
-    Settings    m_settings;
+    Settings m_settings;
 };
 
 class BufferSetBase
@@ -61,15 +61,19 @@ public:
     Buffer::Type        GetType() const noexcept final  { return m_buffers_type; }
     Data::Size          GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<Buffer>& GetRefs() const noexcept final  { return m_refs; }
+    std::string         GetNames() const noexcept final;
     Buffer&             operator[](Data::Index index) const final;
 
-    const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
+    [[nodiscard]] bool  SetState(Resource::State state);
+    [[nodiscard]] const Ptr<Resource::Barriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
+    [[nodiscard]] const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:
-    const Buffer::Type  m_buffers_type;
-    Refs<Buffer>        m_refs;
-    Ptrs<Buffer>        m_ptrs;
-    RawPtrs<BufferBase> m_raw_ptrs;
+    const Buffer::Type      m_buffers_type;
+    Refs<Buffer>            m_refs;
+    Ptrs<Buffer>            m_ptrs;
+    RawPtrs<BufferBase>     m_raw_ptrs;
+    Ptr<Resource::Barriers> m_setup_transition_barriers;
 };
 
 } // namespace Methane::Graphics

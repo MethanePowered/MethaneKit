@@ -1,21 +1,20 @@
 # Methane Kit <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-purple.svg?style=flat)](https://github.com/egorodet/MethaneKit/issues)
+[![Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
+[![CodeQL](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml)
 
-**Easy to use modern 3D graphics abstraction API in C++17 for cross-platform applications development:**
-- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS, Vulkan on Linux will be enabled soon.
-- **Simplifies modern graphics programming** with object-oriented higher-level graphics API inspired by simplicity of Apple's Metal and common shaders code in HLSL 6.
-- **Provides cross-platform application infrastructure** from CMake-based toolchain to platform independent application and user input classes.
+**Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
+- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS, Vulkan on Linux is coming soon.
+- **Simplifies modern graphics programming** with object-oriented medium-level graphics API inspired by simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
+- **Provides cross-platform application framework** from CMake-based build toolchain to platform independent application foundation classes.
+
+Download [release builds](https://github.com/egorodet/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
+Check latest build status, tests, code coverage and analysis results or get build artifacts from [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI and [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
+See [Building from Sources](#building-from-sources) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) and other tutorials documentation.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
-
-- Click "Open in Gitpod" button to explore project code right away in VSCode IDE running in web-browser with navigation by symbols and cloud-builds.
-- Download [release builds](https://github.com/egorodet/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out.
-- Check latest build status, tests, code coverage and analysis results or get build artifacts from [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI and [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
-- See [Building from Sources](#building-from-sources) topic for manual build instructions.
-- Start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) and other tutorials documentation.
 
 |     Platform     | Graphics API |  Master Build Status  |  Develop Build Status  |
 | ---------------- | -------------| --------------------- | ---------------------- |
@@ -40,8 +39,6 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 [![Windows Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Coverage](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=coverage)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=ncloc)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
-[![Codacy](https://api.codacy.com/project/badge/Grade/25ae34bade994076bf636290791b3e0f)](https://www.codacy.com/app/egorodet/MethaneKit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=egorodet/MethaneKit&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/egorodet/methanekit/badge)](https://www.codefactor.io/repository/github/egorodet/methanekit)
 [![Total lines](https://tokei.rs/b1/github/egorodet/MethaneKit)](https://github.com/egorodet/MethaneKit)
 
 ![Asteroids sample on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg)
@@ -59,6 +56,26 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
 [Methane Graphics Core](Modules/Graphics/Core) module implements a set of public object-oriented interfaces, 
 which make modern graphics programming easy and convenient in a platform and API independent way.
 ![Graphics Core Interfaces](Docs/Diagrams/MethaneKit_GraphicsCore_Interfaces.svg)
+
+### Tutorials
+
+Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation
+and continue with others.
+
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
+| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
+| [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
+| [Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
+| [Typography](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
+
+### Samples
+
+Methane samples demonstrate advanced techniques and usage scenarios with more complex implementation than tutorials above.
+
+| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
+| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads. |
 
 ### Features
 
@@ -97,31 +114,11 @@ which make modern graphics programming easy and convenient in a platform and API
 - **Integrated debugging and profiling capabilities**:
   - Library instrumentation for performance analysis with [trace profiling tools](#trace-profiling-tools)
   - Debug names for all GPU objects and debug regions for graphics API calls for use with [frame profiling tools](#frame-profiling-and-debugging-tools)
-- **Continuous integration** with automated multi-platform builds, unit-tests and 
-[Sonar Cloud](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) static code analysis
-in [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/)
+- **Continuous integration** with automated multi-platform builds, unit-tests and
+  [Sonar Cloud](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) static code analysis
+  in [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/)
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
-
-### Tutorials
-
-Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation
-and continue with others.
-
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
-| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in just 120 lines of code! |
-| [Textured Cube](/Apps/Tutorials/02-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/02-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers and textures usage along with program bindings. |
-| [Shadow Cube](/Apps/Tutorials/03-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/03-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes. |
-| [Typography](/Apps/Tutorials/04-Typography) | ![Typography on Windows](Apps/Tutorials/04-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
-
-### Samples
-
-Methane samples demonstrate advanced techniques and usage scenarios with a more complex implementation than tutorials above.
-
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
-| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads. |
 
 ## Building from Sources 
 

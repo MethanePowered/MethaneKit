@@ -284,13 +284,13 @@ void ViewStateDX::Apply(RenderCommandListBase& command_list)
     d3d12_command_list.RSSetScissorRects(static_cast<UINT>(m_dx_scissor_rects.size()), m_dx_scissor_rects.data());
 }
 
-Ptr<RenderState> RenderState::Create(RenderContext& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderStateDX>(dynamic_cast<RenderContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateDX>(dynamic_cast<const RenderContextBase&>(context), state_settings);
 }
 
-RenderStateDX::RenderStateDX(RenderContextBase& context, const Settings& settings)
+RenderStateDX::RenderStateDX(const RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
 {
     META_FUNCTION_TASK();
@@ -439,10 +439,10 @@ ProgramDX& RenderStateDX::GetProgramDX()
     return static_cast<ProgramDX&>(GetProgram());
 }
 
-RenderContextDX& RenderStateDX::GetRenderContextDX()
+const RenderContextDX& RenderStateDX::GetRenderContextDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<RenderContextDX&>(GetRenderContext());
+    return static_cast<const RenderContextDX&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

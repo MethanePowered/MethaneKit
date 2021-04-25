@@ -22,13 +22,14 @@ Base implementation of the program interface.
 ******************************************************************************/
 
 #include "ProgramBase.h"
-#include "ContextBase.h"
+#include "RenderContextBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
 
 #include <magic_enum.hpp>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -36,9 +37,9 @@ namespace Methane::Graphics
 static const std::hash<std::string> g_argument_name_hash;
 
 Program::Argument::Argument(Shader::Type shader_type, const std::string& argument_name) noexcept
-    : shader_type(shader_type)
-    , name(argument_name)
-    , hash(g_argument_name_hash(name) ^ (static_cast<size_t>(shader_type) << 1))
+    : m_shader_type(shader_type)
+    , m_name(argument_name)
+    , m_hash(g_argument_name_hash(m_name) ^ (static_cast<size_t>(shader_type) << 1))
 {
     META_FUNCTION_TASK();
 }
@@ -46,44 +47,57 @@ Program::Argument::Argument(Shader::Type shader_type, const std::string& argumen
 bool Program::Argument::operator==(const Argument& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(hash, shader_type, name) ==
-           std::tie(other.hash, other.shader_type, other.name);
+    return std::tie(m_hash, m_shader_type, m_name) ==
+           std::tie(other.m_hash, other.m_shader_type, other.m_name);
 }
 
 Program::Argument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} {}", magic_enum::flags::enum_name(shader_type), name);
+    return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
 }
 
-Program::ArgumentDesc::ArgumentDesc(Shader::Type shader_type, const std::string& argument_name, Modifiers modifiers) noexcept
+Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type, bool addressable) noexcept
     : Argument(shader_type, argument_name)
-    , modifiers(modifiers)
+    , m_accessor_type(accessor_type)
+    , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDesc::ArgumentDesc(const Argument& argument, Modifiers modifiers) noexcept
+Program::ArgumentAccessor::ArgumentAccessor(const Argument& argument, Type accessor_type, bool addressable) noexcept
     : Argument(argument)
-    , modifiers(modifiers)
+    , m_accessor_type(accessor_type)
+    , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentDescriptions::const_iterator Program::FindArgumentDescription(const ArgumentDescriptions& argument_descriptions, const Argument& argument)
+size_t Program::ArgumentAccessor::GetAccessorIndex() const noexcept
+{
+    return magic_enum::enum_index(m_accessor_type).value();
+}
+
+Program::ArgumentAccessor::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    if (const auto argument_desc_it = argument_descriptions.find(argument);
-        argument_desc_it != argument_descriptions.end())
+    return fmt::format("{} ({}{})", Argument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
+}
+
+Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument)
+{
+    META_FUNCTION_TASK();
+    if (const auto argument_desc_it = argument_accessors.find(argument);
+        argument_desc_it != argument_accessors.end())
         return argument_desc_it;
 
-    const Argument all_shaders_argument(Shader::Type::All, argument.name);
-    return argument_descriptions.find(all_shaders_argument);
+    const Argument all_shaders_argument(Shader::Type::All, argument.GetName());
+    return argument_accessors.find(all_shaders_argument);
 }
 
 Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
-                                        program.GetName(), argument.name, magic_enum::flags::enum_name(argument.shader_type)))
+                                        program.GetName(), argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
     , m_program(program)
     , m_argument_ptr(std::make_unique<Program::Argument>(argument))
 {
@@ -114,7 +128,7 @@ Shader::Types CreateShaderTypes(const Ptrs<Shader>& shaders)
     return shader_types;
 }
 
-ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
+ProgramBase::ProgramBase(const ContextBase& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
@@ -126,9 +140,8 @@ ProgramBase::ProgramBase(ContextBase& context, const Settings& settings)
 ProgramBase::~ProgramBase()
 {
     META_FUNCTION_TASK();
-
     std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (const auto& [heap_type, heap_reservation] : m_constant_descriptor_range_by_heap_type)
+    for (const auto& [heap_and_access_type, heap_reservation] : m_constant_descriptor_range_by_heap_and_access_type)
     {
         if (heap_reservation.range.IsEmpty())
             continue;
@@ -137,10 +150,9 @@ ProgramBase::~ProgramBase()
     }
 }
 
-void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_descriptions)
+void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();
-
     Shader::Types all_shader_types;
     std::map<std::string, Shader::Types, std::less<>> shader_types_by_argument_name_map;
     
@@ -151,13 +163,13 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         const Shader::Type shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
         
-        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_descriptions);
+        const ShaderBase::ArgumentBindings argument_bindings = static_cast<const ShaderBase&>(*shader_ptr).GetArgumentBindings(argument_accessors);
         for (const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binging_ptr : argument_bindings)
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
             m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
-            shader_types_by_argument_name_map[shader_argument.name].insert(shader_argument.shader_type);
+            shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }
     }
     
@@ -167,7 +179,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         if (shader_types != all_shader_types)
             continue;
 
-        Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
+        Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_ptr;
         for(Shader::Type shader_type : all_shader_types)
         {
             const Argument argument{ shader_type, argument_name };
@@ -183,18 +195,72 @@ void ProgramBase::InitArgumentBindings(const ArgumentDescriptions& argument_desc
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
         m_binding_by_argument.try_emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
+
+    if (m_context.GetType() != Context::Type::Render)
+        return;
+
+    // Create frame-constant argument bindings only when program is created in render context
+    m_frame_bindings_by_argument.clear();
+    const auto& render_context = static_cast<const RenderContextBase&>(m_context);
+    const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
+    META_CHECK_ARG_GREATER_OR_EQUAL(frame_buffers_count, 2);
+
+    for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
+    {
+        if (!argument_binding_ptr->GetSettings().argument.IsFrameConstant())
+            continue;
+
+        Ptrs<ProgramBindingsBase::ArgumentBindingBase> per_frame_argument_bindings(frame_buffers_count);
+        per_frame_argument_bindings[0] = argument_binding_ptr;
+        for(uint32_t frame_index = 1; frame_index < frame_buffers_count; ++frame_index)
+        {
+            per_frame_argument_bindings[frame_index] = ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);
+        }
+        m_frame_bindings_by_argument.try_emplace(program_argument, std::move(per_frame_argument_bindings));
+    }
 }
 
-const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(DescriptorHeap& heap, uint32_t range_length)
+const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const
 {
     META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
+    META_CHECK_ARG_TRUE_DESCR(argument_frame_bindings_it != m_frame_bindings_by_argument.end(), "can not find frame-constant argument binding in program");
+    return argument_frame_bindings_it->second.at(frame_index);
+}
+
+Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+
+    const Program::ArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
+    switch(argument_accessor.GetAccessorType())
+    {
+    case ArgumentAccessor::Type::Mutable:       return ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);
+    case ArgumentAccessor::Type::Constant:      return argument_binding_ptr;
+    case ArgumentAccessor::Type::FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
+    default:                                    META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);
+    }
+}
+
+DescriptorHeap::Range ProgramBase::ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
+{
+    META_FUNCTION_TASK();
+    if (access_type == ArgumentAccessor::Type::Mutable)
+    {
+        DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
+        META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+        return descriptor_range;
+    }
 
     const DescriptorHeap::Type heap_type = heap.GetSettings().type;
-    if (auto constant_descriptor_range_by_heap_type_it = m_constant_descriptor_range_by_heap_type.find(heap_type);
-        constant_descriptor_range_by_heap_type_it != m_constant_descriptor_range_by_heap_type.end())
+    const auto heap_and_access_type      = std::make_pair(heap_type, access_type);
+
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    if (auto constant_descriptor_range_it = m_constant_descriptor_range_by_heap_and_access_type.find(heap_and_access_type);
+        constant_descriptor_range_it != m_constant_descriptor_range_by_heap_and_access_type.end())
     {
-        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_by_heap_type_it->second;
+        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
         META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
                                   "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
         META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
@@ -202,16 +268,17 @@ const DescriptorHeap::Range& ProgramBase::ReserveConstantDescriptorRange(Descrip
         return heap_reservation.range;
     }
 
-    DescriptorHeap::Range const_desc_range = heap.ReserveRange(range_length);
-    META_CHECK_ARG_NOT_ZERO_DESCR(const_desc_range, "Descriptor heap does not have enough space to reserve constant descriptor range of a program.");
-    return m_constant_descriptor_range_by_heap_type.try_emplace(heap_type, DescriptorHeapReservation{ heap, const_desc_range }).first->second.range;
+    DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
+    META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+    m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
+    return descriptor_range;
 }
 
-Shader& ProgramBase::GetShaderRef(Shader::Type shader_type)
+Shader& ProgramBase::GetShaderRef(Shader::Type shader_type) const
 {
     META_FUNCTION_TASK();
     const Ptr<Shader>& shader_ptr = GetShader(shader_type);
-    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::flags::enum_name(shader_type), GetName());
+    META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::enum_name(shader_type), GetName());
     return *shader_ptr;
 }
 

@@ -68,13 +68,13 @@ static void ConvertRenderPassAttcachmentToMetal(const RenderPass::Attachment& pa
     mtl_attachment_desc.storeAction   = GetMTLStoreAction(pass_attachment.store_action);
 }
 
-Ptr<RenderPass> RenderPass::Create(RenderContext& context, const Settings& settings)
+Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassMT>(dynamic_cast<RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPassMT>(dynamic_cast<const RenderContextBase&>(context), settings);
 }
 
-RenderPassMT::RenderPassMT(RenderContextBase& context, const Settings& settings)
+RenderPassMT::RenderPassMT(const RenderContextBase& context, const Settings& settings)
     : RenderPassBase(context, settings)
 {
     META_FUNCTION_TASK();
@@ -135,10 +135,10 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
     return m_mtl_pass_descriptor;
 }
 
-IContextMT& RenderPassMT::GetContextMT() noexcept
+const IContextMT& RenderPassMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetRenderContext());
+    return static_cast<const IContextMT&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

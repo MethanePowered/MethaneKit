@@ -49,7 +49,7 @@ template<typename... ExtraArgs>
 class TextureDX final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
         : ResourceDX<TextureBase>(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -58,7 +58,7 @@ public:
     }
 
     // Resource interface
-    void SetData(const SubResources&) override
+    void SetData(const SubResources&, CommandQueue*) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("setting texture data is allowed for image textures only");
     }
@@ -73,13 +73,13 @@ template<>
 class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
 
     // Object overrides
     void SetName(const std::string& name) override;
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) override;
+    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
 
 private:
     using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
@@ -87,18 +87,16 @@ private:
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const;
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-    Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<ResourceBase::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 template<>
 class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
 
     // Resource overrides
-    void SetData(const SubResources&) override
+    void SetData(const SubResources&, CommandQueue*) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth stencil texture does not allow to set data");
     }

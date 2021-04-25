@@ -34,43 +34,43 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-TextureVK::TextureVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+TextureVK::TextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
@@ -83,10 +83,10 @@ void TextureVK::SetName(const std::string& name)
     ResourceVK::SetName(name);
 }
 
-void TextureVK::SetData(const SubResources& sub_resources)
+void TextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources, sync_cmd_queue);
     
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {

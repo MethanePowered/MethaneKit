@@ -20,15 +20,18 @@ which make modern graphics programming easy and convenient in a platform and API
 - [ParallelRenderCommandList](Include/Methane/Graphics/ParallelRenderCommandList.h)
 - [BlitCommandList](Include/Methane/Graphics/BlitCommandList.h) (work in progress)
 - [Fence](Include/Methane/Graphics/Fence.h)
+- [CommandKit](Include/Methane/Graphics/CommandKit.h)
 
 ### Graphics Resources
 
 - [Resource](Include/Methane/Graphics/Resource.h)
+  - [SubResource](Include/Methane/Graphics/SubResource.h)
+  - [ResourceBarriers](Include/Methane/Graphics/ResourceBarriers.h)
 - [Buffer, BufferSet](Include/Methane/Graphics/Buffer.h)
 - [Texture](Include/Methane/Graphics/Texture.h)
 - [Sampler](Include/Methane/Graphics/Sampler.h)
 
-### Graphics Pipeline State
+### Graphics Pipeline
 
 - [Shader](Include/Methane/Graphics/Shader.h)
 - [Program](Include/Methane/Graphics/Program.h)

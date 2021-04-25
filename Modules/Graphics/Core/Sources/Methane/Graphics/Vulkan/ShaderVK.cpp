@@ -30,29 +30,29 @@ Vulkan implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ShaderVK::ShaderVK(Shader::Type shader_type, ContextBase& context, const Settings& settings)
+ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
 {
     META_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentDescriptions&) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors&) const
 {
     META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
     return argument_bindings;
 }
 
-IContextVK& ShaderVK::GetContextVK() noexcept
+const IContextVK& ShaderVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextVK&>(GetContext());
+    return static_cast<const IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

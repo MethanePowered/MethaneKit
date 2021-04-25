@@ -95,7 +95,7 @@ public:
     [[nodiscard]] Data::Size        GetBufferSize() const noexcept { return m_buffer_size; }
     [[nodiscard]] Data::Size        GetQuerySize() const noexcept  { return m_query_size; }
     [[nodiscard]] CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
-    [[nodiscard]] Context&          GetContext() noexcept          { return m_context; }
+    [[nodiscard]] const Context&    GetContext() const noexcept    { return m_context; }
 
 protected:
     QueryBuffer(CommandQueueBase& command_queue, Type type,
@@ -116,7 +116,7 @@ private:
     RangeSet          m_free_indices;
     RangeSet          m_free_data_ranges;
     CommandQueueBase& m_command_queue;
-    Context&          m_context;
+    const Context&    m_context;
 };
 
 struct TimestampQueryBuffer

@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 struct Context;
 
-struct Buffer : virtual Resource
+struct Buffer : virtual Resource // NOSONAR
 {
     enum class Type
     {
@@ -58,11 +58,11 @@ struct Buffer : virtual Resource
     };
 
     // Create Buffer instance
-    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride);
-    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format);
-    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(Context& context, Data::Size size);
+    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride);
+    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format);
+    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(const Context& context, Data::Size size);
 
     // Auxiliary functions
     [[nodiscard]] static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
@@ -80,6 +80,7 @@ struct BufferSet
     [[nodiscard]] virtual Buffer::Type        GetType() const noexcept = 0;
     [[nodiscard]] virtual Data::Size          GetCount() const noexcept = 0;
     [[nodiscard]] virtual const Refs<Buffer>& GetRefs() const noexcept = 0;
+    [[nodiscard]] virtual std::string         GetNames() const noexcept = 0;
     [[nodiscard]] virtual Buffer&             operator[](Data::Index index) const = 0;
 
     virtual ~BufferSet() = default;

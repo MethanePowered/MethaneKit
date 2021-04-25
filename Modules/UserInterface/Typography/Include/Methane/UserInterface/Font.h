@@ -227,12 +227,12 @@ private:
         bool              is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(gfx::Context& context, bool deferred_data_init);
+    AtlasTexture CreateAtlasTexture(const gfx::Context& context, bool deferred_data_init);
     void RemoveAtlasTexture(gfx::Context& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const gfx::Context& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;

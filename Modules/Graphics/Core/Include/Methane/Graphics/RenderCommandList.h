@@ -35,8 +35,10 @@ namespace Methane::Graphics
 struct RenderPass;
 struct ParallelRenderCommandList;
 
-struct RenderCommandList : virtual CommandList
+struct RenderCommandList : virtual CommandList // NOSONAR
 {
+    static constexpr Type type = Type::Render;
+
     enum class Primitive
     {
         Point,
@@ -58,9 +60,9 @@ struct RenderCommandList : virtual CommandList
     virtual void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) = 0;
     virtual void SetViewState(ViewState& view_state) = 0;
-    virtual void SetVertexBuffers(BufferSet& vertex_buffers) = 0;
-    virtual void DrawIndexed(Primitive primitive, Buffer& index_buffer, 
-                             uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0, 
+    virtual bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers = true) = 0;
+    virtual bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers = true) = 0;
+    virtual void DrawIndexed(Primitive primitive, uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0,
                              uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0,
                       uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;

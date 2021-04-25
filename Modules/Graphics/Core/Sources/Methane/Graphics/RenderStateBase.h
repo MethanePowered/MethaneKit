@@ -58,24 +58,24 @@ class RenderStateBase
     , public RenderState
 {
 public:
-    RenderStateBase(RenderContextBase& context, const Settings& settings);
+    RenderStateBase(const RenderContextBase& context, const Settings& settings);
 
     // RenderState overrides
-    const Settings& GetSettings() const noexcept override   { return m_settings; }
+    const Settings& GetSettings() const noexcept override { return m_settings; }
     void Reset(const Settings& settings) override;
 
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Groups apply_groups) = 0;
 
-    Ptr<RenderStateBase> GetRenderStatePtr()    { return std::static_pointer_cast<RenderStateBase>(GetBasePtr()); }
-    RenderContextBase&   GetRenderContext()     { return m_context; }
+    Ptr<RenderStateBase>     GetRenderStatePtr() noexcept      { return std::static_pointer_cast<RenderStateBase>(GetBasePtr()); }
+    const RenderContextBase& GetRenderContext() const noexcept { return m_context; }
 
 protected:
     Program& GetProgram();
 
 private:
-    RenderContextBase& m_context;
-    Settings           m_settings;
+    const RenderContextBase& m_context;
+    Settings                 m_settings;
 };
 
 } // namespace Methane::Graphics

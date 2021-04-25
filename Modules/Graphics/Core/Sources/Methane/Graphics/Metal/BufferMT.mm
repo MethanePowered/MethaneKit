@@ -28,6 +28,7 @@ Metal implementation of the buffer interface.
 #include "BlitCommandListMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -47,35 +48,35 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
     }
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<BufferMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
-    return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<BufferMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<BufferMT>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
-    return std::make_shared<BufferMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<BufferMT>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -84,7 +85,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferMT::BufferMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+BufferMT::BufferMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
@@ -101,10 +102,10 @@ void BufferMT::SetName(const std::string& name)
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
-void BufferMT::SetData(const SubResources& sub_resources)
+void BufferMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceMT::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources, sync_cmd_queue);
 
     switch(GetSettings().storage_mode)
     {
@@ -144,7 +145,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    BlitCommandListMT& blit_command_list = dynamic_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();

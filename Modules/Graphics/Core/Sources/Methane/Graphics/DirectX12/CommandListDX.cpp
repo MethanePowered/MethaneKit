@@ -22,8 +22,6 @@ DirectX 12 command lists collection implementation
 ******************************************************************************/
 
 #include "CommandListDX.h"
-#include "BlitCommandListDX.h"
-#include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
 
 #include <Methane/Instrumentation.h>
@@ -53,12 +51,6 @@ Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list
     return std::make_shared<CommandListSetDX>(command_list_refs);
 }
 
-inline void AddParallelRenderNativeCommandLists(CommandListSetDX::NativeCommandLists& native_cmd_list, const ParallelRenderCommandListDX& parallel_render_cmd_list)
-{
-    const CommandListSetDX::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandListDX&>(parallel_render_cmd_list).GetNativeCommandLists();
-    native_cmd_list.insert(native_cmd_list.end(), parallel_native_cmd_lists.begin(), parallel_native_cmd_lists.end());
-}
-
 CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     : CommandListSetBase(command_list_refs)
     , m_execution_completed_fence(GetCommandQueueBase())
@@ -68,31 +60,22 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
 
     std::stringstream fence_name_ss;
-    fence_name_ss << "Execution completed for command lists: ";
+    fence_name_ss << "Execution completed for command list set: ";
 
     m_native_command_lists.reserve(base_command_list_refs.size());
     for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
     {
         const CommandListBase& command_list = command_list_ref.get();
-        switch (command_list.GetType())
+        if (command_list.GetType() == CommandList::Type::ParallelRender)
         {
-        case CommandList::Type::Blit:
-            m_native_command_lists.emplace_back(&static_cast<const BlitCommandListDX&>(command_list).GetNativeCommandList());
-            break;
-
-        case CommandList::Type::Render:
-            m_native_command_lists.emplace_back(&static_cast<const RenderCommandListDX&>(command_list).GetNativeCommandList());
-            break;
-
-        case CommandList::Type::ParallelRender:
-            AddParallelRenderNativeCommandLists(m_native_command_lists, static_cast<const ParallelRenderCommandListDX&>(command_list));
-            break;
-
-        default:
-            META_UNEXPECTED_ARG(command_list.GetType());
+            const CommandListSetDX::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
+            m_native_command_lists.insert(m_native_command_lists.end(), parallel_native_cmd_lists.begin(), parallel_native_cmd_lists.end());
         }
-
-        fence_name_ss << " `" << command_list.GetName() << "`";
+        else
+        {
+            m_native_command_lists.emplace_back(&dynamic_cast<const ICommandListDX&>(command_list).GetNativeCommandList());
+        }
+        fence_name_ss << " '" << command_list.GetName() << "'";
     }
 
     m_execution_completed_fence.SetName(fence_name_ss.str());

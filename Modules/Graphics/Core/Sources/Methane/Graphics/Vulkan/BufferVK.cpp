@@ -33,36 +33,36 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(Context& context, Data::Size size, Data::Size stride)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Vertex, Usage::None, size, stride, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<BufferVK>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(Context& context, Data::Size size, PixelFormat format)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{ Buffer::Type::Index, Usage::None, size, GetPixelSize(format), format, Buffer::StorageMode::Private };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<BufferVK>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<BufferVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Buffer> Buffer::CreateVolatileBuffer(Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
     const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
-    return std::make_shared<BufferVK>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<BufferVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -71,7 +71,7 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferVK::BufferVK(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
@@ -84,10 +84,10 @@ void BufferVK::SetName(const std::string& name)
     ResourceVK::SetName(name);
 }
 
-void BufferVK::SetData(const SubResources& sub_resources)
+void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources);
+    ResourceVK::SetData(sub_resources, sync_cmd_queue);
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

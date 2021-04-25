@@ -29,11 +29,12 @@ Base implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
+#include <sstream>
 
 namespace Methane::Graphics
 {
 
-BufferBase::BufferBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+BufferBase::BufferBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
     , m_settings(settings)
 {
@@ -74,12 +75,38 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
     }
 }
 
+std::string BufferSetBase::GetNames() const noexcept
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    bool is_empty = true;
+    for (const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        if (!is_empty)
+            ss << ", ";
+        ss << "'" << buffer_ref.get().GetName() << "'";
+        is_empty = false;
+    }
+    return ss.str();
+}
+
 Buffer& BufferSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_refs.size());
 
     return m_refs[index].get();
+}
+
+bool BufferSetBase::SetState(Resource::State state)
+{
+    META_FUNCTION_TASK();
+    bool state_changed = false;
+    for(const Ref<Buffer>& buffer_ref : m_refs)
+    {
+        state_changed |= static_cast<BufferBase&>(buffer_ref.get()).SetState(state, m_setup_transition_barriers);
+    }
+    return state_changed;
 }
 
 } // namespace Methane::Graphics

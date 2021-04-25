@@ -47,14 +47,14 @@ Sampler::LevelOfDetail::LevelOfDetail(float in_bias, float in_min, float in_max)
 {
 }
 
-SamplerBase::SamplerBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceBase(Type::Sampler, Usage::ShaderRead, context, descriptor_by_usage)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
 }
 
-void SamplerBase::SetData(const SubResources&)
+void SamplerBase::SetData(const SubResources&, CommandQueue*)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
 }

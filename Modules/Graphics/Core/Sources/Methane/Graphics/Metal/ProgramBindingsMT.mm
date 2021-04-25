@@ -159,16 +159,16 @@ static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& pro
     }
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument, frame_index);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument);
+    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument, frame_index);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -224,14 +224,14 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     }
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument)
-    : ProgramBindingsBase(program_ptr, resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument)
+ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
@@ -261,16 +261,16 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
         switch(metal_argument_binding.GetSettingsMT().resource_type)
         {
             case Resource::Type::Buffer:
-                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
+                SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
                                        metal_argument_binding.GetBufferOffsets());
                 break;
 
             case Resource::Type::Texture:
-                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
+                SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
                 break;
 
             case Resource::Type::Sampler:
-                SetMetalResourcesForAll(program_argument.shader_type, GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
+                SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 
             default: META_UNEXPECTED_ARG(metal_argument_binding.GetSettingsMT().resource_type);

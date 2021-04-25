@@ -279,8 +279,7 @@ void TexturedCubeApp::Init()
     using namespace magic_enum::bitwise_operators;
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
-    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options);
-    m_cube_texture_ptr->SetName("Cube Texture 2D Image");
+    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -297,7 +296,7 @@ void TexturedCubeApp::Init()
 
 `Graphics::Program` object is created in `Graphics::RenderState::Settings` structure using `Graphics::Program::Create(...)` factory function.
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
-Program settings also includes additional description `Graphics::Program::ArgumentDescriptions` of program arguments bound to graphics resources.
+Program settings also includes additional description `Graphics::Program::ArgumentAccessors` of program arguments bound to graphics resources.
 Argument description define specific access modifiers for program arguments used in `Graphics::ProgramBindings` object.
 Also it is important to note that render state settings enables depth testing for correct rendering of cube faces.
 Finally, render state is created using filled settings structure with `Graphics::RenderState::Create(...)` factory function.
@@ -324,12 +323,12 @@ void TexturedCubeApp::Init()
                     gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             gfx::PixelFormats
             {
@@ -376,10 +375,10 @@ void TexturedCubeApp::Init()
             { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_const_buffer_ptr        } } },
             { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_cube_texture_ptr        } } },
             { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr     } } },
-        });
+        }, frame.index);
         
         // Create command list for rendering
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
@@ -468,6 +467,7 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+    frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
     frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_index_buffer_ptr);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
@@ -476,7 +476,7 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

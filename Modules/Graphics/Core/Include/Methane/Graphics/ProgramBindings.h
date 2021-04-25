@@ -26,6 +26,7 @@ Methane program bindings interface for resources binding to program arguments.
 #include "Program.h"
 #include "Resource.h"
 
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
 
 #include <string>
@@ -37,39 +38,47 @@ namespace Methane::Graphics
 
 struct ProgramBindings
 {
+    struct ArgumentBinding;
+
+    struct IArgumentBindingCallback
+    {
+        virtual void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) = 0;
+
+        virtual ~IArgumentBindingCallback() = default;
+    };
+
     struct ArgumentBinding
+        : virtual Data::IEmitter<IArgumentBindingCallback> // NOSONAR
     {
         // ArgumentBinding settings
         struct Settings
         {
-            Program::ArgumentDesc argument;
-            Resource::Type        resource_type;
-            uint32_t              resource_count = 1;
+            Program::ArgumentAccessor argument;
+            Resource::Type            resource_type;
+            uint32_t                  resource_count = 1;
         };
 
         class ConstantModificationException : public std::logic_error
         {
         public:
-            ConstantModificationException();
+            explicit ConstantModificationException(const Program::Argument& argument);
         };
 
         // ArgumentBinding interface
         [[nodiscard]] virtual const Settings&            GetSettings() const noexcept = 0;
         [[nodiscard]] virtual const Resource::Locations& GetResourceLocations() const noexcept = 0;
         virtual void SetResourceLocations(const Resource::Locations& resource_locations) = 0;
-
-        virtual ~ArgumentBinding() = default;
+        [[nodiscard]] virtual explicit operator std::string() const = 0;
     };
-
-    using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ProgramBindings::ArgumentBinding>, Program::Argument::Hash>;
-
+    
     enum class ApplyBehavior : uint32_t
     {
-        Indifferent    = 0U,        // All bindings will be applied indifferently of the previous binding values
-        ConstantOnce   = 1U << 0,   // Constant program arguments will be applied only once for each command list
-        ChangesOnly    = 1U << 1,   // Only changed program argument values will be applied in command sequence
-        StateBarriers  = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
-        AllIncremental = ~0U        // All binding values will be applied incrementally along with resource state barriers
+        Indifferent     = 0U,        // All bindings will be applied indifferently of the previous binding values
+        ConstantOnce    = 1U << 0,   // Constant program arguments will be applied only once for each command list
+        ChangesOnly     = 1U << 1,   // Only changed program argument values will be applied in command sequence
+        StateBarriers   = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
+        RetainResources = 1U << 3,   // Retain bound resources in command list state until it is completed on GPU
+        AllIncremental  = ~0U        // All binding values will be applied incrementally along with resource state barriers
     };
 
     using ResourceLocationsByArgument = std::unordered_map<Program::Argument, Resource::Locations, Program::Argument::Hash>;
@@ -79,7 +88,7 @@ struct ProgramBindings
     public:
         UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
 
-        [[nodiscard]] const Program& GetProgram() const noexcept { return m_program; }
+        [[nodiscard]] const Program&            GetProgram() const noexcept { return m_program; }
         [[nodiscard]] const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
     private:
@@ -88,11 +97,13 @@ struct ProgramBindings
     };
 
     // Create ProgramBindings instance
-    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {});
+    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // ProgramBindings interface
-    [[nodiscard]] virtual const Ptr<ArgumentBinding>& Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual Program&         GetProgram() const = 0;
+    [[nodiscard]] virtual ArgumentBinding& Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual explicit operator std::string() const = 0;
 
     virtual ~ProgramBindings() = default;
 };

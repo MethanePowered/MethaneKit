@@ -133,7 +133,7 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
     default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 
-    // TODO: unsupported filtering types
+    // Other DX texture filtering types, which are currently not supported:
     // D3D12_FILTER_ANISOTROPIC
     // D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT
     // D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR
@@ -204,13 +204,13 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     }
 }
 
-Ptr<Sampler> Sampler::Create(Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-SamplerDX::SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceDX(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();

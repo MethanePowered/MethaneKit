@@ -34,13 +34,13 @@ Metal implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
+Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueMT>(dynamic_cast<ContextBase&>(context), command_lists_type);
+    return std::make_shared<CommandQueueMT>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 }
 
-CommandQueueMT::CommandQueueMT(ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueBase(context, command_lists_type)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
@@ -69,18 +69,18 @@ void CommandQueueMT::SetName(const std::string& name)
     m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
 }
 
-IContextMT& CommandQueueMT::GetContextMT() noexcept
+const IContextMT& CommandQueueMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextMT&>(GetContext());
+    return static_cast<const IContextMT&>(GetContextBase());
 }
 
-RenderContextMT& CommandQueueMT::GetRenderContextMT()
+const RenderContextMT& CommandQueueMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    ContextBase& context = GetContext();
+    const ContextBase& context = GetContextBase();
     META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Context::Type::Render, "incompatible context type");
-    return static_cast<RenderContextMT&>(context);
+    return static_cast<const RenderContextMT&>(context);
 }
 
 } // namespace Methane::Graphics

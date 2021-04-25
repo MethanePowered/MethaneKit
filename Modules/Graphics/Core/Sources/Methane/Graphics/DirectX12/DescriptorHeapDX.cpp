@@ -45,7 +45,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type)
     }
 }
 
-Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings& settings)
+Ptr<DescriptorHeap> DescriptorHeap::Create(const ContextBase& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     auto descriptor_heap_ptr = std::make_shared<DescriptorHeapDX>(context, settings);
@@ -56,7 +56,7 @@ Ptr<DescriptorHeap> DescriptorHeap::Create(ContextBase& context, const Settings&
     return descriptor_heap_ptr;
 }
 
-DescriptorHeapDX::DescriptorHeapDX(ContextBase& context, const Settings& settings)
+DescriptorHeapDX::DescriptorHeapDX(const ContextBase& context, const Settings& settings)
     : DescriptorHeap(context, settings)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
@@ -124,10 +124,10 @@ void DescriptorHeapDX::Allocate()
     DescriptorHeap::Allocate();
 }
 
-IContextDX& DescriptorHeapDX::GetContextDX() noexcept
+const IContextDX& DescriptorHeapDX::GetContextDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
+    return static_cast<const IContextDX&>(GetContext());
 }
 
 } // namespace Methane::Graphics

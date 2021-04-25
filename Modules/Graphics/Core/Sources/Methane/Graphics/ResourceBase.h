@@ -24,12 +24,14 @@ Base implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include "ObjectBase.h"
 #include "DescriptorHeap.h"
 
 #include <set>
 #include <map>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -44,162 +46,45 @@ struct IResourceBase
 };
 
 class ResourceBase
-    : public virtual Resource
+    : public virtual Resource // NOSONAR
     , public ObjectBase
+    , public Data::Emitter<IResourceCallback>
 {
 public:
-    enum class State
-    {
-        Common,
-        VertexAndConstantBuffer,
-        IndexBuffer,
-        RenderTarget,
-        UnorderedAccess,
-        DepthWrite,
-        DepthRead,
-        NonPixelShaderResource,
-        PixelShaderResource,
-        StreamOut,
-        IndirectArgument,
-        CopyDest,
-        CopySource,
-        ResolveDest,
-        ResolveSource,
-        GenericRead,
-        Present,
-        Predication,
-    };
-
-    class Barrier
-    {
-    public:
-        enum class Type
-        {
-            Transition,
-        };
-
-        class Id
-        {
-        public:
-            Id(Type type, const Resource& resource) noexcept;
-            Id(const Id& id) noexcept = default;
-
-            Id& operator=(const Id&) noexcept = default;
-
-            [[nodiscard]] bool operator<(const Id& other) const noexcept;
-            [[nodiscard]] bool operator==(const Id& other) const noexcept;
-            [[nodiscard]] bool operator!=(const Id& other) const noexcept;
-
-            [[nodiscard]] Type            GetType() const noexcept     { return m_type; }
-            [[nodiscard]] const Resource& GetResource() const noexcept { return m_resource_ref.get(); }
-
-        private:
-            Type                m_type;
-            Ref<const Resource> m_resource_ref;
-        };
-
-        class StateChange
-        {
-        public:
-            StateChange(State before, State after) noexcept;
-            StateChange(const StateChange& id) noexcept = default;
-
-            StateChange& operator=(const StateChange&) noexcept = default;
-
-            [[nodiscard]] bool operator<(const StateChange& other) const noexcept;
-            [[nodiscard]] bool operator==(const StateChange& other) const noexcept;
-            [[nodiscard]] bool operator!=(const StateChange& other) const noexcept;
-
-            [[nodiscard]] State GetStateBefore() const noexcept { return m_before; }
-            [[nodiscard]] State GetStateAfter() const noexcept  { return m_after; }
-
-        private:
-            State m_before;
-            State m_after;
-        };
-
-        Barrier(const Id& id, const StateChange& state_change);
-        Barrier(Type type, const Resource& resource, State state_before, State state_after);
-        Barrier(const Barrier&) = default;
-
-        Barrier& operator=(const Barrier& barrier) noexcept = default;
-        [[nodiscard]] bool operator<(const Barrier& other) const noexcept;
-        [[nodiscard]] bool operator==(const Barrier& other) const noexcept;
-        [[nodiscard]] bool operator!=(const Barrier& other) const noexcept;
-        [[nodiscard]] explicit operator std::string() const noexcept;
-
-        [[nodiscard]] const Id&          GetId() const noexcept          { return m_id; }
-        [[nodiscard]] const StateChange& GetStateChange() const noexcept { return m_state_change; }
-
-    private:
-        Id          m_id;
-        StateChange m_state_change;
-    };
-
-    class Barriers
-    {
-    public:
-        using Set = std::set<Barrier>;
-        using Map = std::map<Barrier::Id, Barrier::StateChange>;
-
-        [[nodiscard]] static Ptr<Barriers> Create(const Set& barriers = {});
-        [[nodiscard]] static Ptr<Barriers> CreateTransition(const Refs<const Resource>& resources, State state_before, State state_after);
-
-        [[nodiscard]] bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
-        [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
-        [[nodiscard]] Set        GetSet() const noexcept;
-
-        [[nodiscard]] bool Has(Barrier::Type type, const Resource& resource, State before, State after);
-        [[nodiscard]] bool HasTransition(const Resource& resource, State before, State after);
-
-        bool Add(Barrier::Type type, const Resource& resource, State before, State after);
-        bool AddTransition(const Resource& resource, State before, State after);
-        virtual bool AddStateChange(const Barrier::Id& id, const Barrier::StateChange& state_change);
-
-        virtual ~Barriers() = default;
-
-        [[nodiscard]] explicit operator std::string() const noexcept;
-
-    protected:
-        explicit Barriers(const Set& barriers);
-
-    private:
-        Map  m_barriers_map;
-    };
-
-    ResourceBase(Type type, Usage usage_mask, ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
+    ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage);
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
     ~ResourceBase() override;
 
     // Resource interface
     [[nodiscard]] Type                      GetResourceType() const noexcept final             { return m_type; }
+    [[nodiscard]] State                     GetState() const noexcept final                    { return m_state;  }
     [[nodiscard]] Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
     [[nodiscard]] const DescriptorByUsage&  GetDescriptorByUsage() const noexcept final        { return m_descriptor_by_usage; }
     [[nodiscard]] const Descriptor&         GetDescriptor(Usage usage) const final;
-    [[nodiscard]] Context&                  GetContext() noexcept final;
+    [[nodiscard]] const Context&            GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
-    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
-    void SetData(const SubResources& sub_resources) override;
+    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                    const std::optional<BytesRange>& data_range = {}) override;
+    bool SetState(State state, Ptr<Barriers>& out_barriers) final;
+    bool SetState(State state) final;
+    void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
     void InitializeDefaultDescriptors();
     [[nodiscard]] DescriptorHeap::Types GetUsedDescriptorHeapTypes() const noexcept;
-
-    [[nodiscard]] State GetState() const noexcept { return m_state;  }
-    bool SetState(State state, Ptr<Barriers>& out_barriers);
-
+    [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
     [[nodiscard]] static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;
 
 protected:
-    [[nodiscard]] ContextBase&         GetContextBase()                                       { return m_context; }
+    [[nodiscard]] const ContextBase&   GetContextBase() const noexcept                  { return m_context; }
+    [[nodiscard]] Data::Size           GetInitializedDataSize() const noexcept          { return m_initialized_data_size; }
     [[nodiscard]] DescriptorHeap::Type GetDescriptorHeapTypeByUsage(Usage usage) const;
     [[nodiscard]] const Descriptor&    GetDescriptorByUsage(Usage usage) const;
-    [[nodiscard]] Data::Size           GetInitializedDataSize() const noexcept                { return m_initialized_data_size; }
 
-    void                 SetSubResourceCount(const SubResource::Count& sub_resource_count);
-    void                 ValidateSubResource(const SubResource& sub_resource) const;
-    void                 ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
+    void  SetSubResourceCount(const SubResource::Count& sub_resource_count);
+    void  ValidateSubResource(const SubResource& sub_resource) const;
+    void  ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
 
     [[nodiscard]] virtual Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
@@ -209,13 +94,15 @@ private:
 
     const Type         m_type;
     const Usage        m_usage_mask;
-    ContextBase&       m_context;
+    const ContextBase& m_context;
     DescriptorByUsage  m_descriptor_by_usage;
     State              m_state = State::Common;
     Data::Size         m_initialized_data_size       = 0U;
     bool               m_sub_resource_count_constant = false;
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;
+    Ptr<Barriers>      m_setup_transition_barriers_ptr;
+    TracyLockable(std::mutex, m_state_mutex)
 };
 
 } // namespace Methane::Graphics

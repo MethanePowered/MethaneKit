@@ -29,6 +29,8 @@ Base implementation of the command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason
 //#define METHANE_DEBUG_GROUP_FRAMES_ENABLED
@@ -119,7 +121,8 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
-    META_LOG("{} Command list '{}' RESET commands encoding", magic_enum::enum_name(m_type), GetName());
+    META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
+             p_debug_group ? fmt::format("with debug group '{}'", p_debug_group->GetName()) : "");
 
     SetCommandListStateNoLock(State::Encoding);
 
@@ -154,11 +157,19 @@ void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
-    if (m_command_state.program_bindings_ptr.get() == &program_bindings)
+    using namespace magic_enum::bitwise_operators;
+
+    if (m_command_state.program_bindings_ptr.get() == std::addressof(program_bindings))
         return;
 
+    META_LOG("{} Command list '{}' SET PROGRAM BINDINGS for program '{}':\n{}",
+             magic_enum::enum_name(GetType()), GetName(), program_bindings.GetProgram().GetName(),
+             static_cast<std::string>(program_bindings));
+
     auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
-    program_bindings_base.Apply(*this, apply_behavior);
+    ApplyProgramBindings(program_bindings_base, apply_behavior);
+    if (!magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
+        return;
 
     Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
     m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
@@ -314,6 +325,11 @@ void CommandListBase::ResetCommandState()
     META_FUNCTION_TASK();
     m_command_state.program_bindings_ptr.reset();
     m_command_state.retained_resources.clear();
+}
+
+void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
+{
+    program_bindings.Apply(*this, apply_behavior);
 }
 
 CommandQueueBase& CommandListBase::GetCommandQueueBase()

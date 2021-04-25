@@ -140,6 +140,9 @@ ITT_DOMAIN_EXTERN();
 
 #include <Methane/Platform/Utils.h>
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+
 #define META_LOG(/*std::string_view*/message, ...) \
     Methane::Platform::PrintToDebugOutput(fmt::format(message, ## __VA_ARGS__))
 

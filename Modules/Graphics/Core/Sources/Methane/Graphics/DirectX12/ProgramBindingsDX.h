@@ -30,7 +30,9 @@ DirectX 12 implementation of the program bindings interface.
 #include <wrl.h>
 #include <d3d12.h>
 
+#include <magic_enum.hpp>
 #include <functional>
+#include <array>
 
 namespace Methane::Graphics
 {
@@ -55,17 +57,17 @@ public:
 
         struct SettingsDX : Settings
         {
-            Type                      type;
-            D3D_SHADER_INPUT_TYPE     input_type;
-            uint32_t                  point;
-            uint32_t                  space;
+            Type                  type;
+            D3D_SHADER_INPUT_TYPE input_type;
+            uint32_t              point;
+            uint32_t              space;
         };
 
         struct DescriptorRange
         {
-            DescriptorHeap::Type heap_type = DescriptorHeap::Type::Undefined;
-            uint32_t             offset    = 0;
-            uint32_t             count     = 0;
+            DescriptorHeap::Type  heap_type = DescriptorHeap::Type::Undefined;
+            uint32_t              offset    = 0;
+            uint32_t              count     = 0;
         };
 
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
@@ -84,7 +86,7 @@ public:
         const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
         const IResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
 
-        void SetRootParameterIndex(uint32_t root_parameter_index)                     { m_root_parameter_index = root_parameter_index; }
+        void SetRootParameterIndex(uint32_t root_parameter_index)                 { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
         void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation);
 
@@ -96,8 +98,8 @@ public:
         IResourceDX::LocationsDX           m_resource_locations_dx;
     };
     
-    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument);
-    ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument);
+    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
+    ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index);
 
     void Initialize();
 
@@ -106,6 +108,10 @@ public:
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+
+protected:
+    // ProgramBindings::IArgumentBindingCallback
+    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) override;
 
 private:
     struct RootParameterBinding
@@ -118,30 +124,32 @@ private:
 
     struct ResourceState
     {
-        Ptr<ResourceBase>     resource_ptr;
-        ResourceBase::State   state;
+        Ptr<ResourceBase> resource_ptr;
+        Resource::State   state;
     };
 
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
-    void AddRootParameterBinding(const Program::ArgumentDesc& argument_desc, const RootParameterBinding& root_parameter_binding);
-    void AddResourceState(const Program::ArgumentDesc& argument_desc, ResourceState resource_state);
+    void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
+    void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    bool ApplyResourceStates(bool apply_constant_resource_states) const;
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
+    void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+                                    const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
     void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
-    RootParameterBindings m_constant_root_parameter_bindings;
-    RootParameterBindings m_variadic_root_parameter_bindings;
+    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
 
     using ResourceStates = std::vector<ResourceState>;
-    ResourceStates        m_constant_resource_states;
-    ResourceStates        m_variadic_resource_states;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    ResourceStatesByAccess m_resource_states_by_access;
 
-    mutable Ptr<ResourceBase::Barriers> m_resource_transition_barriers_ptr;
+    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

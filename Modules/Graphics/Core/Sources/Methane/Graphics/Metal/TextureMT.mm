@@ -26,6 +26,7 @@ Metal implementation of the texture interface.
 #include "BlitCommandListMT.hh"
 #include "TypesMT.hh"
 
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Platform/MacOS/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -75,43 +76,43 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<TextureMT>(dynamic_cast<RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateImage(Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateCube(Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
 }
 
-TextureMT::TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+TextureMT::TextureMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceMT(context, settings, descriptor_by_usage)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
@@ -128,15 +129,15 @@ void TextureMT::SetName(const std::string& name)
     m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
 }
 
-void TextureMT::SetData(const SubResources& sub_resources)
+void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
-    ResourceMT::SetData(sub_resources);
+    ResourceMT::SetData(sub_resources, sync_cmd_queue);
 
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
+    BlitCommandListMT& blit_command_list = dynamic_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
     blit_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
@@ -179,8 +180,10 @@ void TextureMT::SetData(const SubResources& sub_resources)
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        GenerateMipLevels();
+        GenerateMipLevels(blit_command_list);
     }
+
+    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 void TextureMT::UpdateFrameBuffer()
@@ -190,12 +193,10 @@ void TextureMT::UpdateFrameBuffer()
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
-void TextureMT::GenerateMipLevels()
+void TextureMT::GenerateMipLevels(BlitCommandListMT& blit_command_list)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
-
-    BlitCommandListMT& blit_command_list = static_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandList());
     blit_command_list.Reset(s_debug_group.get());
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
@@ -203,15 +204,13 @@ void TextureMT::GenerateMipLevels()
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
 
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
-
-    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
-RenderContextMT& TextureMT::GetRenderContextMT()
+const RenderContextMT& TextureMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
-    return static_cast<RenderContextMT&>(GetContextMT());
+    return static_cast<const RenderContextMT&>(GetContextMT());
 }
 
 MTLTextureUsage TextureMT::GetNativeTextureUsage()

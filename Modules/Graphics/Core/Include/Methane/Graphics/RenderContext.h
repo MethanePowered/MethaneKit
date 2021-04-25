@@ -31,6 +31,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/AppView.h>
+#include <Methane/Memory.hpp>
 
 #include <optional>
 
@@ -40,20 +41,20 @@ namespace Methane::Graphics
 class FpsCounter;
 struct RenderCommandList;
 
-struct RenderContext : virtual Context
+struct RenderContext : virtual Context // NOSONAR
 {
     struct Settings
     {
-        FrameSize                   frame_size;
-        PixelFormat                 color_format            = PixelFormat::BGRA8Unorm;
-        PixelFormat                 depth_stencil_format    = PixelFormat::Unknown;
-        std::optional<Color4F>      clear_color;
-        std::optional<DepthStencil> clear_depth_stencil;
-        uint32_t                    frame_buffers_count     = 3U;
-        bool                        vsync_enabled           = true;
-        bool                        is_full_screen          = false;
-        bool                        is_emulated_render_pass = false; // Windows only
-        uint32_t                    unsync_max_fps          = 1000U; // MacOS only
+        FrameSize         frame_size;
+        PixelFormat       color_format         = PixelFormat::BGRA8Unorm;
+        PixelFormat       depth_stencil_format = PixelFormat::Unknown;
+        Opt<Color4F>      clear_color;
+        Opt<DepthStencil> clear_depth_stencil;
+        uint32_t          frame_buffers_count  = 3U;
+        bool              vsync_enabled        = true;
+        bool              is_full_screen       = false;
+        Options           options_mask         = Options::None;
+        uint32_t          unsync_max_fps       = 1000U; // MacOS only
     };
 
     // Create RenderContext instance
@@ -65,7 +66,6 @@ struct RenderContext : virtual Context
     virtual void Present() = 0;
 
     [[nodiscard]] virtual Platform::AppView GetAppView() const = 0;
-    [[nodiscard]] virtual CommandQueue&     GetRenderCommandQueue() = 0;
     [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
@@ -76,6 +76,8 @@ struct RenderContext : virtual Context
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
     virtual bool SetFullScreen(bool is_full_screen) = 0;
+
+    [[nodiscard]] inline CommandKit& GetRenderCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Render); }
 };
 
 } // namespace Methane::Graphics

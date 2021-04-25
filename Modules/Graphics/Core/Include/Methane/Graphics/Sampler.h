@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 struct Context;
 
-struct Sampler : virtual Resource
+struct Sampler : virtual Resource // NOSONAR
 {
     struct Filter
     {
@@ -115,7 +115,7 @@ struct Sampler : virtual Resource
     };
 
     // Create Sampler instance
-    [[nodiscard]] static Ptr<Sampler> Create(Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Sampler interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

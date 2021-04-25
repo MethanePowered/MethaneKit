@@ -34,14 +34,15 @@ namespace Methane::Graphics
 {
 
 class RenderContextMT;
+class BlitCommandListMT;
 
 class TextureMT final : public ResourceMT<TextureBase>
 {
 public:
-    TextureMT(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    TextureMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
-    void SetData(const SubResources& sub_resources) override;
+    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -51,8 +52,8 @@ public:
     const id<MTLTexture>& GetNativeTexture() const { return m_mtl_texture; }
 
 private:
-    void GenerateMipLevels();
-    RenderContextMT& GetRenderContextMT();
+    void GenerateMipLevels(BlitCommandListMT& blit_command_list);
+    const RenderContextMT& GetRenderContextMT() const;
 
     MTLTextureUsage       GetNativeTextureUsage();
     MTLTextureDescriptor* GetNativeTextureDescriptor();

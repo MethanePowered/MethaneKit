@@ -29,7 +29,7 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueueBase::CommandQueueBase(ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type)
     : m_context(context)
     , m_command_lists_type(command_lists_type)
 {
@@ -44,10 +44,17 @@ CommandQueueBase::~CommandQueueBase()
 void CommandQueueBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    ObjectBase::SetName(name);
     if (m_tracy_gpu_context_ptr)
     {
         m_tracy_gpu_context_ptr->SetName(name);
     }
+}
+
+const Context& CommandQueueBase::GetContext() const noexcept
+{
+    META_FUNCTION_TASK();
+    return dynamic_cast<const Context&>(m_context);
 }
 
 void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)

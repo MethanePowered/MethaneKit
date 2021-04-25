@@ -40,7 +40,7 @@ class ContextBase;
 class SamplerDX final : public ResourceDX<SamplerBase>
 {
 public:
-    SamplerDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // NOTE: SamplerBase descriptor is stored in heap
 };

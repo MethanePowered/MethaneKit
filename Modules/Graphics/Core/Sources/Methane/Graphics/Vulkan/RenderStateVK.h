@@ -49,7 +49,7 @@ public:
 class RenderStateVK final : public RenderStateBase
 {
 public:
-    RenderStateVK(RenderContextBase& context, const Settings& settings);
+    RenderStateVK(const RenderContextBase& context, const Settings& settings);
     
     // RenderState interface
     void Reset(const Settings& settings) override;
@@ -61,7 +61,7 @@ public:
     void SetName(const std::string& name) override;
 
 private:
-    IContextVK& GetContextVK() noexcept;
+    const IContextVK& GetContextVK() const noexcept;
     
     void ResetNativeState();
 };

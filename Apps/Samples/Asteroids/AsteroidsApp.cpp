@@ -101,7 +101,8 @@ void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Asteroids", true /* animations */, true /* depth */, 0.F /* depth clear */, { /* color clearing disabled */ }),
+        Samples::GetGraphicsAppSettings("Methane Asteroids", Samples::AppOptions::Default, gfx::Context::Options::None,
+                                        0.F /* depth clear */, { /* color clearing disabled */ }),
         { HeadsUpDisplayMode::UserInterface, true },
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
@@ -258,18 +259,18 @@ void AsteroidsApp::Init()
         frame.final_screen_pass_ptr = gfx::RenderPass::Create(context, final_screen_pass_settings);
 
         // Create parallel command list for asteroids rendering
-        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
         frame.parallel_cmd_list_ptr->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.parallel_cmd_list_ptr->SetName(IndexedName("Parallel Rendering", frame.index));
         frame.parallel_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
-        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.initial_screen_pass_ptr);
+        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
         frame.serial_cmd_list_ptr->SetName(IndexedName("Serial Rendering", frame.index));
         frame.serial_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
-        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandQueue(), *frame.final_screen_pass_ptr);
+        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.final_screen_pass_ptr);
         frame.final_cmd_list_ptr->SetName(IndexedName("Final Rendering", frame.index));
         frame.final_cmd_list_ptr->SetValidationEnabled(false);
 
@@ -294,15 +295,19 @@ void AsteroidsApp::Init()
 
         // Resource bindings for Sky-Box rendering
         frame.skybox.program_bindings_per_instance.resize(1);
-        frame.skybox.program_bindings_per_instance[0] = m_sky_box_ptr->CreateProgramBindings(frame.skybox.uniforms_buffer_ptr);
+        frame.skybox.program_bindings_per_instance[0] = m_sky_box_ptr->CreateProgramBindings(frame.skybox.uniforms_buffer_ptr, frame.index);
 
         // Resource bindings for Planet rendering
         frame.planet.program_bindings_per_instance.resize(1);
-        frame.planet.program_bindings_per_instance[0] = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr);
+        frame.planet.program_bindings_per_instance[0] = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr, frame.index);
 
         // Resource bindings for Asteroids rendering
-        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr);
+        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr, frame.index);
     }
+
+    // Update initial resource states before asteroids drawing without applying barriers on GPU (automatic state propagation from Common state works),
+    // which is required for correct automatic resource barriers to be set after asteroids drawing, on planet drawing
+    m_asteroids_array_ptr->CreateBeginningResourceBarriers(*m_const_buffer_ptr)->UpdateResourceStates();
 
     CompleteInitialization();
     META_LOG(GetParametersString());
@@ -346,8 +351,9 @@ bool AsteroidsApp::Update()
         return false;
 
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+    m_scene_uniforms.view_proj_matrix = hlslpp::transpose(m_view_camera.GetViewProjMatrix());
+    m_scene_uniforms.eye_position     = m_view_camera.GetOrientation().eye;
+    m_scene_uniforms.light_position   = m_light_camera.GetOrientation().eye;
 
     m_sky_box_ptr->Update();
     return true;
@@ -391,7 +397,7 @@ bool AsteroidsApp::Render()
     frame.final_cmd_list_ptr->Commit();
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

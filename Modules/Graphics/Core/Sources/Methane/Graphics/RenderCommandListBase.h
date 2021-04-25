@@ -49,8 +49,6 @@ public:
         {
             None          = 0U,
             PrimitiveType = 1U << 0U,
-            IndexBuffer   = 1U << 1U,
-            VertexBuffers = 1U << 2U,
             All           = ~0U
         };
 
@@ -64,6 +62,9 @@ public:
         Changes                  changes             = Changes::None;
     };
 
+    static Ptr<RenderCommandList> CreateForSynchronization(CommandQueue& cmd_queue);
+
+    explicit RenderCommandListBase(CommandQueueBase& command_queue);
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
     explicit RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list);
     
@@ -78,13 +79,15 @@ public:
     void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
     void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) override;
     void SetViewState(ViewState& view_state) override;
-    void SetVertexBuffers(BufferSet& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive_type, Buffer& index_buffer,
-                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+    bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers) override;
+    bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers) override;
+    void DrawIndexed(Primitive primitive_type, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
+    bool            HasPass() const noexcept    { return !!m_render_pass_ptr; }
+    RenderPassBase* GetPassPtr() const noexcept { return m_render_pass_ptr.get(); }
     RenderPassBase& GetPass();
 
 protected:
@@ -96,7 +99,7 @@ protected:
     bool                               IsParallel() const                   { return m_is_parallel; }
     Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() const { return m_parallel_render_command_list_wptr.lock(); }
 
-    inline void UpdateDrawingState(Primitive primitive_type, Buffer* p_index_buffer = nullptr);
+    inline void UpdateDrawingState(Primitive primitive_type);
     inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0) const;
 
 private:

@@ -35,6 +35,7 @@ DirectX 12 implementation of the command queue interface.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
+#include <magic_enum.hpp>
 #include <stdexcept>
 #include <cassert>
 
@@ -43,20 +44,23 @@ namespace Methane::Graphics
 
 constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
 
-Ptr<CommandQueue> CommandQueue::Create(Context& context, CommandList::Type command_lists_type)
+Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(dynamic_cast<ContextBase&>(context), command_lists_type);
+    return std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 }
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, Context::Options options)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
     switch(command_list_type)
     {
     case CommandList::Type::Blit:
-        // TODO: should be D3D12_COMMAND_LIST_TYPE_COPY
-        return D3D12_COMMAND_LIST_TYPE_DIRECT;
+        return magic_enum::flags::enum_contains(options & Context::Options::BlitWithDirectQueueOnWindows)
+             ? D3D12_COMMAND_LIST_TYPE_DIRECT
+             : D3D12_COMMAND_LIST_TYPE_COPY;
 
     case CommandList::Type::Render:
     case CommandList::Type::ParallelRender:
@@ -82,9 +86,9 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
     return cp_command_queue;
 }
 
-CommandQueueDX::CommandQueueDX(ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueBase(context, command_lists_type)
-    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type)))
+    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
     , m_execution_waiting_thread(&CommandQueueDX::WaitForExecution, this)
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     , m_timestamp_query_buffer_ptr(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
@@ -163,10 +167,10 @@ void CommandQueueDX::CompleteExecution(const std::optional<Data::Index>& frame_i
     m_execution_waiting_condition_var.notify_one();
 }
 
-IContextDX& CommandQueueDX::GetContextDX() noexcept
+const IContextDX& CommandQueueDX::GetContextDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
+    return static_cast<const IContextDX&>(GetContextBase());
 }
 
 ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()

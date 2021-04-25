@@ -60,12 +60,12 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
             {
                 gfx::Program::InputBufferLayout { mesh.GetVertexLayout().GetSemantics() }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::Argument::Modifiers::None     },
-                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::Argument::Modifiers::Constant },
-                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::Argument::Modifiers::Constant },
+                { { gfx::Shader::Type::All,    "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant  },
+                { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant       },
+                { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
+                { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
             },
             gfx::PixelFormats
             {
@@ -80,7 +80,7 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
     m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     
-    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options));
+    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
     m_texture_sampler_ptr = gfx::Sampler::Create(context, {
         gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
@@ -93,18 +93,18 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
     Update(0.0, 0.0);
 }
 
-Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr) const
+Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
-
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
+
     return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr            } } },
         { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
         { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
         { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr          } } },
-    });
+    }, frame_index);
 }
 
 bool Planet::Update(double elapsed_seconds, double)
@@ -126,7 +126,7 @@ bool Planet::Update(double elapsed_seconds, double)
     return true;
 }
 
-void Planet::Draw(gfx::RenderCommandList& cmd_list, gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");

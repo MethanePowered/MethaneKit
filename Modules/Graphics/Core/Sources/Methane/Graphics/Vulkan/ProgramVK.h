@@ -34,13 +34,13 @@ class ShaderVK;
 class ProgramVK final : public ProgramBase
 {
 public:
-    ProgramVK(ContextBase& context, const Settings& settings);
+    ProgramVK(const ContextBase& context, const Settings& settings);
     ~ProgramVK() override;
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 
 private:
-    IContextVK& GetContextVK() noexcept;
+    const IContextVK& GetContextVK() const noexcept;
 };
 
 } // namespace Methane::Graphics

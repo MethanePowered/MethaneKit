@@ -31,7 +31,9 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include <memory>
+#include <array>
+#include <string>
+#include <magic_enum.hpp>
 
 namespace tf
 {
@@ -44,12 +46,14 @@ namespace Methane::Graphics
 {
 
 class DeviceBase;
-struct CommandQueue;
 class CommandQueueBase;
+struct CommandQueue;
+struct CommandList;
+struct CommandListSet;
 
 class ContextBase
     : public ObjectBase
-    , public virtual Context
+    , public virtual Context // NOSONAR
     , public IContextNT
     , public Data::Emitter<IContextCallback>
 {
@@ -66,10 +70,9 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(Device& device) override;
     void              Reset() override;
-    CommandQueue&     GetUploadCommandQueue() override;
-    BlitCommandList&  GetUploadCommandList() override;
-    CommandListSet&   GetUploadCommandListSet() override;
-    Device&           GetDevice() override;
+    CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
+    CommandKit&       GetDefaultCommandKit(CommandQueue& cmd_queue) const final;
+    const Device&     GetDevice() const final;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
@@ -78,17 +81,14 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    DeferredAction          GetRequestedAction() const noexcept  { return m_requested_action; }
-    ResourceManager&        GetResourceManager() noexcept        { return m_resource_manager; }
-    const ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
-    CommandQueueBase&       GetUploadCommandQueueBase();
-    DeviceBase&             GetDeviceBase();
-    const DeviceBase&       GetDeviceBase() const;
+    DeferredAction    GetRequestedAction() const noexcept  { return m_requested_action; }
+    ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
+    DeviceBase&       GetDeviceBase();
+    const DeviceBase& GetDeviceBase() const;
 
 protected:
     void PerformRequestedAction();
     void SetDevice(DeviceBase& device);
-    Fence& GetUploadFence() const;
 
     // ContextBase interface
     virtual bool UploadResources();
@@ -96,18 +96,19 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    const Type                m_type;
-    Ptr<DeviceBase>           m_device_ptr;
-    tf::Executor&             m_parallel_executor;
-    ObjectBase::RegistryBase  m_objects_cache;
-    ResourceManager::Settings m_resource_manager_init_settings{ true, {}, {} };
-    ResourceManager           m_resource_manager;
-    Ptr<CommandQueue>         m_upload_cmd_queue_ptr;
-    Ptr<BlitCommandList>      m_upload_cmd_list_ptr;
-    Ptr<CommandListSet>       m_upload_cmd_lists_ptr;
-    Ptr<Fence>                m_upload_fence_ptr;
-    mutable DeferredAction    m_requested_action = DeferredAction::None;
-    mutable bool              m_is_completing_initialization = false;
+    using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
+    using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
+
+    const Type                  m_type;
+    Ptr<DeviceBase>             m_device_ptr;
+    tf::Executor&               m_parallel_executor;
+    ObjectBase::RegistryBase    m_objects_cache;
+    ResourceManager::Settings   m_resource_manager_init_settings{ true, {}, {} };
+    mutable ResourceManager     m_resource_manager;
+    mutable CommandKitPtrByType m_default_command_kit_ptrs;
+    mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction      m_requested_action = DeferredAction::None;
+    mutable bool                m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

@@ -40,12 +40,6 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics
 {
 
-struct DescriptorOffsets
-{
-    uint32_t constant_offset = 0;
-    uint32_t mutable_offset = 0;
-};
-
 [[nodiscard]]
 static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
@@ -101,7 +95,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 };
 
 static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptor_ranges, std::vector<CD3DX12_ROOT_PARAMETER1>& root_parameters,
-                                          std::map<DescriptorHeap::Type, DescriptorOffsets>& descriptor_offset_by_heap_type,
+                                          std::map<DescriptorHeap::Type, DescriptorsCountByAccess>& descriptor_offset_by_heap_type,
                                           ProgramBindingsDX::ArgumentBindingDX& argument_binding,
                                           const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& bind_settings,
                                           const D3D12_SHADER_VISIBILITY& shader_visibility)
@@ -118,27 +112,25 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
 
     const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
-    DescriptorOffsets& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
-    uint32_t& descriptor_offset = argument_binding.GetSettings().argument.IsConstant()
-                                ? descriptor_offsets.constant_offset
-                                : descriptor_offsets.mutable_offset;
+    DescriptorsCountByAccess& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
+    uint32_t& descriptor_offset = descriptor_offsets[bind_settings.argument.GetAccessorType()];
     argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
 
     descriptor_offset += bind_settings.resource_count;
 }
 
-Ptr<Program> Program::Create(Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramDX>(dynamic_cast<ContextBase&>(context), settings);
+    return std::make_shared<ProgramDX>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ProgramDX::ProgramDX(ContextBase& context, const Settings& settings)
+ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
     , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
     META_FUNCTION_TASK();
-    InitArgumentBindings(settings.argument_descriptions);
+    InitArgumentBindings(settings.argument_accessors);
     InitRootSignature();
 }
 
@@ -159,18 +151,18 @@ void ProgramDX::InitRootSignature()
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
     std::vector<CD3DX12_ROOT_PARAMETER1>   root_parameters;
 
-    const ProgramBindings::ArgumentBindings& binding_by_argument = GetArgumentBindings();
+    const ProgramBindingsBase::ArgumentBindings& binding_by_argument = GetArgumentBindings();
     descriptor_ranges.reserve(binding_by_argument.size());
     root_parameters.reserve(binding_by_argument.size());
 
-    std::map<DescriptorHeap::Type, DescriptorOffsets> descriptor_offset_by_heap_type;
+    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptor_offset_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
         auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
-        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.shader_type);
+        const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.GetShaderType());
 
         argument_binding.SetRootParameterIndex(static_cast<uint32_t>(root_parameters.size()));
         root_parameters.emplace_back();
@@ -194,6 +186,21 @@ void ProgramDX::InitRootSignature()
         }
     }
 
+    // Replicate descriptor ranges for all frame-constant argument binding instances
+    for (const auto& [program_argument, frame_argument_bindings] : GetFrameArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_EMPTY(frame_argument_bindings);
+        const auto& initial_frame_binding = static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings.front());
+        const ProgramBindingsDX::ArgumentBindingDX::DescriptorRange& descriptor_range = initial_frame_binding.GetDescriptorRange();
+
+        for(size_t frame_index = 1; frame_index < frame_argument_bindings.size(); ++frame_index)
+        {
+            auto& argument_binding_dx = static_cast<ProgramBindingsDX::ArgumentBindingDX&>(*frame_argument_bindings[frame_index]);
+            argument_binding_dx.SetRootParameterIndex(initial_frame_binding.GetRootParameterIndex());
+            argument_binding_dx.SetDescriptorRange(descriptor_range);
+        }
+    }
+
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
     root_signature_desc.Init_1_1(static_cast<UINT>(root_parameters.size()), root_parameters.data(), 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -212,25 +219,19 @@ void ProgramDX::InitRootSignature()
     ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
 }
 
-IContextDX& ProgramDX::GetContextDX() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<IContextDX&>(GetContext());
-}
-
 const IContextDX& ProgramDX::GetContextDX() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextDX&>(GetContext());
 }
 
-ShaderDX& ProgramDX::GetVertexShaderDX() noexcept
+ShaderDX& ProgramDX::GetVertexShaderDX() const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Vertex));
 }
 
-ShaderDX& ProgramDX::GetPixelShaderDX() noexcept
+ShaderDX& ProgramDX::GetPixelShaderDX() const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Pixel));

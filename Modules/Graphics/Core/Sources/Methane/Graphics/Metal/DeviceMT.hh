@@ -38,7 +38,7 @@ public:
     DeviceMT(const id<MTLDevice>& mtl_device);
     ~DeviceMT() override;
     
-    id<MTLDevice>& GetNativeDevice() { return m_mtl_device; }
+    const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
 
 private:
     id<MTLDevice> m_mtl_device;

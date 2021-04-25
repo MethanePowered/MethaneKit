@@ -35,7 +35,7 @@ class TextureBase
     , public ResourceBase
 {
 public:
-    TextureBase(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    TextureBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }

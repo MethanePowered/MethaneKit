@@ -33,10 +33,10 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class ResourceBarriersVK : public ResourceBase::Barriers
+class ResourceBarriersVK : public Resource::Barriers
 {
 public:
-    explicit ResourceBarriersVK(const Set& barriers) : ResourceBase::Barriers(barriers) {}
+    explicit ResourceBarriersVK(const Set& barriers) : Resource::Barriers(barriers) {}
 };
 
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
@@ -44,14 +44,26 @@ class ResourceVK : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceVK(ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
+    ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
     }
 
+    ~ResourceVK() override
+    {
+        // Resource released callback has to be emitted before native resource is released
+        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+    }
+
+    ResourceVK(const ResourceVK&) = delete;
+    ResourceVK(ResourceVK&&) = delete;
+
+    bool operator=(const ResourceVK&) = delete;
+    bool operator=(ResourceVK&&) = delete;
+
 protected:
-    IContextVK& GetContextVK() noexcept
+    const IContextVK& GetContextVK() const noexcept
     {
         return dynamic_cast<IContextVK&>(ResourceBase::GetContextBase());
     }

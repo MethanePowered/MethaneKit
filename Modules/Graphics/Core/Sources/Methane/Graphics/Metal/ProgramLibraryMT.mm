@@ -37,7 +37,7 @@ static NSString* GetLibraryFullPath(const std::string& library_name)
     return MacOS::ConvertToNsType<std::string, NSString*>(Platform::GetResourceDir() + "/" + library_name + ".metallib");
 }
 
-ProgramLibraryMT::ProgramLibraryMT(DeviceMT& metal_device, const std::string& library_name)
+ProgramLibraryMT::ProgramLibraryMT(const DeviceMT& metal_device, const std::string& library_name)
     : m_mtl_library(library_name.empty()
                     ? [metal_device.GetNativeDevice() newDefaultLibrary]
                     : [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&m_ns_error])

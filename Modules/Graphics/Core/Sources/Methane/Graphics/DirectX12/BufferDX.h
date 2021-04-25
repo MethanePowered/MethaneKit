@@ -33,6 +33,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
+#include <fmt/format.h>
 #include <d3dx12.h>
 
 namespace Methane::Graphics
@@ -42,7 +43,7 @@ template<typename TViewNative, typename... ExtraViewArgs>
 class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
-    BufferDX(ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
+    BufferDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
         : ResourceDX(context, settings, descriptor_by_usage)
     {
         META_FUNCTION_TASK();
@@ -74,15 +75,15 @@ public:
 
         if (m_cp_upload_resource)
         {
-            m_cp_upload_resource->SetName(nowide::widen(name + " Upload Resource").c_str());
+            m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
         }
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources) override
+    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override
     {
         META_FUNCTION_TASK();
-        ResourceDX::SetData(sub_resources);
+        ResourceDX::SetData(sub_resources, sync_cmd_queue);
 
         const CD3DX12_RANGE zero_read_range(0U, 0U);
         const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
@@ -119,23 +120,8 @@ public:
             return;
 
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
-
-        auto& upload_cmd_list = static_cast<BlitCommandListDX&>(GetContext().GetUploadCommandList());
-        upload_cmd_list.RetainResource(*this);
-
-        const ResourceBase::State final_buffer_state = GetState() == State::Common ? State::PixelShaderResource : GetState();
-        if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
-        {
-            upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
-        }
-
+        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
-
-        if (SetState(final_buffer_state, m_upload_end_transition_barriers_ptr) && m_upload_end_transition_barriers_ptr)
-        {
-            upload_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
-        }
-
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
 
@@ -182,10 +168,7 @@ private:
 
     // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
     TViewNative                 m_buffer_view;
-
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-    Ptr<ResourceBase::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<ResourceBase::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 struct ReadBackBufferView { };

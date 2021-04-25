@@ -73,7 +73,7 @@ void BlitCommandListVK::Commit()
     CommandListBase::Commit();
 }
 
-void BlitCommandListVK::SetResourceBarriers(const ResourceBase::Barriers&)
+void BlitCommandListVK::SetResourceBarriers(const Resource::Barriers&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }

@@ -24,14 +24,14 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/UserInterface/Font.h>
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <nowide/convert.hpp>
+#include <fmt/format.h>
 #include <magic_enum.hpp>
-#include <map>
 #include <set>
 #include <locale>
 #include <codecvt>
@@ -644,16 +644,17 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
 
 gfx::Texture& Font::GetAtlasTexture(gfx::Context& context)
 {
+    META_FUNCTION_TASK();
     const Ptr<gfx::Texture>& texture_ptr = GetAtlasTexturePtr(context);
     META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "atlas texture is not available for context");
     return *texture_ptr;
 }
 
-Font::AtlasTexture Font::CreateAtlasTexture(gfx::Context& context, bool deferred_data_init)
+Font::AtlasTexture Font::CreateAtlasTexture(const gfx::Context& context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
     Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
-    atlas_texture_ptr->SetName(m_settings.description.name + " Font Atlas");
+    atlas_texture_ptr->SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {
         context.RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
@@ -723,7 +724,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     Emit(&IFontCallback::OnFontAtlasUpdated, *this);
 }
 
-void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture)
+void Font::UpdateAtlasTexture(const gfx::Context& context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");
@@ -739,9 +740,13 @@ void Font::UpdateAtlasTexture(gfx::Context& context, AtlasTexture& atlas_texture
     else
     {
         // TODO: Update only a region of atlas texture containing character bitmap
-        atlas_texture.texture_ptr->SetData({
-            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
-        });
+        atlas_texture.texture_ptr->SetData(
+            gfx::Resource::SubResources
+            {
+                gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size()))
+            },
+            &context.GetDefaultCommandKit(gfx::CommandList::Type::Render).GetQueue()
+        );
     }
 
     atlas_texture.is_update_required = false;

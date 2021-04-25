@@ -63,6 +63,12 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListMT>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
+{
+    META_FUNCTION_TASK();
+    return nullptr;
+}
+
 RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(true, command_queue, render_pass)
 {
@@ -109,21 +115,16 @@ void RenderCommandListMT::ResetCommandEncoder()
         MTLRenderPassDescriptor* mtl_render_pass = GetRenderPassMT().GetNativeDescriptor(!IsCommandBufferInitialized());
         META_CHECK_ARG_NOT_NULL(mtl_render_pass);
 
-        id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
+        const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
         InitializeCommandEncoder([mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass]);
     }
 }
 
-void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
+bool RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    RenderCommandListBase::SetVertexBuffers(vertex_buffers);
-
-    DrawingState& drawing_state = GetDrawingState();
-    if (!magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::VertexBuffers))
-        return;
+    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+        return false;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
@@ -134,23 +135,23 @@ void RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers)
     const NSRange                     mtl_range{ 0U, metal_vertex_buffers.GetCount() };
     [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data() offsets:mtl_offsets.data() withRange:mtl_range];
 
-    drawing_state.changes &= ~DrawingState::Changes::VertexBuffers;
+    return true;
 }
 
-void RenderCommandListMT::DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                                      uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+void RenderCommandListMT::DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    
-    const BufferMT& metal_index_buffer = static_cast<const BufferMT&>(index_buffer);
-    if (index_count == 0)
+
+    DrawingState& drawing_state = GetDrawingState();
+    if (index_count == 0 && drawing_state.index_buffer_ptr)
     {
-        index_count = metal_index_buffer.GetFormattedItemsCount();
+        index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_buffer, index_count, start_index, start_vertex, instance_count, start_instance);
-    
+    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
+
+    const BufferMT&        metal_index_buffer   = static_cast<const BufferMT&>(*drawing_state.index_buffer_ptr);
     const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
     const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
     const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();

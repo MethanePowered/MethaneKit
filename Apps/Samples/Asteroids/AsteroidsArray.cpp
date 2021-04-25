@@ -25,10 +25,11 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Math.hpp>
+#include <Methane/Data/Parallel.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <future>
 #include <cmath>
 
 namespace Methane::Samples
@@ -67,8 +68,8 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
         base_mesh.Spherify();
 
         tf::Taskflow task_flow;
-        task_flow.for_each_index_guided(0, static_cast<int>(m_instance_count), 1,
-            [this, &rng, &data_mutex, &base_mesh](const int)
+        task_flow.for_each_index_guided(0U, m_instance_count, 1U,
+            [this, &rng, &data_mutex, &base_mesh](const uint32_t)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
                 asteroid_mesh.Randomize(rng()); // NOSONAR
@@ -77,7 +78,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
             },
-            Data::GetParallelChunkSizeAsInt(m_instance_count, 5)
+            Data::GetParallelChunkSize(m_instance_count, 5)
         );
         parallel_executor.run(task_flow).get();
     }
@@ -137,7 +138,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
         },
-        Data::GetParallelChunkSizeAsInt(texture_array_subresources.size(), 5)
+        Data::GetParallelChunkSize(texture_array_subresources.size(), 5)
     );
     parallel_executor.run(task_flow).get();
 
@@ -220,7 +221,6 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
@@ -237,15 +237,15 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
             {
                 gfx::Program::InputBufferLayout { state.uber_mesh.GetVertexLayout().GetSemantics() }
             },
-            gfx::Program::ArgumentDescriptions
+            gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::Argument::Modifiers::Addressable },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::Argument::Modifiers::None        },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::Argument::Modifiers::Constant    },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::Argument::Modifiers::Constant    },
+                { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
+                { { gfx::Shader::Type::All,    "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
                 { { gfx::Shader::Type::Pixel,  "g_face_textures"  }, m_settings.textures_array_enabled
-                                                                     ? gfx::Program::Argument::Modifiers::Constant
-                                                                     : gfx::Program::Argument::Modifiers::None      },
+                                                                     ? gfx::Program::ArgumentAccessor::Type::Constant
+                                                                     : gfx::Program::ArgumentAccessor::Type::Mutable     },
             },
             gfx::PixelFormats
             {
@@ -294,7 +294,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     
 Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr,
                                                                  const Ptr<gfx::Buffer>& scene_uniforms_buffer_ptr,
-                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr) const
+                                                                 const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
+                                                                 Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::CreateProgramBindings");
@@ -305,38 +306,75 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
 
     const gfx::Resource::Locations face_texture_locations = m_settings.textures_array_enabled
                                                           ? gfx::Resource::CreateLocations(m_unique_textures)
-                                                          : gfx::Resource::Locations{ { GetInstanceTexturePtr(0) } };
+                                                          : gfx::Resource::Locations{ { GetInstanceTexturePtr() } };
     
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer_ptr, GetUniformsBufferOffset(0) } } },
-        { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { scene_uniforms_buffer_ptr } } },
+        { { gfx::Shader::Type::All,    "g_scene_uniforms" }, { { scene_uniforms_buffer_ptr } } },
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { constants_buffer_ptr      } } },
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations        },
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr     } } },
-    });
+    }, frame_index);
 
     tf::Taskflow task_flow;
-    task_flow.for_each_index_guided(1, static_cast<int>(m_settings.instance_count), 1,
-        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr](const int asteroid_index)
+    task_flow.for_each_index_guided(1U, m_settings.instance_count, 1U,
+        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, frame_index](const uint32_t asteroid_index)
         {
-            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(static_cast<uint32_t>(asteroid_index));
+            const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
-                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
+                { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
             };
             if (!m_settings.textures_array_enabled)
             {
                 set_resource_location_by_argument.insert(
-                    { { gfx::Shader::Type::Pixel, "g_face_textures"  }, { { GetInstanceTexturePtr(static_cast<uint32_t>(asteroid_index)) } } }
+                    { { gfx::Shader::Type::Pixel, "g_face_textures" }, { { GetInstanceTexturePtr(asteroid_index) } } }
                 );
             }
-            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument);
+            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument, frame_index);
         },
-        Data::GetParallelChunkSizeAsInt(m_settings.instance_count, 5)
+        Data::GetParallelChunkSize(m_settings.instance_count, 5)
     );
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
-    
+
     return program_bindings_array;
+}
+
+Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(gfx::Buffer& constants_buffer)
+{
+    META_FUNCTION_TASK();
+
+#ifdef _WIN32
+    const gfx::Resource::State prev_state = gfx::Resource::State::CopyDest;
+#else
+    const gfx::Resource::State prev_state = gfx::Resource::State::Common;
+#endif
+
+    Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = gfx::Resource::Barriers::Create({
+        { gfx::Resource::Barrier::Type::Transition, constants_buffer, prev_state, gfx::Resource::State::VertexAndConstantBuffer },
+        { gfx::Resource::Barrier::Type::Transition, GetIndexBuffer(), prev_state, gfx::Resource::State::IndexBuffer             },
+    });
+
+    const gfx::BufferSet& vertex_buffer_set = GetVertexBuffers();
+    for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
+    {
+        beginning_resource_barriers_ptr->AddTransition(vertex_buffer_set[vertex_buffer_index], prev_state, gfx::Resource::State::VertexAndConstantBuffer);
+    }
+
+    if (m_settings.textures_array_enabled)
+    {
+        for(const Ptr<gfx::Texture>& texture_ptr : m_unique_textures)
+        {
+            META_CHECK_ARG_NOT_NULL(texture_ptr);
+            beginning_resource_barriers_ptr->AddTransition(*texture_ptr, prev_state, gfx::Resource::State::PixelShaderResource);
+        }
+    }
+    else
+    {
+        beginning_resource_barriers_ptr->AddTransition(GetInstanceTexture(), prev_state, gfx::Resource::State::PixelShaderResource);
+    }
+
+    return beginning_resource_barriers_ptr;
 }
 
 bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
@@ -350,9 +388,9 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
         [this, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
         {
-            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetViewProjMatrix(), m_settings.view_camera.GetOrientation().eye, elapsed_radians);
+            UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetOrientation().eye, elapsed_radians);
         },
-        Data::GetParallelChunkSizeAsInt(m_content_state_ptr->parameters.size(), 5)
+        Data::GetParallelChunkSize(m_content_state_ptr->parameters.size(), 5)
     );
 
     GetRenderContext().GetParallelExecutor().run(update_task_flow).get();
@@ -367,14 +405,23 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
-    buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
+
+    // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::Draw(cmd_list, buffer_bindings.program_bindings_per_instance,
-                      gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
+    BaseBuffers::Draw(
+        cmd_list, buffer_bindings.program_bindings_per_instance,
+        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, 0, // Constant bindings are applied once mutable always, resource barriers are not set to reduce overhead
+        true,   // Bound resources are not retained by command lists to reduce overhead from the huge amount of bindings
+        false   // Do not set resource barriers for Vertex and Index buffers since their state does not change and to reduce runtime overhead
+    );
+
+    // Make sure that uniforms have finished uploading to GPU
+    uniforms_update_future.wait();
 }
 
 void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
@@ -385,14 +432,21 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
-    buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources());
+
+    // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
 
     parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);
 
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
-    BaseBuffers::DrawParallel(parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
-                              gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
+    BaseBuffers::DrawParallel(
+        parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
+        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, // Constant bindings are applied once mutable always, resource barriers are not set to reduce overhead
+        true,   // Bound resources are not retained by command lists to reduce overhead from the huge amount of bindings
+        false   // Do not set resource barriers for Vertex and Index buffers since their state does not change and to reduce runtime overhead
+    );
+    uniforms_update_future.wait();
 }
 
 float AsteroidsArray::GetMinMeshLodScreenSize() const
@@ -414,7 +468,7 @@ uint32_t AsteroidsArray::GetSubsetByInstanceIndex(uint32_t instance_index) const
     return m_mesh_subset_by_instance_index[instance_index];
 }
 
-void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float4x4& view_proj_matrix, const hlslpp::float3& eye_position, float elapsed_radians)
+void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians)
 {
     META_FUNCTION_TASK();
 
@@ -425,19 +479,17 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     const hlslpp::float4x4 orbit_rotation_matrix = hlslpp::float4x4::rotation_y(orbit_angle_rad);
 
     const hlslpp::float4x4 model_matrix = hlslpp::mul(hlslpp::mul(spin_rotation_matrix, asteroid_parameters.scale_translate_matrix), orbit_rotation_matrix);
-    const hlslpp::float4x4 mvp_matrix   = hlslpp::mul(model_matrix, view_proj_matrix);
+    const hlslpp::float3   asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
+    const float            distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
+    const float            relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
 
-    const hlslpp::float3 asteroid_position(model_matrix._m30, model_matrix._m31, model_matrix._m32);
-    const float distance_to_eye            = hlslpp::length(eye_position - asteroid_position);
-    const float relative_screen_size_log_2 = std::log2(asteroid_parameters.scale / std::sqrt(distance_to_eye));
-
-    const float             mesh_subdiv_float       = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
-    const uint32_t          mesh_subdivision_index  = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
-    const uint32_t          mesh_subset_index       = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
-    const auto&    [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
-    const Asteroid::Colors& asteroid_colors         = m_mesh_lod_coloring_enabled
-                                                    ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
-                                                    : asteroid_parameters.colors;
+    const float    mesh_subdiv_float        = std::roundf(relative_screen_size_log_2 - m_min_mesh_lod_screen_size_log_2);
+    const uint32_t mesh_subdivision_index   = std::min(m_settings.subdivisions_count - 1, static_cast<uint32_t>(std::max(0.0F, mesh_subdiv_float)));
+    const uint32_t mesh_subset_index        = m_content_state_ptr->uber_mesh.GetSubsetIndex(asteroid_parameters.mesh_instance_index, mesh_subdivision_index);
+    const auto&   [mesh_depth_min, mesh_depth_max] = m_content_state_ptr->uber_mesh.GetSubsetDepthRange(mesh_subset_index);
+    const Asteroid::Colors& asteroid_colors = m_mesh_lod_coloring_enabled
+                                            ? Asteroid::GetAsteroidLodColors(mesh_subdivision_index)
+                                            : asteroid_parameters.colors;
 
     m_mesh_subset_by_instance_index[asteroid_parameters.index] = mesh_subset_index;
 
@@ -445,10 +497,10 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
         AsteroidUniforms
         {
             hlslpp::transpose(model_matrix),
-            hlslpp::transpose(mvp_matrix),
-            asteroid_colors.deep.AsVector(),
-            asteroid_colors.shallow.AsVector(),
-            hlslpp::float2(mesh_depth_min, mesh_depth_max),
+            asteroid_colors.deep,
+            asteroid_colors.shallow,
+            mesh_depth_min,
+            mesh_depth_max,
             asteroid_parameters.texture_index
         },
         asteroid_parameters.index

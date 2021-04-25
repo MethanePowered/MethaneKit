@@ -46,15 +46,15 @@ public:
     void Commit() override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const ResourceBase::Barriers&) override { /* not implemented */ }
+    void SetResourceBarriers(const Resource::Barriers&) override { /* not implemented */ }
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void SetVertexBuffers(BufferSet& vertex_buffers) override;
-    void DrawIndexed(Primitive primitive, Buffer& index_buffer,
-                     uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
+    bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers) override;
+    bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers) override;
+    void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;

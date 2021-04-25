@@ -27,7 +27,8 @@ if (WIN32)
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
         ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
@@ -179,10 +180,13 @@ set(HEADERS
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
+    ${INCLUDE_DIR}/ResourceBarriers.h
+    ${INCLUDE_DIR}/SubResource.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/CommandKit.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
     ${INCLUDE_DIR}/BlitCommandList.h
@@ -214,6 +218,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/ProgramBindingsBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
+    ${SOURCES_DIR}/SubResource.cpp
+    ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
     ${SOURCES_DIR}/BufferBase.h
@@ -224,6 +230,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/SamplerBase.cpp
     ${SOURCES_DIR}/RenderPassBase.h
     ${SOURCES_DIR}/RenderPassBase.cpp
+    ${SOURCES_DIR}/CommandKitBase.h
+    ${SOURCES_DIR}/CommandKitBase.cpp
     ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
