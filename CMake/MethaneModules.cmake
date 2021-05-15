@@ -21,6 +21,23 @@ Library module configuration functions
 
 *****************************************************************************]]
 
+set(METHANE_GFX_API 0)
+set(METHANE_GFX_METAL 1)
+set(METHANE_GFX_DIRECTX 2)
+set(METHANE_GFX_VULKAN 3)
+
+if (WIN32)
+    if (METHANE_VULKAN_ON_WINDOWS_ENABLED)
+        set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
+    else()
+        set(METHANE_GFX_API ${METHANE_GFX_DIRECTX})
+    endif()
+elseif(APPLE)
+    set(METHANE_GFX_API ${METHANE_GFX_METAL})
+elseif(UNIX)
+    set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
+endif()
+
 function(get_target_arch OUT_ARCH)
     if(APPLE)
         set(${OUT_ARCH} "" PARENT_SCOPE)
@@ -51,11 +68,11 @@ function(get_platform_dir)
 endfunction()
 
 function(get_graphics_dir)
-    if (WIN32)
+    if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         set(GRAPHICS_DIR DirectX12 PARENT_SCOPE)
-    elseif(APPLE)
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         set(GRAPHICS_DIR Metal PARENT_SCOPE)
-    else()
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         set(GRAPHICS_DIR Vulkan PARENT_SCOPE)
     endif()
 endfunction()

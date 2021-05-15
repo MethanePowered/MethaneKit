@@ -25,14 +25,15 @@ endif()
 enable_testing()
 
 # Build configuration
-option(METHANE_APPS_BUILD_ENABLED       "Enable applications build" ON)
-option(METHANE_TESTS_BUILD_ENABLED      "Enable tests build" ON)
-option(METHANE_CHECKS_ENABLED           "Enable runtime checks of input arguments" ON)
-option(METHANE_RUN_TESTS_DURING_BUILD   "Enable test auto-run after module build" ON)
-option(METHANE_UNITY_BUILD_ENABLED      "Enable unity build speedup for some modules" ON)
-option(METHANE_CODE_COVERAGE_ENABLED    "Enable code coverage data collection with GCC and Clang" OFF)
-option(METHANE_SHADERS_CODEVIEW_ENABLED "Enable shaders code symbols viewing in debug tools)" OFF)
-option(METHANE_USE_OPEN_IMAGE_IO        "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_VULKAN_ON_WINDOWS_ENABLED "Enable using Vulkan graphics API on Windows instead of DirectX" OFF)
+option(METHANE_APPS_BUILD_ENABLED        "Enable applications build" ON)
+option(METHANE_TESTS_BUILD_ENABLED       "Enable tests build" ON)
+option(METHANE_CHECKS_ENABLED            "Enable runtime checks of input arguments" ON)
+option(METHANE_RUN_TESTS_DURING_BUILD    "Enable test auto-run after module build" ON)
+option(METHANE_UNITY_BUILD_ENABLED       "Enable unity build speedup for some modules" ON)
+option(METHANE_CODE_COVERAGE_ENABLED     "Enable code coverage data collection with GCC and Clang" OFF)
+option(METHANE_SHADERS_CODEVIEW_ENABLED  "Enable shaders code symbols viewing in debug tools)" OFF)
+option(METHANE_USE_OPEN_IMAGE_IO         "Enable using OpenImageIO library for images loading" OFF)
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -46,7 +47,7 @@ option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on dem
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 5 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
@@ -61,6 +62,7 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
 )
 
+include(MethaneModules)
 include(MethaneUtils)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -183,6 +185,19 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     METHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
     METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
+
+if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+    include(FindVulkan)
+    if (Vulkan_FOUND)
+        message(STATUS "Methane is using Vulkan graphics API")
+    else()
+        message(WARNING "Methane Vulkan SDK was not found")
+    endif()
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+    message(STATUS "Methane is using DirectX 12 graphics API")
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    message(STATUS "Methane is using Metal graphics API")
+endif()
 
 if (METHANE_APPS_BUILD_ENABLED)
     message(STATUS "Methane applications build is enabled")

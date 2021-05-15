@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Graphics Types Test" type="CMakeCatchTestRunConfigurationType" factoryName="Catch Test" singleton="false" PROGRAM_PARAMS="-b" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneGraphicsTypesTest" CONFIG_NAME="MSVC Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneGraphicsTypesTest" TEST_MODE="SUITE_TEST">
+  <configuration default="false" name="Graphics Types Test" type="CMakeCatchTestRunConfigurationType" factoryName="Catch Test" singleton="false" PROGRAM_PARAMS="-b" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneGraphicsTypesTest" CONFIG_NAME="DX MSVC Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneGraphicsTypesTest" TEST_MODE="SUITE_TEST">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       <option name="BeforeTestRunTask" enabled="true" />

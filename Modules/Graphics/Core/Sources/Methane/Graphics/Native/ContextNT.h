@@ -23,15 +23,15 @@ Native implementation alias of the context interface.
 
 #pragma once
 
-#if defined _WIN32
+#if defined METHANE_GFX_DIRECTX
 
 #include <Methane/Graphics/DirectX12/ContextDX.h>
 
-#elif defined __APPLE__
+#elif defined METHANE_GFX_METAL
 
 #include <Methane/Graphics/Metal/ContextMT.h>
 
-#elif defined __linux__
+#elif defined METHANE_GFX_VULKAN
 
 #include <Methane/Graphics/Vulkan/ContextVK.h>
 
@@ -40,15 +40,15 @@ Native implementation alias of the context interface.
 namespace Methane::Graphics
 {
 
-#if defined _WIN32
+#if defined METHANE_GFX_DIRECTX
 
 using IContextNT = IContextDX;
 
-#elif defined __APPLE__
+#elif defined METHANE_GFX_METAL
 
 using IContextNT = IContextMT;
 
-#elif defined __linux__
+#elif defined METHANE_GFX_VULKAN
 
 using IContextNT = IContextVK;
 

@@ -4,7 +4,7 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
-if (WIN32)
+if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
 
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesDX.h
@@ -64,7 +64,7 @@ if (WIN32)
         Shcore
     )
 
-elseif(APPLE)
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
 
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
@@ -123,7 +123,7 @@ elseif(APPLE)
             COMPILE_FLAGS -fobjc-weak
     )
 
-else() # Linux
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
     set(PLATFORM_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesVK.h
@@ -167,6 +167,8 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
     )
+
+    #set(PLATFORM_LIBRARIES Vulkan::Vulkan)
 
 endif()
 
@@ -291,6 +293,9 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
