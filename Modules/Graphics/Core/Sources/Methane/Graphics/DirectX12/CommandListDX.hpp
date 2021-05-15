@@ -171,8 +171,8 @@ public:
         {
             META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandListBase::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
             return in_cpu_nanoseconds
-                 ? Data::TimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
-                 : Data::TimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
+                 ? GetNormalTimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
+                 : GetNormalTimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
         }
         return CommandListBase::GetGpuTimeRange(in_cpu_nanoseconds);
     }
@@ -240,6 +240,11 @@ protected:
     }
 
 private:
+    static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
+    {
+        return Data::TimeRange(std::min(start, end), std::max(start, end));
+    }
+
     Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;
     Ptr<TimestampQueryBuffer::TimestampQuery> m_end_timestamp_query_ptr;
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
