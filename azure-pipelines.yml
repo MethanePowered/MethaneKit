@@ -34,7 +34,7 @@ resources:
 variables:
 
   product.Version.Major: 0
-  product.Version.Minor: 5
+  product.Version.Minor: 6
   product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(Build.BuildNumber)'
 
   sonar.CloudName: 'Evgeny Gorodetsky Sonar Cloud'
@@ -79,7 +79,7 @@ variables:
 
 jobs:
 
-- job: Windows_x64
+- job: Windows_DX_x64_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -89,7 +89,7 @@ jobs:
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildReleaseCmakeFlags)
-    buildName: 'Win64-$(configuration)'
+    buildName: 'DX-Win64-Release'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -98,7 +98,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows_x64_Profiling
+- job: Windows_DX_x64_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -108,7 +108,7 @@ jobs:
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildProfilingCmakeFlags)
-    buildName: 'Win64-$(configuration)-Profiling'
+    buildName: 'DX-Win64-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -117,7 +117,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows_x86
+- job: Windows_DX_x86_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -127,7 +127,7 @@ jobs:
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildReleaseCmakeFlags)
-    buildName: '$(platform)-$(configuration)'
+    buildName: 'DX-Win32-Release'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -136,7 +136,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Windows_x86_Profiling
+- job: Windows_DX_x86_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -146,7 +146,7 @@ jobs:
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildProfilingCmakeFlags)
-    buildName: '$(platform)-$(configuration)-Profiling'
+    buildName: 'DX-Win32-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -154,6 +154,82 @@ jobs:
 
   steps:
   - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_VK_x64_Release
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'x64'
+    configuration: 'Release'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON $(buildReleaseCmakeFlags)
+    buildName: 'VK-Win64-Release'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+    - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_VK_x64_Profiling
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'x64'
+    configuration: 'RelWithDebInfo'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON $(buildProfilingCmakeFlags)
+    buildName: 'VK-Win64-Profiling'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+    - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_VK_x86_Release
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'Win32'
+    configuration: 'Release'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON $(buildReleaseCmakeFlags)
+    buildName: 'VK-Win32-Release'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+    - template: Build/Windows/AzureBuild.yml
+
+- job: Windows_VK_x86_Profiling
+
+  pool:
+    vmImage: 'windows-2019'
+
+  variables:
+    platform: 'Win32'
+    configuration: 'RelWithDebInfo'
+    generatorName: '"Visual Studio 16 2019"'
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON $(buildProfilingCmakeFlags)
+    buildName: 'VK-Win32-Profiling'
+    buildDir: 'Build\Output\$(buildName)\Build'
+    installDir: 'Build\Output\$(buildName)\Install'
+    buildInstallDir: '..\Install'
+    rootDir: '..\..\..\..'
+
+  steps:
+    - template: Build/Windows/AzureBuild.yml
 
 - job: Windows_Sonar_Scan
   continueOnError: true
@@ -181,7 +257,7 @@ jobs:
   steps:
     - template: Build/Windows/AzureSonarScan.yml
 
-- job: MacOS
+- job: MacOS_Release
 
   pool:
     vmImage: 'macOS-10.15'
@@ -271,7 +347,7 @@ jobs:
             workingDirectory: '$(installDir)/Tests'
             displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
-- job: Ubuntu
+- job: Ubuntu_Release
 
   pool:
     vmImage: 'ubuntu-20.04'
