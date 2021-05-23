@@ -94,7 +94,6 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: true
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -114,10 +113,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
   - template: Build/Windows/AzureBuild.yml
+    parameters:
+      runTests: false
 
 - job: Win32_DX_Release
 
@@ -134,10 +134,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: true
 
   steps:
   - template: Build/Windows/AzureBuild.yml
+    parameters:
+      runTests: false
 
 - job: Win32_DX_Profiling
 
@@ -154,10 +155,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
   - template: Build/Windows/AzureBuild.yml
+    parameters:
+      runTests: false
 
 - job: Win64_VK_Release
 
@@ -174,10 +176,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
     - template: Build/Windows/AzureBuild.yml
+      parameters:
+        runTests: false
 
 - job: Win64_VK_Profiling
 
@@ -194,10 +197,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
     - template: Build/Windows/AzureBuild.yml
+      parameters:
+        runTests: false
 
 - job: Win32_VK_Release
 
@@ -214,10 +218,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
     - template: Build/Windows/AzureBuild.yml
+      parameters:
+        runTests: false
 
 - job: Win32_VK_Profiling
 
@@ -234,10 +239,11 @@ jobs:
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
     rootDir: '..\..\..\..'
-    runTests: false
 
   steps:
     - template: Build/Windows/AzureBuild.yml
+      parameters:
+        runTests: false
 
 - job: Win64_DX_Sonar_Scan
   continueOnError: true
@@ -280,7 +286,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    runTests: true
 
   steps:
   - template: Build/Posix/AzureBuild.yml
@@ -300,10 +305,11 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    runTests: false
 
   steps:
   - template: Build/Posix/AzureBuild.yml
+    parameters:
+      runTests: false
 
 - job: MacOS_MTL_Sonar_Scan
   continueOnError: true
@@ -372,7 +378,6 @@ jobs:
     installDir: 'Build/Output/$(buildName)/Install'
     buildInstallDir: '../Install'
     rootDir: '../../../..'
-    runTests: true
 
   steps:
   - template: Build/Posix/AzureBuild.yml
