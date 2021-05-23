@@ -88,7 +88,7 @@ set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
     <taskflow/taskflow.hpp>
 )
 
-if (WIN32)
+if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
 
     set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
         <d3d12.h>
@@ -97,6 +97,18 @@ if (WIN32)
 
     set(PLATFORM_LIBRARIES
         D3DX12
+    )
+
+endif()
+
+if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+
+    set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
+        <vulkan/vulkan.hpp>
+    )
+
+    set(PLATFORM_LIBRARIES
+        Vulkan-Headers
     )
 
 endif()

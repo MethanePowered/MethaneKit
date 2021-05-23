@@ -186,17 +186,13 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
 )
 
-if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-    include(FindVulkan)
-    if (Vulkan_FOUND)
-        message(STATUS "Methane is using Vulkan graphics API")
-    else()
-        message(WARNING "Methane Vulkan SDK was not found")
-    endif()
+# METHANE_GFX_API is platform dependent and is selected in CMake/MethaneModules.cmake
+if(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    message(STATUS "Methane is using Metal graphics API")
 elseif(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     message(STATUS "Methane is using DirectX 12 graphics API")
-elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
-    message(STATUS "Methane is using Metal graphics API")
+elseif (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+    message(STATUS "Methane is using Vulkan graphics API")
 endif()
 
 if (METHANE_APPS_BUILD_ENABLED)

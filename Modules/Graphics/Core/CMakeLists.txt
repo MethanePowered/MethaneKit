@@ -168,7 +168,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
     )
 
-    #set(PLATFORM_LIBRARIES Vulkan::Vulkan)
+    set(PLATFORM_LIBRARIES volk Vulkan-Headers)
 
 endif()
 
