@@ -21,23 +21,6 @@ Library module configuration functions
 
 *****************************************************************************]]
 
-set(METHANE_GFX_API 0)
-set(METHANE_GFX_METAL 1)
-set(METHANE_GFX_DIRECTX 2)
-set(METHANE_GFX_VULKAN 3)
-
-if (WIN32)
-    if (METHANE_VULKAN_ON_WINDOWS_ENABLED)
-        set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
-    else()
-        set(METHANE_GFX_API ${METHANE_GFX_DIRECTX})
-    endif()
-elseif(APPLE)
-    set(METHANE_GFX_API ${METHANE_GFX_METAL})
-elseif(UNIX)
-    set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
-endif()
-
 function(get_target_arch OUT_ARCH)
     if(APPLE)
         set(${OUT_ARCH} "" PARENT_SCOPE)

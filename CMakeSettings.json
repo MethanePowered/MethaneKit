@@ -31,7 +31,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -113,7 +113,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -195,7 +195,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -277,7 +277,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -359,7 +359,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -441,7 +441,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -523,7 +523,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -610,7 +610,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -697,7 +697,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -788,7 +788,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -874,7 +874,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -960,7 +960,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },
@@ -1046,7 +1046,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_USE_OPEN_IMAGE_IO",
+                    "name": "METHANE_OPEN_IMAGE_IO_ENABLED",
                     "value": "False",
                     "type": "BOOL"
                 },

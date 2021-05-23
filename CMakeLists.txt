@@ -25,7 +25,7 @@ endif()
 enable_testing()
 
 # Build configuration
-option(METHANE_VULKAN_ON_WINDOWS_ENABLED "Enable using Vulkan graphics API on Windows instead of DirectX" OFF)
+option(METHANE_GFX_VULKAN_ENFORCED       "Enforce using Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED        "Enable applications build" ON)
 option(METHANE_TESTS_BUILD_ENABLED       "Enable tests build" ON)
 option(METHANE_CHECKS_ENABLED            "Enable runtime checks of input arguments" ON)
@@ -33,7 +33,7 @@ option(METHANE_RUN_TESTS_DURING_BUILD    "Enable test auto-run after module buil
 option(METHANE_UNITY_BUILD_ENABLED       "Enable unity build speedup for some modules" ON)
 option(METHANE_CODE_COVERAGE_ENABLED     "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED  "Enable shaders code symbols viewing in debug tools)" OFF)
-option(METHANE_USE_OPEN_IMAGE_IO         "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_OPEN_IMAGE_IO_ENABLED     "Enable using OpenImageIO library for images loading" OFF)
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -53,6 +53,26 @@ set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
 set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
+
+# Methane graphics native APIs
+set(METHANE_GFX_METAL 1)
+set(METHANE_GFX_DIRECTX 2)
+set(METHANE_GFX_VULKAN 3)
+
+# Methane graphics API selection
+if (METHANE_GFX_VULKAN_ENFORCED)
+    set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
+else()
+    if (WIN32)
+        set(METHANE_GFX_API ${METHANE_GFX_DIRECTX})
+    elseif(APPLE)
+        set(METHANE_GFX_API ${METHANE_GFX_METAL})
+    elseif(UNIX)
+        set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
+    else()
+        set(METHANE_GFX_API 0)
+    endif()
+endif()
 
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
@@ -233,7 +253,7 @@ if(METHANE_SHADERS_CODEVIEW_ENABLED)
     message(STATUS "Methane shaders code symbols are enabled")
 endif()
 
-if(METHANE_USE_OPEN_IMAGE_IO)
+if(METHANE_OPEN_IMAGE_IO_ENABLED)
     message(STATUS "Methane Kit OpenImageIO media-library is enabled.")
 endif()
 
