@@ -32,6 +32,7 @@ steps:
       )
       exit 0
     workingDirectory: '$(installDir)\Tests'
+    enabled: $(runTests)
     failOnStderr: false
     displayName: 'Run all unit-tests from install directory'
 
@@ -49,6 +50,7 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishTestResults@2
+    enabled: $(runTests)
     continueOnError: true
     inputs:
       testResultsFormat: 'JUnit'

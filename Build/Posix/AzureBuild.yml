@@ -32,6 +32,7 @@ steps:
         echo  - $test_exe - completed with $? exit status
       done
     workingDirectory: '$(installDir)/Tests'
+    enabled: $(runTests)
     displayName: 'Run all unit-tests from install directory'
 
   - script: |
@@ -48,6 +49,7 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishTestResults@2
+    enabled: $(runTests)
     continueOnError: true
     inputs:
       testResultsFormat: 'JUnit'
