@@ -26,6 +26,8 @@ Vulkan implementation of the device interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <vector>
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace Methane::Graphics
@@ -51,10 +53,23 @@ static vk::Instance CreateVulkanInstance(vk::DynamicLoader& vk_loader)
     return vk_instance;
 }
 
-DeviceVK::DeviceVK()
-    : DeviceBase("", false, Device::Features::BasicRendering)
+static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
+    const vk::PhysicalDeviceType vk_device_type = vk_physical_device.getProperties().deviceType;
+    return vk_device_type == vk::PhysicalDeviceType::eVirtualGpu ||
+           vk_device_type == vk::PhysicalDeviceType::eCpu;
+}
+
+DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device)
+    : DeviceBase(vk_physical_device.getProperties().deviceName,
+                 IsSoftwarePhysicalDevice(vk_physical_device),
+                 Device::Features::BasicRendering)
+    , m_vk_physical_device(vk_physical_device)
+    , m_vk_device(vk_physical_device.createDevice({}, nullptr))
+{
+    META_FUNCTION_TASK();
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
 }
 
 System& System::Get()
@@ -87,6 +102,13 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Features supported_featur
     META_FUNCTION_TASK();
     SetGpuSupportedFeatures(supported_features);
     ClearDevices();
+
+    const std::vector<vk::PhysicalDevice> vk_physical_devices = m_vk_instance.enumeratePhysicalDevices();
+    for(const vk::PhysicalDevice& vk_physical_device : vk_physical_devices)
+    {
+        AddDevice(std::make_shared<DeviceVK>(vk_physical_device));
+    }
+
     return GetGpuDevices();
 }
 

@@ -33,7 +33,14 @@ namespace Methane::Graphics
 class DeviceVK final : public DeviceBase
 {
 public:
-    DeviceVK();
+    DeviceVK(const vk::PhysicalDevice& vk_physical_device);
+
+    const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
+    const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
+
+private:
+    vk::PhysicalDevice m_vk_physical_device;
+    vk::Device         m_vk_device;
 };
 
 class SystemVK final : public SystemBase

@@ -263,9 +263,6 @@ const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Features supported_featur
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
     {
         META_CHECK_ARG_NOT_NULL(p_adapter);
-
-        // Don't select the Basic Render Driver adapter.
-        // If you want a software adapter, pass in "/warp" on the command line.
         if (IsSoftwareAdapterDxgi(*p_adapter))
             continue;
 
