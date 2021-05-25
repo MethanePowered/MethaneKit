@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/DeviceBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -37,8 +39,22 @@ public:
 class SystemVK final : public SystemBase
 {
 public:
+    SystemVK();
+    ~SystemVK(); // NOSONAR
+
+    // System interface
     void CheckForChanges() override;
     const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
+
+    vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
+    const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }
+
+    vk::Instance&       GetNativeInstance() noexcept          { return m_vk_instance; }
+    const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_instance; }
+
+private:
+    vk::DynamicLoader m_vk_loader;
+    vk::Instance      m_vk_instance;
 };
 
 } // namespace Methane::Graphics

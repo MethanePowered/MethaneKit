@@ -111,6 +111,10 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         Vulkan-Headers
     )
 
+    set(PRECOMPILED_EXTRA_DEFINITIONS
+        VK_NO_PROTOTYPES
+    )
+
 endif()
 
 add_library(${EXTRA_TARGET} STATIC
@@ -132,6 +136,11 @@ target_link_libraries(${EXTRA_TARGET}
 target_precompile_headers(${EXTRA_TARGET}
     PUBLIC
         ${PRECOMPILED_EXTRA_HEADERS}
+)
+
+target_compile_definitions(${EXTRA_TARGET}
+    PUBLIC
+        ${PRECOMPILED_EXTRA_DEFINITIONS}
 )
 
 set_target_properties(${EXTRA_TARGET}

@@ -71,7 +71,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
 
     const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
-    META_CHECK_ARG_NOT_EMPTY(devices);
+    META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no GPU devices are available for rendering in the system");
 
     Ptr<Device> device_ptr;
     if (m_settings.default_device_index < 0)
