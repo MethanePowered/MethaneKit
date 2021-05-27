@@ -27,6 +27,7 @@ MacOS platform utility functions.
 
 #include <stdexcept>
 #include <string_view>
+#include <iostream>
 
 namespace Methane::Platform
 {
@@ -34,6 +35,7 @@ namespace Methane::Platform
 void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 {
     META_FUNCTION_TASK();
+    std::cerr << msg;
     TracyMessage(msg.data(), msg.size());
 }
 

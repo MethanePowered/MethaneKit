@@ -30,10 +30,11 @@ Vulkan implementation of the device interface.
 namespace Methane::Graphics
 {
 
-class DeviceVK final : public DeviceBase
+class DeviceVK final : public DeviceBase // NOSONAR
 {
 public:
-    DeviceVK(const vk::PhysicalDevice& vk_physical_device);
+    explicit DeviceVK(const vk::PhysicalDevice& vk_physical_device);
+    ~DeviceVK();
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
@@ -43,11 +44,11 @@ private:
     vk::Device         m_vk_device;
 };
 
-class SystemVK final : public SystemBase
+class SystemVK final : public SystemBase // NOSONAR
 {
 public:
     SystemVK();
-    ~SystemVK(); // NOSONAR
+    ~SystemVK();
 
     // System interface
     void CheckForChanges() override;
