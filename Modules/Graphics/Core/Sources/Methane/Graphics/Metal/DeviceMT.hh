@@ -50,7 +50,7 @@ public:
     ~SystemMT() override;
     
     void                CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
     
 private:
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);

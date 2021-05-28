@@ -250,13 +250,13 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Features supported_features)
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
-    SetGpuSupportedFeatures(supported_features);
+    SetDeviceCapabilities(required_device_caps);
     ClearDevices();
 
     IDXGIAdapter1* p_adapter = nullptr;
@@ -290,7 +290,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     Device::Features device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
 
     using namespace magic_enum::bitwise_operators;
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetGpuSupportedFeatures()))
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
         return;
 
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));

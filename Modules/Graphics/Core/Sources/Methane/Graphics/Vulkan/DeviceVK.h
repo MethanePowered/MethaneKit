@@ -33,8 +33,10 @@ namespace Methane::Graphics
 class DeviceVK final : public DeviceBase // NOSONAR
 {
 public:
-    explicit DeviceVK(const vk::PhysicalDevice& vk_physical_device);
-    ~DeviceVK();
+    static Device::Features GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
+
+    explicit DeviceVK(const vk::PhysicalDevice& vk_physical_device, const std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos);
+    ~DeviceVK() override;
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
@@ -48,11 +50,11 @@ class SystemVK final : public SystemBase // NOSONAR
 {
 public:
     SystemVK();
-    ~SystemVK();
+    ~SystemVK() override;
 
     // System interface
     void CheckForChanges() override;
-    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
 
     vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
     const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }
@@ -61,6 +63,8 @@ public:
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_instance; }
 
 private:
+    void AddDevice(const vk::PhysicalDevice& vk_physical_device);
+
     vk::DynamicLoader m_vk_loader;
     vk::Instance      m_vk_instance;
 };

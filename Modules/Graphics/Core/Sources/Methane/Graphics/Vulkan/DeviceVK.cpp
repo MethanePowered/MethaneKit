@@ -77,6 +77,8 @@ static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>&
 
 static std::vector<char const *> GetEnabledExtensions(const std::vector<std::string>& extensions)
 {
+    META_FUNCTION_TASK();
+
 #ifndef NDEBUG
     const std::vector<vk::ExtensionProperties>& extension_properties = vk::enumerateInstanceExtensionProperties();
 #endif
@@ -118,8 +120,10 @@ static std::vector<char const *> GetEnabledExtensions(const std::vector<std::str
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
                                                            VkDebugUtilsMessageTypeFlagsEXT             message_types,
                                                            const VkDebugUtilsMessengerCallbackDataEXT* callback_data_ptr,
-                                                           void* /*user_data_ptr*/)
+                                                           void* /*user_data_ptr*/) // NOSONAR
 {
+    META_FUNCTION_TASK();
+
 #ifndef NDEBUG
 
     if (callback_data_ptr->messageIdNumber == 648835635) // UNASSIGNED-khronos-Validation-debug-build-warning-message
@@ -181,6 +185,8 @@ InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& v
                                                     const std::vector<char const *>& layers,
                                                     const std::vector<char const *>& extensions)
 {
+    META_FUNCTION_TASK();
+
 #if defined( NDEBUG )
     return InstanceCreateInfoChain({ {}, &vk_app_info, layers, extensions });
 #else
@@ -226,6 +232,84 @@ static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
     return vk_instance;
 }
 
+template<bool exact_flags_matching>
+std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                                        vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                        const std::vector<uint32_t>& reserved_queues_count_per_family)
+{
+    META_FUNCTION_TASK();
+    for(size_t family_index = 0; family_index < vk_queue_family_properties.size(); ++family_index)
+    {
+        const vk::QueueFamilyProperties& vk_family_props = vk_queue_family_properties[family_index];
+        if constexpr (exact_flags_matching)
+        {
+            if (vk_family_props.queueFlags != queue_flags)
+                continue;
+        }
+        else
+        {
+            if (!(vk_family_props.queueFlags & queue_flags))
+                continue;
+        }
+
+        if (vk_family_props.queueCount < queues_count + reserved_queues_count_per_family.at(family_index))
+            continue;
+
+        return static_cast<uint32_t>(family_index);
+    }
+
+    return {};
+}
+
+static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                                               vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                               const std::vector<uint32_t>& reserved_queues_count_per_family)
+{
+    META_FUNCTION_TASK();
+
+    // Try to find queue family with exact flags match
+    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family);
+    if (vk_exact_family_index)
+        return *vk_exact_family_index;
+
+    // If no family with exact match, find one which contains a subset of queue flags
+    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family);
+}
+
+static bool AddDeviceQueueCreateInfo(const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties,
+                                     vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                     std::vector<uint32_t>& reserved_queues_count_per_family,
+                                     std::map<uint32_t, std::vector<float>>& vk_queue_priorities_per_family,
+                                     std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos)
+{
+    META_FUNCTION_TASK();
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count,
+                                                                          reserved_queues_count_per_family);
+    if (!vk_queue_family_index)
+        return false;
+
+    uint32_t& reserved_queues_count = reserved_queues_count_per_family.at(*vk_queue_family_index);
+    reserved_queues_count += queues_count;
+
+    std::vector<float>& vk_queue_priorities = vk_queue_priorities_per_family[*vk_queue_family_index];
+    vk_queue_priorities.resize(reserved_queues_count, 0.F);
+
+    const auto vk_queue_create_info_it = std::find_if(vk_queue_create_infos.begin(), vk_queue_create_infos.end(),
+                                                      [&vk_queue_family_index](const vk::DeviceQueueCreateInfo& create_info)
+                                                          { return create_info.queueFamilyIndex == *vk_queue_family_index; }
+    );
+
+    if (vk_queue_create_info_it != vk_queue_create_infos.end())
+    {
+        vk_queue_create_info_it->queueCount = reserved_queues_count;
+        vk_queue_create_info_it->pQueuePriorities = vk_queue_priorities.data();
+        return true;
+    }
+
+    vk_queue_create_infos.emplace_back(vk::DeviceQueueCreateFlags(), *vk_queue_family_index, queues_count, vk_queue_priorities.data());
+    return true;
+}
+
 static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
@@ -234,12 +318,18 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
-DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device)
+Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice&)
+{
+    META_FUNCTION_TASK();
+    return Device::Features::BasicRendering;
+}
+
+DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos)
     : DeviceBase(vk_physical_device.getProperties().deviceName,
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  Device::Features::BasicRendering)
     , m_vk_physical_device(vk_physical_device)
-    , m_vk_device(vk_physical_device.createDevice({}, nullptr))
+    , m_vk_device(vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos)))
 {
     META_FUNCTION_TASK();
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
@@ -276,19 +366,52 @@ void SystemVK::CheckForChanges()
     META_FUNCTION_NOT_IMPLEMENTED();
 }
 
-const Ptrs<Device>& SystemVK::UpdateGpuDevices(Device::Features supported_features)
+const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
-    SetGpuSupportedFeatures(supported_features);
+    SetDeviceCapabilities(required_device_caps);
     ClearDevices();
 
     const std::vector<vk::PhysicalDevice> vk_physical_devices = m_vk_instance.enumeratePhysicalDevices();
     for(const vk::PhysicalDevice& vk_physical_device : vk_physical_devices)
     {
-        AddDevice(std::make_shared<DeviceVK>(vk_physical_device));
+        AddDevice(vk_physical_device);
     }
 
     return GetGpuDevices();
+}
+
+void SystemVK::AddDevice(const vk::PhysicalDevice& vk_physical_device)
+{
+    META_FUNCTION_TASK();
+    const Device::Capabilities& device_caps = GetDeviceCapabilities();
+    const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
+
+    using namespace magic_enum::bitwise_operators;
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
+        return;
+
+    const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
+    std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
+    std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
+    std::map<uint32_t, std::vector<float>> queue_priorities_per_family;
+
+    if (device_caps.render_queues_count &&
+        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics, device_caps.render_queues_count,
+                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
+        return;
+
+    if (device_caps.compute_queues_count &&
+        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eCompute, device_caps.compute_queues_count,
+                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
+        return;
+
+    if (device_caps.blit_queues_count &&
+        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eTransfer, device_caps.blit_queues_count,
+                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
+        return;
+
+    SystemBase::AddDevice(std::make_shared<DeviceVK>(vk_physical_device, vk_queue_create_infos));
 }
 
 } // namespace Methane::Graphics

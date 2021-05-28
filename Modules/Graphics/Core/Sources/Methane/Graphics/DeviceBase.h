@@ -62,22 +62,22 @@ private:
 class SystemBase : public System
 {
 public:
-    const Ptrs<Device>&   GetGpuDevices() const override            { return m_devices; }
-    Device::Features      GetGpuSupportedFeatures() const override  { return m_supported_features; }
-    Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
-    Ptr<Device>           GetSoftwareGpuDevice() const override;
-    std::string           ToString() const override;
+    const Ptrs<Device>&         GetGpuDevices() const override            { return m_devices; }
+    const Device::Capabilities& GetDeviceCapabilities() const override  { return m_device_caps; }
+    Ptr<Device>                 GetNextGpuDevice(const Device& device) const override;
+    Ptr<Device>                 GetSoftwareGpuDevice() const override;
+    std::string                 ToString() const override;
 
 protected:
-    void SetGpuSupportedFeatures(Device::Features supported_features) { m_supported_features = supported_features; }
+    void SetDeviceCapabilities(const Device::Capabilities& device_caps) { m_device_caps = device_caps; }
     void ClearDevices() { m_devices.clear(); }
     void AddDevice(const Ptr<Device>& device_ptr) { m_devices.emplace_back(device_ptr); }
     void RequestRemoveDevice(Device& device) const;
     void RemoveDevice(Device& device);
 
 private:
-    Device::Features m_supported_features = Device::Features::All;
-    Ptrs<Device>     m_devices;
+    Device::Capabilities m_device_caps;
+    Ptrs<Device>         m_devices;
 };
 
 } // namespace Methane::Graphics
