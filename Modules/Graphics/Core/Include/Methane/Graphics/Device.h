@@ -32,6 +32,11 @@ is used to create graphics context for rendering.
 #include <array>
 #include <functional>
 
+namespace Methane::Platform
+{
+struct AppEnvironment;
+}
+
 namespace Methane::Graphics
 {
 
@@ -60,6 +65,7 @@ struct Device
     struct Capabilities
     {
         Features features = Device::Features::All;
+        bool     present_to_window = true;
         uint32_t render_queues_count = 1;
         uint32_t blit_queues_count = 1;
         uint32_t compute_queues_count = 0;
@@ -77,6 +83,7 @@ struct System
 
     virtual void CheckForChanges() = 0;
     [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Device::Capabilities& required_device_caps = {}) = 0;
+    [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps = {}) = 0;
     [[nodiscard]] virtual const Ptrs<Device>&         GetGpuDevices() const = 0;
     [[nodiscard]] virtual Ptr<Device>                 GetNextGpuDevice(const Device& device) const = 0;
     [[nodiscard]] virtual Ptr<Device>                 GetSoftwareGpuDevice() const = 0;

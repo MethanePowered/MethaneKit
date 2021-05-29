@@ -80,6 +80,7 @@ public:
 
     // System interface
     void  CheckForChanges() override;
+    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
     const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
 
     [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }

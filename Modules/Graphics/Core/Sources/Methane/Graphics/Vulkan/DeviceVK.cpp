@@ -22,6 +22,7 @@ Vulkan implementation of the device interface.
 ******************************************************************************/
 
 #include "DeviceVK.h"
+#include "PlatformVK.h"
 
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
@@ -40,9 +41,9 @@ namespace Methane::Graphics
 static const std::string g_vk_app_name    = "Methane Application";
 static const std::string g_vk_engine_name = "Methane Kit";
 
-static const std::string g_vk_validation_layer      = "VK_LAYER_KHRONOS_validation";
-static const std::string g_vk_debug_utils_extension = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-static const std::string g_vk_validation_extension  = "VK_EXT_validation_features";
+static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_validation";
+static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+static const std::string g_vk_validation_extension    = "VK_EXT_validation_features";
 
 static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>& layers)
 {
@@ -235,7 +236,8 @@ static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
 template<bool exact_flags_matching>
 std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                         vk::QueueFlagBits queue_flags, uint32_t queues_count,
-                                        const std::vector<uint32_t>& reserved_queues_count_per_family)
+                                        const std::vector<uint32_t>& reserved_queues_count_per_family,
+                                        const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
     for(size_t family_index = 0; family_index < vk_queue_family_properties.size(); ++family_index)
@@ -255,6 +257,10 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
         if (vk_family_props.queueCount < queues_count + reserved_queues_count_per_family.at(family_index))
             continue;
 
+        if (queue_flags == vk::QueueFlagBits::eGraphics && vk_physical_device && vk_present_surface &&
+            !vk_physical_device.getSurfaceSupportKHR(static_cast<uint32_t>(family_index), vk_present_surface))
+            continue;
+
         return static_cast<uint32_t>(family_index);
     }
 
@@ -263,28 +269,30 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
 
 static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                                vk::QueueFlagBits queue_flags, uint32_t queues_count,
-                                               const std::vector<uint32_t>& reserved_queues_count_per_family)
+                                               const std::vector<uint32_t>& reserved_queues_count_per_family,
+                                               const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
 
     // Try to find queue family with exact flags match
-    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family);
+    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
     if (vk_exact_family_index)
         return *vk_exact_family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags
-    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family);
+    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
 }
 
 static bool AddDeviceQueueCreateInfo(const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties,
                                      vk::QueueFlagBits queue_flags, uint32_t queues_count,
                                      std::vector<uint32_t>& reserved_queues_count_per_family,
                                      std::map<uint32_t, std::vector<float>>& vk_queue_priorities_per_family,
-                                     std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos)
+                                     std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos,
+                                     const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
-    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count,
-                                                                          reserved_queues_count_per_family);
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family,
+                                                                          vk_physical_device, vk_present_surface);
     if (!vk_queue_family_index)
         return false;
 
@@ -296,7 +304,7 @@ static bool AddDeviceQueueCreateInfo(const std::vector<vk::QueueFamilyProperties
 
     const auto vk_queue_create_info_it = std::find_if(vk_queue_create_infos.begin(), vk_queue_create_infos.end(),
                                                       [&vk_queue_family_index](const vk::DeviceQueueCreateInfo& create_info)
-                                                          { return create_info.queueFamilyIndex == *vk_queue_family_index; }
+                                                      { return create_info.queueFamilyIndex == *vk_queue_family_index; }
     );
 
     if (vk_queue_create_info_it != vk_queue_create_infos.end())
@@ -349,7 +357,7 @@ System& System::Get()
 }
 
 SystemVK::SystemVK()
-    : m_vk_instance(CreateVulkanInstance(m_vk_loader))
+    : m_vk_instance(CreateVulkanInstance(m_vk_loader, {}, GetVulkanInstanceRequiredExtensions(), VK_API_VERSION_1_1))
 {
     META_FUNCTION_TASK();
 }
@@ -358,12 +366,27 @@ SystemVK::~SystemVK()
 {
     META_FUNCTION_TASK();
     m_vk_instance.destroy();
+    if (m_vk_surface)
+    {
+        m_vk_instance.destroySurfaceKHR(m_vk_surface);
+    }
 }
 
 void SystemVK::CheckForChanges()
 {
     META_FUNCTION_TASK();
     META_FUNCTION_NOT_IMPLEMENTED();
+}
+
+const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(app_env);
+    if (required_device_caps.present_to_window && !m_vk_surface)
+    {
+        m_vk_surface = CreateVulkanSurfaceForWindow(m_vk_instance, app_env);
+    }
+    return UpdateGpuDevices(required_device_caps);
 }
 
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
@@ -396,10 +419,21 @@ void SystemVK::AddDevice(const vk::PhysicalDevice& vk_physical_device)
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::map<uint32_t, std::vector<float>> queue_priorities_per_family;
 
-    if (device_caps.render_queues_count &&
-        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics, device_caps.render_queues_count,
-                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
-        return;
+    if (device_caps.render_queues_count)
+    {
+        if (device_caps.present_to_window &&
+            !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics, 1U,
+                                      reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos,
+                                      vk_physical_device, m_vk_surface))
+            return;
+
+        if ((!device_caps.present_to_window || device_caps.render_queues_count > 1) &&
+            !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics,
+                                      device_caps.render_queues_count - (device_caps.present_to_window ? 1U : 0U),
+                                      reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
+            return;
+
+    }
 
     if (device_caps.compute_queues_count &&
         !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eCompute, device_caps.compute_queues_count,

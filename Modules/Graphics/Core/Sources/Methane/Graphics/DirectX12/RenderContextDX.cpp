@@ -145,13 +145,13 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     // Initialize swap-chain
 
     DXGI_SWAP_CHAIN_DESC1 swap_chain_desc{};
-    swap_chain_desc.Width                 = settings.frame_size.GetWidth();
-    swap_chain_desc.Height                = settings.frame_size.GetHeight();
-    swap_chain_desc.Format                = TypeConverterDX::PixelFormatToDxgi(settings.color_format);
-    swap_chain_desc.BufferCount           = settings.frame_buffers_count;
-    swap_chain_desc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swap_chain_desc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swap_chain_desc.SampleDesc.Count      = 1;
+    swap_chain_desc.Width            = settings.frame_size.GetWidth();
+    swap_chain_desc.Height           = settings.frame_size.GetHeight();
+    swap_chain_desc.Format           = TypeConverterDX::PixelFormatToDxgi(settings.color_format);
+    swap_chain_desc.BufferCount      = settings.frame_buffers_count;
+    swap_chain_desc.BufferUsage      = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swap_chain_desc.SwapEffect       = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swap_chain_desc.SampleDesc.Count = 1;
 
     const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     META_CHECK_ARG_NOT_NULL(cp_dxgi_factory);

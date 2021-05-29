@@ -50,6 +50,7 @@ public:
     ~SystemMT() override;
     
     void                CheckForChanges() override {}
+    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
     const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
     
 private:

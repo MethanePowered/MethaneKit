@@ -70,6 +70,12 @@ SystemMT::~SystemMT()
     }
 }
 
+const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Platform::AppEnvironment&, const Device::Capabilities& required_device_caps)
+{
+    META_FUNCTION_TASK();
+    return UpdateGpuDevices(required_device_caps);
+}
+
 const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();

@@ -54,6 +54,7 @@ public:
 
     // System interface
     void CheckForChanges() override;
+    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
     const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
 
     vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
@@ -62,11 +63,14 @@ public:
     vk::Instance&       GetNativeInstance() noexcept          { return m_vk_instance; }
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_instance; }
 
+    const vk::SurfaceKHR& GetNativeSurface() const noexcept   { return m_vk_surface; }
+
 private:
     void AddDevice(const vk::PhysicalDevice& vk_physical_device);
 
     vk::DynamicLoader m_vk_loader;
     vk::Instance      m_vk_instance;
+    vk::SurfaceKHR    m_vk_surface;
 };
 
 } // namespace Methane::Graphics
