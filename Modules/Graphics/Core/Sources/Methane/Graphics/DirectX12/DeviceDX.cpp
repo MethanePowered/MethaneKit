@@ -64,10 +64,10 @@ Device::Features DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>&
     return Device::Features::BasicRendering;
 }
 
-DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
+DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
     : DeviceBase(GetAdapterNameDxgi(*cp_adapter.Get()),
                  IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-                 GetSupportedFeatures(cp_adapter, feature_level))
+                 capabilities)
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {
@@ -299,7 +299,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
+    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));
 }
 
 void SystemDX::ReportLiveObjects() const

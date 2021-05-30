@@ -31,10 +31,10 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
-DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, Features supported_features)
+DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
     : m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
-    , m_supported_features(supported_features)
+    , m_capabilities(capabilities)
 {
     META_FUNCTION_TASK();
 }
@@ -78,7 +78,7 @@ void SystemBase::RemoveDevice(Device& device)
     static_cast<DeviceBase&>(device).OnRemoved();
 }
 
-Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
+Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const noexcept
 {
     META_FUNCTION_TASK();
     Ptr<Device> next_device_ptr;
@@ -95,7 +95,7 @@ Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
 }
 
-Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
+Ptr<Device> SystemBase::GetSoftwareGpuDevice() const noexcept
 {
     META_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),

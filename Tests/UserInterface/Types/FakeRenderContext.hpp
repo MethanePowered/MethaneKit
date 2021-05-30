@@ -47,10 +47,10 @@ class FakeDevice : public Device, public Data::Emitter<IDeviceCallback>
 {
 public:
     // Device interface
-    [[nodiscard]] const std::string& GetAdapterName() const noexcept override   { static std::string name; return name; }
-    [[nodiscard]] bool        IsSoftwareAdapter() const noexcept override       { return true; }
-    [[nodiscard]] Features    GetSupportedFeatures() const noexcept override    { return { }; }
-    [[nodiscard]] std::string ToString() const override                         { return { }; }
+    [[nodiscard]] const std::string& GetAdapterName() const noexcept override { static std::string s_name; return s_name; }
+    [[nodiscard]] bool IsSoftwareAdapter() const noexcept override { return true; }
+    [[nodiscard]] const Capabilities& GetCapabilities() const noexcept override { static const Capabilities s_caps; return s_caps; }
+    [[nodiscard]] std::string ToString() const override { return { }; }
 
     // Object interface
     void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }

@@ -24,12 +24,15 @@ Vulkan implementation of the device interface.
 #include "DeviceVK.h"
 #include "PlatformVK.h"
 
+#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 
 //#define VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
 
@@ -236,8 +239,8 @@ static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
 template<bool exact_flags_matching>
 std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                         vk::QueueFlagBits queue_flags, uint32_t queues_count,
-                                        const std::vector<uint32_t>& reserved_queues_count_per_family,
-                                        const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
+                                        const vk::PhysicalDevice& vk_physical_device = {},
+                                        const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
     for(size_t family_index = 0; family_index < vk_queue_family_properties.size(); ++family_index)
@@ -254,7 +257,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
                 continue;
         }
 
-        if (vk_family_props.queueCount < queues_count + reserved_queues_count_per_family.at(family_index))
+        if (vk_family_props.queueCount < queues_count)
             continue;
 
         if (queue_flags == vk::QueueFlagBits::eGraphics && vk_physical_device && vk_present_surface &&
@@ -269,53 +272,18 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
 
 static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                                vk::QueueFlagBits queue_flags, uint32_t queues_count,
-                                               const std::vector<uint32_t>& reserved_queues_count_per_family,
-                                               const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
+                                               const vk::PhysicalDevice& vk_physical_device = {},
+                                               const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
 
     // Try to find queue family with exact flags match
-    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
+    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
     if (vk_exact_family_index)
         return *vk_exact_family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags
-    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
-}
-
-static bool AddDeviceQueueCreateInfo(const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties,
-                                     vk::QueueFlagBits queue_flags, uint32_t queues_count,
-                                     std::vector<uint32_t>& reserved_queues_count_per_family,
-                                     std::map<uint32_t, std::vector<float>>& vk_queue_priorities_per_family,
-                                     std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos,
-                                     const vk::PhysicalDevice& vk_physical_device = {}, const vk::SurfaceKHR& vk_present_surface = {})
-{
-    META_FUNCTION_TASK();
-    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count, reserved_queues_count_per_family,
-                                                                          vk_physical_device, vk_present_surface);
-    if (!vk_queue_family_index)
-        return false;
-
-    uint32_t& reserved_queues_count = reserved_queues_count_per_family.at(*vk_queue_family_index);
-    reserved_queues_count += queues_count;
-
-    std::vector<float>& vk_queue_priorities = vk_queue_priorities_per_family[*vk_queue_family_index];
-    vk_queue_priorities.resize(reserved_queues_count, 0.F);
-
-    const auto vk_queue_create_info_it = std::find_if(vk_queue_create_infos.begin(), vk_queue_create_infos.end(),
-                                                      [&vk_queue_family_index](const vk::DeviceQueueCreateInfo& create_info)
-                                                      { return create_info.queueFamilyIndex == *vk_queue_family_index; }
-    );
-
-    if (vk_queue_create_info_it != vk_queue_create_infos.end())
-    {
-        vk_queue_create_info_it->queueCount = reserved_queues_count;
-        vk_queue_create_info_it->pQueuePriorities = vk_queue_priorities.data();
-        return true;
-    }
-
-    vk_queue_create_infos.emplace_back(vk::DeviceQueueCreateFlags(), *vk_queue_family_index, queues_count, vk_queue_priorities.data());
-    return true;
+    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
 }
 
 static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_device)
@@ -326,20 +294,77 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
+DeviceVK::QueueFamilyReservation::QueueFamilyReservation(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
+    : m_family_index(family_index)
+    , m_queue_flags(queue_flags)
+    , m_queues_count(queues_count)
+    , m_can_present_to_window(can_present_to_window)
+    , m_priorities(m_queues_count, 0.F)
+    , m_free_indices({ { 0U, m_queues_count } })
+{
+    META_FUNCTION_TASK();
+}
+
+vk::DeviceQueueCreateInfo DeviceVK::QueueFamilyReservation::MakeDeviceQueueCreateInfo() const noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), m_family_index, m_queues_count, m_priorities.data());
+}
+
+uint32_t DeviceVK::QueueFamilyReservation::TakeFreeQueueIndex() const
+{
+    META_FUNCTION_TASK();
+    if (m_free_indices.IsEmpty())
+        throw EmptyArgumentException<Data::RangeSet<uint32_t>>(__FUNCTION_NAME__, "m_free_indices", "device queue family has no free queue indices");
+
+    const uint32_t free_queue_index = m_free_indices.begin()->GetStart();
+    m_free_indices.Remove({ free_queue_index, free_queue_index + 1});
+    return free_queue_index;
+}
+
+static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
+{
+    META_FUNCTION_TASK();
+    switch(cmd_list_type)
+    {
+    case CommandList::Type::Blit:   return vk::QueueFlagBits::eTransfer;
+    case CommandList::Type::Render: return vk::QueueFlagBits::eGraphics;
+    default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
+    }
+}
+
 Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice&)
 {
     META_FUNCTION_TASK();
     return Device::Features::BasicRendering;
 }
 
-DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const std::vector<vk::DeviceQueueCreateInfo>& vk_queue_create_infos)
+DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)
     : DeviceBase(vk_physical_device.getProperties().deviceName,
                  IsSoftwarePhysicalDevice(vk_physical_device),
-                 Device::Features::BasicRendering)
+                 capabilities)
     , m_vk_physical_device(vk_physical_device)
-    , m_vk_device(vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos)))
 {
     META_FUNCTION_TASK();
+
+    using namespace magic_enum::bitwise_operators;
+    const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
+    if (!magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
+        throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
+
+    const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
+    std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
+
+    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, vk_queue_family_properties,
+                       capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
+
+    ReserveQueueFamily(CommandList::Type::Blit, capabilities.render_queues_count, vk_queue_family_properties);
+
+    std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
+    std::transform(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(), std::back_inserter(vk_queue_create_infos),
+                   [](const auto& queue_type_and_family_reservation) { return queue_type_and_family_reservation.second.MakeDeviceQueueCreateInfo(); });
+
+    m_vk_device = vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos));
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
 }
 
@@ -347,6 +372,39 @@ DeviceVK::~DeviceVK()
 {
     META_FUNCTION_TASK();
     m_vk_device.destroy();
+}
+
+const DeviceVK::QueueFamilyReservation* DeviceVK::GetQueueFamilyReservationPtr(CommandList::Type cmd_list_type) const noexcept
+{
+    META_FUNCTION_TASK();
+    const auto queue_family_reservation_by_type_it = m_queue_family_reservation_by_type.find(cmd_list_type);
+    return queue_family_reservation_by_type_it != m_queue_family_reservation_by_type.end()
+         ? &queue_family_reservation_by_type_it->second
+         : nullptr;
+}
+
+const DeviceVK::QueueFamilyReservation& DeviceVK::GetQueueFamilyReservation(CommandList::Type cmd_list_type) const
+{
+    META_FUNCTION_TASK();
+    const DeviceVK::QueueFamilyReservation* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
+    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr, fmt::format("queue family was not reserved for {} command list type", cmd_list_type));
+    return *queue_family_reservation_ptr;
+}
+
+void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,
+                                  const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                                  const vk::SurfaceKHR& vk_surface)
+{
+    META_FUNCTION_TASK();
+    if (!queues_count)
+        return;
+
+    const vk::QueueFlagBits queue_flags = GetQueueFlagBitsByType(cmd_list_type);
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count, m_vk_physical_device, vk_surface);
+    if (!vk_queue_family_index)
+        throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
+
+    m_queue_family_reservation_by_type.try_emplace(cmd_list_type, *vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface));
 }
 
 System& System::Get()
@@ -398,54 +456,19 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& requi
     const std::vector<vk::PhysicalDevice> vk_physical_devices = m_vk_instance.enumeratePhysicalDevices();
     for(const vk::PhysicalDevice& vk_physical_device : vk_physical_devices)
     {
-        AddDevice(vk_physical_device);
+        try
+        {
+            AddDevice(std::make_shared<DeviceVK>(vk_physical_device, m_vk_surface, required_device_caps));
+        }
+        catch(const DeviceVK::IncompatibleException& ex)
+        {
+            META_LOG("Physical GPU device is skipped: {}", ex.what());
+            META_UNUSED(ex);
+            continue;
+        }
     }
 
     return GetGpuDevices();
-}
-
-void SystemVK::AddDevice(const vk::PhysicalDevice& vk_physical_device)
-{
-    META_FUNCTION_TASK();
-    const Device::Capabilities& device_caps = GetDeviceCapabilities();
-    const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
-
-    using namespace magic_enum::bitwise_operators;
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
-        return;
-
-    const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
-    std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
-    std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
-    std::map<uint32_t, std::vector<float>> queue_priorities_per_family;
-
-    if (device_caps.render_queues_count)
-    {
-        if (device_caps.present_to_window &&
-            !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics, 1U,
-                                      reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos,
-                                      vk_physical_device, m_vk_surface))
-            return;
-
-        if ((!device_caps.present_to_window || device_caps.render_queues_count > 1) &&
-            !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eGraphics,
-                                      device_caps.render_queues_count - (device_caps.present_to_window ? 1U : 0U),
-                                      reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
-            return;
-
-    }
-
-    if (device_caps.compute_queues_count &&
-        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eCompute, device_caps.compute_queues_count,
-                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
-        return;
-
-    if (device_caps.blit_queues_count &&
-        !AddDeviceQueueCreateInfo(vk_queue_family_properties, vk::QueueFlagBits::eTransfer, device_caps.blit_queues_count,
-                                  reserved_queues_count_per_family, queue_priorities_per_family, vk_queue_create_infos))
-        return;
-
-    SystemBase::AddDevice(std::make_shared<DeviceVK>(vk_physical_device, vk_queue_create_infos));
 }
 
 } // namespace Methane::Graphics

@@ -40,8 +40,8 @@ Device::Features DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
     return supported_features;
 }
 
-DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
-    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, GetSupportedFeatures(mtl_device))
+DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities)
+    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, capabilities)
     , m_mtl_device(mtl_device)
 {
     META_FUNCTION_TASK();
@@ -95,7 +95,7 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Device::Capabilities& requi
     
     for(id<MTLDevice> mtl_device in mtl_devices)
     {
-        AddDevice(mtl_device);
+        AddDevice(mtl_device, required_device_caps);
     }
     
     return GetGpuDevices();
@@ -126,10 +126,10 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
     using namespace magic_enum::bitwise_operators;
 
     Device::Features device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
+    if (!magic_enum::flags::enum_contains(device_supported_features& GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device));
+    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device, GetDeviceCapabilities()));
 }
 
 const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const

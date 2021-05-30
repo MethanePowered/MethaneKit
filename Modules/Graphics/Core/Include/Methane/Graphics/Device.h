@@ -66,15 +66,14 @@ struct Device
     {
         Features features = Device::Features::All;
         bool     present_to_window = true;
-        uint32_t render_queues_count = 1;
-        uint32_t blit_queues_count = 1;
-        uint32_t compute_queues_count = 0;
+        uint32_t render_queues_count = 1U;
+        uint32_t blit_queues_count = 1U;
     };
 
-    [[nodiscard]] virtual const std::string& GetAdapterName() const noexcept = 0;
-    [[nodiscard]] virtual bool               IsSoftwareAdapter() const noexcept = 0;
-    [[nodiscard]] virtual Features           GetSupportedFeatures() const noexcept = 0;
-    [[nodiscard]] virtual std::string        ToString() const = 0;
+    [[nodiscard]] virtual const std::string&          GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool                        IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual const Capabilities&         GetCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string                 ToString() const = 0;
 };
 
 struct System
@@ -84,10 +83,10 @@ struct System
     virtual void CheckForChanges() = 0;
     [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Device::Capabilities& required_device_caps = {}) = 0;
     [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps = {}) = 0;
-    [[nodiscard]] virtual const Ptrs<Device>&         GetGpuDevices() const = 0;
-    [[nodiscard]] virtual Ptr<Device>                 GetNextGpuDevice(const Device& device) const = 0;
-    [[nodiscard]] virtual Ptr<Device>                 GetSoftwareGpuDevice() const = 0;
-    [[nodiscard]] virtual const Device::Capabilities& GetDeviceCapabilities() const = 0;
+    [[nodiscard]] virtual const Ptrs<Device>&         GetGpuDevices() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<Device>                 GetNextGpuDevice(const Device& device) const noexcept = 0;
+    [[nodiscard]] virtual Ptr<Device>                 GetSoftwareGpuDevice() const noexcept = 0;
+    [[nodiscard]] virtual const Device::Capabilities& GetDeviceCapabilities() const noexcept = 0;
     [[nodiscard]] virtual std::string                 ToString() const = 0;
     
     virtual ~System() = default;

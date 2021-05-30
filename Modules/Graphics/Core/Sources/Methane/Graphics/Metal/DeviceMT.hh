@@ -35,7 +35,7 @@ class DeviceMT final : public DeviceBase
 public:
     static Device::Features GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
-    DeviceMT(const id<MTLDevice>& mtl_device);
+    DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
     ~DeviceMT() override;
     
     const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
