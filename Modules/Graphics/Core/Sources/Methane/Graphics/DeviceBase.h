@@ -42,7 +42,7 @@ public:
     // Device interface
     const std::string&  GetAdapterName() const noexcept override    { return m_adapter_name; }
     bool                IsSoftwareAdapter() const noexcept override { return m_is_software_adapter; }
-    const Capabilities& GetCapabilities() const noexcept            { return m_capabilities; }
+    const Capabilities& GetCapabilities() const noexcept override   { return m_capabilities; }
     std::string         ToString() const override;
 
     Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }

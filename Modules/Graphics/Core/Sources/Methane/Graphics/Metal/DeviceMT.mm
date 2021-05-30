@@ -95,7 +95,7 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Device::Capabilities& requi
     
     for(id<MTLDevice> mtl_device in mtl_devices)
     {
-        AddDevice(mtl_device, required_device_caps);
+        AddDevice(mtl_device);
     }
     
     return GetGpuDevices();
