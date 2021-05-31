@@ -25,7 +25,6 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/DeviceBase.h>
 #include <Methane/Graphics/CommandQueue.h>
-#include <Methane/Data/RangeSet.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -33,6 +32,29 @@ Vulkan implementation of the device interface.
 
 namespace Methane::Graphics
 {
+
+class QueueFamilyReservationVK
+{
+public:
+    QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window = false);
+
+    [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept      { return m_family_index; }
+    [[nodiscard]] vk::QueueFlagBits         GetQueueFlags() const noexcept       { return m_queue_flags; }
+    [[nodiscard]] uint32_t                  GetQueuesCount() const noexcept      { return m_queues_count; }
+    [[nodiscard]] bool                      CanPresentToWindow() const noexcept  { return m_can_present_to_window; }
+    [[nodiscard]] const std::vector<float>& GetPriorities() const noexcept       { return m_priorities; }
+    [[nodiscard]] bool                      HasFreeQueueIndices() const noexcept { return m_free_queues_count > 0; }
+    [[nodiscard]] uint32_t                  TakeFreeQueueIndex() const;
+    [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
+
+private:
+    uint32_t           m_family_index;
+    vk::QueueFlagBits  m_queue_flags;
+    uint32_t           m_queues_count;
+    mutable uint32_t   m_free_queues_count;
+    bool               m_can_present_to_window;
+    std::vector<float> m_priorities;
+};
 
 class DeviceVK final : public DeviceBase // NOSONAR
 {
@@ -45,43 +67,19 @@ public:
         { }
     };
 
-    class QueueFamilyReservation
-    {
-    public:
-        QueueFamilyReservation(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window = false);
-
-        [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept      { return m_family_index; }
-        [[nodiscard]] vk::QueueFlagBits         GetQueueFlags() const noexcept       { return m_queue_flags; }
-        [[nodiscard]] uint32_t                  GetQueuesCount() const noexcept      { return m_queues_count; }
-        [[nodiscard]] bool                      CanPresentToWindow() const noexcept  { return m_can_present_to_window; }
-        [[nodiscard]] const std::vector<float>& GetPriorities() const noexcept       { return m_priorities; }
-        [[nodiscard]] bool                      HasFreeQueueIndices() const noexcept { return !m_free_indices.IsEmpty(); }
-        [[nodiscard]] uint32_t                  TakeFreeQueueIndex() const;
-        [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
-
-    private:
-        uint32_t           m_family_index;
-        vk::QueueFlagBits  m_queue_flags;
-        uint32_t           m_queues_count;
-        bool               m_can_present_to_window;
-        std::vector<float> m_priorities;
-
-        mutable Data::RangeSet<uint32_t> m_free_indices;
-    };
-
     static Device::Features GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
     ~DeviceVK() override;
 
-    [[nodiscard]] const QueueFamilyReservation* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
-    [[nodiscard]] const QueueFamilyReservation& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
+    [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
+    [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
 
 private:
-    using QueueFamilyReservationByType = std::map<CommandList::Type, QueueFamilyReservation>;
+    using QueueFamilyReservationByType = std::map<CommandList::Type, QueueFamilyReservationVK>;
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
                             const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,

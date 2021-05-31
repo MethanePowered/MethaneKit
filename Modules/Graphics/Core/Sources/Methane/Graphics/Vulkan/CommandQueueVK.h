@@ -25,10 +25,14 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/CommandQueueBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
+class DeviceVK;
 class RenderPassVK;
+class QueueFamilyReservationVK;
 struct IContextVK;
 
 class CommandQueueVK final : public CommandQueueBase
@@ -42,8 +46,22 @@ public:
     
     const IContextVK& GetContextVK() const noexcept;
 
+    vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
+    const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
+
+    vk::CommandPool& GetNativeCommandPool() { return m_vk_command_pool; }
+    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_command_pool; }
+
 private:
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                   const DeviceVK& device);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                   const DeviceVK& device, const QueueFamilyReservationVK& family_reservation);
+
     void Reset();
+
+    vk::Queue       m_vk_queue;
+    vk::CommandPool m_vk_command_pool;
 };
 
 } // namespace Methane::Graphics

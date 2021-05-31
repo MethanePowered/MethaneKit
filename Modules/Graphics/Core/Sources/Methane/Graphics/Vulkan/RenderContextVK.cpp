@@ -35,7 +35,10 @@ namespace Methane::Graphics
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderContextVK>(env, static_cast<DeviceBase&>(device), parallel_executor, settings);
+    auto& device_base = static_cast<DeviceBase&>(device);
+    const auto render_context_ptr = std::make_shared<RenderContextVK>(env, device_base, parallel_executor, settings);
+    render_context_ptr->Initialize(device_base, true);
+    return render_context_ptr;
 }
 
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)

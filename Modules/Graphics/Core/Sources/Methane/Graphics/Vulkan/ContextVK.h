@@ -34,7 +34,7 @@ class CommandQueueVK;
 
 struct IContextVK
 {
-    virtual DeviceVK&       GetDeviceVK() noexcept = 0;
+    virtual const DeviceVK& GetDeviceVK() const noexcept = 0;
     virtual CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) = 0;
 
     virtual ~IContextVK() = default;

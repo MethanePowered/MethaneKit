@@ -23,6 +23,7 @@ Vulkan implementation of the command queue interface.
 
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
+#include "DeviceVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -37,7 +38,23 @@ Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type
 }
 
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type)
+    : CommandQueueVK(context, command_lists_type, static_cast<const IContextVK&>(context).GetDeviceVK())
+{
+    META_FUNCTION_TASK();
+}
+
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                               const DeviceVK& device)
+    : CommandQueueVK(context, command_lists_type, device, device.GetQueueFamilyReservation(command_lists_type))
+{
+    META_FUNCTION_TASK();
+}
+
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                               const DeviceVK& device, const QueueFamilyReservationVK& family_reservation)
     : CommandQueueBase(context, command_lists_type)
+    , m_vk_queue(device.GetNativeDevice().getQueue(family_reservation.GetFamilyIndex(), family_reservation.TakeFreeQueueIndex()))
+    , m_vk_command_pool(device.GetNativeDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), family_reservation.GetFamilyIndex())))
 {
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(Tracy::GpuContext::Settings());
@@ -46,6 +63,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
+    GetContextVK().GetDeviceVK().GetNativeDevice().destroyCommandPool(m_vk_command_pool);
 }
 
 void CommandQueueVK::SetName(const std::string& name)

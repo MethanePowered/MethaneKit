@@ -294,32 +294,31 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
-DeviceVK::QueueFamilyReservation::QueueFamilyReservation(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
+QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
     , m_queues_count(queues_count)
+    , m_free_queues_count(m_queues_count)
     , m_can_present_to_window(can_present_to_window)
     , m_priorities(m_queues_count, 0.F)
-    , m_free_indices({ { 0U, m_queues_count } })
 {
     META_FUNCTION_TASK();
 }
 
-vk::DeviceQueueCreateInfo DeviceVK::QueueFamilyReservation::MakeDeviceQueueCreateInfo() const noexcept
+vk::DeviceQueueCreateInfo QueueFamilyReservationVK::MakeDeviceQueueCreateInfo() const noexcept
 {
     META_FUNCTION_TASK();
     return vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), m_family_index, m_queues_count, m_priorities.data());
 }
 
-uint32_t DeviceVK::QueueFamilyReservation::TakeFreeQueueIndex() const
+uint32_t QueueFamilyReservationVK::TakeFreeQueueIndex() const
 {
     META_FUNCTION_TASK();
-    if (m_free_indices.IsEmpty())
-        throw EmptyArgumentException<Data::RangeSet<uint32_t>>(__FUNCTION_NAME__, "m_free_indices", "device queue family has no free queue indices");
+    if (!m_free_queues_count)
+        throw EmptyArgumentException<uint32_t>(__FUNCTION_NAME__, "m_free_queues_count", "device queue family has no free queues in reservation");
 
-    const uint32_t free_queue_index = m_free_indices.begin()->GetStart();
-    m_free_indices.Remove({ free_queue_index, free_queue_index + 1});
-    return free_queue_index;
+    m_free_queues_count--;
+    return m_queues_count - m_free_queues_count - 1;
 }
 
 static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
@@ -374,7 +373,7 @@ DeviceVK::~DeviceVK()
     m_vk_device.destroy();
 }
 
-const DeviceVK::QueueFamilyReservation* DeviceVK::GetQueueFamilyReservationPtr(CommandList::Type cmd_list_type) const noexcept
+const QueueFamilyReservationVK* DeviceVK::GetQueueFamilyReservationPtr(CommandList::Type cmd_list_type) const noexcept
 {
     META_FUNCTION_TASK();
     const auto queue_family_reservation_by_type_it = m_queue_family_reservation_by_type.find(cmd_list_type);
@@ -383,10 +382,10 @@ const DeviceVK::QueueFamilyReservation* DeviceVK::GetQueueFamilyReservationPtr(C
          : nullptr;
 }
 
-const DeviceVK::QueueFamilyReservation& DeviceVK::GetQueueFamilyReservation(CommandList::Type cmd_list_type) const
+const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList::Type cmd_list_type) const
 {
     META_FUNCTION_TASK();
-    const DeviceVK::QueueFamilyReservation* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
+    const QueueFamilyReservationVK* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
     META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr, fmt::format("queue family was not reserved for {} command list type", cmd_list_type));
     return *queue_family_reservation_ptr;
 }
@@ -433,7 +432,6 @@ SystemVK::~SystemVK()
 void SystemVK::CheckForChanges()
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED();
 }
 
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps)

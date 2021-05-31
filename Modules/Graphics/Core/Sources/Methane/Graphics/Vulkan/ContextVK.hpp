@@ -75,10 +75,10 @@ public:
 
     // IContextVK interface
 
-    DeviceVK& GetDeviceVK() noexcept final
+    const DeviceVK& GetDeviceVK() const noexcept final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
+        return dynamic_cast<const DeviceVK&>(ContextBase::GetDeviceBase());
     }
 
     CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
