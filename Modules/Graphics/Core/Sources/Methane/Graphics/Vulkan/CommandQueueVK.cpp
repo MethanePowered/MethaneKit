@@ -53,8 +53,10 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
                                const DeviceVK& device, const QueueFamilyReservationVK& family_reservation)
     : CommandQueueBase(context, command_lists_type)
-    , m_vk_queue(device.GetNativeDevice().getQueue(family_reservation.GetFamilyIndex(), family_reservation.TakeFreeQueueIndex()))
-    , m_vk_command_pool(device.GetNativeDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), family_reservation.GetFamilyIndex())))
+    , m_queue_family_index(family_reservation.GetFamilyIndex())
+    , m_queue_index(family_reservation.ClaimQueueIndex())
+    , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
+    , m_vk_command_pool(device.GetNativeDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), m_queue_family_index)))
 {
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(Tracy::GpuContext::Settings());
@@ -63,7 +65,9 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroyCommandPool(m_vk_command_pool);
+    const DeviceVK& device = GetContextVK().GetDeviceVK();
+    device.GetQueueFamilyReservation(GetCommandListType()).ReleaseQueueIndex(m_queue_index);
+    device.GetNativeDevice().destroyCommandPool(m_vk_command_pool);
 }
 
 void CommandQueueVK::SetName(const std::string& name)

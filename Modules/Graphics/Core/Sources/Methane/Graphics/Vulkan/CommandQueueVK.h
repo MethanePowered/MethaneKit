@@ -60,6 +60,8 @@ private:
 
     void Reset();
 
+    const uint32_t  m_queue_family_index;
+    const uint32_t  m_queue_index;
     vk::Queue       m_vk_queue;
     vk::CommandPool m_vk_command_pool;
 };

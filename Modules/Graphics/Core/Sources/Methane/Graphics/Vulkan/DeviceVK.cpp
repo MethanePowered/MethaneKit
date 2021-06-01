@@ -33,6 +33,7 @@ Vulkan implementation of the device interface.
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <cassert>
 
 //#define VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
 
@@ -278,9 +279,9 @@ static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamily
     META_FUNCTION_TASK();
 
     // Try to find queue family with exact flags match
-    const std::optional<uint32_t> vk_exact_family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
-    if (vk_exact_family_index)
-        return *vk_exact_family_index;
+    if (const std::optional<uint32_t> family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
+        family_index)
+        return *family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags
     return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
@@ -298,11 +299,19 @@ QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::Qu
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
     , m_queues_count(queues_count)
-    , m_free_queues_count(m_queues_count)
     , m_can_present_to_window(can_present_to_window)
     , m_priorities(m_queues_count, 0.F)
+    , m_free_indices({ { 0U, m_queues_count } })
 {
     META_FUNCTION_TASK();
+}
+
+QueueFamilyReservationVK::~QueueFamilyReservationVK()
+{
+    META_FUNCTION_TASK();
+
+    // All command queues must be released upon device destruction
+    assert(m_free_indices == Data::RangeSet<uint32_t>({ { 0U, m_queues_count } }));
 }
 
 vk::DeviceQueueCreateInfo QueueFamilyReservationVK::MakeDeviceQueueCreateInfo() const noexcept
@@ -311,14 +320,22 @@ vk::DeviceQueueCreateInfo QueueFamilyReservationVK::MakeDeviceQueueCreateInfo() 
     return vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), m_family_index, m_queues_count, m_priorities.data());
 }
 
-uint32_t QueueFamilyReservationVK::TakeFreeQueueIndex() const
+uint32_t QueueFamilyReservationVK::ClaimQueueIndex() const
 {
     META_FUNCTION_TASK();
-    if (!m_free_queues_count)
-        throw EmptyArgumentException<uint32_t>(__FUNCTION_NAME__, "m_free_queues_count", "device queue family has no free queues in reservation");
+    if (m_free_indices.IsEmpty())
+        throw EmptyArgumentException<Data::RangeSet<uint32_t>>(__FUNCTION_NAME__, "m_free_indices", "device queue family has no free queues in reservation");
 
-    m_free_queues_count--;
-    return m_queues_count - m_free_queues_count - 1;
+    const uint32_t free_queue_index = m_free_indices.begin()->GetStart();
+    m_free_indices.Remove({ free_queue_index, free_queue_index + 1});
+    return free_queue_index;
+}
+
+void QueueFamilyReservationVK::ReleaseQueueIndex(uint32_t queue_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS(queue_index, m_queues_count);
+    m_free_indices.Add({ queue_index, queue_index + 1});
 }
 
 static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
@@ -347,8 +364,8 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     META_FUNCTION_TASK();
 
     using namespace magic_enum::bitwise_operators;
-    const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
-    if (!magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
+    if (const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
+        !magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();

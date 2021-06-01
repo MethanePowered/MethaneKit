@@ -25,6 +25,7 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/DeviceBase.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Data/RangeSet.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -33,27 +34,31 @@ Vulkan implementation of the device interface.
 namespace Methane::Graphics
 {
 
-class QueueFamilyReservationVK
+class QueueFamilyReservationVK // NOSONAR
 {
 public:
     QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window = false);
+    ~QueueFamilyReservationVK();
 
+    [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
     [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept      { return m_family_index; }
     [[nodiscard]] vk::QueueFlagBits         GetQueueFlags() const noexcept       { return m_queue_flags; }
     [[nodiscard]] uint32_t                  GetQueuesCount() const noexcept      { return m_queues_count; }
     [[nodiscard]] bool                      CanPresentToWindow() const noexcept  { return m_can_present_to_window; }
     [[nodiscard]] const std::vector<float>& GetPriorities() const noexcept       { return m_priorities; }
-    [[nodiscard]] bool                      HasFreeQueueIndices() const noexcept { return m_free_queues_count > 0; }
-    [[nodiscard]] uint32_t                  TakeFreeQueueIndex() const;
-    [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
+    [[nodiscard]] bool                      HasFreeQueues() const noexcept       { return !m_free_indices.IsEmpty(); }
+    [[nodiscard]] uint32_t                  ClaimQueueIndex() const;
+
+    void ReleaseQueueIndex(uint32_t queue_index) const;
 
 private:
     uint32_t           m_family_index;
     vk::QueueFlagBits  m_queue_flags;
     uint32_t           m_queues_count;
-    mutable uint32_t   m_free_queues_count;
     bool               m_can_present_to_window;
     std::vector<float> m_priorities;
+
+    mutable Data::RangeSet<uint32_t> m_free_indices;
 };
 
 class DeviceVK final : public DeviceBase // NOSONAR
@@ -62,7 +67,7 @@ public:
     class IncompatibleException: public std::runtime_error
     {
     public:
-        IncompatibleException(const std::string& incompatibility_reason)
+        explicit IncompatibleException(const std::string& incompatibility_reason)
             : std::runtime_error(incompatibility_reason)
         { }
     };
