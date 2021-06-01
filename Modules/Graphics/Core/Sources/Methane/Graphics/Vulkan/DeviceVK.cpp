@@ -49,6 +49,10 @@ static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_valida
 static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 static const std::string g_vk_validation_extension    = "VK_EXT_validation_features";
 
+static const std::vector<std::string> g_present_device_extensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>& layers)
 {
     META_FUNCTION_TASK();
@@ -371,6 +375,10 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
     std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
 
+    if (capabilities.present_to_window &&
+        !IsExtensionSupported(g_present_device_extensions))
+        throw IncompatibleException("Device does not support some of required extensions");
+
     ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, vk_queue_family_properties,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
@@ -380,7 +388,13 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     std::transform(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(), std::back_inserter(vk_queue_create_infos),
                    [](const auto& queue_type_and_family_reservation) { return queue_type_and_family_reservation.second.MakeDeviceQueueCreateInfo(); });
 
-    m_vk_device = vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos));
+    std::vector<const char*> enabled_extension_names;
+    if (capabilities.present_to_window)
+    {
+        std::transform(g_present_device_extensions.begin(), g_present_device_extensions.end(), std::back_inserter(enabled_extension_names),
+                       [](const std::string& extension_name) { return extension_name.data(); });
+    }
+    m_vk_device = vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos, { }, enabled_extension_names));
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
 }
 
@@ -388,6 +402,20 @@ DeviceVK::~DeviceVK()
 {
     META_FUNCTION_TASK();
     m_vk_device.destroy();
+}
+
+bool DeviceVK::IsExtensionSupported(const std::vector<std::string>& required_extensions) const
+{
+    META_FUNCTION_TASK();
+
+    std::set<std::string> extensions(required_extensions.begin(), required_extensions.end());
+    const std::vector<vk::ExtensionProperties> vk_device_extension_properties = m_vk_physical_device.enumerateDeviceExtensionProperties();
+    for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
+    {
+        extensions.erase(vk_extension_props.extensionName);
+    }
+
+    return extensions.empty();
 }
 
 const QueueFamilyReservationVK* DeviceVK::GetQueueFamilyReservationPtr(CommandList::Type cmd_list_type) const noexcept
