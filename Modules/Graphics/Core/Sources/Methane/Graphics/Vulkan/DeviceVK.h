@@ -26,6 +26,7 @@ Vulkan implementation of the device interface.
 #include <Methane/Graphics/DeviceBase.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Data/RangeSet.hpp>
+#include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -50,6 +51,7 @@ public:
     [[nodiscard]] uint32_t                  ClaimQueueIndex() const;
 
     void ReleaseQueueIndex(uint32_t queue_index) const;
+    void IncrementQueuesCount(uint32_t extra_queues_count) noexcept;
 
 private:
     uint32_t           m_family_index;
@@ -72,6 +74,13 @@ public:
         { }
     };
 
+    struct SwapChainSupport
+    {
+        vk::SurfaceCapabilitiesKHR capabilities;
+        std::vector<vk::SurfaceFormatKHR> formats;
+        std::vector<vk::PresentModeKHR> present_modes;
+    };
+
     static Device::Features GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
@@ -79,12 +88,13 @@ public:
 
     [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
     [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
+    [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
 
 private:
-    using QueueFamilyReservationByType = std::map<CommandList::Type, QueueFamilyReservationVK>;
+    using QueueFamilyReservationByType = std::map<CommandList::Type, Ptr<QueueFamilyReservationVK>>;
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
                             const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,

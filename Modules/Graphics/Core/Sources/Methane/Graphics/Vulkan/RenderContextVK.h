@@ -28,13 +28,15 @@ Vulkan implementation of the render context interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Platform/AppEnvironment.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
 class RenderContextVK final : public ContextVK<RenderContextBase>
 {
 public:
-    RenderContextVK(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
+    RenderContextVK(const Platform::AppEnvironment& app_env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
     ~RenderContextVK() override;
 
     // Context interface
@@ -53,6 +55,14 @@ public:
     // ContextBase overrides
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
+
+private:
+    vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const;
+    vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
+    vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
+
+    vk::SurfaceKHR   m_vk_surface;
+    vk::SwapchainKHR m_vk_swapchain;
 };
 
 } // namespace Methane::Graphics

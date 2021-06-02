@@ -299,6 +299,17 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
+static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
+{
+    META_FUNCTION_TASK();
+    switch(cmd_list_type)
+    {
+    case CommandList::Type::Blit:   return vk::QueueFlagBits::eTransfer;
+    case CommandList::Type::Render: return vk::QueueFlagBits::eGraphics;
+    default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
+    }
+}
+
 QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
@@ -342,15 +353,14 @@ void QueueFamilyReservationVK::ReleaseQueueIndex(uint32_t queue_index) const
     m_free_indices.Add({ queue_index, queue_index + 1});
 }
 
-static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
+void QueueFamilyReservationVK::IncrementQueuesCount(uint32_t extra_queues_count) noexcept
 {
     META_FUNCTION_TASK();
-    switch(cmd_list_type)
-    {
-    case CommandList::Type::Blit:   return vk::QueueFlagBits::eTransfer;
-    case CommandList::Type::Render: return vk::QueueFlagBits::eGraphics;
-    default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
-    }
+    if (!extra_queues_count)
+        return;
+
+    m_queues_count += extra_queues_count;
+    m_priorities.resize(m_queues_count, 0.F);
 }
 
 Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice&)
@@ -375,8 +385,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
     std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
 
-    if (capabilities.present_to_window &&
-        !IsExtensionSupported(g_present_device_extensions))
+    if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
         throw IncompatibleException("Device does not support some of required extensions");
 
     ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, vk_queue_family_properties,
@@ -385,8 +394,15 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     ReserveQueueFamily(CommandList::Type::Blit, capabilities.render_queues_count, vk_queue_family_properties);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
-    std::transform(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(), std::back_inserter(vk_queue_create_infos),
-                   [](const auto& queue_type_and_family_reservation) { return queue_type_and_family_reservation.second.MakeDeviceQueueCreateInfo(); });
+    std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;
+    for(const auto& [type, queue_family_reservation_ptr] : m_queue_family_reservation_by_type)
+    {
+        if (!queue_family_reservation_ptr || unique_family_reservation_ptrs.count(queue_family_reservation_ptr.get()))
+            continue;
+
+        vk_queue_create_infos.emplace_back(queue_family_reservation_ptr->MakeDeviceQueueCreateInfo());
+        unique_family_reservation_ptrs.insert(queue_family_reservation_ptr.get());
+    }
 
     std::vector<const char*> enabled_extension_names;
     if (capabilities.present_to_window)
@@ -423,7 +439,7 @@ const QueueFamilyReservationVK* DeviceVK::GetQueueFamilyReservationPtr(CommandLi
     META_FUNCTION_TASK();
     const auto queue_family_reservation_by_type_it = m_queue_family_reservation_by_type.find(cmd_list_type);
     return queue_family_reservation_by_type_it != m_queue_family_reservation_by_type.end()
-         ? &queue_family_reservation_by_type_it->second
+         ? queue_family_reservation_by_type_it->second.get()
          : nullptr;
 }
 
@@ -433,6 +449,16 @@ const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList:
     const QueueFamilyReservationVK* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
     META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr, fmt::format("queue family was not reserved for {} command list type", cmd_list_type));
     return *queue_family_reservation_ptr;
+}
+
+[[nodiscard]] DeviceVK::SwapChainSupport DeviceVK::GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept
+{
+    META_FUNCTION_TASK();
+    return SwapChainSupport{
+        m_vk_physical_device.getSurfaceCapabilitiesKHR(vk_surface),
+        m_vk_physical_device.getSurfaceFormatsKHR(vk_surface),
+        m_vk_physical_device.getSurfacePresentModesKHR(vk_surface)
+    };
 }
 
 void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,
@@ -448,7 +474,19 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
     if (!vk_queue_family_index)
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
 
-    m_queue_family_reservation_by_type.try_emplace(cmd_list_type, *vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface));
+    const auto queue_family_reservation_it = std::find_if(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(),
+                                                          [&vk_queue_family_index](const auto& type_and_queue_family_reservation)
+                                                          { return type_and_queue_family_reservation.second->GetFamilyIndex() == *vk_queue_family_index; });
+
+    const bool is_new_queue_family_reservation = queue_family_reservation_it == m_queue_family_reservation_by_type.end();
+    if (!is_new_queue_family_reservation && queue_family_reservation_it->second)
+        queue_family_reservation_it->second->IncrementQueuesCount(queues_count);
+
+    m_queue_family_reservation_by_type.try_emplace(cmd_list_type,
+        is_new_queue_family_reservation
+            ? std::make_shared<QueueFamilyReservationVK>(*vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface))
+            : queue_family_reservation_it->second
+    );
 }
 
 System& System::Get()
@@ -467,11 +505,11 @@ SystemVK::SystemVK()
 SystemVK::~SystemVK()
 {
     META_FUNCTION_TASK();
-    m_vk_instance.destroy();
+
     if (m_vk_surface)
-    {
         m_vk_instance.destroySurfaceKHR(m_vk_surface);
-    }
+
+    m_vk_instance.destroy();
 }
 
 void SystemVK::CheckForChanges()

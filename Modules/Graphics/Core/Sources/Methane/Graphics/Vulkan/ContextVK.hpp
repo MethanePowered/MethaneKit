@@ -45,6 +45,7 @@ class ContextVK : public ContextBaseT
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, parallel_executor, settings)
+        , m_device(dynamic_cast<const DeviceVK&>(device))
     {
         META_FUNCTION_TASK();
     }
@@ -78,7 +79,7 @@ public:
     const DeviceVK& GetDeviceVK() const noexcept final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<const DeviceVK&>(ContextBase::GetDeviceBase());
+        return m_device;
     }
 
     CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
@@ -86,6 +87,9 @@ public:
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
     }
+
+private:
+    const DeviceVK& m_device;
 };
 
 } // namespace Methane::Graphics

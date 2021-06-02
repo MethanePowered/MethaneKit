@@ -25,9 +25,12 @@ Vulkan implementation of the render context interface.
 #include "DeviceVK.h"
 #include "RenderStateVK.h"
 #include "CommandQueueVK.h"
+#include "PlatformVK.h"
 #include "TypesVK.h"
 
 #include <Methane/Instrumentation.h>
+
+#include <fmt/format.h>
 
 namespace Methane::Graphics
 {
@@ -41,15 +44,45 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
     return render_context_ptr;
 }
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& /*env*/, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
+    , m_vk_surface(CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
+    const DeviceVK::SwapChainSupport swap_chain_support = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
+    const vk::SurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const vk::PresentModeKHR   swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const vk::Extent2D         swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
+
+    uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, settings.frame_buffers_count + 1);
+    if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
+        image_count = swap_chain_support.capabilities.maxImageCount;
+
+    m_vk_swapchain = GetDeviceVK().GetNativeDevice().createSwapchainKHR(
+        vk::SwapchainCreateInfoKHR(
+            vk::SwapchainCreateFlagsKHR(),
+            m_vk_surface,
+            image_count,
+            swap_surface_format.format,
+            swap_surface_format.colorSpace,
+            swap_extent,
+            1,
+            vk::ImageUsageFlagBits::eColorAttachment,
+            vk::SharingMode::eExclusive, 0, nullptr,
+            swap_chain_support.capabilities.currentTransform,
+            vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            swap_present_mode,
+            true,
+            nullptr
+        )
+    );
 }
 
 RenderContextVK::~RenderContextVK()
 {
     META_FUNCTION_TASK();
+    static_cast<SystemVK&>(System::Get()).GetNativeInstance().destroy(m_vk_surface);
+    GetDeviceVK().GetNativeDevice().destroy(m_vk_swapchain);
 }
 
 void RenderContextVK::Release()
@@ -112,6 +145,54 @@ uint32_t RenderContextVK::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
     return 96U;
+}
+
+vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
+{
+    META_FUNCTION_TASK();
+
+    // TODO: Use GetSettings().color_format
+    const vk::Format        required_color_format = vk::Format::eB8G8R8A8Srgb;
+    const vk::ColorSpaceKHR required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+    const auto format_it = std::find_if(available_formats.begin(), available_formats.end(),
+                                        [required_color_format, required_color_space](const vk::SurfaceFormatKHR& format)
+                                        { return format.format == required_color_format && format.colorSpace == required_color_space; });
+    if (format_it == available_formats.end())
+        throw Context::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
+                                                         required_color_format, required_color_space));
+
+    return *format_it;
+}
+
+vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const
+{
+    META_FUNCTION_TASK();
+    const vk::PresentModeKHR required_present_mode = GetSettings().vsync_enabled
+                                                   ? vk::PresentModeKHR::eFifo
+                                                   : vk::PresentModeKHR::eMailbox;
+
+    const auto present_mode_it = std::find_if(available_present_modes.begin(), available_present_modes.end(),
+                                              [required_present_mode](const vk::PresentModeKHR& present_mode)
+                                              { return present_mode == required_present_mode; });
+
+    if (present_mode_it == available_present_modes.end())
+        throw Context::IncompatibleException(fmt::format("{} present mode is not available for window surface.", required_present_mode));
+
+    return *present_mode_it;
+}
+
+vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const
+{
+    META_FUNCTION_TASK();
+    if (surface_caps.currentExtent.width != std::numeric_limits<uint32_t>::max())
+        return surface_caps.currentExtent;
+
+    const FrameSize& frame_size = GetSettings().frame_size;
+    return vk::Extent2D(
+        std::max(surface_caps.minImageExtent.width,  std::min(surface_caps.minImageExtent.width,  frame_size.GetWidth())),
+        std::max(surface_caps.minImageExtent.height, std::min(surface_caps.minImageExtent.height, frame_size.GetHeight()))
+    );
 }
 
 } // namespace Methane::Graphics

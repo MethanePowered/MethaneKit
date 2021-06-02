@@ -30,6 +30,8 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/IEmitter.h>
 
+#include <stdexcept>
+
 namespace tf // NOSONAR
 {
 // TaskFlow Executor class forward declaration:
@@ -81,6 +83,14 @@ struct Context
         None                         = 0U,
         BlitWithDirectQueueOnWindows = 1U << 0U, // Blit command lists and queues in DX API are created with DIRECT type instead of COPY type
         EmulatedRenderPassOnWindows  = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    };
+
+    class IncompatibleException: public std::runtime_error
+    {
+    public:
+        explicit IncompatibleException(const std::string& incompatibility_msg)
+            : std::runtime_error(incompatibility_msg)
+        { }
     };
 
     // Context interface
