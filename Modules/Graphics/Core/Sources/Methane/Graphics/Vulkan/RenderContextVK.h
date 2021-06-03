@@ -56,13 +56,22 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
+    const vk::SurfaceKHR&   GetNativeSurface() const noexcept   { return m_vk_surface; }
+    const vk::SwapchainKHR& GetNativeSwapchain() const noexcept { return m_vk_swapchain; }
+    const vk::Extent2D&     GetNativeFrameExtent() const noexcept { return m_vk_frame_extent; }
+    vk::Format              GetNativeFrameFormat() const noexcept { return m_vk_frame_format; }
+    const vk::Image&        GetNativeFrameImage(uint32_t frame_buffer_index) const;
+
 private:
     vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const;
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
 
-    vk::SurfaceKHR   m_vk_surface;
-    vk::SwapchainKHR m_vk_swapchain;
+    vk::SurfaceKHR         m_vk_surface;
+    vk::SwapchainKHR       m_vk_swapchain;
+    vk::Format             m_vk_frame_format;
+    vk::Extent2D           m_vk_frame_extent;
+    std::vector<vk::Image> m_vk_frame_images;
 };
 
 } // namespace Methane::Graphics

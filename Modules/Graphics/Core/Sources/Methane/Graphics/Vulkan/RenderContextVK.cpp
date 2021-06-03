@@ -49,6 +49,10 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     , m_vk_surface(CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
+    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
+    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
+        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
+
     const DeviceVK::SwapChainSupport swap_chain_support = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
     const vk::SurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
     const vk::PresentModeKHR   swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
@@ -58,7 +62,8 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
         image_count = swap_chain_support.capabilities.maxImageCount;
 
-    m_vk_swapchain = GetDeviceVK().GetNativeDevice().createSwapchainKHR(
+    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
+    m_vk_swapchain = vk_device.createSwapchainKHR(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
             m_vk_surface,
@@ -76,6 +81,10 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
             nullptr
         )
     );
+
+    m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
+    m_vk_frame_format = swap_surface_format.format;
+    m_vk_frame_extent = swap_extent;
 }
 
 RenderContextVK::~RenderContextVK()
@@ -147,12 +156,17 @@ uint32_t RenderContextVK::GetFontResolutionDpi() const
     return 96U;
 }
 
+const vk::Image& RenderContextVK::GetNativeFrameImage(uint32_t frame_buffer_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS(frame_buffer_index, m_vk_frame_images.size());
+    return m_vk_frame_images[frame_buffer_index];
+}
+
 vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
 {
     META_FUNCTION_TASK();
-
-    // TODO: Use GetSettings().color_format
-    const vk::Format        required_color_format = vk::Format::eB8G8R8A8Srgb;
+    const vk::Format        required_color_format = TypeConverterVK::PixelFormatToVulkan(GetSettings().color_format);
     const vk::ColorSpaceKHR required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
 
     const auto format_it = std::find_if(available_formats.begin(), available_formats.end(),

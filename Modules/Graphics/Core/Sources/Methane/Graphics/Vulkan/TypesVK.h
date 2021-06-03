@@ -25,11 +25,16 @@ Methane graphics types converters to Vulkan native types.
 
 #include <Methane/Graphics/Types.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
 class TypeConverterVK
 {
+public:
+    static vk::Format PixelFormatToVulkan(PixelFormat pixel_format);
+
 private:
     TypeConverterVK() = default;
 };
