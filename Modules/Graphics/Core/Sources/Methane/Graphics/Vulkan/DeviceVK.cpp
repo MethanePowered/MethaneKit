@@ -359,6 +359,7 @@ void QueueFamilyReservationVK::IncrementQueuesCount(uint32_t extra_queues_count)
     if (!extra_queues_count)
         return;
 
+    m_free_indices.Add({m_queues_count, m_queues_count + extra_queues_count});
     m_queues_count += extra_queues_count;
     m_priorities.resize(m_queues_count, 0.F);
 }

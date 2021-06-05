@@ -89,10 +89,12 @@ struct Texture : virtual Resource // NOSONAR
         [[nodiscard]] static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
     };
 
+    using FrameBufferIndex = uint32_t;
+
     // Create Texture instance
     [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings,
                                                          const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, uint32_t frame_buffer_index,
+    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index,
                                                         const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context,
                                                                const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());

@@ -23,6 +23,9 @@ Vulkan implementation of the resource interface.
 
 #pragma once
 
+#include "ContextVK.h"
+
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Instrumentation.h>
 
@@ -30,8 +33,6 @@ Vulkan implementation of the resource interface.
 
 namespace Methane::Graphics
 {
-
-struct IContextVK;
 
 class ResourceBarriersVK : public Resource::Barriers
 {
@@ -65,7 +66,7 @@ public:
 protected:
     const IContextVK& GetContextVK() const noexcept
     {
-        return dynamic_cast<IContextVK&>(ResourceBase::GetContextBase());
+        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
     }
 };
 

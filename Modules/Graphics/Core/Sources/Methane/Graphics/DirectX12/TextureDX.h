@@ -106,8 +106,8 @@ private:
     void CreateDepthStencilView(const Settings& settings, const DXGI_FORMAT& view_write_format, const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const;
 };
 
+using FrameBufferTextureDX          = TextureDX<Texture::FrameBufferIndex>;
 using RenderTargetTextureDX         = TextureDX<>;
-using FrameBufferTextureDX          = TextureDX<uint32_t /* frame_buffer_index */>;
 using DepthStencilBufferTextureDX   = TextureDX<const std::optional<DepthStencil>&>;
 using ImageTextureDX                = TextureDX<ImageTextureArg>;
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -49,6 +49,30 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     , m_vk_surface(CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
+}
+
+RenderContextVK::~RenderContextVK()
+{
+    META_FUNCTION_TASK();
+    Release();
+
+    static_cast<SystemVK&>(System::Get()).GetNativeInstance().destroy(m_vk_surface);
+}
+
+void RenderContextVK::Release()
+{
+    META_FUNCTION_TASK();
+    ContextVK<RenderContextBase>::Release();
+
+    m_vk_frame_images.clear();
+    GetDeviceVK().GetNativeDevice().destroy(m_vk_swapchain);
+}
+
+void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
+{
+    META_FUNCTION_TASK();
+    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
+
     const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
     if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
         throw Context::IncompatibleException("Device does not support presentation to the window surface.");
@@ -58,7 +82,7 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     const vk::PresentModeKHR   swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
     const vk::Extent2D         swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
 
-    uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, settings.frame_buffers_count + 1);
+    uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
         image_count = swap_chain_support.capabilities.maxImageCount;
 
@@ -85,25 +109,6 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
-}
-
-RenderContextVK::~RenderContextVK()
-{
-    META_FUNCTION_TASK();
-    static_cast<SystemVK&>(System::Get()).GetNativeInstance().destroy(m_vk_surface);
-    GetDeviceVK().GetNativeDevice().destroy(m_vk_swapchain);
-}
-
-void RenderContextVK::Release()
-{
-    META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::Release();
-}
-
-void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
-{
-    META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 bool RenderContextVK::ReadyToRender() const

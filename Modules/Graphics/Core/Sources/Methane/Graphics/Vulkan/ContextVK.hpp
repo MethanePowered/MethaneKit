@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ Vulkan template implementation of the base context interface.
 
 #include "ContextVK.h"
 #include "DeviceVK.h"
+#include "CommandQueueVK.h"
 
-#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
@@ -45,7 +45,6 @@ class ContextVK : public ContextBaseT
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, parallel_executor, settings)
-        , m_device(dynamic_cast<const DeviceVK&>(device))
     {
         META_FUNCTION_TASK();
     }
@@ -55,9 +54,9 @@ public:
     void WaitForGpu(Context::WaitFor wait_for) override
     {
         META_FUNCTION_TASK();
-        ContextBase::WaitForGpu(wait_for);
+        ContextBaseT::WaitForGpu(wait_for);
         // ...
-        ContextBase::OnGpuWaitComplete(wait_for);
+        ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
     // ContextBase interface
@@ -65,13 +64,13 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override
     {
         META_FUNCTION_TASK();
-        ContextBase::Initialize(device, deferred_heap_allocation, is_callback_emitted);
+        ContextBaseT::Initialize(device, deferred_heap_allocation, is_callback_emitted);
     }
 
     void Release() override
     {
         META_FUNCTION_TASK();
-        ContextBase::Release();
+        ContextBaseT::Release();
     }
 
     // IContextVK interface
@@ -79,17 +78,14 @@ public:
     const DeviceVK& GetDeviceVK() const noexcept final
     {
         META_FUNCTION_TASK();
-        return m_device;
+        return static_cast<const DeviceVK&>(ContextBaseT::GetDeviceBase());
     }
 
     CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<CommandQueueVK&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
+        return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
-
-private:
-    const DeviceVK& m_device;
 };
 
 } // namespace Methane::Graphics

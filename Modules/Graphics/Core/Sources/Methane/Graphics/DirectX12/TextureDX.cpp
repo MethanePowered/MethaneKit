@@ -70,7 +70,7 @@ Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, co
     }
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& render_context, uint32_t frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& render_context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = render_context.GetSettings();
@@ -120,7 +120,7 @@ void RenderTargetTextureDX::Initialize()
 }
 
 template<>
-void FrameBufferTextureDX::Initialize(uint32_t frame_buffer_index)
+void FrameBufferTextureDX::Initialize(FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::RenderTarget, "frame-buffer texture supports only 'RenderTarget' usage");

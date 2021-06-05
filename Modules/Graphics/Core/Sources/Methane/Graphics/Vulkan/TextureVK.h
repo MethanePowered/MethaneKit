@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -27,13 +27,19 @@ Vulkan implementation of the texture interface.
 
 #include <Methane/Graphics/TextureBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
-class TextureVK final : public ResourceVK<TextureBase>
+class RenderContextVK;
+
+class TextureVK : public ResourceVK<TextureBase>
 {
 public:
-    TextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    // Temporary constructor, to be removed
+    TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    ~TextureVK() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
@@ -41,10 +47,34 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    void UpdateFrameBuffer();
+    const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
+    const vk::ImageView& GetNativeImageView() const noexcept  { return m_vk_image_view; }
+
+protected:
+    TextureVK(const RenderContextVK& context, const Settings& settings,
+              const DescriptorByUsage& descriptor_by_usage,
+              const vk::Image& image, vk::ImageView&& image_view);
 
 private:
     void GenerateMipLevels();
+
+    vk::Image     m_vk_image;
+    vk::ImageView m_vk_image_view;
+};
+
+class FrameBufferTextureVK final : public TextureVK
+{
+public:
+    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                         FrameBufferIndex frame_buffer_index);
+
+    [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
+
+private:
+    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                         FrameBufferIndex frame_buffer_index, const vk::Image& image);
+
+    const FrameBufferIndex m_frame_buffer_index;
 };
 
 } // namespace Methane::Graphics

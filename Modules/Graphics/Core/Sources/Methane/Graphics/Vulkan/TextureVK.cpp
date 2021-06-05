@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ Vulkan implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureVK.h"
-#include "RenderCommandListVK.h"
+#include "RenderContextVK.h"
+#include "DeviceVK.h"
 #include "TypesVK.h"
 
-#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -34,18 +34,48 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+static vk::ImageViewType GetNativeImageViewType(Texture::DimensionType dimension_type)
+{
+    META_FUNCTION_TASK();
+    switch(dimension_type)
+    {
+    case Texture::DimensionType::Tex1D:              return vk::ImageViewType::e1D;
+    case Texture::DimensionType::Tex1DArray:         return vk::ImageViewType::e1DArray;
+    case Texture::DimensionType::Tex2D:              return vk::ImageViewType::e2D;
+    case Texture::DimensionType::Tex2DArray:
+    case Texture::DimensionType::Tex2DMultisample:   return vk::ImageViewType::e2D;
+    case Texture::DimensionType::Cube:               return vk::ImageViewType::eCube;
+    case Texture::DimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
+    case Texture::DimensionType::Tex3D:              return vk::ImageViewType::e3D;
+    default: META_UNEXPECTED_ARG_RETURN(dimension_type, vk::ImageViewType::e1D);
+    }
+}
+
+static vk::ImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
+{
+    META_FUNCTION_TASK();
+    return vk_device.createImageView(vk::ImageViewCreateInfo(
+        vk::ImageViewCreateFlags(),
+        vk_image,
+        GetNativeImageViewType(settings.dimension_type),
+        TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
+        vk::ComponentMapping(),
+        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+    ));
+}
+
 Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), settings, descriptor_by_usage);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, uint32_t /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<FrameBufferTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage, frame_buffer_index);
 }
 
 Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
@@ -53,28 +83,46 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, con
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
 }
 
 Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureVK>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
 }
 
-TextureVK::TextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(context, settings, descriptor_by_usage)
+// Temporary constructor, to be removed
+TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
+}
+
+TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
+                     const DescriptorByUsage& descriptor_by_usage,
+                     const vk::Image& image, vk::ImageView&& image_view)
+    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
+    , m_vk_image(std::move(image))
+    , m_vk_image_view(std::move(image_view))
+{
+    META_FUNCTION_TASK();
+    InitializeDefaultDescriptors();
+}
+
+TextureVK::~TextureVK()
+{
+    META_FUNCTION_TASK();
+    GetContextVK().GetDeviceVK().GetNativeDevice().destroyImageView(m_vk_image_view);
 }
 
 void TextureVK::SetName(const std::string& name)
@@ -94,13 +142,22 @@ void TextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cm
     }
 }
 
-void TextureVK::UpdateFrameBuffer()
+void TextureVK::GenerateMipLevels()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Texture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
 }
 
-void TextureVK::GenerateMipLevels()
+FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                                           FrameBufferIndex frame_buffer_index)
+    : FrameBufferTextureVK(context, settings, descriptor_by_usage, frame_buffer_index, context.GetNativeFrameImage(frame_buffer_index))
+{
+    META_FUNCTION_TASK();
+}
+
+FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                                           FrameBufferIndex frame_buffer_index, const vk::Image& image)
+    : TextureVK(context, settings, descriptor_by_usage, image, CreateNativeImageView(settings, context.GetDeviceVK().GetNativeDevice(), image))
+    , m_frame_buffer_index(frame_buffer_index)
 {
     META_FUNCTION_TASK();
 }
