@@ -53,6 +53,16 @@ function(get_metal_library FOR_TARGET SHADERS_HLSL METAL_LIBRARY)
     set(${METAL_LIBRARY} "${TARGET_SHADERS_DIR}/${SHADERS_NAME}.metallib" PARENT_SCOPE)
 endfunction()
 
+function(get_generated_shader_extension OUT_SHADER_EXT)
+    if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+        set(${OUT_SHADER_EXT} "obj" PARENT_SCOPE)
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+        set(${OUT_SHADER_EXT} "metal" PARENT_SCOPE)
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+        set(${OUT_SHADER_EXT} "spirv" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENERATED)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_CONFIG} SHADERS_NAME)
@@ -73,12 +83,12 @@ function(get_generated_shaders FOR_TARGET SHADERS_CONFIG SHADER_EXT SHADERS_GENE
 endfunction()
 
 function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_SHADERS_METAL)
-    get_platform_dir()
+    get_platform_dir(PLATFORM_DIR CPP_EXT)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
 
-    set(DXC_BIN_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}")
+    set(DXC_BIN_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/bin")
     set(DXC_EXE     "${DXC_BIN_DIR}/dxc")
 
     set(SPIRV_BIN_DIR      "${CMAKE_SOURCE_DIR}/Externals/SPIRV/binaries/${PLATFORM_DIR}")
@@ -187,15 +197,23 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 endfunction()
 
 function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_SHADER_BINS)
-    
-    get_platform_dir()
-    get_target_arch(WIN_ARCH)
+
+    get_platform_arch_dir(PLATFORM_ARCH_DIR CPP_EXT)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
+    get_generated_shader_extension(OUTPUT_FILE_EXT)
 
-    set(SHADER_COMPILER_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}-${WIN_ARCH}/bin")
-    set(SHADER_COMPILER_EXE "${SHADER_COMPILER_DIR}/dxc.exe")
+    set(DXC_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_ARCH_DIR}/bin")
+    set(DXC_EXE "${DXC_DIR}/dxc")
+
+    if (NOT WIN32)
+        set(DXC_EXE "LD_LIBRARY_PATH=.;${DXC_EXE}")
+    endif()
+
+    if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+        set(OUTPUT_TYPE_ARG "-spirv")
+    endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS /Od)
@@ -225,19 +243,19 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
         get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
 
-        set(SHADER_OBJ_FILE "${SHADERS_NAME}_${NEW_ENTRY_POINT}.obj")
+        set(SHADER_OBJ_FILE "${SHADERS_NAME}_${NEW_ENTRY_POINT}.${OUTPUT_FILE_EXT}")
         set(SHADER_OBJ_PATH "${TARGET_SHADERS_DIR}/${SHADER_OBJ_FILE}")
 
         list(APPEND _OUT_COMPILED_SHADER_BINS ${SHADER_OBJ_PATH})
 
         shorten_target_name(${FOR_TARGET}_HLSL_${NEW_ENTRY_POINT} COMPILE_SHADER_TARGET)
         add_custom_target(${COMPILE_SHADER_TARGET}
-            COMMENT "Compiling HLSL shader from file " ${SHADERS_HLSL} " with profile " ${SHADER_PROFILE} " and macro-definition" ${SHADER_DEFINITIONS} "to OBJ file " ${SHADER_OBJ_FILE}
+            COMMENT "Compiling HLSL shader from file ${SHADERS_HLSL} with profile ${SHADER_PROFILE} and macro-definitions \"${SHADER_DEFINITIONS}\" to ${OUTPUT_FILE_EXT} file ${SHADER_OBJ_FILE}"
             BYPRODUCTS "${SHADER_OBJ_PATH}"
             DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
-            WORKING_DIRECTORY "${SHADER_COMPILER_DIR}"
+            WORKING_DIRECTORY "${DXC_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
-            COMMAND ${SHADER_COMPILER_EXE} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
+            COMMAND ${DXC_EXE} ${OUTPUT_TYPE_ARG} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
 
         add_dependencies(${COMPILE_SHADER_TARGET} DirectXCompilerUnpack-build)
@@ -257,12 +275,14 @@ endfunction()
 function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
 
     set(RESOURCE_NAMESPACE ${TARGET})
+    get_generated_shader_extension(GENERATED_SHADER_EXT)
 
-    if (WIN32)
+    if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX OR
+        METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
             get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
-            get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" "obj" SHADERS_OBJ)
+            get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" ${GENERATED_SHADER_EXT} SHADERS_OBJ)
             list(APPEND SHADERS_OBJ_FILES ${SHADERS_OBJ})
             list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
         endforeach()
@@ -310,7 +330,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
             SHADER_RESOURCES_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
         )
 
-    elseif(APPLE)
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
 
         # Get list of generated Metal shaders
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
@@ -320,7 +340,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
             get_metal_library(${TARGET} ${SHADERS_CONFIG} METAL_LIBRARY)
             list(APPEND METAL_LIBRARIES ${METAL_LIBRARY})
 
-            get_generated_shaders(${TARGET} ${SHADERS_CONFIG} "metal" METAL_SOURCES)
+            get_generated_shaders(${TARGET} ${SHADERS_CONFIG} ${GENERATED_SHADER_EXT} METAL_SOURCES)
             list(APPEND GENERATED_SOURCES ${METAL_SOURCES})
         endforeach()
 
