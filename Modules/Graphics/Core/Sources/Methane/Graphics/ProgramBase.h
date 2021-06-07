@@ -54,9 +54,9 @@ public:
     ~ProgramBase() override;
 
     // Program interface
-    const Settings&      GetSettings() const override                       { return m_settings; }
-    const Shader::Types& GetShaderTypes() const override                    { return m_shader_types; }
-    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const override { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
+    const Settings&      GetSettings() const final                          { return m_settings; }
+    const Shader::Types& GetShaderTypes() const final                       { return m_shader_types; }
+    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const final    { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
     bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
 
     const ContextBase&   GetContext() const { return m_context; }

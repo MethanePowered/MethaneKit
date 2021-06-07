@@ -25,6 +25,8 @@ Vulkan implementation of the shader interface.
 
 #include <Methane/Graphics/ShaderBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 #include <string>
 #include <memory>
 
@@ -38,12 +40,18 @@ class ShaderVK final : public ShaderBase
 {
 public:
     ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings);
+    ~ShaderVK() override;
 
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
 
+    const vk::ShaderModule& GetNativeModule() const noexcept { return m_vk_module; }
+    vk::PipelineShaderStageCreateInfo GetNativeStageCreateInfo() const;
+
 private:
     const IContextVK& GetContextVK() const noexcept;
+
+    vk::ShaderModule m_vk_module;
 };
 
 } // namespace Methane::Graphics

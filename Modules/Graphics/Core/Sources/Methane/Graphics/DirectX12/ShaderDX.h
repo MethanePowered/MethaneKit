@@ -24,14 +24,16 @@ DirectX 12 implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
-#include <Methane/Data/Chunk.hpp>
-
-#include "DescriptorHeapDX.h"
 
 #include <wrl.h>
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <d3d12shader.h>
+
+namespace Methane::Data
+{
+class Chunk;
+}
 
 namespace Methane::Graphics
 {

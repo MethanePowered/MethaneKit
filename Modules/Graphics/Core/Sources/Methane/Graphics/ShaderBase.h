@@ -46,8 +46,8 @@ public:
     ShaderBase(Type type, const ContextBase& context, const Settings& settings);
 
     // Shader interface
-    Type             GetType() const noexcept override       { return m_type; }
-    const Settings&  GetSettings() const noexcept override   { return m_settings; }
+    Type             GetType() const noexcept final     { return m_type; }
+    const Settings&  GetSettings() const noexcept final { return m_settings; }
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;

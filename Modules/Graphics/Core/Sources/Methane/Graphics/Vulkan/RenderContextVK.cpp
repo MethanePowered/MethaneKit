@@ -31,6 +31,7 @@ Vulkan implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -171,15 +172,17 @@ const vk::Image& RenderContextVK::GetNativeFrameImage(uint32_t frame_buffer_inde
 vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
 {
     META_FUNCTION_TASK();
-    const vk::Format        required_color_format = TypeConverterVK::PixelFormatToVulkan(GetSettings().color_format);
-    const vk::ColorSpaceKHR required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
+
+    static const vk::ColorSpaceKHR s_required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
+    const vk::Format required_color_format = TypeConverterVK::PixelFormatToVulkan(GetSettings().color_format);
 
     const auto format_it = std::find_if(available_formats.begin(), available_formats.end(),
-                                        [required_color_format, required_color_space](const vk::SurfaceFormatKHR& format)
-                                        { return format.format == required_color_format && format.colorSpace == required_color_space; });
+                                        [required_color_format](const vk::SurfaceFormatKHR& format)
+                                        { return format.format == required_color_format &&
+                                                 format.colorSpace == s_required_color_space; });
     if (format_it == available_formats.end())
         throw Context::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
-                                                         required_color_format, required_color_space));
+                                                         magic_enum::enum_name(required_color_format), magic_enum::enum_name(s_required_color_space)));
 
     return *format_it;
 }
@@ -196,7 +199,7 @@ vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::
                                               { return present_mode == required_present_mode; });
 
     if (present_mode_it == available_present_modes.end())
-        throw Context::IncompatibleException(fmt::format("{} present mode is not available for window surface.", required_present_mode));
+        throw Context::IncompatibleException(fmt::format("{} present mode is not available for window surface.", magic_enum::enum_name(required_present_mode)));
 
     return *present_mode_it;
 }

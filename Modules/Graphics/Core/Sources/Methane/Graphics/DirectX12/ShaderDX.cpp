@@ -37,6 +37,7 @@ DirectX 12 implementation of the shader interface.
 #include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>
+#include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <sstream>
 
@@ -117,7 +118,7 @@ ShaderDX::ShaderDX(Type type, const ContextBase& context, const Settings& settin
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.obj", compiled_func_name)));
     }
 
     META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
