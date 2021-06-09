@@ -27,6 +27,8 @@ Vulkan implementation of the render state interface.
 
 #include <vector>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -44,6 +46,13 @@ public:
 
     // ViewStateBase interface
     void Apply(RenderCommandListBase& command_list) override;
+
+    const std::vector<vk::Viewport>& GetNativeViewports() const noexcept    { return m_vk_viewports; }
+    const std::vector<vk::Rect2D>&   GetNativeScissorRects() const noexcept { return m_vk_scissor_rects; }
+
+private:
+    std::vector<vk::Viewport> m_vk_viewports;
+    std::vector<vk::Rect2D>   m_vk_scissor_rects;
 };
 
 class RenderStateVK final : public RenderStateBase

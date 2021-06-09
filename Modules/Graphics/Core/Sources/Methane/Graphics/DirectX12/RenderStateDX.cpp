@@ -40,6 +40,8 @@ DirectX 12 implementation of the render state interface.
 #include <d3dx12.h>
 #include <d3dcompiler.h>
 
+#include <algorithm>
+
 namespace Methane::Graphics
 {
 
@@ -207,12 +209,9 @@ static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
 {
     META_FUNCTION_TASK();
-
     std::vector<CD3DX12_VIEWPORT> d3d_viewports;
-    for (const Viewport& viewport : viewports)
-    {
-        d3d_viewports.push_back(ViewportToD3D(viewport));
-    }
+    std::transform(viewports.begin(), viewports.end(), std::back_inserter(d3d_viewports),
+                   [](const Viewport& viewport) { return ViewportToD3D(viewport); });
     return d3d_viewports;
 }
 
@@ -220,12 +219,9 @@ static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) 
 static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
 {
     META_FUNCTION_TASK();
-
     std::vector<CD3DX12_RECT> d3d_scissor_rects;
-    for (const ScissorRect& scissor_rect : scissor_rects)
-    {
-        d3d_scissor_rects.push_back(ScissorRectToD3D(scissor_rect));
-    }
+    std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(d3d_scissor_rects),
+                   [](const ScissorRect& scissor_rect) { return ScissorRectToD3D(scissor_rect); });
     return d3d_scissor_rects;
 }
 

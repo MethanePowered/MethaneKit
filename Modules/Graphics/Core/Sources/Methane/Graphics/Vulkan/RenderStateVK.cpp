@@ -33,8 +33,51 @@ Vulkan implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <algorithm>
+
 namespace Methane::Graphics
 {
+
+[[nodiscard]]
+static vk::Viewport ViewportToVulkan(const Viewport& viewport) noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::Viewport(
+        static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
+        static_cast<float>(viewport.size.GetWidth()), static_cast<float>(viewport.size.GetHeight()),
+        static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.GetDepth())
+    );
+}
+
+[[nodiscard]]
+static vk::Rect2D ScissorRectToVulkan(const ScissorRect& scissor_rect) noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::Rect2D(
+        vk::Offset2D(static_cast<int32_t>(scissor_rect.origin.GetX()), static_cast<int32_t>(scissor_rect.origin.GetY())),
+        vk::Extent2D(scissor_rect.size.GetWidth(), scissor_rect.size.GetHeight())
+    );
+}
+
+[[nodiscard]]
+static std::vector<vk::Viewport> ViewportsToVulkan(const Viewports& viewports) noexcept
+{
+    META_FUNCTION_TASK();
+    std::vector<vk::Viewport> vk_viewports;
+    std::transform(viewports.begin(), viewports.end(), std::back_inserter(vk_viewports),
+                   [](const Viewport& viewport) { return ViewportToVulkan(viewport); });
+    return vk_viewports;
+}
+
+[[nodiscard]]
+static std::vector<vk::Rect2D> ScissorRectsToVulkan(const ScissorRects& scissor_rects) noexcept
+{
+    META_FUNCTION_TASK();
+    std::vector<vk::Rect2D> vk_scissor_rects;
+    std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(vk_scissor_rects),
+                   [](const ScissorRect& scissor_rect) { return ScissorRectToVulkan(scissor_rect); });
+    return vk_scissor_rects;
+}
 
 Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
 {
@@ -44,6 +87,8 @@ Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
 
 ViewStateVK::ViewStateVK(const Settings& settings)
     : ViewStateBase(settings)
+    , m_vk_viewports(ViewportsToVulkan(settings.viewports))
+    , m_vk_scissor_rects(ScissorRectsToVulkan(settings.scissor_rects))
 {
     META_FUNCTION_TASK();
 }
@@ -54,6 +99,8 @@ bool ViewStateVK::Reset(const Settings& settings)
     if (!ViewStateBase::Reset(settings))
         return false;
 
+    m_vk_viewports     = ViewportsToVulkan(settings.viewports);
+    m_vk_scissor_rects = ScissorRectsToVulkan(settings.scissor_rects);
     return true;
 }
 
@@ -63,6 +110,7 @@ bool ViewStateVK::SetViewports(const Viewports& viewports)
     if (!ViewStateBase::SetViewports(viewports))
         return false;
 
+    m_vk_viewports = ViewportsToVulkan(GetSettings().viewports);
     return true;
 }
 
@@ -72,6 +120,7 @@ bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
     if (!ViewStateBase::SetScissorRects(scissor_rects))
         return false;
 
+    m_vk_scissor_rects = ScissorRectsToVulkan(GetSettings().scissor_rects);
     return true;
 }
 
