@@ -170,7 +170,11 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
     )
 
-    set(PLATFORM_LIBRARIES Vulkan-Headers)
+    set(PLATFORM_LIBRARIES
+        Vulkan-Headers
+        spirv-cross-core
+        spirv-cross-hlsl
+    )
 
 endif()
 

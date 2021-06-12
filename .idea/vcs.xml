@@ -15,12 +15,12 @@
     <mapping directory="$PROJECT_DIR$/Externals/HLSLpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/IttApi" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/MagicEnum" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/SPIRV-Cross" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/TaskFlow" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg/downloads/git-tmp" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/Volk" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Vulkan-Headers" vcs="Git" />
   </component>
 </project>

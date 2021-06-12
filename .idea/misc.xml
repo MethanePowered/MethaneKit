@@ -27,6 +27,7 @@
       <file path="$PROJECT_DIR$/Externals/OpenImageIO" />
       <file path="$PROJECT_DIR$/Externals/PerlinNoise" />
       <file path="$PROJECT_DIR$/Externals/SPIRV" />
+      <file path="$PROJECT_DIR$/Externals/SPIRV-Cross" />
       <file path="$PROJECT_DIR$/Externals/STB" />
       <file path="$PROJECT_DIR$/Externals/SonarScanner" />
       <file path="$PROJECT_DIR$/Externals/TaskFlow" />

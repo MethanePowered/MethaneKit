@@ -28,6 +28,8 @@ Vulkan implementation of the shader interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <spirv_hlsl.hpp>
+
 namespace Methane::Graphics
 {
 
