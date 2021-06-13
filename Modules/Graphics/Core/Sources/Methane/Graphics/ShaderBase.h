@@ -58,7 +58,9 @@ public:
 protected:
     const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
-    std::string         GetCompiledEntryFunctionName() const;
+    std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
+
+    static std::string GetCompiledEntryFunctionName(const Settings& settings);
 
 private:
     const Type         m_type;

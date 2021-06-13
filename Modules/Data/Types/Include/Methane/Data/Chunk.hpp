@@ -57,6 +57,24 @@ public:
     [[nodiscard]] bool        IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
     [[nodiscard]] bool        IsDataStored() const noexcept  { return !m_data_storage.empty(); }
 
+    template<typename T>
+    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, Size> GetDataSize() const noexcept
+    {
+        return m_data_size / sizeof(T);
+    }
+
+    template<typename T>
+    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, const T*> GetDataPtr() const noexcept
+    {
+        return reinterpret_cast<const T*>(m_data_ptr);
+    }
+
+    template<typename T>
+    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, const T*> GetDataEndPtr() const noexcept
+    {
+        return GetDataPtr<T>() + GetDataSize<T>();
+    }
+
 protected:
     explicit Chunk(const Chunk& other) noexcept
         : m_data_storage(other.m_data_storage)

@@ -55,7 +55,7 @@ struct Program : virtual Object // NOSONAR
 
         ArgumentSemantics argument_semantics;
         StepType          step_type = StepType::PerVertex;
-        uint32_t          step_rate = 1;
+        uint32_t          step_rate = 1U;
     };
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;

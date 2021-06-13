@@ -127,7 +127,6 @@ Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 
 ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
-    , m_dx_input_layout(GetVertexShaderDX().GetNativeProgramInputLayout(*this))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
@@ -240,9 +239,12 @@ ShaderDX& ProgramDX::GetPixelShaderDX() const
 D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept
 {
     META_FUNCTION_TASK();
+    if (m_dx_vertex_input_layout.empty())
+        m_dx_vertex_input_layout = GetVertexShaderDX().GetNativeProgramInputLayout(*this);
+
     return {
-        m_dx_input_layout.data(),
-        static_cast<UINT>(m_dx_input_layout.size())
+        m_dx_vertex_input_layout.data(),
+        static_cast<UINT>(m_dx_vertex_input_layout.size())
     };
 }
 

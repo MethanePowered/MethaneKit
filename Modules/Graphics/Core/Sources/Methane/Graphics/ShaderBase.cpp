@@ -60,12 +60,12 @@ uint32_t ShaderBase::GetProgramInputBufferIndexByArgumentSemantic(const ProgramB
     return program.GetInputBufferIndexByArgumentSemantic(argument_semantic);
 }
 
-std::string ShaderBase::GetCompiledEntryFunctionName() const
+std::string ShaderBase::GetCompiledEntryFunctionName(const Settings& settings)
 {
     META_FUNCTION_TASK();
     std::stringstream entry_func_steam;
-    entry_func_steam << m_settings.entry_function.file_name << "_" << m_settings.entry_function.function_name;
-    for (const auto& define_and_value : m_settings.compile_definitions)
+    entry_func_steam << settings.entry_function.file_name << "_" << settings.entry_function.function_name;
+    for (const auto& define_and_value : settings.compile_definitions)
     {
         entry_func_steam << "_" << define_and_value.name << define_and_value.value;
     }

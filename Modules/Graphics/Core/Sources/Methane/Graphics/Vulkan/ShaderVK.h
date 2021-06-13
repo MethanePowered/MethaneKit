@@ -24,11 +24,21 @@ Vulkan implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
 
 #include <string>
-#include <memory>
+
+namespace spirv_cross
+{
+class Compiler;
+}
+
+namespace Methane::Data
+{
+class Chunk;
+}
 
 namespace Methane::Graphics
 {
@@ -45,13 +55,23 @@ public:
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
 
-    const vk::ShaderModule& GetNativeModule() const noexcept { return m_vk_module; }
-    vk::PipelineShaderStageCreateInfo GetNativeStageCreateInfo() const;
+    const Data::Chunk&                     GetNativeByteCode() const noexcept { return *m_byte_code_chunk_ptr; }
+    const vk::ShaderModule&                GetNativeModule() const noexcept { return m_vk_module; }
+    const spirv_cross::Compiler&           GetNativeCompiler() const;
+    vk::PipelineShaderStageCreateInfo      GetNativeStageCreateInfo() const;
+    vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo(const ProgramVK& program);
 
 private:
+    void InitializeVertexInputDescriptions(const ProgramVK& program);
+
     const IContextVK& GetContextVK() const noexcept;
 
-    vk::ShaderModule m_vk_module;
+    UniquePtr<Data::Chunk>                           m_byte_code_chunk_ptr;
+    vk::ShaderModule                                 m_vk_module;
+    mutable UniquePtr<spirv_cross::Compiler>         m_spirv_compiler_ptr;
+    std::vector<vk::VertexInputBindingDescription>   m_vertex_input_binding_descriptions;
+    std::vector<vk::VertexInputAttributeDescription> m_vertex_input_attribute_descriptions;
+    bool                                             m_vertex_input_initialized = false;
 };
 
 } // namespace Methane::Graphics
