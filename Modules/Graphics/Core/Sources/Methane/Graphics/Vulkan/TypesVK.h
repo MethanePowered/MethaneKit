@@ -34,6 +34,7 @@ class TypeConverterVK
 {
 public:
     static vk::Format PixelFormatToVulkan(PixelFormat pixel_format);
+    static vk::CompareOp CompareFunctionToVulkan(Compare compare_func);
 
 private:
     TypeConverterVK() = default;

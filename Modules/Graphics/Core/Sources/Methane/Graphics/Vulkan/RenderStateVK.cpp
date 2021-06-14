@@ -33,10 +33,149 @@ Vulkan implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics
 {
+
+[[nodiscard]]
+static vk::PolygonMode RasterizerFillModeToVulkan(RenderState::Rasterizer::FillMode fill_mode)
+{
+    META_FUNCTION_TASK();
+    using FillMode = RenderState::Rasterizer::FillMode;
+    switch(fill_mode)
+    {
+    case FillMode::Solid:     return vk::PolygonMode::eFill;
+    case FillMode::Wireframe: return vk::PolygonMode::eLine;
+    default:
+        META_UNEXPECTED_ARG_RETURN(fill_mode, vk::PolygonMode::eFill);
+    }
+}
+
+[[nodiscard]]
+static vk::CullModeFlags RasterizerCullModeToVulkan(RenderState::Rasterizer::CullMode cull_mode)
+{
+    META_FUNCTION_TASK();
+    using CullMode = RenderState::Rasterizer::CullMode;
+    switch(cull_mode)
+    {
+    case CullMode::None:  return vk::CullModeFlagBits::eNone;
+    case CullMode::Back:  return vk::CullModeFlagBits::eBack;
+    case CullMode::Front: return vk::CullModeFlagBits::eFront;
+    default:
+        META_UNEXPECTED_ARG_RETURN(cull_mode, vk::CullModeFlagBits::eNone);
+    }
+}
+
+[[nodiscard]]
+static vk::SampleCountFlagBits RasterizerSampleCountToVulkan(uint32_t sample_count)
+{
+    META_FUNCTION_TASK();
+    switch(sample_count)
+    {
+    case 1:  return vk::SampleCountFlagBits::e1;
+    case 2:  return vk::SampleCountFlagBits::e2;
+    case 4:  return vk::SampleCountFlagBits::e4;
+    case 8:  return vk::SampleCountFlagBits::e8;
+    case 16: return vk::SampleCountFlagBits::e16;
+    case 32: return vk::SampleCountFlagBits::e32;
+    case 61: return vk::SampleCountFlagBits::e64;
+    default:
+        META_UNEXPECTED_ARG_DESCR_RETURN(sample_count, vk::SampleCountFlagBits::e1, "Vulkan rasterizer sample count should be a power of 2 from 1 to 64.");
+    }
+}
+
+[[nodiscard]]
+static vk::StencilOp StencilOperationToVulkan(RenderState::Stencil::Operation stencil_operation)
+{
+    META_FUNCTION_TASK();
+    using StencilOperation = RenderState::Stencil::Operation;
+    switch(stencil_operation)
+    {
+    case StencilOperation::Keep:            return vk::StencilOp::eKeep;
+    case StencilOperation::Zero:            return vk::StencilOp::eZero;
+    case StencilOperation::Replace:         return vk::StencilOp::eReplace;
+    case StencilOperation::Invert:          return vk::StencilOp::eInvert;
+    case StencilOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
+    case StencilOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
+    case StencilOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
+    case StencilOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
+    default:
+        META_UNEXPECTED_ARG_RETURN(stencil_operation, vk::StencilOp::eKeep);
+    }
+}
+
+[[nodiscard]]
+static vk::BlendFactor BlendingFactorToVulkan(RenderState::Blending::Factor blend_factor)
+{
+    META_FUNCTION_TASK();
+    using BlendFactor = RenderState::Blending::Factor;
+    switch(blend_factor)
+    {
+    case BlendFactor::Zero:                     return vk::BlendFactor::eZero;
+    case BlendFactor::One:                      return vk::BlendFactor::eOne;
+    case BlendFactor::SourceColor:              return vk::BlendFactor::eSrcColor;
+    case BlendFactor::OneMinusSourceColor:      return vk::BlendFactor::eOneMinusSrcColor;
+    case BlendFactor::SourceAlpha:              return vk::BlendFactor::eSrcAlpha;
+    case BlendFactor::OneMinusSourceAlpha:      return vk::BlendFactor::eOneMinusSrcAlpha;
+    case BlendFactor::DestinationColor:         return vk::BlendFactor::eDstColor;
+    case BlendFactor::OneMinusDestinationColor: return vk::BlendFactor::eOneMinusDstColor;
+    case BlendFactor::DestinationAlpha:         return vk::BlendFactor::eDstAlpha;
+    case BlendFactor::OneMinusDestinationAlpha: return vk::BlendFactor::eOneMinusDstAlpha;
+    case BlendFactor::SourceAlphaSaturated:     return vk::BlendFactor::eSrcAlphaSaturate;
+    case BlendFactor::BlendColor:               return vk::BlendFactor::eConstantColor;
+    case BlendFactor::OneMinusBlendColor:       return vk::BlendFactor::eOneMinusConstantColor;
+    case BlendFactor::BlendAlpha:               return vk::BlendFactor::eConstantAlpha;
+    case BlendFactor::OneMinusBlendAlpha:       return vk::BlendFactor::eOneMinusConstantAlpha;
+    case BlendFactor::Source1Color:             return vk::BlendFactor::eSrc1Color;
+    case BlendFactor::OneMinusSource1Color:     return vk::BlendFactor::eOneMinusSrc1Color;
+    case BlendFactor::Source1Alpha:             return vk::BlendFactor::eSrc1Alpha;
+    case BlendFactor::OneMinusSource1Alpha:     return vk::BlendFactor::eOneMinusSrc1Alpha;
+    default:
+        META_UNEXPECTED_ARG_RETURN(blend_factor, vk::BlendFactor::eZero);
+    }
+}
+
+[[nodiscard]]
+vk::BlendOp BlendingOperationToVulkan(RenderState::Blending::Operation blend_operation)
+{
+    META_FUNCTION_TASK();
+    using BlendOperation = RenderState::Blending::Operation;
+    switch(blend_operation)
+    {
+    case BlendOperation::Add:               return vk::BlendOp::eAdd;
+    case BlendOperation::Subtract:          return vk::BlendOp::eSubtract;
+    case BlendOperation::ReverseSubtract:   return vk::BlendOp::eReverseSubtract;
+    case BlendOperation::Minimum:           return vk::BlendOp::eMin;
+    case BlendOperation::Maximum:           return vk::BlendOp::eMax;
+    default:
+        META_UNEXPECTED_ARG_RETURN(blend_operation, vk::BlendOp::eAdd);
+    }
+}
+
+[[nodiscard]]
+vk::ColorComponentFlags BlendingColorChannelsToVulkan(RenderState::Blending::ColorChannels color_channels)
+{
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+    using ColorChannels = RenderState::Blending::ColorChannels;
+
+    vk::ColorComponentFlags color_component_flags{};
+    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Red))
+        color_component_flags |= vk::ColorComponentFlagBits::eR;
+
+    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Green))
+        color_component_flags |= vk::ColorComponentFlagBits::eG;
+
+    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Blue))
+        color_component_flags |= vk::ColorComponentFlagBits::eB;
+
+    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Alpha))
+        color_component_flags |= vk::ColorComponentFlagBits::eA;
+
+    return color_component_flags;
+}
 
 [[nodiscard]]
 static vk::Viewport ViewportToVulkan(const Viewport& viewport) noexcept
@@ -149,9 +288,100 @@ void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
-
     RenderStateBase::Reset(settings);
-    ResetNativeState();
+
+    vk::PipelineRasterizationStateCreateInfo rasterizer_info(
+        vk::PipelineRasterizationStateCreateFlags{},
+        false, // depthClampEnable
+        false, // rasterizerDiscardEnable
+        RasterizerFillModeToVulkan(settings.rasterizer.fill_mode),
+        RasterizerCullModeToVulkan(settings.rasterizer.cull_mode),
+        settings.rasterizer.is_front_counter_clockwise ? vk::FrontFace::eCounterClockwise : vk::FrontFace::eClockwise,
+        false, // depthBiasEnable
+        0.F,   // depthBiasConstantFactor
+        0.F,   // depthBiasClamp
+        0.F,   // depthBiasSlopeFactor
+        1.F    // lineWidth
+    );
+
+    vk::PipelineMultisampleStateCreateInfo multisample_info(
+        vk::PipelineMultisampleStateCreateFlags{},
+        RasterizerSampleCountToVulkan(settings.rasterizer.sample_count),
+        false,   // sampleShadingEnable
+        1.F,     // minSampleShading
+        nullptr, // pSampleMask
+        settings.rasterizer.alpha_to_coverage_enabled,
+        false    // alphaToOneEnable
+    );
+
+    vk::PipelineDepthStencilStateCreateInfo depth_stencil_info(
+        vk::PipelineDepthStencilStateCreateFlags{},
+        settings.depth.enabled,
+        settings.depth.write_enabled,
+        TypeConverterVK::CompareFunctionToVulkan(settings.depth.compare),
+        false, // depthBoundsTestEnable
+        settings.stencil.enabled,
+        vk::StencilOpState( // front face
+            StencilOperationToVulkan(settings.stencil.front_face.stencil_failure),
+            StencilOperationToVulkan(settings.stencil.front_face.stencil_pass),
+            StencilOperationToVulkan(settings.stencil.front_face.depth_failure),
+            TypeConverterVK::CompareFunctionToVulkan(settings.stencil.front_face.compare),
+            0U, // compareMask
+            0U, // writeMask
+            0U  // reference
+        ),
+        vk::StencilOpState( // back face
+            StencilOperationToVulkan(settings.stencil.back_face.stencil_failure),
+            StencilOperationToVulkan(settings.stencil.back_face.stencil_pass),
+            StencilOperationToVulkan(settings.stencil.back_face.depth_failure),
+            TypeConverterVK::CompareFunctionToVulkan(settings.stencil.back_face.compare),
+            0U, // compareMask
+            0U, // writeMask
+            0U  // reference
+        ),
+        0.F, // minDepthBounds
+        0.F  // maxDepthBounds
+    );
+
+    const size_t blend_attachments_count = settings.blending.is_independent
+                                         ? settings.program_ptr->GetSettings().color_formats.size()
+                                         : 1;
+    std::vector<vk::PipelineColorBlendAttachmentState> attachment_blend_states;
+    std::transform(settings.blending.render_targets.begin(),
+                   settings.blending.render_targets.begin() + blend_attachments_count,
+                   std::back_inserter(attachment_blend_states),
+        [](const Blending::RenderTarget& rt_blending)
+        {
+            return vk::PipelineColorBlendAttachmentState(
+                rt_blending.blend_enabled,
+                BlendingFactorToVulkan(rt_blending.source_rgb_blend_factor),
+                BlendingFactorToVulkan(rt_blending.dest_rgb_blend_factor),
+                BlendingOperationToVulkan(rt_blending.rgb_blend_op),
+                BlendingFactorToVulkan(rt_blending.source_alpha_blend_factor),
+                BlendingFactorToVulkan(rt_blending.dest_alpha_blend_factor),
+                BlendingOperationToVulkan(rt_blending.alpha_blend_op),
+                BlendingColorChannelsToVulkan(rt_blending.write_mask)
+            );
+        }
+    );
+
+    vk::PipelineColorBlendStateCreateInfo blending_info(
+        vk::PipelineColorBlendStateCreateFlags{},
+        false, // logicOpEnable
+        vk::LogicOp::eCopy,
+        attachment_blend_states,
+        settings.blending_color.AsArray()
+    );
+
+    const std::vector<vk::DynamicState> dynamic_states = {
+        vk::DynamicState::eViewport,
+        vk::DynamicState::eScissor,
+        vk::DynamicState::ePrimitiveTopologyEXT,
+    };
+    vk::PipelineDynamicStateCreateInfo dynamic_info(
+        vk::PipelineDynamicStateCreateFlags{},
+        dynamic_states
+    );
 }
 
 void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Groups /*state_groups*/)
@@ -162,15 +392,7 @@ void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Groups /*stat
 void RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     RenderStateBase::SetName(name);
-    
-    ResetNativeState();
-}
-
-void RenderStateVK::ResetNativeState()
-{
-    META_FUNCTION_TASK();
 }
 
 const IContextVK& RenderStateVK::GetContextVK() const noexcept

@@ -58,4 +58,21 @@ vk::Format TypeConverterVK::PixelFormatToVulkan(PixelFormat pixel_format)
     }
 }
 
+vk::CompareOp TypeConverterVK::CompareFunctionToVulkan(Compare compare_func)
+{
+    META_FUNCTION_TASK();
+    switch (compare_func)
+    {
+    case Compare::Never:        return vk::CompareOp::eNever;
+    case Compare::Always:       return vk::CompareOp::eAlways;
+    case Compare::Less:         return vk::CompareOp::eLess;
+    case Compare::LessEqual:    return vk::CompareOp::eLessOrEqual;
+    case Compare::Greater:      return vk::CompareOp::eGreater;
+    case Compare::GreaterEqual: return vk::CompareOp::eGreaterOrEqual;
+    case Compare::Equal:        return vk::CompareOp::eEqual;
+    case Compare::NotEqual:     return vk::CompareOp::eNotEqual;
+    default:                    META_UNEXPECTED_ARG_RETURN(compare_func, vk::CompareOp::eNever);
+    }
+}
+
 } // namespace Methane::Graphics

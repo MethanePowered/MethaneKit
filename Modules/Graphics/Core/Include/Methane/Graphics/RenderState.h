@@ -187,7 +187,7 @@ public:
         struct FaceOperations
         {
             Operation  stencil_failure   = Operation::Keep;
-            Operation  stencil_pass      = Operation::Keep; // DX only
+            Operation  stencil_pass      = Operation::Keep; // DX, VK only
             Operation  depth_failure     = Operation::Keep;
             Operation  depth_stencil_pass= Operation::Keep; // Metal only
             Compare    compare           = Compare::Always;
