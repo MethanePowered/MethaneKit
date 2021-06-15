@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: MethaneKit/Apps/Tutorials/03-ShadowCube/Shaders/ShadowCube.hlsl
+FILE: MethaneKit/Apps/Tutorials/04-ShadowCube/Shaders/ShadowCube.hlsl
 Shaders for shadow and final pass rendering of textured cube
 with Phong lighting model and simple shadows
 

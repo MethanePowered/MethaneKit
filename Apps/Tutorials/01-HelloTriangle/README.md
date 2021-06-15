@@ -289,5 +289,5 @@ Now you have all in one application executable/bundle running on Windows & MacOS
 
 ## Continue learning
 
-Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../02-TexturedCube), 
-which is demonstrating simple mesh drawing with phong lighting and texturing.
+Continue learning Methane Graphics programming in the next tutorial [Hello Cube](../02-HelloCube), 
+which is demonstrating cube mesh drawing using vertex and index buffers.

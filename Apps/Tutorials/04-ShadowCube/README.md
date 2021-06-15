@@ -797,5 +797,5 @@ set_target_properties(${TARGET}
 
 ## Continue learning
 
-Continue learning Methane Graphics programming in the next tutorial [Typography](../04-Typography), which is demonstrating
+Continue learning Methane Graphics programming in the next tutorial [Typography](../05-Typography), which is demonstrating
 text rendering using dynamic font atlas textures.

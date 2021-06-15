@@ -9,7 +9,7 @@ set(SOURCES
     TexturedCubeApp.cpp
 )
 
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Cube.hlsl)
+set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/TexturedCube.hlsl)
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
 

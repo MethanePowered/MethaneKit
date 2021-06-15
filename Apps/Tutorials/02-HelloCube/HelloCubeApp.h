@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: HelloTriangleApp.cpp
-Tutorial demonstrating triangle rendering with Methane graphics API
+FILE: HelloCubeApp.cpp
+Tutorial demonstrating colored cube rendering with Methane graphics API
 
 ******************************************************************************/
 
@@ -34,7 +34,7 @@ namespace Methane::Tutorials
 
 namespace gfx = Methane::Graphics;
 
-struct HelloTriangleFrame final : gfx::AppFrame
+struct HelloCubeFrame final : gfx::AppFrame
 {
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
@@ -42,13 +42,13 @@ struct HelloTriangleFrame final : gfx::AppFrame
     using gfx::AppFrame::AppFrame;
 };
 
-using UserInterfaceApp = UserInterface::App<HelloTriangleFrame>;
+using UserInterfaceApp = UserInterface::App<HelloCubeFrame>;
 
-class HelloTriangleApp final : public UserInterfaceApp
+class HelloCubeApp final : public UserInterfaceApp
 {
 public:
-    HelloTriangleApp();
-    ~HelloTriangleApp() override;
+    HelloCubeApp();
+    ~HelloCubeApp() override;
 
     // GraphicsApp overrides
     void Init() override;

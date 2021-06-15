@@ -628,5 +628,5 @@ target_link_libraries(${TARGET}
 
 ## Continue learning
 
-Continue learning Methane Graphics programming in the next tutorial [Shadow Cube](../03-ShadowCube), which is demonstrating
+Continue learning Methane Graphics programming in the next tutorial [Shadow Cube](../04-ShadowCube), which is demonstrating
 multi-pass rendering for drawing simple shadows.
