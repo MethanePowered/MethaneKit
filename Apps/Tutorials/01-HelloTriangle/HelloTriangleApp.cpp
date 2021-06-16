@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_render_state_ptr;
-    Ptr<BufferSet>   m_vertex_buffer_set_ptr;
 
 public:
     HelloTriangleApp() : GraphicsApp(
@@ -70,23 +69,6 @@ public:
     {
         GraphicsApp::Init();
 
-        struct Vertex { RawVector3F position; RawVector3F color; };
-        const std::array<Vertex, 3> triangle_vertices{ {
-            { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
-            { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
-            { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
-        } };
-
-        const auto vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        vertex_buffer_ptr->SetData(
-            Resource::SubResources
-            {
-                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
-            }
-        );
-        m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
@@ -98,14 +80,8 @@ public:
                             Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
                             Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
                         },
-                        Program::InputBufferLayouts
-                        {
-                            Program::InputBufferLayout
-                            {
-                                Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" },
-                            }
-                        },
-                        Program::ArgumentAccessors { },
+                        Program::InputBufferLayouts{ },
+                        Program::ArgumentAccessors{ },
                         PixelFormats { GetRenderContext().GetSettings().color_format }
                     }
                 )
@@ -129,7 +105,6 @@ public:
         const HelloTriangleFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.render_cmd_list_ptr->Commit();
 
@@ -141,7 +116,6 @@ public:
 
     void OnContextReleased(Context& context) override
     {
-        m_vertex_buffer_set_ptr.reset();
         m_render_state_ptr.reset();
 
         GraphicsApp::OnContextReleased(context);

@@ -235,7 +235,12 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
     if (m_is_validation_enabled)
     {
         const DrawingState& drawing_state = GetDrawingState();
-        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
+        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before draw call");
+        const size_t input_buffers_count = drawing_state.render_state_ptr->GetSettings().program_ptr->GetSettings().input_buffer_layouts.size();
+        META_CHECK_ARG_TRUE_DESCR(!input_buffers_count || drawing_state.vertex_buffer_set_ptr,
+                                 "vertex buffers must be set when program has non empty input buffer layouts");
+        META_CHECK_ARG_TRUE_DESCR(!drawing_state.vertex_buffer_set_ptr || drawing_state.vertex_buffer_set_ptr->GetCount() == input_buffers_count,
+                                  "vertex buffers count must be equal to the program input buffer layouts count");
         META_CHECK_ARG_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
         META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
 
@@ -283,6 +288,8 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
 {
     META_FUNCTION_TASK();
     META_UNUSED(draw_vertex_count);
+    if (!m_drawing_state.vertex_buffer_set_ptr)
+        return;
 
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)

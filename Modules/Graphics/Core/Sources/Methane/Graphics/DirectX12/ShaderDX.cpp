@@ -40,9 +40,12 @@ DirectX 12 implementation of the shader interface.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <sstream>
+#include <set>
 
 namespace Methane::Graphics
 {
+
+static const std::set<std::string> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
 [[nodiscard]]
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
@@ -235,6 +238,8 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         if (param_index < shader_desc.InputParameters - 1)
             log_ss << std::endl;
 #endif
+        if (g_skip_semantic_names.count(param_desc.SemanticName))
+            continue;
 
         const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);

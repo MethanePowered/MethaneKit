@@ -21,23 +21,29 @@ Shaders for colored triangle rendering
 
 ******************************************************************************/
 
-struct VSInput
-{
-    float3 position : POSITION;
-    float3 color    : COLOR;
-};
-
 struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color    : COLOR;
 };
 
-PSInput TriangleVS(VSInput input)
+PSInput TriangleVS(uint vertex_id : SV_VertexID)
 {
+    const float4 positions[3] = {
+        {  0.0F,  0.5F, 0.0F, 1.F },
+        {  0.5F, -0.5F, 0.0F, 1.F },
+        { -0.5F, -0.5F, 0.0F, 1.F },
+    };
+
+    const float4 colors[3] = {
+        { 1.0F, 0.0F, 0.0F, 1.F },
+        { 0.0F, 1.0F, 0.0F, 1.F },
+        { 0.0F, 0.0F, 1.0F, 1.F },
+    };
+
     PSInput output;
-    output.position = float4(input.position, 1.F);
-    output.color    = float4(input.color, 1.F);
+    output.position = positions[vertex_id];
+    output.color    = colors[vertex_id];
     return output;
 }
 
