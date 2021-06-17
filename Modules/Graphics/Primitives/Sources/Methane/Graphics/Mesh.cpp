@@ -82,12 +82,12 @@ Data::Size Mesh::GetColorsCount() noexcept
 const Mesh::Color& Mesh::GetColor(size_t index)
 {
     static const std::array<Mesh::Color, g_colors_count> s_colors{{
-        { 1.0F, 0.0F, 0.0F, 1.0F },
-        { 0.0F, 1.0F, 0.0F, 1.0F },
-        { 0.0F, 0.0F, 1.0F, 1.0F },
-        { 1.0F, 0.0F, 1.0F, 1.0F },
-        { 1.0F, 1.0F, 0.0F, 1.0F },
-        { 0.0F, 1.0F, 1.0F, 1.0F },
+        { 1.0F, 0.0F, 0.0F },
+        { 0.0F, 1.0F, 0.0F },
+        { 0.0F, 0.0F, 1.0F },
+        { 1.0F, 0.0F, 1.0F },
+        { 1.0F, 1.0F, 0.0F },
+        { 0.0F, 1.0F, 1.0F },
     }};
     return s_colors[index];
 }

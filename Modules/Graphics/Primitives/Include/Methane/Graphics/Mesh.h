@@ -40,7 +40,7 @@ public:
     using Position   = Data::RawVector3F;
     using Position2D = Data::RawVector2F;
     using Normal     = Data::RawVector3F;
-    using Color      = Data::RawVector4F;
+    using Color      = Data::RawVector3F;
     using TexCoord   = Data::RawVector2F;
     using Index      = uint16_t;
     using Indices    = std::vector<Index>;
