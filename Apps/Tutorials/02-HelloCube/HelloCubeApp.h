@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ namespace gfx = Methane::Graphics;
 
 struct HelloCubeFrame final : gfx::AppFrame
 {
+    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
+    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
@@ -52,14 +54,31 @@ public:
 
     // GraphicsApp overrides
     void Init() override;
+    bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
+    bool Update() override;
     bool Render() override;
 
     // IContextCallback interface
     void OnContextReleased(gfx::Context& context) override;
 
 private:
+    struct META_UNIFORM_ALIGN Uniforms
+    {
+        hlslpp::float4x4 mvp_matrix;
+    };
+
+    bool Animate(double elapsed_seconds, double delta_seconds);
+
+    hlslpp::float4x4      m_model_matrix;
+    Uniforms              m_shader_uniforms { };
+    gfx::Camera           m_camera;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>      m_index_buffer_ptr;
+
+    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+    };
 };
 
 } // namespace Methane::Tutorials

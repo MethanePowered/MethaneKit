@@ -33,10 +33,17 @@ struct PSInput
     float4 color    : COLOR;
 };
 
+struct Uniforms
+{
+    float4x4 mvp_matrix;
+};
+
+ConstantBuffer<Uniforms> g_uniforms : register(b1);
+
 PSInput CubeVS(VSInput input)
 {
     PSInput output;
-    output.position = float4(input.position, 1.F);
+    output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
     output.color    = float4(input.color, 1.F);
     return output;
 }

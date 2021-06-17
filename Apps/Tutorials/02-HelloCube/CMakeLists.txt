@@ -9,7 +9,7 @@ set(SOURCES
 )
 
 set(SHADERS_HLSL
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Cube.hlsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ColoredCube.hlsl"
 )
 
 add_methane_application(${TARGET}

@@ -2,7 +2,7 @@
 
 | Windows (DirectX 12) | MacOS (Metal) |
 | -------------------- | ------------- |
-| Hello Cube on Windows | Hello Cube on MacOS |
+| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | Hello Cube on MacOS |
 
 This tutorial application demonstrates colored cube rendering 
 
