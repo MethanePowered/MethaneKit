@@ -138,8 +138,8 @@ public:
 
     // RenderContext interface
     [[nodiscard]] bool ReadyToRender() const override                                   { return false; }
-    void Resize(const FrameSize&) override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Present() override                                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Resize(const FrameSize&) override                                              { throw Methane::NotImplementedException("Resize"); }
+    void Present() override                                                             { throw Methane::NotImplementedException("Present"); }
     [[nodiscard]] Platform::AppView GetAppView() const override                         { return { }; }
     [[nodiscard]] const Settings&   GetSettings() const noexcept override               { return m_settings; }
     [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override       { return 0U; }
@@ -157,18 +157,18 @@ public:
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override           { return m_executor; }
     [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override              { return m_object_registry; }
     void RequestDeferredAction(DeferredAction) const noexcept override                  { }
-    void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void CompleteInitialization() override                                              { throw Methane::NotImplementedException("CompleteInitialization"); }
     [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
-    void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void WaitForGpu(WaitFor) override                                                   { throw Methane::NotImplementedException("WaitForGpu"); }
+    void Reset(Device&) override                                                        { throw Methane::NotImplementedException("Reset"); }
+    void Reset() override                                                               { throw Methane::NotImplementedException("Reset"); }
 
     [[nodiscard]] const Device& GetDevice() const override                              { return m_fake_device; }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // Object interface
-    void SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetName(const std::string&) override                                           { throw Methane::NotImplementedException("SetName"); }
     [[nodiscard]] const std::string& GetName() const noexcept override                  { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return nullptr; }
 

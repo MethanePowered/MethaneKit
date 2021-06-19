@@ -105,6 +105,7 @@ public:
         Data::Index m_mip_level;
     };
 
+    SubResource() = default;
     explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
     SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
     ~SubResource() = default;
