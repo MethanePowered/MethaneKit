@@ -37,8 +37,7 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    Ptr<gfx::RenderPass>                initial_screen_pass_ptr;
-    Ptr<gfx::RenderPass>                final_screen_pass_ptr;
+    Ptr<gfx::RenderPass>                asteroids_pass_ptr;
     Ptr<gfx::ParallelRenderCommandList> parallel_cmd_list_ptr;
     Ptr<gfx::RenderCommandList>         serial_cmd_list_ptr;
     Ptr<gfx::RenderCommandList>         final_cmd_list_ptr;
@@ -118,7 +117,8 @@ private:
     gfx::Resource::SubResources       m_scene_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
     };
-    
+
+    Ptr<gfx::RenderPattern>           m_asteroids_render_pattern_ptr;
     Ptr<gfx::Buffer>                  m_const_buffer_ptr;
     Ptr<gfx::SkyBox>                  m_sky_box_ptr;
     Ptr<Planet>                       m_planet_ptr;

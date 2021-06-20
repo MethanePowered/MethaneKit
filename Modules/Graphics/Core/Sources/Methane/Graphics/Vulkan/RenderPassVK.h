@@ -33,7 +33,7 @@ struct IContextVK;
 class RenderPassVK final : public RenderPassBase
 {
 public:
-    RenderPassVK(const RenderContextBase& context, const Settings& settings);
+    RenderPassVK(RenderPatternBase& render_pattern, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;

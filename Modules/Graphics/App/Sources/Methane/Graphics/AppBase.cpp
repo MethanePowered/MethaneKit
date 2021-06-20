@@ -88,6 +88,39 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     m_context_ptr->SetName("Graphics Context");
     m_context_ptr->Connect(*this);
 
+    // Fill initial screen render-pass pattern settings
+    m_screen_pass_pattern_settings.shader_access_mask = m_settings.screen_pass_access;
+    m_screen_pass_pattern_settings.is_final_pass      = true;
+
+    // Final frame color attachment
+    Data::Index attachment_index = 0U;
+    m_screen_pass_pattern_settings.color_attachments = {
+        RenderPass::ColorAttachment(
+            attachment_index++,
+            m_initial_context_settings.color_format, 1U,
+            m_initial_context_settings.clear_color.has_value()
+            ? RenderPass::Attachment::LoadAction::Clear
+            : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::Store,
+            m_initial_context_settings.clear_color.value_or(Color4F())
+        )
+    };
+
+    // Create frame depth texture and attachment description
+    if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
+    {
+        static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
+        m_screen_pass_pattern_settings.depth_attachment = RenderPass::DepthAttachment(
+            attachment_index++,
+            m_initial_context_settings.depth_stencil_format, 1U,
+            m_initial_context_settings.clear_depth_stencil.has_value()
+            ? RenderPass::Attachment::LoadAction::Clear
+            : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::DontCare,
+            m_initial_context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
+        );
+    }
+
     AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });
 
     SetFullScreen(m_initial_context_settings.is_full_screen);
@@ -107,17 +140,20 @@ void AppBase::Init()
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
     const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
 
-    // Create depth texture for FB rendering
+    // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
         m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(*m_context_ptr);
         m_depth_texture_ptr->SetName("Depth Texture");
     }
 
+    // Create screen render pass pattern
+    m_screen_pass_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+
     m_view_state_ptr = ViewState::Create({
-         { GetFrameViewport(context_settings.frame_size)    },
-         { GetFrameScissorRect(context_settings.frame_size) }
-     });
+        { GetFrameViewport(context_settings.frame_size)    },
+        { GetFrameScissorRect(context_settings.frame_size) }
+    });
 
     Platform::App::Init();
 }
@@ -243,36 +279,26 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture) const
+Texture::Locations AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(frame_buffer_texture);
+    Texture::Locations attachments{
+        Texture::Location(frame_buffer_texture)
+    };
 
-    const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
-    static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
+    if (m_depth_texture_ptr)
+        attachments.push_back(Texture::Location(*m_depth_texture_ptr));
 
-    return RenderPass::Create(*m_context_ptr, {
-        {
-            RenderPass::ColorAttachment(
-                Texture::Location{ frame_buffer_texture },
-                context_settings.clear_color.has_value()
-                    ? RenderPass::Attachment::LoadAction::Clear
-                    : RenderPass::Attachment::LoadAction::DontCare,
-                RenderPass::Attachment::StoreAction::Store,
-                context_settings.clear_color.value_or(Color4F())
-            )
-        },
-        RenderPass::DepthAttachment(
-            Texture::Location{ m_depth_texture_ptr },
-            context_settings.clear_depth_stencil.has_value()
-                ? RenderPass::Attachment::LoadAction::Clear
-                : RenderPass::Attachment::LoadAction::DontCare,
-            RenderPass::Attachment::StoreAction::DontCare,
-            context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
-        ),
-        RenderPass::StencilAttachment(),
-        m_settings.screen_pass_access,
-        true // final render pass
+    return attachments;
+}
+
+Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_context_ptr);
+    return RenderPass::Create(GetScreenPassPattern(), {
+        GetScreenPassAttachments(frame_buffer_texture),
+        m_context_ptr->GetSettings().frame_size
     });
 }
 
@@ -330,6 +356,7 @@ void AppBase::OnContextReleased(Context&)
     m_restore_animations_enabled = m_settings.animations_enabled;
     SetBaseAnimationsEnabled(false);
 
+    m_screen_pass_pattern_ptr.reset();
     m_depth_texture_ptr.reset();
     m_view_state_ptr.reset();
 

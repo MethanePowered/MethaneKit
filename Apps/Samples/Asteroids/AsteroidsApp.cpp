@@ -94,8 +94,7 @@ static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_acti
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 {
     META_FUNCTION_TASK();
-    initial_screen_pass_ptr->ReleaseAttachmentTextures();
-    final_screen_pass_ptr->ReleaseAttachmentTextures();
+    asteroids_pass_ptr->ReleaseAttachmentTextures();
     AppFrame::ReleaseScreenPassAttachmentTextures();
 }
 
@@ -191,6 +190,17 @@ void AsteroidsApp::Init()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Init");
 
+    gfx::RenderPattern::Settings& screen_pass_pattern_settings = GetScreenPassPatternSettings();
+
+    // Create asteroids render pass pattern
+    gfx::RenderPattern::Settings asteroids_render_pattern_settings = screen_pass_pattern_settings;
+    asteroids_render_pattern_settings.depth_attachment->store_action = gfx::RenderPass::Attachment::StoreAction::Store;
+    m_asteroids_render_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), asteroids_render_pattern_settings);
+
+    // Modify initial settings of the screen render-pass so that color and depth attachments are reused from initial asteroids render pass
+    screen_pass_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
+    screen_pass_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Load;
+
     UserInterfaceApp::Init();
 
     gfx::RenderContext& context = GetRenderContext();
@@ -247,30 +257,22 @@ void AsteroidsApp::Init()
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())
     {
-        // Create initial screen pass for asteroids rendering
-        gfx::RenderPass::Settings initial_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
-        initial_screen_pass_settings.depth_attachment.store_action = gfx::RenderPass::Attachment::StoreAction::Store;
-        frame.initial_screen_pass_ptr = gfx::RenderPass::Create(context, initial_screen_pass_settings);
-
-        // Create final screen pass for sky-box and planet rendering
-        gfx::RenderPass::Settings final_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
-        final_screen_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
-        final_screen_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
-        frame.final_screen_pass_ptr = gfx::RenderPass::Create(context, final_screen_pass_settings);
+        // Create asteroids render pass
+        frame.asteroids_pass_ptr = gfx::RenderPass::Create(*m_asteroids_render_pattern_ptr, frame.screen_pass_ptr->GetSettings());
 
         // Create parallel command list for asteroids rendering
-        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
+        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.asteroids_pass_ptr);
         frame.parallel_cmd_list_ptr->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.parallel_cmd_list_ptr->SetName(IndexedName("Parallel Rendering", frame.index));
         frame.parallel_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
-        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
+        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.asteroids_pass_ptr);
         frame.serial_cmd_list_ptr->SetName(IndexedName("Serial Rendering", frame.index));
         frame.serial_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
-        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.final_screen_pass_ptr);
+        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.final_cmd_list_ptr->SetName(IndexedName("Final Rendering", frame.index));
         frame.final_cmd_list_ptr->SetValidationEnabled(false);
 
@@ -324,17 +326,15 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Update frame buffer and depth textures in initial & final render passes
     for (const AsteroidsFrame& frame : GetFrames())
     {
-        META_CHECK_ARG_NOT_NULL(frame.initial_screen_pass_ptr);
-        gfx::RenderPass::Settings initial_pass_settings             = frame.initial_screen_pass_ptr->GetSettings();
-        initial_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
-        initial_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
-        frame.initial_screen_pass_ptr->Update(initial_pass_settings);
-        
-        META_CHECK_ARG_NOT_NULL(frame.final_screen_pass_ptr);
-        gfx::RenderPass::Settings final_pass_settings             = frame.final_screen_pass_ptr->GetSettings();
-        final_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
-        final_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
-        frame.final_screen_pass_ptr->Update(final_pass_settings);
+        META_CHECK_ARG_NOT_NULL(frame.asteroids_pass_ptr);
+        gfx::RenderPass::Settings asteroids_pass_settings{
+            {
+                gfx::Texture::Location(*frame.screen_texture_ptr),
+                gfx::Texture::Location(GetDepthTexture())
+            },
+            frame_size
+        };
+        frame.asteroids_pass_ptr->Update(asteroids_pass_settings);
     }
 
     m_view_camera.Resize({ static_cast<float>(frame_size.GetWidth()), static_cast<float>(frame_size.GetHeight()) });
@@ -417,6 +417,7 @@ void AsteroidsApp::OnContextReleased(gfx::Context& context)
     m_planet_ptr.reset();
     m_asteroids_array_ptr.reset();
     m_const_buffer_ptr.reset();
+    m_asteroids_render_pattern_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

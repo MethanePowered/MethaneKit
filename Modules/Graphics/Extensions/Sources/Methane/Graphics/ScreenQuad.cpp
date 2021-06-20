@@ -197,13 +197,13 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {
-        { { Shader::Type::Pixel, "g_constants" }, { { m_const_buffer_ptr    } } }
+        { { Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { m_texture_ptr         } });
-        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { m_texture_sampler_ptr } });
+        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { *m_texture_ptr         } });
+        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { *m_texture_sampler_ptr } });
     }
 
     m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_locations);
@@ -257,7 +257,7 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
         return;
 
     m_texture_ptr = texture_ptr;
-    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_texture_ptr } });
+    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_texture_ptr } });
 }
 
 const Texture& ScreenQuad::GetTexture() const

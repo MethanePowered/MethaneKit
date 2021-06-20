@@ -263,8 +263,8 @@ void ProgramBindingsDX::OnProgramArgumentBindingResourceLocationsChanged(const A
     std::set<Resource*> processed_resources;
     for(const Resource::Location& old_resource_location : old_resource_locations)
     {
-        if (!old_resource_location.IsInitialized() || old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
-             processed_resources.count(old_resource_location.GetResourcePtr().get()))
+        if (old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
+            processed_resources.count(old_resource_location.GetResourcePtr().get()))
             continue;
 
         // Check if resource is still used in new resource locations

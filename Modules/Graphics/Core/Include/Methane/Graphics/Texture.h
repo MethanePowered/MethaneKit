@@ -56,10 +56,9 @@ struct Texture : virtual Resource // NOSONAR
     class Location : public Resource::Location
     {
     public:
-        Location() = default;
-        Location(const Ptr<Texture>& texture_ptr, const SubResource::Index& subresource_index = SubResource::Index())
-            : Resource::Location(texture_ptr, subresource_index)
-            , m_texture_ptr(texture_ptr)
+        Location(Texture& texture, const SubResource::Index& subresource_index = SubResource::Index())
+            : Resource::Location(texture, subresource_index)
+            , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
         { }
 
         using Resource::Location::operator==;
@@ -72,6 +71,8 @@ struct Texture : virtual Resource // NOSONAR
         // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
         Ptr<Texture> m_texture_ptr;
     };
+
+    using Locations = std::vector<Location>;
 
     struct Settings
     {

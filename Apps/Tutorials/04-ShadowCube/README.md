@@ -145,7 +145,7 @@ private:
     - Mesh uniforms buffer `uniforms_buffer_ptr`
     - Program bindings configuration `program_bindings_ptr`
   - Render target texture `rt_texture_ptr`
-  - Render pass setup object `pass_ptr`
+  - Render pass setup object `render_pass_ptr`
   - Render command list `cmd_list_ptr`
 - Scene uniforms buffer in `scene_uniforms_buffer_ptr`
 - Command list set for execution on frame, which contains command lists from shadow and final passes
@@ -164,7 +164,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
         MeshResources               cube;
         MeshResources               floor;
         Ptr<gfx::Texture>           rt_texture_ptr;
-        Ptr<gfx::RenderPass>        pass_ptr;
+        Ptr<gfx::RenderPass>        render_pass_ptr;
         Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };
 
@@ -325,7 +325,7 @@ meshes both for shadow and final passes rendering. Program bindings are created 
 which are binding created uniform buffers to the `g_mesh_uniforms` program argument of `All` shader types
 (taking into account that there's only Vertex shader in that program).
 
-Shadow render pass `frame.shadow_pass.pass_ptr` is created without color attachments, but with depth attachment
+Shadow render pass `frame.shadow_pass.render_pass_ptr` is created without color attachments, but with depth attachment
 bound to the shadow-map texture for the current frame `frame.shadow_pass.rt_texture_ptr`.
 Depth attachment is crated with `Clear` load action to clear the depth texture with provided depth value, 
 taken from render context settings `context_settings.clear_depth_stencil->first`; and `Store` action is used to retain
@@ -357,7 +357,7 @@ rendered depth texture content for the next render pass. Render command list is 
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.pass_ptr = gfx::RenderPass::Create(GetRenderContext(), {
+        frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(GetRenderContext(), {
             { // No color attachments
             },
             gfx::RenderPass::DepthAttachment(
@@ -372,7 +372,7 @@ rendered depth texture content for the next render pass. Render command list is 
         });
 
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 ```
 
@@ -414,10 +414,10 @@ application class `Methane::Graphics::App`. Render command list is created bound
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
-        frame.final_pass.pass_ptr       = frame.screen_pass_ptr;
+        frame.final_pass.render_pass_ptr       = frame.screen_pass_ptr;
 
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.pass_ptr);
+        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 ```
 

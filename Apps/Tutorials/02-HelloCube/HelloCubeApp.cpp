@@ -123,7 +123,7 @@ void HelloCubeApp::Init()
 
         // Configure program resource bindings
         frame.program_bindings_ptr = gfx::ProgramBindings::Create(state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_uniforms" }, { { frame.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Create command list for rendering

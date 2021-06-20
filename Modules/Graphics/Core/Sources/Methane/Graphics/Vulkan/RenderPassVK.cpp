@@ -32,14 +32,20 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
+Ptr<RenderPattern> RenderPattern::Create(const RenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassVK>(dynamic_cast<const RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPatternBase>(dynamic_cast<const RenderContextBase&>(render_context), settings);
 }
 
-RenderPassVK::RenderPassVK(const RenderContextBase& context, const Settings& settings)
-    : RenderPassBase(context, settings)
+Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderPassVK>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);
+}
+
+RenderPassVK::RenderPassVK(RenderPatternBase& render_pattern, const Settings& settings)
+    : RenderPassBase(render_pattern, settings)
 {
     META_FUNCTION_TASK();
     Reset();
@@ -61,7 +67,7 @@ void RenderPassVK::Reset()
 const IContextVK& RenderPassVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetRenderContext());
+    return static_cast<const IContextVK&>(GetPatternBase().GetRenderContextBase());
 }
 
 } // namespace Methane::Graphics

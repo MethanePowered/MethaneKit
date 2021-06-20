@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-struct RenderPass : virtual Object // NOSONAR
+struct RenderPattern : virtual Object // NOSONAR
 {
     struct Attachment
     {
@@ -54,62 +54,72 @@ struct RenderPass : virtual Object // NOSONAR
             Store,
             Resolve,
         };
-        
-        Texture::Location  texture_location;
-        LoadAction         load_action  = LoadAction::DontCare;
-        StoreAction        store_action = StoreAction::DontCare;
+
+        Data::Index attachment_index = 0U;
+        PixelFormat format           = PixelFormat::Unknown;
+        Data::Size  samples_count    = 1U;
+        LoadAction  load_action      = LoadAction::DontCare;
+        StoreAction store_action     = StoreAction::DontCare;
 
         Attachment() = default;
-        Attachment(Texture::Location&& texture_location,
-                   LoadAction          load_action  = LoadAction::DontCare,
-                   StoreAction         store_action = StoreAction::DontCare);
+        Attachment(Data::Index attachment_index,
+                   PixelFormat format,
+                   Data::Size  samples_count,
+                   LoadAction  load_action  = LoadAction::DontCare,
+                   StoreAction store_action = StoreAction::DontCare);
         virtual ~Attachment() = default;
 
         [[nodiscard]] bool operator==(const Attachment& other) const;
         [[nodiscard]] bool operator!=(const Attachment& other) const;
         [[nodiscard]] virtual explicit operator std::string() const;
     };
-    
+
     struct ColorAttachment : Attachment
     {
         Color4F clear_color;
-        
-        ColorAttachment(Texture::Location&& texture_location,
-                        LoadAction          load_action  = LoadAction::DontCare,
-                        StoreAction         store_action = StoreAction::DontCare,
-                        const Color4F&      clear_color  = Color4F());
+
+        ColorAttachment(Data::Index    attachment_index,
+                        PixelFormat    format,
+                        Data::Size     samples_count,
+                        LoadAction     load_action  = LoadAction::DontCare,
+                        StoreAction    store_action = StoreAction::DontCare,
+                        const Color4F& clear_color  = Color4F());
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
         [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
         [[nodiscard]] explicit operator std::string() const final;
     };
-    
+
     using ColorAttachments = std::vector<ColorAttachment>;
-    
+
     struct DepthAttachment : Attachment
     {
         Depth clear_value = 1.F;
-        
+
         DepthAttachment() = default;
-        DepthAttachment(Texture::Location&& texture_location,
-                        LoadAction          load_action  = LoadAction::DontCare,
-                        StoreAction         store_action = StoreAction::DontCare,
-                        Depth               clear_value  = 1.F);
+        DepthAttachment(Data::Index attachment_index,
+                        PixelFormat format,
+                        Data::Size  samples_count,
+                        LoadAction  load_action  = LoadAction::DontCare,
+                        StoreAction store_action = StoreAction::DontCare,
+                        Depth       clear_value  = 1.F);
 
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
         [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
         [[nodiscard]] explicit operator std::string() const final;
     };
-    
+
     struct StencilAttachment : Attachment
     {
         Stencil clear_value = 0U;
-        
+
         StencilAttachment() = default;
-        StencilAttachment(Texture::Location&& texture_location,
-                          LoadAction          load_action  = LoadAction::DontCare,
-                          StoreAction         store_action = StoreAction::DontCare,
-                          Stencil             clear_value  = 0U);
+        StencilAttachment(Data::Index attachment_index,
+                          PixelFormat format,
+                          Data::Size  samples_count,
+                          LoadAction  load_action  = LoadAction::DontCare,
+                          StoreAction store_action = StoreAction::DontCare,
+                          Stencil     clear_value  = 0U);
 
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
         [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
@@ -128,22 +138,50 @@ struct RenderPass : virtual Object // NOSONAR
 
     struct Settings
     {
-        ColorAttachments   color_attachments;
-        DepthAttachment    depth_attachment;
-        StencilAttachment  stencil_attachment;
-        Access             shader_access_mask = Access::None;
-        bool               is_final_pass = true;
+        ColorAttachments       color_attachments;
+        Opt<DepthAttachment>   depth_attachment;
+        Opt<StencilAttachment> stencil_attachment;
+        Access                 shader_access_mask = Access::None;
+        bool                   is_final_pass = true;
 
         [[nodiscard]] bool operator==(const Settings& other) const;
         [[nodiscard]] bool operator!=(const Settings& other) const;
         [[nodiscard]] explicit operator std::string() const;
     };
 
+    // Create RenderPattern instance
+    [[nodiscard]] static Ptr<RenderPattern> Create(const RenderContext& render_context, const Settings& settings);
+
+    // RenderPattern interface
+    virtual const RenderContext& GetRenderContext() const noexcept = 0;
+    virtual const Settings&      GetSettings() const noexcept = 0;
+};
+
+struct RenderPass : virtual Object // NOSONAR
+{
+    using Pattern           = RenderPattern;
+    using Attachment        = RenderPattern::Attachment;
+    using ColorAttachment   = RenderPattern::ColorAttachment;
+    using ColorAttachments  = RenderPattern::ColorAttachments;
+    using DepthAttachment   = RenderPattern::DepthAttachment;
+    using StencilAttachment = RenderPattern::StencilAttachment;
+    using Access            = RenderPattern::Access;
+
+    struct Settings
+    {
+        Texture::Locations attachments;
+        FrameSize          frame_size;
+
+        [[nodiscard]] bool operator==(const Settings& other) const;
+        [[nodiscard]] bool operator!=(const Settings& other) const;
+    };
+
     // Create RenderPass instance
-    [[nodiscard]] static Ptr<RenderPass> Create(const RenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderPass> Create(RenderPattern& render_pattern, const Settings& settings);
 
     // RenderPass interface
-    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
+    virtual const RenderPattern& GetPattern() const noexcept = 0;
+    virtual const Settings& GetSettings() const noexcept = 0;
     virtual bool Update(const Settings& settings) = 0;
     virtual void ReleaseAttachmentTextures() = 0;
 };

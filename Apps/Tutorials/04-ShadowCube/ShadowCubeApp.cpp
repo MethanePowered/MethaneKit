@@ -204,6 +204,21 @@ void ShadowCubeApp::Init()
         { gfx::GetFrameScissorRect(g_shadow_map_size) }
     });
 
+    // Create Shadow pass pattern
+    m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
+        { // No color attachments
+        },
+        gfx::RenderPattern::DepthAttachment(
+            0U, context_settings.depth_stencil_format, 1U,
+            gfx::RenderPass::Attachment::LoadAction::Clear,
+            gfx::RenderPass::Attachment::StoreAction::Store,
+            context_settings.clear_depth_stencil->first
+        ),
+        gfx::RenderPass::StencilAttachment(),
+        gfx::RenderPass::Access::ShaderResources,
+        false // intermediate render pass
+    });
+
     // ========= Per-Frame Data =========
 
     using namespace magic_enum::bitwise_operators;
@@ -231,12 +246,12 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Create depth texture for shadow map rendering
@@ -244,22 +259,13 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.pass_ptr = gfx::RenderPass::Create(GetRenderContext(), {
-            { // No color attachments
-            },
-            gfx::RenderPass::DepthAttachment(
-                gfx::Texture::Location(frame.shadow_pass.rt_texture_ptr),
-                gfx::RenderPass::Attachment::LoadAction::Clear,
-                gfx::RenderPass::Attachment::StoreAction::Store,
-                context_settings.clear_depth_stencil->first
-            ),
-            gfx::RenderPass::StencilAttachment(),
-            gfx::RenderPass::Access::ShaderResources,
-            false // intermediate render pass
+        frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(*m_shadow_pass_pattern_ptr, {
+            { *frame.shadow_pass.rt_texture_ptr },
+            context_settings.frame_size
         });
         
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // ========= Final Pass Resources =========
@@ -274,27 +280,27 @@ void ShadowCubeApp::Init()
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(final_state_settings.program_ptr, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.cube.uniforms_buffer_ptr   } } },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { frame.scene_uniforms_buffer_ptr             } } },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { m_const_buffer_ptr                          } } },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { { frame.shadow_pass.rt_texture_ptr            } } },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { m_shadow_sampler_ptr                        } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexturePtr()         } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { m_texture_sampler_ptr                       } } },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
+            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
+            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { { *frame.shadow_pass.rt_texture_ptr           } } },
+            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { *m_shadow_sampler_ptr                       } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture()            } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr                      } } },
         }, frame.index);
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer_ptr  } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexturePtr()        } } },
+            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
         }, frame.index);
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
-        frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
-        frame.final_pass.pass_ptr       = frame.screen_pass_ptr;
+        frame.final_pass.rt_texture_ptr  = frame.screen_texture_ptr;
+        frame.final_pass.render_pass_ptr = frame.screen_pass_ptr;
         
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.pass_ptr);
+        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Rendering command lists sequence
@@ -435,6 +441,7 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     m_shadow_sampler_ptr.reset();
     m_texture_sampler_ptr.reset();
     m_const_buffer_ptr.reset();
+    m_shadow_pass_pattern_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

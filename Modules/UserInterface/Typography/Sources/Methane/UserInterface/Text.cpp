@@ -416,10 +416,10 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
     m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
-        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_uniforms_buffer_ptr } } },
-        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { const_buffer_ptr      } } },
-        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { m_atlas_texture_ptr   } } },
-        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { atlas_sampler_ptr     } } },
+        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
+        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
+        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
+        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
 }
 
@@ -461,7 +461,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_atlas_texture_ptr } });
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Atlas;
@@ -537,7 +537,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(
