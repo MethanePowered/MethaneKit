@@ -225,11 +225,7 @@ description here.
                 { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            GetScreenPassPattern().GetAttachmentFormats()
         }
     );
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
@@ -263,8 +259,10 @@ Vertex shader since it will be used for rendering to depth buffer only without c
             {
                 { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
             },
-            gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
-            context_settings.depth_stencil_format
+            gfx::AttachmentFormats{
+                { /* no color attachments, rendering to depth texture */ },
+                context_settings.depth_stencil_format
+            }
         }
     );
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");

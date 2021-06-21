@@ -45,6 +45,7 @@ public:
     // RenderPattern overrides
     const RenderContext& GetRenderContext() const noexcept final;
     const Settings&      GetSettings() const noexcept final { return m_settings; }
+    AttachmentFormats    GetAttachmentFormats() const noexcept final;
 
     const RenderContextBase& GetRenderContextBase() const noexcept { return m_render_context; }
 

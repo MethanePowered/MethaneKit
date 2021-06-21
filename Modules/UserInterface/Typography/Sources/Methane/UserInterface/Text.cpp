@@ -78,8 +78,6 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 {
     META_FUNCTION_TASK();
     m_font_ptr->Connect(*this);
-
-    const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
@@ -116,11 +114,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
-                gfx::PixelFormats
-                {
-                    context_settings.color_format
-                },
-                context_settings.depth_stencil_format
+                ui_context.GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");

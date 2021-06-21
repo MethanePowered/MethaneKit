@@ -32,20 +32,19 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings)
-    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::AttachmentFormats& attachment_formats)
+    : Planet(context, image_loader, settings, attachment_formats, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings,
+               const gfx::AttachmentFormats& attachment_formats, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")
 {
     META_FUNCTION_TASK();
-
-    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
 
     gfx::RenderState::Settings state_settings;
     state_settings.program_ptr = gfx::Program::Create(context,
@@ -67,16 +66,13 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
                 { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
                 { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            attachment_formats
         }
     );
     state_settings.program_ptr->SetName("Planet Shaders");
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
+
     m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     

@@ -360,15 +360,18 @@ void RenderStateDX::Reset(const Settings& settings)
     m_pipeline_state_desc.SampleDesc.Count      = settings.rasterizer.sample_count;
 
     // Set RTV, DSV formats for pipeline state
-    META_CHECK_ARG_LESS_DESCR(program_settings.color_formats.size(), g_max_rtv_count + 1, "number of color attachments exceeds maximum RTV count in DirectX");
+    META_CHECK_ARG_LESS_DESCR(program_settings.attachment_formats.colors.size(), g_max_rtv_count + 1,
+                              "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
-    for (PixelFormat color_format : program_settings.color_formats)
+    for (PixelFormat color_format : program_settings.attachment_formats.colors)
     {
         m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::PixelFormatToDxgi(color_format);
     }
-    m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
+    m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.attachment_formats.colors.size());
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled
+                                    ? TypeConverterDX::PixelFormatToDxgi(program_settings.attachment_formats.depth)
+                                    : DXGI_FORMAT_UNKNOWN;
 
     m_cp_pipeline_state.Reset();
 }

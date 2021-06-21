@@ -98,8 +98,8 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::RenderContext& context, const Settings& settings);
-    AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state);
+    AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats);
+    AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats, ContentState& state);
 
     [[nodiscard]] const Settings& GetSettings() const         { return m_settings; }
     [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }

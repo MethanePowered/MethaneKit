@@ -204,13 +204,13 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings)
-    : AsteroidsArray(context, settings, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats)
+    : AsteroidsArray(context, settings, attachment_formats, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats, ContentState& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(settings)
     , m_content_state_ptr(state.shared_from_this())
@@ -220,7 +220,6 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
     
-    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
@@ -247,11 +246,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& sett
                                                                      ? gfx::Program::ArgumentAccessor::Type::Constant
                                                                      : gfx::Program::ArgumentAccessor::Type::Mutable     },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            attachment_formats
         }
     );
     state_settings.program_ptr->SetName("Asteroid Shaders");

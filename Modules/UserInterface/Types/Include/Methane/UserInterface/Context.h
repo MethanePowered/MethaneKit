@@ -41,14 +41,16 @@ namespace gfx = Methane::Graphics;
 class Context
 {
 public:
-    explicit Context(gfx::RenderContext& render_context) noexcept;
+    explicit Context(gfx::RenderContext& render_context, const gfx::AttachmentFormats& attachment_formats) noexcept;
 
-    [[nodiscard]] const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_context; }
-    [[nodiscard]] gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_context; }
+    const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_context; }
 
-    [[nodiscard]] decltype(auto)   GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
-    [[nodiscard]] uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
-    [[nodiscard]] const FrameSize& GetFrameSize() const noexcept              { return m_render_context.GetSettings().frame_size; }
+    const gfx::AttachmentFormats& GetAttachmentFormats() const noexcept { return m_attachment_formats; }
+
+    double           GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
+    uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
+    const FrameSize& GetFrameSize() const noexcept              { return m_render_context.GetSettings().frame_size; }
 
     template<Units units>
     [[nodiscard]] UnitSize  GetFrameSizeIn() const noexcept
@@ -140,9 +142,10 @@ public:
     }
 
 private:
-    gfx::RenderContext&  m_render_context;
-    double               m_dots_to_pixels_factor;
-    uint32_t             m_font_resolution_dpi;
+    gfx::RenderContext&    m_render_context;
+    gfx::AttachmentFormats m_attachment_formats;
+    double                 m_dots_to_pixels_factor;
+    uint32_t               m_font_resolution_dpi;
 };
 
 } // namespace Methane::UserInterface

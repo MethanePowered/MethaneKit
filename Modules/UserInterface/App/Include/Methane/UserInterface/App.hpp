@@ -62,7 +62,9 @@ public:
         // Update parameters since they could change after parsing command line arguments
         UpdateParametersText();
         GraphicsApp::Init();
-        AppBase::InitUI(GraphicsApp::GetRenderContext(), GraphicsApp::GetFrameSize());
+        AppBase::InitUI(GraphicsApp::GetRenderContext(),
+                        GraphicsApp::GetFrameSize(),
+                        GraphicsApp::GetScreenPassPattern().GetAttachmentFormats());
     }
 
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override

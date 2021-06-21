@@ -121,11 +121,7 @@ void TexturedCubeApp::Init()
                 { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            GetScreenPassPattern().GetAttachmentFormats()
         }
     );
     state_settings.program_ptr->SetName("Textured Phong Lighting");

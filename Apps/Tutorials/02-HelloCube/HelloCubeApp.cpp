@@ -106,7 +106,7 @@ void HelloCubeApp::Init()
             {
                 { { gfx::Shader::Type::All, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
             },
-            gfx::PixelFormats{ GetRenderContext().GetSettings().color_format }
+            GetScreenPassPattern().GetAttachmentFormats()
         }
     );
     state_settings.program_ptr->SetName("Colored Cube Shading");

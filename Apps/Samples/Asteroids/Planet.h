@@ -65,7 +65,7 @@ public:
         hlslpp::float4x4 model_matrix;
     };
 
-    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::AttachmentFormats& attachment_formats);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     bool Update(double elapsed_seconds, double delta_seconds);
@@ -87,7 +87,8 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings,
+           const gfx::AttachmentFormats& attachment_formats, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

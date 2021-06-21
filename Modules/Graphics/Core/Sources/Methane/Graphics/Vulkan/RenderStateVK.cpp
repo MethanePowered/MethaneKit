@@ -344,7 +344,7 @@ void RenderStateVK::Reset(const Settings& settings)
     );
 
     const size_t blend_attachments_count = settings.blending.is_independent
-                                         ? settings.program_ptr->GetSettings().color_formats.size()
+                                         ? settings.program_ptr->GetSettings().attachment_formats.colors.size()
                                          : 1;
     std::vector<vk::PipelineColorBlendAttachmentState> attachment_blend_states;
     std::transform(settings.blending.render_targets.begin(),

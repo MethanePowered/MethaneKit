@@ -227,23 +227,28 @@ void AsteroidsApp::Init()
     });
 
     // Create planet
-    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(), Planet::Settings{
-        m_view_camera,
-        m_light_camera,
-        "Textures/Planet/Mars.jpg",             // texture_path
-        hlslpp::float3(0.F, 0.F, 0.F),          // position
-        m_scene_scale * 3.F,                    // scale
-        0.1F,                                   // spin_velocity_rps
-        true,                                   // depth_reversed
-        gfx::ImageLoader::Options::Mipmapped |  // image_options
-        gfx::ImageLoader::Options::SrgbColorSpace,
-        -1.F,                                   // lod_bias
-    });
+    const gfx::AttachmentFormats& screen_attachment_formats = GetScreenPassPattern().GetAttachmentFormats();
+    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(),
+        Planet::Settings
+        {
+            m_view_camera,
+            m_light_camera,
+            "Textures/Planet/Mars.jpg",             // texture_path
+            hlslpp::float3(0.F, 0.F, 0.F),          // position
+            m_scene_scale * 3.F,                    // scale
+            0.1F,                                   // spin_velocity_rps
+            true,                                   // depth_reversed
+            gfx::ImageLoader::Options::Mipmapped |  // image_options
+            gfx::ImageLoader::Options::SrgbColorSpace,
+            -1.F,                                   // lod_bias
+        },
+        screen_attachment_formats
+    );
 
     // Create asteroids array
     m_asteroids_array_ptr = m_asteroids_array_state_ptr
-                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
-                         : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings);
+                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, screen_attachment_formats, *m_asteroids_array_state_ptr)
+                         : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, screen_attachment_formats);
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));

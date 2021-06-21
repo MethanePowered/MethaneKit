@@ -51,7 +51,7 @@ public:
     AppBase& operator=(AppBase&&) = delete;
 
 protected:
-    void InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size);
+    void InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size, const gfx::AttachmentFormats& attachment_formats);
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
     bool UpdateUI() const;

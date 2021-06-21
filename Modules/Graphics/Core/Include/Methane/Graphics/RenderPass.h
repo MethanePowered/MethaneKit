@@ -155,6 +155,7 @@ struct RenderPattern : virtual Object // NOSONAR
     // RenderPattern interface
     virtual const RenderContext& GetRenderContext() const noexcept = 0;
     virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual AttachmentFormats GetAttachmentFormats() const noexcept = 0;
 };
 
 struct RenderPass : virtual Object // NOSONAR

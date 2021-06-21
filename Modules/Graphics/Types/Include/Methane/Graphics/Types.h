@@ -85,6 +85,13 @@ enum class PixelFormat : uint32_t
 
 using PixelFormats = std::vector<PixelFormat>;
 
+struct AttachmentFormats
+{
+    PixelFormats colors;
+    PixelFormat  depth    = PixelFormat::Unknown;
+    PixelFormat  stencil  = PixelFormat::Unknown;
+};
+
 [[nodiscard]] Data::Size GetPixelSize(PixelFormat pixel_format);
 [[nodiscard]] bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept;
 

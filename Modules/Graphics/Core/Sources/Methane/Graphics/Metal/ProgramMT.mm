@@ -56,12 +56,13 @@ ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     // Fill state color attachment descriptors matching program's pixel shader output
     // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
     uint32_t attachment_index = 0;
-    for(PixelFormat color_format : settings.color_formats)
+    for(PixelFormat color_format : settings.attachment_formats.colors)
     {
         mtl_reflection_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverterMT::DataFormatToMetalPixelType(color_format);
     }
     mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
-    mtl_reflection_state_desc.depthAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(ProgramBase::GetSettings().depth_format);
+    mtl_reflection_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(settings.attachment_formats.depth);
+    mtl_reflection_state_desc.stencilAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(settings.attachment_formats.stencil);
     
     const IContextMT& metal_context = dynamic_cast<const IContextMT&>(context);
     

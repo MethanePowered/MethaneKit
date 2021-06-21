@@ -158,11 +158,7 @@ void ShadowCubeApp::Init()
                 { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            GetScreenPassPattern().GetAttachmentFormats()
         }
     );
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
@@ -174,9 +170,23 @@ void ShadowCubeApp::Init()
 
     // ========= Shadow Pass Render & View States =========
 
-    gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
+    // Create shadow-pass render pattern
+    m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
+        { // No color attachments
+        },
+        gfx::RenderPattern::DepthAttachment(
+            0U, context_settings.depth_stencil_format, 1U,
+            gfx::RenderPass::Attachment::LoadAction::Clear,
+            gfx::RenderPass::Attachment::StoreAction::Store,
+            context_settings.clear_depth_stencil->first
+        ),
+        gfx::RenderPass::StencilAttachment(),
+        gfx::RenderPass::Access::ShaderResources,
+        false // intermediate render pass
+    });
 
     // Create shadow-pass rendering state with program
+    const gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
     gfx::RenderState::Settings shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
@@ -190,8 +200,7 @@ void ShadowCubeApp::Init()
             {
                 { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
             },
-            gfx::PixelFormats { /* no color attachments, rendering to depth texture */ },
-            context_settings.depth_stencil_format
+            m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
     );
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
@@ -202,21 +211,6 @@ void ShadowCubeApp::Init()
     m_shadow_pass.view_state_ptr = gfx::ViewState::Create({
         { gfx::GetFrameViewport(g_shadow_map_size)    },
         { gfx::GetFrameScissorRect(g_shadow_map_size) }
-    });
-
-    // Create Shadow pass pattern
-    m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
-        { // No color attachments
-        },
-        gfx::RenderPattern::DepthAttachment(
-            0U, context_settings.depth_stencil_format, 1U,
-            gfx::RenderPass::Attachment::LoadAction::Clear,
-            gfx::RenderPass::Attachment::StoreAction::Store,
-            context_settings.clear_depth_stencil->first
-        ),
-        gfx::RenderPass::StencilAttachment(),
-        gfx::RenderPass::Access::ShaderResources,
-        false // intermediate render pass
     });
 
     // ========= Per-Frame Data =========

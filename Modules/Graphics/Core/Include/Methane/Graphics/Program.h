@@ -134,8 +134,7 @@ struct Program : virtual Object // NOSONAR
         Shaders            shaders;
         InputBufferLayouts input_buffer_layouts;
         ArgumentAccessors  argument_accessors;
-        PixelFormats       color_formats;
-        PixelFormat        depth_format = PixelFormat::Unknown;
+        AttachmentFormats  attachment_formats;
     };
 
     // Create Program instance
