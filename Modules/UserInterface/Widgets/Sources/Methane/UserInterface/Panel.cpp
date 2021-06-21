@@ -32,7 +32,7 @@ namespace Methane::UserInterface
 
 Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
     : Container(ui_context, ui_rect)
-    , ScreenQuad(ui_context.GetRenderContext(),
+    , ScreenQuad(ui_context.GetRenderContext(), ui_context.GetAttachmentFormats(),
         ScreenQuad::Settings
         {
             settings.name,

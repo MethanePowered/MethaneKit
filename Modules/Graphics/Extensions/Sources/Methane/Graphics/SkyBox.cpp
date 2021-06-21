@@ -33,22 +33,20 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings)
-    : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const AttachmentFormats& attachment_formats,  const Settings& settings)
+    : SkyBox(context, image_loader, attachment_formats, settings, SphereMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const AttachmentFormats& attachment_formats, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
 
-    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Milky Way Cube Texture"));
-
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Sky-Box Texture"));
 
     RenderState::Settings state_settings;
     state_settings.program_ptr = Program::Create(context,
@@ -72,11 +70,7 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
                 { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
                 { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
             },
-            PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            attachment_formats
         }
     );
 

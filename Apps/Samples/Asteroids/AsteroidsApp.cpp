@@ -211,24 +211,26 @@ void AsteroidsApp::Init()
 
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
-        m_view_camera,
+    const gfx::AttachmentFormats& screen_attachment_formats = GetScreenPassPattern().GetAttachmentFormats();
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), screen_attachment_formats,
+        gfx::SkyBox::Settings
         {
-            "Textures/SkyBox/Galaxy/PositiveX.jpg",
-            "Textures/SkyBox/Galaxy/NegativeX.jpg",
-            "Textures/SkyBox/Galaxy/PositiveY.jpg",
-            "Textures/SkyBox/Galaxy/NegativeY.jpg",
-            "Textures/SkyBox/Galaxy/PositiveZ.jpg",
-            "Textures/SkyBox/Galaxy/NegativeZ.jpg"
-        },
-        m_scene_scale * 100.F,
-        gfx::ImageLoader::Options::Mipmapped,
-        gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
-    });
+            m_view_camera,
+            {
+                "Textures/SkyBox/Galaxy/PositiveX.jpg",
+                "Textures/SkyBox/Galaxy/NegativeX.jpg",
+                "Textures/SkyBox/Galaxy/PositiveY.jpg",
+                "Textures/SkyBox/Galaxy/NegativeY.jpg",
+                "Textures/SkyBox/Galaxy/PositiveZ.jpg",
+                "Textures/SkyBox/Galaxy/NegativeZ.jpg"
+            },
+            m_scene_scale * 100.F,
+            gfx::ImageLoader::Options::Mipmapped,
+            gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
+        });
 
     // Create planet
-    const gfx::AttachmentFormats& screen_attachment_formats = GetScreenPassPattern().GetAttachmentFormats();
-    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(),
+    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(), screen_attachment_formats,
         Planet::Settings
         {
             m_view_camera,
@@ -241,14 +243,13 @@ void AsteroidsApp::Init()
             gfx::ImageLoader::Options::Mipmapped |  // image_options
             gfx::ImageLoader::Options::SrgbColorSpace,
             -1.F,                                   // lod_bias
-        },
-        screen_attachment_formats
+        }
     );
 
     // Create asteroids array
     m_asteroids_array_ptr = m_asteroids_array_state_ptr
-                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, screen_attachment_formats, *m_asteroids_array_state_ptr)
-                         : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, screen_attachment_formats);
+                         ? std::make_unique<AsteroidsArray>(context, screen_attachment_formats, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
+                         : std::make_unique<AsteroidsArray>(context, screen_attachment_formats, m_asteroids_array_settings);
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));

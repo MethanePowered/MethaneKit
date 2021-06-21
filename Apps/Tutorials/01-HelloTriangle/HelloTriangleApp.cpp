@@ -82,7 +82,7 @@ public:
                         },
                         Program::InputBufferLayouts{ },
                         Program::ArgumentAccessors{ },
-                        PixelFormats { GetRenderContext().GetSettings().color_format }
+                        GetScreenPassPattern().GetAttachmentFormats()
                     }
                 )
             }

@@ -32,14 +32,16 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::AttachmentFormats& attachment_formats)
-    : Planet(context, image_loader, settings, attachment_formats, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader,
+               const gfx::AttachmentFormats& attachment_formats, const Settings& settings)
+    : Planet(context, image_loader, attachment_formats, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings,
-               const gfx::AttachmentFormats& attachment_formats, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader,
+               const gfx::AttachmentFormats& attachment_formats, const Settings& settings,
+               const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(context)
     , m_mesh_buffers(context, mesh, "Planet")

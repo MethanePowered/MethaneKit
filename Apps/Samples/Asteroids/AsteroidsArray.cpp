@@ -204,13 +204,13 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats)
-    : AsteroidsArray(context, settings, attachment_formats, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::AttachmentFormats& attachment_formats, const Settings& settings)
+    : AsteroidsArray(context, attachment_formats, settings, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const Settings& settings, const gfx::AttachmentFormats& attachment_formats, ContentState& state)
+AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::AttachmentFormats& attachment_formats, const Settings& settings, ContentState& state)
     : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
     , m_settings(settings)
     , m_content_state_ptr(state.shared_from_this())

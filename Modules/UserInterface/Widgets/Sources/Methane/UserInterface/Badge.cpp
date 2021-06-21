@@ -45,7 +45,7 @@ Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::stri
 
 Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Settings& settings)
     : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeIn<Units::Pixels>(), settings))
-    , ScreenQuad(ui_context.GetRenderContext(), texture_ptr,
+    , ScreenQuad(ui_context.GetRenderContext(), ui_context.GetAttachmentFormats(), texture_ptr,
         ScreenQuad::Settings
         {
             settings.name,
@@ -123,7 +123,7 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
-                         "frame size, badge size and margins units must be equal");
+                         "frame size, badge size and margin units must be equal");
 
     switch(frame_corner)
     {

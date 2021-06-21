@@ -64,12 +64,12 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shade
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(RenderContext& context, const Settings& settings)
-    : ScreenQuad(context, nullptr, settings)
+ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachment_formats, const Settings& settings)
+    : ScreenQuad(context, attachment_formats, nullptr, settings)
 {
 }
 
-ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachment_formats, const Ptr<Texture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
     , m_context(context)
     , m_texture_ptr(texture_ptr)
@@ -81,7 +81,6 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
     }
 
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
-    const RenderContext::Settings& context_settings           = context.GetSettings();
     const Shader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentAccessors     program_argument_accessors = {
         { { Shader::Type::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
@@ -115,11 +114,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, 
                     }
                 },
                 program_argument_accessors,
-                PixelFormats
-                {
-                    context_settings.color_format
-                },
-                context_settings.depth_stencil_format
+                attachment_formats
             }
         );
         state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
