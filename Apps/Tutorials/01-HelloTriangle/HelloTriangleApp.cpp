@@ -84,7 +84,8 @@ public:
                         Program::ArgumentAccessors{ },
                         GetScreenPassPattern().GetAttachmentFormats()
                     }
-                )
+                ),
+                c
             }
         );
 

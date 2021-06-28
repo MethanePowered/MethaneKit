@@ -40,18 +40,20 @@ class RenderPatternBase
     , public ObjectBase
 {
 public:
-    RenderPatternBase(const RenderContextBase& render_context, const Settings& settings);
+    RenderPatternBase(RenderContextBase& render_context, const Settings& settings);
 
     // RenderPattern overrides
-    const RenderContext& GetRenderContext() const noexcept final;
-    const Settings&      GetSettings() const noexcept final { return m_settings; }
-    AttachmentFormats    GetAttachmentFormats() const noexcept final;
+    [[nodiscard]] const RenderContext& GetRenderContext() const noexcept final;
+    [[nodiscard]] RenderContext&       GetRenderContext() noexcept final;
+    [[nodiscard]] const Settings&      GetSettings() const noexcept final { return m_settings; }
+    [[nodiscard]] AttachmentFormats    GetAttachmentFormats() const noexcept final;
 
-    const RenderContextBase& GetRenderContextBase() const noexcept { return m_render_context; }
+    [[nodiscard]] const RenderContextBase& GetRenderContextBase() const noexcept { return *m_render_context_ptr; }
+    [[nodiscard]] RenderContextBase&       GetRenderContextBase() noexcept       { return *m_render_context_ptr; }
 
 private:
-    const RenderContextBase& m_render_context;
-    Settings                 m_settings;
+    const Ptr<RenderContextBase> m_render_context_ptr;
+    Settings m_settings;
 };
 
 class RenderPassBase

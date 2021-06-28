@@ -27,11 +27,10 @@ Methane user interface context used by all widgets for rendering.
 namespace Methane::UserInterface
 {
 
-Context::Context(gfx::RenderContext& render_context, const gfx::AttachmentFormats& attachment_formats) noexcept
-    : m_render_context(render_context)
-    , m_attachment_formats(attachment_formats)
-    , m_dots_to_pixels_factor(render_context.GetContentScalingFactor())
-    , m_font_resolution_dpi(render_context.GetFontResolutionDpi())
+Context::Context(gfx::RenderPattern& render_pattern) noexcept
+    : m_render_pattern_ptr(std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr()))
+    , m_dots_to_pixels_factor(render_pattern.GetRenderContext().GetContentScalingFactor())
+    , m_font_resolution_dpi(render_pattern.GetRenderContext().GetFontResolutionDpi())
 {
     META_FUNCTION_TASK();
 }

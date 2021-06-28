@@ -164,8 +164,8 @@ RenderPattern::StencilAttachment::operator std::string() const
                        clear_value);
 }
 
-RenderPatternBase::RenderPatternBase(const RenderContextBase& render_context, const Settings& settings)
-    : m_render_context(render_context)
+RenderPatternBase::RenderPatternBase(RenderContextBase& render_context, const Settings& settings)
+    : m_render_context_ptr(std::dynamic_pointer_cast<RenderContextBase>(render_context.GetPtr()))
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -174,7 +174,13 @@ RenderPatternBase::RenderPatternBase(const RenderContextBase& render_context, co
 const RenderContext& RenderPatternBase::GetRenderContext() const noexcept
 {
     META_FUNCTION_TASK();
-    return m_render_context;
+    return *m_render_context_ptr;
+}
+
+RenderContext& RenderPatternBase::GetRenderContext() noexcept
+{
+    META_FUNCTION_TASK();
+    return *m_render_context_ptr;
 }
 
 AttachmentFormats RenderPatternBase::GetAttachmentFormats() const noexcept

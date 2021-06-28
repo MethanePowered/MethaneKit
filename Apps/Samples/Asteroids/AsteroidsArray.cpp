@@ -204,14 +204,14 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::AttachmentFormats& attachment_formats, const Settings& settings)
-    : AsteroidsArray(context, attachment_formats, settings, *std::make_shared<ContentState>(context.GetParallelExecutor(), settings))
+AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings)
+    : AsteroidsArray(render_pattern, settings, *std::make_shared<ContentState>(render_pattern.GetRenderContext().GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::AttachmentFormats& attachment_formats, const Settings& settings, ContentState& state)
-    : BaseBuffers(context, state.uber_mesh, "Asteroids Array")
+AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state)
+    : BaseBuffers(render_pattern.GetRenderContext(), state.uber_mesh, "Asteroids Array")
     , m_settings(settings)
     , m_content_state_ptr(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0U)
@@ -219,7 +219,8 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::Attachmen
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
-    
+
+    gfx::RenderContext& context = render_pattern.GetRenderContext();
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 
@@ -246,10 +247,11 @@ AsteroidsArray::AsteroidsArray(gfx::RenderContext& context, const gfx::Attachmen
                                                                      ? gfx::Program::ArgumentAccessor::Type::Constant
                                                                      : gfx::Program::ArgumentAccessor::Type::Mutable     },
             },
-            attachment_formats
+            render_pattern.GetAttachmentFormats()
         }
     );
     state_settings.program_ptr->SetName("Asteroid Shaders");
+    state_settings.render_pattern_ptr = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
     

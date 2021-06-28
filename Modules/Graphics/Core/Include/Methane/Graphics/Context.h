@@ -98,6 +98,7 @@ struct Context
     [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
+    [[nodiscard]] virtual const Object::Registry& GetObjectsRegistry() const noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;

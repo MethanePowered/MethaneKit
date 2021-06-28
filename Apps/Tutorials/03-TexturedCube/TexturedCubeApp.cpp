@@ -124,6 +124,7 @@ void TexturedCubeApp::Init()
             GetScreenPassPattern().GetAttachmentFormats()
         }
     );
+    state_settings.render_pattern_ptr = GetScreenPassPatternPtr();
     state_settings.program_ptr->SetName("Textured Phong Lighting");
     state_settings.depth.enabled = true;
 

@@ -109,6 +109,7 @@ void HelloCubeApp::Init()
             GetScreenPassPattern().GetAttachmentFormats()
         }
     );
+    state_settings.render_pattern_ptr = GetScreenPassPatternPtr();
     state_settings.program_ptr->SetName("Colored Cube Shading");
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_render_state_ptr->SetName("Colored Cube Pipeline State");

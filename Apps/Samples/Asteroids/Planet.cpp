@@ -32,30 +32,27 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader,
-               const gfx::AttachmentFormats& attachment_formats, const Settings& settings)
-    : Planet(context, image_loader, attachment_formats, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
+Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings)
+    : Planet(render_pattern, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader,
-               const gfx::AttachmentFormats& attachment_formats, const Settings& settings,
-               const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_context(context)
-    , m_mesh_buffers(context, mesh, "Planet")
+    , m_context(render_pattern.GetRenderContext())
+    , m_mesh_buffers(m_context, mesh, "Planet")
 {
     META_FUNCTION_TASK();
 
     gfx::RenderState::Settings state_settings;
-    state_settings.program_ptr = gfx::Program::Create(context,
+    state_settings.program_ptr = gfx::Program::Create(m_context,
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
-                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
+                gfx::Shader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
+                gfx::Shader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -68,19 +65,20 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
                 { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
                 { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
             },
-            attachment_formats
+            render_pattern.GetAttachmentFormats()
         }
     );
     state_settings.program_ptr->SetName("Planet Shaders");
+    state_settings.render_pattern_ptr = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
 
-    m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
+    m_render_state_ptr = gfx::RenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
-    m_texture_sampler_ptr = gfx::Sampler::Create(context, {
+    m_texture_sampler_ptr = gfx::Sampler::Create(m_context, {
         gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
         gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToEdge),
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)

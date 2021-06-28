@@ -150,12 +150,13 @@ struct RenderPattern : virtual Object // NOSONAR
     };
 
     // Create RenderPattern instance
-    [[nodiscard]] static Ptr<RenderPattern> Create(const RenderContext& render_context, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderPattern> Create(RenderContext& render_context, const Settings& settings);
 
     // RenderPattern interface
-    virtual const RenderContext& GetRenderContext() const noexcept = 0;
-    virtual const Settings&      GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual AttachmentFormats GetAttachmentFormats() const noexcept = 0;
+    [[nodiscard]] virtual const RenderContext& GetRenderContext() const noexcept = 0;
+    [[nodiscard]] virtual RenderContext&       GetRenderContext() noexcept = 0;
+    [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual AttachmentFormats    GetAttachmentFormats() const noexcept = 0;
 };
 
 struct RenderPass : virtual Object // NOSONAR

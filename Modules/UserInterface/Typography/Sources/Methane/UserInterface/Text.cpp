@@ -114,10 +114,11 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
-                ui_context.GetAttachmentFormats()
+                ui_context.GetRenderPattern().GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
+        state_settings.render_pattern_ptr                                   = ui_context.GetRenderPatternPtr();
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;

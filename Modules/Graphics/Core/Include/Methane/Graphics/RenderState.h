@@ -36,6 +36,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 struct RenderCommandList;
+struct RenderPattern;
 
 struct ViewState
 {
@@ -224,12 +225,13 @@ public:
         // NOTE: members are ordered by the usage frequency,
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
-        Ptr<Program> program_ptr;
-        Rasterizer   rasterizer;
-        Depth        depth;
-        Stencil      stencil;
-        Blending     blending;
-        Color4F      blending_color;
+        Ptr<Program>       program_ptr;
+        Ptr<RenderPattern> render_pattern_ptr;
+        Rasterizer         rasterizer;
+        Depth              depth;
+        Stencil            stencil;
+        Blending           blending;
+        Color4F            blending_color;
 
         [[nodiscard]] static Groups Compare(const Settings& left, const Settings& right, Groups compare_groups = Groups::All) noexcept;
         [[nodiscard]] bool operator==(const Settings& other) const noexcept;

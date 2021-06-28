@@ -211,8 +211,7 @@ void AsteroidsApp::Init()
 
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
-    const gfx::AttachmentFormats& screen_attachment_formats = GetScreenPassPattern().GetAttachmentFormats();
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), screen_attachment_formats,
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
         gfx::SkyBox::Settings
         {
             m_view_camera,
@@ -230,7 +229,7 @@ void AsteroidsApp::Init()
         });
 
     // Create planet
-    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(), screen_attachment_formats,
+    m_planet_ptr = std::make_shared<Planet>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
         Planet::Settings
         {
             m_view_camera,
@@ -248,8 +247,8 @@ void AsteroidsApp::Init()
 
     // Create asteroids array
     m_asteroids_array_ptr = m_asteroids_array_state_ptr
-                         ? std::make_unique<AsteroidsArray>(context, screen_attachment_formats, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
-                         : std::make_unique<AsteroidsArray>(context, screen_attachment_formats, m_asteroids_array_settings);
+                         ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
+                         : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
     const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
     const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));

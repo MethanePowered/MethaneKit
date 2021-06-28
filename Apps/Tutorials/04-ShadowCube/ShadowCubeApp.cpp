@@ -161,6 +161,7 @@ void ShadowCubeApp::Init()
             GetScreenPassPattern().GetAttachmentFormats()
         }
     );
+    final_state_settings.render_pattern_ptr = GetScreenPassPatternPtr();
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
     final_state_settings.depth.enabled = true;
 
@@ -203,7 +204,9 @@ void ShadowCubeApp::Init()
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
     );
+    shadow_state_settings.render_pattern_ptr = m_shadow_pass_pattern_ptr;
     shadow_state_settings.program_ptr->SetName("Vertex Only: Textured, Lighting");
+    shadow_state_settings.render_pattern_ptr = m_shadow_pass_pattern_ptr;
     shadow_state_settings.depth.enabled = true;
 
     m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);

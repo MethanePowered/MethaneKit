@@ -80,10 +80,10 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size, const gfx::AttachmentFormats& attachment_formats)
+void AppBase::InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(render_context, attachment_formats);
+    m_ui_context_ptr = std::make_unique<Context>(render_pattern);
     m_frame_size    = UnitSize(Units::Pixels, frame_size);
     m_text_margins  = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
 

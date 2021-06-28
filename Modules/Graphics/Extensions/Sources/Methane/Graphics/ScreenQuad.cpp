@@ -24,6 +24,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/ScreenQuad.h>
 
 #include <Methane/Graphics/Mesh/QuadMesh.hpp>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
@@ -64,14 +65,14 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shade
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachment_formats, const Settings& settings)
-    : ScreenQuad(context, attachment_formats, nullptr, settings)
+ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Settings& settings)
+    : ScreenQuad(render_pattern, nullptr, settings)
 {
 }
 
-ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachment_formats, const Ptr<Texture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
-    , m_context(context)
+    , m_render_pattern_ptr(std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr()))
     , m_texture_ptr(texture_ptr)
 {
     META_FUNCTION_TASK();
@@ -80,6 +81,7 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
         META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "screen-quad texture can not be empty when quad texturing is enabled");
     }
 
+    RenderContext& render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const Shader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentAccessors     program_argument_accessors = {
@@ -94,17 +96,17 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
     const std::string state_name = fmt::format("{} Render State", quad_name);
-    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(m_context.GetObjectsRegistry().GetGraphicsObject(state_name));
+    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(render_context.GetObjectsRegistry().GetGraphicsObject(state_name));
     if (!m_render_state_ptr)
     {
         RenderState::Settings state_settings;
-        state_settings.program_ptr = Program::Create(context,
+        state_settings.program_ptr = Program::Create(render_context,
             Program::Settings
             {
                 Program::Shaders
                 {
-                    Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
-                    Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
+                    Shader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
+                    Shader::CreatePixel( render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
                 },
                 Program::InputBufferLayouts
                 {
@@ -114,10 +116,11 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
                     }
                 },
                 program_argument_accessors,
-                attachment_formats
+                render_pattern.GetAttachmentFormats(),
             }
         );
         state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -127,10 +130,10 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
         state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
 
-        m_render_state_ptr = RenderState::Create(context, state_settings);
+        m_render_state_ptr = RenderState::Create(render_context, state_settings);
         m_render_state_ptr->SetName(state_name);
 
-        m_context.GetObjectsRegistry().AddGraphicsObject(*m_render_state_ptr);
+        render_context.GetObjectsRegistry().AddGraphicsObject(*m_render_state_ptr);
     }
 
     m_view_state_ptr = ViewState::Create({
@@ -141,25 +144,25 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
         static const std::string s_sampler_name = "Screen-Quad Sampler";
-        m_texture_sampler_ptr = std::dynamic_pointer_cast<Sampler>(m_context.GetObjectsRegistry().GetGraphicsObject(s_sampler_name));
+        m_texture_sampler_ptr = std::dynamic_pointer_cast<Sampler>(render_context.GetObjectsRegistry().GetGraphicsObject(s_sampler_name));
         if (!m_texture_sampler_ptr)
         {
-            m_texture_sampler_ptr = Sampler::Create(context, {
+            m_texture_sampler_ptr = Sampler::Create(render_context, {
                 Sampler::Filter(Sampler::Filter::MinMag::Linear),
                 Sampler::Address(Sampler::Address::Mode::ClampToZero),
             });
             m_texture_sampler_ptr->SetName(s_sampler_name);
-            m_context.GetObjectsRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
+            render_context.GetObjectsRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
         }
 
         m_texture_ptr->SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
     }
 
     static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
-    Ptr<Buffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Buffer>(m_context.GetObjectsRegistry().GetGraphicsObject(s_vertex_buffer_name));
+    Ptr<Buffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectsRegistry().GetGraphicsObject(s_vertex_buffer_name));
     if (!vertex_buffer_ptr)
     {
-        vertex_buffer_ptr = Buffer::CreateVertexBuffer(context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
+        vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName(s_vertex_buffer_name);
         vertex_buffer_ptr->SetData({
             {
@@ -167,16 +170,16 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
                 quad_mesh.GetVertexDataSize()
             }
         });
-        m_context.GetObjectsRegistry().AddGraphicsObject(*vertex_buffer_ptr);
+        render_context.GetObjectsRegistry().AddGraphicsObject(*vertex_buffer_ptr);
     }
 
     m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
-    m_index_buffer_ptr = std::dynamic_pointer_cast<Buffer>(m_context.GetObjectsRegistry().GetGraphicsObject(s_index_buffer_name));
+    m_index_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectsRegistry().GetGraphicsObject(s_index_buffer_name));
     if (!m_index_buffer_ptr)
     {
-        m_index_buffer_ptr = Buffer::CreateIndexBuffer(context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
+        m_index_buffer_ptr = Buffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetName(s_index_buffer_name);
         m_index_buffer_ptr->SetData({
             {
@@ -184,11 +187,11 @@ ScreenQuad::ScreenQuad(RenderContext& context, const AttachmentFormats& attachme
                 quad_mesh.GetIndexDataSize()
             }
         });
-        m_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
+        render_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
     const auto const_buffer_size = static_cast<Data::Size>(sizeof(ScreenQuadConstants));
-    m_const_buffer_ptr = Buffer::CreateConstantBuffer(context, Buffer::GetAlignedBufferSize(const_buffer_size));
+    m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {
@@ -273,6 +276,12 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_de
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle);
 }
 
+const RenderContext& ScreenQuad::GetRenderContext() const noexcept
+{
+    META_FUNCTION_TASK();
+    return GetRenderPattern().GetRenderContext();
+}
+
 void ScreenQuad::UpdateConstantsBuffer() const
 {
     META_FUNCTION_TASK();
@@ -288,7 +297,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
                 static_cast<Data::Size>(sizeof(constants))
             }
         },
-        &m_context.GetRenderCommandKit().GetQueue()
+        &m_render_pattern_ptr->GetRenderContext().GetRenderCommandKit().GetQueue()
     );
 }
 

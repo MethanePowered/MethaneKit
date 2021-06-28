@@ -32,10 +32,10 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderPattern> RenderPattern::Create(const RenderContext& render_context, const Settings& settings)
+Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPatternBase>(dynamic_cast<const RenderContextBase&>(render_context), settings);
+    return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
 }
 
 Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
