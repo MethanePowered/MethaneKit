@@ -85,7 +85,7 @@ public:
                         GetScreenPassPattern().GetAttachmentFormats()
                     }
                 ),
-                c
+                GetScreenPassPatternPtr()
             }
         );
 
