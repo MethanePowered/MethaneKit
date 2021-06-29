@@ -287,7 +287,6 @@ RenderStateVK::RenderStateVK(const RenderContextBase& context, const Settings& s
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
     RenderStateBase::Reset(settings);
 
     vk::PipelineRasterizationStateCreateInfo rasterizer_info(

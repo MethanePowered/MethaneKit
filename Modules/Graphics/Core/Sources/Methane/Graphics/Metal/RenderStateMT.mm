@@ -294,9 +294,8 @@ RenderStateMT::~RenderStateMT()
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
-
     RenderStateBase::Reset(settings);
+
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
 
@@ -314,7 +313,7 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
     
     // Blending state
-    const AttachmentFormats& attach_formats = metal_program.GetSettings().attachment_formats;
+    const AttachmentFormats attach_formats = settings.render_pattern_ptr->GetAttachmentFormats();
     for (uint32_t rt_index = 0; rt_index < settings.blending.render_targets.size(); ++rt_index)
     {
         const Blending::RenderTarget& render_target     = settings.blending.is_independent
