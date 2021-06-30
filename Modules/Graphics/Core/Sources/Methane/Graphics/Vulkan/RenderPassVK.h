@@ -25,23 +25,46 @@ Vulkan implementation of the render pass interface.
 
 #include <Methane/Graphics/RenderPassBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
 struct IContextVK;
+class RenderContextVK;
+
+class RenderPatternVK
+    : public RenderPatternBase
+{
+public:
+    RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
+    ~RenderPatternVK(); // NOSONAR
+
+    [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
+    [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
+
+    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept { return m_vk_render_pass; }
+
+private:
+    vk::RenderPass m_vk_render_pass;
+};
 
 class RenderPassVK final : public RenderPassBase
 {
 public:
-    RenderPassVK(RenderPatternBase& render_pattern, const Settings& settings);
+    RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
+    ~RenderPassVK(); // NOSONAR
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
     
     void Reset();
 
-private:
     const IContextVK& GetContextVK() const noexcept;
+    RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
+
+private:
+    vk::Framebuffer m_vk_frame_buffer;
 };
 
 } // namespace Methane::Graphics
