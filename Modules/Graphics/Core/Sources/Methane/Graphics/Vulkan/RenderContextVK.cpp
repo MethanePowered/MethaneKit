@@ -47,7 +47,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
-    , m_vk_surface(CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
+    , m_vk_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
 }

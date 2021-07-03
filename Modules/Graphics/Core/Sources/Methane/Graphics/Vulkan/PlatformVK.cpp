@@ -16,29 +16,26 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Linux/PlatformVK.h
-Vulkan platform dependent functions for Linux.
+FILE: Methane/Graphics/PlatformVK.cpp
+Vulkan platform dependent functions.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Vulkan/PlatformVK.h>
-#include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
+#include "PlatformVK.h"
+
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-const std::vector<std::string>& PlatformVK::GetVulkanInstanceRequiredExtensions()
+std::vector<std::string> PlatformVK::GetPlatformInstanceExtensions(const std::vector<std::string>& platform_instance_extensions)
 {
-    META_FUNCTION_TASK();
-    static const std::vector<std::string> s_instance_extensions = GetPlatformInstanceExtensions({ });
-    return s_instance_extensions;
-}
-
-vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
-{
-    META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Vulkan surface creation is not implemented for Linux.");
+    std::vector<std::string> instance_extensions = {
+        "VK_KHR_surface",
+        "VK_KHR_get_physical_device_properties2" // required by device extension VK_EXT_extended_dynamic_state
+    };
+    instance_extensions.insert(instance_extensions.end(), platform_instance_extensions.begin(), platform_instance_extensions.end());
+    return instance_extensions;
 }
 
 } // namespace Methane::Graphics

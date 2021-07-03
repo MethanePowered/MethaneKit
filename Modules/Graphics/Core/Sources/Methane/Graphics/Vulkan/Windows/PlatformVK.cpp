@@ -29,17 +29,16 @@ Vulkan platform dependent functions for Windows.
 namespace Methane::Graphics
 {
 
-const std::vector<std::string>& GetVulkanInstanceRequiredExtensions()
+const std::vector<std::string>& PlatformVK::GetVulkanInstanceRequiredExtensions()
 {
     META_FUNCTION_TASK();
-    static const std::vector<std::string> s_required_instance_extensions {
-        "VK_KHR_surface",
+    static const std::vector<std::string> s_instance_extensions = GetPlatformInstanceExtensions({
         "VK_KHR_win32_surface"
-    };
-    return s_required_instance_extensions;
+    });
+    return s_instance_extensions;
 }
 
-vk::SurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
+vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
 {
     META_FUNCTION_TASK();
     return vk_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), app_env.window_handle));

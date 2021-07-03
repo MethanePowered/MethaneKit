@@ -380,10 +380,10 @@ void RenderStateVK::Reset(const Settings& settings)
         false
     );
 
-    // Fake state, actual viewports and scissor rects are set dynamically
+    // Fake viewport state, actual state is set dynamically
     vk::PipelineViewportStateCreateInfo viewport_info(
         vk::PipelineViewportStateCreateFlags{},
-        {}
+        1, nullptr, 1, nullptr
     );
 
     const std::vector<vk::DynamicState> dynamic_states = {
@@ -400,11 +400,11 @@ void RenderStateVK::Reset(const Settings& settings)
     const auto& render_pattern = static_cast<const RenderPatternVK&>(*GetSettings().render_pattern_ptr);
 
     const vk::PipelineVertexInputStateCreateInfo vk_vertex_input_state_info = program.GetNativeVertexInputStateCreateInfo();
-    const std::vector<vk::PipelineShaderStageCreateInfo> stages_info = program.GetNativeShaderStageCreateInfos();
+    const std::vector<vk::PipelineShaderStageCreateInfo> vk_stages_info = program.GetNativeShaderStageCreateInfos();
 
     const vk::GraphicsPipelineCreateInfo vk_pipeline_create_info(
         vk::PipelineCreateFlags(),
-        stages_info,
+        vk_stages_info,
         &vk_vertex_input_state_info,
         &assembly_info,
         nullptr, // no tesselation support yet

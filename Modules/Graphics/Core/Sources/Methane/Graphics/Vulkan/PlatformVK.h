@@ -30,7 +30,16 @@ Vulkan platform dependent functions.
 namespace Methane::Graphics
 {
 
-const std::vector<std::string>& GetVulkanInstanceRequiredExtensions();
-vk::SurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& app_env);
+class PlatformVK
+{
+public:
+    PlatformVK() = delete;
+
+    static const std::vector<std::string>& GetVulkanInstanceRequiredExtensions();
+    static vk::SurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& app_env);
+
+private:
+    static std::vector<std::string> GetPlatformInstanceExtensions(const std::vector<std::string>& platform_instance_extensions);
+};
 
 } // namespace Methane::Graphics

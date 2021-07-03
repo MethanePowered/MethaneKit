@@ -28,16 +28,14 @@ Vulkan platform dependent functions for MacOS.
 namespace Methane::Graphics
 {
 
-const std::vector<std::string>& GetVulkanInstanceRequiredExtensions()
+const std::vector<std::string>& PlatformVK::GetVulkanInstanceRequiredExtensions()
 {
     META_FUNCTION_TASK();
-    static const std::vector<std::string> s_required_instance_extensions {
-        "VK_KHR_surface"
-    };
-    return s_required_instance_extensions;
+    static const std::vector<std::string> s_instance_extensions = GetPlatformInstanceExtensions({ });
+    return s_instance_extensions;
 }
 
-vk::SurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
+vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Vulkan surface creation is not implemented for MacOS.");
