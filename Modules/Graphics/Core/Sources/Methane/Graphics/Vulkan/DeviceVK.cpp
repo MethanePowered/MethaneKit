@@ -49,6 +49,10 @@ static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_valida
 static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 static const std::string g_vk_validation_extension    = "VK_EXT_validation_features";
 
+static const std::vector<std::string> g_render_device_extensions{
+    VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
+};
+
 static const std::vector<std::string> g_present_device_extensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
@@ -411,6 +415,13 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
         std::transform(g_present_device_extensions.begin(), g_present_device_extensions.end(), std::back_inserter(enabled_extension_names),
                        [](const std::string& extension_name) { return extension_name.data(); });
     }
+
+    if (magic_enum::flags::enum_contains(capabilities.features & Device::Features::BasicRendering))
+    {
+        std::transform(g_render_device_extensions.begin(), g_render_device_extensions.end(), std::back_inserter(enabled_extension_names),
+                       [](const std::string& extension_name) { return extension_name.data(); });
+    }
+
     m_vk_device = vk_physical_device.createDevice(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), vk_queue_create_infos, { }, enabled_extension_names));
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
 }

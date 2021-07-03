@@ -25,6 +25,8 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/ProgramBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -39,8 +41,14 @@ public:
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 
+    std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
+    vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
+    const vk::PipelineLayout& GetNativePipelineLayout() const noexcept { return m_vk_pipeline_layout; }
+
 private:
     const IContextVK& GetContextVK() const noexcept;
+
+    vk::PipelineLayout m_vk_pipeline_layout;
 };
 
 } // namespace Methane::Graphics

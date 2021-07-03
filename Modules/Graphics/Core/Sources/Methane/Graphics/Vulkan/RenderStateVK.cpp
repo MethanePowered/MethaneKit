@@ -22,6 +22,7 @@ Vulkan implementation of the render state interface.
 ******************************************************************************/
 
 #include "RenderStateVK.h"
+#include "RenderPassVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "RenderCommandListVK.h"
@@ -372,6 +373,19 @@ void RenderStateVK::Reset(const Settings& settings)
         settings.blending_color.AsArray()
     );
 
+    // Fake state, actual PrimitiveTopology is set dynamically
+    vk::PipelineInputAssemblyStateCreateInfo assembly_info(
+        vk::PipelineInputAssemblyStateCreateFlags{},
+        vk::PrimitiveTopology::eTriangleList,
+        false
+    );
+
+    // Fake state, actual viewports and scissor rects are set dynamically
+    vk::PipelineViewportStateCreateInfo viewport_info(
+        vk::PipelineViewportStateCreateFlags{},
+        {}
+    );
+
     const std::vector<vk::DynamicState> dynamic_states = {
         vk::DynamicState::eViewport,
         vk::DynamicState::eScissor,
@@ -381,6 +395,32 @@ void RenderStateVK::Reset(const Settings& settings)
         vk::PipelineDynamicStateCreateFlags{},
         dynamic_states
     );
+
+    const auto& program = static_cast<const ProgramVK&>(*GetSettings().program_ptr);
+    const auto& render_pattern = static_cast<const RenderPatternVK&>(*GetSettings().render_pattern_ptr);
+
+    const vk::PipelineVertexInputStateCreateInfo vk_vertex_input_state_info = program.GetNativeVertexInputStateCreateInfo();
+    const std::vector<vk::PipelineShaderStageCreateInfo> stages_info = program.GetNativeShaderStageCreateInfos();
+
+    const vk::GraphicsPipelineCreateInfo vk_pipeline_create_info(
+        vk::PipelineCreateFlags(),
+        stages_info,
+        &vk_vertex_input_state_info,
+        &assembly_info,
+        nullptr, // no tesselation support yet
+        &viewport_info,
+        &rasterizer_info,
+        &multisample_info,
+        &depth_stencil_info,
+        &blending_info,
+        &dynamic_info,
+        program.GetNativePipelineLayout(),
+        render_pattern.GetNativeRenderPass()
+    );
+
+    vk::Result result;
+    std::tie(result, m_vk_pipeline) = GetContextVK().GetDeviceVK().GetNativeDevice().createGraphicsPipeline(nullptr, vk_pipeline_create_info);
+    META_CHECK_ARG_EQUAL_DESCR(result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
 }
 
 void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Groups /*state_groups*/)
