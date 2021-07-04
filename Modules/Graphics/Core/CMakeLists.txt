@@ -163,6 +163,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h

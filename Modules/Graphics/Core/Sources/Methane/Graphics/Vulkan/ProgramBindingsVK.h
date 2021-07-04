@@ -28,6 +28,8 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
+struct ICommandListVK;
+
 class ProgramBindingsVK final : public ProgramBindingsBase
 {
 public:
@@ -55,9 +57,11 @@ public:
 
     // ProgramBindings interface
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
-    
+
     // ProgramBindingsBase interface
     void CompleteInitialization() override { /* not implemented yet */ }
+
+    void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 };
 
 } // namespace Methane::Graphics

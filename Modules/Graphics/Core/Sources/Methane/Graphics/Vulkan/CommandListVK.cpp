@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ namespace Methane::Graphics
 Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListVK::DebugGroupVK>(name);
+    return std::make_shared<ICommandListVK::DebugGroupVK>(name);
 }
 
-CommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
+ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
     : CommandListBase::DebugGroupBase(name)
 {
     META_FUNCTION_TASK();

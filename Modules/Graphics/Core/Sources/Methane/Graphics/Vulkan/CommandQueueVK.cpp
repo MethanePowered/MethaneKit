@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -31,6 +31,14 @@ Vulkan implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
+static vk::CommandPool CreateVulkanCommandPool(const vk::Device& vk_device, uint32_t queue_family_index)
+{
+    META_FUNCTION_TASK();
+    vk::CommandPoolCreateInfo vk_command_pool_info(vk::CommandPoolCreateFlags(), queue_family_index);
+    vk_command_pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    return vk_device.createCommandPool(vk_command_pool_info);
+}
+
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
@@ -56,7 +64,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
-    , m_vk_command_pool(device.GetNativeDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), m_queue_family_index)))
+    , m_vk_command_pool(CreateVulkanCommandPool(device.GetNativeDevice(), m_queue_family_index))
 {
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(Tracy::GpuContext::Settings());

@@ -244,7 +244,7 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
         ApplyResourceStates(apply_access_mask) &&
         m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
     {
-        command_list_dx.SetResourceBarriersDX(*m_resource_transition_barriers_ptr);
+        command_list_dx.SetResourceBarriers(*m_resource_transition_barriers_ptr);
     }
 
     // Apply root parameter bindings after resource barriers

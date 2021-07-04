@@ -22,7 +22,7 @@ Vulkan implementation of the program interface.
 ******************************************************************************/
 
 #include "ProgramBindingsVK.h"
-#include "RenderCommandListVK.h"
+#include "CommandListVK.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -78,17 +78,22 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
+    Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
+}
 
-    auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+void ProgramBindingsVK::Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(command_list);
+    using namespace magic_enum::bitwise_operators;
 
     for(const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
              magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
-             vulkan_command_list.GetProgramBindings() &&
+            p_applied_program_bindings &&
              static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr).IsAlreadyApplied(
-                 GetProgram(), *vulkan_command_list.GetProgramBindings(),
+                 GetProgram(), *p_applied_program_bindings,
                  magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
     }

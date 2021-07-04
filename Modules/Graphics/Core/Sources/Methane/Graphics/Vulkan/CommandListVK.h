@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandListVK.h
+FILE: Methane/Graphics/Vulkan/CommandListVK.h
 Vulkan command lists sequence implementation.
 
 ******************************************************************************/
@@ -28,16 +28,23 @@ Vulkan command lists sequence implementation.
 namespace Methane::Graphics
 {
 
-namespace CommandListVK
-{
+class CommandQueueVK;
 
-class DebugGroupVK final : public CommandListBase::DebugGroupBase
+struct ICommandListVK
 {
-public:
-    explicit DebugGroupVK(const std::string& name);
+    class DebugGroupVK final : public CommandListBase::DebugGroupBase
+    {
+    public:
+        explicit DebugGroupVK(const std::string& name);
+    };
+
+    virtual CommandQueueVK&          GetCommandQueueVK() = 0;
+    virtual const CommandQueueVK&    GetCommandQueueVK() const = 0;
+    virtual const vk::CommandBuffer& GetNativeCommandBuffer() const = 0;
+    virtual void SetResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
+
+    virtual ~ICommandListVK() = default;
 };
-
-} // namespace CommandListVK
 
 class CommandListSetVK final : public CommandListSetBase
 {

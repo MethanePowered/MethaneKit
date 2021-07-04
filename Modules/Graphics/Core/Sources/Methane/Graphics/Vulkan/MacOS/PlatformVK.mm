@@ -41,5 +41,4 @@ vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, con
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Vulkan surface creation is not implemented for MacOS.");
 }
 
-
 } // namespace Methane::Graphics

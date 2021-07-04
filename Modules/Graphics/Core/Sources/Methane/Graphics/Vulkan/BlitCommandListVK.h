@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/BlitCommandListVK.h
+FILE: Methane/Graphics/Vulkan/BlitCommandListVK.h
 Vulkan implementation of the blit command list interface.
 
 ******************************************************************************/
 
 #pragma once
+
+#include "CommandListVK.hpp"
 
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Graphics/CommandListBase.h>
@@ -32,31 +34,11 @@ namespace Methane::Graphics
 class CommandQueueVK;
 
 class BlitCommandListVK final
-    : public CommandListBase
+    : public CommandListVK<CommandListBase>
     , public BlitCommandList
 {
 public:
-    explicit BlitCommandListVK(CommandQueueBase& command_queue);
-
-    // CommandList interface
-    void PushDebugGroup(DebugGroup& debug_group) override;
-    void PopDebugGroup() override;
-    void Commit() override;
-
-    // CommandListBase interface
-    void SetResourceBarriers(const Resource::Barriers&) override;
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
-
-    // BlitCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-
-    // Object interface
-    void SetName(const std::string& label) override;
-
-private:
-    void InitializeCommandBuffer();
-    
-    CommandQueueVK& GetCommandQueueVK() noexcept;
+    explicit BlitCommandListVK(CommandQueueVK& command_queue);
 };
 
 } // namespace Methane::Graphics

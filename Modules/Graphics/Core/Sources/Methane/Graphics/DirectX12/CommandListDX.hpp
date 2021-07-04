@@ -48,9 +48,6 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class CommandQueueDX;
-class RenderPassDX;
-
 template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
 class CommandListDX
     : public CommandListBaseT
@@ -125,8 +122,6 @@ public:
         m_is_native_committed = true;
     }
 
-    // CommandListBase interface
-
     void SetResourceBarriers(const Resource::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
@@ -194,7 +189,6 @@ public:
 
     // ICommandListDX interface
 
-    void SetResourceBarriersDX(const Resource::Barriers& resource_barriers) final { SetResourceBarriers(resource_barriers); }
     CommandQueueDX&             GetCommandQueueDX() final                             { return static_cast<CommandQueueDX&>(GetCommandQueueBase()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const final
     {

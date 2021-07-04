@@ -40,13 +40,13 @@ namespace Methane::Graphics
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass));
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+    return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list));
 }
 
 Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
@@ -55,14 +55,14 @@ Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQu
     return nullptr;
 }
 
-RenderCommandListVK::RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
-    : RenderCommandListBase(command_queue, render_pass)
+RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
+    : CommandListVK<RenderCommandListBase>(command_queue, render_pass)
 {
     META_FUNCTION_TASK();
 }
 
-RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list)
-    : RenderCommandListBase(parallel_render_command_list)
+RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list)
+    : CommandListVK<RenderCommandListBase>(parallel_render_command_list)
 {
     META_FUNCTION_TASK();
 }
@@ -79,25 +79,6 @@ void RenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* 
     META_FUNCTION_TASK();
     RenderCommandListBase::ResetCommandState();
     RenderCommandListBase::ResetWithState(render_state, p_debug_group);
-}
-
-void RenderCommandListVK::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-
-    RenderCommandListBase::SetName(name);
-}
-
-void RenderCommandListVK::PushDebugGroup(DebugGroup& debug_group)
-{
-    META_FUNCTION_TASK();
-    CommandListBase::PushDebugGroup(debug_group);
-}
-
-void RenderCommandListVK::PopDebugGroup()
-{
-    META_FUNCTION_TASK();
-    CommandListBase::PopDebugGroup();
 }
 
 bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
@@ -143,19 +124,13 @@ void RenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
-    RenderCommandListBase::Commit();
+    CommandListVK<RenderCommandListBase>::Commit();
 }
 
 void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     RenderCommandListBase::Execute(frame_index, completed_callback);
-}
-
-CommandQueueVK& RenderCommandListVK::GetCommandQueueVK() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 RenderPassVK& RenderCommandListVK::GetPassVK()
