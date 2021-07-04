@@ -156,6 +156,7 @@ struct RenderPattern : virtual Object // NOSONAR
     [[nodiscard]] virtual const RenderContext& GetRenderContext() const noexcept = 0;
     [[nodiscard]] virtual RenderContext&       GetRenderContext() noexcept = 0;
     [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual Data::Size           GetAttachmentCount() const noexcept = 0;
     [[nodiscard]] virtual AttachmentFormats    GetAttachmentFormats() const noexcept = 0;
 };
 

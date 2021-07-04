@@ -60,6 +60,7 @@ public:
               uint32_t instance_count, uint32_t start_instance) override;
 
 private:
+    void ResetRenderPass();
     RenderPassVK& GetPassVK();
 };
 

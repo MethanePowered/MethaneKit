@@ -204,6 +204,7 @@ public:
     const RenderContext& GetRenderContext() const noexcept override     { return m_render_context; }
     RenderContext&       GetRenderContext() noexcept override           { return m_render_context; }
     const Settings&      GetSettings() const noexcept override          { return m_settings; }
+    Data::Size           GetAttachmentCount() const noexcept override   { return 0U; }
     AttachmentFormats    GetAttachmentFormats() const noexcept override { return {}; }
 
     // Object interface

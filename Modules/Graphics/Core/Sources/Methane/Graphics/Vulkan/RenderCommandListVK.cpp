@@ -72,6 +72,10 @@ void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
     META_FUNCTION_TASK();
     RenderCommandListBase::ResetCommandState();
     RenderCommandListBase::Reset(p_debug_group);
+    if (HasPass())
+    {
+        ResetRenderPass();
+    }
 }
 
 void RenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
@@ -79,6 +83,10 @@ void RenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* 
     META_FUNCTION_TASK();
     RenderCommandListBase::ResetCommandState();
     RenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    if (HasPass())
+    {
+        ResetRenderPass();
+    }
 }
 
 bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
@@ -124,6 +132,13 @@ void RenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
+
+    if (auto pass_vk = static_cast<RenderPassVK*>(GetPassPtr());
+        pass_vk && pass_vk->IsBegun())
+    {
+        pass_vk->End(*this);
+    }
+
     CommandListVK<RenderCommandListBase>::Commit();
 }
 
@@ -131,6 +146,21 @@ void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback&
 {
     META_FUNCTION_TASK();
     RenderCommandListBase::Execute(frame_index, completed_callback);
+}
+
+void RenderCommandListVK::ResetRenderPass()
+{
+    META_FUNCTION_TASK();
+    RenderPassVK& pass_vk = GetPassVK();
+
+    if (IsParallel())
+    {
+        // TODO: support parallel render command lists
+    }
+    else if (!pass_vk.IsBegun())
+    {
+        pass_vk.Begin(*this);
+    }
 }
 
 RenderPassVK& RenderCommandListVK::GetPassVK()

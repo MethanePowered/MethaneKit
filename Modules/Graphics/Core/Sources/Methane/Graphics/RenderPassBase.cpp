@@ -183,6 +183,17 @@ RenderContext& RenderPatternBase::GetRenderContext() noexcept
     return *m_render_context_ptr;
 }
 
+Data::Size RenderPatternBase::GetAttachmentCount() const noexcept
+{
+    META_FUNCTION_TASK();
+    Data::Size attachment_count = static_cast<Data::Size>(m_settings.color_attachments.size());
+    if (m_settings.depth_attachment)
+        attachment_count++;
+    if (m_settings.stencil_attachment)
+        attachment_count++;
+    return attachment_count;
+}
+
 AttachmentFormats RenderPatternBase::GetAttachmentFormats() const noexcept
 {
     META_FUNCTION_TASK();

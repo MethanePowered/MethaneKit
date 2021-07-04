@@ -25,6 +25,7 @@ Vulkan implementation of the render pass interface.
 #include "ContextVK.h"
 #include "TextureVK.h"
 #include "RenderContextVK.h"
+#include "RenderCommandListVK.h"
 #include "TypesVK.h"
 
 #include <Methane/Instrumentation.h>
@@ -192,6 +193,27 @@ RenderContextVK& RenderPatternVK::GetRenderContextVK() noexcept
     return static_cast<RenderContextVK&>(GetRenderContextBase());
 }
 
+std::vector<vk::ClearValue> RenderPatternVK::GetAttachmentClearValues() const noexcept
+{
+    META_FUNCTION_TASK();
+    const Settings& settings = GetSettings();
+    std::vector<vk::ClearValue> clear_colors;
+    clear_colors.reserve(GetAttachmentCount());
+    std::transform(settings.color_attachments.begin(), settings.color_attachments.end(), std::back_inserter(clear_colors),
+                   [](const ColorAttachment& color_attachment)
+                   {
+                       return vk::ClearValue(vk::ClearColorValue(color_attachment.clear_color.AsArray()));
+                   });
+    if (settings.depth_attachment || settings.stencil_attachment)
+        clear_colors.emplace_back(
+            vk::ClearDepthStencilValue(
+                settings.depth_attachment   ? settings.depth_attachment->clear_value   : 0.F,
+                settings.stencil_attachment ? settings.stencil_attachment->clear_value : 0U
+            )
+        );
+    return clear_colors;
+}
+
 Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
@@ -203,6 +225,13 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
     , m_vk_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
 {
     META_FUNCTION_TASK();
+    const std::vector<vk::ClearValue> attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
+    m_vk_pass_begin_info = vk::RenderPassBeginInfo(
+        GetPatternVK().GetNativeRenderPass(),
+        m_vk_frame_buffer,
+        vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(settings.frame_size.GetWidth(), settings.frame_size.GetHeight())),
+        attachment_clear_values
+    );
 }
 
 RenderPassVK::~RenderPassVK()
@@ -220,6 +249,25 @@ bool RenderPassVK::Update(const Settings& settings)
         return true;
     }
     return false;
+}
+
+void RenderPassVK::Begin(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+    RenderPassBase::Begin(command_list);
+
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eInline);
+}
+
+void RenderPassVK::End(RenderCommandListBase& command_list)
+{
+    META_FUNCTION_TASK();
+
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    vk_command_buffer.endRenderPass();
+
+    RenderPassBase::End(command_list);
 }
 
 void RenderPassVK::Reset()

@@ -44,6 +44,7 @@ public:
     [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
 
     [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept { return m_vk_render_pass; }
+    [[nodiscard]] std::vector<vk::ClearValue> GetAttachmentClearValues() const noexcept;
 
 private:
     vk::RenderPass m_vk_render_pass;
@@ -57,6 +58,10 @@ public:
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
+
+    // RenderPassBase interface
+    void Begin(RenderCommandListBase& command_list) override;
+    void End(RenderCommandListBase& command_list) override;
     
     void Reset();
 
@@ -65,6 +70,7 @@ public:
 
 private:
     vk::Framebuffer m_vk_frame_buffer;
+    vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };
 
 } // namespace Methane::Graphics

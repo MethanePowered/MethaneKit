@@ -46,6 +46,7 @@ public:
     [[nodiscard]] const RenderContext& GetRenderContext() const noexcept final;
     [[nodiscard]] RenderContext&       GetRenderContext() noexcept final;
     [[nodiscard]] const Settings&      GetSettings() const noexcept final { return m_settings; }
+    [[nodiscard]] Data::Size           GetAttachmentCount() const noexcept final;
     [[nodiscard]] AttachmentFormats    GetAttachmentFormats() const noexcept final;
 
     [[nodiscard]] const RenderContextBase& GetRenderContextBase() const noexcept { return *m_render_context_ptr; }
