@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandListVK.hpp
+FILE: Methane/Graphics/Vulkan/CommandListVK.hpp
 Vulkan base template implementation of the command list interface.
 
 ******************************************************************************/
@@ -61,7 +61,7 @@ public:
         META_FUNCTION_TASK();
 
         m_vk_command_buffer.begin(vk::CommandBufferBeginInfo());
-        SetCommandListState(CommandList::State::Encoding);
+        CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
     // CommandList interface
@@ -86,15 +86,15 @@ public:
         CommandListBaseT::Commit();
 
         // TODO: insert ending timestamp query
-        // TODO: end command buffer
 
+        m_vk_command_buffer.end();
         m_is_native_committed = true;
     }
 
     void SetResourceBarriers(const Resource::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
-        VerifyEncodingState();
+        CommandListBaseT::VerifyEncodingState();
         
         const auto lock_guard = resource_barriers.Lock();
         if (resource_barriers.IsEmpty())
@@ -138,8 +138,8 @@ public:
     }
 
     // ICommandListVK interface
-    CommandQueueVK&          GetCommandQueueVK() final            { return static_cast<CommandQueueVK&>(GetCommandQueueBase()); }
-    const CommandQueueVK&    GetCommandQueueVK() const final      { return static_cast<const CommandQueueVK&>(GetCommandQueueBase()); }
+    CommandQueueVK&          GetCommandQueueVK() final            { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
+    const CommandQueueVK&    GetCommandQueueVK() const final      { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
     const vk::CommandBuffer& GetNativeCommandBuffer() const final { return m_vk_command_buffer; }
 
 protected:

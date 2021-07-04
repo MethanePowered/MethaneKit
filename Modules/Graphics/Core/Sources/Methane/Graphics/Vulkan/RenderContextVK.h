@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderContextVK.hh
+FILE: Methane/Graphics/Vulkan/RenderContextVK.hh
 Vulkan implementation of the render context interface.
 
 ******************************************************************************/

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandListVK.cpp
+FILE: Methane/Graphics/Vulkan/CommandListVK.cpp
 Vulkan command lists sequence implementation
 
 ******************************************************************************/

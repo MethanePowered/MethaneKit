@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ContextVK.hpp
+FILE: Methane/Graphics/Vulkan/ContextVK.hpp
 Vulkan template implementation of the base context interface.
 
 ******************************************************************************/
