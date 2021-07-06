@@ -37,6 +37,20 @@ Vulkan implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
+vk::PrimitiveTopology GetVulkanPrimitiveTopology(RenderCommandList::Primitive primitive_type)
+{
+    META_FUNCTION_TASK();
+    switch(primitive_type)
+    {
+    case RenderCommandList::Primitive::Point:           return vk::PrimitiveTopology::ePointList;
+    case RenderCommandList::Primitive::Line:            return vk::PrimitiveTopology::eLineList;
+    case RenderCommandList::Primitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
+    case RenderCommandList::Primitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
+    case RenderCommandList::Primitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
+    default: META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
+    }
+}
+
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
@@ -119,6 +133,9 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, uint32_t index_count,
     }
 
     RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
+
+    UpdatePrimitiveTopology(primitive);
+    GetNativeCommandBuffer().drawIndexed(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
 void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -126,6 +143,9 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
 {
     META_FUNCTION_TASK();
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
+
+    UpdatePrimitiveTopology(primitive);
+    GetNativeCommandBuffer().draw(vertex_count, instance_count, start_vertex, start_instance);
 }
 
 void RenderCommandListVK::Commit()
@@ -160,6 +180,19 @@ void RenderCommandListVK::ResetRenderPass()
     else if (!pass_vk.IsBegun())
     {
         pass_vk.Begin(*this);
+    }
+}
+
+void RenderCommandListVK::UpdatePrimitiveTopology(Primitive primitive)
+{
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+    if (DrawingState& drawing_state = GetDrawingState();
+        magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+    {
+        const vk::PrimitiveTopology vk_primitive_topology = GetVulkanPrimitiveTopology(primitive);
+        GetNativeCommandBuffer().setPrimitiveTopologyEXT(vk_primitive_topology);
+        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
 }
 

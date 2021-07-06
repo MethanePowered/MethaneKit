@@ -61,6 +61,8 @@ public:
 
 private:
     void ResetRenderPass();
+    void UpdatePrimitiveTopology(Primitive primitive);
+
     RenderPassVK& GetPassVK();
 };
 
