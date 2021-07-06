@@ -267,9 +267,9 @@ bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-
-    auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
-    META_UNUSED(vulkan_command_list);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    vk_command_buffer.setViewport(0U, m_vk_viewports);
+    vk_command_buffer.setScissor(0U, m_vk_scissor_rects);
 }
 
 Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
@@ -423,9 +423,11 @@ void RenderStateVK::Reset(const Settings& settings)
     META_CHECK_ARG_EQUAL_DESCR(result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& /*command_list*/, Groups /*state_groups*/)
+void RenderStateVK::Apply(RenderCommandListBase& command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
+    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    vk_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_vk_pipeline);
 }
 
 void RenderStateVK::SetName(const std::string& name)
