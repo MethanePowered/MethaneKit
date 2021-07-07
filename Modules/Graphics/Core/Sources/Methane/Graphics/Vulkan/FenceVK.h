@@ -25,6 +25,8 @@ Vulkan fence implementation.
 
 #include <Methane/Graphics/FenceBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -33,7 +35,8 @@ class CommandQueueVK;
 class FenceVK final : public FenceBase
 {
 public:
-    explicit FenceVK(CommandQueueBase& command_queue);
+    explicit FenceVK(CommandQueueVK& command_queue);
+    ~FenceVK() override;
 
     // Fence overrides
     void Signal() override;
@@ -43,10 +46,13 @@ public:
     // Object override
     void SetName(const std::string& name) override;
 
+    const vk::Semaphore& GetNativeSemaphore() const noexcept { return m_vk_semaphore; }
+
 private:
     CommandQueueVK& GetCommandQueueVK();
 
-    // TODO: native fence object
+    const vk::Device& m_vk_device;
+    vk::Semaphore     m_vk_semaphore; // timeline semaphore
 };
 
 } // namespace Methane::Graphics

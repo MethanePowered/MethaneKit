@@ -78,18 +78,23 @@ void FenceDX::WaitOnCpu()
     META_FUNCTION_TASK();
     FenceBase::WaitOnCpu();
 
+
+
+    const uint64_t wait_value = GetValue();
+    const uint64_t curr_value = m_cp_fence->GetCompletedValue();
+    if (curr_value >= wait_value)
+        return;
+
+    META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);
+
     META_CHECK_ARG_NOT_NULL(m_cp_fence);
     META_CHECK_ARG_NOT_NULL(m_event);
-    if (m_cp_fence->GetCompletedValue() < GetValue())
-    {
-        META_LOG("Fence '{}' SLEEP with value {}", GetName(), GetValue());
 
-        ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
-                      GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
-        WaitForSingleObjectEx(m_event, INFINITE, FALSE);
+    ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
+                  GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice().Get());
+    WaitForSingleObjectEx(m_event, INFINITE, FALSE);
 
-        META_LOG("Fence '{}' AWAKE with value {}", GetName(), GetValue());
-    }
+    META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
 void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)

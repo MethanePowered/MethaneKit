@@ -33,36 +33,67 @@ Vulkan fence implementation.
 namespace Methane::Graphics
 {
 
+static vk::Semaphore CreateTimelineSemaphore(const vk::Device& vk_device, uint64_t initial_value)
+{
+    META_FUNCTION_TASK();
+    vk::SemaphoreTypeCreateInfo semaphore_type_create_info(vk::SemaphoreType::eTimeline, initial_value);
+    return vk_device.createSemaphore(vk::SemaphoreCreateInfo().setPNext(&semaphore_type_create_info));
+}
+
 Ptr<Fence> Fence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<FenceVK>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceVK>(static_cast<CommandQueueVK&>(command_queue));
 }
 
-FenceVK::FenceVK(CommandQueueBase& command_queue)
+FenceVK::FenceVK(CommandQueueVK& command_queue)
     : FenceBase(command_queue)
+    , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
+    , m_vk_semaphore(CreateTimelineSemaphore(m_vk_device, GetValue()))
 {
     META_FUNCTION_TASK();
+}
+
+FenceVK::~FenceVK()
+{
+    META_FUNCTION_TASK();
+    m_vk_device.destroy(m_vk_semaphore);
 }
 
 void FenceVK::Signal()
 {
     META_FUNCTION_TASK();
-
     FenceBase::Signal();
+
+    const vk::SemaphoreSignalInfo signal_info(m_vk_semaphore, GetValue());
+    m_vk_device.signalSemaphoreKHR(signal_info);
 }
 
 void FenceVK::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-
     FenceBase::WaitOnCpu();
+
+    const uint64_t wait_value = GetValue();
+    const uint64_t curr_value = m_vk_device.getSemaphoreCounterValueKHR(m_vk_semaphore);
+    if (curr_value >= wait_value)
+        return;
+
+    META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);
+
+    const vk::SemaphoreWaitInfo wait_info(vk::SemaphoreWaitFlagBits{}, 1U, &m_vk_semaphore, &wait_value);
+    const vk::Result semaphore_wait_result = m_vk_device.waitSemaphoresKHR(wait_info, std::numeric_limits<uint64_t>::max());
+    META_CHECK_ARG_EQUAL(semaphore_wait_result, vk::Result::eSuccess);
+
+    META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
 void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
+
+    // TODO: add semaphore waiting on queue submit
 }
 
 void FenceVK::SetName(const std::string& name)
