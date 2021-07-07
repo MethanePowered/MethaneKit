@@ -28,10 +28,10 @@ Vulkan platform dependent functions for MacOS.
 namespace Methane::Graphics
 {
 
-const std::vector<std::string>& PlatformVK::GetVulkanInstanceRequiredExtensions()
+const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtensions()
 {
     META_FUNCTION_TASK();
-    static const std::vector<std::string> s_instance_extensions = GetPlatformInstanceExtensions({ });
+    static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({ });
     return s_instance_extensions;
 }
 

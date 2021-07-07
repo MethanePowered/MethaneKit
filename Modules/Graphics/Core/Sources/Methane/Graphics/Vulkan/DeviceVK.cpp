@@ -34,6 +34,7 @@ Vulkan implementation of the device interface.
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <string_view>
 
 //#define VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
 
@@ -42,22 +43,26 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 namespace Methane::Graphics
 {
 
-static const std::string g_vk_app_name    = "Methane Application";
+static const std::string g_vk_app_name    = "Methane Powered App";
 static const std::string g_vk_engine_name = "Methane Kit";
 
 static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_validation";
 static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-static const std::string g_vk_validation_extension    = "VK_EXT_validation_features";
+static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME;
 
-static const std::vector<std::string> g_render_device_extensions{
+static const std::vector<std::string_view> g_common_device_extensions{
+    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
+};
+
+static const std::vector<std::string_view> g_render_device_extensions{
     VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
 };
 
-static const std::vector<std::string> g_present_device_extensions = {
+static const std::vector<std::string_view> g_present_device_extensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>& layers)
+static std::vector<char const*> GetEnabledLayers(const std::vector<std::string_view>& layers)
 {
     META_FUNCTION_TASK();
 
@@ -65,9 +70,9 @@ static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>&
     const std::vector<vk::LayerProperties> layer_properties = vk::enumerateInstanceLayerProperties();
 #endif
 
-    std::vector<char const *> enabled_layers;
+    std::vector<const char*> enabled_layers;
     enabled_layers.reserve(layers.size() );
-    for (const std::string& layer : layers)
+    for (const std::string_view& layer : layers)
     {
         assert(std::find_if(layer_properties.begin(), layer_properties.end(),
                             [layer](const vk::LayerProperties& lp) { return layer == lp.layerName; }
@@ -88,7 +93,7 @@ static std::vector<const char*> GetEnabledLayers(const std::vector<std::string>&
     return enabled_layers;
 }
 
-static std::vector<char const *> GetEnabledExtensions(const std::vector<std::string>& extensions)
+static std::vector<const char*> GetEnabledExtensions(const std::vector<std::string_view>& extensions)
 {
     META_FUNCTION_TASK();
 
@@ -96,10 +101,10 @@ static std::vector<char const *> GetEnabledExtensions(const std::vector<std::str
     const std::vector<vk::ExtensionProperties>& extension_properties = vk::enumerateInstanceExtensionProperties();
 #endif
 
-    std::vector<char const *> enabled_extensions;
+    std::vector<const char*> enabled_extensions;
     enabled_extensions.reserve(extensions.size());
 
-    for (const std::string& ext : extensions)
+    for (const std::string_view& ext : extensions)
     {
         assert(std::find_if(extension_properties.begin(), extension_properties.end(),
                             [ext](const vk::ExtensionProperties& ep) { return ext == ep.extensionName; }
@@ -195,8 +200,8 @@ using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::D
 #endif
 
 InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
-                                                    const std::vector<char const *>& layers,
-                                                    const std::vector<char const *>& extensions)
+                                                    const std::vector<const char*>& layers,
+                                                    const std::vector<const char*>& extensions)
 {
     META_FUNCTION_TASK();
 
@@ -226,8 +231,8 @@ InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& v
 }
 
 static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
-                                         const std::vector<std::string>& layers = {},
-                                         const std::vector<std::string>& extensions = {},
+                                         const std::vector<std::string_view>& layers = {},
+                                         const std::vector<std::string_view>& extensions = {},
                                          uint32_t vk_api_version = VK_API_VERSION_1_1)
 {
     META_FUNCTION_TASK();
@@ -235,8 +240,8 @@ static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_loader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr"));
 
     constexpr uint32_t engine_version = METHANE_VERSION_MAJOR * 10 + METHANE_VERSION_MINOR;
-    const std::vector<char const *> enabled_layers     = GetEnabledLayers(layers);
-    const std::vector<char const *> enabled_extensions = GetEnabledExtensions(extensions);
+    const std::vector<const char*> enabled_layers     = GetEnabledLayers(layers);
+    const std::vector<const char*> enabled_extensions = GetEnabledExtensions(extensions);
     const vk::ApplicationInfo vk_app_info(g_vk_app_name.c_str(), 1, g_vk_engine_name.c_str(), engine_version, vk_api_version);
     const vk::InstanceCreateInfo vk_instance_create_info = MakeInstanceCreateInfoChain(vk_app_info, enabled_layers, enabled_extensions).get<vk::InstanceCreateInfo>();
 
@@ -409,20 +414,21 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
         unique_family_reservation_ptrs.insert(queue_family_reservation_ptr.get());
     }
 
-    std::vector<const char*> enabled_extension_names;
+    std::vector<std::string_view> enabled_extension_names = g_common_device_extensions;
     if (capabilities.present_to_window)
     {
-        std::transform(g_present_device_extensions.begin(), g_present_device_extensions.end(), std::back_inserter(enabled_extension_names),
-                       [](const std::string& extension_name) { return extension_name.data(); });
+        enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-
     if (magic_enum::flags::enum_contains(capabilities.features & Device::Features::BasicRendering))
     {
-        std::transform(g_render_device_extensions.begin(), g_render_device_extensions.end(), std::back_inserter(enabled_extension_names),
-                       [](const std::string& extension_name) { return extension_name.data(); });
+        enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
 
-    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, enabled_extension_names);
+    std::vector<const char*> raw_enabled_extension_names;
+    std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
+                   [](const std::string_view& extension_name) { return extension_name.data(); });
+
+    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names);
     const vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
     vk_device_info.setPNext(&vk_device_dynamic_state_info);
 
@@ -436,17 +442,15 @@ DeviceVK::~DeviceVK()
     m_vk_device.destroy();
 }
 
-bool DeviceVK::IsExtensionSupported(const std::vector<std::string>& required_extensions) const
+bool DeviceVK::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const
 {
     META_FUNCTION_TASK();
-
-    std::set<std::string> extensions(required_extensions.begin(), required_extensions.end());
+    std::set<std::string_view> extensions(required_extensions.begin(), required_extensions.end());
     const std::vector<vk::ExtensionProperties> vk_device_extension_properties = m_vk_physical_device.enumerateDeviceExtensionProperties();
     for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
     {
         extensions.erase(vk_extension_props.extensionName);
     }
-
     return extensions.empty();
 }
 

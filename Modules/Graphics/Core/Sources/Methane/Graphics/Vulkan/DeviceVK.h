@@ -100,7 +100,7 @@ private:
                             const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
-    bool IsExtensionSupported(const std::vector<std::string>& required_extensions) const;
+    bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
 
     Capabilities                 m_device_caps;
     vk::PhysicalDevice           m_vk_physical_device;

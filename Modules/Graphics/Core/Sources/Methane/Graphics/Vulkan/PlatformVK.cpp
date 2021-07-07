@@ -28,11 +28,11 @@ Vulkan platform dependent functions.
 namespace Methane::Graphics
 {
 
-std::vector<std::string> PlatformVK::GetPlatformInstanceExtensions(const std::vector<std::string>& platform_instance_extensions)
+std::vector<std::string_view> PlatformVK::GetPlatformInstanceExtensions(const std::vector<std::string_view>& platform_instance_extensions)
 {
-    std::vector<std::string> instance_extensions = {
-        "VK_KHR_surface",
-        "VK_KHR_get_physical_device_properties2" // required by device extension VK_EXT_extended_dynamic_state
+    std::vector<std::string_view> instance_extensions = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
     };
     instance_extensions.insert(instance_extensions.end(), platform_instance_extensions.begin(), platform_instance_extensions.end());
     return instance_extensions;
