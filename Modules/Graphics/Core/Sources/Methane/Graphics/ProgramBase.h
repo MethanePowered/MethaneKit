@@ -60,7 +60,6 @@ public:
     bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
 
     const ContextBase&   GetContext() const { return m_context; }
-    Ptr<ProgramBase>     GetProgramPtr()    { return std::static_pointer_cast<ProgramBase>(GetBasePtr()); }
 
 protected:
     using FrameArgumentBindings = std::unordered_map<Program::Argument, Ptrs<ProgramBindingsBase::ArgumentBindingBase>, Program::Argument::Hash>;

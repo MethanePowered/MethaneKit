@@ -45,7 +45,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue)
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
-    , m_render_pass_ptr(pass.GetRenderPassPtr())
+    , m_render_pass_ptr(pass.GetPtr<RenderPassBase>())
 {
     META_FUNCTION_TASK();
 }
@@ -53,8 +53,8 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetRenderPassPtr())
-    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetParallelRenderCommandListPtr())
+    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPassBase>())
+    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetPtr<ParallelRenderCommandListBase>())
 {
     META_FUNCTION_TASK();
 }

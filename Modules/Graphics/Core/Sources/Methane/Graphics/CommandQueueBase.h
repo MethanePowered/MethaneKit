@@ -56,7 +56,6 @@ public:
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override { return m_command_lists_type; }
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
-    Ptr<CommandQueueBase> GetCommandQueuePtr()            { return std::static_pointer_cast<CommandQueueBase>(GetBasePtr()); }
     const ContextBase&    GetContextBase() const noexcept { return m_context; }
     Tracy::GpuContext&    GetTracyContext();
 

@@ -49,7 +49,7 @@ static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()>
 
 ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
     : m_type(type)
-    , m_device_ptr(device.GetDevicePtr())
+    , m_device_ptr(device.GetPtr<DeviceBase>())
     , m_parallel_executor(parallel_executor)
     , m_resource_manager(*this)
 {
@@ -162,7 +162,7 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     META_FUNCTION_TASK();
     META_LOG("Context '{}' INITIALIZE", GetName());
 
-    m_device_ptr = device.GetDevicePtr();
+    m_device_ptr = device.GetPtr<DeviceBase>();
     if (const std::string& context_name = GetName();
         !context_name.empty())
     {
@@ -315,7 +315,7 @@ void ContextBase::PerformRequestedAction()
 void ContextBase::SetDevice(DeviceBase& device)
 {
     META_FUNCTION_TASK();
-    m_device_ptr = device.GetDevicePtr();
+    m_device_ptr = device.GetPtr<DeviceBase>();
 }
 
 } // namespace Methane::Graphics

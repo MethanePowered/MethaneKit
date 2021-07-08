@@ -67,7 +67,6 @@ public:
     void SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
-    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandListPtr() { return std::static_pointer_cast<ParallelRenderCommandListBase>(GetBasePtr()); }
 
 private:
     template<typename ResetCommandListFn>

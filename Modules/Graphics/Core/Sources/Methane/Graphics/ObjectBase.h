@@ -57,6 +57,9 @@ public:
 
     Ptr<ObjectBase>    GetBasePtr()                              { return shared_from_this(); }
 
+    template<typename T>
+    std::enable_if_t<std::is_base_of_v<ObjectBase, T>, Ptr<T>> GetPtr() { return std::static_pointer_cast<T>(GetBasePtr()); }
+
 private:
     std::string m_name;
 };

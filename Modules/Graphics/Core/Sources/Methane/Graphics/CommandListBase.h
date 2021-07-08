@@ -102,7 +102,7 @@ public:
     CommandQueueBase&               GetCommandQueueBase();
     const CommandQueueBase&         GetCommandQueueBase() const;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
-    Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
+    Ptr<CommandListBase>            GetCommandListPtr()                  { return GetPtr<CommandListBase>(); }
 
     inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
     inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }

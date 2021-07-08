@@ -70,7 +70,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
-    , m_command_queue_ptr(command_queue.GetCommandQueuePtr())
+    , m_command_queue_ptr(command_queue.GetPtr<CommandQueueBase>())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
     , m_tracy_construct_location_ptr(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
@@ -275,7 +275,7 @@ CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
 void CommandListBase::PushOpenDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
-    m_open_debug_groups.emplace(std::static_pointer_cast<DebugGroupBase>(static_cast<DebugGroupBase&>(debug_group).GetBasePtr()));
+    m_open_debug_groups.emplace(static_cast<DebugGroupBase&>(debug_group).GetPtr<DebugGroupBase>());
 }
 
 void CommandListBase::ClearOpenDebugGroups()

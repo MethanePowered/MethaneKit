@@ -150,7 +150,7 @@ void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
 void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetNative(std::static_pointer_cast<RenderStateDX>(static_cast<RenderStateBase&>(render_state).GetBasePtr()));
+    ResetNative(static_cast<RenderStateBase&>(render_state).GetPtr<RenderStateDX>());
     RenderCommandListBase::ResetWithState(render_state, p_debug_group);
     if (HasPass())
     {

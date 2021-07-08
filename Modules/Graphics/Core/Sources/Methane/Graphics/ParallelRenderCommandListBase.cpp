@@ -48,7 +48,7 @@ inline std::string GetThreadCommandListName(std::string_view name, Data::Index i
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListBase(command_queue, Type::ParallelRender)
-    , m_render_pass_ptr(render_pass.GetRenderPassPtr())
+    , m_render_pass_ptr(render_pass.GetPtr<RenderPassBase>())
 {
     META_FUNCTION_TASK();
 }

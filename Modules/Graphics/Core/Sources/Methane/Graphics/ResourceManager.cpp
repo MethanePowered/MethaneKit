@@ -150,7 +150,7 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
                          "program bindings instance was already added to resource manager");
 #endif
 
-    m_program_bindings.push_back(std::static_pointer_cast<ProgramBindingsBase>(static_cast<ProgramBindingsBase&>(program_bindings).GetBasePtr()));
+    m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr<ProgramBindingsBase>());
 }
 
 uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)

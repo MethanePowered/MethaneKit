@@ -79,7 +79,6 @@ public:
     TextureBase*             GetDepthAttachmentTexture() const;
     TextureBase*             GetStencilAttachmentTexture() const;
     const Ptrs<TextureBase>& GetNonFrameBufferAttachmentTextures() const;
-    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::static_pointer_cast<RenderPassBase>(GetBasePtr()); }
     bool                     IsBegun() const noexcept   { return m_is_begun; }
 
 protected:

@@ -412,7 +412,7 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
 
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_texture_ref.get().GetBasePtr());
+        Ptr<TextureBase> color_attachment_ptr = color_texture_ref.get().GetPtr<TextureBase>();
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)
             continue;
 
@@ -422,13 +422,13 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
     if (TextureBase* depth_texture_ptr = GetDepthAttachmentTexture();
         depth_texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(depth_texture_ptr->GetBasePtr()));
+        m_non_frame_buffer_attachment_textures.emplace_back(depth_texture_ptr->GetPtr<TextureBase>());
     }
 
     if (TextureBase* stencil_texture_ptr = GetStencilAttachmentTexture();
         stencil_texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(stencil_texture_ptr->GetBasePtr()));
+        m_non_frame_buffer_attachment_textures.emplace_back(stencil_texture_ptr->GetPtr<TextureBase>());
     }
 
     return m_non_frame_buffer_attachment_textures;
