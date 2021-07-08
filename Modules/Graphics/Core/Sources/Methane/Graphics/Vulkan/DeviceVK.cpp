@@ -428,9 +428,13 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
                    [](const std::string_view& extension_name) { return extension_name.data(); });
 
+
+    // Add descriptions of enabled device features:
+    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
+    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR vk_device_timeline_semaphores_info(true);
     vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names);
-    const vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
     vk_device_info.setPNext(&vk_device_dynamic_state_info);
+    vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
 
     m_vk_device = vk_physical_device.createDevice(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
