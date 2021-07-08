@@ -78,8 +78,6 @@ void FenceDX::WaitOnCpu()
     META_FUNCTION_TASK();
     FenceBase::WaitOnCpu();
 
-
-
     const uint64_t wait_value = GetValue();
     const uint64_t curr_value = m_cp_fence->GetCompletedValue();
     if (curr_value >= wait_value)
