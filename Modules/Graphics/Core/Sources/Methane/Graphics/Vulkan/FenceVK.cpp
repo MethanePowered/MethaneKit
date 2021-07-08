@@ -92,8 +92,7 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
-
-    // TODO: add semaphore waiting on queue submit
+    static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(m_vk_semaphore, vk::PipelineStageFlagBits::eTopOfPipe);
 }
 
 void FenceVK::SetName(const std::string& name)

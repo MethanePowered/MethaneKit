@@ -68,7 +68,7 @@ public:
     // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
 
-    void WaitUntilCompleted() noexcept;
+    void WaitUntilCompleted();
 
     using NativeCommandLists = std::vector<ID3D12CommandList*>;
     const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }

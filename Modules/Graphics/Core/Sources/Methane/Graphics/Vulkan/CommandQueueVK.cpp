@@ -22,6 +22,7 @@ Vulkan implementation of the command queue interface.
 ******************************************************************************/
 
 #include "CommandQueueVK.h"
+#include "CommandListVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
 
@@ -78,10 +79,25 @@ CommandQueueVK::~CommandQueueVK()
     device.GetNativeDevice().destroyCommandPool(m_vk_command_pool);
 }
 
+void CommandQueueVK::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
+{
+    META_FUNCTION_TASK();
+    CommandQueueBase::Execute(command_lists, completed_callback);
+
+    m_wait_info.semaphores.clear();
+    m_wait_info.stages.clear();
+};
+
+void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags)
+{
+    META_FUNCTION_TASK();
+    m_wait_info.semaphores.emplace_back(semaphore);
+    m_wait_info.stages.emplace_back(stage_flags);
+}
+
 void CommandQueueVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     CommandQueueBase::SetName(name);
 }
 
