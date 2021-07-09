@@ -61,7 +61,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
                                const DeviceVK& device, const QueueFamilyReservationVK& family_reservation)
-    : CommandQueueBase(context, command_lists_type)
+    : CommandQueueTrackingBase(context, command_lists_type)
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
@@ -82,7 +82,7 @@ CommandQueueVK::~CommandQueueVK()
 void CommandQueueVK::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandQueueBase::Execute(command_lists, completed_callback);
+    CommandQueueTrackingBase::Execute(command_lists, completed_callback);
 
     m_wait_info.semaphores.clear();
     m_wait_info.stages.clear();

@@ -54,11 +54,9 @@ public:
 
     // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
-
-    void WaitUntilCompleted();
+    void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
-    const vk::Fence& GetNativeExecutionCompletedFence() const noexcept { return m_vk_execution_completed_fence; }
 
     CommandQueueVK&       GetCommandQueueVK() noexcept;
     const CommandQueueVK& GetCommandQueueVK() const noexcept;

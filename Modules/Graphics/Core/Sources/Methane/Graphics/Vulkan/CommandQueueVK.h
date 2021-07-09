@@ -23,7 +23,7 @@ Vulkan implementation of the command queue interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/CommandQueueTrackingBase.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -35,7 +35,7 @@ class RenderPassVK;
 class QueueFamilyReservationVK;
 struct IContextVK;
 
-class CommandQueueVK final : public CommandQueueBase
+class CommandQueueVK final : public CommandQueueTrackingBase
 {
 public:
     struct WaitInfo

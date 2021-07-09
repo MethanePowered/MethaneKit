@@ -244,6 +244,8 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandKitBase.cpp
     ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
+    ${SOURCES_DIR}/CommandQueueTrackingBase.h
+    ${SOURCES_DIR}/CommandQueueTrackingBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h

@@ -377,7 +377,11 @@ CommandList& CommandListSetBase::operator[](Data::Index index) const
 void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_command_lists_mutex);
+
+    m_is_executing = true;
     m_executing_on_frame_index = frame_index;
+
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
         command_list_ref.get().Execute(frame_index, completed_callback);
@@ -387,6 +391,8 @@ void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::Com
 void CommandListSetBase::Complete() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_command_lists_mutex);
+
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
         CommandListBase& command_list = command_list_ref.get();
@@ -395,6 +401,8 @@ void CommandListSetBase::Complete() const
 
         command_list.Complete(m_executing_on_frame_index);
     }
+
+    m_is_executing = false;
 }
 
 const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index) const

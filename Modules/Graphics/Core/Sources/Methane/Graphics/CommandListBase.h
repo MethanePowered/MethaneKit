@@ -35,6 +35,7 @@ Base implementation of the command list interface.
 #include <magic_enum.hpp>
 #include <stack>
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 
 namespace Methane::Graphics
@@ -172,7 +173,9 @@ public:
 
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
-    
+    virtual void WaitUntilCompleted() { }
+
+    bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
     Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
@@ -183,10 +186,13 @@ public:
     const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
-    Refs<CommandList>      m_refs;
-    Refs<CommandListBase>  m_base_refs;
-    Ptrs<CommandListBase>  m_base_ptrs;
-    Data::Index            m_executing_on_frame_index = 0U;
+    Refs<CommandList>     m_refs;
+    Refs<CommandListBase> m_base_refs;
+    Ptrs<CommandListBase> m_base_ptrs;
+    Data::Index           m_executing_on_frame_index = 0U;
+
+    mutable TracyLockable(std::mutex, m_command_lists_mutex)
+    mutable std::atomic<bool> m_is_executing = false;
 };
 
 } // namespace Methane::Graphics
