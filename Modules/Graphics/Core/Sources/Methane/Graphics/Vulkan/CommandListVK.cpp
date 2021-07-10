@@ -24,14 +24,39 @@ Vulkan command lists sequence implementation
 #include "CommandListVK.h"
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
+#include "RenderContextVK.h"
 #include "DeviceVK.h"
 
+#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Instrumentation.h>
 
 #include <algorithm>
 
 namespace Methane::Graphics
 {
+
+static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<CommandList>& command_list_refs)
+{
+    META_FUNCTION_TASK();
+    vk::PipelineStageFlags wait_stages {};
+    for(const Ref<CommandList>& command_list_ref : command_list_refs)
+    {
+        if (command_list_ref.get().GetType() != CommandList::Type::Render)
+            continue;
+
+        const RenderCommandList& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
+        for(const Texture::Location& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
+        {
+            const Texture::Type attach_texture_type = attach_location.GetTexture().GetSettings().type;
+            if (attach_texture_type == Texture::Type::FrameBuffer)
+                wait_stages |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            if (attach_texture_type == Texture::Type::DepthStencilBuffer)
+                wait_stages |= vk::PipelineStageFlagBits::eVertexShader;
+        }
+    }
+    return wait_stages;
+}
 
 Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
 {
@@ -53,6 +78,7 @@ Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list
 
 CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
     : CommandListSetBase(command_list_refs)
+    , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_execution_completed_fence(m_vk_device.createFence(vk::FenceCreateInfo()))
 {
@@ -78,8 +104,8 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
 
     const CommandQueueVK& command_queue = GetCommandQueueVK();
     vk::SubmitInfo submit_info(
-        command_queue.GetWaitInfo().semaphores,
-        command_queue.GetWaitInfo().stages,
+        GetWaitSemaphores(),
+        GetWaitStages(),
         m_vk_command_buffers
     );
 
@@ -105,6 +131,40 @@ const CommandQueueVK& CommandListSetVK::GetCommandQueueVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const CommandQueueVK&>(GetCommandQueueBase());
+}
+
+const std::vector<vk::Semaphore>& CommandListSetVK::GetWaitSemaphores()
+{
+    META_FUNCTION_TASK();
+    const CommandQueueVK& command_queue = GetCommandQueueVK();
+    const std::vector<vk::Semaphore>& vk_wait_semaphores = command_queue.GetWaitInfo().semaphores;
+    if (!m_vk_wait_frame_buffer_rendering_on_stages)
+        return vk_wait_semaphores;
+
+    m_vk_wait_semaphores.resize(vk_wait_semaphores.size() + 1);
+    if (!vk_wait_semaphores.empty())
+    {
+        m_vk_wait_semaphores.assign(vk_wait_semaphores.begin(), vk_wait_semaphores.end());
+    }
+    m_vk_wait_semaphores.back() = dynamic_cast<const RenderContextVK&>(command_queue.GetContextVK()).GetNativeFrameImageAvailableSemaphore();
+    return m_vk_wait_semaphores;
+}
+
+const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
+{
+    META_FUNCTION_TASK();
+    const CommandQueueVK& command_queue = GetCommandQueueVK();
+    const std::vector<vk::PipelineStageFlags>& vk_wait_stages = command_queue.GetWaitInfo().stages;
+    if (!m_vk_wait_frame_buffer_rendering_on_stages)
+        return vk_wait_stages;
+
+    m_vk_wait_stages.resize(vk_wait_stages.size() + 1);
+    if (!vk_wait_stages.empty())
+    {
+        m_vk_wait_stages.assign(vk_wait_stages.begin(), vk_wait_stages.end());
+    }
+    m_vk_wait_stages.back() = m_vk_wait_frame_buffer_rendering_on_stages;
+    return m_vk_wait_stages;
 }
 
 } // namespace Methane::Graphics

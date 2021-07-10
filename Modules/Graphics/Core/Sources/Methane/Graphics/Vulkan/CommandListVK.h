@@ -62,9 +62,15 @@ public:
     const CommandQueueVK& GetCommandQueueVK() const noexcept;
 
 private:
-    const vk::Device& m_vk_device;
-    std::vector<vk::CommandBuffer> m_vk_command_buffers;
-    vk::Fence m_vk_execution_completed_fence;
+    const std::vector<vk::Semaphore>& GetWaitSemaphores();
+    const std::vector<vk::PipelineStageFlags>& GetWaitStages();
+
+    const vk::PipelineStageFlags        m_vk_wait_frame_buffer_rendering_on_stages;
+    const vk::Device&                   m_vk_device;
+    std::vector<vk::CommandBuffer>      m_vk_command_buffers;
+    std::vector<vk::Semaphore>          m_vk_wait_semaphores;
+    std::vector<vk::PipelineStageFlags> m_vk_wait_stages;
+    vk::Fence                           m_vk_execution_completed_fence;
 };
 
 } // namespace Methane::Graphics

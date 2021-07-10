@@ -61,17 +61,25 @@ public:
     const vk::Extent2D&     GetNativeFrameExtent() const noexcept { return m_vk_frame_extent; }
     vk::Format              GetNativeFrameFormat() const noexcept { return m_vk_frame_format; }
     const vk::Image&        GetNativeFrameImage(uint32_t frame_buffer_index) const;
+    const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const;
+    const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore() const;
+
+protected:
+    // RenderContextBase overrides
+    uint32_t GetNextFrameBufferIndex() override;
 
 private:
     vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const;
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
 
-    vk::SurfaceKHR         m_vk_surface;
-    vk::SwapchainKHR       m_vk_swapchain;
-    vk::Format             m_vk_frame_format;
-    vk::Extent2D           m_vk_frame_extent;
-    std::vector<vk::Image> m_vk_frame_images;
+    vk::SurfaceKHR             m_vk_surface;
+    vk::SwapchainKHR           m_vk_swapchain;
+    vk::Format                 m_vk_frame_format;
+    vk::Extent2D               m_vk_frame_extent;
+    std::vector<vk::Image>     m_vk_frame_images;
+    std::vector<vk::Semaphore> m_vk_frame_semaphores_pool;
+    std::vector<vk::Semaphore> m_vk_frame_image_available_semaphores;
 };
 
 } // namespace Methane::Graphics

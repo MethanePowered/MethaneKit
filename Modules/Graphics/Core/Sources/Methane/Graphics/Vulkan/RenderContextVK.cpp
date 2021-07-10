@@ -65,8 +65,15 @@ void RenderContextVK::Release()
     META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Release();
 
+    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
+    for(vk::Semaphore& vk_semaphore : m_vk_frame_semaphores_pool)
+        vk_device.destroy(vk_semaphore);
+
+    m_vk_frame_semaphores_pool.clear();
+    m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
-    GetDeviceVK().GetNativeDevice().destroy(m_vk_swapchain);
+
+    vk_device.destroy(m_vk_swapchain);
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
@@ -78,10 +85,10 @@ void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocati
     if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
         throw Context::IncompatibleException("Device does not support presentation to the window surface.");
 
-    const DeviceVK::SwapChainSupport swap_chain_support = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
-    const vk::SurfaceFormatKHR swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
-    const vk::PresentModeKHR   swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const vk::Extent2D         swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
+    const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
+    const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
 
     uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
@@ -110,6 +117,16 @@ void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocati
     m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
+
+    m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
+    for(vk::Semaphore& vk_frame_semaphore : m_vk_frame_semaphores_pool)
+    {
+        vk_frame_semaphore = vk_device.createSemaphore(vk::SemaphoreCreateInfo());
+    }
+    // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
+    m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
+
+    UpdateFrameBufferIndex();
 }
 
 bool RenderContextVK::ReadyToRender() const
@@ -128,6 +145,7 @@ void RenderContextVK::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Resize(frame_size);
+    UpdateFrameBufferIndex();
 }
 
 void RenderContextVK::Present()
@@ -136,6 +154,7 @@ void RenderContextVK::Present()
     ContextVK<RenderContextBase>::Present();
     // ...
     ContextVK<RenderContextBase>::OnCpuPresentComplete();
+    UpdateFrameBufferIndex();
 }
 
 bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
@@ -167,6 +186,30 @@ const vk::Image& RenderContextVK::GetNativeFrameImage(uint32_t frame_buffer_inde
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(frame_buffer_index, m_vk_frame_images.size());
     return m_vk_frame_images[frame_buffer_index];
+}
+
+const vk::Semaphore& RenderContextVK::GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS(frame_buffer_index, m_vk_frame_image_available_semaphores.size());
+    return m_vk_frame_image_available_semaphores[frame_buffer_index];
+}
+
+const vk::Semaphore& RenderContextVK::GetNativeFrameImageAvailableSemaphore() const
+{
+    META_FUNCTION_TASK();
+    return GetNativeFrameImageAvailableSemaphore(GetFrameBufferIndex());
+}
+
+uint32_t RenderContextVK::GetNextFrameBufferIndex()
+{
+    META_FUNCTION_TASK();
+    uint32_t next_frame_index = 0;
+    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[GetFrameIndex() % m_vk_frame_semaphores_pool.size()];
+    vk::Result image_acquire_result = GetDeviceVK().GetNativeDevice().acquireNextImageKHR(m_vk_swapchain, std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
+    META_CHECK_ARG_EQUAL_DESCR(image_acquire_result, vk::Result::eSuccess, "Failed to acquire next image");
+    m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
+    return next_frame_index;
 }
 
 vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
