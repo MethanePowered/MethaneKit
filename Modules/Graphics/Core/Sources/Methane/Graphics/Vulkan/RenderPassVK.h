@@ -43,11 +43,12 @@ public:
     [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
     [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
 
-    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept { return m_vk_render_pass; }
-    [[nodiscard]] std::vector<vk::ClearValue> GetAttachmentClearValues() const noexcept;
+    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept                   { return m_vk_render_pass; }
+    [[nodiscard]] const std::vector<vk::ClearValue>& GetAttachmentClearValues() const noexcept { return m_attachment_clear_colors; }
 
 private:
-    vk::RenderPass m_vk_render_pass;
+    vk::RenderPass              m_vk_render_pass;
+    std::vector<vk::ClearValue> m_attachment_clear_colors;
 };
 
 class RenderPassVK final : public RenderPassBase

@@ -173,6 +173,23 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
     , m_vk_render_pass(CreateVulkanRenderPass(render_context.GetDeviceVK().GetNativeDevice(), settings))
 {
     META_FUNCTION_TASK();
+
+    // Fill attachment clear colors
+    m_attachment_clear_colors.reserve(GetAttachmentCount());
+    std::transform(settings.color_attachments.begin(), settings.color_attachments.end(), std::back_inserter(m_attachment_clear_colors),
+                   [](const ColorAttachment& color_attachment)
+                   {
+                       return vk::ClearValue(vk::ClearColorValue(color_attachment.clear_color.AsArray()));
+                   });
+    if (settings.depth_attachment || settings.stencil_attachment)
+    {
+        m_attachment_clear_colors.emplace_back(
+            vk::ClearDepthStencilValue(
+                settings.depth_attachment ? settings.depth_attachment->clear_value : 0.F,
+                settings.stencil_attachment ? settings.stencil_attachment->clear_value : 0U
+            )
+        );
+    }
 }
 
 RenderPatternVK::~RenderPatternVK()
@@ -193,27 +210,6 @@ RenderContextVK& RenderPatternVK::GetRenderContextVK() noexcept
     return static_cast<RenderContextVK&>(GetRenderContextBase());
 }
 
-std::vector<vk::ClearValue> RenderPatternVK::GetAttachmentClearValues() const noexcept
-{
-    META_FUNCTION_TASK();
-    const Settings& settings = GetSettings();
-    std::vector<vk::ClearValue> clear_colors;
-    clear_colors.reserve(GetAttachmentCount());
-    std::transform(settings.color_attachments.begin(), settings.color_attachments.end(), std::back_inserter(clear_colors),
-                   [](const ColorAttachment& color_attachment)
-                   {
-                       return vk::ClearValue(vk::ClearColorValue(color_attachment.clear_color.AsArray()));
-                   });
-    if (settings.depth_attachment || settings.stencil_attachment)
-        clear_colors.emplace_back(
-            vk::ClearDepthStencilValue(
-                settings.depth_attachment   ? settings.depth_attachment->clear_value   : 0.F,
-                settings.stencil_attachment ? settings.stencil_attachment->clear_value : 0U
-            )
-        );
-    return clear_colors;
-}
-
 Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
@@ -225,7 +221,7 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
     , m_vk_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
 {
     META_FUNCTION_TASK();
-    const std::vector<vk::ClearValue> attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
+    const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
     m_vk_pass_begin_info = vk::RenderPassBeginInfo(
         GetPatternVK().GetNativeRenderPass(),
         m_vk_frame_buffer,
