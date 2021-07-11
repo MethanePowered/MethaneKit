@@ -57,6 +57,7 @@ public:
     void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
+    const vk::Semaphore&     GetNativeExecutionCompletedSemaphore() const noexcept { return m_vk_execution_completed_semaphore; }
 
     CommandQueueVK&       GetCommandQueueVK() noexcept;
     const CommandQueueVK& GetCommandQueueVK() const noexcept;
@@ -70,6 +71,7 @@ private:
     std::vector<vk::CommandBuffer>      m_vk_command_buffers;
     std::vector<vk::Semaphore>          m_vk_wait_semaphores;
     std::vector<vk::PipelineStageFlags> m_vk_wait_stages;
+    vk::Semaphore                       m_vk_execution_completed_semaphore;
     vk::Fence                           m_vk_execution_completed_fence;
 };
 

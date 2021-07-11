@@ -217,7 +217,7 @@ void RenderContextDX::Present()
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
                   GetDeviceDX().GetNativeDevice().Get());
 
-    OnCpuPresentComplete();
+    ContextDX<RenderContextBase>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();
 }
 

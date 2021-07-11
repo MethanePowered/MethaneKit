@@ -51,6 +51,8 @@ public:
 
     void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
 
+    Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
+
 private:
     void WaitForExecution() noexcept;
 

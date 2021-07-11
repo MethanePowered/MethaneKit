@@ -84,8 +84,8 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_r
 void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::ResetCommandState();
-    RenderCommandListBase::Reset(p_debug_group);
+    CommandListVK<RenderCommandListBase>::ResetCommandState();
+    CommandListVK<RenderCommandListBase>::Reset(p_debug_group);
     if (HasPass())
     {
         ResetRenderPass();
@@ -95,8 +95,9 @@ void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
 void RenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::ResetCommandState();
-    RenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    CommandListVK<RenderCommandListBase>::ResetCommandState();
+    CommandListVK<RenderCommandListBase>::Reset(p_debug_group);
+    CommandListVK<RenderCommandListBase>::SetRenderState(render_state);
     if (HasPass())
     {
         ResetRenderPass();

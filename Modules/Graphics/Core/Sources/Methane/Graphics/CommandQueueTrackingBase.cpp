@@ -138,6 +138,13 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
     }
 }
 
+Ptr<CommandListSetBase> CommandQueueTrackingBase::GetLastExecutingCommandListSet() const
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_executing_command_lists_mutex);
+    return m_executing_command_lists.empty() ? Ptr<CommandListSetBase>() : m_executing_command_lists.back();
+}
+
 const Ptr<CommandListSetBase>& CommandQueueTrackingBase::GetNextExecutingCommandListSet() const
 {
     META_FUNCTION_TASK();

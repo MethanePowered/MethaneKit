@@ -25,6 +25,7 @@ Vulkan implementation of the render context interface.
 #include "DeviceVK.h"
 #include "RenderStateVK.h"
 #include "CommandQueueVK.h"
+#include "CommandListVK.h"
 #include "PlatformVK.h"
 #include "TypesVK.h"
 
@@ -151,8 +152,20 @@ void RenderContextVK::Resize(const FrameSize& frame_size)
 void RenderContextVK::Present()
 {
     META_FUNCTION_TASK();
+    META_SCOPE_TIMER("RenderContextDX::Present");
     ContextVK<RenderContextBase>::Present();
-    // ...
+
+    CommandQueueVK& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
+    Ptr<CommandListSetVK> last_executing_command_list_set_ptr = std::static_pointer_cast<CommandListSetVK>(render_command_queue.GetLastExecutingCommandListSet());
+
+    // Present frame to screen
+    const uint32_t image_index = GetFrameBufferIndex();
+    vk::PresentInfoKHR present_info = last_executing_command_list_set_ptr
+        ? vk::PresentInfoKHR(last_executing_command_list_set_ptr->GetNativeExecutionCompletedSemaphore(), m_vk_swapchain, image_index)
+        : vk::PresentInfoKHR({}, m_vk_swapchain, image_index);
+    const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
+    META_CHECK_ARG_EQUAL_DESCR(present_result, vk::Result::eSuccess, "failed to present frame image on screen");
+
     ContextVK<RenderContextBase>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();
 }
