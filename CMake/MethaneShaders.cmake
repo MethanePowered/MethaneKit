@@ -212,7 +212,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     endif()
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-        set(OUTPUT_TYPE_ARG "-spirv")
+        set(OUTPUT_TYPE_ARG -spirv)
     endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -243,6 +243,12 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
 
         get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
 
+        if(SHADER_TYPE STREQUAL "vert")
+            set(EXTRA_OPTIONS -fvk-invert-y)
+        else()
+            set(EXTRA_OPTIONS "")
+        endif()
+
         set(SHADER_OBJ_FILE "${SHADERS_NAME}_${NEW_ENTRY_POINT}.${OUTPUT_FILE_EXT}")
         set(SHADER_OBJ_PATH "${TARGET_SHADERS_DIR}/${SHADER_OBJ_FILE}")
 
@@ -255,7 +261,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
             WORKING_DIRECTORY "${DXC_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
-            COMMAND ${DXC_EXE} ${OUTPUT_TYPE_ARG} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
+            COMMAND ${DXC_EXE} ${OUTPUT_TYPE_ARG} ${EXTRA_OPTIONS} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
 
         add_dependencies(${COMPILE_SHADER_TARGET} DirectXCompilerUnpack-build)
