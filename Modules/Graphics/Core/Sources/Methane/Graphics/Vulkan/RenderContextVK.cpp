@@ -82,48 +82,18 @@ void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocati
     META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 
-    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
-    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
-        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
-
-    const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
-    const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
-    const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
-
-    uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
-    if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
-        image_count = swap_chain_support.capabilities.maxImageCount;
+    InitializeNativeSwapchain();
 
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    m_vk_swapchain = vk_device.createSwapchainKHR(
-        vk::SwapchainCreateInfoKHR(
-            vk::SwapchainCreateFlagsKHR(),
-            m_vk_surface,
-            image_count,
-            swap_surface_format.format,
-            swap_surface_format.colorSpace,
-            swap_extent,
-            1,
-            vk::ImageUsageFlagBits::eColorAttachment,
-            vk::SharingMode::eExclusive, 0, nullptr,
-            swap_chain_support.capabilities.currentTransform,
-            vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            swap_present_mode,
-            true,
-            nullptr
-        )
-    );
-
-    m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
-    m_vk_frame_format = swap_surface_format.format;
-    m_vk_frame_extent = swap_extent;
-
     m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
     for(vk::Semaphore& vk_frame_semaphore : m_vk_frame_semaphores_pool)
     {
+        if (vk_frame_semaphore)
+            continue;
+
         vk_frame_semaphore = vk_device.createSemaphore(vk::SemaphoreCreateInfo());
     }
+
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
 
@@ -145,7 +115,14 @@ void RenderContextVK::WaitForGpu(Context::WaitFor wait_for)
 void RenderContextVK::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
+    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
+    vk_device.waitIdle();
+    vk_device.destroy(m_vk_swapchain);
+    m_vk_frame_images.clear();
+
     ContextVK<RenderContextBase>::Resize(frame_size);
+
+    InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
 }
 
@@ -271,6 +248,47 @@ vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
         std::max(surface_caps.minImageExtent.width,  std::min(surface_caps.minImageExtent.width,  frame_size.GetWidth())),
         std::max(surface_caps.minImageExtent.height, std::min(surface_caps.minImageExtent.height, frame_size.GetHeight()))
     );
+}
+
+void RenderContextVK::InitializeNativeSwapchain()
+{
+    META_FUNCTION_TASK();
+    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
+    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
+        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
+
+    const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
+    const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
+
+    uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
+    if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
+        image_count = swap_chain_support.capabilities.maxImageCount;
+
+    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
+    m_vk_swapchain = vk_device.createSwapchainKHR(
+        vk::SwapchainCreateInfoKHR(
+            vk::SwapchainCreateFlagsKHR(),
+            m_vk_surface,
+            image_count,
+            swap_surface_format.format,
+            swap_surface_format.colorSpace,
+            swap_extent,
+            1,
+            vk::ImageUsageFlagBits::eColorAttachment,
+            vk::SharingMode::eExclusive, 0, nullptr,
+            swap_chain_support.capabilities.currentTransform,
+            vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            swap_present_mode,
+            true,
+            nullptr
+        )
+    );
+
+    m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
+    m_vk_frame_format = swap_surface_format.format;
+    m_vk_frame_extent = swap_extent;
 }
 
 } // namespace Methane::Graphics

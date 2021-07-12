@@ -64,6 +64,12 @@ public:
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
+    ~CommandListVK()
+    {
+        META_FUNCTION_TASK();
+        GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice().freeCommandBuffers(GetCommandQueueVK().GetNativeCommandPool(), m_vk_command_buffer);
+    }
+
     // CommandList interface
 
     void PushDebugGroup(CommandList::DebugGroup& debug_group) final

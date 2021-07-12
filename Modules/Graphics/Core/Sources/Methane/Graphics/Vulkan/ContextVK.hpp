@@ -59,20 +59,6 @@ public:
         ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
-    // ContextBase interface
-
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override
-    {
-        META_FUNCTION_TASK();
-        ContextBaseT::Initialize(device, deferred_heap_allocation, is_callback_emitted);
-    }
-
-    void Release() override
-    {
-        META_FUNCTION_TASK();
-        ContextBaseT::Release();
-    }
-
     // IContextVK interface
 
     const DeviceVK& GetDeviceVK() const noexcept final

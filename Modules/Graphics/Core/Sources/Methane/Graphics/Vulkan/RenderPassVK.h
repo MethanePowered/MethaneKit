@@ -59,6 +59,7 @@ public:
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
+    void ReleaseAttachmentTextures() override;
 
     // RenderPassBase interface
     void Begin(RenderCommandListBase& command_list) override;
@@ -70,6 +71,8 @@ public:
     RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
 
 private:
+    vk::RenderPassBeginInfo CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
+
     vk::Framebuffer m_vk_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };

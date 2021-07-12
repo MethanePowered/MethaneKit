@@ -72,6 +72,7 @@ private:
     vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const;
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
+    void InitializeNativeSwapchain();
 
     vk::SurfaceKHR             m_vk_surface;
     vk::SwapchainKHR           m_vk_swapchain;
