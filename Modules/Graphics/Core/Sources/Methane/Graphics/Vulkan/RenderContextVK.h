@@ -36,11 +36,8 @@ namespace Methane::Graphics
 class RenderContextVK final : public ContextVK<RenderContextBase>
 {
 public:
-    RenderContextVK(const Platform::AppEnvironment& app_env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
+    RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
     ~RenderContextVK() override;
-
-    // Context interface
-    void  WaitForGpu(Context::WaitFor wait_for) override;
 
     // RenderContext interface
     bool     ReadyToRender() const override;
@@ -73,8 +70,10 @@ private:
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
     void InitializeNativeSwapchain();
+    void ReleaseNativeSwapchain();
 
-    vk::SurfaceKHR             m_vk_surface;
+    const vk::Device           m_vk_device;
+    const vk::SurfaceKHR       m_vk_surface;
     vk::SwapchainKHR           m_vk_swapchain;
     vk::Format                 m_vk_frame_format;
     vk::Extent2D               m_vk_frame_extent;

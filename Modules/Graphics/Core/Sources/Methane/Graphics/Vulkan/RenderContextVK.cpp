@@ -40,14 +40,15 @@ namespace Methane::Graphics
 Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
-    auto& device_base = static_cast<DeviceBase&>(device);
-    const auto render_context_ptr = std::make_shared<RenderContextVK>(env, device_base, parallel_executor, settings);
-    render_context_ptr->Initialize(device_base, true);
+    auto& device_vk = static_cast<DeviceVK&>(device);
+    const auto render_context_ptr = std::make_shared<RenderContextVK>(env, device_vk, parallel_executor, settings);
+    render_context_ptr->Initialize(device_vk, true);
     return render_context_ptr;
 }
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
+    , m_vk_device(device.GetNativeDevice())
     , m_vk_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
@@ -65,38 +66,14 @@ void RenderContextVK::Release()
 {
     META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Release();
-
-    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    for(vk::Semaphore& vk_semaphore : m_vk_frame_semaphores_pool)
-        vk_device.destroy(vk_semaphore);
-
-    m_vk_frame_semaphores_pool.clear();
-    m_vk_frame_image_available_semaphores.clear();
-    m_vk_frame_images.clear();
-
-    vk_device.destroy(m_vk_swapchain);
+    ReleaseNativeSwapchain();
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
-
     InitializeNativeSwapchain();
-
-    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
-    for(vk::Semaphore& vk_frame_semaphore : m_vk_frame_semaphores_pool)
-    {
-        if (vk_frame_semaphore)
-            continue;
-
-        vk_frame_semaphore = vk_device.createSemaphore(vk::SemaphoreCreateInfo());
-    }
-
-    // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
-    m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
-
     UpdateFrameBufferIndex();
 }
 
@@ -106,19 +83,10 @@ bool RenderContextVK::ReadyToRender() const
     return true;
 }
 
-void RenderContextVK::WaitForGpu(Context::WaitFor wait_for)
-{
-    META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::WaitForGpu(wait_for);
-}
-
 void RenderContextVK::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    vk_device.waitIdle();
-    vk_device.destroy(m_vk_swapchain);
-    m_vk_frame_images.clear();
+    ReleaseNativeSwapchain();
 
     ContextVK<RenderContextBase>::Resize(frame_size);
 
@@ -196,7 +164,7 @@ uint32_t RenderContextVK::GetNextFrameBufferIndex()
     META_FUNCTION_TASK();
     uint32_t next_frame_index = 0;
     const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[GetFrameIndex() % m_vk_frame_semaphores_pool.size()];
-    vk::Result image_acquire_result = GetDeviceVK().GetNativeDevice().acquireNextImageKHR(m_vk_swapchain, std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
+    vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(m_vk_swapchain, std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
     META_CHECK_ARG_EQUAL_DESCR(image_acquire_result, vk::Result::eSuccess, "Failed to acquire next image");
     m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
     return next_frame_index;
@@ -266,8 +234,7 @@ void RenderContextVK::InitializeNativeSwapchain()
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
         image_count = swap_chain_support.capabilities.maxImageCount;
 
-    const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    m_vk_swapchain = vk_device.createSwapchainKHR(
+    m_vk_swapchain = m_vk_device.createSwapchainKHR(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
             m_vk_surface,
@@ -286,9 +253,37 @@ void RenderContextVK::InitializeNativeSwapchain()
         )
     );
 
-    m_vk_frame_images = vk_device.getSwapchainImagesKHR(m_vk_swapchain);
+    m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(m_vk_swapchain);
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
+
+    // Create frame semaphores in pool
+    m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
+    for(vk::Semaphore& vk_frame_semaphore : m_vk_frame_semaphores_pool)
+    {
+        if (vk_frame_semaphore)
+            continue;
+
+        vk_frame_semaphore = m_vk_device.createSemaphore(vk::SemaphoreCreateInfo());
+    }
+
+    // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
+    m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
+}
+
+void RenderContextVK::ReleaseNativeSwapchain()
+{
+    META_FUNCTION_TASK();
+    m_vk_device.waitIdle();
+
+    for(vk::Semaphore& vk_semaphore : m_vk_frame_semaphores_pool)
+        m_vk_device.destroy(vk_semaphore);
+
+    m_vk_frame_semaphores_pool.clear();
+    m_vk_frame_image_available_semaphores.clear();
+    m_vk_frame_images.clear();
+
+    m_vk_device.destroy(m_vk_swapchain);
 }
 
 } // namespace Methane::Graphics
