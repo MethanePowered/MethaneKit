@@ -23,6 +23,7 @@ Tutorial demonstrating colored triangle rendering with Methane graphics API
 
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
+#include <Methane/Samples/AppSettings.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -41,23 +42,11 @@ private:
     Ptr<RenderState> m_render_state_ptr;
 
 public:
-    HelloTriangleApp() : GraphicsApp(
-        {                                        // Application settings:
-            {                                    // platform_app:
-                "Methane Hello Triangle",        // - name
-                0.8, 0.8,                        // - width, height
-            },                                   //
-            {                                    // graphics_app:
-                RenderPass::Access::None,        // - screen_pass_access
-                false,                           // - animations_enabled
-            },                                   //
-            {                                    // render_context:
-                FrameSize(),                     // - frame_size placeholder: set in InitContext
-                PixelFormat::BGRA8Unorm,         // - color_format
-                PixelFormat::Unknown,            // - depth_stencil_format
-                Color4F(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
-            }
-        })
+    HelloTriangleApp()
+        : GraphicsApp(
+            Samples::GetGraphicsAppSettings("Methane Hello Triangle",
+                                            Samples::AppOptions::VSync, Context::Options::None,
+                                            {}, Color4F(0.0F, 0.2F, 0.4F, 1.0F), RenderPass::Access::None))
     { }
 
     ~HelloTriangleApp() override
