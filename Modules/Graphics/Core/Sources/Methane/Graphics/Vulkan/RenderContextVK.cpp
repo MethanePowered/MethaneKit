@@ -33,6 +33,7 @@ Vulkan implementation of the render context interface.
 
 #include <fmt/format.h>
 #include <magic_enum.hpp>
+#include <sstream>
 
 namespace Methane::Graphics
 {
@@ -191,18 +192,35 @@ vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<
 vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const
 {
     META_FUNCTION_TASK();
-    const vk::PresentModeKHR required_present_mode = GetSettings().vsync_enabled
-                                                   ? vk::PresentModeKHR::eFifo
-                                                   : vk::PresentModeKHR::eMailbox;
+    const std::vector<vk::PresentModeKHR> required_present_modes = GetSettings().vsync_enabled
+        ? std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eFifo }
+        : std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eImmediate };
 
-    const auto present_mode_it = std::find_if(available_present_modes.begin(), available_present_modes.end(),
-                                              [required_present_mode](const vk::PresentModeKHR& present_mode)
-                                              { return present_mode == required_present_mode; });
+    std::optional<vk::PresentModeKHR> present_mode_opt;
+    for (vk::PresentModeKHR required_present_mode : required_present_modes)
+    {
+        const auto present_mode_it = std::find_if(available_present_modes.begin(), available_present_modes.end(),
+                                                  [required_present_mode](const vk::PresentModeKHR& present_mode)
+                                                  { return present_mode == required_present_mode; });
 
-    if (present_mode_it == available_present_modes.end())
-        throw Context::IncompatibleException(fmt::format("{} present mode is not available for window surface.", magic_enum::enum_name(required_present_mode)));
+        if (present_mode_it != available_present_modes.end())
+        {
+            present_mode_opt = required_present_mode;
+            break;
+        }
+    }
 
-    return *present_mode_it;
+    if (!present_mode_opt)
+    {
+        std::stringstream ss;
+        for (vk::PresentModeKHR required_present_mode : required_present_modes)
+        {
+            ss << " " << magic_enum::enum_name(required_present_mode);
+        }
+        throw Context::IncompatibleException(fmt::format("None of required present modes ({}) is available for window surface.", ss.str()));
+    }
+
+    return *present_mode_opt;
 }
 
 vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const
