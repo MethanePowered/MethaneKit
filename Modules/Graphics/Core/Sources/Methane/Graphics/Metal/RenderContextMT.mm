@@ -51,7 +51,6 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
     : ContextMT<RenderContextBase>(device, parallel_executor, settings)
     , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)
                                         appWindow: env.ns_app_delegate.window
-                                           device: ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()
                                       pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
                                     drawableCount: settings.frame_buffers_count
                                      vsyncEnabled: Methane::MacOS::ConvertToNsType<bool, BOOL>(settings.vsync_enabled)

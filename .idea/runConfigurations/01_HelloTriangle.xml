@@ -1,5 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="01-HelloTriangle" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneHelloTriangle" CONFIG_NAME="MSVC DX Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneHelloTriangle">
+    <envs>
+      <env name="VK_ICD_FILENAMES" value="$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json" />
+      <env name="VK_LAYER_PATH" value="$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d" />
+    </envs>
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>

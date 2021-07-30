@@ -25,6 +25,8 @@ Vulkan command lists sequence implementation.
 
 #include <Methane/Graphics/CommandListBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 

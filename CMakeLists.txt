@@ -207,12 +207,23 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
 )
 
 # METHANE_GFX_API is platform dependent and is selected in CMake/MethaneModules.cmake
-if(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
-    message(STATUS "Methane is using Metal graphics API")
-elseif(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     message(STATUS "Methane is using DirectX 12 graphics API")
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    message(STATUS "Methane is using Metal graphics API")
 elseif (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     message(STATUS "Methane is using Vulkan graphics API")
+    # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
+    # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
+    if (APPLE)
+        # To enable Vulkan support on MacOS we link statically with MoltenVK framework (translation layer to Metal).
+        # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
+        # - VULKAN_SDK to full installation path before running CMake generator.
+        find_package(Vulkan REQUIRED)
+        # To run Vulkan application on MacOS, additional environment variables need to be set for application:
+        # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json
+        # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
+    endif()
 endif()
 
 if (METHANE_APPS_BUILD_ENABLED)

@@ -50,7 +50,6 @@ MacOS application view implementation.
 - (nonnull instancetype)initWithCoder:(nonnull NSCoder*) aDecoder;
 - (nonnull instancetype)initWithFrame:(NSRect) backing_frame
                             appWindow:(nullable NSWindow*) app_window
-                               device:(nonnull id<MTLDevice>) device
                           pixelFormat:(MTLPixelFormat) pixelFormat
                         drawableCount:(NSUInteger) drawable_count
                          vsyncEnabled:(BOOL) vsync_enabled
