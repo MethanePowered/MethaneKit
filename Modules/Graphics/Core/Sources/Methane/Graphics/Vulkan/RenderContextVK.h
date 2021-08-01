@@ -30,6 +30,14 @@ Vulkan implementation of the render context interface.
 
 #include <vulkan/vulkan.hpp>
 
+#ifdef __APPLE__
+#ifdef __OBJC__
+#import <Methane/Platform/MacOS/AppViewMT.hh>
+#else
+using AppViewMT = void;
+#endif
+#endif
+
 namespace Methane::Graphics
 {
 
@@ -73,6 +81,10 @@ private:
     void ReleaseNativeSwapchain();
 
     const vk::Device           m_vk_device;
+#ifdef __APPLE__
+    // MacOS metal app view with swap-chain implementation to work via MoltenVK
+    AppViewMT*                 m_metal_view;
+#endif
     const vk::SurfaceKHR       m_vk_surface;
     vk::SwapchainKHR           m_vk_swapchain;
     vk::Format                 m_vk_frame_format;

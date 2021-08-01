@@ -22,6 +22,9 @@ Vulkan platform dependent functions for MacOS.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/PlatformVK.h>
+
+#include <Methane/Platform/MacOS/AppViewMT.hh>
+#include <Methane/Graphics/Metal/RenderContextAppViewMT.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -37,13 +40,26 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
     return s_instance_extensions;
 }
 
-vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment&)
+vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    // TODO: CAMetalLayer is required here to create Vulkan Surface
+    AppViewMT* metal_view = nil;
+    if (!env.ns_app_delegate.isViewLoaded)
+    {
+        // Create temporary application view for Window if it was not created yet
+        metal_view = CreateTemporaryAppView(env);
+        env.ns_app_delegate.view = metal_view;
+    }
+    else
+    {
+        metal_view = static_cast<AppViewMT*>(env.ns_app_delegate.view);
+    }
+
+    CAMetalLayer* metal_layer = metal_view.metalLayer;
     return vk_instance.createMetalSurfaceEXT(
         vk::MetalSurfaceCreateInfoEXT(
-            vk::MetalSurfaceCreateFlagsEXT{}
+            vk::MetalSurfaceCreateFlagsEXT{},
+            metal_layer
         )
     );
 }

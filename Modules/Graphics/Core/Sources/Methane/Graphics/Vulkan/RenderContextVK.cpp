@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/RenderContextVK.mm
+FILE: Methane/Graphics/Vulkan/RenderContextVK.cpp
 Vulkan implementation of the render context interface.
 
 ******************************************************************************/
@@ -47,6 +47,8 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
     return render_context_ptr;
 }
 
+#ifndef __APPLE__
+
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
@@ -54,6 +56,8 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
 {
     META_FUNCTION_TASK();
 }
+
+#endif // #ifndef __APPLE__
 
 RenderContextVK::~RenderContextVK()
 {

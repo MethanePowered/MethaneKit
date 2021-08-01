@@ -401,7 +401,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, vk_queue_family_properties,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandList::Type::Blit, capabilities.render_queues_count, vk_queue_family_properties);
+    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count, vk_queue_family_properties);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;

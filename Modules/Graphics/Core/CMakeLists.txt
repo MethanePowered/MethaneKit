@@ -101,6 +101,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
+        ${SOURCES_GRAPHICS_DIR}/RenderContextAppViewMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
@@ -192,7 +193,18 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     )
 
     if (APPLE)
-        set(PLATFORM_SOURCES_OBJC ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.mm)
+        set(VULKAN_TO_METAL_SOURCES
+            ${SOURCES_GRAPHICS_DIR}/RenderContextVK.mm
+            ${SOURCES_DIR}/Metal/TypesMT.hh
+            ${SOURCES_DIR}/Metal/TypesMT.mm
+            ${SOURCES_DIR}/Metal/RenderContextAppViewMT.hh
+        )
+        set(GRAPHICS_API_SOURCES ${GRAPHICS_API_SOURCES}
+            ${VULKAN_TO_METAL_SOURCES}
+        )
+        set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
+            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.mm
+        )
     endif()
 
     set(PLATFORM_LIBRARIES
