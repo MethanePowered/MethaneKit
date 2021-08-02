@@ -216,9 +216,10 @@ elseif (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
     # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
     if (APPLE)
-        # To enable Vulkan support on MacOS we link statically with MoltenVK framework (translation layer to Metal).
+        message(WARNING "Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
+        # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
         # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
-        # - VULKAN_SDK to full installation path before running CMake generator.
+        # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
         find_package(Vulkan REQUIRED)
         # To run Vulkan application on MacOS, additional environment variables need to be set for application:
         # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json

@@ -8,6 +8,9 @@ do
         --analyze)
             IS_ANALYZE_BUILD=true
             ;;
+        --vulkan)
+            IS_VULKAN_BUILD=true
+            ;;
         *)
             if [ "$IS_ANALYZE_BUILD" == true ]; then
                 SONAR_TOKEN=$arg
@@ -38,12 +41,21 @@ esac
 BUILD_TYPE=Release
 BUILD_VERSION=0.5
 
+if [ "$IS_VULKAN_BUILD" == true ]; then
+    VULKAN_BUILD_FLAG=ON
+    VULKAN_SDK=/Users/egorodet/VulkanSDK/1.2.182.0/macOS
+    echo "Vulkan build is enabled via SDK: $VULKAN_SDK"
+else
+    VULKAN_BUILD_FLAG=OFF
+fi
+
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output
 CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR
 INSTALL_DIR=$CONFIG_DIR/Install
 CMAKE_FLAGS=" \
+    -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=$VULKAN_BUILD_FLAG \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
     -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON \
