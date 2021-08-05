@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/SamplerVK.mm
+FILE: Methane/Graphics/Vulkan/SamplerVK.cpp
 Vulkan implementation of the sampler interface.
 
 ******************************************************************************/

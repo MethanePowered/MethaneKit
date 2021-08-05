@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/TextureVK.mm
+FILE: Methane/Graphics/Vulkan/TextureVK.cpp
 Vulkan implementation of the texture interface.
 
 ******************************************************************************/

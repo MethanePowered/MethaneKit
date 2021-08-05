@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/DeviceVK.mm
+FILE: Methane/Graphics/Vulkan/DeviceVK.cpp
 Vulkan implementation of the device interface.
 
 ******************************************************************************/

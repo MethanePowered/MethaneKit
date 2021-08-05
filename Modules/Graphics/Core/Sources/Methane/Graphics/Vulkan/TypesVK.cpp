@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/TypesVK.mm
+FILE: Methane/Graphics/Vulkan/TypesVK.cpp
 Methane graphics types converters to Vulkan native types.
 
 ******************************************************************************/

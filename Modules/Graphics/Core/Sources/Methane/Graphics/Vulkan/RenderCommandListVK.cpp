@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/RenderCommandListVK.mm
+FILE: Methane/Graphics/Vulkan/RenderCommandListVK.cpp
 Vulkan implementation of the render command list interface.
 
 ******************************************************************************/

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/BufferVK.mm
+FILE: Methane/Graphics/Vulkan/BufferVK.cpp
 Vulkan implementation of the buffer interface.
 
 ******************************************************************************/

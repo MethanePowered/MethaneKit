@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/CommandQueueVK.mm
+FILE: Methane/Graphics/Vulkan/CommandQueueVK.cpp
 Vulkan implementation of the command queue interface.
 
 ******************************************************************************/

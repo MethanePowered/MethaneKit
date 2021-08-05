@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ResourceVK.mm
+FILE: Methane/Graphics/Vulkan/ResourceVK.cpp
 Vulkan implementation of the resource interface.
 
 ******************************************************************************/

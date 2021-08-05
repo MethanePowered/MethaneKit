@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ShaderVK.mm
+FILE: Methane/Graphics/Vulkan/ShaderVK.cpp
 Vulkan implementation of the shader interface.
 
 ******************************************************************************/

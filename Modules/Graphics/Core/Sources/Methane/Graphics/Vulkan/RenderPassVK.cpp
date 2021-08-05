@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/RenderPassVK.mm
+FILE: Methane/Graphics/Vulkan/RenderPassVK.cpp
 Vulkan implementation of the render pass interface.
 
 ******************************************************************************/

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/RenderStateVK.mm
+FILE: Methane/Graphics/Vulkan/RenderStateVK.cpp
 Vulkan implementation of the render state interface.
 
 ******************************************************************************/
