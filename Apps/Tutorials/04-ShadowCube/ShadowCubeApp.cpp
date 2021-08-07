@@ -96,9 +96,9 @@ void ShadowCubeApp::Init()
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
     m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MarbleWhite.jpg", image_options, "Floor Texture"));
 
-    const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
-    const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
-    const Data::Size mesh_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(MeshUniforms)));
+    const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::Constants)));
+    const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms)));
+    const Data::Size mesh_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms)));
 
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
@@ -357,24 +357,24 @@ bool ShadowCubeApp::Update()
     hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
 
     // Update Cube uniforms
-    m_cube_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
+    m_cube_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
         hlslpp::transpose(cube_model_matrix),
         hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
         hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
-    m_cube_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
+    m_cube_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
         hlslpp::transpose(cube_model_matrix),
         hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()
     });
 
     // Update Floor uniforms
-    m_floor_buffers_ptr->SetFinalPassUniforms(MeshUniforms{
+    m_floor_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
         hlslpp::transpose(scale_matrix),
         hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
         hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
     });
-    m_floor_buffers_ptr->SetShadowPassUniforms(MeshUniforms{
+    m_floor_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
         hlslpp::transpose(scale_matrix),
         hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()

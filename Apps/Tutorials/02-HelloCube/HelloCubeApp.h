@@ -26,8 +26,10 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/UserInterface/App.hpp>
 
-#include <string>
-#include <array>
+namespace hlslpp // NOSONAR
+{
+#include "Shaders/HelloCubeUniforms.h"
+}
 
 namespace Methane::Tutorials
 {
@@ -62,22 +64,17 @@ public:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    struct META_UNIFORM_ALIGN Uniforms
-    {
-        hlslpp::float4x4 mvp_matrix;
-    };
-
     bool Animate(double elapsed_seconds, double delta_seconds);
 
     hlslpp::float4x4      m_model_matrix;
-    Uniforms              m_shader_uniforms { };
+    hlslpp::Uniforms      m_shader_uniforms { };
     gfx::Camera           m_camera;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
     Ptr<gfx::Buffer>      m_index_buffer_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
     };
 };
 

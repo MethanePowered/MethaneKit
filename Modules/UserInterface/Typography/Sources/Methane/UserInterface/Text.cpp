@@ -41,20 +41,15 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+namespace hlslpp // NOSONAR
+{
+#include <TextUniforms.h>
+}
+
 #include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
-
-struct META_UNIFORM_ALIGN Text::Constants
-{
-    gfx::Color4F color;
-};
-
-struct META_UNIFORM_ALIGN Text::Uniforms
-{
-    hlslpp::float4x4 vp_matrix;
-};
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
     : Text(ui_context, font,
@@ -515,7 +510,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
     const gfx::FrameSize& content_size = text_mesh.GetContentSize();
     META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
-    Uniforms uniforms{
+    hlslpp::TextUniforms uniforms{
         hlslpp::mul(
             hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.GetWidth()),
                                     2.F / static_cast<float>(content_size.GetHeight()),
@@ -634,8 +629,8 @@ void Text::UpdateTextMesh()
 void Text::UpdateConstantsBuffer()
 {
     META_FUNCTION_TASK();
-    Constants constants{
-        m_settings.color
+    hlslpp::TextConstants constants{
+        m_settings.color.AsVector()
     };
     const auto const_data_size = static_cast<Data::Size>(sizeof(constants));
 

@@ -21,6 +21,8 @@ Shaders for sky-box rendering from cube-map texture on a sphere mesh without lig
 
 ******************************************************************************/
 
+#include "SkyBoxUniforms.h"
+
 struct VSInput
 {
     float3 position : POSITION;
@@ -32,14 +34,9 @@ struct PSInput
     float3 uvw      : UVFACE;
 };
 
-struct Uniforms
-{
-    float4x4 mvp_matrix;
-};
-
-ConstantBuffer<Uniforms> g_skybox_uniforms : register(b1);
-TextureCube              g_skybox_texture  : register(t1);
-SamplerState             g_texture_sampler : register(s1);
+ConstantBuffer<SkyBoxUniforms> g_skybox_uniforms : register(b1);
+TextureCube                    g_skybox_texture  : register(t1);
+SamplerState                   g_texture_sampler : register(s1);
 
 PSInput SkyboxVS(VSInput input)
 {

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ Shaders for textured cube rendering with Phong lighting model
 
 ******************************************************************************/
 
+#include "TexturedCubeUniforms.h"
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
@@ -36,22 +37,6 @@ struct PSInput
     float3 world_position   : POSITION;
     float3 world_normal     : NORMAL;
     float2 texcoord         : TEXCOORD;
-};
-
-struct Constants
-{
-    float4 light_color;
-    float  light_power;
-    float  light_ambient_factor;
-    float  light_specular_factor;
-};
-
-struct Uniforms
-{
-    float3   eye_position;
-    float3   light_position;
-    float4x4 mvp_matrix;
-    float4x4 model_matrix;
 };
 
 ConstantBuffer<Constants> g_constants : register(b1);

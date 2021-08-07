@@ -4,6 +4,8 @@ include(MethaneShaders)
 
 get_module_dirs("Methane/Graphics")
 
+set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
+
 set(HEADERS
     ${INCLUDE_DIR}/Extensions.h
     ${INCLUDE_DIR}/ImageLoader.h
@@ -16,11 +18,13 @@ set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
+    ${SHADERS_DIR}/ScreenQuadConstants.h
+    ${SHADERS_DIR}/SkyBoxUniforms.h
 )
 
 set(HLSL_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/SkyBox.hlsl
-    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ScreenQuad.hlsl
+    ${SHADERS_DIR}/SkyBox.hlsl
+    ${SHADERS_DIR}/ScreenQuad.hlsl
 )
 
 add_library(${TARGET} STATIC
@@ -67,6 +71,7 @@ target_include_directories(${TARGET}
         Sources
     PUBLIC
         Include
+        Shaders
 )
 
 # Disable GCC/Clang warnings produced by external code from 'stb_image.h'

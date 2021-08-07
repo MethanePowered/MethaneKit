@@ -92,8 +92,8 @@ void HelloCubeApp::Init()
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ColoredCube", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "ColoredCube", "CubePS" } }),
+                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
+                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
             },
             gfx::Program::InputBufferLayouts
             {

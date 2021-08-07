@@ -139,9 +139,6 @@ protected:
     void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
 
 private:
-    struct Constants;
-    struct Uniforms;
-
     struct CommonResourceRefs
     {
         gfx::RenderContext&      render_context;

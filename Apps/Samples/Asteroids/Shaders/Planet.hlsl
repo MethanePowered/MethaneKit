@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ Shaders for planet rendering with spheric texture and Phong lighting.
 
 ******************************************************************************/
 
+#include "SceneConstants.h"
+#include "PlanetUniforms.h"
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
@@ -38,26 +40,11 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-struct Constants
-{
-    float4 light_color;
-    float  light_power;
-    float  light_ambient_factor;
-    float  light_specular_factor;
-};
+ConstantBuffer<SceneConstants> g_constants : register(b1);
+ConstantBuffer<PlanetUniforms> g_uniforms  : register(b2);
 
-struct Uniforms
-{
-    float4   eye_position;
-    float3   light_position;
-    float4x4 mvp_matrix;
-    float4x4 model_matrix;
-};
-
-ConstantBuffer<Constants> g_constants : register(b1);
-ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
-Texture2D                 g_texture   : register(t0);
-SamplerState              g_sampler   : register(s0);
+Texture2D    g_texture   : register(t0);
+SamplerState g_sampler   : register(s0);
 
 PSInput PlanetVS(VSInput input)
 {

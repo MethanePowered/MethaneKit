@@ -122,7 +122,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER OU
         add_custom_target(${GENERATE_METAL_TARGET}
             COMMENT "Generating Metal shader source code from HLSL " ${NEW_ENTRY_POINT} " for application " ${TARGET}
             BYPRODUCTS "${SHADER_METAL_PATH}"
-            DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
+            DEPENDS "${SHADERS_HLSL}" "${SHADERS_CONFIG}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${DXC_EXE} -spirv -T ${SHADER_PROFILE} -E ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} "${SHADERS_HLSL}" -Fo "${SHADER_SPIRV_PATH}"
             #COMMAND ${SPIRV_GEN_EXE} --hlsl-iomap -S ${SHADER_TYPE} -e ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} -o "${SHADER_SPIRV_PATH}" -V -D "${SHADERS_HLSL}"
@@ -258,7 +258,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         add_custom_target(${COMPILE_SHADER_TARGET}
             COMMENT "Compiling HLSL shader from file ${SHADERS_HLSL} with profile ${SHADER_PROFILE} and macro-definitions \"${SHADER_DEFINITIONS}\" to ${OUTPUT_FILE_EXT} file ${SHADER_OBJ_FILE}"
             BYPRODUCTS "${SHADER_OBJ_PATH}"
-            DEPENDS ${SHADERS_HLSL} ${SHADERS_CONFIG}
+            DEPENDS "${SHADERS_HLSL}" "${SHADERS_CONFIG}"
             WORKING_DIRECTORY "${DXC_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${DXC_EXE} ${OUTPUT_TYPE_ARG} ${EXTRA_OPTIONS} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}

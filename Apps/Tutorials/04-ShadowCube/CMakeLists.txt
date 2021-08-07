@@ -7,6 +7,7 @@ include(MethaneResources)
 set(SOURCES
     ShadowCubeApp.h
     ShadowCubeApp.cpp
+    Shaders/ShadowCubeUniforms.h
 )
 
 set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)

@@ -15,6 +15,9 @@ set(SOURCES
     AsteroidsArray.cpp
     Planet.h
     Planet.cpp
+    Shaders/AsteroidUniforms.h
+    Shaders/PlanetUniforms.h
+    Shaders/SceneConstants.h
 )
 
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)

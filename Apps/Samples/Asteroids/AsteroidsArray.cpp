@@ -491,11 +491,12 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
     m_mesh_subset_by_instance_index[asteroid_parameters.index] = mesh_subset_index;
 
     SetFinalPassUniforms(
-        AsteroidUniforms
+        hlslpp::AsteroidUniforms
         {
             hlslpp::transpose(model_matrix),
-            asteroid_colors.deep,
-            asteroid_colors.shallow,
+            asteroid_colors.deep.AsVector(),
+            asteroid_colors.shallow.AsVector(),
+            0.f,
             mesh_depth_min,
             mesh_depth_max,
             asteroid_parameters.texture_index

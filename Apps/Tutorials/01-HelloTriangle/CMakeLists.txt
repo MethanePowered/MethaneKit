@@ -15,7 +15,7 @@ add_methane_application(${TARGET}
 )
 
 set(SHADERS_HLSL
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloTriangle.hlsl"
 )
 
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")

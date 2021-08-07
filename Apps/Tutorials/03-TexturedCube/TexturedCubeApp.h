@@ -26,6 +26,11 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/UserInterface/App.hpp>
 
+namespace hlslpp // NOSONAR
+{
+#include "Shaders/TexturedCubeUniforms.h"
+}
+
 namespace Methane::Tutorials
 {
 
@@ -60,42 +65,26 @@ protected:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    struct META_UNIFORM_ALIGN Constants
-    {
-        hlslpp::float4 light_color;
-        float          light_power;
-        float          light_ambient_factor;
-        float          light_specular_factor;
-    };
-
-    struct META_UNIFORM_ALIGN Uniforms
-    {
-        hlslpp::float3   eye_position;
-        hlslpp::float3   light_position;
-        hlslpp::float4x4 mvp_matrix;
-        hlslpp::float4x4 model_matrix;
-    };
-
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const float           m_cube_scale = 15.F;
-    const Constants       m_shader_constants{
+    const float             m_cube_scale = 15.F;
+    const hlslpp::Constants m_shader_constants{
         { 1.F, 1.F, 0.74F, 1.F },  // - light_color
         700.F,                     // - light_power
         0.04F,                     // - light_ambient_factor
         30.F                       // - light_specular_factor
     };
-    Uniforms              m_shader_uniforms { };
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>      m_index_buffer_ptr;
-    Ptr<gfx::Buffer>      m_const_buffer_ptr;
-    Ptr<gfx::Texture>     m_cube_texture_ptr;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    hlslpp::Uniforms        m_shader_uniforms { };
+    gfx::Camera             m_camera;
+    Ptr<gfx::RenderState>   m_render_state_ptr;
+    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>        m_index_buffer_ptr;
+    Ptr<gfx::Buffer>        m_const_buffer_ptr;
+    Ptr<gfx::Texture>       m_cube_texture_ptr;
+    Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
     };
 };
 

@@ -33,6 +33,11 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 
+namespace hlslpp // NOSONAR
+{
+#include <SkyBoxUniforms.h>
+}
+
 #include <memory>
 #include <array>
 
@@ -85,11 +90,13 @@ private:
 
     SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
-    Settings                      m_settings;
-    RenderContext&                m_context;
-    TexturedMeshBuffers<Uniforms> m_mesh_buffers;
-    Ptr<Sampler>                  m_texture_sampler_ptr;
-    Ptr<RenderState>              m_render_state_ptr;
+    using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
+
+    Settings         m_settings;
+    RenderContext&   m_context;
+    TexMeshBuffers   m_mesh_buffers;
+    Ptr<Sampler>     m_texture_sampler_ptr;
+    Ptr<RenderState> m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

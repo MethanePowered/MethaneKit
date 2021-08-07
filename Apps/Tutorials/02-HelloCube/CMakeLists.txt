@@ -6,10 +6,11 @@ set(TARGET MethaneHelloCube)
 set(SOURCES
     HelloCubeApp.h
     HelloCubeApp.cpp
+    Shaders/HelloCubeUniforms.h
 )
 
 set(SHADERS_HLSL
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ColoredCube.hlsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloCube.hlsl"
 )
 
 add_methane_application(${TARGET}

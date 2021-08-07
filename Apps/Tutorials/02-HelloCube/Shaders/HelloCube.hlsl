@@ -16,10 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: MethaneKit/Apps/Tutorials/02-HelloCube/Shaders/Cube.hlsl
+FILE: MethaneKit/Apps/Tutorials/02-HelloCube/Shaders/HelloCube.hlsl
 Shaders for colored cube rendering
 
 ******************************************************************************/
+
+#include "HelloCubeUniforms.h"
 
 struct VSInput
 {
@@ -31,11 +33,6 @@ struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color    : COLOR;
-};
-
-struct Uniforms
-{
-    float4x4 mvp_matrix;
 };
 
 ConstantBuffer<Uniforms> g_uniforms : register(b1);

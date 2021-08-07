@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ Optional macro definition: ENABLE_SHADOWS, ENABLE_TEXTURING
 
 ******************************************************************************/
 
+#include "ShadowCubeUniforms.h"
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
@@ -48,41 +49,18 @@ struct PSInput
 #endif
 };
 
-struct Constants
-{
-    float4 light_color;
-    float  light_power;
-    float  light_ambient_factor;
-    float  light_specular_factor;
-};
-
-struct SceneUniforms
-{
-    float4   eye_position;
-    float3   light_position;
-};
-
-struct MeshUniforms
-{
-    float4x4 model_matrix;
-    float4x4 mvp_matrix;
-#ifdef ENABLE_SHADOWS
-    float4x4 shadow_mvpx_matrix;
-#endif
-};
-
 ConstantBuffer<Constants>     g_constants       : register(b1);
 ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b2);
 ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b3);
 
 #ifdef ENABLE_SHADOWS
-Texture2D                     g_shadow_map      : register(t0);
-SamplerState                  g_shadow_sampler  : register(s0);
+Texture2D    g_shadow_map      : register(t0);
+SamplerState g_shadow_sampler  : register(s0);
 #endif
 
 #ifdef ENABLE_TEXTURING
-Texture2D                     g_texture         : register(t1);
-SamplerState                  g_texture_sampler : register(s1);
+Texture2D    g_texture         : register(t1);
+SamplerState g_texture_sampler : register(s1);
 #endif
 
 PSInput CubeVS(VSInput input)
@@ -110,7 +88,7 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
 #ifdef ENABLE_SHADOWS
-    float3       light_proj_pos = input.shadow_position.xyz / input.shadow_position.w;
+    const float3 light_proj_pos = input.shadow_position.xyz / input.shadow_position.w;
     const float  current_depth  = light_proj_pos.z - 0.0001F;
     const float  shadow_depth   = g_shadow_map.Sample(g_shadow_sampler, light_proj_pos.xy).r;
     const float  shadow_ratio   = current_depth > shadow_depth ? 1.0F : 0.0F;

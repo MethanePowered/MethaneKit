@@ -21,6 +21,8 @@ Shaders for text rendering from glyphs atlas texture
 
 ******************************************************************************/
 
+#include "TextUniforms.h"
+
 struct VSInput
 {
     float2 position         : POSITION;
@@ -33,20 +35,10 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-struct Constants
-{
-    float4 color;
-};
-
-struct Uniforms
-{
-    float4x4 vp_matrix;
-};
-
-ConstantBuffer<Constants> g_constants : register(b1);
-ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
-Texture2D<float>          g_texture   : register(t0);
-SamplerState              g_sampler   : register(s0);
+ConstantBuffer<TextConstants> g_constants : register(b1);
+ConstantBuffer<TextUniforms>  g_uniforms  : register(b2);
+Texture2D<float>              g_texture   : register(t0);
+SamplerState                  g_sampler   : register(s0);
 
 PSInput TextVS(VSInput input)
 {

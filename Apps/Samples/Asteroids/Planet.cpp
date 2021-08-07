@@ -112,7 +112,7 @@ bool Planet::Update(double elapsed_seconds, double)
     const hlslpp::float4x4 model_rotation_matrix  = hlslpp::float4x4::rotation_y(static_cast<float>(-m_settings.spin_velocity_rps * elapsed_seconds));
     const hlslpp::float4x4 model_matrix           = hlslpp::mul(hlslpp::mul(model_scale_matrix, model_rotation_matrix), model_translate_matrix);
 
-    Uniforms uniforms{};
+    hlslpp::PlanetUniforms uniforms{};
     uniforms.eye_position   = hlslpp::float4(m_settings.view_camera.GetOrientation().eye, 1.F);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = hlslpp::transpose(model_matrix);
@@ -128,7 +128,7 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBinding
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(hlslpp::PlanetUniforms));
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());

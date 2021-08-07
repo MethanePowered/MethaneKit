@@ -250,8 +250,8 @@ void AsteroidsApp::Init()
                          ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
                          : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
-    const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
-    const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
+    const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneConstants)));
+    const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms)));
     const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
@@ -293,7 +293,7 @@ void AsteroidsApp::Init()
         frame.skybox.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Planet rendering
-        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(Planet::Uniforms));
+        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(hlslpp::PlanetUniforms));
         frame.planet.uniforms_buffer_ptr->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Asteroids array rendering

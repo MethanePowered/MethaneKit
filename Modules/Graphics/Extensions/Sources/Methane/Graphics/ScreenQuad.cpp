@@ -32,15 +32,15 @@ Screen Quad rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+namespace hlslpp // NOSONAR
+{
+#include <ScreenQuadConstants.h>
+}
+
 #include <fmt/format.h>
 
 namespace Methane::Graphics
 {
-
-struct META_UNIFORM_ALIGN ScreenQuadConstants
-{
-    Color4F blend_color;
-};
 
 struct ScreenQuadVertex
 {
@@ -190,7 +190,7 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         render_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
-    const auto const_buffer_size = static_cast<Data::Size>(sizeof(ScreenQuadConstants));
+    const auto const_buffer_size = static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants));
     m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, Buffer::GetAlignedBufferSize(const_buffer_size));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
@@ -285,8 +285,8 @@ const RenderContext& ScreenQuad::GetRenderContext() const noexcept
 void ScreenQuad::UpdateConstantsBuffer() const
 {
     META_FUNCTION_TASK();
-    const ScreenQuadConstants constants {
-        m_settings.blend_color
+    const hlslpp::ScreenQuadConstants constants {
+        m_settings.blend_color.AsVector()
     };
 
     m_const_buffer_ptr->SetData(

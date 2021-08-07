@@ -7,6 +7,7 @@ include(MethaneResources)
 set(SOURCES
     TexturedCubeApp.h
     TexturedCubeApp.cpp
+    Shaders/TexturedCubeUniforms.h
 )
 
 set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/TexturedCube.hlsl)

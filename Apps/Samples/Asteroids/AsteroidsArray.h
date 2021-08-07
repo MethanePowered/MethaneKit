@@ -32,6 +32,11 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Camera.h>
 
+namespace hlslpp // NOSONAR
+{
+#include "Shaders/AsteroidUniforms.h"
+}
+
 #include <taskflow/taskflow.hpp>
 
 namespace Methane::Samples
@@ -39,10 +44,10 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidsArray final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray final : public gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>
 {
 public:
-    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
+    using BaseBuffers = gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>;
 
     struct Settings
     {
