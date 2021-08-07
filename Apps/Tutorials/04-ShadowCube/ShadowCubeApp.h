@@ -29,7 +29,9 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 namespace hlslpp // NOSONAR
 {
 #define ENABLE_SHADOWS
+#pragma pack(push, 16)
 #include "Shaders/ShadowCubeUniforms.h"
+#pragma pack(pop)
 }
 
 namespace Methane::Tutorials

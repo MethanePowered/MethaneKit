@@ -34,7 +34,9 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/AsteroidUniforms.h"
+#pragma pack(pop)
 }
 
 #include <taskflow/taskflow.hpp>
@@ -136,14 +138,14 @@ private:
 
     void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians);
 
-    const Settings               m_settings;
-    Ptr<ContentState>            m_content_state_ptr;
-    Textures                     m_unique_textures;
-    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
-    Ptr<gfx::RenderState>        m_render_state_ptr;
-    MeshSubsetByInstanceIndex    m_mesh_subset_by_instance_index;
-    bool                         m_mesh_lod_coloring_enabled = false;
-    float                        m_min_mesh_lod_screen_size_log_2;
+    const Settings            m_settings;
+    Ptr<ContentState>         m_content_state_ptr;
+    Textures                  m_unique_textures;
+    Ptr<gfx::Sampler>         m_texture_sampler_ptr;
+    Ptr<gfx::RenderState>     m_render_state_ptr;
+    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+    bool                      m_mesh_lod_coloring_enabled = false;
+    float                     m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples

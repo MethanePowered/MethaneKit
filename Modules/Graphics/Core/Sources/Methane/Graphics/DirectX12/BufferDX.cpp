@@ -67,8 +67,14 @@ Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Private };
+    const Buffer::Settings settings{
+        Buffer::Type::Constant,
+        Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None),
+        GetAlignedBufferSize(size),
+        0U,
+        PixelFormat::Unknown,
+        Buffer::StorageMode::Private
+    };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 
@@ -76,8 +82,14 @@ Ptr<Buffer> Buffer::CreateVolatileBuffer(const Context& context, Data::Size size
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    const Usage usage_mask = Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None);
-    const Buffer::Settings settings{ Buffer::Type::Constant, usage_mask, size, 0U, PixelFormat::Unknown, Buffer::StorageMode::Managed };
+    const Buffer::Settings settings{
+        Buffer::Type::Constant,
+        Usage::ShaderRead | (addressable ? Usage::Addressable : Usage::None),
+        GetAlignedBufferSize(size),
+        0U,
+        PixelFormat::Unknown,
+        Buffer::StorageMode::Managed
+    };
     return std::make_shared<ConstantBufferDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
 }
 

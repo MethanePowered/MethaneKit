@@ -12,7 +12,11 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 #ifndef SCENE_CONSTANTS_H
 #define SCENE_CONSTANTS_H
 
-struct SceneConstants
+#ifndef META_UNIFORM_ALIGN
+#define META_UNIFORM_ALIGN
+#endif
+
+struct META_UNIFORM_ALIGN SceneConstants
 {
     float4 light_color;
     float  light_power;

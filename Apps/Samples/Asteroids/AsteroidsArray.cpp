@@ -319,6 +319,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, frame_index](const uint32_t asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
+            META_CHECK_ARG_EQUAL(asteroid_uniform_offset % 256, 0);
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
                 { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { *asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
             };
@@ -496,7 +497,6 @@ void AsteroidsArray::UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid
             hlslpp::transpose(model_matrix),
             asteroid_colors.deep.AsVector(),
             asteroid_colors.shallow.AsVector(),
-            0.f,
             mesh_depth_min,
             mesh_depth_max,
             asteroid_parameters.texture_index

@@ -28,7 +28,9 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/HelloCubeUniforms.h"
+#pragma pack(pop)
 }
 
 namespace Methane::Tutorials

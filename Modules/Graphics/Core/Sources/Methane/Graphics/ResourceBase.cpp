@@ -251,14 +251,9 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
     {
         META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
                                    "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
-        META_CHECK_ARG_LESS_DESCR(sub_resource.GetDataSize(), sub_resource_data_size + 1,
-                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
     }
-    else
-    {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
-                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.GetIndex());
-    }
+    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
+                                       "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
 }
 
 void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const

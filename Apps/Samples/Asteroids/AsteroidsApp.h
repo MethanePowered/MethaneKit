@@ -31,8 +31,10 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/SceneConstants.h"
 #include "Shaders/AsteroidUniforms.h"
+#pragma pack(pop)
 }
 
 namespace Methane::Samples

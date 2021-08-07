@@ -34,7 +34,9 @@ Screen Quad rendering primitive.
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include <ScreenQuadConstants.h>
+#pragma pack(pop)
 }
 
 #include <fmt/format.h>
@@ -190,8 +192,7 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         render_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
-    const auto const_buffer_size = static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants));
-    m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, Buffer::GetAlignedBufferSize(const_buffer_size));
+    m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {

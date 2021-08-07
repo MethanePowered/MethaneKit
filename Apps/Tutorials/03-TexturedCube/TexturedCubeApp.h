@@ -28,7 +28,9 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/TexturedCubeUniforms.h"
+#pragma pack(pop)
 }
 
 namespace Methane::Tutorials

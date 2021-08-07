@@ -35,7 +35,9 @@ Planet rendering primitive
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/PlanetUniforms.h"
+#pragma pack(pop)
 }
 
 #include <memory>

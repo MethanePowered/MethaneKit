@@ -115,7 +115,7 @@ void HelloCubeApp::Init()
     m_render_state_ptr->SetName("Colored Cube Pipeline State");
 
     // Create per-frame command lists
-    const Data::Size uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_uniforms)));
+    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
     for(HelloCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering

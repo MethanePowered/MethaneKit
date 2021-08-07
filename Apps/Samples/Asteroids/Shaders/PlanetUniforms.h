@@ -12,7 +12,11 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 #ifndef PLANET_UNIFORMS_H
 #define PLANET_UNIFORMS_H
 
-struct PlanetUniforms
+#ifndef META_UNIFORM_ALIGN
+#define META_UNIFORM_ALIGN
+#endif
+
+struct META_UNIFORM_ALIGN PlanetUniforms
 {
     float4   eye_position;
     float3   light_position;

@@ -96,9 +96,9 @@ void ShadowCubeApp::Init()
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
     m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MarbleWhite.jpg", image_options, "Floor Texture"));
 
-    const Data::Size constants_data_size      = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::Constants)));
-    const Data::Size scene_uniforms_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms)));
-    const Data::Size mesh_uniforms_data_size  = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms)));
+    const Data::Size constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
+    const Data::Size scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
+    const Data::Size mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
 
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);

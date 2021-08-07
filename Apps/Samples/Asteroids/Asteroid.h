@@ -29,7 +29,9 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include "Shaders/AsteroidUniforms.h"
+#pragma pack(pop)
 }
 
 #include <utility>

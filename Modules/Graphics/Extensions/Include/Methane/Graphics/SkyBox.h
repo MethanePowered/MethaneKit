@@ -35,7 +35,9 @@ SkyBox rendering primitive
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include <SkyBoxUniforms.h>
+#pragma pack(pop)
 }
 
 #include <memory>

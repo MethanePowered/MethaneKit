@@ -43,7 +43,9 @@ Methane text rendering primitive.
 
 namespace hlslpp // NOSONAR
 {
+#pragma pack(push, 16)
 #include <TextUniforms.h>
+#pragma pack(pop)
 }
 
 #include <magic_enum.hpp>
@@ -522,7 +524,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
 
     if (!m_uniforms_buffer_ptr)
     {
-        m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
+        m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, uniforms_data_size);
         m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
@@ -636,7 +638,7 @@ void Text::UpdateConstantsBuffer()
 
     if (!m_const_buffer_ptr)
     {
-        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
+        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), const_data_size);
         m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
     m_const_buffer_ptr->SetData(

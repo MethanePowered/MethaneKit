@@ -250,8 +250,8 @@ void AsteroidsApp::Init()
                          ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
                          : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
-    const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneConstants)));
-    const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms)));
+    const Data::Size constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
+    const Data::Size scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
     const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
