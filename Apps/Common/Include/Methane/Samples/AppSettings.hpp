@@ -27,12 +27,6 @@ Common application settings for Methane samples and tutorials.
 
 #include <magic_enum.hpp>
 
-#ifdef __APPLE__
-#define VSYNC_FLAG | VSync
-#else
-#define VSYNC_FLAG
-#endif
-
 namespace Methane::Samples
 {
 
@@ -40,20 +34,44 @@ enum class AppOptions : uint32_t
 {
     None        = 0U,
     DepthBuffer = 1U << 0U,
-    Animations  = 1U << 1U,
-    Fullscreen  = 1U << 2U,
-    VSync       = 1U << 3U
+    ClearDepth  = 1U << 1U,
+    ClearColor  = 1U << 2U,
+    Animations  = 1U << 3U,
+    Fullscreen  = 1U << 4U,
+    VSync       = 1U << 5U
 };
 
-static constexpr AppOptions g_default_app_options = []()
+
+static constexpr AppOptions g_default_app_options_color_only = []()
 {
     using namespace magic_enum::bitwise_operators;
-    return AppOptions::DepthBuffer |
-           AppOptions::Animations
+    return AppOptions::ClearColor
 #ifdef __APPLE__
            | AppOptions::VSync
 #endif
     ;
+}();
+
+static constexpr AppOptions g_default_app_options_color_with_depth = []()
+{
+    using namespace magic_enum::bitwise_operators;
+    return g_default_app_options_color_only |
+           AppOptions::DepthBuffer |
+           AppOptions::ClearDepth;
+}();
+
+static constexpr AppOptions g_default_app_options_color_with_depth_and_anim = []()
+{
+    using namespace magic_enum::bitwise_operators;
+    return g_default_app_options_color_with_depth |
+           AppOptions::Animations;
+}();
+
+static constexpr AppOptions g_default_app_options_color_only_and_anim = []()
+{
+    using namespace magic_enum::bitwise_operators;
+    return g_default_app_options_color_only |
+           AppOptions::Animations;
 }();
 
 static constexpr Graphics::RenderPass::Access g_default_screen_pass_access = []()
@@ -64,34 +82,30 @@ static constexpr Graphics::RenderPass::Access g_default_screen_pass_access = [](
 }();
 
 static constexpr Graphics::Context::Options g_default_context_options = Graphics::Context::Options::None;
-static constexpr float                      g_default_clear_depth = 1.F;
+static constexpr Graphics::DepthStencil     g_default_clear_depth_stencil(1.F, 0);
+static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
-[[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(
-                                                const std::string& app_name,
-                                                AppOptions app_options = g_default_app_options,
-                                                Graphics::Context::Options context_options = g_default_context_options,
-                                                std::optional<float> clear_depth = g_default_clear_depth,
-                                                std::optional<Graphics::Color4F> clear_color = Graphics::Color4F(0.0F, 0.2F, 0.4F, 1.0F),
-                                                Graphics::RenderPass::Access screen_pass_access = g_default_screen_pass_access)
+[[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, AppOptions app_options)
 {
     using namespace magic_enum::bitwise_operators;
-    using Stencil = Graphics::Stencil;
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
+    using ColorOpt        = std::optional<Graphics::Color4F>;
 
-    const bool depth_enabled      = magic_enum::flags::enum_contains(app_options & AppOptions::DepthBuffer);
-    const bool animations_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::Animations);
-    const bool fullscreen_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::Fullscreen);
-    const bool vsync_enabled      = magic_enum::flags::enum_contains(app_options & AppOptions::VSync);
+    const bool depth_enabled       = magic_enum::flags::enum_contains(app_options & AppOptions::DepthBuffer);
+    const bool clear_depth_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::ClearDepth);
+    const bool clear_color_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::ClearColor);
+    const bool animations_enabled  = magic_enum::flags::enum_contains(app_options & AppOptions::Animations);
+    const bool fullscreen_enabled  = magic_enum::flags::enum_contains(app_options & AppOptions::Fullscreen);
+    const bool vsync_enabled       = magic_enum::flags::enum_contains(app_options & AppOptions::VSync);
 
     return Graphics::AppSettings
     {                                                           // =========================
         Platform::App::Settings {                               // platform_app:
             app_name,                                           //   - name
-            0.8, 0.8,                                           //   - width, height
-            false,                                              //   - is_full_screen
+            { 0.8, 0.8 },                                       //   - width, height
         },                                                      // =========================
         Graphics::IApp::Settings {                              // graphics_app:
-            screen_pass_access,                                 //   - screen_pass_access
+            g_default_screen_pass_access,                       //   - screen_pass_access
             animations_enabled,                                 //   - animations_enabled
             true,                                               //   - show_hud_in_window_title
             0                                                   //   - default_device_index
@@ -102,14 +116,16 @@ static constexpr float                      g_default_clear_depth = 1.F;
             depth_enabled                                       //   - depth_stencil_format
                 ? Graphics::PixelFormat::Depth32Float           //     ...
                 : Graphics::PixelFormat::Unknown,               //     ...
-            std::move(clear_color),                             //   - clear_color
-            depth_enabled && clear_depth                        //   - clear_depth_stencil
-                ? DepthStencilOpt({ *clear_depth, Stencil(0) }) //     ...
+            clear_color_enabled                                 //   - clear_color
+                ? ColorOpt(g_default_clear_color)               //     ...
+                : ColorOpt(),                                   //     ...
+            depth_enabled && clear_depth_enabled                //   - clear_depth_stencil
+                ? DepthStencilOpt(g_default_clear_depth_stencil)//     ...
                 : DepthStencilOpt(),                            //     ...
             3U,                                                 //   - frame_buffers_count
             vsync_enabled,                                      //   - vsync_enabled
             fullscreen_enabled,                                 //   - is_full_screen
-            context_options,                                    //   - options_mask
+            g_default_context_options,                          //   - options_mask
             1000U,                                              //   - unsync_max_fps (MacOS only)
         }                                                       // =========================
     };

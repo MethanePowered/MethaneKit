@@ -63,6 +63,83 @@ inline uint32_t GetTimingTextHeightInDots(const Context& ui_context, const Font&
     return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertTo<Units::Dots>(text_margins).GetHeight()) / 2U;
 }
 
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetMajorFont(const Font::Description& new_major_font) noexcept
+{
+    META_FUNCTION_TASK();
+    major_font = new_major_font;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetMinorFont(const Font::Description& new_minor_font) noexcept
+{
+    META_FUNCTION_TASK();
+    minor_font = new_minor_font;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetPosition(const UnitPoint& new_position) noexcept
+{
+    META_FUNCTION_TASK();
+    position = new_position;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetTextMargins(const UnitSize& new_text_margins) noexcept
+{
+    META_FUNCTION_TASK();
+    text_margins = new_text_margins;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetTextColor(const Color4F& new_text_color) noexcept
+{
+    META_FUNCTION_TASK();
+    text_color = new_text_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetOnColor(const Color4F& new_on_color) noexcept
+{
+    META_FUNCTION_TASK();
+    on_color = new_on_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetOffColor(const Color4F& new_off_color) noexcept
+{
+    META_FUNCTION_TASK();
+    off_color = new_off_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpColor(const Color4F& new_help_color) noexcept
+{
+    META_FUNCTION_TASK();
+    help_color = new_help_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetBackgroundColor(const Color4F& new_background_color) noexcept
+{
+    META_FUNCTION_TASK();
+    background_color = new_background_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept
+{
+    META_FUNCTION_TASK();
+    help_shortcut = new_help_shortcut;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double new_update_interval_sec) noexcept
+{
+    META_FUNCTION_TASK();
+    update_interval_sec = new_update_interval_sec;
+    return *this;
+}
+
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(settings)

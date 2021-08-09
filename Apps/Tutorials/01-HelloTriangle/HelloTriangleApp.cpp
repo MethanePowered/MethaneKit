@@ -44,9 +44,11 @@ private:
 public:
     HelloTriangleApp()
         : GraphicsApp(
-            Samples::GetGraphicsAppSettings("Methane Hello Triangle",
-                                            Samples::AppOptions::VSync, Context::Options::None,
-                                            {}, Color4F(0.0F, 0.2F, 0.4F, 1.0F), RenderPass::Access::None))
+            []() {
+                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
+                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                return settings;
+            }())
     { }
 
     ~HelloTriangleApp() override

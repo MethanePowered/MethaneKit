@@ -84,6 +84,64 @@ static void WriteKeyDescriptionToHelpStream(std::stringstream& help_stream, std:
     }
 }
 
+template<typename ScalarType>
+static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Data::RectSize<ScalarType>& rect_size, const std::string& description = "", bool defaulted = false)
+{
+    META_FUNCTION_TASK();
+    CLI::callback_t parse_fn = [&rect_size](CLI::results_t res)
+    {
+        ScalarType width  {};
+        ScalarType height {};
+        if (CLI::detail::lexical_cast(res[0], width) &&
+            CLI::detail::lexical_cast(res[1], height))
+        {
+            rect_size.SetWidth(width);
+            rect_size.SetHeight(height);
+            return true;
+        }
+        return false;
+    };
+
+    CLI::Option* option_ptr = app.add_option(name, parse_fn, description, defaulted);
+    META_CHECK_ARG_NOT_NULL(option_ptr);
+
+    option_ptr->type_name("RECT-SIZE");
+    option_ptr->type_size(2);
+    if(defaulted)
+    {
+        option_ptr->default_str(static_cast<std::string>(rect_size));
+    }
+    return *option_ptr;
+}
+
+AppBase::Settings& AppBase::Settings::SetName(std::string&& new_name) noexcept
+{
+    META_FUNCTION_TASK();
+    name = std::move(new_name);
+    return *this;
+}
+
+AppBase::Settings& AppBase::Settings::SetSize(Data::FloatSize&& new_size) noexcept
+{
+    META_FUNCTION_TASK();
+    size = std::move(new_size);
+    return *this;
+}
+
+AppBase::Settings& AppBase::Settings::SetMinSize(Data::FrameSize&& new_min_size) noexcept
+{
+    META_FUNCTION_TASK();
+    min_size = std::move(new_min_size);
+    return *this;
+}
+
+AppBase::Settings& AppBase::Settings::SetFullScreen(bool new_full_screen) noexcept
+{
+    META_FUNCTION_TASK();
+    is_full_screen = new_full_screen;
+    return *this;
+}
+
 AppBase::AppBase(const AppBase::Settings& settings)
     : CLI::App(settings.name, GetExecutableFileName())
     , m_settings(settings)
@@ -92,8 +150,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
     META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
-    add_option("-w,--width", m_settings.width, "Window width in pixels or as ratio of desktop width", true);
-    add_option("-x,--height", m_settings.height, "Window height in pixels or as ratio of desktop height", true);
+    AddRectSizeOption(*this, "-w,--wnd-size", m_settings.size, "Window size in pixels or as ratio of desktop size", true);
     add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode", true);
 
 #ifdef __APPLE__

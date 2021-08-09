@@ -49,7 +49,7 @@ static const gfx::FrameSize g_shadow_map_size(1024, 1024);
 
 ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Shadow Cube"), {},
+        Samples::GetGraphicsAppSettings("Methane Shadow Cube", Samples::g_default_app_options_color_with_depth_and_anim), {},
         "Methane tutorial of shadow pass rendering")
     , m_shadow_pass(false, "Shadow Render Pass")
     , m_final_pass(true, "Final Render Pass")

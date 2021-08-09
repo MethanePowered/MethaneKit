@@ -103,6 +103,15 @@ public:
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
         Data::Size        mesh_buffers_reservation_multiplier = 2U;
+
+        Settings& SetName(const std::string& new_name) noexcept { name = new_name; return *this; }
+        Settings& SetText(const StringType& new_text) noexcept  { text = new_text; return *this; }
+        Settings& SetRect(const UnitRect& new_rect) noexcept    { rect = new_rect; return *this; }
+        Settings& SetLayout(const Layout& new_layout) noexcept  { layout = new_layout; return *this; }
+        Settings& SetColor(const Color4F& new_color) noexcept   { color = new_color; return *this; }
+        Settings& SetIncrementalUpdate(bool new_incremental_update) noexcept { incremental_update = new_incremental_update; return *this; }
+        Settings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept { adjust_vertical_content_offset = new_adjust_offset; return *this; }
+        Settings& SetMeshBuffersReservationMultiplier(Data::Size new_reservation_multiplier) noexcept { mesh_buffers_reservation_multiplier = new_reservation_multiplier; return *this; }
     };
 
     using SettingsUtf8  = Settings<std::string>;

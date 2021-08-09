@@ -47,7 +47,7 @@ struct CubeVertex
 
 TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Textured Cube"), {},
+        Samples::GetGraphicsAppSettings("Methane Textured Cube", Samples::g_default_app_options_color_only_and_anim), {},
         "Methane tutorial of textured cube rendering")
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);

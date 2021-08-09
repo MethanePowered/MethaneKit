@@ -68,6 +68,11 @@ struct Device
         bool     present_to_window = true;
         uint32_t render_queues_count = 1U;
         uint32_t blit_queues_count = 1U;
+
+        Capabilities& SetFeatures(Features new_features) noexcept;
+        Capabilities& SetPresentToWindow(bool new_present_to_window) noexcept;
+        Capabilities& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
+        Capabilities& SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept;
     };
 
     [[nodiscard]] virtual const std::string&          GetAdapterName() const noexcept = 0;

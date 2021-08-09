@@ -100,9 +100,14 @@ void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Asteroids", g_default_app_options, g_default_context_options,
-                                        0.F /* depth clear */, { /* color clearing disabled */ }),
-        { HeadsUpDisplayMode::UserInterface, true },
+        []() {
+            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Asteroids", g_default_app_options_color_with_depth_and_anim);
+            settings.render_context
+                .SetClearDepthStencil(gfx::DepthStencil(0.F, 0)) // Clear depth with 0.F
+                .SetClearColor({}); // Disable color clearing, use sky-box instead
+            return settings;
+        }(),
+        { HeadsUpDisplayMode::UserInterface },
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)

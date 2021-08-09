@@ -80,8 +80,8 @@ int AppWin::Run(const RunArgs& args)
 
     const Settings& app_settings = GetPlatformAppSettings();
     const Data::FrameSize frame_size(
-        app_settings.width  < 1.0 ? static_cast<uint32_t>(desktop_width * app_settings.width)   : static_cast<uint32_t>(app_settings.width),
-        app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * app_settings.height) : static_cast<uint32_t>(app_settings.height)
+        static_cast<uint32_t>(app_settings.size.GetWidth()  * (app_settings.size.GetWidth()  < 1.0 ? desktop_width : 1U)),
+        static_cast<uint32_t>(app_settings.size.GetHeight() * (app_settings.size.GetHeight() < 1.0 ? desktop_height : 1U))
     );
 
     RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.GetWidth()), static_cast<LONG>(frame_size.GetHeight()) };

@@ -129,8 +129,8 @@ inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& dis
 
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Typography", Samples::AppOptions::Animations),
-        { gui::IApp::HeadsUpDisplayMode::UserInterface, true },
+        Samples::GetGraphicsAppSettings("Methane Typography", Samples::g_default_app_options_color_only_and_anim),
+        { gui::IApp::HeadsUpDisplayMode::UserInterface },
         "Dynamic text rendering and fonts management tutorial.")
 {
     m_displayed_text_lengths.resize(g_text_blocks_count, 0);
@@ -234,9 +234,9 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
-            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
             gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitPoint(gui::Units::Dots, 16U, 16U),
+            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
+            gui::UnitSize(gui::Units::Dots, 16U, 16U),
             gui::Color4F(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
@@ -294,13 +294,13 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     );
 
     // Layout badges in a row one after another with a margin spacing
-    gui::UnitPoint badge_margins(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
+    gui::UnitSize badge_margins(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
         META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertTo<gui::Units::Dots>(badge_atlas_ptr->GetTexture().GetSettings().dimensions.AsRectSize());
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
-        badge_margins += gui::UnitPoint(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);
+        badge_margins += gui::UnitSize(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);
     }
 }
 

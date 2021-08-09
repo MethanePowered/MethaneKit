@@ -41,6 +41,62 @@ namespace Methane::Graphics
 
 static constexpr double g_title_update_interval_sec = 1.0;
 
+IApp::Settings& IApp::Settings::SetScreenPassAccess(RenderPass::Access new_screen_pass_access) noexcept
+{
+    META_FUNCTION_TASK();
+    screen_pass_access = new_screen_pass_access;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetAnimationsEnabled(bool new_animations_enabled) noexcept
+{
+    META_FUNCTION_TASK();
+    animations_enabled = new_animations_enabled;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept
+{
+    META_FUNCTION_TASK();
+    show_hud_in_window_title = new_show_hud_in_window_title;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept
+{
+    META_FUNCTION_TASK();
+    default_device_index = new_default_device_index;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetDeviceCapabilities(Device::Capabilities&& new_device_capabilities) noexcept
+{
+    META_FUNCTION_TASK();
+    device_capabilities = std::move(new_device_capabilities);
+    return *this;
+}
+
+AppSettings& AppSettings::SetPlatformAppSettings(Platform::App::Settings&& new_platform_app_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    platform_app = std::move(new_platform_app_settings);
+    return *this;
+}
+
+AppSettings& AppSettings::SetGraphicsAppSettings(IApp::Settings&& new_graphics_app_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    graphics_app = std::move(new_graphics_app_settings);
+    return *this;
+}
+
+AppSettings& AppSettings::SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    render_context = std::move(new_render_context_settings);
+    return *this;
+}
+
 AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)

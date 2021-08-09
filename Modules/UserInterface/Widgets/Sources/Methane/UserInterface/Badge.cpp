@@ -34,6 +34,48 @@ Badge widget displaying texture in specific corner of the screen.
 namespace Methane::UserInterface
 {
 
+Badge::Settings& Badge::Settings::SetName(std::string_view new_name) noexcept
+{
+    META_FUNCTION_TASK();
+    name = new_name;
+    return *this;
+}
+
+Badge::Settings& Badge::Settings::SetSize(const UnitSize& new_size) noexcept
+{
+    META_FUNCTION_TASK();
+    size = new_size;
+    return *this;
+}
+
+Badge::Settings& Badge::Settings::SetCorner(FrameCorner new_corner) noexcept
+{
+    META_FUNCTION_TASK();
+    corner = new_corner;
+    return *this;
+}
+
+Badge::Settings& Badge::Settings::SetMargings(const UnitSize& new_margins) noexcept
+{
+    META_FUNCTION_TASK();
+    margins = new_margins;
+    return *this;
+}
+
+Badge::Settings& Badge::Settings::SetBlendColor(const Color4F& new_blend_color) noexcept
+{
+    META_FUNCTION_TASK();
+    blend_color = new_blend_color;
+    return *this;
+}
+
+Badge::Settings& Badge::Settings::SetTextureMode(TextureMode new_texture_mode) noexcept
+{
+    META_FUNCTION_TASK();
+    texture_mode = new_texture_mode;
+    return *this;
+}
+
 Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings)
     : Badge(ui_context,
             gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(),
@@ -61,7 +103,7 @@ Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Se
     META_FUNCTION_TASK();
 }
 
-void Badge::FrameResize(const UnitSize& frame_size, std::optional<UnitSize> badge_size, std::optional<UnitPoint> margins)
+void Badge::FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size, Opt<UnitSize> margins)
 {
     META_FUNCTION_TASK();
     
@@ -89,7 +131,7 @@ void Badge::SetCorner(FrameCorner frame_corner)
     SetRect(GetBadgeRectInFrame());
 }
 
-void Badge::SetMargins(const UnitPoint& margins)
+void Badge::SetMargins(const UnitSize& margins)
 {
     META_FUNCTION_TASK();
     if (m_settings.margins == margins)
@@ -119,7 +161,7 @@ UnitRect Badge::GetBadgeRectInFrame(const Context& ui_context, const UnitSize& f
 }
 
 UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& badge_size,
-                                    const UnitPoint& badge_margins, Badge::FrameCorner frame_corner)
+                                    const UnitSize& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
@@ -128,20 +170,23 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
     switch(frame_corner)
     {
     case FrameCorner::TopLeft:
-        return UnitRect(frame_size.GetUnits(), badge_margins, badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetWidth(), badge_margins.GetHeight()), badge_size);
 
     case FrameCorner::TopRight:
-        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetX(), badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetWidth(), badge_margins.GetHeight()), badge_size);
 
     case FrameCorner::BottomLeft:
-        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetX(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetY()), badge_size);
+        return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetHeight()), badge_size);
 
     case FrameCorner::BottomRight:
+    {
+        const UnitSize sz = frame_size - badge_size - badge_margins;
         return UnitRect(
             frame_size.GetUnits(),
-            gfx::FramePoint(frame_size.GetWidth()  - badge_size.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight()) - badge_margins,
+            gfx::FramePoint(sz.GetWidth(), sz.GetHeight()),
             badge_size
         );
+    }
 
     default:
         META_UNEXPECTED_ARG_RETURN(frame_corner, UnitRect());

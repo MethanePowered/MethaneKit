@@ -43,7 +43,7 @@ struct CubeVertex
 
 HelloCubeApp::HelloCubeApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Hello Cube", Samples::AppOptions::Animations), {},
+        Samples::GetGraphicsAppSettings("Methane Hello Cube", Samples::g_default_app_options_color_only_and_anim), {},
         "Methane tutorial of colored cube rendering")
     , m_model_matrix(hlslpp::float4x4::scale(15.F))
 {

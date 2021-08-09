@@ -31,6 +31,34 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
+Device::Capabilities& Device::Capabilities::SetFeatures(Features new_features) noexcept
+{
+    META_FUNCTION_TASK();
+    features = new_features;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetPresentToWindow(bool new_present_to_window) noexcept
+{
+    META_FUNCTION_TASK();
+    present_to_window = new_present_to_window;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
+{
+    META_FUNCTION_TASK();
+    render_queues_count = new_render_queues_count;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept
+{
+    META_FUNCTION_TASK();
+    blit_queues_count = new_blit_queues_count;
+    return *this;
+}
+
 DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
     : m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
