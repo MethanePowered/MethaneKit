@@ -82,7 +82,7 @@ static constexpr Graphics::RenderPass::Access g_default_screen_pass_access = [](
 }();
 
 static constexpr Graphics::Context::Options g_default_context_options = Graphics::Context::Options::None;
-static constexpr Graphics::DepthStencil     g_default_clear_depth_stencil(1.F, 0);
+static constexpr Graphics::DepthStencil     g_default_clear_depth_stencil(1.F, Graphics::Stencil(0));
 static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
 [[nodiscard]] inline Graphics::AppSettings GetGraphicsAppSettings(const std::string& app_name, AppOptions app_options)

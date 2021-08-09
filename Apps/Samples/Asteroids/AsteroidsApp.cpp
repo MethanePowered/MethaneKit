@@ -103,7 +103,7 @@ AsteroidsApp::AsteroidsApp()
         []() {
             Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Asteroids", g_default_app_options_color_with_depth_and_anim);
             settings.render_context
-                .SetClearDepthStencil(gfx::DepthStencil(0.F, 0)) // Clear depth with 0.F
+                .SetClearDepthStencil(gfx::DepthStencil(0.F, {})) // Clear depth with 0.F
                 .SetClearColor({}); // Disable color clearing, use sky-box instead
             return settings;
         }(),

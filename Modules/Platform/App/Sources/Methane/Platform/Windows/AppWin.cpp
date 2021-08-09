@@ -221,9 +221,9 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
     int header = (window_rect.bottom - window_rect.top) - client_rect.bottom;
 
     
-    const Settings& settings  = GetPlatformAppSettings();
-    int32_t min_window_width  = settings.min_width + border;
-    int32_t min_window_height = settings.min_height + header;
+    const Settings& settings = GetPlatformAppSettings();
+    const int32_t min_window_width  = settings.min_size.GetWidth()  + border;
+    const int32_t min_window_height = settings.min_size.GetHeight() + header;
 
     // Update window rectangle with respect to minimum size limit
     auto p_window_rect = reinterpret_cast<PRECT>(l_param);
