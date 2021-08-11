@@ -226,7 +226,6 @@ bool TexturedCubeApp::Render()
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 
-    // Commit command list with present flag
     frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen

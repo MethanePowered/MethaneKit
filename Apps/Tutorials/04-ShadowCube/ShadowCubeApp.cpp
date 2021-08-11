@@ -424,7 +424,6 @@ void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const Shadow
         RenderOverlay(cmd_list);
     }
 
-    // Commit command list with present flag in case of final render pass
     cmd_list.Commit();
 }
 

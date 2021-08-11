@@ -6,7 +6,6 @@ set(TARGET MethaneHelloCube)
 set(SOURCES
     HelloCubeApp.h
     HelloCubeApp.cpp
-    Shaders/HelloCubeUniforms.h
 )
 
 set(SHADERS_HLSL

@@ -24,14 +24,8 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #pragma once
 
 #include <Methane/Kit.h>
-#include <Methane/UserInterface/App.hpp>
-
-namespace hlslpp // NOSONAR
-{
-#pragma pack(push, 16)
-#include "Shaders/HelloCubeUniforms.h"
-#pragma pack(pop)
-}
+#include <Methane/Graphics/App.hpp>
+#include <Methane/Graphics/Mesh/CubeMesh.hpp>
 
 namespace Methane::Tutorials
 {
@@ -40,17 +34,14 @@ namespace gfx = Methane::Graphics;
 
 struct HelloCubeFrame final : gfx::AppFrame
 {
-    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
-    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
 
-using UserInterfaceApp = UserInterface::App<HelloCubeFrame>;
-
-class HelloCubeApp final : public UserInterfaceApp
+using GraphicsApp = gfx::App<HelloCubeFrame>;
+class HelloCubeApp final : public GraphicsApp
 {
 public:
     HelloCubeApp();
@@ -68,16 +59,25 @@ public:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    hlslpp::float4x4      m_model_matrix;
-    hlslpp::Uniforms      m_shader_uniforms { };
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>      m_index_buffer_ptr;
+    struct CubeVertex
+    {
+        gfx::Mesh::Position position;
+        gfx::Mesh::Color    color;
 
-    const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
+        inline static const gfx::Mesh::VertexLayout layout{
+            gfx::Mesh::VertexField::Position,
+            gfx::Mesh::VertexField::Color
+        };
     };
+
+    const gfx::CubeMesh<CubeVertex> m_cube_mesh;
+    std::vector<CubeVertex>         m_proj_vertices;
+    gfx::Camera                     m_camera;
+    hlslpp::float4x4                m_model_matrix;
+
+    Ptr<gfx::RenderState>   m_render_state_ptr;
+    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>        m_index_buffer_ptr;
 };
 
 } // namespace Methane::Tutorials

@@ -403,6 +403,7 @@ bool AsteroidsApp::Render()
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
     m_planet_ptr->Draw(*frame.final_cmd_list_ptr, frame.planet, GetViewState());
     m_sky_box_ptr->Draw(*frame.final_cmd_list_ptr, frame.skybox, GetViewState());
+
     RenderOverlay(*frame.final_cmd_list_ptr);
     frame.final_cmd_list_ptr->Commit();
 
