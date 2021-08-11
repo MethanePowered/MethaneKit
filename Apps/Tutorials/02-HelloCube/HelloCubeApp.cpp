@@ -62,16 +62,6 @@ void HelloCubeApp::Init()
         static_cast<float>(context_settings.frame_size.GetHeight())
     });
 
-    // Create vertex buffer for cube mesh
-    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
-    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
-    // Create index buffer for cube mesh
-    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), gfx::GetIndexFormat(m_cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetName("Cube Index Buffer");
-    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } });
-
     // Create render state with program
     gfx::RenderState::Settings state_settings;
     state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
@@ -101,9 +91,19 @@ void HelloCubeApp::Init()
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
     m_render_state_ptr->SetName("Colored Cube Pipeline State");
 
+    // Create index buffer for cube mesh
+    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), gfx::GetIndexFormat(m_cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr->SetName("Cube Index Buffer");
+    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } });
+
     // Create per-frame command lists
     for(HelloCubeFrame& frame : GetFrames())
     {
+        // Create vertex buffers for each frame
+        Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
+        vertex_buffer_ptr->SetName(IndexedName("Cube Vertex Buffer", frame.index));
+        frame.vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+
         // Create command list for rendering
         frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
@@ -148,8 +148,10 @@ bool HelloCubeApp::Update()
     }
 
     // Update vertex buffer with vertices in camera's projection view
-    (*m_vertex_buffer_set_ptr)[0].SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
-                                          &GetRenderContext().GetRenderCommandKit().GetQueue());
+    (*GetCurrentFrame().vertex_buffer_set_ptr)[0].SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
+        &GetRenderContext().GetRenderCommandKit().GetQueue()
+    );
     return true;
 }
 
@@ -163,7 +165,7 @@ bool HelloCubeApp::Render()
     const HelloCubeFrame& frame = GetCurrentFrame();
     frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
-    frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+    frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
     frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
     frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
     frame.render_cmd_list_ptr->Commit();
@@ -178,7 +180,6 @@ bool HelloCubeApp::Render()
 void HelloCubeApp::OnContextReleased(gfx::Context& context)
 {
     m_index_buffer_ptr.reset();
-    m_vertex_buffer_set_ptr.reset();
     m_render_state_ptr.reset();
 
     GraphicsApp::OnContextReleased(context);

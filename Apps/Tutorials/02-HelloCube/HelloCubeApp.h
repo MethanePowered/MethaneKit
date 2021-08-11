@@ -34,6 +34,7 @@ namespace gfx = Methane::Graphics;
 
 struct HelloCubeFrame final : gfx::AppFrame
 {
+    Ptr<gfx::BufferSet>         vertex_buffer_set_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
@@ -76,7 +77,6 @@ private:
     hlslpp::float4x4                m_model_matrix;
 
     Ptr<gfx::RenderState>   m_render_state_ptr;
-    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
     Ptr<gfx::Buffer>        m_index_buffer_ptr;
 };
 
