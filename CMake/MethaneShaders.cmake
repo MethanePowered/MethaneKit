@@ -212,7 +212,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
     endif()
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-        set(OUTPUT_TYPE_ARG -spirv)
+        set(OUTPUT_TYPE_ARG -spirv -fspv-reflect)
     endif()
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")

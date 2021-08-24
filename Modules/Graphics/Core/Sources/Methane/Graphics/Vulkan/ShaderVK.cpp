@@ -199,6 +199,10 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     m_vertex_input_attribute_descriptions.reserve(shader_resources.stage_inputs.size());
     for(const spirv_cross::Resource& input_resource : shader_resources.stage_inputs)
     {
+        const bool has_semantic = spirv_compiler.has_decoration(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
+        const bool has_location = spirv_compiler.has_decoration(input_resource.id, spv::DecorationLocation);
+        META_CHECK_ARG_TRUE(has_semantic && has_location);
+
         const std::string&           semantic_name  = spirv_compiler.get_decoration_string(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
         const spirv_cross::SPIRType& attribute_type = spirv_compiler.get_type(input_resource.base_type_id);
 
