@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -32,6 +32,20 @@ Vulkan implementation of the buffer interface.
 
 namespace Methane::Graphics
 {
+
+static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Buffer>& buffer_refs)
+{
+    META_FUNCTION_TASK();
+    std::vector<vk::Buffer> vk_buffers;
+    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
+                   [](const Ref<Buffer>& buffer_ref)
+                   {
+                       const auto& vertex_buffer = static_cast<const BufferVK&>(buffer_ref.get());
+                       return vertex_buffer.GetNativeBuffer();
+                   }
+    );
+    return vk_buffers;
+}
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride)
 {
@@ -153,6 +167,8 @@ Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& 
 
 BufferSetVK::BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
     : BufferSetBase(buffers_type, buffer_refs)
+    , m_vk_buffers(GetVulkanBuffers(buffer_refs))
+    , m_vk_offsets(m_vk_buffers.size(), 0U)
 {
     META_FUNCTION_TASK();
 }

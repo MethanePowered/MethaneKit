@@ -51,6 +51,18 @@ vk::PrimitiveTopology GetVulkanPrimitiveTopology(RenderCommandList::Primitive pr
     }
 }
 
+static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
+{
+    META_FUNCTION_TASK();
+    switch(index_stride_bytes)
+    {
+    case 1:  return vk::IndexType::eUint8EXT;
+    case 2: return vk::IndexType::eUint16;
+    case 4: return vk::IndexType::eUint32;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(index_stride_bytes, vk::IndexType::eNoneKHR, "unsupported index buffer stride size");
+    }
+}
+
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
@@ -110,6 +122,8 @@ bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
+    auto& vk_vertex_buffers = static_cast<BufferSetVK&>(vertex_buffers);
+    GetNativeCommandBuffer().bindVertexBuffers(0U, vk_vertex_buffers.GetNativeBuffers(), vk_vertex_buffers.GetNativeOffsets());
     return true;
 }
 
@@ -119,6 +133,10 @@ bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource
     if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
+
+    auto& vk_index_buffer = static_cast<BufferVK&>(index_buffer);
+    const vk::IndexType vk_index_type = GetVulkanIndexTypeByStride(index_buffer.GetSettings().item_stride_size);
+    GetNativeCommandBuffer().bindIndexBuffer(vk_index_buffer.GetNativeBuffer(), 0U, vk_index_type);
     return true;
 }
 
