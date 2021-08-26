@@ -22,7 +22,6 @@ Vulkan implementation of the buffer interface.
 ******************************************************************************/
 
 #include "BufferVK.h"
-#include "DeviceVK.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/ContextBase.h>
@@ -90,8 +89,7 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type)
 
 BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage)
-    , m_vk_device(dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice())
-    , m_vk_buffer(m_vk_device.createBuffer(
+    , m_vk_buffer(GetNativeDevice().createBuffer(
         vk::BufferCreateInfo(
             vk::BufferCreateFlags{},
             settings.size,
@@ -100,12 +98,19 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const D
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
+
+    // TODO: set memory properties based on settings.storage_mode
+    const vk::MemoryPropertyFlags vk_memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible
+                                                           | vk::MemoryPropertyFlagBits::eHostCoherent;
+    AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(m_vk_buffer), vk_memory_property_flags);
+    GetNativeDevice().bindBufferMemory(m_vk_buffer, GetNativeDeviceMemory(), 0);
 }
 
 BufferVK::~BufferVK()
 {
     META_FUNCTION_TASK();
-    m_vk_device.destroy(m_vk_buffer);
+    GetNativeDevice().destroy(m_vk_buffer);
+    FreeDeviceMemory();
 }
 
 void BufferVK::SetName(const std::string& name)
@@ -118,6 +123,26 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
 {
     META_FUNCTION_TASK();
     ResourceVK::SetData(sub_resources, sync_cmd_queue);
+
+    const vk::Device&       vk_device        = GetNativeDevice();
+    const vk::DeviceMemory& vk_device_memory = GetNativeDeviceMemory();
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        ValidateSubResource(sub_resource);
+
+        // TODO: calculate memory offset by sub-resource index
+        const vk::DeviceSize sub_resource_offset = 0U;
+        Data::RawPtr sub_resource_data_ptr = nullptr;
+        const vk::Result vk_map_result = vk_device.mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
+                                                             reinterpret_cast<void**>(&sub_resource_data_ptr));
+
+        META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+        META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+
+        stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
+        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
+        vk_device.unmapMemory(vk_device_memory);
+    }
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

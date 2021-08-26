@@ -24,12 +24,13 @@ Vulkan implementation of the resource interface.
 #pragma once
 
 #include "ContextVK.h"
+#include "DeviceVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Instrumentation.h>
 
-#include <memory>
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
@@ -47,14 +48,17 @@ public:
     template<typename SettingsType>
     ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
         : ReourceBaseType(context, settings, descriptor_by_usage)
+        , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
     {
         META_FUNCTION_TASK();
     }
 
     ~ResourceVK() override
     {
+        META_FUNCTION_TASK();
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        // FreeDeviceMemory() should be called in derived class destructor after native resource is released
     }
 
     ResourceVK(const ResourceVK&) = delete;
@@ -63,11 +67,44 @@ public:
     bool operator=(const ResourceVK&) = delete;
     bool operator=(ResourceVK&&) = delete;
 
+    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_device_memory; }
+
 protected:
-    const IContextVK& GetContextVK() const noexcept
+    const IContextVK& GetContextVK() const noexcept                 { return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase()); }
+    const vk::Device& GetNativeDevice() const noexcept              { return m_vk_device; }
+
+    void AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
     {
-        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
+        META_FUNCTION_TASK();
+        FreeDeviceMemory();
+
+        const Opt<uint32_t> memory_type_opt = GetContextVK().GetDeviceVK().FindMemoryType(memory_requirements.memoryTypeBits, memory_property_flags);
+        if (!memory_type_opt)
+            throw Resource::AllocationError(*this, "suitable memory type was not found");
+
+        try
+        {
+            m_vk_device_memory = GetContextVK().GetDeviceVK().GetNativeDevice().allocateMemory(vk::MemoryAllocateInfo(memory_requirements.size, *memory_type_opt));
+        }
+        catch(const vk::SystemError& error)
+        {
+            throw Resource::AllocationError(*this, error.what());
+        }
     }
+
+    void FreeDeviceMemory()
+    {
+        META_FUNCTION_TASK();
+        if (!m_vk_device_memory)
+            return;
+
+        m_vk_device.freeMemory(m_vk_device_memory);
+        m_vk_device_memory = nullptr;
+    }
+
+private:
+    vk::Device       m_vk_device;
+    vk::DeviceMemory m_vk_device_memory;
 };
 
 } // namespace Methane::Graphics

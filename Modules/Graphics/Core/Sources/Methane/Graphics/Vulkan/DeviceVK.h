@@ -29,7 +29,6 @@ Vulkan implementation of the device interface.
 #include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
-
 #include <map>
 
 namespace Methane::Graphics
@@ -89,6 +88,7 @@ public:
     [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
     [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
     [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
+    [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }

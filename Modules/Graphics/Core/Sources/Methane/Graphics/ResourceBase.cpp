@@ -44,6 +44,13 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     META_FUNCTION_TASK();
 }
 
+Resource::AllocationError::AllocationError(const Resource& resource, std::string_view error_message)
+    : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
+    , m_resource(resource)
+{
+    META_FUNCTION_TASK();
+}
+
 ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
@@ -51,7 +58,6 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& conte
     , m_descriptor_by_usage(descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
         descriptor.heap.ReplaceResource(*this, descriptor.index);
@@ -61,7 +67,6 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& conte
 ResourceBase::~ResourceBase()
 {
     META_FUNCTION_TASK();
-
     for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
         descriptor.heap.RemoveResource(descriptor.index);

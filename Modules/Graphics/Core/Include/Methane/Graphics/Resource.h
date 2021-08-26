@@ -31,6 +31,8 @@ Methane resource interface: base class of all GPU resources.
 #include <Methane/Data/IEmitter.h>
 #include <Methane/Graphics/Types.h>
 
+#include <string_view>
+
 namespace Methane::Graphics
 {
 
@@ -80,6 +82,17 @@ struct Resource
         Data::Index     index;
 
         Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
+    };
+
+    class AllocationError : public std::runtime_error
+    {
+    public:
+        AllocationError(const Resource& resource, std::string_view error_message);
+
+        const Resource& GetResource() const noexcept { return m_resource; }
+
+    private:
+        const Resource& m_resource;
     };
 
     using State         = ResourceState;

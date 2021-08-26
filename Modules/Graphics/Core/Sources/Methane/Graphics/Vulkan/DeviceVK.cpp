@@ -51,7 +51,11 @@ static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTEN
 static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME;
 
 static const std::vector<std::string_view> g_common_device_extensions{
-    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME
+    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+
+    // Extension is used to reflect HLSL semantic names from shader input decorations,
+    // and it actually works but is not listed by NVidia or AMD drivers, who knows why?
+    // VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
 };
 
 static const std::vector<std::string_view> g_render_device_extensions{
@@ -474,7 +478,7 @@ const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList:
     return *queue_family_reservation_ptr;
 }
 
-[[nodiscard]] DeviceVK::SwapChainSupport DeviceVK::GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept
+DeviceVK::SwapChainSupport DeviceVK::GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept
 {
     META_FUNCTION_TASK();
     return SwapChainSupport{
@@ -482,6 +486,19 @@ const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList:
         m_vk_physical_device.getSurfaceFormatsKHR(vk_surface),
         m_vk_physical_device.getSurfacePresentModesKHR(vk_surface)
     };
+}
+
+Opt<uint32_t> DeviceVK::FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept
+{
+    META_FUNCTION_TASK();
+    const vk::PhysicalDeviceMemoryProperties vk_memory_props = m_vk_physical_device.getMemoryProperties();
+    for(uint32_t type_index = 0U; type_index < vk_memory_props.memoryTypeCount; ++type_index)
+    {
+        if (type_filter & (1 << type_index) &&
+            (vk_memory_props.memoryTypes[type_index].propertyFlags & property_flags) == property_flags)
+            return type_index;
+    }
+    return std::nullopt;
 }
 
 void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,

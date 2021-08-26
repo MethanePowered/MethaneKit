@@ -45,8 +45,9 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
+    const vk::Buffer& GetNativeBuffer() const noexcept { return m_vk_buffer; }
+
 private:
-    vk::Device m_vk_device;
     vk::Buffer m_vk_buffer;
 };
 
