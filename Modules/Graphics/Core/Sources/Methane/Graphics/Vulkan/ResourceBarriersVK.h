@@ -16,32 +16,24 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/SamplerVK.h
-Vulkan implementation of the sampler interface.
+FILE: Methane/Graphics/Vulkan/ResourceVK.h
+Vulkan implementation of the resource interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ResourceVK.hpp"
+#include <Methane/Graphics/ResourceBarriers.h>
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-struct IContextVK;
-
-class SamplerVK final : public ResourceVK<SamplerBase>
+class ResourceBarriersVK : public ResourceBarriers
 {
 public:
-    SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-
-    // Object interface
-    void SetName(const std::string& name) override;
-    
-private:
-    void ResetSamplerState();
+    explicit ResourceBarriersVK(const Set& barriers);
 };
 
 } // namespace Methane::Graphics

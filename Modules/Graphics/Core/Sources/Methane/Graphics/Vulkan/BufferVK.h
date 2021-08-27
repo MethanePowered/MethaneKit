@@ -23,7 +23,7 @@ Vulkan implementation of the buffer interface.
 
 #pragma once
 
-#include "ResourceVK.h"
+#include "ResourceVK.hpp"
 
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/Types.h>

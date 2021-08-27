@@ -23,7 +23,7 @@ Vulkan implementation of the texture interface.
 
 #pragma once
 
-#include "ResourceVK.h"
+#include "ResourceVK.hpp"
 
 #include <Methane/Graphics/TextureBase.h>
 

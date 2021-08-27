@@ -21,19 +21,24 @@ Vulkan implementation of the resource interface.
 
 ******************************************************************************/
 
-#include "ResourceVK.h"
-#include "ContextVK.h"
+#include "ResourceBarriersVK.h"
 
-#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<Resource::Barriers> Resource::Barriers::Create(const Set& barriers)
+Ptr<ResourceBarriers> ResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ResourceBarriersVK>(barriers);
 }
+
+ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
+    : ResourceBarriers(barriers)
+{
+    META_FUNCTION_TASK();
+}
+
 
 } // namespace Methane::Graphics
