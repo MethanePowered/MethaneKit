@@ -152,9 +152,8 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
 
         META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
         META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
 
-        stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
-        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
         vk_device.unmapMemory(vk_device_memory);
     }
 }
