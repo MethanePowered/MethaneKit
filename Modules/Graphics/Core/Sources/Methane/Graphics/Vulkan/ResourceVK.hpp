@@ -35,12 +35,6 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-class ResourceBarriersVK : public Resource::Barriers
-{
-public:
-    explicit ResourceBarriersVK(const Set& barriers) : Resource::Barriers(barriers) {}
-};
-
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
 class ResourceVK : public ReourceBaseType
 {
