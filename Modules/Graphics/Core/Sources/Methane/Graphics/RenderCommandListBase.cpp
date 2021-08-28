@@ -65,7 +65,7 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
     CommandListBase::Reset(p_debug_group);
     if (m_render_pass_ptr)
     {
-        META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetSettings()));
+        META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetPattern().GetSettings()));
         m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
     }
 }
@@ -219,7 +219,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, uint32_t index
     }
 
     META_LOG("{} Command list '{}' DRAW INDEXED with vertex buffers {} and index buffer '{}' using {} primive type, {} indices from {} index and {} vertex with {} instances count from {} instance",
-             magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(), index_buffer.GetName(),
+             magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(), GetDrawingState().index_buffer_ptr->GetName(),
              magic_enum::enum_name(primitive_type), index_count, start_index, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);
 
