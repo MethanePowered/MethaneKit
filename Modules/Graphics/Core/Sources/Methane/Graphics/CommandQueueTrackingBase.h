@@ -53,13 +53,37 @@ public:
 
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
 
+protected:
+    using ExecutingCommandListSets = std::queue<Ptr<CommandListSetBase>>;
+
+    template<typename MutexType>
+    class ExecutingCommandListSetsGuard
+    {
+    public:
+        ExecutingCommandListSetsGuard(const ExecutingCommandListSets& executing_command_lists, MutexType& mutex)
+            : m_lock_guard(mutex)
+            , m_executing_command_lists(executing_command_lists)
+        { }
+
+        const ExecutingCommandListSets& GetExecutingCommandLists() const noexcept { return m_executing_command_lists; }
+
+    private:
+        std::scoped_lock<MutexType>     m_lock_guard;
+        const ExecutingCommandListSets& m_executing_command_lists;
+    };
+
+    decltype(auto) GetExecutingCommandListsGuard() const
+    {
+        return ExecutingCommandListSetsGuard<decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
+    }
+
 private:
     void WaitForExecution() noexcept;
 
     const Ptr<CommandListSetBase>& GetNextExecutingCommandListSet() const;
     void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
-    std::queue<Ptr<CommandListSetBase>> m_executing_command_lists;
+    ExecutingCommandListSets            m_executing_command_lists;
     mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex)
     TracyLockable(std::mutex,           m_execution_waiting_mutex)
     std::condition_variable_any         m_execution_waiting_condition_var;

@@ -104,8 +104,7 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
     META_FUNCTION_TASK();
     CommandListSetBase::Execute(frame_index, completed_callback);
 
-    const CommandQueueVK& command_queue = GetCommandQueueVK();
-    vk::SubmitInfo submit_info(
+    const vk::SubmitInfo submit_info(
         GetWaitSemaphores(),
         GetWaitStages(),
         m_vk_command_buffers,
@@ -113,7 +112,7 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
     );
 
     m_vk_device.resetFences(m_vk_execution_completed_fence);
-    command_queue.GetNativeQueue().submit(submit_info, m_vk_execution_completed_fence);
+    GetCommandQueueVK().GetNativeQueue().submit(submit_info, m_vk_execution_completed_fence);
 }
 
 void CommandListSetVK::WaitUntilCompleted()
@@ -140,7 +139,7 @@ const std::vector<vk::Semaphore>& CommandListSetVK::GetWaitSemaphores()
 {
     META_FUNCTION_TASK();
     const CommandQueueVK& command_queue = GetCommandQueueVK();
-    const std::vector<vk::Semaphore>& vk_wait_semaphores = command_queue.GetWaitInfo().semaphores;
+    const std::vector<vk::Semaphore>& vk_wait_semaphores = command_queue.GetWaitBeforeExecuting().semaphores;
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_semaphores;
 
@@ -157,7 +156,7 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
 {
     META_FUNCTION_TASK();
     const CommandQueueVK& command_queue = GetCommandQueueVK();
-    const std::vector<vk::PipelineStageFlags>& vk_wait_stages = command_queue.GetWaitInfo().stages;
+    const std::vector<vk::PipelineStageFlags>& vk_wait_stages = command_queue.GetWaitBeforeExecuting().stages;
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_stages;
 

@@ -64,13 +64,16 @@ void FenceVK::Signal()
 {
     META_FUNCTION_TASK();
     const uint64_t wait_value = GetValue();
-    const vk::PipelineStageFlags wait_stage = vk::PipelineStageFlagBits::eTopOfPipe;
 
     FenceBase::Signal();
 
     const uint64_t signal_value = GetValue();
     vk::TimelineSemaphoreSubmitInfo vk_semaphore_submit_info(wait_value, signal_value);
-    vk::SubmitInfo vk_submit_info(m_vk_semaphore, wait_stage, {}, m_vk_semaphore);
+    const CommandQueueVK::WaitInfo& wait_for_execution_completed = GetCommandQueueVK().GetWaitForExecutionCompleted();
+    vk::SubmitInfo vk_submit_info(wait_for_execution_completed.semaphores,
+                                  wait_for_execution_completed.stages,
+                                  {}, // no command buffers to execute
+                                  m_vk_semaphore);
     vk_submit_info.setPNext(&vk_semaphore_submit_info);
 
     GetCommandQueueVK().GetNativeQueue().submit(vk_submit_info);

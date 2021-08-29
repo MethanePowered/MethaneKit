@@ -56,7 +56,8 @@ public:
     const IContextVK& GetContextVK() const noexcept;
 
     void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
-    const WaitInfo& GetWaitInfo() const noexcept { return m_wait_info; }
+    const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
+    const WaitInfo& GetWaitForExecutionCompleted() const;
 
     vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
     const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
@@ -72,13 +73,14 @@ private:
 
     void Reset();
 
-    const uint32_t  m_queue_family_index;
-    const uint32_t  m_queue_index;
-    vk::Queue       m_vk_queue;
-    vk::CommandPool m_vk_command_pool;
-    WaitInfo        m_wait_info;
+    using Semaphores = std::vector<vk::Semaphore>;
 
-
+    const uint32_t   m_queue_family_index;
+    const uint32_t   m_queue_index;
+    vk::Queue        m_vk_queue;
+    vk::CommandPool  m_vk_command_pool;
+    WaitInfo         m_wait_before_executing;
+    mutable WaitInfo m_wait_execution_completed;
 };
 
 } // namespace Methane::Graphics

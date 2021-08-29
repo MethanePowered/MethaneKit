@@ -106,13 +106,13 @@ void RenderContextVK::Present()
     ContextVK<RenderContextBase>::Present();
 
     CommandQueueVK& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
-    Ptr<CommandListSetVK> last_executing_command_list_set_ptr = std::static_pointer_cast<CommandListSetVK>(render_command_queue.GetLastExecutingCommandListSet());
 
     // Present frame to screen
     const uint32_t image_index = GetFrameBufferIndex();
-    vk::PresentInfoKHR present_info = last_executing_command_list_set_ptr
-        ? vk::PresentInfoKHR(last_executing_command_list_set_ptr->GetNativeExecutionCompletedSemaphore(), m_vk_swapchain, image_index)
-        : vk::PresentInfoKHR({}, m_vk_swapchain, image_index);
+    const vk::PresentInfoKHR present_info = vk::PresentInfoKHR(
+        render_command_queue.GetWaitForExecutionCompleted().semaphores,
+        m_vk_swapchain, image_index
+    );
     const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
     META_CHECK_ARG_EQUAL_DESCR(present_result, vk::Result::eSuccess, "failed to present frame image on screen");
 

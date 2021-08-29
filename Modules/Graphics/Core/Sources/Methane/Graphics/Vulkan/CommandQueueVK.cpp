@@ -84,15 +84,36 @@ void CommandQueueVK::Execute(CommandListSet& command_lists, const CommandList::C
     META_FUNCTION_TASK();
     CommandQueueTrackingBase::Execute(command_lists, completed_callback);
 
-    m_wait_info.semaphores.clear();
-    m_wait_info.stages.clear();
+    m_wait_before_executing.semaphores.clear();
+    m_wait_before_executing.stages.clear();
 };
 
 void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags)
 {
     META_FUNCTION_TASK();
-    m_wait_info.semaphores.emplace_back(semaphore);
-    m_wait_info.stages.emplace_back(stage_flags);
+    m_wait_before_executing.semaphores.emplace_back(semaphore);
+    m_wait_before_executing.stages.emplace_back(stage_flags);
+}
+
+const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted() const
+{
+    META_FUNCTION_TASK();
+    const auto executing_command_lists_guard = GetExecutingCommandListsGuard();
+    ExecutingCommandListSets executing_command_list_sets = executing_command_lists_guard.GetExecutingCommandLists(); // copy the queue for iterating
+
+    m_wait_execution_completed.semaphores.clear();
+    m_wait_execution_completed.semaphores.reserve(executing_command_list_sets.size());
+
+    while(!executing_command_list_sets.empty())
+    {
+        META_CHECK_ARG_NOT_NULL(executing_command_list_sets.front());
+        const CommandListSetVK& executing_command_list_set = static_cast<const CommandListSetVK&>(*executing_command_list_sets.front());
+        m_wait_execution_completed.semaphores.emplace_back(executing_command_list_set.GetNativeExecutionCompletedSemaphore());
+        executing_command_list_sets.pop();
+    }
+
+    m_wait_execution_completed.stages.resize(m_wait_execution_completed.semaphores.size(), vk::PipelineStageFlagBits::eTopOfPipe);
+    return m_wait_execution_completed;
 }
 
 void CommandQueueVK::SetName(const std::string& name)

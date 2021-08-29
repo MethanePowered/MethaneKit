@@ -95,6 +95,7 @@ void CommandQueueTrackingBase::CompleteExecution(const std::optional<Data::Index
     while (!m_executing_command_lists.empty() &&
           (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
     {
+        META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
         m_executing_command_lists.front()->Complete();
         m_executing_command_lists.pop();
     }
