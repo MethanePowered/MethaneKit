@@ -92,7 +92,7 @@ private:
         CpuTime,
         GpuName,
         HelpKey,
-        FrameBuffers,
+        FrameBuffersAndApi,
         VSync
     };
 

@@ -83,6 +83,15 @@ struct Device
 
 struct System
 {
+    enum class GraphicsApi
+    {
+        Metal,
+        DirectX,
+        Vulkan
+    };
+
+    static GraphicsApi GetGraphicsApi() noexcept;
+
     [[nodiscard]] static System& Get();
 
     virtual void CheckForChanges() = 0;

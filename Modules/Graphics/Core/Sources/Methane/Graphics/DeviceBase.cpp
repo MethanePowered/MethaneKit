@@ -85,6 +85,17 @@ void DeviceBase::OnRemoved()
     Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
 }
 
+System::GraphicsApi System::GetGraphicsApi() noexcept
+{
+#if defined METHANE_GFX_METAL
+    return GraphicsApi::Metal;
+#elif defined METHANE_GFX_DIRECTX
+    return GraphicsApi::DirectX;
+#elif defined METHANE_GFX_VULKAN
+    return GraphicsApi::Vulkan;
+#endif
+}
+
 void SystemBase::RequestRemoveDevice(Device& device) const
 {
     META_FUNCTION_TASK();

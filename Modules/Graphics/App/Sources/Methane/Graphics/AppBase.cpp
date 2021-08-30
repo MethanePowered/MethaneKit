@@ -390,12 +390,13 @@ void AppBase::UpdateWindowTitle()
     const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
     const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
     const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
-    const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  F1 - help",
+    const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,
                                           average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
                                           context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(),
                                           context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
-                                          m_context_ptr->GetDevice().GetAdapterName());
+                                          m_context_ptr->GetDevice().GetAdapterName(),
+                                          magic_enum::enum_name(System::GetGraphicsApi()));
 
     SetWindowTitle(title);
 }

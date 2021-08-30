@@ -26,7 +26,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
  ╟───────────────┥ 123 FPS (Major Font)           ║
  ║ CPU Time %    │                                ║
  ╟───────────────┼────────────────────────────────╢
- ║ VSync ON/OFF  │ Frame Buffs Resolution & Count ║
+ ║ VSync ON/OFF  │ W x H       N FB      GFX API  ║
  ╚═══════════════╧════════════════════════════════╝
 
 ******************************************************************************/
@@ -218,7 +218,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             Text::SettingsUtf8
             {
                 "Frame Buffers",
-                "0000 x 0000   3 FB",
+                "0000 x 0000   3 FB   DirectX",
                 UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
@@ -284,7 +284,11 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffers).SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(), context_settings.frame_buffers_count));
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}   {:d} FB   {:s}",
+                                                                    context_settings.frame_size.GetWidth(),
+                                                                    context_settings.frame_size.GetHeight(),
+                                                                    context_settings.frame_buffers_count,
+                                                                    magic_enum::enum_name(Graphics::System::GetGraphicsApi())));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
@@ -339,11 +343,11 @@ void HeadsUpDisplay::LayoutTextBlocks()
     // Layout right column text blocks
     const FrameSize gpu_name_size      = GetTextBlock(TextBlock::GpuName).GetRectInDots().size;
     const FrameSize fps_size           = GetTextBlock(TextBlock::Fps).GetRectInDots().size;
-    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffers).GetRectInDots().size;
+    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffersAndApi).GetRectInDots().size;
     const uint32_t  right_column_width = std::max({ gpu_name_size.GetWidth(), fps_size.GetWidth(), frame_buffers_size.GetWidth() });
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
-    GetTextBlock(TextBlock::FrameBuffers).SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetRelOrigin(position);
 
     const UnitPoint right_bottom_position = position;
 
