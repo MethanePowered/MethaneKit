@@ -51,9 +51,12 @@ public:
         CharPosition(CoordinateType x, CoordinateType y, bool is_line_start = false);
 
         bool     is_line_start              = false; // start of new line: either after line break `\n` or text wrap
-        bool     is_whitespace_or_linebreak = false;
+        bool     is_whitespace              = false;
+        bool     is_line_break              = false;
         size_t   start_vertex_index         = std::numeric_limits<size_t>::max();
         uint32_t visual_width               = 0U;
+
+        bool IsWhiteSpaceOrLineBreak() const noexcept { return is_whitespace || is_line_break; }
     };
 
     using CharPositions = std::vector<CharPosition>;
@@ -84,7 +87,9 @@ private:
     void AppendChars(std::u32string added_text);
     void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
     void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
-    int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const;
+    float GetLineWidth(size_t line_start_index) const;
+    float GetHorizontalLineAlignmentOffset(size_t line_start_index, float frame_width) const;
+    std::pair<size_t, bool> GetWhiteSpacesCountInLine(size_t line_start_index) const;
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
 

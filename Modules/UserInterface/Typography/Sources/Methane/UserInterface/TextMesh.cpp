@@ -58,8 +58,9 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
         META_CHECK_ARG_NOT_ZERO(text_char);
 
         TextMesh::CharPosition& char_pos = char_positions.back();
-        char_pos.is_whitespace_or_linebreak = text_char.IsLineBreak() || text_char.IsWhiteSpace();
-        char_pos.visual_width               = text_char.GetVisualSize().GetWidth();
+        char_pos.is_whitespace = text_char.IsWhiteSpace();
+        char_pos.is_line_break = text_char.IsLineBreak();
+        char_pos.visual_width  = text_char.GetVisualSize().GetWidth();
 
         // Wrap to next line and skip visualization of "line break" character
         if (text_char.IsLineBreak())
@@ -245,7 +246,7 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
             whitespace_it != m_text.rend())
         {
             m_last_whitespace_index = std::distance(m_text.begin(), whitespace_it.base()) - 1;
-            META_CHECK_ARG(m_last_whitespace_index, m_char_positions[m_last_whitespace_index].is_whitespace_or_linebreak);
+            META_CHECK_ARG(m_last_whitespace_index, m_char_positions[m_last_whitespace_index].IsWhiteSpaceOrLineBreak());
         }
         else
         {
@@ -326,7 +327,7 @@ void TextMesh::AppendChars(std::u32string added_text)
 
             if (font_char.IsWhiteSpace() || font_char.IsLineBreak())
             {
-                META_CHECK_ARG(char_index, m_char_positions[init_text_length + char_index].is_whitespace_or_linebreak);
+                META_CHECK_ARG(char_index, m_char_positions[init_text_length + char_index].IsWhiteSpaceOrLineBreak());
                 return CharAction::Continue;
             }
 
@@ -358,9 +359,14 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
 
     META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
     const size_t  end_char_index                  = m_char_positions.size() - 1;
-    const auto    frame_width                     = static_cast<int32_t>(m_content_size.GetWidth());
-    int32_t       horizontal_alignment_offset     = 0; // Alignment offset of the recently appended character
-    int32_t       horizontal_alignment_adjustment = 0; // Alignment adjustment of the existing character of the last line of text
+    const float   frame_width                     = static_cast<float>(m_content_size.GetWidth());
+    float         horizontal_alignment_offset     = 0.F;
+    float         justified_whitespace_width      = 0.F;
+    bool          is_line_ending_with_line_break  = false;
+    size_t        line_whitespace_index           = 0;
+    int32_t       line_start_offset               = 0;
+    const bool    justify_alignment_enabled       = m_layout.horizontal_alignment == Text::HorizontalAlignment::Justify &&
+                                                   (m_layout.wrap == Text::Wrap::None || m_layout.wrap == Text::Wrap::Word);
 
     // Apply horizontal alignment offset to newly added and existing character quads at last line
     for(size_t char_index = line_start_index; char_index < end_char_index; ++char_index)
@@ -368,23 +374,34 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
         const CharPosition& char_position = m_char_positions[char_index];
         if (char_position.is_line_start && char_index <= end_char_index - 1)
         {
+            line_whitespace_index = 0;
+            line_start_offset = static_cast<int32_t>(m_vertices[m_char_positions[char_index].start_vertex_index].position[0]);
             horizontal_alignment_offset = GetHorizontalLineAlignmentOffset(char_index, frame_width);
-            if (char_index < aligned_text_length)
+            if (justify_alignment_enabled)
             {
-                // Calculate previously aligned characters adjustment
-                META_CHECK_ARG_LESS(char_position.start_vertex_index, m_vertices.size());
-                horizontal_alignment_adjustment = horizontal_alignment_offset - static_cast<int32_t>(m_vertices[char_position.start_vertex_index].position[0]);
+                size_t whitespaces_count_in_line = 0;
+                std::tie(whitespaces_count_in_line, is_line_ending_with_line_break) = GetWhiteSpacesCountInLine(char_index);
+                justified_whitespace_width = (m_layout.wrap == Text::Wrap::None || !is_line_ending_with_line_break) && whitespaces_count_in_line > 0
+                                           ? (frame_width - GetLineWidth(char_index)) / whitespaces_count_in_line
+                                           : 0.F;
             }
         }
 
-        if (char_position.is_whitespace_or_linebreak)
+        if (char_position.IsWhiteSpaceOrLineBreak())
+        {
+            if (justify_alignment_enabled && char_position.is_whitespace)
+            {
+                line_whitespace_index++;
+                horizontal_alignment_offset = std::round(justified_whitespace_width * line_whitespace_index);
+            }
             continue;
+        }
 
         // Apply line alignment offset to the character quad vertices
         META_CHECK_ARG_LESS(char_position.start_vertex_index, m_vertices.size());
         const float alignment_offset = char_index < aligned_text_length
-                                     ? static_cast<float>(horizontal_alignment_adjustment)
-                                     : static_cast<float>(horizontal_alignment_offset);
+                                     ? horizontal_alignment_offset - line_start_offset
+                                     : horizontal_alignment_offset;
         for (size_t vertex_id = 0; vertex_id < 4; ++vertex_id)
         {
             m_vertices[char_position.start_vertex_index + vertex_id].position[0] += alignment_offset;
@@ -392,28 +409,54 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
     }
 }
 
-int32_t TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const
+float TextMesh::GetLineWidth(size_t line_start_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
 
     // Find next line start or end of text
     auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 1,
-        [](const CharPosition& line_char_pos) { return line_char_pos.is_line_start; }
-    );
+                                             [](const CharPosition& line_char_pos) { return line_char_pos.is_line_start; });
 
     // Step back from next line start to get end of line position
     while(line_end_position_it->is_line_start && line_end_position_it != m_char_positions.begin())
         --line_end_position_it;
 
     // Calculate current line width and alignment offset
-    const int32_t line_width = line_end_position_it->GetX() + line_end_position_it->visual_width - m_char_positions[line_start_index].GetX();
+    return static_cast<float>(line_end_position_it->GetX() + line_end_position_it->visual_width - m_char_positions[line_start_index].GetX());
+}
+
+float TextMesh::GetHorizontalLineAlignmentOffset(size_t line_start_index, float frame_width) const
+{
+    META_FUNCTION_TASK();
     switch(m_layout.horizontal_alignment)
     {
-    case Text::HorizontalAlignment::Right:  return (frame_width - line_width);
-    case Text::HorizontalAlignment::Center: return (frame_width - line_width) / 2;
+    case Text::HorizontalAlignment::Right:  return (frame_width - GetLineWidth(line_start_index));
+    case Text::HorizontalAlignment::Center: return (frame_width - GetLineWidth(line_start_index)) / 2;
     default:                                return 0;
     }
+}
+
+std::pair<size_t, bool> TextMesh::GetWhiteSpacesCountInLine(size_t line_start_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG(line_start_index, m_char_positions[line_start_index].is_line_start);
+
+    size_t white_spaces_count = 0;
+    for(size_t char_index = line_start_index; char_index < m_char_positions.size(); ++char_index)
+    {
+        const CharPosition& char_position = m_char_positions[char_index];
+        if (char_position.is_whitespace)
+            ++white_spaces_count;
+
+        if (char_position.is_line_break)
+            return std::make_pair(white_spaces_count, true);
+
+        if (char_position.is_line_start && char_index > line_start_index)
+            return std::make_pair(white_spaces_count, false);
+    }
+
+    return std::make_pair(white_spaces_count, true);
 }
 
 void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size)

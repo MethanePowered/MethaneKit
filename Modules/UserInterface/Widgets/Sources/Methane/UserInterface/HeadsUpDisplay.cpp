@@ -220,7 +220,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
                 "Frame Buffers",
                 "0000 x 0000   3 FB   DirectX",
                 UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
-                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Justify, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
@@ -284,7 +284,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}   {:d} FB   {:s}",
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d} {:d} FB {:s}",
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,
@@ -348,6 +348,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
     GetTextBlock(TextBlock::FrameBuffersAndApi).SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetSize(GetTextBlock(TextBlock::GpuName).GetRectInDots().GetUnitSize());
 
     const UnitPoint right_bottom_position = position;
 

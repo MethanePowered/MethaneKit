@@ -66,7 +66,8 @@ public:
     {
         Left = 0U,
         Right,
-        Center
+        Center,
+        Justify
     };
 
     enum class VerticalAlignment : uint32_t
