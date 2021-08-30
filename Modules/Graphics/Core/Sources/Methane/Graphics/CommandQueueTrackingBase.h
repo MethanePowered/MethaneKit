@@ -49,7 +49,7 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    void CompleteExecution(const std::optional<Data::Index>& frame_index = { });
+    void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
 
@@ -90,7 +90,7 @@ private:
     std::atomic<bool>                   m_execution_waiting{ true };
     std::thread                         m_execution_waiting_thread;
     std::exception_ptr                  m_execution_waiting_exception_ptr;
-    std::atomic<bool>                   m_name_changed{ false };
+    std::atomic<bool>                   m_name_changed{ true };
 };
 
 } // namespace Methane::Graphics

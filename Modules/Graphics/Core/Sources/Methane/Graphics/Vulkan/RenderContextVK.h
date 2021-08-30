@@ -47,6 +47,9 @@ public:
     RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
     ~RenderContextVK() override;
 
+    // Context interface
+    void WaitForGpu(WaitFor wait_for) override;
+
     // RenderContext interface
     bool     ReadyToRender() const override;
     void     Resize(const FrameSize& frame_size) override;

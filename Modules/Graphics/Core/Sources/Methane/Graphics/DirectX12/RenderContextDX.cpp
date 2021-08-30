@@ -99,7 +99,6 @@ RenderContextDX::~RenderContextDX()
     META_FUNCTION_TASK();
 }
 
-// Context interface
 void RenderContextDX::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();

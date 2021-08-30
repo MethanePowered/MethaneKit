@@ -82,6 +82,24 @@ void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocati
     UpdateFrameBufferIndex();
 }
 
+void RenderContextVK::WaitForGpu(WaitFor wait_for)
+{
+    META_FUNCTION_TASK();
+    ContextVK<RenderContextBase>::WaitForGpu(wait_for);
+
+    std::optional<Data::Index> frame_buffer_index;
+    CommandList::Type cl_type = CommandList::Type::Render;
+    switch (wait_for)
+    {
+    case WaitFor::RenderComplete:    break;
+    case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
+    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Blit; break;
+    default: META_UNEXPECTED_ARG(wait_for);
+    }
+
+    GetDefaultCommandQueueVK(cl_type).CompleteExecution(frame_buffer_index);
+}
+
 bool RenderContextVK::ReadyToRender() const
 {
     META_FUNCTION_TASK();

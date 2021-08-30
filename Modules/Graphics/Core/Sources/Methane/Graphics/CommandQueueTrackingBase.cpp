@@ -88,7 +88,7 @@ void CommandQueueTrackingBase::SetName(const std::string& name)
     m_name_changed = true;
 }
 
-void CommandQueueTrackingBase::CompleteExecution(const std::optional<Data::Index>& frame_index)
+void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
