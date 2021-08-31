@@ -89,7 +89,7 @@ jobs:
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: $(buildReleaseCmakeFlags)
-    buildName: 'DX-Win64-Release'
+    buildName: 'Win64-DX-Release'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'
@@ -108,7 +108,7 @@ jobs:
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
     cmakeFlags: -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
-    buildName: 'DX-Win64-Profiling'
+    buildName: 'Win64-DX-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
     buildInstallDir: '..\Install'

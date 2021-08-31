@@ -71,4 +71,4 @@ steps:
     displayName: 'Publish install artifacts for $(platform) $(configuration)'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: MethaneKit-$(buildName)
+      artifactName: MethaneKit-$(buildName)_v$(product.Version.Full)
