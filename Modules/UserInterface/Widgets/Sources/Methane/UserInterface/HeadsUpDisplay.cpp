@@ -284,7 +284,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d} {:d} FB {:s}",
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}  {:d} FB  {:s}",
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,
@@ -348,7 +348,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
     GetTextBlock(TextBlock::FrameBuffersAndApi).SetRelOrigin(position);
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetSize(GetTextBlock(TextBlock::GpuName).GetRectInDots().GetUnitSize());
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetSize(UnitSize(Units::Dots, right_column_width, frame_buffers_size.GetHeight()));
 
     const UnitPoint right_bottom_position = position;
 

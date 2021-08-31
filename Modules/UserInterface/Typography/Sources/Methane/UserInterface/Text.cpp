@@ -676,6 +676,7 @@ FrameRect Text::GetAlignedViewportRect() const
     {
         switch (m_settings.layout.horizontal_alignment)
         {
+        case HorizontalAlignment::Justify:
         case HorizontalAlignment::Left:   break;
         case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
         case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
