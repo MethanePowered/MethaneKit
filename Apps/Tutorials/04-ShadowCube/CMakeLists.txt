@@ -22,7 +22,7 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Shadow Cube"
-    "Tutorial of the shadow pass rendering with Methane Kit."
+    "Tutorial demonstrating shadow and final render passes done with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"

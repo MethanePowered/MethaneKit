@@ -3,27 +3,21 @@ include(MethaneShaders)
 
 set(TARGET MethaneHelloCube)
 
-set(SOURCES
-    HelloCubeApp.h
-    HelloCubeApp.cpp
-)
-
-set(SHADERS_HLSL
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloCube.hlsl"
-)
-
 add_methane_application(${TARGET}
-    "${SOURCES}"
+    HelloCubeApp.cpp
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Hello Cube"
-    "Hello Cube tutorial: colored cube rendering with Methane Kit."
+    "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
 
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
+add_methane_shaders(${TARGET}
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloCube.hlsl"
+    "6_0"
+)
 
 target_link_libraries(${TARGET}
     PRIVATE

@@ -8,7 +8,7 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Hello Triangle"
-    "Hello Triangle tutorial of the colored triangle rendering with Methane Kit."
+    "Tutorial demonstrating colored triangle rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"

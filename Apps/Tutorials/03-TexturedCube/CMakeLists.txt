@@ -19,7 +19,7 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Textured Cube"
-    "Tutorial of the textured cube rendering with Methane Kit."
+    "Tutorial demonstrating textured rotating cube rendering with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"

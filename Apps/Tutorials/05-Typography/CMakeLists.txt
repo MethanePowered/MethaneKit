@@ -18,7 +18,7 @@ add_methane_application(${TARGET}
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Typography"
-    "Dynamic text rendering and fonts management tutorial with Methane Kit."
+    "Tutorial demonstrating dynamic text rendering and font atlases management with Methane Kit."
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
