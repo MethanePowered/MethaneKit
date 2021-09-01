@@ -220,7 +220,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 
 | Build Option Name                               | Default Value           | Release Build           | Profiling Build         | Description             |
 | ----------------------------------------------- | ----------------------- | ----------------------- | ----------------------- | ----------------------- |
-| <sub>METHANE_GFX_VULKAN_ENFORCED</sub>          | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub>Enforce using Vulkan graphics API instead of platform native API</sub> |
+| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
 | <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
 | <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
 | <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable tests build</sub> |

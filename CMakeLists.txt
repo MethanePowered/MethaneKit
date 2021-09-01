@@ -25,7 +25,7 @@ endif()
 enable_testing()
 
 # Build configuration
-option(METHANE_GFX_VULKAN_ENFORCED       "Enforce using Vulkan graphics API instead of platform native API" OFF)
+option(METHANE_GFX_VULKAN_ENABLED        "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED        "Enable applications build" ON)
 option(METHANE_TESTS_BUILD_ENABLED       "Enable tests build" ON)
 option(METHANE_CHECKS_ENABLED            "Enable runtime checks of input arguments" ON)
@@ -52,15 +52,15 @@ set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
-set(METHANE_COPYRIGHT     "Copyright 2019-2020 Evgeny Gorodetskiy")
+set(METHANE_COPYRIGHT     "Copyright 2019-2021 Evgeny Gorodetskiy")
 
 # Methane graphics native APIs
-set(METHANE_GFX_METAL 1)
-set(METHANE_GFX_DIRECTX 2)
-set(METHANE_GFX_VULKAN 3)
+set(METHANE_GFX_METAL 1)   # MacOS default API
+set(METHANE_GFX_DIRECTX 2) # Windows default API
+set(METHANE_GFX_VULKAN 3)  # Linux default API
 
 # Methane graphics API selection
-if (METHANE_GFX_VULKAN_ENFORCED)
+if (METHANE_GFX_VULKAN_ENABLED)
     set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
 else()
     if (WIN32)

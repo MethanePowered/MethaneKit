@@ -170,7 +170,7 @@ jobs:
     platform: 'x64'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
     buildName: 'Win64-VK-Release'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -191,7 +191,7 @@ jobs:
     platform: 'x64'
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
     buildName: 'Win64-VK-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -212,7 +212,7 @@ jobs:
     platform: 'Win32'
     configuration: 'Release'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildReleaseCmakeFlags)
     buildName: 'Win32-VK-Release'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'
@@ -233,7 +233,7 @@ jobs:
     platform: 'Win32'
     configuration: 'RelWithDebInfo'
     generatorName: '"Visual Studio 16 2019"'
-    cmakeFlags: -DMETHANE_GFX_VULKAN_ENFORCED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
+    cmakeFlags: -DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
     buildName: 'Win32-VK-Profiling'
     buildDir: 'Build\Output\$(buildName)\Build'
     installDir: 'Build\Output\$(buildName)\Install'

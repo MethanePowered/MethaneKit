@@ -1178,7 +1178,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_GFX_VULKAN_ENFORCED",
+                    "name": "METHANE_GFX_VULKAN_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 }
@@ -1265,7 +1265,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_GFX_VULKAN_ENFORCED",
+                    "name": "METHANE_GFX_VULKAN_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 }
@@ -1352,7 +1352,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_GFX_VULKAN_ENFORCED",
+                    "name": "METHANE_GFX_VULKAN_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 }
@@ -1439,7 +1439,7 @@
                     "type": "BOOL"
                 },
                 {
-                    "name": "METHANE_GFX_VULKAN_ENFORCED",
+                    "name": "METHANE_GFX_VULKAN_ENABLED",
                     "value": "True",
                     "type": "BOOL"
                 }
