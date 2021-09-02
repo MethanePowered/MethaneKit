@@ -95,7 +95,7 @@ void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::Pipeli
     m_wait_before_executing.stages.emplace_back(stage_flags);
 }
 
-const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted() const
+const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt) const
 {
     META_FUNCTION_TASK();
     const auto executing_command_lists_guard = GetExecutingCommandListsGuard();
@@ -108,6 +108,12 @@ const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted() c
     {
         META_CHECK_ARG_NOT_NULL(executing_command_list_sets.front());
         const CommandListSetVK& executing_command_list_set = static_cast<const CommandListSetVK&>(*executing_command_list_sets.front());
+        if (frame_index_opt && executing_command_list_set.GetExecutingOnFrameIndex() != *frame_index_opt)
+        {
+            executing_command_list_sets.pop();
+            continue;
+        }
+
         m_wait_execution_completed.semaphores.emplace_back(executing_command_list_set.GetNativeExecutionCompletedSemaphore());
         executing_command_list_sets.pop();
     }

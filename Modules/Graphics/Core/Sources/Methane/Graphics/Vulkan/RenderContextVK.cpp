@@ -127,8 +127,8 @@ void RenderContextVK::Present()
 
     // Present frame to screen
     const uint32_t image_index = GetFrameBufferIndex();
-    const vk::PresentInfoKHR present_info = vk::PresentInfoKHR(
-        render_command_queue.GetWaitForExecutionCompleted().semaphores,
+    const vk::PresentInfoKHR present_info(
+        render_command_queue.GetWaitForExecutionCompleted(image_index).semaphores,
         m_vk_swapchain, image_index
     );
     const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);

@@ -57,7 +57,7 @@ public:
 
     void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
     const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
-    const WaitInfo& GetWaitForExecutionCompleted() const;
+    const WaitInfo& GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt = { }) const;
 
     vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
     const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
