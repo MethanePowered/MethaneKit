@@ -140,7 +140,7 @@ public:
         for(HelloCubeFrame& frame : GetFrames())
         {
             // Create vertex buffers for each frame
-            Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
+            Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
             vertex_buffer_ptr->SetName(IndexedName("Cube Vertex Buffer", frame.index));
             frame.vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 

@@ -24,8 +24,11 @@ Base implementation of the buffer interface.
 #pragma once
 
 #include "ResourceBase.h"
+#include "ContextBase.h"
 
 #include <Methane/Graphics/Buffer.h>
+
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {

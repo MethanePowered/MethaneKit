@@ -290,19 +290,19 @@ void AsteroidsApp::Init()
         frame.execute_cmd_list_set_ptr = CreateExecuteCommandListSet(frame);
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, scene_uniforms_data_size);
+        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size, false, true);
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(gfx::SkyBox::Uniforms));
+        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::Uniforms), false, true);
         frame.skybox.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Planet rendering
-        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(hlslpp::PlanetUniforms));
+        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(hlslpp::PlanetUniforms), false, true);
         frame.planet.uniforms_buffer_ptr->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Asteroids array rendering
-        frame.asteroids.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, asteroid_uniforms_data_size, true);
+        frame.asteroids.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true, true);
         frame.asteroids.uniforms_buffer_ptr->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering

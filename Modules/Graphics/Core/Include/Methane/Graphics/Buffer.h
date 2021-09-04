@@ -58,10 +58,9 @@ struct Buffer : virtual Resource // NOSONAR
     };
 
     // Create Buffer instance
-    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride);
-    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format);
-    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Buffer> CreateVolatileBuffer(const Context& context, Data::Size size, bool addressable = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Buffer> CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile = false);
+    [[nodiscard]] static Ptr<Buffer> CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile = false);
+    [[nodiscard]] static Ptr<Buffer> CreateConstantBuffer(const Context& context, Data::Size size, bool addressable = false, bool is_volatile = false, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
     [[nodiscard]] static Ptr<Buffer> CreateReadBackBuffer(const Context& context, Data::Size size);
 
     // Auxiliary functions

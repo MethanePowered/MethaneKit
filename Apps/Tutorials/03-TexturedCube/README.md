@@ -344,7 +344,7 @@ void TexturedCubeApp::Init()
 ```
 
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
-- Create uniforms buffer with `Graphics::Buffer::CreateVolatileBuffer(...)` function.
+- Create uniforms buffer with `Graphics::Buffer::CreateConstantBuffer(...)` function.
 - Create program arguments to resources bindings with `ProgramBindings::Create(..)` function.
 - Create rendering command list with `Graphics::RenderCommandList::Create(...)` and 
 create set of command lists with `Graphics::CommandListSet::Create(...)` for execution in command queue.
@@ -362,7 +362,7 @@ void TexturedCubeApp::Init()
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(GetRenderContext(), uniforms_data_size);
+        frame.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
         frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
