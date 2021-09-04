@@ -108,9 +108,18 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
     CommandList::Type cl_type = CommandList::Type::Render;
     switch (wait_for)
     {
-    case WaitFor::RenderComplete: break;
-    case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
-    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Blit; break;
+    case WaitFor::RenderComplete:
+        break;
+
+    case WaitFor::FramePresented:
+        WaitForSwapChainLatency();
+        frame_buffer_index = GetFrameBufferIndex();
+        break;
+
+    case WaitFor::ResourcesUploaded:
+        cl_type = CommandList::Type::Blit;
+        break;
+
     default: META_UNEXPECTED_ARG(wait_for);
     }
 
@@ -154,6 +163,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     swap_chain_desc.SwapEffect       = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.AlphaMode        = DXGI_ALPHA_MODE_IGNORE;
     swap_chain_desc.SampleDesc.Count = 1;
+    swap_chain_desc.Flags            = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT; // requires Windows 8.1
 
     const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = SystemDX::Get().GetNativeFactory();
     META_CHECK_ARG_NOT_NULL(cp_dxgi_factory);
@@ -163,21 +173,31 @@ void RenderContextDX::Initialize(DeviceBase& device, bool deferred_heap_allocati
     ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)), p_native_device);
     if (present_tearing_support)
     {
-        swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        m_is_tearing_supported = true;
+    }
+    else
+    {
+        m_is_tearing_supported = false;
     }
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
     ID3D12CommandQueue& dx_command_queue = GetDefaultCommandQueueDX(CommandList::Type::Render).GetNativeCommandQueue();
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
+
     META_CHECK_ARG_NOT_NULL(cp_swap_chain);
+    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain), p_native_device);
+
+    // Create waitable object to reduce frame latency (https://docs.microsoft.com/en-us/windows/uwp/gaming/reduce-latency-with-dxgi-1-3-swap-chains)
+    m_cp_swap_chain->SetMaximumFrameLatency(settings.frame_buffers_count);
+    m_frame_latency_waitable_object = m_cp_swap_chain->GetFrameLatencyWaitableObject();
+    META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_latency_waitable_object, "swap-chain waitable object is null");
 
     if (settings.is_full_screen)
     {
         // Restore top-most flag
         SetWindowTopMostFlag(m_platform_env.window_handle, true);
     }
-
-    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain), p_native_device);
 
     // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
     ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER), p_native_device);
@@ -247,6 +267,19 @@ uint32_t RenderContextDX::GetNextFrameBufferIndex()
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);
     return m_cp_swap_chain->GetCurrentBackBufferIndex();
+}
+
+void RenderContextDX::WaitForSwapChainLatency()
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_frame_latency_waitable_object);
+    const DWORD frame_latency_wait_result = WaitForSingleObjectEx(
+        m_frame_latency_waitable_object,
+        1000, // 1 second timeout (should not ever happen)
+        true
+    );
+    META_CHECK_ARG_NOT_EQUAL_DESCR(frame_latency_wait_result, WAIT_TIMEOUT, "timeout reached while waiting for swap-chain latency");
+    META_CHECK_ARG_EQUAL_DESCR(frame_latency_wait_result, WAIT_OBJECT_0, "failed to wait for swap-chain latency");
 }
 
 } // namespace Methane::Graphics
