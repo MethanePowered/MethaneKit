@@ -29,7 +29,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
-#include "Shaders/TexturedCubeUniforms.h"
+#include "Shaders/TexturedCubeUniforms.h" // NOSONAR
 #pragma pack(pop)
 }
 
@@ -86,7 +86,7 @@ private:
     Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
 };
 

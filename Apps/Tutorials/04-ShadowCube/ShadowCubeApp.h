@@ -30,7 +30,7 @@ namespace hlslpp // NOSONAR
 {
 #define ENABLE_SHADOWS
 #pragma pack(push, 16)
-#include "Shaders/ShadowCubeUniforms.h"
+#include "Shaders/ShadowCubeUniforms.h" // NOSONAR
 #pragma pack(pop)
 }
 
@@ -97,7 +97,7 @@ private:
     private:
         hlslpp::MeshUniforms        m_shadow_pass_uniforms{};
         gfx::Resource::SubResources m_shadow_pass_uniforms_subresources{
-            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) }
+            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } // NOSONAR
         };
     };
 
@@ -124,7 +124,7 @@ private:
     };
     hlslpp::SceneUniforms       m_scene_uniforms{ };
     gfx::Resource::SubResources m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;

@@ -96,14 +96,14 @@ void ShadowCubeApp::Init()
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
     m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MarbleWhite.jpg", image_options, "Floor Texture"));
 
-    const Data::Size constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
-    const Data::Size scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
-    const Data::Size mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
+    const auto constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
+    const auto scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
+    const auto mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
 
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }); // NOSONAR
 
     // Create sampler for cube and floor textures sampling
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),

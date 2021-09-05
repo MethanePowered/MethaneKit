@@ -32,8 +32,8 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
-#include "Shaders/SceneConstants.h"
-#include "Shaders/AsteroidUniforms.h"
+#include "Shaders/SceneConstants.h"   // NOSONAR
+#include "Shaders/AsteroidUniforms.h" // NOSONAR
 #pragma pack(pop)
 }
 
@@ -108,7 +108,7 @@ private:
     bool                              m_is_parallel_rendering_enabled = true;
     hlslpp::SceneUniforms             m_scene_uniforms{ };
     gfx::Resource::SubResources       m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
 
     Ptr<gfx::RenderPattern>           m_asteroids_render_pattern_ptr;

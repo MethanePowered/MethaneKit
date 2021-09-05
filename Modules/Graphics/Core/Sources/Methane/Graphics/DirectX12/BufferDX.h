@@ -97,7 +97,7 @@ public:
             Data::RawPtr p_sub_resource_data = nullptr;
             ThrowIfFailed(
                 d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
-                                   reinterpret_cast<void**>(&p_sub_resource_data)),
+                                   reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
                 GetContextDX().GetDeviceDX().GetNativeDevice().Get()
             );
 
@@ -145,7 +145,7 @@ public:
         Data::RawPtr p_sub_resource_data = nullptr;
         ThrowIfFailed(
             d3d12_resource.Map(sub_resource_raw_index, &read_range,
-                               reinterpret_cast<void**>(&p_sub_resource_data)),
+                               reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
             GetContextDX().GetDeviceDX().GetNativeDevice().Get()
         );
 

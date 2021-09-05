@@ -74,7 +74,7 @@ public:
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
         vertex_buffer_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         });
@@ -84,7 +84,7 @@ public:
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetIndexDataSize())
             }
         });
@@ -232,7 +232,7 @@ protected:
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
         m_final_pass_instance_uniforms_subresources = Resource::SubResources{
-            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() }
+            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
         };
     }
 
@@ -272,8 +272,8 @@ protected:
     {
         META_FUNCTION_TASK();
         return static_cast<Data::Size>(
-            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()),
-                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index]))
+            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
+                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
         );
     }
 

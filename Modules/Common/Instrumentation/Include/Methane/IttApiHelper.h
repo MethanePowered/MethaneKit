@@ -52,7 +52,7 @@ class Event
 {
 public:
     Event(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
-        : m_id(__itt_id_make(const_cast<__itt_domain*>(p_domain), reinterpret_cast<unsigned long long>(p_name)))
+    : m_id(__itt_id_make(const_cast<__itt_domain*>(p_domain), reinterpret_cast<unsigned long long>(p_name))) // NOSONAR
         , m_p_domain(p_domain)
     { }
 

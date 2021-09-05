@@ -220,7 +220,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Setting
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::AsteroidsArray");
 
-    gfx::RenderContext& context = render_pattern.GetRenderContext();
+    const gfx::RenderContext& context = render_pattern.GetRenderContext();
     const size_t textures_array_size = m_settings.textures_array_enabled ? m_settings.textures_count : 1;
     const gfx::Shader::MacroDefinitions macro_definitions{ { "TEXTURES_COUNT", std::to_string(textures_array_size) } };
 

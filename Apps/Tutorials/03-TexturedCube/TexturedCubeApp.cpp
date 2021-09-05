@@ -82,20 +82,20 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } }); // NOSONAR
     m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_index_buffer_ptr->SetName("Cube Index Buffer");
-    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
+    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } }); // NOSONAR
 
     // Create constants buffer for frame rendering
-    const Data::Size constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
+    const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } }); // NOSONAR
 
     // Create render state with program
     gfx::RenderState::Settings state_settings;
@@ -147,7 +147,7 @@ void TexturedCubeApp::Init()
     );
 
     // Create frame buffer data
-    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
+    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering

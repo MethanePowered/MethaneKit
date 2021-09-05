@@ -146,8 +146,8 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data),
-                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size));
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data), // NOSONAR
+                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size)); // NOSONAR
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
@@ -155,7 +155,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     else
     {
         return ImageData(image_dimensions, static_cast<uint32_t>(image_channels_count),
-                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size));
+                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size)); // NOSONAR
     }
 
 #endif

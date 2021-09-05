@@ -208,7 +208,7 @@ void AsteroidsApp::Init()
 
     UserInterfaceApp::Init();
 
-    gfx::RenderContext& context = GetRenderContext();
+    const gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.GetWidth()),
                                           static_cast<float>(context_settings.frame_size.GetHeight()));
@@ -255,14 +255,14 @@ void AsteroidsApp::Init()
                          ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
                          : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
-    const Data::Size constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
-    const Data::Size scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
+    const auto       constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
+    const auto       scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
     const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }); // NOSONAR
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())

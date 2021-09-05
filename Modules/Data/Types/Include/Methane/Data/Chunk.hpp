@@ -66,7 +66,7 @@ public:
     template<typename T>
     [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, const T*> GetDataPtr() const noexcept
     {
-        return reinterpret_cast<const T*>(m_data_ptr);
+        return reinterpret_cast<const T*>(m_data_ptr); // NOSONAR
     }
 
     template<typename T>

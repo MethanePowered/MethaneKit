@@ -54,19 +54,13 @@ using GraphicsApp = App<HelloCubeFrame>;
 class HelloCubeApp final : public GraphicsApp
 {
 private:
-    const CubeMesh<CubeVertex> m_cube_mesh;
+    const CubeMesh<CubeVertex> m_cube_mesh{ CubeVertex::layout };
+    const hlslpp::float4x4     m_model_matrix = hlslpp::float4x4::scale(15.F);
     std::vector<CubeVertex>    m_proj_vertices;
     Camera                     m_camera;
-    hlslpp::float4x4           m_model_matrix;
 
     Ptr<RenderState> m_render_state_ptr;
     Ptr<Buffer>      m_index_buffer_ptr;
-
-    bool Animate(double, double delta_seconds)
-    {
-        m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
-        return true;
-    }
 
 public:
     HelloCubeApp()
@@ -76,23 +70,26 @@ public:
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
             }())
-        , m_cube_mesh(CubeVertex::layout)
         , m_proj_vertices(m_cube_mesh.GetVertices())
-        , m_model_matrix(hlslpp::float4x4::scale(15.F))
     {
         m_camera.ResetOrientation({ { 13.0F, 13.0F, 13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
-        // Setup animations
-        GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&HelloCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+        // Setup camera rotation animation
+        GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(
+            [this](double, double delta_seconds)
+            {
+                m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+                return true;
+            }));
     }
 
-    ~HelloCubeApp()
+    ~HelloCubeApp() override
     {
         // Wait for GPU rendering is completed to release resources
         GetRenderContext().WaitForGpu(Context::WaitFor::RenderComplete);
     }
 
-    void Init()
+    void Init() override
     {
         GraphicsApp::Init();
 
@@ -134,7 +131,7 @@ public:
         // Create index buffer for cube mesh
         m_index_buffer_ptr = Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetName("Cube Index Buffer");
-        m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } });
+        m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }); // NOSONAR
 
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
@@ -153,7 +150,7 @@ public:
         GraphicsApp::CompleteInitialization();
     }
 
-    bool Resize(const FrameSize& frame_size, bool is_minimized)
+    bool Resize(const FrameSize& frame_size, bool is_minimized) override
     {
         // Resize screen color and depth textures
         if (!GraphicsApp::Resize(frame_size, is_minimized))
@@ -167,7 +164,7 @@ public:
         return true;
     }
 
-    bool Update()
+    bool Update() override
     {
         if (!GraphicsApp::Update())
             return false;
@@ -183,13 +180,13 @@ public:
 
         // Update vertex buffer with vertices in camera's projection view
         (*GetCurrentFrame().vertex_buffer_set_ptr)[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
+            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
             &GetRenderContext().GetRenderCommandKit().GetQueue()
         );
         return true;
     }
 
-    bool Render()
+    bool Render() override
     {
         if (!GraphicsApp::Render())
             return false;
@@ -211,7 +208,7 @@ public:
         return true;
     }
 
-    void OnContextReleased(Context& context)
+    void OnContextReleased(Context& context) override
     {
         m_index_buffer_ptr.reset();
         m_render_state_ptr.reset();

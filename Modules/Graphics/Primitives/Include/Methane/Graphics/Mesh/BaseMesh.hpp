@@ -53,7 +53,7 @@ protected:
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
-        return *reinterpret_cast<FType*>(reinterpret_cast<std::byte*>(&vertex) + field_offset);
+        return *reinterpret_cast<FType*>(reinterpret_cast<std::byte*>(&vertex) + field_offset); // NOSONAR
     }
 
     template<typename FType>
@@ -61,7 +61,7 @@ protected:
     {
         META_FUNCTION_TASK();
         const int32_t field_offset = GetVertexFieldOffset(field);
-        return *reinterpret_cast<const FType*>(reinterpret_cast<const std::byte*>(&vertex) + field_offset);
+        return *reinterpret_cast<const FType*>(reinterpret_cast<const std::byte*>(&vertex) + field_offset); // NOSONAR
     }
 
     using EdgeMidpoints = std::map<Mesh::Edge, Mesh::Index>;

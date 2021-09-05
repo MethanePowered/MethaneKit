@@ -35,7 +35,7 @@ Screen Quad rendering primitive.
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
-#include <ScreenQuadConstants.h>
+#include <ScreenQuadConstants.h> // NOSONAR
 #pragma pack(pop)
 }
 
@@ -168,7 +168,7 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         vertex_buffer_ptr->SetName(s_vertex_buffer_name);
         vertex_buffer_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()), // NOSONAR
                 quad_mesh.GetVertexDataSize()
             }
         });
@@ -185,7 +185,7 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         m_index_buffer_ptr->SetName(s_index_buffer_name);
         m_index_buffer_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()), // NOSONAR
                 quad_mesh.GetIndexDataSize()
             }
         });
@@ -294,7 +294,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
         Resource::SubResources
         {
             {
-                reinterpret_cast<Data::ConstRawPtr>(&constants),
+                reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
                 static_cast<Data::Size>(sizeof(constants))
             }
         },

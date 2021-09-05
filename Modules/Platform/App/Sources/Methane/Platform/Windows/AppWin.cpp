@@ -226,7 +226,7 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
     const int32_t min_window_height = settings.min_size.GetHeight() + header;
 
     // Update window rectangle with respect to minimum size limit
-    auto p_window_rect = reinterpret_cast<PRECT>(l_param);
+    auto p_window_rect = reinterpret_cast<PRECT>(l_param); // NOSONAR
 
     if (p_window_rect->right - p_window_rect->left < min_window_width)
     {
@@ -376,11 +376,11 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
     if (msg_id == WM_CREATE)
     {
-        SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams));
+        SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams)); // NOSONAR
         return 0;
     }
 
-    auto p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
+    auto p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA)); // NOSONAR
     if (!p_app || !p_app->IsMessageProcessing())
     {
         return DefWindowProc(h_wnd, msg_id, w_param, l_param);

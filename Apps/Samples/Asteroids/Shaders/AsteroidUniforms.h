@@ -12,8 +12,8 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 #ifndef ASTEROID_UNIFORMS_H
 #define ASTEROID_UNIFORMS_H
 
-#ifndef uint
-#define uint uint32_t
+#ifdef __cplusplus
+using uint = uint32_t;
 #endif
 
 #ifndef META_UNIFORM_ALIGN

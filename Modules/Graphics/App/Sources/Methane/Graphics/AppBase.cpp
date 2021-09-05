@@ -343,7 +343,7 @@ Texture::Locations AppBase::GetScreenPassAttachments(Texture& frame_buffer_textu
     };
 
     if (m_depth_texture_ptr)
-        attachments.push_back(Texture::Location(*m_depth_texture_ptr));
+        attachments.emplace_back(*m_depth_texture_ptr);
 
     return attachments;
 }
