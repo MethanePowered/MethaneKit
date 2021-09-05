@@ -34,7 +34,7 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
     , m_metal_view(CreateRenderContextAppView(app_env, settings))
-    , m_vk_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
+    , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
 

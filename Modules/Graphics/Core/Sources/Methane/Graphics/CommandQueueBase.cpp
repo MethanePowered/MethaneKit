@@ -31,12 +31,8 @@ namespace Methane::Graphics
 
 CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type)
     : m_context(context)
+    , m_device_ptr(context.GetDeviceBasePtr())
     , m_command_lists_type(command_lists_type)
-{
-    META_FUNCTION_TASK();
-}
-
-CommandQueueBase::~CommandQueueBase()
 {
     META_FUNCTION_TASK();
 }

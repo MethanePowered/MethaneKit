@@ -92,7 +92,7 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPatt
     );
 }
 
-static vk::RenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const RenderPattern::Settings& settings)
+static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const RenderPattern::Settings& settings)
 {
     META_FUNCTION_TASK();
 
@@ -130,7 +130,7 @@ static vk::RenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const 
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
 
-    return vk_device.createRenderPass(
+    return vk_device.createRenderPassUnique(
         vk::RenderPassCreateInfo(
             vk::RenderPassCreateFlags{},
             vk_attachment_descs,
@@ -139,7 +139,7 @@ static vk::RenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const 
     );
 }
 
-static vk::Framebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const RenderPass::Settings& settings)
+static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const RenderPass::Settings& settings)
 {
     META_FUNCTION_TASK();
     std::vector<vk::ImageView> vk_attachment_views;
@@ -150,7 +150,7 @@ static vk::Framebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device, cons
         }
     );
 
-    return vk_device.createFramebuffer(
+    return vk_device.createFramebufferUnique(
         vk::FramebufferCreateInfo(
             vk::FramebufferCreateFlags{},
             vk_render_pass,
@@ -170,7 +170,7 @@ Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Se
 
 RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings& settings)
     : RenderPatternBase(render_context, settings)
-    , m_vk_render_pass(CreateVulkanRenderPass(render_context.GetDeviceVK().GetNativeDevice(), settings))
+    , m_vk_unique_render_pass(CreateVulkanRenderPass(render_context.GetDeviceVK().GetNativeDevice(), settings))
 {
     META_FUNCTION_TASK();
 
@@ -190,12 +190,6 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
             )
         );
     }
-}
-
-RenderPatternVK::~RenderPatternVK()
-{
-    META_FUNCTION_TASK();
-    GetRenderContextVK().GetDeviceVK().GetNativeDevice().destroy(m_vk_render_pass);
 }
 
 const RenderContextVK& RenderPatternVK::GetRenderContextVK() const noexcept
@@ -218,16 +212,10 @@ Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings)
-    , m_vk_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
-    , m_vk_pass_begin_info(CreateBeginInfo(m_vk_frame_buffer))
+    , m_vk_unique_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
+    , m_vk_pass_begin_info(CreateBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
-}
-
-RenderPassVK::~RenderPassVK()
-{
-    META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroy(m_vk_frame_buffer);
 }
 
 vk::RenderPassBeginInfo RenderPassVK::CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
@@ -256,9 +244,8 @@ bool RenderPassVK::Update(const Settings& settings)
 void RenderPassVK::ReleaseAttachmentTextures()
 {
     META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroy(m_vk_frame_buffer);
 
-    m_vk_frame_buffer = vk::Framebuffer();
+    m_vk_unique_frame_buffer.release();
     m_vk_pass_begin_info = vk::RenderPassBeginInfo();
 
     RenderPassBase::ReleaseAttachmentTextures();
@@ -286,12 +273,8 @@ void RenderPassVK::End(RenderCommandListBase& command_list)
 void RenderPassVK::Reset()
 {
     META_FUNCTION_TASK();
-    if (m_vk_frame_buffer)
-    {
-        GetContextVK().GetDeviceVK().GetNativeDevice().destroy(m_vk_frame_buffer);
-    }
-    m_vk_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
-    m_vk_pass_begin_info = CreateBeginInfo(m_vk_frame_buffer);
+    m_vk_unique_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
+    m_vk_pass_begin_info = CreateBeginInfo(m_vk_unique_frame_buffer.get());
 }
 
 const IContextVK& RenderPassVK::GetContextVK() const noexcept

@@ -37,7 +37,6 @@ class BufferVK final : public ResourceVK<BufferBase>
 {
 public:
     BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    ~BufferVK() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
@@ -45,10 +44,10 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    const vk::Buffer& GetNativeBuffer() const noexcept { return m_vk_buffer; }
+    const vk::Buffer& GetNativeBuffer() const noexcept { return m_vk_unique_buffer.get(); }
 
 private:
-    vk::Buffer m_vk_buffer;
+    vk::UniqueBuffer m_vk_unique_buffer;
 };
 
 class BufferSetVK final : public BufferSetBase

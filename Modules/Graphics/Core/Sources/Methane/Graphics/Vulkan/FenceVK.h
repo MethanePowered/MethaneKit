@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ class FenceVK final : public FenceBase
 {
 public:
     explicit FenceVK(CommandQueueVK& command_queue);
-    ~FenceVK() override;
 
     // Fence overrides
     void Signal() override;
@@ -46,13 +45,13 @@ public:
     // Object override
     void SetName(const std::string& name) override;
 
-    const vk::Semaphore& GetNativeSemaphore() const noexcept { return m_vk_semaphore; }
+    const vk::Semaphore& GetNativeSemaphore() const noexcept { return m_vk_unique_semaphore.get(); }
 
 private:
     CommandQueueVK& GetCommandQueueVK();
 
-    const vk::Device& m_vk_device;
-    vk::Semaphore     m_vk_semaphore; // timeline semaphore
+    const vk::Device&   m_vk_device;
+    vk::UniqueSemaphore m_vk_unique_semaphore;
 };
 
 } // namespace Methane::Graphics

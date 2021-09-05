@@ -62,7 +62,7 @@ private:
     mutable Data::RangeSet<uint32_t> m_free_indices;
 };
 
-class DeviceVK final : public DeviceBase // NOSONAR
+class DeviceVK final : public DeviceBase
 {
 public:
     class IncompatibleException: public std::runtime_error
@@ -83,7 +83,6 @@ public:
     static Device::Features GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
-    ~DeviceVK() override;
 
     [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
     [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
@@ -91,7 +90,7 @@ public:
     [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
     const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
-    const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_device; }
+    const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
 
 private:
     using QueueFamilyReservationByType = std::map<CommandList::Type, Ptr<QueueFamilyReservationVK>>;
@@ -104,15 +103,14 @@ private:
 
     Capabilities                 m_device_caps;
     vk::PhysicalDevice           m_vk_physical_device;
-    vk::Device                   m_vk_device;
+    vk::UniqueDevice             m_vk_unique_device;
     QueueFamilyReservationByType m_queue_family_reservation_by_type;
 };
 
-class SystemVK final : public SystemBase // NOSONAR
+class SystemVK final : public SystemBase
 {
 public:
     SystemVK();
-    ~SystemVK() override;
 
     // System interface
     void CheckForChanges() override;
@@ -122,15 +120,15 @@ public:
     vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
     const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }
 
-    vk::Instance&       GetNativeInstance() noexcept          { return m_vk_instance; }
-    const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_instance; }
+    vk::Instance&       GetNativeInstance() noexcept          { return m_vk_unique_instance.get(); }
+    const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
 
-    const vk::SurfaceKHR& GetNativeSurface() const noexcept   { return m_vk_surface; }
+    const vk::SurfaceKHR& GetNativeSurface() const noexcept   { return m_vk_unique_surface.get(); }
 
 private:
-    vk::DynamicLoader m_vk_loader;
-    vk::Instance      m_vk_instance;
-    vk::SurfaceKHR    m_vk_surface;
+    vk::DynamicLoader    m_vk_loader;
+    vk::UniqueInstance   m_vk_unique_instance;
+    vk::UniqueSurfaceKHR m_vk_unique_surface;
 };
 
 } // namespace Methane::Graphics

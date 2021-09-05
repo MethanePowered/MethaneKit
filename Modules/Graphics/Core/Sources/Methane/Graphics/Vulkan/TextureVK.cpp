@@ -51,10 +51,10 @@ static vk::ImageViewType GetNativeImageViewType(Texture::DimensionType dimension
     }
 }
 
-static vk::ImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
+static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
 {
     META_FUNCTION_TASK();
-    return vk_device.createImageView(vk::ImageViewCreateInfo(
+    return vk_device.createImageViewUnique(vk::ImageViewCreateInfo(
         vk::ImageViewCreateFlags(),
         vk_image,
         GetNativeImageViewType(settings.dimension_type),
@@ -110,19 +110,13 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, c
 
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
                      const DescriptorByUsage& descriptor_by_usage,
-                     const vk::Image& image, vk::ImageView&& image_view)
+                     const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view)
     : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
-    , m_vk_image(std::move(image))
-    , m_vk_image_view(std::move(image_view))
+    , m_vk_image(std::move(vk_image))
+    , m_vk_unique_image_view(std::move(vk_unique_image_view))
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
-}
-
-TextureVK::~TextureVK()
-{
-    META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroyImageView(m_vk_image_view);
 }
 
 void TextureVK::SetName(const std::string& name)

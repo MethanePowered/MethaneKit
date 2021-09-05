@@ -80,8 +80,8 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
     : CommandListSetBase(command_list_refs)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
-    , m_vk_execution_completed_semaphore(m_vk_device.createSemaphore(vk::SemaphoreCreateInfo()))
-    , m_vk_execution_completed_fence(m_vk_device.createFence(vk::FenceCreateInfo()))
+    , m_vk_unique_execution_completed_semaphore(m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo()))
+    , m_vk_unique_execution_completed_fence(m_vk_device.createFenceUnique(vk::FenceCreateInfo()))
 {
     META_FUNCTION_TASK();
     m_vk_command_buffers.reserve(command_list_refs.size());
@@ -90,13 +90,6 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
                    {
                        return dynamic_cast<const ICommandListVK&>(command_list_ref.get()).GetNativeCommandBuffer();
                    });
-}
-
-CommandListSetVK::~CommandListSetVK()
-{
-    META_FUNCTION_TASK();
-    m_vk_device.destroy(m_vk_execution_completed_fence);
-    m_vk_device.destroy(m_vk_execution_completed_semaphore);
 }
 
 void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
@@ -108,17 +101,20 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
         GetWaitSemaphores(),
         GetWaitStages(),
         m_vk_command_buffers,
-        m_vk_execution_completed_semaphore
+        GetNativeExecutionCompletedSemaphore()
     );
 
-    m_vk_device.resetFences(m_vk_execution_completed_fence);
-    GetCommandQueueVK().GetNativeQueue().submit(submit_info, m_vk_execution_completed_fence);
+    m_vk_device.resetFences(GetNativeExecutionCompletedFence());
+    GetCommandQueueVK().GetNativeQueue().submit(submit_info, GetNativeExecutionCompletedFence());
 }
 
 void CommandListSetVK::WaitUntilCompleted()
 {
     META_FUNCTION_TASK();
-    const vk::Result execution_completed_fence_wait_result = m_vk_device.waitForFences(m_vk_execution_completed_fence, true, std::numeric_limits<uint64_t>::max());
+    const vk::Result execution_completed_fence_wait_result = m_vk_device.waitForFences(
+        GetNativeExecutionCompletedFence(),
+        true, std::numeric_limits<uint64_t>::max()
+    );
     META_CHECK_ARG_EQUAL_DESCR(execution_completed_fence_wait_result, vk::Result::eSuccess, "failed to wait for command list set execution complete");
     Complete();
 }

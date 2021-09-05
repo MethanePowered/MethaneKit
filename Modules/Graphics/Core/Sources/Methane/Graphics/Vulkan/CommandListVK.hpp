@@ -51,23 +51,17 @@ public:
     template<typename... ConstructArgs>
     explicit CommandListVK(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
-        , m_vk_command_buffer(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice().allocateCommandBuffers(
+        , m_vk_unique_command_buffer(std::move(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice().allocateCommandBuffersUnique(
             vk::CommandBufferAllocateInfo(
                 GetCommandQueueVK().GetNativeCommandPool(),
                 vk::CommandBufferLevel::ePrimary,
                 1U
-            )).back())
+            )).back()))
     {
         META_FUNCTION_TASK();
 
-        m_vk_command_buffer.begin(vk::CommandBufferBeginInfo());
+        m_vk_unique_command_buffer.get().begin(vk::CommandBufferBeginInfo());
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
-    }
-
-    ~CommandListVK()
-    {
-        META_FUNCTION_TASK();
-        GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice().freeCommandBuffers(GetCommandQueueVK().GetNativeCommandPool(), m_vk_command_buffer);
     }
 
     // CommandList interface
@@ -93,7 +87,7 @@ public:
 
         // TODO: insert ending timestamp query
 
-        m_vk_command_buffer.end();
+        m_vk_unique_command_buffer.get().end();
         m_is_native_committed = true;
     }
 
@@ -120,7 +114,7 @@ public:
             return;
 
         m_is_native_committed = false;
-        m_vk_command_buffer.begin(vk::CommandBufferBeginInfo());
+        m_vk_unique_command_buffer.get().begin(vk::CommandBufferBeginInfo());
 
         // TODO: insert beginning timestamp query
 
@@ -146,7 +140,7 @@ public:
     // ICommandListVK interface
     CommandQueueVK&          GetCommandQueueVK() final            { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
     const CommandQueueVK&    GetCommandQueueVK() const final      { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
-    const vk::CommandBuffer& GetNativeCommandBuffer() const final { return m_vk_command_buffer; }
+    const vk::CommandBuffer& GetNativeCommandBuffer() const final { return m_vk_unique_command_buffer.get(); }
 
 protected:
     void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
@@ -159,8 +153,8 @@ protected:
     void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 
 private:
-    vk::CommandBuffer m_vk_command_buffer;
-    bool              m_is_native_committed = false;
+    vk::UniqueCommandBuffer m_vk_unique_command_buffer;
+    bool                    m_is_native_committed = false;
 };
 
 } // namespace Methane::Graphics

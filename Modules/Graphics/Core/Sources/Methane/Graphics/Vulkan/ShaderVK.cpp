@@ -119,16 +119,10 @@ Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, con
 ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
     , m_byte_code_chunk_ptr(std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings)))))
-    , m_vk_module(GetContextVK().GetDeviceVK().GetNativeDevice().createShaderModule(
+    , m_vk_unique_module(GetContextVK().GetDeviceVK().GetNativeDevice().createShaderModuleUnique(
         vk::ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags{}, m_byte_code_chunk_ptr->GetDataSize(), m_byte_code_chunk_ptr->GetDataPtr<uint32_t>())))
 {
     META_FUNCTION_TASK();
-}
-
-ShaderVK::~ShaderVK()
-{
-    META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroyShaderModule(m_vk_module);
 }
 
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors&) const
@@ -155,7 +149,7 @@ vk::PipelineShaderStageCreateInfo ShaderVK::GetNativeStageCreateInfo() const
     return vk::PipelineShaderStageCreateInfo(
         vk::PipelineShaderStageCreateFlags{},
         ConvertShaderTypeToStageFlagBits(GetType()),
-        m_vk_module,
+        GetNativeModule(),
         GetSettings().entry_function.function_name.c_str()
     );
 }

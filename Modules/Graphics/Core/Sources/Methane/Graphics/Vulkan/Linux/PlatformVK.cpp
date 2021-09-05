@@ -35,7 +35,7 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
     return s_instance_extensions;
 }
 
-vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Vulkan surface creation is not implemented for Linux.");

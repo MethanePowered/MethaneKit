@@ -39,7 +39,6 @@ class TextureVK : public ResourceVK<TextureBase>
 public:
     // Temporary constructor, to be removed
     TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    ~TextureVK() override;
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
@@ -48,18 +47,18 @@ public:
     void SetName(const std::string& name) override;
 
     const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
-    const vk::ImageView& GetNativeImageView() const noexcept  { return m_vk_image_view; }
+    const vk::ImageView& GetNativeImageView() const noexcept  { return m_vk_unique_image_view.get(); }
 
 protected:
     TextureVK(const RenderContextVK& context, const Settings& settings,
               const DescriptorByUsage& descriptor_by_usage,
-              const vk::Image& image, vk::ImageView&& image_view);
+              const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view);
 
 private:
     void GenerateMipLevels();
 
-    vk::Image     m_vk_image;
-    vk::ImageView m_vk_image_view;
+    vk::Image           m_vk_image;
+    vk::UniqueImageView m_vk_unique_image_view;
 };
 
 class FrameBufferTextureVK final : public TextureVK

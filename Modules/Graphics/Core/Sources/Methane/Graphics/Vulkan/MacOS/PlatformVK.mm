@@ -40,7 +40,7 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
     return s_instance_extensions;
 }
 
-vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& env)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
     AppViewMT* metal_view = nil;
@@ -56,7 +56,7 @@ vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_i
     }
 
     CAMetalLayer* metal_layer = metal_view.metalLayer;
-    return vk_instance.createMetalSurfaceEXT(
+    return vk_instance.createMetalSurfaceEXTUnique(
         vk::MetalSurfaceCreateInfoEXT(
             vk::MetalSurfaceCreateFlagsEXT{},
             metal_layer

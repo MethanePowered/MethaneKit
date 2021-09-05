@@ -64,8 +64,8 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
-    const vk::SurfaceKHR&   GetNativeSurface() const noexcept   { return m_vk_surface; }
-    const vk::SwapchainKHR& GetNativeSwapchain() const noexcept { return m_vk_swapchain; }
+    const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
+    const vk::SwapchainKHR& GetNativeSwapchain() const noexcept   { return m_vk_unique_swapchain.get(); }
     const vk::Extent2D&     GetNativeFrameExtent() const noexcept { return m_vk_frame_extent; }
     vk::Format              GetNativeFrameFormat() const noexcept { return m_vk_frame_format; }
     const vk::Image&        GetNativeFrameImage(uint32_t frame_buffer_index) const;
@@ -81,20 +81,20 @@ private:
     vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
     void InitializeNativeSwapchain();
-    void ReleaseNativeSwapchain();
+    void ReleaseNativeSwapchainResources();
 
     const vk::Device           m_vk_device;
 #ifdef __APPLE__
     // MacOS metal app view with swap-chain implementation to work via MoltenVK
     AppViewMT*                 m_metal_view;
 #endif
-    const vk::SurfaceKHR       m_vk_surface;
-    vk::SwapchainKHR           m_vk_swapchain;
-    vk::Format                 m_vk_frame_format;
-    vk::Extent2D               m_vk_frame_extent;
-    std::vector<vk::Image>     m_vk_frame_images;
-    std::vector<vk::Semaphore> m_vk_frame_semaphores_pool;
-    std::vector<vk::Semaphore> m_vk_frame_image_available_semaphores;
+    const vk::UniqueSurfaceKHR       m_vk_unique_surface;
+    vk::UniqueSwapchainKHR           m_vk_unique_swapchain;
+    vk::Format                       m_vk_frame_format;
+    vk::Extent2D                     m_vk_frame_extent;
+    std::vector<vk::Image>           m_vk_frame_images;
+    std::vector<vk::UniqueSemaphore> m_vk_frame_semaphores_pool;
+    std::vector<vk::Semaphore>       m_vk_frame_image_available_semaphores;
 };
 
 } // namespace Methane::Graphics

@@ -52,7 +52,6 @@ public:
         META_FUNCTION_TASK();
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
-        // FreeDeviceMemory() should be called in derived class destructor after native resource is released
     }
 
     ResourceVK(const ResourceVK&) = delete;
@@ -61,7 +60,7 @@ public:
     bool operator=(const ResourceVK&) = delete;
     bool operator=(ResourceVK&&) = delete;
 
-    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_device_memory; }
+    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_unique_device_memory.get(); }
 
 protected:
     const IContextVK& GetContextVK() const noexcept                 { return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase()); }
@@ -70,7 +69,7 @@ protected:
     void AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
     {
         META_FUNCTION_TASK();
-        FreeDeviceMemory();
+        m_vk_unique_device_memory.release();
 
         const Opt<uint32_t> memory_type_opt = GetContextVK().GetDeviceVK().FindMemoryType(memory_requirements.memoryTypeBits, memory_property_flags);
         if (!memory_type_opt)
@@ -78,7 +77,7 @@ protected:
 
         try
         {
-            m_vk_device_memory = GetContextVK().GetDeviceVK().GetNativeDevice().allocateMemory(vk::MemoryAllocateInfo(memory_requirements.size, *memory_type_opt));
+            m_vk_unique_device_memory = GetContextVK().GetDeviceVK().GetNativeDevice().allocateMemoryUnique(vk::MemoryAllocateInfo(memory_requirements.size, *memory_type_opt));
         }
         catch(const vk::SystemError& error)
         {
@@ -86,19 +85,9 @@ protected:
         }
     }
 
-    void FreeDeviceMemory()
-    {
-        META_FUNCTION_TASK();
-        if (!m_vk_device_memory)
-            return;
-
-        m_vk_device.freeMemory(m_vk_device_memory);
-        m_vk_device_memory = nullptr;
-    }
-
 private:
-    vk::Device       m_vk_device;
-    vk::DeviceMemory m_vk_device_memory;
+    vk::Device             m_vk_device;
+    vk::UniqueDeviceMemory m_vk_unique_device_memory;
 };
 
 } // namespace Methane::Graphics

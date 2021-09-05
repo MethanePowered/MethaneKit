@@ -34,10 +34,10 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-static vk::PipelineLayout CreateVulkanPipelineLayout(const vk::Device& vk_device)
+static vk::UniquePipelineLayout CreateVulkanPipelineLayout(const vk::Device& vk_device)
 {
     META_FUNCTION_TASK();
-    return vk_device.createPipelineLayout(vk::PipelineLayoutCreateInfo());
+    return vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo());
 }
 
 Ptr<Program> Program::Create(const Context& context, const Settings& settings)
@@ -48,15 +48,9 @@ Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 
 ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
-    , m_vk_pipeline_layout(CreateVulkanPipelineLayout(GetContextVK().GetDeviceVK().GetNativeDevice()))
+    , m_vk_unique_pipeline_layout(CreateVulkanPipelineLayout(GetContextVK().GetDeviceVK().GetNativeDevice()))
 {
     META_FUNCTION_TASK();
-}
-
-ProgramVK::~ProgramVK()
-{
-    META_FUNCTION_TASK();
-    GetContextVK().GetDeviceVK().GetNativeDevice().destroy(m_vk_pipeline_layout);
 }
 
 const IContextVK& ProgramVK::GetContextVK() const noexcept

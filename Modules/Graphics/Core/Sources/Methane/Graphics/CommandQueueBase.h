@@ -37,6 +37,7 @@ namespace Methane::Graphics
 {
 
 class ContextBase;
+class DeviceBase;
 
 class CommandQueueBase
     : public ObjectBase
@@ -46,7 +47,6 @@ class CommandQueueBase
 
 public:
     CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueBase() override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -57,6 +57,7 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     const ContextBase&    GetContextBase() const noexcept { return m_context; }
+    DeviceBase&           GetDeviceBase() const noexcept  { return *m_device_ptr; }
     Tracy::GpuContext&    GetTracyContext();
 
 protected:
@@ -65,6 +66,7 @@ protected:
 
 private:
     const ContextBase&           m_context;
+    const Ptr<DeviceBase>        m_device_ptr;
     const CommandList::Type      m_command_lists_type;
     UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;
 };

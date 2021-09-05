@@ -52,7 +52,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
-    , m_vk_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
+    , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
 }
@@ -63,23 +63,22 @@ RenderContextVK::~RenderContextVK()
 {
     META_FUNCTION_TASK();
     Release();
-
-    static_cast<SystemVK&>(System::Get()).GetNativeInstance().destroy(m_vk_surface);
 }
 
 void RenderContextVK::Release()
 {
     META_FUNCTION_TASK();
+    ReleaseNativeSwapchainResources();
     ContextVK<RenderContextBase>::Release();
-    ReleaseNativeSwapchain();
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
+    SetDevice(device);
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
+    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
 }
 
 void RenderContextVK::WaitForGpu(WaitFor wait_for)
@@ -109,7 +108,7 @@ bool RenderContextVK::ReadyToRender() const
 void RenderContextVK::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    ReleaseNativeSwapchain();
+    ReleaseNativeSwapchainResources();
 
     ContextVK<RenderContextBase>::Resize(frame_size);
 
@@ -129,7 +128,7 @@ void RenderContextVK::Present()
     const uint32_t image_index = GetFrameBufferIndex();
     const vk::PresentInfoKHR present_info(
         render_command_queue.GetWaitForExecutionCompleted(image_index).semaphores,
-        m_vk_swapchain, image_index
+        GetNativeSwapchain(), image_index
     );
     const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
     META_CHECK_ARG_EQUAL_DESCR(present_result, vk::Result::eSuccess, "failed to present frame image on screen");
@@ -186,8 +185,8 @@ uint32_t RenderContextVK::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
     uint32_t next_frame_index = 0;
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[GetFrameIndex() % m_vk_frame_semaphores_pool.size()];
-    vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(m_vk_swapchain, std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
+    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[GetFrameIndex() % m_vk_frame_semaphores_pool.size()].get();
+    vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
     META_CHECK_ARG_EQUAL_DESCR(image_acquire_result, vk::Result::eSuccess, "Failed to acquire next image");
     m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
     return next_frame_index;
@@ -261,23 +260,28 @@ vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
 void RenderContextVK::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
-    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
-    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, m_vk_surface))
-        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
 
-    const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(m_vk_surface);
+    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
+    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
+    {
+        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
+    }
+
+    const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(GetNativeSurface());
     const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
     const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
     const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
 
     uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
+    {
         image_count = swap_chain_support.capabilities.maxImageCount;
+    }
 
-    m_vk_swapchain = m_vk_device.createSwapchainKHR(
+    m_vk_unique_swapchain = m_vk_device.createSwapchainKHRUnique(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
-            m_vk_surface,
+            GetNativeSurface(),
             image_count,
             swap_surface_format.format,
             swap_surface_format.colorSpace,
@@ -289,41 +293,36 @@ void RenderContextVK::InitializeNativeSwapchain()
             vk::CompositeAlphaFlagBitsKHR::eOpaque,
             swap_present_mode,
             true,
-            nullptr
+            m_vk_unique_swapchain.get()
         )
     );
 
-    m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(m_vk_swapchain);
+    m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
 
     // Create frame semaphores in pool
     m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
-    for(vk::Semaphore& vk_frame_semaphore : m_vk_frame_semaphores_pool)
+    for(vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
     {
-        if (vk_frame_semaphore)
+        if (vk_unique_frame_semaphore)
             continue;
 
-        vk_frame_semaphore = m_vk_device.createSemaphore(vk::SemaphoreCreateInfo());
+        vk_unique_frame_semaphore = m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
     }
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
 }
 
-void RenderContextVK::ReleaseNativeSwapchain()
+void RenderContextVK::ReleaseNativeSwapchainResources()
 {
     META_FUNCTION_TASK();
     m_vk_device.waitIdle();
 
-    for(vk::Semaphore& vk_semaphore : m_vk_frame_semaphores_pool)
-        m_vk_device.destroy(vk_semaphore);
-
     m_vk_frame_semaphores_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
-
-    m_vk_device.destroy(m_vk_swapchain);
 }
 
 } // namespace Methane::Graphics

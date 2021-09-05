@@ -38,16 +38,15 @@ class RenderPatternVK
 {
 public:
     RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
-    ~RenderPatternVK(); // NOSONAR
 
     [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
     [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
 
-    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept                   { return m_vk_render_pass; }
+    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept                   { return m_vk_unique_render_pass.get(); }
     [[nodiscard]] const std::vector<vk::ClearValue>& GetAttachmentClearValues() const noexcept { return m_attachment_clear_colors; }
 
 private:
-    vk::RenderPass              m_vk_render_pass;
+    vk::UniqueRenderPass        m_vk_unique_render_pass;
     std::vector<vk::ClearValue> m_attachment_clear_colors;
 };
 
@@ -55,7 +54,6 @@ class RenderPassVK final : public RenderPassBase
 {
 public:
     RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
-    ~RenderPassVK(); // NOSONAR
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -70,10 +68,12 @@ public:
     const IContextVK& GetContextVK() const noexcept;
     RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
 
+    const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
+
 private:
     vk::RenderPassBeginInfo CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
 
-    vk::Framebuffer m_vk_frame_buffer;
+    vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };
 

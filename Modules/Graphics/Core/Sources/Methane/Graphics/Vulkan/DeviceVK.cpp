@@ -234,7 +234,7 @@ InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& v
 #endif
 }
 
-static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
+static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
                                          const std::vector<std::string_view>& layers = {},
                                          const std::vector<std::string_view>& extensions = {},
                                          uint32_t vk_api_version = VK_API_VERSION_1_1)
@@ -249,9 +249,9 @@ static vk::Instance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
     const vk::ApplicationInfo vk_app_info(g_vk_app_name.c_str(), 1, g_vk_engine_name.c_str(), engine_version, vk_api_version);
     const vk::InstanceCreateInfo vk_instance_create_info = MakeInstanceCreateInfoChain(vk_app_info, enabled_layers, enabled_extensions).get<vk::InstanceCreateInfo>();
 
-    vk::Instance vk_instance = vk::createInstance(vk_instance_create_info);
-    VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_instance);
-    return vk_instance;
+    vk::UniqueInstance vk_unique_instance = vk::createInstanceUnique(vk_instance_create_info);
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_unique_instance.get());
+    return vk_unique_instance;
 }
 
 template<bool exact_flags_matching>
@@ -439,14 +439,8 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     vk_device_info.setPNext(&vk_device_dynamic_state_info);
     vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
 
-    m_vk_device = vk_physical_device.createDevice(vk_device_info);
-    VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_device);
-}
-
-DeviceVK::~DeviceVK()
-{
-    META_FUNCTION_TASK();
-    m_vk_device.destroy();
+    m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
 }
 
 bool DeviceVK::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const
@@ -537,19 +531,9 @@ System& System::Get()
 }
 
 SystemVK::SystemVK()
-    : m_vk_instance(CreateVulkanInstance(m_vk_loader, {}, PlatformVK::GetVulkanInstanceRequiredExtensions(), VK_API_VERSION_1_1))
+    : m_vk_unique_instance(CreateVulkanInstance(m_vk_loader, {}, PlatformVK::GetVulkanInstanceRequiredExtensions(), VK_API_VERSION_1_1))
 {
     META_FUNCTION_TASK();
-}
-
-SystemVK::~SystemVK()
-{
-    META_FUNCTION_TASK();
-
-    if (m_vk_surface)
-        m_vk_instance.destroySurfaceKHR(m_vk_surface);
-
-    m_vk_instance.destroy();
 }
 
 void SystemVK::CheckForChanges()
@@ -561,9 +545,9 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& a
 {
     META_FUNCTION_TASK();
     META_UNUSED(app_env);
-    if (required_device_caps.present_to_window && !m_vk_surface)
+    if (required_device_caps.present_to_window && !m_vk_unique_surface)
     {
-        m_vk_surface = PlatformVK::CreateVulkanSurfaceForWindow(m_vk_instance, app_env);
+        m_vk_unique_surface = PlatformVK::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);
     }
     return UpdateGpuDevices(required_device_caps);
 }
@@ -574,12 +558,12 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& requi
     SetDeviceCapabilities(required_device_caps);
     ClearDevices();
 
-    const std::vector<vk::PhysicalDevice> vk_physical_devices = m_vk_instance.enumeratePhysicalDevices();
+    const std::vector<vk::PhysicalDevice> vk_physical_devices = GetNativeInstance().enumeratePhysicalDevices();
     for(const vk::PhysicalDevice& vk_physical_device : vk_physical_devices)
     {
         try
         {
-            AddDevice(std::make_shared<DeviceVK>(vk_physical_device, m_vk_surface, required_device_caps));
+            AddDevice(std::make_shared<DeviceVK>(vk_physical_device, GetNativeSurface(), required_device_caps));
         }
         catch(const DeviceVK::IncompatibleException& ex)
         {

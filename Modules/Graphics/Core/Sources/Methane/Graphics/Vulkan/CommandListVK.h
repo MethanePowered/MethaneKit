@@ -52,14 +52,14 @@ class CommandListSetVK final : public CommandListSetBase
 {
 public:
     explicit CommandListSetVK(const Refs<CommandList>& command_list_refs);
-    ~CommandListSetVK() override; // NOSONAR
 
     // CommandListSetBase interface
     void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
-    const vk::Semaphore&     GetNativeExecutionCompletedSemaphore() const noexcept { return m_vk_execution_completed_semaphore; }
+    const vk::Semaphore&     GetNativeExecutionCompletedSemaphore() const noexcept { return m_vk_unique_execution_completed_semaphore.get(); }
+    const vk::Fence&         GetNativeExecutionCompletedFence() const noexcept     { return m_vk_unique_execution_completed_fence.get(); }
 
     CommandQueueVK&       GetCommandQueueVK() noexcept;
     const CommandQueueVK& GetCommandQueueVK() const noexcept;
@@ -73,8 +73,8 @@ private:
     std::vector<vk::CommandBuffer>      m_vk_command_buffers;
     std::vector<vk::Semaphore>          m_vk_wait_semaphores;
     std::vector<vk::PipelineStageFlags> m_vk_wait_stages;
-    vk::Semaphore                       m_vk_execution_completed_semaphore;
-    vk::Fence                           m_vk_execution_completed_fence;
+    vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
+    vk::UniqueFence                     m_vk_unique_execution_completed_fence;
 };
 
 } // namespace Methane::Graphics

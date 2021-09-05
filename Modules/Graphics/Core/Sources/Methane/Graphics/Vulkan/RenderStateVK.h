@@ -70,12 +70,12 @@ public:
     // Object interface
     void SetName(const std::string& name) override;
 
-    const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_pipeline; }
+    const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
 
 private:
     const IContextVK& GetContextVK() const noexcept;
 
-    vk::Pipeline m_vk_pipeline;
+    vk::UniquePipeline m_vk_unique_pipeline;
 };
 
 } // namespace Methane::Graphics

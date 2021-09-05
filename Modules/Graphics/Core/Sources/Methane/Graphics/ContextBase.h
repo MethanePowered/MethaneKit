@@ -86,6 +86,7 @@ public:
     ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
+    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept { return m_device_ptr; }
 
 protected:
     void PerformRequestedAction();

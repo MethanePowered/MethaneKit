@@ -418,16 +418,16 @@ void RenderStateVK::Reset(const Settings& settings)
         render_pattern.GetNativeRenderPass()
     );
 
-    vk::Result result;
-    std::tie(result, m_vk_pipeline) = GetContextVK().GetDeviceVK().GetNativeDevice().createGraphicsPipeline(nullptr, vk_pipeline_create_info);
-    META_CHECK_ARG_EQUAL_DESCR(result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
+    auto pipe = GetContextVK().GetDeviceVK().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
+    META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
+    m_vk_unique_pipeline = std::move(pipe.value);
 }
 
 void RenderStateVK::Apply(RenderCommandListBase& command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
     const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_vk_pipeline);
+    vk_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 
 void RenderStateVK::SetName(const std::string& name)

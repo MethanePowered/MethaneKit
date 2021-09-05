@@ -38,7 +38,7 @@ public:
     PlatformVK() = delete;
 
     static const std::vector<std::string_view>& GetVulkanInstanceRequiredExtensions();
-    static vk::SurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& app_env);
+    static vk::UniqueSurfaceKHR CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& app_env);
 
 private:
     static std::vector<std::string_view> GetPlatformInstanceExtensions(const std::vector<std::string_view>& platform_instance_extensions);

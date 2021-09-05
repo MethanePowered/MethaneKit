@@ -32,12 +32,12 @@ Vulkan implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-static vk::CommandPool CreateVulkanCommandPool(const vk::Device& vk_device, uint32_t queue_family_index)
+static vk::UniqueCommandPool CreateVulkanCommandPool(const vk::Device& vk_device, uint32_t queue_family_index)
 {
     META_FUNCTION_TASK();
     vk::CommandPoolCreateInfo vk_command_pool_info(vk::CommandPoolCreateFlags(), queue_family_index);
     vk_command_pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-    return vk_device.createCommandPool(vk_command_pool_info);
+    return vk_device.createCommandPoolUnique(vk_command_pool_info);
 }
 
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
@@ -65,7 +65,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
-    , m_vk_command_pool(CreateVulkanCommandPool(device.GetNativeDevice(), m_queue_family_index))
+    , m_vk_unique_command_pool(CreateVulkanCommandPool(device.GetNativeDevice(), m_queue_family_index))
 {
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(Tracy::GpuContext::Settings());
@@ -74,9 +74,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
-    const DeviceVK& device = GetContextVK().GetDeviceVK();
-    device.GetQueueFamilyReservation(GetCommandListType()).ReleaseQueueIndex(m_queue_index);
-    device.GetNativeDevice().destroyCommandPool(m_vk_command_pool);
+    GetDeviceVK().GetQueueFamilyReservation(GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
 void CommandQueueVK::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
@@ -132,6 +130,12 @@ const IContextVK& CommandQueueVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextVK&>(GetContextBase());
+}
+
+DeviceVK& CommandQueueVK::GetDeviceVK() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<DeviceVK&>(GetDeviceBase());
 }
 
 } // namespace Methane::Graphics

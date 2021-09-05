@@ -90,7 +90,7 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type)
 
 BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage)
-    , m_vk_buffer(GetNativeDevice().createBuffer(
+    , m_vk_unique_buffer(GetNativeDevice().createBufferUnique(
         vk::BufferCreateInfo(
             vk::BufferCreateFlags{},
             settings.size,
@@ -103,15 +103,8 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const D
     // TODO: set memory properties based on settings.storage_mode
     const vk::MemoryPropertyFlags vk_memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible
                                                            | vk::MemoryPropertyFlagBits::eHostCoherent;
-    AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(m_vk_buffer), vk_memory_property_flags);
-    GetNativeDevice().bindBufferMemory(m_vk_buffer, GetNativeDeviceMemory(), 0);
-}
-
-BufferVK::~BufferVK()
-{
-    META_FUNCTION_TASK();
-    GetNativeDevice().destroy(m_vk_buffer);
-    FreeDeviceMemory();
+    AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(m_vk_unique_buffer.get()), vk_memory_property_flags);
+    GetNativeDevice().bindBufferMemory(m_vk_unique_buffer.get(), GetNativeDeviceMemory(), 0);
 }
 
 void BufferVK::SetName(const std::string& name)

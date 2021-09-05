@@ -38,10 +38,10 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
     return s_instance_extensions;
 }
 
-vk::SurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
 {
     META_FUNCTION_TASK();
-    return vk_instance.createWin32SurfaceKHR(vk::Win32SurfaceCreateInfoKHR(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), app_env.window_handle));
+    return vk_instance.createWin32SurfaceKHRUnique(vk::Win32SurfaceCreateInfoKHR(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), app_env.window_handle));
 }
 
 } // namespace Methane::Graphics

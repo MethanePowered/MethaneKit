@@ -54,6 +54,7 @@ public:
     void SetName(const std::string& name) override;
 
     const IContextVK& GetContextVK() const noexcept;
+    DeviceVK& GetDeviceVK() const noexcept;
 
     void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
     const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
@@ -62,8 +63,8 @@ public:
     vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
     const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
 
-    vk::CommandPool&       GetNativeCommandPool()       { return m_vk_command_pool; }
-    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_command_pool; }
+    vk::CommandPool&       GetNativeCommandPool()       { return m_vk_unique_command_pool.get(); }
+    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_unique_command_pool.get(); }
 
 private:
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
@@ -75,12 +76,12 @@ private:
 
     using Semaphores = std::vector<vk::Semaphore>;
 
-    const uint32_t   m_queue_family_index;
-    const uint32_t   m_queue_index;
-    vk::Queue        m_vk_queue;
-    vk::CommandPool  m_vk_command_pool;
-    WaitInfo         m_wait_before_executing;
-    mutable WaitInfo m_wait_execution_completed;
+    const uint32_t         m_queue_family_index;
+    const uint32_t         m_queue_index;
+    vk::Queue              m_vk_queue;
+    vk::UniqueCommandPool  m_vk_unique_command_pool;
+    WaitInfo               m_wait_before_executing;
+    mutable WaitInfo       m_wait_execution_completed;
 };
 
 } // namespace Methane::Graphics
