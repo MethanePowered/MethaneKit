@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ private:
     void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
     void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
     float GetLineWidth(size_t line_start_index) const;
-    float GetHorizontalLineAlignmentOffset(size_t line_start_index, float frame_width) const;
-    std::pair<size_t, bool> GetWhiteSpacesCountInLine(size_t line_start_index) const;
+    float GetHorizontalLineAlignmentOffset(size_t line_start_index) const;
+    float GetJustifiedWhitespaceWidth(size_t line_start_index) const;
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
 

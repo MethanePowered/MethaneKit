@@ -179,14 +179,7 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
         return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetHeight()), badge_size);
 
     case FrameCorner::BottomRight:
-    {
-        const UnitSize sz = frame_size - badge_size - badge_margins;
-        return UnitRect(
-            frame_size.GetUnits(),
-            gfx::FramePoint(sz.GetWidth(), sz.GetHeight()),
-            badge_size
-        );
-    }
+        return UnitRect(frame_size.GetUnits(), static_cast<gfx::FramePoint>(frame_size - badge_size - badge_margins), badge_size);
 
     default:
         META_UNEXPECTED_ARG_RETURN(frame_corner, UnitRect());

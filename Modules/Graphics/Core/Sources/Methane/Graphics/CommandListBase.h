@@ -173,7 +173,7 @@ public:
 
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
-    virtual void WaitUntilCompleted() { }
+    virtual void WaitUntilCompleted() = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;

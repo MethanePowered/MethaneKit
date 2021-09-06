@@ -90,9 +90,8 @@ static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Da
     META_FUNCTION_TASK();
     CLI::callback_t parse_fn = [&rect_size](CLI::results_t res)
     {
-        ScalarType width  {};
-        ScalarType height {};
-        if (CLI::detail::lexical_cast(res[0], width) &&
+        if (ScalarType width{}, height{};
+            CLI::detail::lexical_cast(res[0], width) &&
             CLI::detail::lexical_cast(res[1], height))
         {
             rect_size.SetWidth(width);

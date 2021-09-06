@@ -45,6 +45,12 @@ class CommandListSetMT final : public CommandListSetBase
 {
 public:
     explicit CommandListSetMT(const Refs<CommandList>& command_list_refs);
+
+    virtual void WaitUntilCompleted()
+    {
+        // Command list execution tracking is not needed in Metal,
+        // because native API has command list wait mechanism used directly in CommandListMT::Execute(...)
+    }
 };
 
 } // namespace Methane::Graphics

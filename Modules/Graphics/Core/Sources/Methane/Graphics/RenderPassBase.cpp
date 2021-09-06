@@ -186,7 +186,7 @@ RenderContext& RenderPatternBase::GetRenderContext() noexcept
 Data::Size RenderPatternBase::GetAttachmentCount() const noexcept
 {
     META_FUNCTION_TASK();
-    Data::Size attachment_count = static_cast<Data::Size>(m_settings.color_attachments.size());
+    auto attachment_count = static_cast<Data::Size>(m_settings.color_attachments.size());
     if (m_settings.depth_attachment)
         attachment_count++;
     if (m_settings.stencil_attachment)

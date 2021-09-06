@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -284,7 +284,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}  {:d} FB  {:s}",
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d}\u00A0x\u00A0{:d}  {:d}\u00A0FB  {:s}",
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,

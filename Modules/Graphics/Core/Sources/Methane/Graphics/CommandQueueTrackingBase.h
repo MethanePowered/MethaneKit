@@ -41,7 +41,7 @@ class CommandQueueTrackingBase : public CommandQueueBase
 {
 public:
     CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueTrackingBase() override;
+    ~CommandQueueTrackingBase() override; // NOSONAR
 
     // CommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
