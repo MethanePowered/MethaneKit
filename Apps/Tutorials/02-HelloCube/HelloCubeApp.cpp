@@ -93,11 +93,7 @@ public:
     {
         GraphicsApp::Init();
 
-        const RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
-        m_camera.Resize({
-            static_cast<float>(context_settings.frame_size.GetWidth()),
-            static_cast<float>(context_settings.frame_size.GetHeight())
-        });
+        m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
         // Create render state with program
         RenderState::Settings state_settings;
@@ -156,11 +152,7 @@ public:
         if (!GraphicsApp::Resize(frame_size, is_minimized))
             return false;
 
-        m_camera.Resize({
-            static_cast<float>(frame_size.GetWidth()),
-            static_cast<float>(frame_size.GetHeight())
-        });
-
+        m_camera.Resize(frame_size);
         return true;
     }
 

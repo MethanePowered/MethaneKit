@@ -69,15 +69,10 @@ void TexturedCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
-    const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
-    m_camera.Resize({
-        static_cast<float>(context_settings.frame_size.GetWidth()),
-        static_cast<float>(context_settings.frame_size.GetHeight())
-    });
-
-    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
+    m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create vertex buffer for cube mesh
+    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
     const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
     const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
@@ -186,11 +181,7 @@ bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized
     if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
 
-    m_camera.Resize({
-        static_cast<float>(frame_size.GetWidth()),
-        static_cast<float>(frame_size.GetHeight())
-    });
-
+    m_camera.Resize(frame_size);
     return true;
 }
 

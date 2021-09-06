@@ -59,7 +59,7 @@ ShadowCubeApp::ShadowCubeApp()
     m_light_camera.ResetOrientation({ { 0.0F,  25.0F, -25.0F }, { 0.0F, 7.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300, 300.F, 90.F });
-    m_light_camera.Resize({ 80.F, 80.F });
+    m_light_camera.Resize(Data::FloatSize(80.F, 80.F));
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -76,10 +76,7 @@ void ShadowCubeApp::Init()
     UserInterfaceApp::Init();
 
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
-    m_view_camera.Resize({
-        static_cast<float>(context_settings.frame_size.GetWidth()),
-        static_cast<float>(context_settings.frame_size.GetHeight())
-    });
+    m_view_camera.Resize(context_settings.frame_size);
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
     const gfx::CubeMesh<Vertex>   cube_mesh(mesh_layout, 1.F, 1.F, 1.F);
@@ -324,11 +321,7 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     if (!is_resized)
         return false;
 
-    m_view_camera.Resize({
-        static_cast<float>(frame_size.GetWidth()),
-        static_cast<float>(frame_size.GetHeight())
-    });
-
+    m_view_camera.Resize(frame_size);
     return true;
 }
 

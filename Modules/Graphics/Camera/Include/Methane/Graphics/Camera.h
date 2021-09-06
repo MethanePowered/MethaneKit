@@ -57,6 +57,7 @@ public:
     explicit Camera() noexcept;
 
     void Resize(const Data::FloatSize& screen_size);
+    void Resize(const Data::FrameSize& screen_size) { Resize(static_cast<Data::FloatSize>(screen_size)); }
     void SetProjection(Projection projection);
     void SetParameters(const Parameters& parameters);
 

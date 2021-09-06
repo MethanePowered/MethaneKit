@@ -143,7 +143,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.ResetOrientation({ { -100.F, 120.F, 0.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300.F, 300.F, 90.F });
-    m_light_camera.Resize({ 120.F, 120.F });
+    m_light_camera.Resize(Data::FloatSize(120.F, 120.F));
 
     AddInputControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
@@ -210,9 +210,7 @@ void AsteroidsApp::Init()
 
     const gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.GetWidth()),
-                                          static_cast<float>(context_settings.frame_size.GetHeight()));
-    m_view_camera.Resize(float_rect_size);
+    m_view_camera.Resize(context_settings.frame_size);
 
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
@@ -347,7 +345,7 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         frame.asteroids_pass_ptr->Update(asteroids_pass_settings);
     }
 
-    m_view_camera.Resize({ static_cast<float>(frame_size.GetWidth()), static_cast<float>(frame_size.GetHeight()) });
+    m_view_camera.Resize(frame_size);
 
     return true;
 }
