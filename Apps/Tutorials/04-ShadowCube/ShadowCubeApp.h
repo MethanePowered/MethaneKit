@@ -66,7 +66,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
 using UserInterfaceApp = UserInterface::App<ShadowCubeFrame>;
 
-class ShadowCubeApp final : public UserInterfaceApp
+class ShadowCubeApp final : public UserInterfaceApp // NOSONAR
 {
 public:
     ShadowCubeApp();

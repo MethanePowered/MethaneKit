@@ -100,7 +100,7 @@ Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size
     return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
 }
 
-// Temporary constructor, to be removed
+// TODO: Temporary constructor, to be removed
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
 {
@@ -112,7 +112,7 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
                      const DescriptorByUsage& descriptor_by_usage,
                      const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view)
     : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
-    , m_vk_image(std::move(vk_image))
+    , m_vk_image(vk_image)
     , m_vk_unique_image_view(std::move(vk_unique_image_view))
 {
     META_FUNCTION_TASK();

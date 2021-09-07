@@ -122,7 +122,7 @@ void RenderContextVK::Present()
     META_SCOPE_TIMER("RenderContextDX::Present");
     ContextVK<RenderContextBase>::Present();
 
-    CommandQueueVK& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
+    const auto& render_command_queue = static_cast<const CommandQueueVK&>(GetRenderCommandKit().GetQueue());
 
     // Present frame to screen
     const uint32_t image_index = GetFrameBufferIndex();
@@ -260,9 +260,8 @@ vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
 void RenderContextVK::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
-
-    const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
-    if (!GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
+    if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
+        !GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
         throw Context::IncompatibleException("Device does not support presentation to the window surface.");
     }

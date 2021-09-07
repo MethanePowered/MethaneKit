@@ -50,7 +50,7 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 
 using UserInterfaceApp = UserInterface::App<TexturedCubeFrame>;
 
-class TexturedCubeApp final : public UserInterfaceApp
+class TexturedCubeApp final : public UserInterfaceApp // NOSONAR
 {
 public:
     TexturedCubeApp();

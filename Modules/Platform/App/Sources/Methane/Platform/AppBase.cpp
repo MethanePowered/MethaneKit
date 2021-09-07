@@ -90,12 +90,12 @@ static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Da
     META_FUNCTION_TASK();
     CLI::callback_t parse_fn = [&rect_size](CLI::results_t res)
     {
-        if (ScalarType width{}, height{};
-            CLI::detail::lexical_cast(res[0], width) &&
-            CLI::detail::lexical_cast(res[1], height))
+        if (std::array<ScalarType, 2> dimensions{{ ScalarType{}, ScalarType{} }};
+            CLI::detail::lexical_cast(res[0], dimensions[0]) &&
+            CLI::detail::lexical_cast(res[1], dimensions[1]))
         {
-            rect_size.SetWidth(width);
-            rect_size.SetHeight(height);
+            rect_size.SetWidth(dimensions[0]);
+            rect_size.SetHeight(dimensions[1]);
             return true;
         }
         return false;
@@ -104,11 +104,11 @@ static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Da
     CLI::Option* option_ptr = app.add_option(name, parse_fn, description, defaulted);
     META_CHECK_ARG_NOT_NULL(option_ptr);
 
-    option_ptr->type_name("RECT-SIZE");
+    option_ptr->type_name("[W H]");
     option_ptr->type_size(2);
     if(defaulted)
     {
-        option_ptr->default_str(static_cast<std::string>(rect_size));
+        option_ptr->default_str(fmt::format("{} {}", rect_size.GetWidth(), rect_size.GetHeight()));
     }
     return *option_ptr;
 }

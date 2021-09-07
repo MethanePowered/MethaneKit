@@ -51,7 +51,7 @@ struct CubeVertex
 };
 
 using GraphicsApp = App<HelloCubeFrame>;
-class HelloCubeApp final : public GraphicsApp
+class HelloCubeApp final : public GraphicsApp // NOSONAR
 {
 private:
     const CubeMesh<CubeVertex> m_cube_mesh{ CubeVertex::layout };

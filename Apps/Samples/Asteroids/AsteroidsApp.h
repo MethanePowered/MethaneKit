@@ -62,8 +62,7 @@ struct AsteroidsFrame final : gfx::AppFrame
 };
 
 using UserInterfaceApp = UserInterface::App<AsteroidsFrame>;
-
-class AsteroidsApp final : public UserInterfaceApp
+class AsteroidsApp final : public UserInterfaceApp // NOSONAR
 {
 public:
     AsteroidsApp();

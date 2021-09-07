@@ -80,7 +80,7 @@ void FenceDX::WaitOnCpu()
 
     const uint64_t wait_value = GetValue();
     const uint64_t curr_value = m_cp_fence->GetCompletedValue();
-    if (curr_value >= wait_value)
+    if (curr_value >= wait_value) // NOSONAR - curr_value declared outside if
         return;
 
     META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);

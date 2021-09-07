@@ -37,11 +37,12 @@ Base implementation of the command queue with execution tracking.
 namespace Methane::Graphics
 {
 
-class CommandQueueTrackingBase : public CommandQueueBase
+class CommandQueueTrackingBase // NOSONAR - destructor is required
+    : public CommandQueueBase
 {
 public:
     CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type);
-    ~CommandQueueTrackingBase() override; // NOSONAR
+    ~CommandQueueTrackingBase() override;
 
     // CommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;

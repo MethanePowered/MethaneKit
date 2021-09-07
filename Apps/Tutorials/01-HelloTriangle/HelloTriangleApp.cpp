@@ -36,7 +36,7 @@ struct HelloTriangleFrame final : AppFrame
 };
 
 using GraphicsApp = App<HelloTriangleFrame>;
-class HelloTriangleApp final : public GraphicsApp
+class HelloTriangleApp final : public GraphicsApp // NOSONAR
 {
 private:
     Ptr<RenderState> m_render_state_ptr;

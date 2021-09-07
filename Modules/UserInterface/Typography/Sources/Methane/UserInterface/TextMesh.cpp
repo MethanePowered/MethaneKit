@@ -446,14 +446,11 @@ float TextMesh::GetJustifiedWhitespaceWidth(size_t line_start_index) const
         if (char_position.is_whitespace)
             ++white_spaces_count;
 
-        if (char_position.is_line_break)
-            break;
-
         if (char_position.is_line_start && char_index > line_start_index)
-        {
             is_line_ending_with_line_break = false;
+
+        if (char_position.is_line_break || !is_line_ending_with_line_break)
             break;
-        }
     }
 
     if ((m_layout.wrap != Text::Wrap::None && is_line_ending_with_line_break) || !white_spaces_count)

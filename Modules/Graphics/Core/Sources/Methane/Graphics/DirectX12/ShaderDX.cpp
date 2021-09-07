@@ -45,7 +45,7 @@ DirectX 12 implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-static const std::set<std::string> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
+static const std::set<std::string, std::less<>> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
 [[nodiscard]]
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)

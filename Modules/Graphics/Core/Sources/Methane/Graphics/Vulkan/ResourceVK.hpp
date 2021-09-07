@@ -36,7 +36,7 @@ namespace Methane::Graphics
 {
 
 template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
-class ResourceVK : public ReourceBaseType
+class ResourceVK : public ReourceBaseType // NOSONAR - destructor in use
 {
 public:
     template<typename SettingsType>

@@ -80,8 +80,8 @@ int AppWin::Run(const RunArgs& args)
 
     const Settings& app_settings = GetPlatformAppSettings();
     const Data::FrameSize frame_size(
-        static_cast<uint32_t>(app_settings.size.GetWidth()  * (app_settings.size.GetWidth()  < 1.0 ? desktop_width : 1U)),
-        static_cast<uint32_t>(app_settings.size.GetHeight() * (app_settings.size.GetHeight() < 1.0 ? desktop_height : 1U))
+        static_cast<uint32_t>(app_settings.size.GetWidth()  * static_cast<float>(app_settings.size.GetWidth()  < 1.0 ? desktop_width : 1U)),
+        static_cast<uint32_t>(app_settings.size.GetHeight() * static_cast<float>(app_settings.size.GetHeight() < 1.0 ? desktop_height : 1U))
     );
 
     RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.GetWidth()), static_cast<LONG>(frame_size.GetHeight()) };
@@ -321,10 +321,9 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
     META_FUNCTION_TASK();
     META_UNUSED(w_param);
 
-    const int x = GET_X_LPARAM(l_param);
-    const int y = GET_Y_LPARAM(l_param);
+    const Mouse::Position mouse_pos(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
 
-    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ x, y });
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
 
     if (!GetInputState().GetMouseState().IsInWindow())
     {

@@ -68,7 +68,7 @@ private:
 
     const Platform::AppEnvironment m_platform_env;
     wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
-    HANDLE                         m_frame_latency_waitable_object = NULL;
+    HANDLE                         m_frame_latency_waitable_object {};
     bool                           m_is_tearing_supported = false;
 };
 

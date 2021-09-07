@@ -122,7 +122,7 @@ bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
-    auto& vk_vertex_buffers = static_cast<BufferSetVK&>(vertex_buffers);
+    const auto& vk_vertex_buffers = static_cast<const BufferSetVK&>(vertex_buffers);
     GetNativeCommandBuffer().bindVertexBuffers(0U, vk_vertex_buffers.GetNativeBuffers(), vk_vertex_buffers.GetNativeOffsets());
     return true;
 }
@@ -133,8 +133,7 @@ bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource
     if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
-
-    auto& vk_index_buffer = static_cast<BufferVK&>(index_buffer);
+    const auto& vk_index_buffer = static_cast<const BufferVK&>(index_buffer);
     const vk::IndexType vk_index_type = GetVulkanIndexTypeByStride(index_buffer.GetSettings().item_stride_size);
     GetNativeCommandBuffer().bindIndexBuffer(vk_index_buffer.GetNativeBuffer(), 0U, vk_index_type);
     return true;
