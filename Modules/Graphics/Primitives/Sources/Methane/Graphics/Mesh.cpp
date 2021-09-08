@@ -101,7 +101,7 @@ Mesh::Index Mesh::GetFaceIndex(size_t index)
     return s_face_indices[index];
 }
 
-Data::Size Mesh::GetFaceIndicesCount() noexcept
+Mesh::Index Mesh::GetFaceIndicesCount() noexcept
 {
     return g_face_indices_count;
 }

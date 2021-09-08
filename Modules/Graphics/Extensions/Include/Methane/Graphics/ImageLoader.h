@@ -79,7 +79,7 @@ public:
 
     explicit ImageLoader(Data::Provider& data_provider);
 
-    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const;
+    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
     [[nodiscard]] Ptr<Texture> LoadImageToTexture2D(const Context& context, const std::string& image_path, Options options = Options::None, const std::string& texture_name = "") const;
     [[nodiscard]] Ptr<Texture> LoadImagesToTextureCube(const Context& context, const CubeFaceResources& image_paths, Options options = Options::None, const std::string& texture_name = "") const;
 

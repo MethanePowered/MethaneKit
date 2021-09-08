@@ -134,7 +134,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
 
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
     {
-        Data::Bytes sub_resource_data(pixels_count * pixel_size, std::byte(255));
+        Data::Bytes sub_resource_data(static_cast<size_t>(pixels_count) * pixel_size, std::byte(255));
         FillPerlinNoiseToTexture(sub_resource_data, dimensions, row_stride,
                                  noise_seed_distribution(rng),
                                  noise_parameters.persistence,

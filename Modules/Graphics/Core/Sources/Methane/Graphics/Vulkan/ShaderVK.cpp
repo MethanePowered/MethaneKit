@@ -181,10 +181,11 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     for(const Program::InputBufferLayout& input_buffer_layout : input_buffer_layouts)
     {
         m_vertex_input_binding_descriptions.emplace_back(
-            input_buffer_index++,
+            input_buffer_index,
             0U, // stride is auto calculated by vertex attributes
             ConvertInputBufferLayoutStepTypeToVertexInputRate(input_buffer_layout.step_type)
         );
+        input_buffer_index++;
     }
 
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
@@ -211,7 +212,7 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
             input_binding_desc.stride
         );
 
-        // Tight packing of attributes in vertex buffer is assumed;
+        // Tight packing of attributes in vertex buffer is assumed
         input_binding_desc.stride += attribute_type.vecsize * 4;
     }
 

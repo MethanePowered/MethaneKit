@@ -30,7 +30,7 @@ Vulkan implementation of the shader interface.
 
 #include <string>
 
-namespace spirv_cross
+namespace spirv_cross // NOSONAR
 {
 class Compiler;
 }

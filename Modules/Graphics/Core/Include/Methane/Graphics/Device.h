@@ -85,6 +85,7 @@ struct System
 {
     enum class GraphicsApi
     {
+        Undefined,
         Metal,
         DirectX,
         Vulkan

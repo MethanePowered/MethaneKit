@@ -76,7 +76,7 @@ void FenceVK::WaitOnCpu()
 
     const uint64_t wait_value = GetValue();
     const uint64_t curr_value = m_vk_device.getSemaphoreCounterValueKHR(GetNativeSemaphore());
-    if (curr_value >= wait_value)
+    if (curr_value >= wait_value) // NOSONAR - curr_value declared outside if
         return;
 
     META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);

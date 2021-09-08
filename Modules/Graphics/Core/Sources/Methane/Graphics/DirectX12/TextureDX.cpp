@@ -252,7 +252,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
 
-    D3D12_RESOURCE_DESC tex_desc{};
+    CD3DX12_RESOURCE_DESC tex_desc;
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
 
@@ -297,11 +297,11 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
 
-        srv_desc.Texture2DArray.MipLevels   = sub_resource_count.GetMipLevelsCount();
-        srv_desc.Texture2DArray.ArraySize   = sub_resource_count.GetArraySize();
-        srv_desc.ViewDimension              = settings.dimension_type == DimensionType::Tex2D
-                                            ? D3D12_SRV_DIMENSION_TEXTURE2D
-                                            : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        srv_desc.Texture2DArray.MipLevels = sub_resource_count.GetMipLevelsCount();
+        srv_desc.Texture2DArray.ArraySize = sub_resource_count.GetArraySize();
+        srv_desc.ViewDimension            = settings.dimension_type == DimensionType::Tex2D
+                                          ? D3D12_SRV_DIMENSION_TEXTURE2D
+                                          : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
     case DimensionType::Tex3D:
@@ -372,8 +372,8 @@ void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue* sy
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.GetDataPtr();
-        dx_sub_resource.RowPitch   = settings.dimensions.GetWidth()  * pixel_size;
-        dx_sub_resource.SlicePitch = settings.dimensions.GetHeight() * dx_sub_resource.RowPitch;
+        dx_sub_resource.RowPitch   = static_cast<int64_t>(settings.dimensions.GetWidth())  * pixel_size;
+        dx_sub_resource.SlicePitch = dx_sub_resource.RowPitch * settings.dimensions.GetHeight();
 
         META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
                                               "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");

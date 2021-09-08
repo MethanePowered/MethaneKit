@@ -21,6 +21,8 @@ Bit-mask helpers.
 
 ******************************************************************************/
 
+#pragma once
+
 #include <magic_enum.hpp>
 
 namespace Methane::Data

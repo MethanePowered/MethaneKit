@@ -91,7 +91,7 @@ ImageLoader::ImageLoader(Data::Provider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const
+ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -142,7 +142,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const auto image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
+    const auto image_data_size = static_cast<Data::Size>(sizeof(stbi_uc) * image_width * image_height * channels_count);
 
     if (create_copy)
     {

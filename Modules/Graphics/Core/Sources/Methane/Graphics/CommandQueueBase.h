@@ -52,8 +52,8 @@ public:
     void SetName(const std::string& name) override;
 
     // CommandQueue interface
-    [[nodiscard]] const Context&    GetContext() const noexcept override;
-    [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override { return m_command_lists_type; }
+    [[nodiscard]] const Context& GetContext() const noexcept final;
+    CommandList::Type GetCommandListType() const noexcept final { return m_command_lists_type; }
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     const ContextBase&    GetContextBase() const noexcept { return m_context; }

@@ -74,7 +74,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
-    GetDeviceVK().GetQueueFamilyReservation(GetCommandListType()).ReleaseQueueIndex(m_queue_index);
+    GetDeviceVK().GetQueueFamilyReservation(CommandQueueBase::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
 void CommandQueueVK::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
@@ -105,7 +105,7 @@ const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted(con
     while(!executing_command_list_sets.empty())
     {
         META_CHECK_ARG_NOT_NULL(executing_command_list_sets.front());
-        const CommandListSetVK& executing_command_list_set = static_cast<const CommandListSetVK&>(*executing_command_list_sets.front());
+        const auto& executing_command_list_set = static_cast<const CommandListSetVK&>(*executing_command_list_sets.front());
         if (frame_index_opt && executing_command_list_set.GetExecutingOnFrameIndex() != *frame_index_opt)
         {
             executing_command_list_sets.pop();

@@ -93,6 +93,8 @@ System::GraphicsApi System::GetGraphicsApi() noexcept
     return GraphicsApi::DirectX;
 #elif defined METHANE_GFX_VULKAN
     return GraphicsApi::Vulkan;
+#else
+    return GraphicsApi::Undefined;
 #endif
 }
 

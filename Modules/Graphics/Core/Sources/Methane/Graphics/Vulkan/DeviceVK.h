@@ -68,9 +68,7 @@ public:
     class IncompatibleException: public std::runtime_error
     {
     public:
-        explicit IncompatibleException(const std::string& incompatibility_reason)
-            : std::runtime_error(incompatibility_reason)
-        { }
+        using runtime_error::runtime_error;
     };
 
     struct SwapChainSupport

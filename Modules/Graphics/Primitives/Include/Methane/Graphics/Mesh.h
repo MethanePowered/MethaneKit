@@ -139,12 +139,12 @@ protected:
     [[nodiscard]] bool HasVertexField(VertexField field) const noexcept;
     [[nodiscard]] int32_t GetVertexFieldOffset(VertexField field) const { return m_vertex_field_offsets[static_cast<size_t>(field)]; }
 
-    void ResizeIndices(size_t indices_count)         { m_indices.resize(indices_count, 0); }
-    void SetIndex(size_t index, Index vertex_index)  { m_indices[index] = vertex_index; }
-    void SetIndices(Indices&& indices) noexcept      { m_indices = std::move(indices); }
-    void SwapIndices(Indices& indices)               { m_indices.swap(indices); }
-    void AppendIndices(const Mesh::Indices& indices) { m_indices.insert(m_indices.end(), indices.begin(), indices.end()); }
-    auto GetIndicesBackInserter()                    { return std::back_inserter(m_indices); }
+    void ResizeIndices(size_t indices_count)             { m_indices.resize(indices_count, 0); }
+    void SetIndex(Data::Index index, Index vertex_index) { m_indices[index] = vertex_index; }
+    void SetIndices(Indices&& indices) noexcept          { m_indices = std::move(indices); }
+    void SwapIndices(Indices& indices)                   { m_indices.swap(indices); }
+    void AppendIndices(const Mesh::Indices& indices)     { m_indices.insert(m_indices.end(), indices.begin(), indices.end()); }
+    auto GetIndicesBackInserter()                        { return std::back_inserter(m_indices); }
 
     [[nodiscard]] static VertexFieldOffsets GetVertexFieldOffsets(const VertexLayout& vertex_layout);
     [[nodiscard]] static Data::Size         GetVertexSize(const VertexLayout& vertex_layout) noexcept;
@@ -154,7 +154,7 @@ protected:
     [[nodiscard]] static Data::Size         GetFacePositionCount() noexcept;
     [[nodiscard]] static const TexCoord&    GetFaceTexCoord(size_t index);
     [[nodiscard]] static Mesh::Index        GetFaceIndex(size_t index);
-    [[nodiscard]] static Data::Size         GetFaceIndicesCount() noexcept;
+    [[nodiscard]] static Mesh::Index        GetFaceIndicesCount() noexcept;
     [[nodiscard]] static const Color&       GetColor(size_t index);
     [[nodiscard]] static Data::Size         GetColorsCount() noexcept;
 

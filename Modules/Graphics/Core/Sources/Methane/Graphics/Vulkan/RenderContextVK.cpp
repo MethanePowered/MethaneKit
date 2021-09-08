@@ -62,7 +62,7 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
 RenderContextVK::~RenderContextVK()
 {
     META_FUNCTION_TASK();
-    Release();
+    RenderContextVK::Release();
 }
 
 void RenderContextVK::Release()

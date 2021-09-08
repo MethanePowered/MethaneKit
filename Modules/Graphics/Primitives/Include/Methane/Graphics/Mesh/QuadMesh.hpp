@@ -80,9 +80,9 @@ public:
                                      ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0);
 #endif
 
-        const size_t face_indices_count = Mesh::GetFaceIndicesCount();
+        const Mesh::Index face_indices_count = Mesh::GetFaceIndicesCount();
         Mesh::ResizeIndices(face_indices_count);
-        for(size_t index = 0; index < face_indices_count; ++index)
+        for(Mesh::Index index = 0; index < face_indices_count; ++index)
         {
             Mesh::SetIndex(reverse_indices ? face_indices_count - index - 1 : index, Mesh::GetFaceIndex(index));
         }

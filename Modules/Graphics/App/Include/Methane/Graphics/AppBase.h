@@ -83,7 +83,6 @@ protected:
         std::string                 name;
 
         ResourceRestoreInfo() = default;
-        ResourceRestoreInfo(const ResourceRestoreInfo&) = default;
         explicit ResourceRestoreInfo(const Ptr<Resource>& resource_ptr)
             : descriptor_by_usage(resource_ptr ? resource_ptr->GetDescriptorByUsage() : Resource::DescriptorByUsage())
             , name(resource_ptr ? resource_ptr->GetName() : std::string())

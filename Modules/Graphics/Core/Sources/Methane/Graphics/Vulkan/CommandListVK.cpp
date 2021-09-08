@@ -45,7 +45,7 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Comma
         if (command_list_ref.get().GetType() != CommandList::Type::Render)
             continue;
 
-        const RenderCommandList& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
+        const auto& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
         for(const Texture::Location& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
         {
             const Texture::Type attach_texture_type = attach_location.GetTexture().GetSettings().type;

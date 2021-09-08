@@ -158,7 +158,6 @@ void ProgramDX::InitRootSignature()
     for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-
         auto&                             argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::SettingsDX& bind_settings = argument_binding.GetSettingsDX();
         const D3D12_SHADER_VISIBILITY    shader_visibility = GetShaderVisibilityByType(program_argument.GetShaderType());

@@ -501,7 +501,7 @@ void TypographyApp::SetForwardTypingDirection(bool is_forward_typing_direction)
 
 void TypographyApp::SetTextUpdateInterval(double text_update_interval_sec)
 {
-    if (m_settings.typing_update_interval_sec == text_update_interval_sec)
+    if (std::abs(m_settings.typing_update_interval_sec - text_update_interval_sec) < 0.000001)
         return;
 
     m_settings.typing_update_interval_sec = text_update_interval_sec;
