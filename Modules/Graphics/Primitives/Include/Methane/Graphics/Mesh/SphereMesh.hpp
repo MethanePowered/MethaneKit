@@ -168,12 +168,12 @@ private:
 
             Mesh::SetIndex(index_offset, 0);
             Mesh::SetIndex(index_offset + 1, 1);
-            Mesh::SetIndex(index_offset + 2, static_cast<Mesh::Index>(m_long_lines_count));
+            Mesh::SetIndex(index_offset + 2, m_long_lines_count);
 
             index_offset += 3;
         }
 
-        const Mesh::Index vertices_count         = static_cast<Mesh::Index>(BaseMeshT::GetVertexCount());
+        const auto        vertices_count         = static_cast<Mesh::Index>(BaseMeshT::GetVertexCount());
         const Mesh::Index index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
         const Mesh::Index index_long_lines_count = has_texcoord ? m_long_lines_count    : m_long_lines_count - 1;
         const Mesh::Index first_vertex_index     = has_texcoord ? 0 : 1;
