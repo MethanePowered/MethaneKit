@@ -87,8 +87,8 @@ private:
     void AppendChars(std::u32string added_text);
     void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
     void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
-    float GetLineWidth(size_t line_start_index) const;
-    float GetHorizontalLineAlignmentOffset(size_t line_start_index) const;
+    int32_t GetLineWidth(size_t line_start_index) const;
+    int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index) const;
     float GetJustifiedWhitespaceWidth(size_t line_start_index) const;
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
