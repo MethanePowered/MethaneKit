@@ -24,6 +24,7 @@ Vulkan fence implementation.
 #include "FenceVK.h"
 #include "CommandQueueVK.h"
 #include "DeviceVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -101,7 +102,8 @@ void FenceVK::SetName(const std::string& name)
     if (ObjectBase::GetName() == name)
         return;
 
-   ObjectBase::SetName(name);
+    ObjectBase::SetName(name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_semaphore.get(), name.c_str());
 }
 
 CommandQueueVK& FenceVK::GetCommandQueueVK()

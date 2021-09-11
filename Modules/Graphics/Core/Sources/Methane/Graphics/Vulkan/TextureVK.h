@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 class RenderContextVK;
 
-class TextureVK : public ResourceVK<TextureBase>
+class TextureVK : public ResourceVK<TextureBase, vk::ImageView>
 {
 public:
     // Temporary constructor, to be removed
@@ -43,11 +43,8 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
-    // Object interface
-    void SetName(const std::string& name) override;
-
     const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
-    const vk::ImageView& GetNativeImageView() const noexcept  { return m_vk_unique_image_view.get(); }
+    const vk::ImageView& GetNativeImageView() const noexcept  { return GetNativeResource(); }
 
 protected:
     TextureVK(const RenderContextVK& context, const Settings& settings,
@@ -57,8 +54,7 @@ protected:
 private:
     void GenerateMipLevels();
 
-    vk::Image           m_vk_image;
-    vk::UniqueImageView m_vk_unique_image_view;
+    vk::Image m_vk_image;
 };
 
 class FrameBufferTextureVK final : public TextureVK

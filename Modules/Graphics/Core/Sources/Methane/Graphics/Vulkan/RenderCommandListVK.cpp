@@ -135,7 +135,7 @@ bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource
 
     const auto& vk_index_buffer = static_cast<const BufferVK&>(index_buffer);
     const vk::IndexType vk_index_type = GetVulkanIndexTypeByStride(index_buffer.GetSettings().item_stride_size);
-    GetNativeCommandBuffer().bindIndexBuffer(vk_index_buffer.GetNativeBuffer(), 0U, vk_index_type);
+    GetNativeCommandBuffer().bindIndexBuffer(vk_index_buffer.GetNativeResource(), 0U, vk_index_type);
     return true;
 }
 

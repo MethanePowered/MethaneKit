@@ -66,6 +66,7 @@ Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& 
 
 ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
     : CommandListBase::DebugGroupBase(name)
+    , m_vk_debug_label(ObjectBase::GetName().c_str())
 {
     META_FUNCTION_TASK();
 }

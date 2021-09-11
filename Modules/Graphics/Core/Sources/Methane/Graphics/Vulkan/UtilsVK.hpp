@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,29 +16,31 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/SamplerVK.h
-Vulkan implementation of the sampler interface.
+FILE: Methane/Graphics/Vulkan/UtilsVK.hpp
+Methane graphics utils for Vulkan API.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ResourceVK.hpp"
+#include <Methane/Instrumentation.h>
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-struct IContextVK;
-
-class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler>
+template<typename VulkanObjectType>
+void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, const char* name)
 {
-public:
-    SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-    
-private:
-    void ResetSamplerState();
-};
+    META_FUNCTION_TASK();
+    vk_device.setDebugUtilsObjectNameEXT(
+        vk::DebugUtilsObjectNameInfoEXT(
+            VulkanObjectType::objectType,
+            reinterpret_cast<uint64_t>(static_cast<VulkanObjectType::CType>(vk_object)), // NOSONAR
+            name
+        )
+    );
+}
 
 } // namespace Methane::Graphics

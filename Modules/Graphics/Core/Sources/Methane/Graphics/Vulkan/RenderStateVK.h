@@ -55,8 +55,7 @@ private:
     std::vector<vk::Rect2D>   m_vk_scissor_rects;
 };
 
-class
-RenderStateVK final : public RenderStateBase
+class RenderStateVK final : public RenderStateBase
 {
 public:
     RenderStateVK(const RenderContextBase& context, const Settings& settings);

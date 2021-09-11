@@ -64,6 +64,9 @@ public:
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
     void Release() override;
 
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
+
     const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
     const vk::SwapchainKHR& GetNativeSwapchain() const noexcept   { return m_vk_unique_swapchain.get(); }
     const vk::Extent2D&     GetNativeFrameExtent() const noexcept { return m_vk_frame_extent; }
@@ -83,10 +86,10 @@ private:
     void InitializeNativeSwapchain();
     void ReleaseNativeSwapchainResources();
 
-    const vk::Device           m_vk_device;
+    const vk::Device m_vk_device;
 #ifdef __APPLE__
     // MacOS metal app view with swap-chain implementation to work via MoltenVK
-    AppViewMT*                 m_metal_view;
+    AppViewMT* m_metal_view;
 #endif
     const vk::UniqueSurfaceKHR       m_vk_unique_surface;
     vk::UniqueSwapchainKHR           m_vk_unique_swapchain;

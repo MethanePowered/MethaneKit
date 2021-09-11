@@ -27,6 +27,7 @@ Vulkan implementation of the render pass interface.
 #include "RenderContextVK.h"
 #include "RenderCommandListVK.h"
 #include "TypesVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -192,6 +193,16 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
     }
 }
 
+void RenderPatternVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
+    RenderPatternBase::SetName(name);
+    SetVulkanObjectName(GetRenderContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
+}
+
 const RenderContextVK& RenderPatternVK::GetRenderContextVK() const noexcept
 {
     META_FUNCTION_TASK();
@@ -268,6 +279,16 @@ void RenderPassVK::End(RenderCommandListBase& command_list)
     vk_command_buffer.endRenderPass();
 
     RenderPassBase::End(command_list);
+}
+
+void RenderPassVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
+    RenderPassBase::SetName(name);
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());
 }
 
 void RenderPassVK::Reset()

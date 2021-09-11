@@ -29,6 +29,7 @@ Vulkan base template implementation of the command list interface.
 #include "ContextVK.h"
 #include "ResourceVK.hpp"
 #include "ProgramBindingsVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Instrumentation.h>
@@ -51,7 +52,8 @@ public:
     template<typename... ConstructArgs>
     explicit CommandListVK(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
-        , m_vk_unique_command_buffer(std::move(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice().allocateCommandBuffersUnique(
+        , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
+        , m_vk_unique_command_buffer(std::move(m_vk_device.allocateCommandBuffersUnique(
             vk::CommandBufferAllocateInfo(
                 GetCommandQueueVK().GetNativeCommandPool(),
                 vk::CommandBufferLevel::ePrimary,
@@ -70,14 +72,16 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBase::PushDebugGroup(debug_group);
-        // TODO: add support of Vulkan debug groups
+
+        m_vk_unique_command_buffer.get().beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
         CommandListBase::PopDebugGroup();
-        // TODO: add support of Vulkan debug groups
+
+        m_vk_unique_command_buffer.get().endDebugUtilsLabelEXT();
     }
 
     void Commit() override
@@ -133,8 +137,11 @@ public:
     void SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
-        // TODO: set command buffer debug name
+        if (ObjectBase::GetName() == name)
+            return;
+
         CommandListBaseT::SetName(name);
+        SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffer.get(), name.c_str());
     }
 
     // ICommandListVK interface
@@ -153,6 +160,7 @@ protected:
     void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 
 private:
+    vk::Device              m_vk_device;
     vk::UniqueCommandBuffer m_vk_unique_command_buffer;
     bool                    m_is_native_committed = false;
 };

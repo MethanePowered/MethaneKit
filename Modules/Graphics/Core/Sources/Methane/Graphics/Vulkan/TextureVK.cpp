@@ -102,7 +102,7 @@ Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size
 
 // TODO: Temporary constructor, to be removed
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
@@ -111,18 +111,11 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, c
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
                      const DescriptorByUsage& descriptor_by_usage,
                      const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view)
-    : ResourceVK<TextureBase>(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage, std::move(vk_unique_image_view))
     , m_vk_image(vk_image)
-    , m_vk_unique_image_view(std::move(vk_unique_image_view))
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
-}
-
-void TextureVK::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    ResourceVK::SetName(name);
 }
 
 void TextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)

@@ -37,19 +37,11 @@ Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& se
 }
 
 SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
     
-    ResetSamplerState();
-}
-
-void SamplerVK::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    ResourceVK::SetName(name);
-
     ResetSamplerState();
 }
 

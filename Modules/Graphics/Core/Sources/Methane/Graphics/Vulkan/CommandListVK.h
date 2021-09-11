@@ -38,6 +38,11 @@ struct ICommandListVK
     {
     public:
         explicit DebugGroupVK(const std::string& name);
+
+        const vk::DebugUtilsLabelEXT& GetNativeDebugLabel() const noexcept { return m_vk_debug_label; }
+
+    private:
+        vk::DebugUtilsLabelEXT m_vk_debug_label;
     };
 
     virtual CommandQueueVK&          GetCommandQueueVK() = 0;

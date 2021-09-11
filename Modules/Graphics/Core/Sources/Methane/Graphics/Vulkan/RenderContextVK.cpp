@@ -28,6 +28,7 @@ Vulkan implementation of the render context interface.
 #include "CommandListVK.h"
 #include "PlatformVK.h"
 #include "TypesVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Instrumentation.h>
 
@@ -70,6 +71,16 @@ void RenderContextVK::Release()
     META_FUNCTION_TASK();
     ReleaseNativeSwapchainResources();
     ContextVK<RenderContextBase>::Release();
+}
+
+void RenderContextVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
+    ContextVK::SetName(name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), name.c_str());
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)

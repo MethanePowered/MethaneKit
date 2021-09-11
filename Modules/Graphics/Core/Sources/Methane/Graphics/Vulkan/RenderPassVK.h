@@ -39,6 +39,9 @@ class RenderPatternVK
 public:
     RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
 
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
+
     [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
     [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
 
@@ -59,9 +62,12 @@ public:
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 
-    // RenderPassBase interface
+    // RenderPassBase overrides
     void Begin(RenderCommandListBase& command_list) override;
     void End(RenderCommandListBase& command_list) override;
+
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
     
     void Reset();
 

@@ -25,6 +25,7 @@ Vulkan implementation of the resource interface.
 
 #include "ContextVK.h"
 #include "DeviceVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ResourceBase.h>
@@ -35,14 +36,18 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+template<typename ReourceBaseType, typename NativeResourceType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
 class ResourceVK : public ReourceBaseType // NOSONAR - destructor in use
 {
 public:
+    using UniqueResourceType = vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>;
+
     template<typename SettingsType>
-    ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage)
+    ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage,
+               UniqueResourceType&& vk_unique_resource)
         : ReourceBaseType(context, settings, descriptor_by_usage)
         , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
+        , m_vk_unique_resource(std::move(vk_unique_resource))
     {
         META_FUNCTION_TASK();
     }
@@ -60,7 +65,19 @@ public:
     bool operator=(const ResourceVK&) = delete;
     bool operator=(ResourceVK&&) = delete;
 
+    // ObjectBase overide
+    void SetName(const std::string& name) final
+    {
+        META_FUNCTION_TASK();
+        if (ObjectBase::GetName() == name)
+            return;
+
+        ReourceBaseType::SetName(name);
+        SetVulkanObjectName(m_vk_device, m_vk_unique_resource.get(), name.c_str());
+    }
+
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_unique_device_memory.get(); }
+    const NativeResourceType& GetNativeResource() const noexcept    { return m_vk_unique_resource.get(); }
 
 protected:
     const IContextVK& GetContextVK() const noexcept                 { return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase()); }
@@ -88,6 +105,7 @@ protected:
 private:
     vk::Device             m_vk_device;
     vk::UniqueDeviceMemory m_vk_unique_device_memory;
+    UniqueResourceType     m_vk_unique_resource;
 };
 
 } // namespace Methane::Graphics

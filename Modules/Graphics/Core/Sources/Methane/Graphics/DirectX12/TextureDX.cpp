@@ -252,7 +252,7 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
 
-    CD3DX12_RESOURCE_DESC tex_desc;
+    CD3DX12_RESOURCE_DESC tex_desc{};
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
 

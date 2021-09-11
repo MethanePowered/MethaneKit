@@ -29,6 +29,7 @@ Vulkan implementation of the render state interface.
 #include "ProgramVK.h"
 #include "ShaderVK.h"
 #include "TypesVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -433,7 +434,11 @@ void RenderStateVK::Apply(RenderCommandListBase& command_list, Groups /*state_gr
 void RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
     RenderStateBase::SetName(name);
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
 }
 
 const IContextVK& RenderStateVK::GetContextVK() const noexcept

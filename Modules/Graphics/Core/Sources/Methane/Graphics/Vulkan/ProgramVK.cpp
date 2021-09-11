@@ -23,10 +23,9 @@ Vulkan implementation of the program interface.
 
 #include "ProgramVK.h"
 #include "ShaderVK.h"
-#include "BufferVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
-#include "RenderCommandListVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -51,6 +50,18 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     , m_vk_unique_pipeline_layout(CreateVulkanPipelineLayout(GetContextVK().GetDeviceVK().GetNativeDevice()))
 {
     META_FUNCTION_TASK();
+}
+
+void ProgramVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
+    ProgramBase::SetName(name);
+
+    const std::string pipeline_name = name + " Pipeline Layout";
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline_layout.get(), pipeline_name.c_str());
 }
 
 const IContextVK& ProgramVK::GetContextVK() const noexcept

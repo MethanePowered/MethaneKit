@@ -23,6 +23,7 @@ Vulkan implementation of the device interface.
 
 #include "DeviceVK.h"
 #include "PlatformVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Platform/Utils.h>
@@ -101,10 +102,7 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
 {
     META_FUNCTION_TASK();
 
-#ifndef NDEBUG
     const std::vector<vk::ExtensionProperties>& extension_properties = vk::enumerateInstanceExtensionProperties();
-#endif
-
     std::vector<const char*> enabled_extensions;
     enabled_extensions.reserve(extensions.size());
 
@@ -116,7 +114,6 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
         enabled_extensions.push_back(ext.data() );
     }
 
-#ifndef NDEBUG
     const auto add_enabled_extension = [&extensions, &enabled_extensions, &extension_properties](const std::string& extension)
     {
         if (std::find(extensions.begin(), extensions.end(), extension) == extensions.end() &&
@@ -130,10 +127,8 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
 
     add_enabled_extension(g_vk_debug_utils_extension);
 
-#ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
+#if defined(VULKAN_VALIDATION_BEST_PRACTICES_ENABLED) && !defined(NDEBUG)
     add_enabled_extension(g_vk_validation_extension);
-#endif
-
 #endif
 
     return enabled_extensions;
@@ -441,6 +436,16 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
+}
+
+void DeviceVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ObjectBase::GetName() == name)
+        return;
+
+    DeviceBase::SetName(name);
+    SetVulkanObjectName(m_vk_unique_device.get(), m_vk_unique_device.get(), name.c_str());
 }
 
 bool DeviceVK::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const

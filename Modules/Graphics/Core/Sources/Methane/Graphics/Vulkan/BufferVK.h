@@ -33,21 +33,13 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferVK final : public ResourceVK<BufferBase>
+class BufferVK final : public ResourceVK<BufferBase, vk::Buffer>
 {
 public:
     BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
-
-    // Object interface
-    void SetName(const std::string& name) override;
-
-    const vk::Buffer& GetNativeBuffer() const noexcept { return m_vk_unique_buffer.get(); }
-
-private:
-    vk::UniqueBuffer m_vk_unique_buffer;
 };
 
 class BufferSetVK final : public BufferSetBase
