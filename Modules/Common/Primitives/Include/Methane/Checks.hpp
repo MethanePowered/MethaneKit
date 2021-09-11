@@ -38,8 +38,6 @@ Methane short check macroses throwing exceptions on negative check result
 
 #include "Exceptions.hpp"
 
-#ifdef METHANE_CHECKS_ENABLED
-
 #ifndef __FUNCTION_NAME__
     #ifdef WIN32
         #define __FUNCTION_NAME__ __FUNCTION__
@@ -47,6 +45,8 @@ Methane short check macroses throwing exceptions on negative check result
         #define __FUNCTION_NAME__ __func__
     #endif
 #endif
+
+#ifdef METHANE_CHECKS_ENABLED
 
 #define META_INVALID_ARG_DESCR(argument, description, ...) \
     throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
@@ -163,6 +163,8 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_RANGE_INC(argument, range_begin, range_end) (void)(argument)
 #define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description, ...) (void)(argument)
 #define META_CHECK_ARG_LESS(argument, upper_limit) (void)(argument)
+#define META_CHECK_ARG_LESS_OR_EQUAL_DESCR(argument, upper_limit, description, ...) (void)(argument)
+#define META_CHECK_ARG_LESS_OR_EQUAL(argument, upper_limit) (void)(argument)
 #define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) (void)(argument)
 #define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) (void)(argument)
 #define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description, ...) (void)(argument)

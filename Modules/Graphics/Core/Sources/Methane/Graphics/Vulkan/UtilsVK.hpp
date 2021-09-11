@@ -27,6 +27,8 @@ Methane graphics utils for Vulkan API.
 
 #include <vulkan/vulkan.hpp>
 
+#include <stdint.h>
+
 namespace Methane::Graphics
 {
 
@@ -37,7 +39,7 @@ void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk
     vk_device.setDebugUtilsObjectNameEXT(
         vk::DebugUtilsObjectNameInfoEXT(
             VulkanObjectType::objectType,
-            reinterpret_cast<uint64_t>(static_cast<VulkanObjectType::CType>(vk_object)), // NOSONAR
+            uint64_t(static_cast<typename VulkanObjectType::CType>(vk_object)), // NOSONAR
             name
         )
     );
