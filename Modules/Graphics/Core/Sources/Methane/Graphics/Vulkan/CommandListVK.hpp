@@ -52,7 +52,7 @@ public:
     template<typename... ConstructArgs>
     explicit CommandListVK(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
-        , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
+        , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_buffer(std::move(m_vk_device.allocateCommandBuffersUnique(
             vk::CommandBufferAllocateInfo(
                 GetCommandQueueVK().GetNativeCommandPool(),

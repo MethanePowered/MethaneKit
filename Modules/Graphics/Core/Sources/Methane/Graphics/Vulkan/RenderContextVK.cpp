@@ -207,7 +207,7 @@ vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<
 {
     META_FUNCTION_TASK();
 
-    static const vk::ColorSpaceKHR s_required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
+    static constexpr vk::ColorSpaceKHR s_required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
     const vk::Format required_color_format = TypeConverterVK::PixelFormatToVulkan(GetSettings().color_format);
 
     const auto format_it = std::find_if(available_formats.begin(), available_formats.end(),
@@ -216,7 +216,7 @@ vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<
                                                  format.colorSpace == s_required_color_space; });
     if (format_it == available_formats.end())
         throw Context::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
-                                                         magic_enum::enum_name(required_color_format), magic_enum::enum_name(s_required_color_space)));
+                                                         magic_enum::enum_name(GetSettings().color_format), magic_enum::enum_name(s_required_color_space)));
 
     return *format_it;
 }

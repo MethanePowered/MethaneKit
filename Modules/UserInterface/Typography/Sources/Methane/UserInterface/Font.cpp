@@ -136,7 +136,7 @@ public:
         : m_font_data(std::move(font_data))
         , m_ft_face(LoadFace(Library::Get().GetImpl().GetFTLib(), m_font_data))
         , m_ft_face_rec(GetFaceRec())
-        , m_has_kerning(static_cast<bool>(FT_HAS_KERNING(m_ft_face)))
+        , m_has_kerning(FT_HAS_KERNING(m_ft_face))
     {
         META_FUNCTION_TASK();
     }
