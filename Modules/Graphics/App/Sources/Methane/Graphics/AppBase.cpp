@@ -106,10 +106,10 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
-    add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
-    add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
-    add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
+    add_option("-a,--animations", m_settings.animations_enabled, "Enable animations");
+    add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter");
+    add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization");
+    add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain");
 
 #ifdef _WIN32
     add_flag("-e,--emulated-render-pass",

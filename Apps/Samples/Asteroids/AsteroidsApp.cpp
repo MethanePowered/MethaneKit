@@ -166,13 +166,13 @@ AsteroidsApp::AsteroidsApp()
                        return true;
                    }
                    return false;
-               }, "simulation complexity", true)
+               }, "simulation complexity")
         ->default_val(m_asteroids_complexity)
         ->expected(0, static_cast<int>(g_max_complexity))
         ->group(options_group);
-    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
-    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);
-    add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
+    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count")->group(options_group);
+    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled")->group(options_group);
+    add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled")->group(options_group);
 
     // Setup animations
     GetAnimations().push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));

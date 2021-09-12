@@ -34,7 +34,6 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AlignedAllocator.hpp>
-#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -172,7 +171,7 @@ public:
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
-        render_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
+        render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
@@ -187,8 +186,7 @@ public:
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index,
                      retain_bindings_once, set_resource_barriers);
-            },
-            Data::GetParallelChunkSize(render_cmd_lists.size(), 5)
+            }
         );
         m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }

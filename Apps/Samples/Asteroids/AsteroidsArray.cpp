@@ -25,7 +25,6 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/AppResourceProviders.h>
-#include <Methane/Data/Parallel.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -68,7 +67,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
         base_mesh.Spherify();
 
         tf::Taskflow task_flow;
-        task_flow.for_each_index_guided(0U, m_instance_count, 1U,
+        task_flow.for_each_index(0U, m_instance_count, 1U,
             [this, &rng, &data_mutex, &base_mesh](const uint32_t)
             {
                 Asteroid::Mesh asteroid_mesh(base_mesh);
@@ -77,8 +76,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
                 std::scoped_lock lock_guard(data_mutex);
                 m_depth_ranges.emplace_back(asteroid_mesh.GetDepthRange());
                 AddSubMesh(asteroid_mesh, false);
-            },
-            Data::GetParallelChunkSize(m_instance_count, 5)
+            }
         );
         parallel_executor.run(task_flow).get();
     }
@@ -127,7 +125,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
 
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
-    task_flow.for_each_guided(texture_array_subresources.begin(), texture_array_subresources.end(),
+    task_flow.for_each(texture_array_subresources.begin(), texture_array_subresources.end(),
         [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](gfx::Resource::SubResources& sub_resources)
         {
             Asteroid::TextureNoiseParameters noise_parameters{
@@ -137,8 +135,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
                 1.5F
             };
             sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
-        },
-        Data::GetParallelChunkSize(texture_array_subresources.size(), 5)
+        }
     );
     parallel_executor.run(task_flow).get();
 
@@ -315,7 +312,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     }, frame_index);
 
     tf::Taskflow task_flow;
-    task_flow.for_each_index_guided(1U, m_settings.instance_count, 1U,
+    task_flow.for_each_index(1U, m_settings.instance_count, 1U,
         [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, frame_index](const uint32_t asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
@@ -330,8 +327,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
                 );
             }
             program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument, frame_index);
-        },
-        Data::GetParallelChunkSize(m_settings.instance_count, 5)
+        }
     );
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
 
@@ -383,12 +379,11 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     const float elapsed_radians = gfx::ConstFloat::Pi * static_cast<float>(elapsed_seconds);
 
     tf::Taskflow update_task_flow;
-    update_task_flow.for_each_guided(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
+    update_task_flow.for_each(m_content_state_ptr->parameters.begin(), m_content_state_ptr->parameters.end(),
         [this, elapsed_radians](const Asteroid::Parameters& asteroid_parameters)
         {
             UpdateAsteroidUniforms(asteroid_parameters, m_settings.view_camera.GetOrientation().eye, elapsed_radians);
-        },
-        Data::GetParallelChunkSize(m_content_state_ptr->parameters.size(), 5)
+        }
     );
 
     GetRenderContext().GetParallelExecutor().run(update_task_flow).get();

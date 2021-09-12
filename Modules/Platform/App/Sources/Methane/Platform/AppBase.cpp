@@ -150,7 +150,7 @@ AppBase::AppBase(const AppBase::Settings& settings)
     META_SCOPE_TIMERS_INITIALIZE(Methane::Platform::Logger);
 
     AddRectSizeOption(*this, "-w,--wnd-size", m_settings.size, "Window size in pixels or as ratio of desktop size", true);
-    add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode", true);
+    add_option("-f,--full-screen", m_settings.is_full_screen, "Full-screen mode");
 
 #ifdef __APPLE__
     // When application is opened on MacOS with its Bundle,

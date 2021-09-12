@@ -51,7 +51,7 @@ public:
         , AppBase(ui_app_settings)
     {
         META_FUNCTION_TASK();
-        CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)", true);
+        CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)");
         Platform::App::AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
         GraphicsApp::SetShowHudInWindowTitle(AppBase::GetAppSettings().heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
     }

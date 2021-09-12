@@ -7,7 +7,6 @@ get_module_dirs("Methane/Data")
 set(HEADERS
     ${INCLUDE_DIR}/AlignedAllocator.hpp
     ${INCLUDE_DIR}/RectBinPack.hpp
-    ${INCLUDE_DIR}/Parallel.hpp
     ${INCLUDE_DIR}/BitMaskHelpers.hpp
 )
 

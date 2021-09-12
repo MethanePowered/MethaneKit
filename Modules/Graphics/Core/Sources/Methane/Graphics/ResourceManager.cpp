@@ -25,7 +25,6 @@ and deferred releasing of GPU resource.
 #include "ResourceManager.h"
 #include "ContextBase.h"
 
-#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -99,15 +98,14 @@ void ResourceManager::CompleteInitialization()
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
     tf::Taskflow task_flow;
-    task_flow.for_each_guided(m_program_bindings.begin(), m_program_bindings.end(),
+    task_flow.for_each(m_program_bindings.begin(), m_program_bindings.end(),
         [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
         {
             META_FUNCTION_TASK();
             Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
             META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
             static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
-        },
-        Data::GetParallelChunkSize(m_program_bindings.size(), 3)
+        }
     );
     m_context.GetParallelExecutor().run(task_flow).get();
 }
