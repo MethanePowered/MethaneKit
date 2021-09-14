@@ -195,17 +195,19 @@ void AsteroidsApp::Init()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Init");
 
-    gfx::RenderPattern::Settings& screen_pass_pattern_settings = GetScreenPassPatternSettings();
-
-    // Create asteroids render pass pattern
-    gfx::RenderPattern::Settings asteroids_render_pattern_settings = screen_pass_pattern_settings;
-    asteroids_render_pattern_settings.depth_attachment->store_action = gfx::RenderPass::Attachment::StoreAction::Store;
+    // Create initial render-pass pattern for asteroids rendering
+    gfx::RenderPattern::Settings asteroids_render_pattern_settings = GetScreenPassPatternSettings();
+    asteroids_render_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::DontCare;
+    asteroids_render_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Clear;
+    asteroids_render_pattern_settings.depth_attachment->store_action   = gfx::RenderPass::Attachment::StoreAction::Store;
     m_asteroids_render_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), asteroids_render_pattern_settings);
 
-    // Modify initial settings of the screen render-pass so that color and depth attachments are reused from initial asteroids render pass
+    // Modify settings of the final screen render-pass pattern so that color and depth attachments are reused from initial asteroids render pass
+    gfx::RenderPattern::Settings& screen_pass_pattern_settings = GetScreenPassPatternSettings();
     screen_pass_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
     screen_pass_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Load;
 
+    // Screen render pattern and screen passes for all frames are initialized here based on modified settings
     UserInterfaceApp::Init();
 
     const gfx::RenderContext& context = GetRenderContext();
