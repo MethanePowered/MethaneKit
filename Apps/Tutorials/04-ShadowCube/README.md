@@ -225,7 +225,7 @@ description here.
                 { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
                 { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
             },
-            GetScreenPassPattern().GetAttachmentFormats()
+            GetScreenRenderPattern().GetAttachmentFormats()
         }
     );
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");

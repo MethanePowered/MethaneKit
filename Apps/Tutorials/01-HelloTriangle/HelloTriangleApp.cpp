@@ -73,10 +73,10 @@ public:
                         },
                         Program::InputBufferLayouts{ },
                         Program::ArgumentAccessors{ },
-                        GetScreenPassPattern().GetAttachmentFormats()
+                        GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenPassPatternPtr()
+                GetScreenRenderPatternPtr()
             }
         );
 

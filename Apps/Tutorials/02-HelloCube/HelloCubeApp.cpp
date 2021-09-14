@@ -116,10 +116,10 @@ public:
                 {
                     { { Shader::Type::All, "g_uniforms"  }, Program::ArgumentAccessor::Type::FrameConstant },
                 },
-                GetScreenPassPattern().GetAttachmentFormats()
+                GetScreenRenderPattern().GetAttachmentFormats()
             }
         );
-        state_settings.render_pattern_ptr = GetScreenPassPatternPtr();
+        state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
         state_settings.program_ptr->SetName("Colored Cube Shading");
         m_render_state_ptr = RenderState::Create(GetRenderContext(), state_settings);
         m_render_state_ptr->SetName("Colored Cube Pipeline State");

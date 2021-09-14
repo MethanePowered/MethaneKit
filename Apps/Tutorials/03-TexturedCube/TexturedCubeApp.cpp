@@ -116,10 +116,10 @@ void TexturedCubeApp::Init()
                 { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
-            GetScreenPassPattern().GetAttachmentFormats()
+            GetScreenRenderPattern().GetAttachmentFormats()
         }
     );
-    state_settings.render_pattern_ptr = GetScreenPassPatternPtr();
+    state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
     state_settings.program_ptr->SetName("Textured Phong Lighting");
     state_settings.depth.enabled = true;
 

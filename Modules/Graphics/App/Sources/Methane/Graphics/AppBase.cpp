@@ -204,7 +204,7 @@ void AppBase::Init()
     }
 
     // Create screen render pass pattern
-    m_screen_pass_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+    m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
 
     m_view_state_ptr = ViewState::Create({
         { GetFrameViewport(context_settings.frame_size)    },
@@ -352,7 +352,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) c
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    return RenderPass::Create(GetScreenPassPattern(), {
+    return RenderPass::Create(GetScreenRenderPattern(), {
         GetScreenPassAttachments(frame_buffer_texture),
         m_context_ptr->GetSettings().frame_size
     });
@@ -413,7 +413,7 @@ void AppBase::OnContextReleased(Context&)
     m_restore_animations_enabled = m_settings.animations_enabled;
     SetBaseAnimationsEnabled(false);
 
-    m_screen_pass_pattern_ptr.reset();
+    m_screen_render_pattern_ptr.reset();
     m_depth_texture_ptr.reset();
     m_view_state_ptr.reset();
 
