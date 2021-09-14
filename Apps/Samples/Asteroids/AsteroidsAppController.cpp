@@ -52,14 +52,6 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
     const uint32_t asteroids_complexity = m_asteroids_app.GetAsteroidsComplexity();
     switch(action)
     {
-    case AsteroidsAppAction::IncreaseComplexity:
-        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
-        break;
-        
-    case AsteroidsAppAction::DecreaseComplexity:
-        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity > 1 ? asteroids_complexity - 1 : 0);
-        break;
-        
     case AsteroidsAppAction::SwitchParallelRendering:
         m_asteroids_app.SetParallelRenderingEnabled(!m_asteroids_app.IsParallelRenderingEnabled());
         break;
@@ -75,6 +67,27 @@ void AsteroidsAppController::OnKeyboardStateAction(AsteroidsAppAction action)
     case AsteroidsAppAction::DecreaseMeshLodComplexity:
         m_asteroids_app.GetAsteroidsArray().SetMinMeshLodScreenSize(m_asteroids_app.GetAsteroidsArray().GetMinMeshLodScreenSize() * 2.F);
         break;
+
+    case AsteroidsAppAction::IncreaseComplexity:
+        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity + 1);
+        break;
+
+    case AsteroidsAppAction::DecreaseComplexity:
+        m_asteroids_app.SetAsteroidsComplexity(asteroids_complexity > 1 ? asteroids_complexity - 1 : 0);
+        break;
+
+    case AsteroidsAppAction::SetComplexity0:
+    case AsteroidsAppAction::SetComplexity1:
+    case AsteroidsAppAction::SetComplexity2:
+    case AsteroidsAppAction::SetComplexity3:
+    case AsteroidsAppAction::SetComplexity4:
+    case AsteroidsAppAction::SetComplexity5:
+    case AsteroidsAppAction::SetComplexity6:
+    case AsteroidsAppAction::SetComplexity7:
+    case AsteroidsAppAction::SetComplexity8:
+    case AsteroidsAppAction::SetComplexity9:
+        m_asteroids_app.SetAsteroidsComplexity(static_cast<uint32_t>(action) - static_cast<uint32_t>(AsteroidsAppAction::SetComplexity0));
+        break;
         
     default:
         META_UNEXPECTED_ARG(action);
@@ -86,12 +99,22 @@ std::string AsteroidsAppController::GetKeyboardActionName(AsteroidsAppAction act
     META_FUNCTION_TASK();
     switch(action)
     {
-    case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
-    case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
     case AsteroidsAppAction::SwitchParallelRendering:   return "switch parallel rendering";
     case AsteroidsAppAction::SwitchMeshLodsColoring:    return "switch mesh LOD coloring";
     case AsteroidsAppAction::IncreaseMeshLodComplexity: return "increase mesh LOD complexity";
     case AsteroidsAppAction::DecreaseMeshLodComplexity: return "decrease mesh LOD complexity";
+    case AsteroidsAppAction::IncreaseComplexity:        return "increase scene complexity";
+    case AsteroidsAppAction::DecreaseComplexity:        return "decrease scene complexity";
+    case AsteroidsAppAction::SetComplexity0:            return "set 0 scene complexity";
+    case AsteroidsAppAction::SetComplexity1:            return "set 1 scene complexity";
+    case AsteroidsAppAction::SetComplexity2:            return "set 2 scene complexity";
+    case AsteroidsAppAction::SetComplexity3:            return "set 3 scene complexity";
+    case AsteroidsAppAction::SetComplexity4:            return "set 4 scene complexity";
+    case AsteroidsAppAction::SetComplexity5:            return "set 5 scene complexity";
+    case AsteroidsAppAction::SetComplexity6:            return "set 6 scene complexity";
+    case AsteroidsAppAction::SetComplexity7:            return "set 7 scene complexity";
+    case AsteroidsAppAction::SetComplexity8:            return "set 8 scene complexity";
+    case AsteroidsAppAction::SetComplexity9:            return "set 9 scene complexity";
     default:                                            META_UNEXPECTED_ARG_RETURN(action, "");
     }
 }

@@ -46,20 +46,20 @@ enum class Key : uint32_t
 {
     // Printable keys
     Space           = 0,
-    Apostrophe,     // '
-    Comma,          // ,
-    Minus,          // -
-    Period,         // .
-    Slash,          // /
-    Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
     Semicolon,      // ; NOSONAR
-    Equal,          // =
+    Apostrophe,     // ' "
+    BackSlash,      // '\' |
+    LeftBracket,    //  [ {
+    RightBracket,   //  ] }
+    Comma,          // , <
+    Period,         // . >
+    Slash,          // / ?
+    Minus,          // - _
+    Equal,          // = +
+    Num0, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9,
     A, B, C, D, E, F, G, H, I, J, K, L, M,
     N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
-    LeftBracket,    //  [
-    BackSlash,      // '\'
-    RightBracket,   //  ]
-    GraveAccent,    //  `
+    GraveAccent,    //  ` ~
     World1, World2,
     
     // Function Keys

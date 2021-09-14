@@ -34,12 +34,22 @@ class AsteroidsApp;
 enum class AsteroidsAppAction
 {
     None,
-    IncreaseComplexity,
-    DecreaseComplexity,
     SwitchParallelRendering,
     SwitchMeshLodsColoring,
     IncreaseMeshLodComplexity,
-    DecreaseMeshLodComplexity
+    DecreaseMeshLodComplexity,
+    IncreaseComplexity,
+    DecreaseComplexity,
+    SetComplexity0,
+    SetComplexity1,
+    SetComplexity2,
+    SetComplexity3,
+    SetComplexity4,
+    SetComplexity5,
+    SetComplexity6,
+    SetComplexity7,
+    SetComplexity8,
+    SetComplexity9,
 };
 
 class AsteroidsAppController final

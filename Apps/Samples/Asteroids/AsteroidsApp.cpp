@@ -83,12 +83,22 @@ inline const MutableParameters& GetMutableParameters()
 }
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state{
-    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
-    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
     { { pal::Keyboard::Key::L            }, AsteroidsAppAction::SwitchMeshLodsColoring      },
     { { pal::Keyboard::Key::Apostrophe   }, AsteroidsAppAction::IncreaseMeshLodComplexity   },
     { { pal::Keyboard::Key::Semicolon    }, AsteroidsAppAction::DecreaseMeshLodComplexity   },
+    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
+    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
+    { { pal::Keyboard::Key::Num0         }, AsteroidsAppAction::SetComplexity0              },
+    { { pal::Keyboard::Key::Num1         }, AsteroidsAppAction::SetComplexity1              },
+    { { pal::Keyboard::Key::Num2         }, AsteroidsAppAction::SetComplexity2              },
+    { { pal::Keyboard::Key::Num3         }, AsteroidsAppAction::SetComplexity3              },
+    { { pal::Keyboard::Key::Num4         }, AsteroidsAppAction::SetComplexity4              },
+    { { pal::Keyboard::Key::Num5         }, AsteroidsAppAction::SetComplexity5              },
+    { { pal::Keyboard::Key::Num6         }, AsteroidsAppAction::SetComplexity6              },
+    { { pal::Keyboard::Key::Num7         }, AsteroidsAppAction::SetComplexity7              },
+    { { pal::Keyboard::Key::Num8         }, AsteroidsAppAction::SetComplexity8              },
+    { { pal::Keyboard::Key::Num9         }, AsteroidsAppAction::SetComplexity9              },
 };
 
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
