@@ -64,10 +64,10 @@ struct Device
 
     struct Capabilities
     {
-        Features features = Device::Features::All;
-        bool     present_to_window = true;
+        Features features            = Device::Features::All;
+        bool     present_to_window   = true;
         uint32_t render_queues_count = 1U;
-        uint32_t blit_queues_count = 1U;
+        uint32_t blit_queues_count   = 1U;
 
         Capabilities& SetFeatures(Features new_features) noexcept;
         Capabilities& SetPresentToWindow(bool new_present_to_window) noexcept;

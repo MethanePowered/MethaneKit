@@ -13,12 +13,32 @@ Thousands of unique asteroid instances (1000-50000) are drawn with individual Dr
 Methane Asteroids sample was inspired by [Intel Asteroids D3D12](https://github.com/GameTechDev/asteroids_d3d12),
 but implemented from scratch in a cross-platform style using Methane Kit.
 
-Default parameters of asteroids simulation are selected depending on CPU HW cores count and can be displayed by `F3` key.
+## Features
+
+Default parameters of asteroids simulation are selected depending on CPU HW cores count and are displayed 
+in right-bottom panel switched by `F3` key.
 Overall complexity can be reduced / increased by pressing `[` / `]` keys.
 Sample renders galaxy background using [SkyBox](/Modules/Graphics/Extensions/Include/Methane/Graphics/SkyBox.h)
 graphics extension and planet using generated [Sphere mesh](/Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/SphereMesh.hpp) with spherical texture coordinates.
-It also uses interactive [Arc-Ball camera](/Modules/Graphics/Primitives/Include/Methane/Graphics/ArcBallCamera.h)
+It also uses interactive [Arc-Ball camera](/Modules/Graphics/Camera/Include/Methane/Graphics/ArcBallCamera.h)
 rotated with mouse `LMB` and light rotated with `RMB` with keyboard shotcuts also available by pressing `F1` key.
+
+## Application Controller 
+
+Keyboard actions are enabled with [AsteroidsAppController](AsteroidsAppController.h) 
+derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
+
+| Asteroids App Action                | Keyboard Shortcut   |
+|-------------------------------------|---------------------|
+| Switch Parallel Rendering           | `P`                 |
+| Switch Mesh LODs Coloring           | `L`                 |
+| Increase Mesh LOD Complexity        | `'`                 |
+| Decrease Mesh LOD Complexity        | `;`                 |
+| Increase Scene Complexity           | `]`                 |
+| Decrease Scene Complexity           | `[`                 |
+| Set Scene Complexity 0 - 9          | `0..9`              |
+
+## Optimizations
 
 Sample includes the following optimizations and features:
 - Asteroid meshes use **dynamically selected LODs** depending on estimated screen size.
@@ -34,6 +54,8 @@ Note that each asteroid texture is a texture 2d array itself with 3 mip-mapped t
 - **Inverted depth buffer** (with values from 1 in foreground to 0 in background and greater-or-equal compare function)
 is used to minimize frame buffer overdrawing by rendering in order from foreground to background: asteroids array with planet
 are drawen first and sky-box afterwards.
+
+## Instrumentation and Profiling
 
 Integrated instrumentation of the Methane Kit library and Asteroids sample enables profiling with the following tools:
 - [Tracy Profiler](https://github.com/wolfpld/tracy)

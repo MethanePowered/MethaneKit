@@ -4,23 +4,24 @@
 | -------------------- | ------------- |
 | ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) |
 
-This tutorial application demonstrates colored triangle rendering implemented in just 120 lines of code using Methane Kit - see [HelloTriangleAppSimple.cpp](HelloTriangleAppSimple.cpp).
+This tutorial application demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
+see [HelloTriangleApp.cpp](HelloTriangleApp.cpp) and [Shaders/HelloTriangle.hlsl](Shaders/HelloTriangle.hlsl).
 Tutorial demonstrates using of the following Methane Kit features:
-- Base graphics application implementing deferred frames rendering
-- Loading shaders, creating program and render state
-- Creating vertex buffers on GPU and filling with data
-- Using render command lists for encoding draw commands
-- Executing command lists on GPU and presenting frame buffers on screen
-- Configuring cross-platform application build with shaders compilation to embedded resources
+- Base graphics application implementing deferred frames rendering.
+- Loading shaders, creating program and render state.
+- Using render command lists for encoding draw commands.
+- Executing command lists on GPU and presenting frame buffers on screen.
+- Configuring cross-platform application build with shaders compilation to embedded resources.
 
 ## Application and Frame Class Definitions
 
-Application class `HelloTriangleApp` is derived from the base template class [Graphics::App<HelloTriangleFrame>](../../../Modules/Graphics/App) 
-which implements the infrastructure of the graphics application designed for deferred rendering approach (instead of immediate rendering).
+Application class `HelloTriangleApp` is derived from the base template class [Graphics::App<HelloTriangleFrame>](/Modules/Graphics/App) 
+which implements base platform and graphics application infrastructure with support of deferred frames rendering.
 
-Application frame class `HelloTriangleFrame` is derived from base class `Graphics::AppFrame` and extends it 
+Application frame class `HelloTriangleFrame` is derived from the base class `Graphics::AppFrame` and extends it 
 with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
-for rendering to frame buffer `index`. Application is initialized with default settings using `AppSettings` structure.
+for rendering to frame buffer `index`. Application is initialized with default settings using `Graphics::AppSettings` structure,
+which is initialized with convenience function `Samples::GetGraphicsAppSettings(...)`. 
 Destroying of application along with its resources is delayed until all rendering is completed on GPU.
 
 ```cpp
@@ -41,23 +42,13 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
 public:
-    HelloTriangleApp() : GraphicsApp(
-        {                                        // Application settings:
-            {                                    // platform_app:
-                "Methane Hello Triangle",        // - name
-                0.8, 0.8,                        // - width, height
-            },                                   //
-            {                                    // graphics_app:
-                RenderPass::Access::None,        // - screen_pass_access
-                false,                           // - animations_enabled
-            },                                   //
-            {                                    // render_context:
-                FrameSize(),                     // - frame_size placeholder: set in InitContext
-                PixelFormat::BGRA8Unorm,         // - color_format
-                PixelFormat::Unknown,            // - depth_stencil_format
-                Color4F(0.0F, 0.2F, 0.4F, 1.0F), // - clear_color
-            }
-        })
+    HelloTriangleApp()
+        : GraphicsApp(
+            []() {
+                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
+                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                return settings;
+            }())
     { }
 
     ~HelloTriangleApp() override
@@ -71,31 +62,31 @@ public:
 
 ## Graphics Resources Initialization
 
-Application class `HelloTriangleApp` keeps frame independent resources in class members: render state `m_render_state_ptr` and 
-set of vertex buffers used for triangle rendering `m_vertex_buffer_set_ptr` - they are initialized in `HelloTriangleApp::Init` method. 
-Vertex buffer is created with `Buffer::CreateVertexBuffer(...)` factory and filled with vertex data using `Buffer::SetData(...)`
-function via `Resource::SubResource` representing initialization data chunk.
-
+Application class `HelloTriangleApp` keeps frame independent resources in private class members.
+In this tutorial it is only render state `m_render_state_ptr` which is initialized in `HelloTriangleApp::Init` method.
 Render state is created with `RenderState::Create(...)` factory by passing render context and setting, which encapsulate 
 program created inline with `Program::Create(...)`. Program is created with a set of vertex and pixel shaders
 created with `Shader::CreateVertex` and `Shader::CreatePixel` factory methods taking `Data::Provider` and 
 `Shader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
 and is accessed via shader data provider singleton available with `Data::ShaderProvider::Get()`.
 Program also defines input buffer layout using argument semantic names from HLSL shaders. Methane graphics abstraction 
-uses shader reflection to identify argument types and offset sizes to build underlying DirectX or Metal layout description.
-Note that render target color formats matching formats of the render pass color attachments are also required for program creation.
+uses shader reflection to automatically identify argument types and offset sizes to build underlying DirectX, Metal or Vulkan
+layout description. Render target color formats are also required for program creation, these formats are taken from 
+`RenderPattern` object provided by the base class `Graphics::App` and describing general configuration of color/depth/stencil
+attachments used for final drawing to window on screen. `RenderState::Settings` requires a pointer to `RenderPattern`
+object and also contains settings of rasterizer, depth, stencil, blending states which are left with default values 
+for simplicity of this tutorial.
 
 Render command lists are created for each frame using `RenderCommandList::Create(...)` factory function which is taking
-render context and render pass as its arguments. So the created command list can be used for rendering only to that particular
-render pass. Finally at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
-resources initialization to prepare for rendering.
+`CommandQueue` and `RenderPass` as its arguments. So the created command list can be used for rendering only to that particular
+render pass. Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
+resources initialization and prepare for rendering.
 
 ```cpp
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
     Ptr<RenderState> m_render_state_ptr;
-    Ptr<BufferSet>   m_vertex_buffer_set_ptr;
     
 public:
     ...
@@ -103,23 +94,6 @@ public:
     void Init() override
     {
         GraphicsApp::Init();
-
-        struct Vertex { RawVector3F position; RawVector3F color; };
-        const std::array<Vertex, 3> triangle_vertices{ {
-            { { 0.0F,   0.5F,  0.0F }, { 1.0F, 0.0F, 0.0F } },
-            { { 0.5F,  -0.5F,  0.0F }, { 0.0F, 1.0F, 0.0F } },
-            { { -0.5F, -0.5F,  0.0F }, { 0.0F, 0.0F, 1.0F } },
-        } };
-
-        const auto vertex_buffer_size = static_cast<Data::Size>(sizeof(triangle_vertices));
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), vertex_buffer_size, static_cast<Data::Size>(sizeof(Vertex)));
-        vertex_buffer_ptr->SetData(
-            Resource::SubResources
-            {
-                Resource::SubResource { reinterpret_cast<Data::ConstRawPtr>(triangle_vertices.data()), vertex_buffer_size }
-            }
-        );
-        m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
@@ -129,20 +103,15 @@ public:
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Triangle", "TriangleVS" } }),
-                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "Triangle", "TrianglePS" } }),
+                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
+                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
-                        Program::InputBufferLayouts
-                        {
-                            Program::InputBufferLayout
-                            {
-                                Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" },
-                            }
-                        },
-                        Program::ArgumentAccessors { },
-                        PixelFormats { GetRenderContext().GetSettings().color_format }
+                        Program::InputBufferLayouts{ },
+                        Program::ArgumentAccessors{ },
+                        GetScreenRenderPattern().GetAttachmentFormats()
                     }
-                )
+                ),
+                GetScreenRenderPatternPtr()
             }
         );
 
@@ -157,7 +126,6 @@ public:
 
     void OnContextReleased(Context& context) override
     {
-        m_vertex_buffer_set_ptr.reset();
         m_render_state_ptr.reset();
 
         GraphicsApp::OnContextReleased(context);
@@ -170,14 +138,14 @@ public:
 ## Frame Rendering Cycle
 
 Rendering is implemented in overridden `HelloTriangleApp::Render` method. First, base graphics application
-rendering logic is called with `GraphicsApp::Render()` and rendering is continued only when it allows.
-Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding to 
-the current frame buffer.
+rendering logic is called with `GraphicsApp::Render()` and rendering is continued only when it succeeds.
+Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
-Command list has to be reset with active render state using `CommandList::Reset(...)` method called before any render commands encoding.
-Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState`.
-Then vertex buffers are set and drawn as `Triangle` primitives using `RenderCommandList::SetVertexBuffers` and `RenderCommandList::Draw` calls.
-And finally `CommandList::Commit` method is called to complete render commands encoding.
+To begin encoding, command list has to be reset with render state using `CommandList::Reset(...)` method.
+Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState(...)`.
+Drawing of 3 vertices is submitted as `Triangle` primitive using `RenderCommandList::Draw` call.
+Vertex buffers are not used here, so the vertex shader will receive only `vertex_id` and will need to generate vertex 
+coordinates based on that. Finally, `CommandList::Commit` method is called to complete render commands encoding.
 
 Execution of GPU rendering is started with `CommandQueue::Execute(...)` method called on the same command queue
 which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
@@ -196,7 +164,6 @@ class HelloTriangleApp final : public GraphicsApp
         const HelloTriangleFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
         frame.render_cmd_list_ptr->Commit();
 
@@ -219,29 +186,33 @@ int main(int argc, const char* argv[])
 
 ## Colored Triangle Shaders
 
-This tutorial uses simple HLSL shader [Shaders/Triangle.hlsl](Shaders/Triangle.hlsl).
-Note that semantic names of `VSInput` structure members, passed as argument to vertex shader function `TriangleVS(VSInput input)`, 
-are matching to input buffer layout arguments `Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" }`
-passed in Settings of `Program::Create(...)` call.
+This tutorial uses simple HLSL shader [Shaders/Triangle.hlsl](Shaders/Triangle.hlsl) which is taking vertex positions
+and colors from inline constant arrays based on vertex_id argument passed to vertex shader. 
 
 ```cpp
-struct VSInput
-{
-    float3 position : POSITION;
-    float3 color    : COLOR;
-};
-
 struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color    : COLOR;
 };
 
-PSInput TriangleVS(VSInput input)
+PSInput TriangleVS(uint vertex_id : SV_VertexID)
 {
+    const float4 positions[3] = {
+        {  0.0F,  0.5F, 0.0F, 1.F },
+        {  0.5F, -0.5F, 0.0F, 1.F },
+        { -0.5F, -0.5F, 0.0F, 1.F },
+    };
+
+    const float4 colors[3] = {
+        { 1.0F, 0.0F, 0.0F, 1.F },
+        { 0.0F, 1.0F, 0.0F, 1.F },
+        { 0.0F, 0.0F, 1.0F, 1.F },
+    };
+
     PSInput output;
-    output.position = float4(input.position, 1.F);
-    output.color    = float4(input.color, 1.F);
+    output.position = positions[vertex_id];
+    output.color    = colors[vertex_id];
     return output;
 }
 
@@ -273,14 +244,15 @@ include(MethaneApplications)
 include(MethaneShaders)
 
 add_methane_application(MethaneHelloTriangle
-    "HelloTriangleAppSimple.cpp"
+    "HelloTriangleApp.cpp"
     "${RESOURCES_DIR}"
-    "Apps/Tutorials"
+    "Apps/"
     "Methane Hello Triangle"
+    "Tutorial demonstrating colored triangle rendering with Methane Kit."
 )
 
 add_methane_shaders(MethaneHelloTriangle
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Triangle.hlsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloTriangle.hlsl"
     "6_0"
 )
 ```

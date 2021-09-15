@@ -14,7 +14,7 @@ The following settings are available:
 | IApp Setting             | Type                     | Default Value            | Cmd-Line Option   | Description           |
 |--------------------------|--------------------------|--------------------------|-------------------|-----------------------|
 | heads_up_display_mode    | HeadsUpDisplayMode       | WindowTitle              | -i,--hud          | HUD displaying mode: Hidden, WindowTitle, UserInterface |
-| logo_badge_visible          | bool                     | true                     |                   | Flag to show logo badge |
+| logo_badge_visible       | bool                     | true                     |                   | Flag to show logo badge |
 | logo_badge_color         | Color4F                  | { 1.F, 1.F, 1.F, 0.15F } |                   | Logo badge color |
 | text_color               | Color4F                  | { 1.F, 1.F, 1.F, 1.F }   |                   | Default text color in UI panels |
 | text_margins             | UnitPoint                | { 20, 20, Units::Dots }  |                   | Text panel margins |
