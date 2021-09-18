@@ -97,7 +97,7 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 Structures from this header are reused in [HLSL shader code](#textured-cube-shaders) and 16-byte packing in C++ is used
 gor common memory layout in HLSL and C++.
 
-Uniform structures in `Shaders/TexturedCubeUniforms.h`:
+Uniform structures in [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h):
 ```hlsl
 struct Constants
 {
