@@ -4,7 +4,12 @@
 | -------------------- | ------------- |
 | ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) |
 
-This tutorial demonstrates using of two render passes for rendering shadow of the textured cube on the floor plane.
+This tutorial demonstrates rendering rendering shadow of the textured cube on the floor plane in two render passes:
+- [ShadowCubeApp.h](ShadowCubeApp.h)
+- [ShadowCubeApp.cpp](ShadowCubeApp.cpp)
+- [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h)
+- [Shaders/ShadowCube.hlsl](Shaders/ShadowCube.hlsl)
+
 Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
 - Rendering with multiple render passes
 - Using texture as render target in one pass and as an input program binding in another pass
@@ -111,7 +116,7 @@ private:
     private:
         hlslpp::MeshUniforms        m_shadow_pass_uniforms{};
         gfx::Resource::SubResources m_shadow_pass_uniforms_subresources{
-            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } // NOSONAR
+            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } 
         };
     };
 
@@ -138,7 +143,7 @@ private:
     };
     hlslpp::SceneUniforms       m_scene_uniforms{ };
     gfx::Resource::SubResources m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) }
     };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
