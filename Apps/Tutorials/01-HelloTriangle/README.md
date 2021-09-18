@@ -7,6 +7,7 @@
 This tutorial demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
 - [HelloTriangleApp.cpp](HelloTriangleApp.cpp)
 - [Shaders/HelloTriangle.hlsl](Shaders/HelloTriangle.hlsl)
+
 Tutorial demonstrates the following Methane Kit features and techniques:
 - Using of the base graphics application for deferred frames rendering.
 - Loading shaders, creating program and render state.
@@ -123,13 +124,6 @@ public:
         }
 
         GraphicsApp::CompleteInitialization();
-    }
-
-    void OnContextReleased(Context& context) override
-    {
-        m_render_state_ptr.reset();
-
-        GraphicsApp::OnContextReleased(context);
     }
 
     ...

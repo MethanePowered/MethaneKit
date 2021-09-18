@@ -90,40 +90,41 @@ void TexturedCubeApp::Init()
     const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } }); // NOSONAR
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } }); // NOSONAR
 
     // Create render state with program
-    gfx::RenderState::Settings state_settings;
-    state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
+        gfx::RenderState::Settings
         {
-            gfx::Program::Shaders
-            {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
-            },
-            gfx::Program::InputBufferLayouts
-            {
-                gfx::Program::InputBufferLayout
+            gfx::Program::Create(GetRenderContext(),
+                gfx::Program::Settings
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    gfx::Program::Shaders
+                    {
+                        gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
+                        gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
+                    },
+                    gfx::Program::InputBufferLayouts
+                    {
+                        gfx::Program::InputBufferLayout
+                        {
+                            gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                        }
+                    },
+                    gfx::Program::ArgumentAccessors
+                    {
+                        { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                        { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                    },
+                    GetScreenRenderPattern().GetAttachmentFormats()
                 }
-            },
-            gfx::Program::ArgumentAccessors
-            {
-                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-            },
-            GetScreenRenderPattern().GetAttachmentFormats()
+            ),
+            GetScreenRenderPatternPtr()
         }
     );
-    state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
-    state_settings.program_ptr->SetName("Textured Phong Lighting");
-    state_settings.depth.enabled = true;
-
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
+    m_render_state_ptr->GetSettings().program_ptr->SetName("Textured Phong Lighting");
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
     // Load texture image from file
@@ -141,7 +142,7 @@ void TexturedCubeApp::Init()
         }
     );
 
-    // Create frame buffer data
+    // Create frame buffer resources
     const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
     for(TexturedCubeFrame& frame : GetFrames())
     {
@@ -150,7 +151,7 @@ void TexturedCubeApp::Init()
         frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.program_bindings_ptr = gfx::ProgramBindings::Create(state_settings.program_ptr, {
+        frame.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
             { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
             { { gfx::Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
             { { gfx::Shader::Type::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },

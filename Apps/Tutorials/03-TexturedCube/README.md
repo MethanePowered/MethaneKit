@@ -10,7 +10,7 @@ This tutorial demonstrates textured cube rendering using Methane Kit:
 - [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h)
 - [Shaders/TexturedCube.hlsl](Shaders/TexturedCube.hlsl)
 
-Tutorial demonstrates the following Methane Kit features additionally to demonstrated in previous [Hello Cube](../02-HelloCube) tutorial:
+Tutorial demonstrates the following Methane Kit features additionally to demonstrated in [Hello Cube](../02-HelloCube):
 - Base user interface application implementing graphics UI overlay rendering
 - Creating 2D textures with data loaded data from images and creating samplers
 - Binding buffers and textures to program arguments and configuring argument modifiers
@@ -21,9 +21,9 @@ Tutorial demonstrates the following Methane Kit features additionally to demonst
 Let's start from the application header file [TexturedCubeApp.h](TexturedCubeApp.h) which declares
 application class `TexturedCubeApp` derived from the base class `UserInterface::App<TexturedCubeFrame>`
 and frame class `TexturedCubeFrame` derived from the base class `Graphics::AppFrame` 
-similar to how it was done in [HelloTriangle](../01-HelloTriangle) tutorial.
+similar to how it was done in [HelloCube](../02-HelloCube) tutorial.
 The difference here is the [UserInterface::App](../../../Modules/UserInterface/App) base class used instead of
-[Graphics::App](../../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay. 
+[Graphics::App](../../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay.
 
 ```cpp
 #pragma once
@@ -74,8 +74,8 @@ private:
 } // namespace Methane::Tutorials
 ```
 
-Methane Kit is designed to use [deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render)
- (instead of immediate rendering approach) with use of triple buffering and minimized waiting for frame-buffers getting released in swap-chain.
+Methane Kit is designed to use [deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render) with triple buffering for minimized waiting for frame-buffers getting
+released in swap-chain.
 In order to prepare graphics resource states ahead of next frames rendering, `TexturedCubeFrame` structure keeps 
 volatile frame dependent resources used for rendering to dedicated frame-buffer. It includes uniforms buffer and 
 program bindings objects as well as render command list for render commands encoding
@@ -93,52 +93,60 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 };
 ```
 
-Private section of the `TexturedCubeApp` class contains declaration of `Constants` and `Uniforms` structures with data
-saved in constants buffer `m_const_buffer_ptr` defined below and uniforms buffer `uniforms_buffer_ptr` defined in `TexturedCubeFrame` structure above.
-Both structures layout is matching definition of the equally named structures in [HLSL shader code](#textured-cube-shaders)
-and use alignment and packing macroses to guarantee that.
+[Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h) header contains declaration of `Constants` and `Uniforms` structures with data saved in constants buffer `m_const_buffer_ptr` field of `TexturedCubeApp` class below and uniforms buffer `uniforms_buffer_ptr` field of `TexturedCubeFrame` structure above.
+Structures from this header are reused in [HLSL shader code](#textured-cube-shaders) and 16-byte packing in C++ is used
+gor common memory layout in HLSL and C++.
+
+Uniform structures in `Shaders/TexturedCubeUniforms.h`:
+```hlsl
+struct Constants
+{
+    float4 light_color;
+    float  light_power;
+    float  light_ambient_factor;
+    float  light_specular_factor;
+};
+
+struct Uniforms
+{
+    float3   eye_position;
+    float3   light_position;
+    float4x4 mvp_matrix;
+    float4x4 model_matrix;
+};
+```
 
 ```cpp
+namespace hlslpp
+{
+#pragma pack(push, 16)
+#include "Shaders/TexturedCubeUniforms.h"
+#pragma pack(pop)
+}
 
 class TexturedCubeApp final : public UserInterfaceApp
 {
     ...
 
 private:
-    struct META_UNIFORM_ALIGN Constants
-    {
-        hlslpp::float4 light_color;
-        float          light_power;
-        float          light_ambient_factor;
-        float          light_specular_factor;
+    const float             m_cube_scale = 15.F;
+    const hlslpp::Constants m_shader_constants{
+        { 1.F, 1.F, 0.74F, 1.F },  // - light_color
+        700.F,                     // - light_power
+        0.04F,                     // - light_ambient_factor
+        30.F                       // - light_specular_factor
     };
-
-    struct META_UNIFORM_ALIGN Uniforms
-    {
-        hlslpp::float3   eye_position;
-        hlslpp::float3   light_position;
-        hlslpp::float4x4 mvp_matrix;
-        hlslpp::float4x4 model_matrix;
-    };
-
-    const float           m_cube_scale = 15.F;
-    const Constants       m_shader_constants{
-        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
-        700.F,                    // - light_power
-        0.04F,                    // - light_ambient_factor
-        30.F                      // - light_specular_factor
-    };
-    Uniforms              m_shader_uniforms { };
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>      m_index_buffer_ptr;
-    Ptr<gfx::Buffer>      m_const_buffer_ptr;
-    Ptr<gfx::Texture>     m_cube_texture_ptr;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    hlslpp::Uniforms        m_shader_uniforms { };
+    gfx::Camera             m_camera;
+    Ptr<gfx::RenderState>   m_render_state_ptr;
+    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>        m_index_buffer_ptr;
+    Ptr<gfx::Buffer>        m_const_buffer_ptr;
+    Ptr<gfx::Texture>       m_cube_texture_ptr;
+    Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(Uniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
     };
 };
 ```
@@ -154,7 +162,7 @@ Camera orientation is reset to the default state. Camera and light rotating anim
 ```cpp
 TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Textured Cube"), {},
+        Samples::GetGraphicsAppSettings("Methane Textured Cube", Samples::g_default_app_options_color_only_and_anim), {},
         "Methane tutorial of textured cube rendering")
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
@@ -164,34 +172,6 @@ TexturedCubeApp::TexturedCubeApp()
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
-}
-```
-
-Before destroying any graphics objects it is sage for wait for all deferred rendering to be completed on GPU in application destructor.
-
-```cpp
-TexturedCubeApp::~TexturedCubeApp()
-{
-    // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
-}
-```
-
-`TexturedCubeApp::Resize(...)` function is overridden to resize camera projection along with application window.
-
-```cpp
-bool TexturedCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
-{
-    // Resize screen color and depth textures
-    if (!UserInterfaceApp::Resize(frame_size, is_minimized))
-        return false;
-
-    m_camera.Resize({
-        static_cast<float>(frame_size.GetWidth()),
-        static_cast<float>(frame_size.GetHeight())
-    });
-
-    return true;
 }
 ```
 
@@ -234,45 +214,37 @@ void TexturedCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
-    const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
-    m_camera.Resize({
-        static_cast<float>(context_settings.frame_size.GetWidth()),
-        static_cast<float>(context_settings.frame_size.GetHeight())
-    });
-
-    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
+    m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create vertex buffer for cube mesh
+    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
     const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
     const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
     vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
     m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetName("Cube Index Buffer");
     m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
 
     // Create constants buffer for frame rendering
-    const Data::Size constants_data_size = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(m_shader_constants)));
+    const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
-    m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), sizeof(m_shader_constants) } });
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } });
 
     ...
 }
 ```
 
 Cube face texture is created using `Graphics::ImageLoader` class through the instance provided by 
-`Graphics::App::GetImageLoader()` function. Texture is loaded from embedded JPEG image from application resources
+`Graphics::App::GetImageLoader()` function. Texture is loaded from JPEG image embedded in application resources
 by path in embedded file system `Textures/MethaneBubbles.jpg`. Image is added to application resources in build time and
 [configured in CMakeLists.txt](#cmake-build-configuration). `Graphics::ImageLoader::Options` is passed to
 image loading function to request mipmaps generation and using SRGB texture format.
 
-Sampler object is created with `Graphics::Sampler::Create(...)` factory function which defines
+Sampler object is created with `Graphics::Sampler::Create(...)` function which defines
 parameters of texture sampling from shader.
 
 ```cpp
@@ -312,49 +284,49 @@ void TexturedCubeApp::Init()
     ...
 
     // Create render state with program
-    gfx::RenderState::Settings state_settings;
-    state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
+        gfx::RenderState::Settings
         {
-            gfx::Program::Shaders
-            {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "Cube", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "Cube", "CubePS" } }),
-            },
-            gfx::Program::InputBufferLayouts
-            {
-                gfx::Program::InputBufferLayout
+            gfx::Program::Create(GetRenderContext(),
+                gfx::Program::Settings
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    gfx::Program::Shaders
+                    {
+                        gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
+                        gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
+                    },
+                    gfx::Program::InputBufferLayouts
+                    {
+                        gfx::Program::InputBufferLayout
+                        {
+                            gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                        }
+                    },
+                    gfx::Program::ArgumentAccessors
+                    {
+                        { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                        { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                    },
+                    GetScreenRenderPattern().GetAttachmentFormats()
                 }
-            },
-            gfx::Program::ArgumentAccessors
-            {
-                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-            },
-            GetScreenRenderPattern().GetAttachmentFormats()
+            ),
+            GetScreenRenderPatternPtr()
         }
     );
-    state_settings.program_ptr->SetName("Textured Phong Lighting");
-    state_settings.depth.enabled = true;
-
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), state_settings);
-    m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
     ...
 }
 ```
 
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
-- Create uniforms buffer with `Graphics::Buffer::CreateConstantBuffer(...)` function.
+- Create uniforms buffer with `Buffer::CreateConstantBuffer(...)` function.
 - Create program arguments to resources bindings with `ProgramBindings::Create(..)` function.
-- Create rendering command list with `Graphics::RenderCommandList::Create(...)` and 
-create set of command lists with `Graphics::CommandListSet::Create(...)` for execution in command queue.
+- Create rendering command list with `RenderCommandList::Create(...)` and 
+create set of command lists with `CommandListSet::Create(...)` for execution in command queue.
 
-Finally at the end of `Init()` function `Graphics::App::CompleteInitialization()` is called to complete graphics
+Finally at the end of `Init()` function `App::CompleteInitialization()` is called to complete graphics
 resources initialization to prepare for rendering. It uploads graphics resources to GPU and initializes shader bindings on GPU.
 
 ```cpp
@@ -362,26 +334,25 @@ void TexturedCubeApp::Init()
 {    
     ...
 
-    // Create frame buffer data
-    const Data::Size uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
+    // Create frame buffer resources
+    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
         frame.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
-        frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.program_bindings_ptr = gfx::ProgramBindings::Create(state_settings.program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { frame.uniforms_buffer_ptr } } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { { m_const_buffer_ptr        } } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_cube_texture_ptr        } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr     } } },
+        frame.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
+            { { gfx::Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr     } } },
         }, frame.index);
         
         // Create command list for rendering
         frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-        frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
+    }e.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
     }
 
     UserInterfaceApp::CompleteInitialization();
@@ -469,11 +440,10 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
     frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle, *m_index_buffer_ptr);
+    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 
-    // Commit command list with present flag
     frame.render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
@@ -500,6 +470,7 @@ SRGB gamma-correction is implemented with `ColorLinearToSrgb(...)` function from
  which is converting final color from linear-space to SRGB color-space.
 
 ```cpp
+#include "TexturedCubeUniforms.h"
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
@@ -515,22 +486,6 @@ struct PSInput
     float3 world_position   : POSITION;
     float3 world_normal     : NORMAL;
     float2 texcoord         : TEXCOORD;
-};
-
-struct Constants
-{
-    float4 light_color;
-    float  light_power;
-    float  light_ambient_factor;
-    float  light_specular_factor;
-};
-
-struct Uniforms
-{
-    float3   eye_position;
-    float3   light_position;
-    float4x4 mvp_matrix;
-    float4x4 model_matrix;
 };
 
 ConstantBuffer<Constants> g_constants : register(b1);
@@ -593,8 +548,6 @@ Shaders are compiled in build time and added as byte code to the application emb
 Texture images are added to the application embedded resources too.
 
 ```cmake
-set(TARGET MethaneTexturedCube)
-
 include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
@@ -602,26 +555,27 @@ include(MethaneResources)
 set(SOURCES
     TexturedCubeApp.h
     TexturedCubeApp.cpp
+    Shaders/TexturedCubeUniforms.h
 )
 
 set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Cube.hlsl)
 set(IMAGES_DIR ${RESOURCES_DIR}/Images)
 set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
 
-add_methane_application(${TARGET}
+add_methane_application(MethaneTexturedCube
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps"
     "Methane Textured Cube"
-    "Tutorial of the textured cube rendering with Methane Kit."
+    "Tutorial demonstrating textured rotating cube rendering with Methane Kit."s
     "${METHANE_COPYRIGHT}"
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
-add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
+add_methane_embedded_textures(MethaneTexturedCube "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_shaders(MethaneTexturedCube "${SHADERS_HLSL}" "6_0")
 
-target_link_libraries(${TARGET}
+target_link_libraries(MethaneTexturedCube
     PRIVATE
         MethaneAppsCommon
 )

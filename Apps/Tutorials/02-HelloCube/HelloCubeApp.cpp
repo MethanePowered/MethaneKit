@@ -178,7 +178,7 @@ public:
         if (!GraphicsApp::Render())
             return false;
 
-            const HelloCubeFrame& frame = GetCurrentFrame();
+        const HelloCubeFrame& frame = GetCurrentFrame();
 
         // Update vertex buffer with vertices in camera's projection view
         (*frame.vertex_buffer_set_ptr)[0].SetData(
