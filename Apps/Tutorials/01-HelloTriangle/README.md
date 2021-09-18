@@ -4,10 +4,11 @@
 | -------------------- | ------------- |
 | ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) |
 
-This tutorial application demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
-see [HelloTriangleApp.cpp](HelloTriangleApp.cpp) and [Shaders/HelloTriangle.hlsl](Shaders/HelloTriangle.hlsl).
-Tutorial demonstrates using of the following Methane Kit features:
-- Base graphics application implementing deferred frames rendering.
+This tutorial demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
+- [HelloTriangleApp.cpp](HelloTriangleApp.cpp)
+- [Shaders/HelloTriangle.hlsl](Shaders/HelloTriangle.hlsl)
+Tutorial demonstrates the following Methane Kit features and techniques:
+- Using of the base graphics application for deferred frames rendering.
 - Loading shaders, creating program and render state.
 - Using render command lists for encoding draw commands.
 - Executing command lists on GPU and presenting frame buffers on screen.
@@ -137,15 +138,17 @@ public:
 
 ## Frame Rendering Cycle
 
-Rendering is implemented in overridden `HelloTriangleApp::Render` method. First, base graphics application
-rendering logic is called with `GraphicsApp::Render()` and rendering is continued only when it succeeds.
+Rendering is implemented in overridden `HelloTriangleApp::Render` method. Base graphics application
+rendering is executed first with `GraphicsApp::Render()` and rendering is continued only when it succeedes,
+it waits for previous iteration of rendering cycle completion and availability of all frame resources.
 Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
 To begin encoding, command list has to be reset with render state using `CommandList::Reset(...)` method.
 Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState(...)`.
 Drawing of 3 vertices is submitted as `Triangle` primitive using `RenderCommandList::Draw` call.
-Vertex buffers are not used here, so the vertex shader will receive only `vertex_id` and will need to generate vertex 
-coordinates based on that. Finally, `CommandList::Commit` method is called to complete render commands encoding.
+Vertex buffers are not used for simplification, so the vertex shader will receive only `vertex_id` and 
+will need to provide vertex coordinates based on that. Finally, `CommandList::Commit` method is called 
+to complete render commands encoding.
 
 Execution of GPU rendering is started with `CommandQueue::Execute(...)` method called on the same command queue
 which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
@@ -227,17 +230,17 @@ is created in pair with every shaders file and describes shader types along with
 optional sets of macro definitions used to pre-build shaders to bytecode at build time:
 
 ```ini
-frag=TrianglePS
 vert=TriangleVS
+frag=TrianglePS
 ```
 
 ## CMake Build Configuration
 
 Finally CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application
 is powered by the included Methane CMake modules:
-- [MethaneApplications.cmake](../../CMake/MethaneApplications.cmake) - defines function `add_methane_application`
-- [MethaneShaders.cmake](../../CMake/MethaneShaders.cmake) - defines function `add_methane_shaders`
-- [MethaneResources.cmake](../../CMake/MethaneResources.cmake) - defines functions `add_methane_embedded_textures` and `add_methane_copy_textures`
+- [MethaneApplications.cmake](/CMake/MethaneApplications.cmake) - defines function `add_methane_application`
+- [MethaneShaders.cmake](/CMake/MethaneShaders.cmake) - defines function `add_methane_shaders`
+- [MethaneResources.cmake](/CMake/MethaneResources.cmake) - defines functions `add_methane_embedded_textures` and `add_methane_copy_textures`
 
 ```cmake
 include(MethaneApplications)
@@ -255,6 +258,11 @@ add_methane_shaders(MethaneHelloTriangle
     "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloTriangle.hlsl"
     "6_0"
 )
+
+target_link_libraries(${TARGET}
+    PRIVATE
+        MethaneAppsCommon
+)
 ```
 
 Now you have all in one application executable/bundle running on Windows & MacOS, which is rendering colored triangle in window with support of resizing the frame buffer.
@@ -262,4 +270,4 @@ Now you have all in one application executable/bundle running on Windows & MacOS
 ## Continue learning
 
 Continue learning Methane Graphics programming in the next tutorial [Hello Cube](../02-HelloCube), 
-which is demonstrating cube mesh drawing using vertex and index buffers.
+which is demonstrating cube mesh drawing using vertex and index buffers with camera projection applied on CPU.

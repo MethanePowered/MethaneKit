@@ -14,11 +14,10 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 
-set(SHADERS_HLSL
+add_methane_shaders(${TARGET}
     "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloTriangle.hlsl"
+    "6_0"
 )
-
-add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
 
 target_link_libraries(${TARGET}
     PRIVATE

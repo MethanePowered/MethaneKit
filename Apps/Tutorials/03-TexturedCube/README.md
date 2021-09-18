@@ -4,14 +4,16 @@
 | -------------------- | ------------- |
 | ![Textured Cube on Windows](Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on MacOS](Screenshots/TexturedCubeMacMetal.jpg) |
 
-This tutorial demonstrates textured cube rendering using Methane Kit.
-Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [HelloTriangle](../01-HelloTriangle):
+This tutorial demonstrates textured cube rendering using Methane Kit:
+- [TexturedCubeApp.h](TexturedCubeApp.h)
+- [TexturedCubeApp.cpp](TexturedCubeApp.cpp)
+- [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h)
+- [Shaders/TexturedCube.hlsl](Shaders/TexturedCube.hlsl)
+
+Tutorial demonstrates the following Methane Kit features additionally to demonstrated in previous [Hello Cube](../02-HelloCube) tutorial:
 - Base user interface application implementing graphics UI overlay rendering
 - Creating 2D textures with data loaded data from images and creating samplers
 - Binding buffers and textures to program arguments and configuring argument modifiers
-- Generating cube mesh vertices and indices data with custom vertex layout
-- Using camera for view and projection matrices generation
-- Time animations used for camera and light rotation
 - SRGB gamma-correction support in textures loader and color transformation in pixel shaders
 
 ## Application and Frame Class Definitions
@@ -31,6 +33,8 @@ The difference here is the [UserInterface::App](../../../Modules/UserInterface/A
 
 namespace Methane::Tutorials
 {
+
+...
 
 namespace gfx = Methane::Graphics;
 
@@ -95,6 +99,7 @@ Both structures layout is matching definition of the equally named structures in
 and use alignment and packing macroses to guarantee that.
 
 ```cpp
+
 class TexturedCubeApp final : public UserInterfaceApp
 {
     ...

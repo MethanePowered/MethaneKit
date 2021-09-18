@@ -39,21 +39,21 @@ struct HelloCubeFrame final : AppFrame
     using AppFrame::AppFrame;
 };
 
-struct CubeVertex
-{
-    Mesh::Position position;
-    Mesh::Color    color;
-
-    inline static const Mesh::VertexLayout layout{
-        Mesh::VertexField::Position,
-        Mesh::VertexField::Color
-    };
-};
-
 using GraphicsApp = App<HelloCubeFrame>;
 class HelloCubeApp final : public GraphicsApp // NOSONAR
 {
 private:
+    struct CubeVertex
+    {
+        Mesh::Position position;
+        Mesh::Color    color;
+
+        inline static const Mesh::VertexLayout layout{
+            Mesh::VertexField::Position,
+            Mesh::VertexField::Color
+        };
+    };
+
     const CubeMesh<CubeVertex> m_cube_mesh{ CubeVertex::layout };
     const hlslpp::float4x4     m_model_matrix = hlslpp::float4x4::scale(15.F);
     std::vector<CubeVertex>    m_proj_vertices;
@@ -96,32 +96,32 @@ public:
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
         // Create render state with program
-        RenderState::Settings state_settings;
-        state_settings.program_ptr = Program::Create(GetRenderContext(),
-            Program::Settings
+        m_render_state_ptr = RenderState::Create(GetRenderContext(),
+            RenderState::Settings
             {
-                Program::Shaders
-                {
-                    Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
-                    Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
-                },
-                Program::InputBufferLayouts
-                {
-                    Program::InputBufferLayout
+                Program::Create(GetRenderContext(),
+                    Program::Settings
                     {
-                        Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                        Program::Shaders
+                        {
+                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
+                            Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                        },
+                        Program::InputBufferLayouts
+                        {
+                            Program::InputBufferLayout
+                            {
+                                Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                            }
+                        },
+                        Program::ArgumentAccessors{ },
+                        GetScreenRenderPattern().GetAttachmentFormats()
                     }
-                },
-                Program::ArgumentAccessors
-                {
-                    { { Shader::Type::All, "g_uniforms"  }, Program::ArgumentAccessor::Type::FrameConstant },
-                },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                ),
+                GetScreenRenderPatternPtr()
             }
         );
-        state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
-        state_settings.program_ptr->SetName("Colored Cube Shading");
-        m_render_state_ptr = RenderState::Create(GetRenderContext(), state_settings);
+        m_render_state_ptr->GetSettings().program_ptr->SetName("Colored Cube Shading");
         m_render_state_ptr->SetName("Colored Cube Pipeline State");
 
         // Create index buffer for cube mesh
@@ -170,11 +170,6 @@ public:
             m_proj_vertices[vertex_index].position = Mesh::Position(proj_position_vec.xyz / proj_position_vec.w);
         }
 
-        // Update vertex buffer with vertices in camera's projection view
-        (*GetCurrentFrame().vertex_buffer_set_ptr)[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            &GetRenderContext().GetRenderCommandKit().GetQueue()
-        );
         return true;
     }
 
@@ -183,9 +178,16 @@ public:
         if (!GraphicsApp::Render())
             return false;
 
+            const HelloCubeFrame& frame = GetCurrentFrame();
+
+        // Update vertex buffer with vertices in camera's projection view
+        (*frame.vertex_buffer_set_ptr)[0].SetData(
+            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
+            &GetRenderContext().GetRenderCommandKit().GetQueue()
+        );
+
         // Issue commands for cube rendering
         META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-        const HelloCubeFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
