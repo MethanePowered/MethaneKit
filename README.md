@@ -6,7 +6,7 @@
 [![CodeQL](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
-- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows and Metal on MacOS, Vulkan on Linux is coming soon.
+- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Metal on MacOS and Vulkan on Linux.
 - **Simplifies modern graphics programming** with object-oriented medium-level graphics API inspired by simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
 - **Provides cross-platform application framework** from CMake-based build toolchain to platform independent application foundation classes.
 
@@ -87,7 +87,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
   - **HLSL++ Math** library with [HLSL-like syntax](https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-reference) in C++
     and vector-instruction optimizations for different platforms
-- **Modern Graphics API abstractions**: DirectX 12 & Metal are supported, Vulkan is coming soon
+- **Modern Graphics API abstractions**: based on DirectX 12, Metal and Vulkan APIs
   - Render state and program configuration with compact initialization syntax
   - Program binding objects implement efficient binding of shader arguments to resources
   - Automatic resource state tracking used for automatic resource transition barriers setup
