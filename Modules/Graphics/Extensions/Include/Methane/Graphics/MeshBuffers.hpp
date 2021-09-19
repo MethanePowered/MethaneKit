@@ -30,7 +30,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
-#include <Methane/Graphics/Mesh/UberMesh.hpp>
+#include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AlignedAllocator.hpp>

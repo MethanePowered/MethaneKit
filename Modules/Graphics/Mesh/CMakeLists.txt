@@ -1,19 +1,21 @@
-set(TARGET MethaneGraphicsPrimitives)
+set(TARGET MethaneGraphicsMesh)
 
 include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
-    ${INCLUDE_DIR}/FpsCounter.h
-    ${INCLUDE_DIR}/PerlinNoise.h
-    $<$<BOOL:${WIN32}>:${INCLUDE_PLATFORM_DIR}/ErrorHandling.h>
+    ${INCLUDE_DIR}/Mesh.h
+    ${INCLUDE_DIR}/BaseMesh.hpp
+    ${INCLUDE_DIR}/QuadMesh.hpp
+    ${INCLUDE_DIR}/CubeMesh.hpp
+    ${INCLUDE_DIR}/UberMesh.hpp
+    ${INCLUDE_DIR}/SphereMesh.hpp
+    ${INCLUDE_DIR}/IcosahedronMesh.hpp
 )
 
 set(SOURCES
-    ${SOURCES_DIR}/FpsCounter.cpp
-    ${SOURCES_DIR}/PerlinNoise.cpp
-    $<$<BOOL:${WIN32}>:${SOURCES_PLATFORM_DIR}/ErrorHandling.cpp>
+    ${SOURCES_DIR}/Mesh.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -30,14 +32,11 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneDataAnimation
         MethaneGraphicsTypes
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
-        MethanePlatformUtils
-        PerlinNoise
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

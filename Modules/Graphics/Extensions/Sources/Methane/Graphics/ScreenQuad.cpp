@@ -23,7 +23,7 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
-#include <Methane/Graphics/Mesh/QuadMesh.hpp>
+#include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/RenderCommandList.h>

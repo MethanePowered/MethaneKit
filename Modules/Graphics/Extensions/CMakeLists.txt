@@ -37,6 +37,7 @@ add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsCore
+        MethaneGraphicsMesh
         MethaneDataPrimitives
         MethaneInstrumentation
         TaskFlow

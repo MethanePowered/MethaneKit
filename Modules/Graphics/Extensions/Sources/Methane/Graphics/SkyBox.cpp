@@ -22,7 +22,7 @@ SkyBox rendering primitive
 ******************************************************************************/
 
 #include <Methane/Graphics/SkyBox.h>
-#include <Methane/Graphics/Mesh/SphereMesh.hpp>
+#include <Methane/Graphics/SphereMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Camera.h>

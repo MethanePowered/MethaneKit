@@ -23,7 +23,7 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
-#include <Methane/Graphics/Mesh/CubeMesh.hpp>
+#include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
