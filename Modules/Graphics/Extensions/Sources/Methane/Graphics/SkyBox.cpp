@@ -22,7 +22,7 @@ SkyBox rendering primitive
 ******************************************************************************/
 
 #include <Methane/Graphics/SkyBox.h>
-#include <Methane/Graphics/SphereMesh.hpp>
+#include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Camera.h>
@@ -35,7 +35,7 @@ namespace Methane::Graphics
 {
 
 SkyBox::SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader,  const Settings& settings)
-    : SkyBox(render_pattern, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
+    : SkyBox(render_pattern, image_loader, settings, CubeMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
