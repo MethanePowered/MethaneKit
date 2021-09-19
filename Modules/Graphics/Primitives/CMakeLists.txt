@@ -7,14 +7,21 @@ get_module_dirs("Methane/Graphics")
 set(HEADERS
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/PerlinNoise.h
-    $<$<BOOL:${WIN32}>:${INCLUDE_PLATFORM_DIR}/ErrorHandling.h>
 )
 
 set(SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
     ${SOURCES_DIR}/PerlinNoise.cpp
-    $<$<BOOL:${WIN32}>:${SOURCES_PLATFORM_DIR}/ErrorHandling.cpp>
 )
+
+if (WIN32)
+    set(HEADERS ${HEADERS}
+        ${INCLUDE_PLATFORM_DIR}/ErrorHandling.h
+    )
+    set(SOURCES ${SOURCES}
+        ${SOURCES_PLATFORM_DIR}/ErrorHandling.cpp
+    )
+endif()
 
 add_library(${TARGET} STATIC
     ${HEADERS}
