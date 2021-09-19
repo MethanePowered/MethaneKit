@@ -23,6 +23,8 @@ Vulkan implementation of the render pass interface.
 
 #pragma once
 
+#include "RenderContextVK.h"
+
 #include <Methane/Graphics/RenderPassBase.h>
 
 #include <vulkan/vulkan.hpp>
@@ -53,7 +55,9 @@ private:
     std::vector<vk::ClearValue> m_attachment_clear_colors;
 };
 
-class RenderPassVK final : public RenderPassBase
+class RenderPassVK final
+    : public RenderPassBase
+    , protected Data::Receiver<IRenderContextVKCallback>
 {
 public:
     RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
@@ -75,6 +79,10 @@ public:
     RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
+
+protected:
+    // IRenderContextVKCallback overrides
+    void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
 
 private:
     vk::RenderPassBeginInfo CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;

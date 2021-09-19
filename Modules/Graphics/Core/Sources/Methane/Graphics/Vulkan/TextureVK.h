@@ -51,13 +51,16 @@ protected:
               const DescriptorByUsage& descriptor_by_usage,
               const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view);
 
+    void ResetNativeImage(const vk::Image& vk_image);
+
 private:
     void GenerateMipLevels();
 
     vk::Image m_vk_image;
 };
 
-class FrameBufferTextureVK final : public TextureVK
+class FrameBufferTextureVK final
+    : public TextureVK
 {
 public:
     FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
@@ -65,10 +68,13 @@ public:
 
     [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
 
+    void ResetNativeImage();
+
 private:
     FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                          FrameBufferIndex frame_buffer_index, const vk::Image& image);
 
+    const RenderContextVK& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
 };
 

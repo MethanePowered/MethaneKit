@@ -102,6 +102,12 @@ protected:
         }
     }
 
+    void ResetNativeResource(UniqueResourceType&& vk_unique_resource)
+    {
+        META_FUNCTION_TASK();
+        m_vk_unique_resource = std::move(vk_unique_resource);
+    }
+
 private:
     vk::Device             m_vk_device;
     vk::UniqueDeviceMemory m_vk_unique_device_memory;

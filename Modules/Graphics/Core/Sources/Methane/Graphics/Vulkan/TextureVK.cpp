@@ -134,6 +134,12 @@ void TextureVK::GenerateMipLevels()
     META_FUNCTION_TASK();
 }
 
+void TextureVK::ResetNativeImage(const vk::Image& vk_image)
+{
+    META_FUNCTION_TASK();
+    m_vk_image = vk_image;
+}
+
 FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                                            FrameBufferIndex frame_buffer_index)
     : FrameBufferTextureVK(context, settings, descriptor_by_usage, frame_buffer_index, context.GetNativeFrameImage(frame_buffer_index))
@@ -144,9 +150,17 @@ FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& context, const
 FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                                            FrameBufferIndex frame_buffer_index, const vk::Image& image)
     : TextureVK(context, settings, descriptor_by_usage, image, CreateNativeImageView(settings, context.GetDeviceVK().GetNativeDevice(), image))
+    , m_render_context(context)
     , m_frame_buffer_index(frame_buffer_index)
 {
     META_FUNCTION_TASK();
+}
+
+void FrameBufferTextureVK::ResetNativeImage()
+{
+    META_FUNCTION_TASK();
+    TextureVK::ResetNativeImage(m_render_context.GetNativeFrameImage(m_frame_buffer_index));
+    ResetNativeResource(CreateNativeImageView(GetSettings(), m_render_context.GetDeviceVK().GetNativeDevice(), GetNativeImage()));
 }
 
 } // namespace Methane::Graphics

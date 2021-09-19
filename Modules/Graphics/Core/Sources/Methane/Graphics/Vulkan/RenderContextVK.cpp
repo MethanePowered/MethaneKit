@@ -101,7 +101,7 @@ void RenderContextVK::WaitForGpu(WaitFor wait_for)
     CommandList::Type cl_type = CommandList::Type::Render;
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:    break;
+    case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
     case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
     case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Blit; break;
     default: META_UNEXPECTED_ARG(wait_for);
@@ -151,13 +151,23 @@ void RenderContextVK::Present()
 bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
-    return RenderContextBase::SetVSyncEnabled(vsync_enabled);
+    if (RenderContextBase::SetVSyncEnabled(vsync_enabled))
+    {
+        ResetNativeSwapchain();
+        return true;
+    }
+    return false;
 }
 
 bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
-    return RenderContextBase::SetFrameBuffersCount(frame_buffers_count);
+    if (RenderContextBase::SetFrameBuffersCount(frame_buffers_count))
+    {
+        ResetNativeSwapchain();
+        return true;
+    }
+    return false;
 }
 
 float RenderContextVK::GetContentScalingFactor() const
@@ -288,7 +298,7 @@ void RenderContextVK::InitializeNativeSwapchain()
         image_count = swap_chain_support.capabilities.maxImageCount;
     }
 
-    m_vk_unique_swapchain = m_vk_device.createSwapchainKHRUnique(
+    vk::UniqueSwapchainKHR vk_new_swapchain = m_vk_device.createSwapchainKHRUnique(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
             GetNativeSurface(),
@@ -307,6 +317,9 @@ void RenderContextVK::InitializeNativeSwapchain()
         )
     );
 
+    const bool is_swap_chain_change = !!m_vk_unique_swapchain;
+    m_vk_unique_swapchain = std::move(vk_new_swapchain);
+
     m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
@@ -323,16 +336,28 @@ void RenderContextVK::InitializeNativeSwapchain()
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
+
+    if (is_swap_chain_change)
+    {
+        Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
+    }
 }
 
 void RenderContextVK::ReleaseNativeSwapchainResources()
 {
     META_FUNCTION_TASK();
-    m_vk_device.waitIdle();
+    WaitForGpu(WaitFor::RenderComplete);
 
     m_vk_frame_semaphores_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
+}
+
+void RenderContextVK::ResetNativeSwapchain()
+{
+    ReleaseNativeSwapchainResources();
+    InitializeNativeSwapchain();
+    UpdateFrameBufferIndex();
 }
 
 } // namespace Methane::Graphics

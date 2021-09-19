@@ -227,6 +227,7 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
     , m_vk_pass_begin_info(CreateBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
+    render_pattern.GetRenderContextVK().Data::Emitter<IRenderContextVKCallback>::Connect(*this);
 }
 
 vk::RenderPassBeginInfo RenderPassVK::CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
@@ -302,6 +303,16 @@ const IContextVK& RenderPassVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextVK&>(GetPatternBase().GetRenderContextBase());
+}
+
+void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
+{
+    META_FUNCTION_TASK();
+    for (const Texture::Location& texture_location : GetSettings().attachments)
+    {
+        dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
+    }
+    Reset();
 }
 
 } // namespace Methane::Graphics

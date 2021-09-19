@@ -27,6 +27,7 @@ Vulkan implementation of the render context interface.
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Platform/AppEnvironment.h>
+#include <Methane/Data/Emitter.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -41,7 +42,18 @@ using AppViewMT = void;
 namespace Methane::Graphics
 {
 
-class RenderContextVK final : public ContextVK<RenderContextBase>
+class RenderContextVK;
+
+struct IRenderContextVKCallback
+{
+    virtual void OnRenderContextVKSwapchainChanged(RenderContextVK& context) = 0;
+
+    virtual ~IRenderContextVKCallback() = default;
+};
+
+class RenderContextVK final
+    : public ContextVK<RenderContextBase>
+    , public Data::Emitter<IRenderContextVKCallback>
 {
 public:
     RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
@@ -85,6 +97,7 @@ private:
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& surface_caps) const;
     void InitializeNativeSwapchain();
     void ReleaseNativeSwapchainResources();
+    void ResetNativeSwapchain();
 
     const vk::Device m_vk_device;
 #ifdef __APPLE__
