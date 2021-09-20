@@ -6,7 +6,7 @@
 [![CodeQL](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
-- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Metal on MacOS and Vulkan on Linux.
+- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Metal on MacOS and Vulkan on Linux & Windows.
 - **Simplifies modern graphics programming** with object-oriented medium-level graphics API inspired by simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
 - **Provides cross-platform application framework** from CMake-based build toolchain to platform independent application foundation classes.
 
@@ -67,7 +67,7 @@ and continue with others.
 | <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
 | ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
 | 1. [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in 100 lines of code. |
-| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube) | ![Hello Cube on Windows](Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg) | Colored cube rendering in 200 line of code with vertex and index buffers. |
+| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube) | ![Hello Cube on Windows](Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg) | Colored cube rendering in 200 lines of code with vertex and index buffers. |
 | 3. [Textured Cube](/Apps/Tutorials/03-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/03-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers, textures and samplers usage with Phong shading.<br/>* _Vulkan is not supported yet._ |
 | 4. [Shadow Cube](/Apps/Tutorials/04-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/04-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes.<br/>* _Vulkan is not supported yet._ |
 | 5. [Typography](/Apps/Tutorials/05-Typography) | ![Typography on Windows](Apps/Tutorials/05-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI.<br/>* _Vulkan is not supported yet._ |
@@ -234,7 +234,6 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 | Build Option Name                               | Default Value           | Release Build           | Profiling Build         | Description             |
 | ----------------------------------------------- | ----------------------- | ----------------------- | ----------------------- | ----------------------- |
 | <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
-| <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
 | <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
 | <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable tests build</sub> |
 | <sub>METHANE_CHECKS_ENABLED</sub>               | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable runtime checks of input arguments</sub> |
