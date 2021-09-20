@@ -43,6 +43,8 @@ Shaders for screen quad rendering with 2D texture
 #define WMASK rgba
 #endif
 
+#include "ScreenQuadConstants.h"
+
 struct VSInput
 {
     float3 position : POSITION;
@@ -55,12 +57,7 @@ struct PSInput
     float2 texcoord : TEXCOORD;
 };
 
-struct Constants
-{
-    float4 blend_color;
-};
-
-ConstantBuffer<Constants> g_constants : register(b1);
+ConstantBuffer<ScreenQuadConstants> g_constants : register(b1);
 
 #ifndef TEXTURE_DISABLED
 Texture2D<TTEXEL>         g_texture   : register(t0);

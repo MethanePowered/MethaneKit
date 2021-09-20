@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/SamplerVK.mm
+FILE: Methane/Graphics/Vulkan/SamplerVK.cpp
 Vulkan implementation of the sampler interface.
 
 ******************************************************************************/
@@ -33,23 +33,21 @@ namespace Methane::Graphics
 Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<SamplerVK>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
+#else
+    META_UNUSED(context);
+    META_UNUSED(settings);
+    META_UNUSED(descriptor_by_usage);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Sampler has no Vulkan API implementation yet");
+#endif
 }
 
 SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(context, settings, descriptor_by_usage)
+    : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
-    
-    ResetSamplerState();
-}
-
-void SamplerVK::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    ResourceVK::SetName(name);
-
     ResetSamplerState();
 }
 

@@ -32,6 +32,11 @@ is used to create graphics context for rendering.
 #include <array>
 #include <functional>
 
+namespace Methane::Platform
+{
+struct AppEnvironment;
+}
+
 namespace Methane::Graphics
 {
 
@@ -57,23 +62,47 @@ struct Device
         All                     = ~0U,
     };
 
-    [[nodiscard]] virtual const std::string& GetAdapterName() const noexcept = 0;
-    [[nodiscard]] virtual bool               IsSoftwareAdapter() const noexcept = 0;
-    [[nodiscard]] virtual Features           GetSupportedFeatures() const noexcept = 0;
-    [[nodiscard]] virtual std::string        ToString() const = 0;
+    struct Capabilities
+    {
+        Features features            = Device::Features::All;
+        bool     present_to_window   = true;
+        uint32_t render_queues_count = 1U;
+        uint32_t blit_queues_count   = 1U;
+
+        Capabilities& SetFeatures(Features new_features) noexcept;
+        Capabilities& SetPresentToWindow(bool new_present_to_window) noexcept;
+        Capabilities& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
+        Capabilities& SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept;
+    };
+
+    [[nodiscard]] virtual const std::string&          GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool                        IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual const Capabilities&         GetCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string                 ToString() const = 0;
 };
 
 struct System
 {
+    enum class GraphicsApi
+    {
+        Undefined,
+        Metal,
+        DirectX,
+        Vulkan
+    };
+
+    static GraphicsApi GetGraphicsApi() noexcept;
+
     [[nodiscard]] static System& Get();
 
     virtual void CheckForChanges() = 0;
-    [[nodiscard]] virtual const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features = Device::Features::All) = 0;
-    [[nodiscard]] virtual const Ptrs<Device>& GetGpuDevices() const = 0;
-    [[nodiscard]] virtual Ptr<Device>         GetNextGpuDevice(const Device& device) const = 0;
-    [[nodiscard]] virtual Ptr<Device>         GetSoftwareGpuDevice() const = 0;
-    [[nodiscard]] virtual Device::Features    GetGpuSupportedFeatures() const = 0;
-    [[nodiscard]] virtual std::string         ToString() const = 0;
+    [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Device::Capabilities& required_device_caps = {}) = 0;
+    [[nodiscard]] virtual const Ptrs<Device>&         UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps = {}) = 0;
+    [[nodiscard]] virtual const Ptrs<Device>&         GetGpuDevices() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<Device>                 GetNextGpuDevice(const Device& device) const noexcept = 0;
+    [[nodiscard]] virtual Ptr<Device>                 GetSoftwareGpuDevice() const noexcept = 0;
+    [[nodiscard]] virtual const Device::Capabilities& GetDeviceCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string                 ToString() const = 0;
     
     virtual ~System() = default;
 };

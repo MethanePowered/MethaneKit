@@ -64,17 +64,12 @@ Device::Features DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>&
     return Device::Features::BasicRendering;
 }
 
-DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
+DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
     : DeviceBase(GetAdapterNameDxgi(*cp_adapter.Get()),
                  IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-                 GetSupportedFeatures(cp_adapter, feature_level))
+                 capabilities)
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
-{
-    META_FUNCTION_TASK();
-}
-
-DeviceDX::~DeviceDX()
 {
     META_FUNCTION_TASK();
 }
@@ -229,7 +224,7 @@ void SystemDX::CheckForChanges()
 
     const Ptrs<Device>& devices = GetGpuDevices();
     Ptrs<Device>   prev_devices = devices;
-    UpdateGpuDevices(GetGpuSupportedFeatures());
+    UpdateGpuDevices(GetDeviceCapabilities());
 
     for (const Ptr<Device>& prev_device_ptr : prev_devices)
     {
@@ -250,22 +245,25 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Ptrs<Device>& SystemDX::UpdateGpuDevices(Device::Features supported_features)
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(const Platform::AppEnvironment&, const Device::Capabilities& required_device_caps)
+{
+    META_FUNCTION_TASK();
+    return UpdateGpuDevices(required_device_caps);
+}
+
+const Ptrs<Device>& SystemDX::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
-    SetGpuSupportedFeatures(supported_features);
+    SetDeviceCapabilities(required_device_caps);
     ClearDevices();
 
     IDXGIAdapter1* p_adapter = nullptr;
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
     {
         META_CHECK_ARG_NOT_NULL(p_adapter);
-
-        // Don't select the Basic Render Driver adapter.
-        // If you want a software adapter, pass in "/warp" on the command line.
         if (IsSoftwareAdapterDxgi(*p_adapter))
             continue;
 
@@ -293,10 +291,10 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     Device::Features device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
 
     using namespace magic_enum::bitwise_operators;
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetGpuSupportedFeatures()))
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level));
+    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));
 }
 
 void SystemDX::ReportLiveObjects() const

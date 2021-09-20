@@ -167,18 +167,12 @@ SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-ResourceLocation::ResourceLocation(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset)
-    : m_resource_ptr(resource_ptr)
+ResourceLocation::ResourceLocation(Resource& resource, const SubResource::Index& subresource_index, Data::Size offset)
+    : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
     , m_subresource_index(subresource_index)
     , m_offset(offset)
 {
     META_FUNCTION_TASK();
-}
-
-Resource& ResourceLocation::GetResource() const
-{
-    META_CHECK_ARG_NOT_NULL_DESCR(m_resource_ptr, "can not get resource from uninitialized resource location");
-    return *m_resource_ptr;
 }
 
 bool ResourceLocation::operator==(const ResourceLocation& other) const noexcept

@@ -35,15 +35,38 @@ class RenderContextBase;
 class RenderCommandListBase;
 class TextureBase;
 
+class RenderPatternBase
+    : public RenderPattern
+    , public ObjectBase
+{
+public:
+    RenderPatternBase(RenderContextBase& render_context, const Settings& settings);
+
+    // RenderPattern overrides
+    [[nodiscard]] const RenderContext& GetRenderContext() const noexcept final;
+    [[nodiscard]] RenderContext&       GetRenderContext() noexcept final;
+    [[nodiscard]] const Settings&      GetSettings() const noexcept final { return m_settings; }
+    [[nodiscard]] Data::Size           GetAttachmentCount() const noexcept final;
+    [[nodiscard]] AttachmentFormats    GetAttachmentFormats() const noexcept final;
+
+    [[nodiscard]] const RenderContextBase& GetRenderContextBase() const noexcept { return *m_render_context_ptr; }
+    [[nodiscard]] RenderContextBase&       GetRenderContextBase() noexcept       { return *m_render_context_ptr; }
+
+private:
+    const Ptr<RenderContextBase> m_render_context_ptr;
+    Settings m_settings;
+};
+
 class RenderPassBase
     : public RenderPass
     , public ObjectBase
 {
 public:
-    RenderPassBase(const RenderContextBase& context, const Settings& settings);
+    RenderPassBase(RenderPatternBase& pattern, const Settings& settings);
 
     // RenderPass interface
-    const Settings& GetSettings() const override    { return m_settings; }
+    const Pattern&  GetPattern() const noexcept final  { return *m_pattern_base_ptr; }
+    const Settings& GetSettings() const noexcept final { return m_settings; }
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 
@@ -51,14 +74,15 @@ public:
     virtual void Begin(RenderCommandListBase& render_command_list);
     virtual void End(RenderCommandListBase& render_command_list);
 
+    const Texture::Location& GetAttachmentTextureLocation(const Attachment& attachment) const;
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
+    TextureBase*             GetStencilAttachmentTexture() const;
     const Ptrs<TextureBase>& GetNonFrameBufferAttachmentTextures() const;
-    Ptr<RenderPassBase>      GetRenderPassPtr()         { return std::static_pointer_cast<RenderPassBase>(GetBasePtr()); }
     bool                     IsBegun() const noexcept   { return m_is_begun; }
 
 protected:
-    const RenderContextBase&  GetRenderContext() const noexcept { return m_render_context; }
+    RenderPatternBase& GetPatternBase() const noexcept { return *m_pattern_base_ptr; }
 
 private:
     void InitAttachmentStates() const;
@@ -67,12 +91,13 @@ private:
                              Ptr<Resource::Barriers>& transition_barriers_ptr,
                              RenderCommandListBase& render_command_list) const;
 
-    const RenderContextBase&  m_render_context;
+    Ptr<RenderPatternBase>    m_pattern_base_ptr;
     Settings                  m_settings;
     bool                      m_is_begun = false;
     mutable Refs<TextureBase> m_color_attachment_textures;
     mutable Ptrs<TextureBase> m_non_frame_buffer_attachment_textures;
     mutable TextureBase*      m_p_depth_attachment_texture = nullptr;
+    mutable TextureBase*      m_p_stencil_attachment_texture = nullptr;
     Ptr<Resource::Barriers>   m_begin_transition_barriers_ptr;
     Ptr<Resource::Barriers>   m_end_transition_barriers_ptr;
 };

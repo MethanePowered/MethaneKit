@@ -54,7 +54,7 @@ static void SetLegacyThreadName(std::string_view name)
 
     __try
     {
-        RaiseException(msvc_exception, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR*>(&info));
+        RaiseException(msvc_exception, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR*>(&info)); // NOSONAR
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
@@ -72,7 +72,8 @@ extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR);
 
 void SetThreadName(std::string_view name)
 {
-    if (static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
+    if (static auto s_set_thread_description_fn = reinterpret_cast<SetThreadDescriptionFn>( // NOSONAR
+            GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"));
         s_set_thread_description_fn)
     {
         const std::wstring w_name = nowide::widen(name.data(), name.length());

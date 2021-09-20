@@ -24,7 +24,6 @@ Planet rendering primitive
 #pragma once
 
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
@@ -34,12 +33,21 @@ Planet rendering primitive
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/ImageLoader.h>
 
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include "Shaders/PlanetUniforms.h" // NOSONAR
+#pragma pack(pop)
+}
+
 #include <memory>
 
 namespace Methane::Samples
 {
 
 namespace gfx = Graphics;
+
+struct RenderPattern;
 
 class Planet
 {
@@ -57,22 +65,14 @@ public:
         float                     lod_bias            = 0.F;
     };
 
-    struct META_UNIFORM_ALIGN Uniforms
-    {
-        hlslpp::float4   eye_position;
-        hlslpp::float3   light_position;
-        hlslpp::float4x4 mvp_matrix;
-        hlslpp::float4x4 model_matrix;
-    };
-
-    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     bool Update(double elapsed_seconds, double delta_seconds);
     void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
 private:
-    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<Uniforms>;
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::PlanetUniforms>;
 
     struct Vertex
     {
@@ -87,7 +87,7 @@ private:
         };
     };
 
-    Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
     Settings              m_settings;
     gfx::RenderContext&   m_context;

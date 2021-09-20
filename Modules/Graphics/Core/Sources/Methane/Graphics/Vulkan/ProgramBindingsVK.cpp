@@ -22,7 +22,7 @@ Vulkan implementation of the program interface.
 ******************************************************************************/
 
 #include "ProgramBindingsVK.h"
-#include "RenderCommandListVK.h"
+#include "CommandListVK.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -34,13 +34,27 @@ namespace Methane::Graphics
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
+#else
+    META_UNUSED(program_ptr);
+    META_UNUSED(resource_locations_by_argument);
+    META_UNUSED(frame_index);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
+#endif
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
+#else
+    META_UNUSED(other_program_bindings);
+    META_UNUSED(replace_resource_location_by_argument);
+    META_UNUSED(frame_index);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
+#endif
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -78,17 +92,22 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
+    Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
+}
 
-    auto& vulkan_command_list = static_cast<RenderCommandListVK&>(command_list);
+void ProgramBindingsVK::Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(command_list);
+    using namespace magic_enum::bitwise_operators;
 
     for(const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
              magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
-             vulkan_command_list.GetProgramBindings() &&
+            p_applied_program_bindings &&
              static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr).IsAlreadyApplied(
-                 GetProgram(), *vulkan_command_list.GetProgramBindings(),
+                 GetProgram(), *p_applied_program_bindings,
                  magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
     }

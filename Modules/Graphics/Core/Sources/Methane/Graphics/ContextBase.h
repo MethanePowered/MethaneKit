@@ -64,6 +64,7 @@ public:
     Type              GetType() const noexcept override                       { return m_type; }
     tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
     Object::Registry& GetObjectsRegistry() noexcept override                  { return m_objects_cache; }
+    const Object::Registry& GetObjectsRegistry() const noexcept override      { return m_objects_cache; }
     void              RequestDeferredAction(DeferredAction action) const noexcept override;
     void              CompleteInitialization() override;
     bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
@@ -85,6 +86,7 @@ public:
     ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
+    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept { return m_device_ptr; }
 
 protected:
     void PerformRequestedAction();

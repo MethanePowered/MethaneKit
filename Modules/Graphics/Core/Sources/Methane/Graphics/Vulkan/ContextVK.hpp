@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ContextVK.hpp
+FILE: Methane/Graphics/Vulkan/ContextVK.hpp
 Vulkan template implementation of the base context interface.
 
 ******************************************************************************/
@@ -25,8 +25,8 @@ Vulkan template implementation of the base context interface.
 
 #include "ContextVK.h"
 #include "DeviceVK.h"
+#include "CommandQueueVK.h"
 
-#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
@@ -54,37 +54,23 @@ public:
     void WaitForGpu(Context::WaitFor wait_for) override
     {
         META_FUNCTION_TASK();
-        ContextBase::WaitForGpu(wait_for);
+        ContextBaseT::WaitForGpu(wait_for);
         // ...
-        ContextBase::OnGpuWaitComplete(wait_for);
-    }
-
-    // ContextBase interface
-
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override
-    {
-        META_FUNCTION_TASK();
-        ContextBase::Initialize(device, deferred_heap_allocation, is_callback_emitted);
-    }
-
-    void Release() override
-    {
-        META_FUNCTION_TASK();
-        ContextBase::Release();
+        ContextBaseT::OnGpuWaitComplete(wait_for);
     }
 
     // IContextVK interface
 
-    DeviceVK& GetDeviceVK() noexcept final
+    const DeviceVK& GetDeviceVK() const noexcept final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<DeviceVK&>(ContextBase::GetDeviceBase());
+        return static_cast<const DeviceVK&>(ContextBaseT::GetDeviceBase());
     }
 
     CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<CommandQueueVK&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
+        return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
 };
 

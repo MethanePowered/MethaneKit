@@ -207,7 +207,7 @@ void ResourceBarriersDX::UpdateNativeResourceBarrier(const ResourceBarrier::Id& 
         break;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(native_barrier_type, nullptr);
+        META_UNEXPECTED_ARG(native_barrier_type);
     }
 }
 

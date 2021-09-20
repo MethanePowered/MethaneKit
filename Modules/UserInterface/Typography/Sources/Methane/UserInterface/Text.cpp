@@ -41,20 +41,17 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include <TextUniforms.h> // NOSONAR
+#pragma pack(pop)
+}
+
 #include <magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
-
-struct META_UNIFORM_ALIGN Text::Constants
-{
-    gfx::Color4F color;
-};
-
-struct META_UNIFORM_ALIGN Text::Uniforms
-{
-    hlslpp::float4x4 vp_matrix;
-};
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
     : Text(ui_context, font,
@@ -78,8 +75,6 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 {
     META_FUNCTION_TASK();
     m_font_ptr->Connect(*this);
-
-    const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
@@ -116,14 +111,11 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
-                gfx::PixelFormats
-                {
-                    context_settings.color_format
-                },
-                context_settings.depth_stencil_format
+                ui_context.GetRenderPattern().GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
+        state_settings.render_pattern_ptr                                   = ui_context.GetRenderPatternPtr();
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -416,10 +408,10 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
     m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
-        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { m_uniforms_buffer_ptr } } },
-        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { const_buffer_ptr      } } },
-        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { m_atlas_texture_ptr   } } },
-        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { atlas_sampler_ptr     } } },
+        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
+        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
+        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
+        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
 }
 
@@ -461,7 +453,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_atlas_texture_ptr } });
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Atlas;
@@ -486,7 +478,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
     }, &render_context.GetRenderCommandKit().GetQueue());
@@ -504,7 +496,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
 
     m_index_buffer_ptr->SetData({
         gfx::Resource::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size,
+            reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
     }, &render_context.GetRenderCommandKit().GetQueue());
@@ -520,7 +512,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
     const gfx::FrameSize& content_size = text_mesh.GetContentSize();
     META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
-    Uniforms uniforms{
+    hlslpp::TextUniforms uniforms{
         hlslpp::mul(
             hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.GetWidth()),
                                     2.F / static_cast<float>(content_size.GetHeight()),
@@ -532,18 +524,18 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
 
     if (!m_uniforms_buffer_ptr)
     {
-        m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, gfx::Buffer::GetAlignedBufferSize(uniforms_data_size));
+        m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, uniforms_data_size);
         m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(
         gfx::Resource::SubResources
         {
-            { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }
+            { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
         },
         &render_context.GetRenderCommandKit().GetQueue()
     );
@@ -639,20 +631,20 @@ void Text::UpdateTextMesh()
 void Text::UpdateConstantsBuffer()
 {
     META_FUNCTION_TASK();
-    Constants constants{
-        m_settings.color
+    hlslpp::TextConstants constants{
+        m_settings.color.AsVector()
     };
     const auto const_data_size = static_cast<Data::Size>(sizeof(constants));
 
     if (!m_const_buffer_ptr)
     {
-        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), gfx::Buffer::GetAlignedBufferSize(const_data_size));
+        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), const_data_size);
         m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
     m_const_buffer_ptr->SetData(
         gfx::Resource::SubResources
         {
-            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size)
+            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size) // NOSONAR
         },
         &GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
     );
@@ -684,6 +676,7 @@ FrameRect Text::GetAlignedViewportRect() const
     {
         switch (m_settings.layout.horizontal_alignment)
         {
+        case HorizontalAlignment::Justify:
         case HorizontalAlignment::Left:   break;
         case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
         case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;

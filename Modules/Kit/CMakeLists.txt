@@ -26,6 +26,7 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsTypes
         MethaneGraphicsPrimitives
+        MethaneGraphicsMesh
         MethaneGraphicsCamera
         MethaneGraphicsCore
         MethaneGraphicsExtensions

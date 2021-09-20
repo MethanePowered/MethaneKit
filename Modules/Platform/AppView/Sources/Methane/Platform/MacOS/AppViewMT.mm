@@ -86,14 +86,12 @@ private:
 #endif
 }
 
-@property (nonatomic) id <MTLDevice> device;
 @property (nonatomic) NSTimer* unsyncTimer;
 
 @end
 
 @implementation AppViewMT
 
-@synthesize device = m_device;
 @synthesize unsyncTimer = m_unsync_timer;
 @synthesize appWindow = m_app_window;
 @synthesize pixelFormat = m_pixel_format;
@@ -109,7 +107,6 @@ private:
     if ((self = [super initWithCoder:aDecoder]))
     {
         m_app_window = nil;
-        m_device = MTLCreateSystemDefaultDevice();
         m_pixel_format = MTLPixelFormatBGRA8Unorm;
         m_drawable_count = 3;
         m_vsync_enabled = YES;
@@ -123,7 +120,6 @@ private:
 
 - (instancetype) initWithFrame:(NSRect)backing_frame
                      appWindow:(NSWindow*) app_window
-                        device:(id<MTLDevice>) device
                    pixelFormat:(MTLPixelFormat) pixel_format
                  drawableCount:(NSUInteger) drawable_count
                   vsyncEnabled:(BOOL) vsync_enabled
@@ -136,7 +132,6 @@ private:
     if ((self = [super initWithFrame:NSRectToCGRect(frame)]))
     {
         m_app_window = app_window;
-        m_device = device;
         m_pixel_format = pixel_format;
         m_drawable_count = drawable_count;
         m_vsync_enabled = vsync_enabled;
@@ -267,7 +262,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
 
     CAMetalLayer *layer = [[CAMetalLayer alloc] init];
     layer.bounds = self.bounds;
-    layer.device = self.device;
+    layer.device = layer.preferredDevice;
     layer.pixelFormat = self.pixelFormat;
     layer.displaySyncEnabled = self.vsyncEnabled;
     layer.contentsScale = self.currentScreen.backingScaleFactor;

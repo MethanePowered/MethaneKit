@@ -55,6 +55,17 @@ struct RenderContext : virtual Context // NOSONAR
         bool              is_full_screen       = false;
         Options           options_mask         = Options::None;
         uint32_t          unsync_max_fps       = 1000U; // MacOS only
+
+        Settings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
+        Settings& SetColorFormat(PixelFormat new_color_format) noexcept;
+        Settings& SetDepthStencilFormat(PixelFormat new_ds_format) noexcept;
+        Settings& SetClearColor(Opt<Color4F>&& new_clear_color) noexcept;
+        Settings& SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept;
+        Settings& SetFrameBuffersCount(uint32_t new_fb_count) noexcept;
+        Settings& SetVSyncEnabled(bool new_vsync_enabled) noexcept;
+        Settings& SetFullscreen(bool new_full_screen) noexcept;
+        Settings& SetOptionsMask(Options new_options_mask) noexcept;
+        Settings& SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept;
     };
 
     // Create RenderContext instance

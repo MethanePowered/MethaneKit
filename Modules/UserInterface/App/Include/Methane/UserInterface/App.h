@@ -42,12 +42,20 @@ struct IApp : Graphics::IApp
     struct Settings
     {
         HeadsUpDisplayMode       heads_up_display_mode = HeadsUpDisplayMode::WindowTitle;
-        bool                     show_logo_badge       = true;
+        bool                     logo_badge_visible    = true;
         Color4F                  logo_badge_color      { 1.F, 1.F, 1.F, 0.15F };
         Color4F                  text_color            { 1.F, 1.F, 1.F, 1.F };
         UnitPoint                text_margins          { Units::Dots, 20, 20 };
         Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11U };
         HeadsUpDisplay::Settings hud_settings;
+
+        Settings& SetHeadsUpDisplayMode(HeadsUpDisplayMode new_heads_up_display_mode) noexcept;
+        Settings& SetLogoBadgeVisible(bool new_logo_badge_visible) noexcept;
+        Settings& SetLogoBadgeColor(const Color4F& new_logo_badge_color) noexcept;
+        Settings& SetTextColor(const Color4F& new_text_color) noexcept;
+        Settings& SetTextMargings(const UnitPoint& new_text_margings) noexcept;
+        Settings& SetMainFont(const Font::Description& new_main_font) noexcept;
+        Settings& SetHudSettings(const HeadsUpDisplay::Settings& new_hud_settings) noexcept;
     };
 
     virtual const IApp::Settings& GetUserInterfaceAppSettings() const noexcept = 0;

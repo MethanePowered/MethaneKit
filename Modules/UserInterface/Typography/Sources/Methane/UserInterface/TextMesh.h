@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -51,9 +51,12 @@ public:
         CharPosition(CoordinateType x, CoordinateType y, bool is_line_start = false);
 
         bool     is_line_start              = false; // start of new line: either after line break `\n` or text wrap
-        bool     is_whitespace_or_linebreak = false;
+        bool     is_whitespace              = false;
+        bool     is_line_break              = false;
         size_t   start_vertex_index         = std::numeric_limits<size_t>::max();
         uint32_t visual_width               = 0U;
+
+        bool IsWhiteSpaceOrLineBreak() const noexcept { return is_whitespace || is_line_break; }
     };
 
     using CharPositions = std::vector<CharPosition>;
@@ -84,7 +87,9 @@ private:
     void AppendChars(std::u32string added_text);
     void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
     void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
-    int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index, int32_t frame_width) const;
+    int32_t GetLineWidth(size_t line_start_index) const;
+    int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index) const;
+    float GetJustifiedWhitespaceWidth(size_t line_start_index) const;
     void UpdateContentSize();
     void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
 

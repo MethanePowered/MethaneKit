@@ -27,6 +27,7 @@ Methane user interface context used by all widgets for rendering.
 #include "TypeTraits.hpp"
 
 #include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Data/TypeTraits.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Memory.hpp>
@@ -41,14 +42,17 @@ namespace gfx = Methane::Graphics;
 class Context
 {
 public:
-    explicit Context(gfx::RenderContext& render_context) noexcept;
+    explicit Context(gfx::RenderPattern& render_pattern) noexcept;
 
-    [[nodiscard]] const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_context; }
-    [[nodiscard]] gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_context; }
+    const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_pattern_ptr->GetRenderContext(); }
+    gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_pattern_ptr->GetRenderContext(); }
 
-    [[nodiscard]] decltype(auto)   GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
-    [[nodiscard]] uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
-    [[nodiscard]] const FrameSize& GetFrameSize() const noexcept              { return m_render_context.GetSettings().frame_size; }
+    const Ptr<gfx::RenderPattern>& GetRenderPatternPtr() const noexcept { return m_render_pattern_ptr; }
+    gfx::RenderPattern&            GetRenderPattern() const noexcept    { return *m_render_pattern_ptr; }
+
+    double           GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
+    uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
+    const FrameSize& GetFrameSize() const noexcept              { return GetRenderContext().GetSettings().frame_size; }
 
     template<Units units>
     [[nodiscard]] UnitSize  GetFrameSizeIn() const noexcept
@@ -140,9 +144,9 @@ public:
     }
 
 private:
-    gfx::RenderContext&  m_render_context;
-    double               m_dots_to_pixels_factor;
-    uint32_t             m_font_resolution_dpi;
+    const Ptr<gfx::RenderPattern> m_render_pattern_ptr;
+    double   m_dots_to_pixels_factor;
+    uint32_t m_font_resolution_dpi;
 };
 
 } // namespace Methane::UserInterface

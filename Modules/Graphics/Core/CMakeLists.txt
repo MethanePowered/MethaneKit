@@ -4,9 +4,33 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
-if (WIN32)
+set(HEADERS
+    ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/Context.h
+    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/Fence.h
+    ${INCLUDE_DIR}/Shader.h
+    ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramBindings.h
+    ${INCLUDE_DIR}/RenderState.h
+    ${INCLUDE_DIR}/Resource.h
+    ${INCLUDE_DIR}/ResourceBarriers.h
+    ${INCLUDE_DIR}/SubResource.h
+    ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/Texture.h
+    ${INCLUDE_DIR}/Sampler.h
+    ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/CommandKit.h
+    ${INCLUDE_DIR}/CommandQueue.h
+    ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/BlitCommandList.h
+    ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
+)
 
-    set(PLATFORM_SOURCES
+if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+
+    set(GRAPHICS_API_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesDX.h
         ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
@@ -64,9 +88,9 @@ if (WIN32)
         Shcore
     )
 
-elseif(APPLE)
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
 
-    set(PLATFORM_SOURCES
+    set(GRAPHICS_API_SOURCES
         ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
         ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
         ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
@@ -77,6 +101,7 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
+        ${SOURCES_GRAPHICS_DIR}/RenderContextAppViewMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
         ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
@@ -112,20 +137,19 @@ elseif(APPLE)
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
     )
 
+    set(PLATFORM_SOURCES_OBJC ${GRAPHICS_API_SOURCES})
+
     set(PLATFORM_LIBRARIES
         "-framework Metal"
     )
 
-    # CLANG_ENABLE_OBJC_WEAK = YES
-    set_source_files_properties(
-        ${PLATFORM_SOURCES}
-        PROPERTIES
-            COMPILE_FLAGS -fobjc-weak
-    )
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
-else() # Linux
-
-    set(PLATFORM_SOURCES
+    set(GRAPHICS_API_SOURCES
+        ${SOURCES_GRAPHICS_DIR}/PlatformVK.h
+        ${SOURCES_GRAPHICS_DIR}/PlatformVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.${CPP_EXT}
+        ${SOURCES_GRAPHICS_DIR}/UtilsVK.hpp
         ${SOURCES_GRAPHICS_DIR}/TypesVK.h
         ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
         ${SOURCES_GRAPHICS_DIR}/DeviceVK.h
@@ -144,8 +168,9 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/RenderContextVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
-        ${SOURCES_GRAPHICS_DIR}/ResourceVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.hpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.cpp  
         ${SOURCES_GRAPHICS_DIR}/BufferVK.h
@@ -160,6 +185,7 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/CommandQueueVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/CommandListVK.hpp
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
@@ -168,36 +194,31 @@ else() # Linux
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.cpp
     )
 
+    if (APPLE)
+        set(VULKAN_TO_METAL_SOURCES
+            ${SOURCES_GRAPHICS_DIR}/RenderContextVK.mm
+            ${SOURCES_DIR}/Metal/TypesMT.hh
+            ${SOURCES_DIR}/Metal/TypesMT.mm
+            ${SOURCES_DIR}/Metal/RenderContextAppViewMT.hh
+        )
+        set(GRAPHICS_API_SOURCES ${GRAPHICS_API_SOURCES}
+            ${VULKAN_TO_METAL_SOURCES}
+        )
+        set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
+            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.mm
+        )
+    endif()
+
+    set(PLATFORM_LIBRARIES
+        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, so only Vulkan headers are needed
+        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with MoltenVK framework on MacOS
+        spirv-cross-core
+        spirv-cross-hlsl
+    )
+
 endif()
 
-set(HEADERS
-    ${INCLUDE_DIR}/Device.h
-    ${INCLUDE_DIR}/Context.h
-    ${INCLUDE_DIR}/RenderContext.h
-    ${INCLUDE_DIR}/Fence.h
-    ${INCLUDE_DIR}/Shader.h
-    ${INCLUDE_DIR}/Program.h
-    ${INCLUDE_DIR}/ProgramBindings.h
-    ${INCLUDE_DIR}/RenderState.h
-    ${INCLUDE_DIR}/Resource.h
-    ${INCLUDE_DIR}/ResourceBarriers.h
-    ${INCLUDE_DIR}/SubResource.h
-    ${INCLUDE_DIR}/Buffer.h
-    ${INCLUDE_DIR}/Texture.h
-    ${INCLUDE_DIR}/Sampler.h
-    ${INCLUDE_DIR}/RenderPass.h
-    ${INCLUDE_DIR}/CommandKit.h
-    ${INCLUDE_DIR}/CommandQueue.h
-    ${INCLUDE_DIR}/CommandList.h
-    ${INCLUDE_DIR}/BlitCommandList.h
-    ${INCLUDE_DIR}/RenderCommandList.h
-    ${INCLUDE_DIR}/ParallelRenderCommandList.h
-)
-
-set(SOURCES ${PLATFORM_SOURCES}
-
-    # Native alias headers
-    ${SOURCES_DIR}/Native/ContextNT.h
+set(SOURCES ${GRAPHICS_API_SOURCES}
 
     # Base implementation
     ${SOURCES_DIR}/ObjectBase.h
@@ -234,12 +255,17 @@ set(SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/CommandKitBase.cpp
     ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
+    ${SOURCES_DIR}/CommandQueueTrackingBase.h
+    ${SOURCES_DIR}/CommandQueueTrackingBase.cpp
     ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
     ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h
     ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
+
+    # Native alias headers
+    ${SOURCES_DIR}/Native/ContextNT.h
 
     # Other sources
     ${SOURCES_DIR}/DescriptorHeap.h
@@ -291,6 +317,11 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN VK_NO_PROTOTYPES>
+        $<$<AND:$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>,$<BOOL:${WIN32}>>:VK_USE_PLATFORM_WIN32_KHR>
+        $<$<AND:$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>,$<BOOL:${APPLE}>>:VK_USE_PLATFORM_METAL_EXT>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
@@ -299,17 +330,21 @@ set_target_properties(${TARGET}
     PROPERTIES
         FOLDER Modules/Graphics
         PUBLIC_HEADER "${HEADERS}"
-        PREREQUISITE_MODULES "DirectXCompiler"
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 6
 )
 
+if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+    set_target_properties(${TARGET} PROPERTIES PREREQUISITE_MODULES "DirectXCompiler")
+endif()
+
 if (APPLE)
-    # Disable precompiled headers on MacOS for Objective-C files:
     set_source_files_properties(
-        ${PLATFORM_SOURCES}
+        ${PLATFORM_SOURCES_OBJC}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
             SKIP_PRECOMPILE_HEADERS ON
+            SKIP_UNITY_BUILD_INCLUSION ON
     )
 endif()
 

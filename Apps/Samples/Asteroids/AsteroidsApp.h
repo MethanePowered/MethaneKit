@@ -29,6 +29,14 @@ Sample demonstrating parallel rendering of the distinct asteroids massive
 #include <Methane/Kit.h>
 #include <Methane/UserInterface/App.hpp>
 
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include "Shaders/SceneConstants.h"   // NOSONAR
+#include "Shaders/AsteroidUniforms.h" // NOSONAR
+#pragma pack(pop)
+}
+
 namespace Methane::Samples
 {
 
@@ -37,8 +45,7 @@ namespace pal = Platform;
 
 struct AsteroidsFrame final : gfx::AppFrame
 {
-    Ptr<gfx::RenderPass>                initial_screen_pass_ptr;
-    Ptr<gfx::RenderPass>                final_screen_pass_ptr;
+    Ptr<gfx::RenderPass>                asteroids_pass_ptr;
     Ptr<gfx::ParallelRenderCommandList> parallel_cmd_list_ptr;
     Ptr<gfx::RenderCommandList>         serial_cmd_list_ptr;
     Ptr<gfx::RenderCommandList>         final_cmd_list_ptr;
@@ -55,8 +62,7 @@ struct AsteroidsFrame final : gfx::AppFrame
 };
 
 using UserInterfaceApp = UserInterface::App<AsteroidsFrame>;
-
-class AsteroidsApp final : public UserInterfaceApp
+class AsteroidsApp final : public UserInterfaceApp // NOSONAR
 {
 public:
     AsteroidsApp();
@@ -84,28 +90,13 @@ protected:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    struct META_UNIFORM_ALIGN Constants
-    {
-        hlslpp::float4 light_color;
-        float          light_power;
-        float          light_ambient_factor;
-        float          light_specular_factor;
-    };
-
-    struct META_UNIFORM_ALIGN SceneUniforms
-    {
-        hlslpp::float4x4 view_proj_matrix;
-        hlslpp::float3   eye_position;
-        hlslpp::float3   light_position;
-    };
-
     bool Animate(double elapsed_seconds, double delta_seconds) const;
     Ptr<gfx::CommandListSet> CreateExecuteCommandListSet(const AsteroidsFrame& frame) const;
 
     gfx::ActionCamera                 m_view_camera;
     gfx::ActionCamera                 m_light_camera;
     const float                       m_scene_scale = 15.F;
-    const Constants                   m_scene_constants{
+    const hlslpp::SceneConstants      m_scene_constants{
         { 1.F, 1.F, 1.F, 1.F },       // - light_color
         3.0F,                         // - light_power
         0.05F,                        // - light_ambient_factor
@@ -114,11 +105,12 @@ private:
     AsteroidsArray::Settings          m_asteroids_array_settings;
     uint32_t                          m_asteroids_complexity          = 0U;
     bool                              m_is_parallel_rendering_enabled = true;
-    SceneUniforms                     m_scene_uniforms{ };
+    hlslpp::SceneUniforms             m_scene_uniforms{ };
     gfx::Resource::SubResources       m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(SceneUniforms) }
+        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
-    
+
+    Ptr<gfx::RenderPattern>           m_asteroids_render_pattern_ptr;
     Ptr<gfx::Buffer>                  m_const_buffer_ptr;
     Ptr<gfx::SkyBox>                  m_sky_box_ptr;
     Ptr<Planet>                       m_planet_ptr;

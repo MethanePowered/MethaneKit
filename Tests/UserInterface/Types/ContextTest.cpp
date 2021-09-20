@@ -40,14 +40,15 @@ static const UnitSize g_frame_size_px  { Units::Pixels, 1920U, 1080U };
 
 TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 {
-    FakeRenderContext      render_context({ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
-    UserInterface::Context ui_context(render_context);
+    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
+    UserInterface::Context ui_context(*render_pattern_ptr);
 
     SECTION("Get UI render context")
     {
         const UserInterface::Context& const_ui_context = ui_context;
-        CHECK(std::addressof(ui_context.GetRenderContext()) == std::addressof(render_context));
-        CHECK(std::addressof(const_ui_context.GetRenderContext()) == std::addressof(render_context));
+        CHECK(std::addressof(ui_context.GetRenderContext()) == render_context_ptr.get());
+        CHECK(std::addressof(const_ui_context.GetRenderContext()) == render_context_ptr.get());
     }
 
     SECTION("Get UI content scale factor and font DPI")
@@ -68,8 +69,9 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-    FakeRenderContext render_context({ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
-    const UserInterface::Context ui_context(render_context);
+    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
+    const UserInterface::Context ui_context(*render_pattern_ptr);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -158,8 +160,9 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
 
 TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-    FakeRenderContext            render_context({ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
-    const UserInterface::Context ui_context(render_context);
+    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
+    const UserInterface::Context ui_context(*render_pattern_ptr);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -182,8 +185,9 @@ TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][c
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Scalar Types", "[ui][context][unit][convert]", int32_t, uint32_t, float, double)
 {
-    FakeRenderContext render_context({ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
-    const UserInterface::Context ui_context(render_context);
+    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
+    const UserInterface::Context ui_context(*render_pattern_ptr);
     const TestType scalar_value = 640;
 
     SECTION("Convert scalar Dots to Pixels")

@@ -313,6 +313,9 @@ RenderStateBase::RenderStateBase(const RenderContextBase& context, const Setting
 void RenderStateBase::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.render_pattern_ptr, "render pass pattern is not initialized in render state settings");
+
     m_settings = settings;
 }
 

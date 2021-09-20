@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -23,27 +23,65 @@ Vulkan implementation of the command queue interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/CommandQueueTrackingBase.h>
+
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
+class DeviceVK;
 class RenderPassVK;
+class QueueFamilyReservationVK;
 struct IContextVK;
 
-class CommandQueueVK final : public CommandQueueBase
+class CommandQueueVK final : public CommandQueueTrackingBase
 {
 public:
+    struct WaitInfo
+    {
+        std::vector<vk::Semaphore>          semaphores;
+        std::vector<vk::PipelineStageFlags> stages;
+    };
+
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueVK() override;
 
+    // CommandQueue interface
+    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+
     // Object interface
     void SetName(const std::string& name) override;
-    
+
     const IContextVK& GetContextVK() const noexcept;
+    DeviceVK& GetDeviceVK() const noexcept;
+
+    void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
+    const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
+    const WaitInfo& GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt = { }) const;
+
+    vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
+    const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
+
+    vk::CommandPool&       GetNativeCommandPool()       { return m_vk_unique_command_pool.get(); }
+    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_unique_command_pool.get(); }
 
 private:
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                   const DeviceVK& device);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
+                   const DeviceVK& device, const QueueFamilyReservationVK& family_reservation);
+
     void Reset();
+
+    using Semaphores = std::vector<vk::Semaphore>;
+
+    const uint32_t         m_queue_family_index;
+    const uint32_t         m_queue_index;
+    vk::Queue              m_vk_queue;
+    vk::UniqueCommandPool  m_vk_unique_command_pool;
+    WaitInfo               m_wait_before_executing;
+    mutable WaitInfo       m_wait_execution_completed;
 };
 
 } // namespace Methane::Graphics

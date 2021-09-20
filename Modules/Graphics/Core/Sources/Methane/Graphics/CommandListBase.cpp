@@ -70,7 +70,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
-    , m_command_queue_ptr(command_queue.GetCommandQueuePtr())
+    , m_command_queue_ptr(command_queue.GetPtr<CommandQueueBase>())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
     , m_tracy_construct_location_ptr(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
@@ -124,6 +124,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
              p_debug_group ? fmt::format("with debug group '{}'", p_debug_group->GetName()) : "");
 
+    ResetCommandState();
     SetCommandListStateNoLock(State::Encoding);
 
     const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
@@ -260,7 +261,6 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
                                magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
 
     SetCommandListStateNoLock(State::Pending);
-    ResetCommandState();
 
     TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
     META_LOG("{} Command list '{}' was COMPLETED on frame {} with GPU timings {}", magic_enum::enum_name(m_type), GetName(), frame_index, static_cast<std::string>(GetGpuTimeRange(true)));
@@ -275,7 +275,7 @@ CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
 void CommandListBase::PushOpenDebugGroup(DebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
-    m_open_debug_groups.emplace(std::static_pointer_cast<DebugGroupBase>(static_cast<DebugGroupBase&>(debug_group).GetBasePtr()));
+    m_open_debug_groups.emplace(static_cast<DebugGroupBase&>(debug_group).GetPtr<DebugGroupBase>());
 }
 
 void CommandListBase::ClearOpenDebugGroups()
@@ -377,7 +377,11 @@ CommandList& CommandListSetBase::operator[](Data::Index index) const
 void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_command_lists_mutex);
+
+    m_is_executing = true;
     m_executing_on_frame_index = frame_index;
+
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
         command_list_ref.get().Execute(frame_index, completed_callback);
@@ -387,6 +391,8 @@ void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::Com
 void CommandListSetBase::Complete() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_command_lists_mutex);
+
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
         CommandListBase& command_list = command_list_ref.get();
@@ -395,6 +401,8 @@ void CommandListSetBase::Complete() const
 
         command_list.Complete(m_executing_on_frame_index);
     }
+
+    m_is_executing = false;
 }
 
 const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index) const

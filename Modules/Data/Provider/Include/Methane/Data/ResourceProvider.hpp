@@ -66,7 +66,7 @@ public:
         if (m_resource_fs.exists(path))
         {
             cmrc::file res_file = m_resource_fs.open(path);
-            return Methane::Data::Chunk(reinterpret_cast<Methane::Data::ConstRawPtr>(res_file.cbegin()),
+            return Methane::Data::Chunk(reinterpret_cast<Methane::Data::ConstRawPtr>(res_file.cbegin()), // NOSONAR
                                         static_cast<Methane::Data::Size>(std::distance(res_file.cbegin(), res_file.cend())));
         }
 

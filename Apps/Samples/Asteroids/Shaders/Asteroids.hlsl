@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ Optional macro definition: TEXTURES_COUNT=10
 
 ******************************************************************************/
 
+#include "SceneConstants.h"
+#include "AsteroidUniforms.h"
 #include "..\..\..\Common\Shaders\Primitives.hlsl"
 
 #ifndef TEXTURES_COUNT
@@ -47,33 +49,7 @@ struct PSInput
     float3 face_blend_weights: BLENDWEIGHT;
 };
 
-struct Constants
-{
-    float4   light_color;
-    float    light_power;
-    float    light_ambient_factor;
-    float    light_specular_factor;
-};
-
-struct SceneUniforms
-{
-    float4x4 view_proj_matrix;
-    float3   eye_position;
-    float3   light_position;
-};
-
-struct AsteroidUniforms
-{
-    float4x4 model_matrix;
-    float3   deep_color;
-    float3   shallow_color;
-    float    padding;
-    float    depth_min;
-    float    depth_max;
-    uint     texture_index;
-};
-
-ConstantBuffer<Constants>        g_constants                     : register(b1);
+ConstantBuffer<SceneConstants>   g_constants                     : register(b1);
 ConstantBuffer<SceneUniforms>    g_scene_uniforms                : register(b2);
 ConstantBuffer<AsteroidUniforms> g_mesh_uniforms                 : register(b3);
 Texture2DArray<float4>           g_face_textures[TEXTURES_COUNT] : register(t1);

@@ -30,11 +30,10 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
-#include <Methane/Graphics/Mesh/UberMesh.hpp>
+#include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AlignedAllocator.hpp>
-#include <Methane/Data/Parallel.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -74,7 +73,7 @@ public:
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
         vertex_buffer_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         });
@@ -84,7 +83,7 @@ public:
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
-                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()),
+                reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetIndexDataSize())
             }
         });
@@ -172,7 +171,7 @@ public:
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
-        render_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
+        render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
@@ -187,8 +186,7 @@ public:
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index,
                      retain_bindings_once, set_resource_barriers);
-            },
-            Data::GetParallelChunkSize(render_cmd_lists.size(), 5)
+            }
         );
         m_render_context.GetParallelExecutor().run(render_task_flow).get();
     }
@@ -232,7 +230,7 @@ protected:
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
         m_final_pass_instance_uniforms_subresources = Resource::SubResources{
-            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() }
+            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
         };
     }
 
@@ -272,8 +270,8 @@ protected:
     {
         META_FUNCTION_TASK();
         return static_cast<Data::Size>(
-            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()),
-                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index]))
+            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
+                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
         );
     }
 

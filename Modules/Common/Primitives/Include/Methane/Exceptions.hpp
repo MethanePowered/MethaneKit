@@ -95,11 +95,16 @@ public:
     [[nodiscard]] const DecayType& GetValue() const noexcept { return m_value; }
 
 private:
-    template<typename V = DecayType, typename = V>
-    [[nodiscard]] static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), value); }
-
-    template<typename V = DecayType, std::enable_if_t<IsStaticCastable<V, std::string>::value, void>>
-    [[nodiscard]] static std::string GetMessage(V value) noexcept { return fmt::format("{}({}) is not valid", typeid(T).name(), static_cast<std::string>(value)); }
+    template<typename V = DecayType>
+    [[nodiscard]] static std::string GetMessage(const V& value) noexcept
+    {
+        if constexpr (std::is_enum_v<V>)
+            return fmt::format("{}::{}({}) is not valid", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), value);
+        else if constexpr (IsStaticCastable<V, std::string>::value)
+            return fmt::format("{}({}) is not valid", typeid(V).name(), static_cast<std::string>(value));
+        else
+            return fmt::format("{}({}) is not valid", typeid(V).name(), value);
+    }
 
     DecayType m_value{ };
 };
@@ -168,9 +173,9 @@ private:
     static std::string GetMessage(ValueType&& value)
     {
         if constexpr (std::is_enum_v<ValueType>)
-            return fmt::format("enum {} value {}({}) is unexpected", magic_enum::enum_type_name<ValueType>(), magic_enum::enum_name(std::forward<ValueType>(value)), std::forward<ValueType>(value));
+            return fmt::format("{}::{}({}) is unexpected", magic_enum::enum_type_name<ValueType>(), magic_enum::enum_name(std::forward<ValueType>(value)), std::forward<ValueType>(value));
         else
-            return fmt::format("{} value {} is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
+            return fmt::format("{}({}) is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
     }
 
     RawType m_value;

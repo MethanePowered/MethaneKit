@@ -38,8 +38,6 @@ Methane short check macroses throwing exceptions on negative check result
 
 #include "Exceptions.hpp"
 
-#ifdef METHANE_CHECKS_ENABLED
-
 #ifndef __FUNCTION_NAME__
     #ifdef WIN32
         #define __FUNCTION_NAME__ __FUNCTION__
@@ -47,6 +45,8 @@ Methane short check macroses throwing exceptions on negative check result
         #define __FUNCTION_NAME__ __func__
     #endif
 #endif
+
+#ifdef METHANE_CHECKS_ENABLED
 
 #define META_INVALID_ARG_DESCR(argument, description, ...) \
     throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
@@ -143,34 +143,38 @@ Methane short check macroses throwing exceptions on negative check result
 
 #else // #ifdef METHANE_CHECKS_ENABLED
 
-// (void)argument is added to suppress unused argument warnings
-#define META_INVALID_ARG_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_DESCR(argument, condition, description, ...) (void)argument
-#define META_CHECK_ARG(argument, condition) (void)argument
-#define META_CHECK_ARG_TRUE_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_TRUE(argument) (void)argument
-#define META_CHECK_ARG_FALSE_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_FALSE(argument) (void)argument
-#define META_CHECK_ARG_EQUAL_DESCR(argument, value, description, ...) (void)argument
-#define META_CHECK_ARG_EQUAL(argument, value) (void)argument
-#define META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, description, ...) (void)argument
-#define META_CHECK_ARG_NOT_EQUAL(argument, value) (void)argument
+// (void)(argument) is added to suppress unused argument warnings
+#define META_INVALID_ARG_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_DESCR(argument, condition, description, ...) (void)(argument)
+#define META_CHECK_ARG(argument, condition) (void)(argument)
+#define META_CHECK_ARG_TRUE_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_TRUE(argument) (void)(argument)
+#define META_CHECK_ARG_FALSE_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_FALSE(argument) (void)(argument)
+#define META_CHECK_ARG_EQUAL_DESCR(argument, value, description, ...) (void)(argument)
+#define META_CHECK_ARG_EQUAL(argument, value) (void)(argument)
+#define META_CHECK_ARG_NOT_EQUAL_DESCR(argument, value, description, ...) (void)(argument)
+#define META_CHECK_ARG_NOT_EQUAL(argument, value) (void)(argument)
 #define META_CHECK_ARG_NAME_DESCR(argument_name, condition, description, ...)
 #define META_CHECK_ARG_NAME(argument_name, condition)
-#define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description, ...) (void)argument
-#define META_CHECK_ARG_RANGE(argument, range_begin, range_end) (void)argument
-#define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description, ...) (void)argument
-#define META_CHECK_ARG_LESS(argument, upper_limit) (void)argument
-#define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) (void)argument
-#define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) (void)argument
-#define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_NOT_EMPTY(argument) (void)argument
-#define META_CHECK_ARG_NOT_NULL_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_NOT_NULL(argument) (void)argument
-#define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description, ...) (void)argument
-#define META_CHECK_ARG_NOT_ZERO(argument) (void)argument
-#define META_UNEXPECTED_ARG_DESCR(argument, description, ...) (void)argument
-#define META_UNEXPECTED_ARG(argument) (void)argument
+#define META_CHECK_ARG_RANGE_DESCR(argument, range_begin, range_end, description, ...) (void)(argument)
+#define META_CHECK_ARG_RANGE(argument, range_begin, range_end) (void)(argument)
+#define META_CHECK_ARG_RANGE_INC_DESCR(argument, range_begin, range_end, description, ...) (void)(argument)
+#define META_CHECK_ARG_RANGE_INC(argument, range_begin, range_end) (void)(argument)
+#define META_CHECK_ARG_LESS_DESCR(argument, upper_limit, description, ...) (void)(argument)
+#define META_CHECK_ARG_LESS(argument, upper_limit) (void)(argument)
+#define META_CHECK_ARG_LESS_OR_EQUAL_DESCR(argument, upper_limit, description, ...) (void)(argument)
+#define META_CHECK_ARG_LESS_OR_EQUAL(argument, upper_limit) (void)(argument)
+#define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) (void)(argument)
+#define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) (void)(argument)
+#define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_NOT_EMPTY(argument) (void)(argument)
+#define META_CHECK_ARG_NOT_NULL_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_NOT_NULL(argument) (void)(argument)
+#define META_CHECK_ARG_NOT_ZERO_DESCR(argument, description, ...) (void)(argument)
+#define META_CHECK_ARG_NOT_ZERO(argument) (void)(argument)
+#define META_UNEXPECTED_ARG_DESCR(argument, description, ...) (void)(argument)
+#define META_UNEXPECTED_ARG(argument) (void)(argument)
 #define META_UNEXPECTED_ARG_RETURN(argument, return_value) return return_value
 #define META_UNEXPECTED_ARG_DESCR_RETURN(argument, return_value, description, ...) return return_value
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description, ...)

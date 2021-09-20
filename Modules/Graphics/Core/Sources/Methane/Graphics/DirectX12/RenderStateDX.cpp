@@ -40,6 +40,8 @@ DirectX 12 implementation of the render state interface.
 #include <d3dx12.h>
 #include <d3dcompiler.h>
 
+#include <algorithm>
+
 namespace Methane::Graphics
 {
 
@@ -207,12 +209,9 @@ static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
 {
     META_FUNCTION_TASK();
-
     std::vector<CD3DX12_VIEWPORT> d3d_viewports;
-    for (const Viewport& viewport : viewports)
-    {
-        d3d_viewports.push_back(ViewportToD3D(viewport));
-    }
+    std::transform(viewports.begin(), viewports.end(), std::back_inserter(d3d_viewports),
+                   [](const Viewport& viewport) { return ViewportToD3D(viewport); });
     return d3d_viewports;
 }
 
@@ -220,12 +219,9 @@ static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) 
 static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
 {
     META_FUNCTION_TASK();
-
     std::vector<CD3DX12_RECT> d3d_scissor_rects;
-    for (const ScissorRect& scissor_rect : scissor_rects)
-    {
-        d3d_scissor_rects.push_back(ScissorRectToD3D(scissor_rect));
-    }
+    std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(d3d_scissor_rects),
+                   [](const ScissorRect& scissor_rect) { return ScissorRectToD3D(scissor_rect); });
     return d3d_scissor_rects;
 }
 
@@ -302,9 +298,6 @@ void RenderStateDX::Reset(const Settings& settings)
     META_FUNCTION_TASK();
     RenderStateBase::Reset(settings);
 
-    const ProgramDX&   dx_program       = RenderStateDX::GetProgramDX();
-    Program::Settings  program_settings = dx_program.GetSettings();
-
     // Set Rasterizer state descriptor
     CD3DX12_RASTERIZER_DESC rasterizer_desc(D3D12_DEFAULT);
     rasterizer_desc.FillMode              = ConvertRasterizerFillModeToD3D12(settings.rasterizer.fill_mode);
@@ -352,6 +345,7 @@ void RenderStateDX::Reset(const Settings& settings)
     depth_stencil_desc.BackFace         = ConvertStencilFaceOperationsToD3D12(settings.stencil.back_face);
 
     // Set pipeline state descriptor for program
+    const ProgramDX& dx_program                 = RenderStateDX::GetProgramDX();
     m_pipeline_state_desc.InputLayout           = dx_program.GetNativeInputLayoutDesc();
     m_pipeline_state_desc.pRootSignature        = dx_program.GetNativeRootSignature().Get();
     m_pipeline_state_desc.VS                    = GetShaderByteCode(dx_program.GetShader(Shader::Type::Vertex));
@@ -364,15 +358,19 @@ void RenderStateDX::Reset(const Settings& settings)
     m_pipeline_state_desc.SampleDesc.Count      = settings.rasterizer.sample_count;
 
     // Set RTV, DSV formats for pipeline state
-    META_CHECK_ARG_LESS_DESCR(program_settings.color_formats.size(), g_max_rtv_count + 1, "number of color attachments exceeds maximum RTV count in DirectX");
+    const AttachmentFormats attachment_formats = settings.render_pattern_ptr->GetAttachmentFormats();
+    META_CHECK_ARG_LESS_DESCR(attachment_formats.colors.size(), g_max_rtv_count + 1,
+                              "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
-    for (PixelFormat color_format : program_settings.color_formats)
+    for (PixelFormat color_format : attachment_formats.colors)
     {
         m_pipeline_state_desc.RTVFormats[attachment_index++] = TypeConverterDX::PixelFormatToDxgi(color_format);
     }
-    m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(program_settings.color_formats.size());
-    m_pipeline_state_desc.DSVFormat = settings.depth.enabled ? TypeConverterDX::PixelFormatToDxgi(program_settings.depth_format) : DXGI_FORMAT_UNKNOWN;
+    m_pipeline_state_desc.NumRenderTargets = static_cast<UINT>(attachment_formats.colors.size());
+    m_pipeline_state_desc.DSVFormat = settings.depth.enabled
+                                    ? TypeConverterDX::PixelFormatToDxgi(attachment_formats.depth)
+                                    : DXGI_FORMAT_UNKNOWN;
 
     m_cp_pipeline_state.Reset();
 }

@@ -544,31 +544,50 @@ TEMPLATE_TEST_CASE("Rectangle Size Conversion to Other Types", "[rect][size][con
 {
     if constexpr (std::is_floating_point_v<TestType>)
     {
+        const RectSize<TestType> float_test_size(1.6F, 2.4F);
+
         SECTION("Conversion to integer size")
         {
-            const RectSize<TestType> test_size(1, 2);
-            CHECK(static_cast<RectSize<uint32_t>>(test_size) == RectSize<uint32_t>(1, 2));
+            CHECK(static_cast<RectSize<uint32_t>>(float_test_size) == RectSize<uint32_t>(2, 2));
+        }
+
+        SECTION("Conversion to integer point")
+        {
+            CHECK(static_cast<Point<uint32_t, 2>>(float_test_size) == Point<uint32_t, 2>(2, 2));
         }
     }
     else
     {
+        const RectSize<TestType> int_test_size(1, 2);
+
         SECTION("Conversion to floating point size")
         {
-            const RectSize<TestType> test_size(1, 2);
-            CHECK(static_cast<RectSize<float>>(test_size) == RectSize<float>(1.F, 2.F));
+            CHECK(static_cast<RectSize<float>>(int_test_size) == RectSize<float>(1.F, 2.F));
         }
+
+        SECTION("Conversion to floating point point")
+        {
+            CHECK(static_cast<Point<float, 2>>(int_test_size) == Point<float, 2>(1.F, 2.F));
+        }
+    }
+
+    const RectSize<TestType> test_size(TestType(1), TestType(2));
+
+    SECTION("Conversion to floating point point")
+    {
+        CHECK(static_cast<Point<TestType, 2>>(test_size) == Point<TestType, 2>(TestType(1), TestType(2)));
     }
 
     SECTION("Conversion to boolean")
     {
         CHECK_FALSE(static_cast<bool>(RectSize<TestType>()));
         CHECK_FALSE(static_cast<bool>(RectSize<TestType>(TestType(1), TestType(0))));
-        CHECK(static_cast<bool>(RectSize<TestType>(TestType(1), TestType(2))));
+        CHECK(static_cast<bool>(test_size));
     }
 
     SECTION("Conversion to string")
     {
-        CHECK(static_cast<std::string>(RectSize<TestType>(TestType(1), TestType(2))) == "Sz(1 x 2)");
+        CHECK(static_cast<std::string>(test_size) == "Sz(1 x 2)");
     }
 }
 

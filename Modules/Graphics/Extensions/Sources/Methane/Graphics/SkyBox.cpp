@@ -22,7 +22,8 @@ SkyBox rendering primitive
 ******************************************************************************/
 
 #include <Methane/Graphics/SkyBox.h>
-#include <Methane/Graphics/Mesh/SphereMesh.hpp>
+#include <Methane/Graphics/CubeMesh.hpp>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -33,31 +34,29 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings)
-    : SkyBox(context, image_loader, settings, SphereMesh<Vertex>(Vertex::layout))
+SkyBox::SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader,  const Settings& settings)
+    : SkyBox(render_pattern, image_loader, settings, CubeMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_context(context)
-    , m_mesh_buffers(context, mesh, "Sky-Box")
+    , m_context(render_pattern.GetRenderContext())
+    , m_mesh_buffers(m_context, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
 
-    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Milky Way Cube Texture"));
-
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Sky-Box Texture"));
 
     RenderState::Settings state_settings;
-    state_settings.program_ptr = Program::Create(context,
+    state_settings.program_ptr = Program::Create(m_context,
         Program::Settings
         {
             Program::Shaders
             {
-                Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
-                Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
+                Shader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+                Shader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
             },
             Program::InputBufferLayouts
             {
@@ -72,25 +71,22 @@ SkyBox::SkyBox(RenderContext& context, const ImageLoader& image_loader, const Se
                 { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
                 { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
             },
-            PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            render_pattern.GetAttachmentFormats()
         }
     );
 
     using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
+    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_render_state_ptr = RenderState::Create(context, state_settings);
+    m_render_state_ptr = RenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Sky-box render state");
 
-    m_texture_sampler_ptr = Sampler::Create(context, {
+    m_texture_sampler_ptr = Sampler::Create(m_context, {
         Sampler::Filter(Sampler::Filter::MinMag::Linear),
         Sampler::Address(Sampler::Address::Mode::ClampToZero),
         Sampler::LevelOfDetail(m_settings.lod_bias)
@@ -104,9 +100,9 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { uniforms_buffer_ptr            } } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexturePtr() } } },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { m_texture_sampler_ptr          } } },
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr            } } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { *m_mesh_buffers.GetTexturePtr() } } },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr          } } },
     }, frame_index);
 }
 

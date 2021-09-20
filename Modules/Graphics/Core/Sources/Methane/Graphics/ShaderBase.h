@@ -46,8 +46,8 @@ public:
     ShaderBase(Type type, const ContextBase& context, const Settings& settings);
 
     // Shader interface
-    Type             GetType() const noexcept override       { return m_type; }
-    const Settings&  GetSettings() const noexcept override   { return m_settings; }
+    Type             GetType() const noexcept final     { return m_type; }
+    const Settings&  GetSettings() const noexcept final { return m_settings; }
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
@@ -58,7 +58,9 @@ public:
 protected:
     const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
-    std::string         GetCompiledEntryFunctionName() const;
+    std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
+
+    static std::string GetCompiledEntryFunctionName(const Settings& settings);
 
 private:
     const Type         m_type;

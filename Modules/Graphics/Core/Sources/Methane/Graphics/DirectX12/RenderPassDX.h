@@ -41,7 +41,7 @@ class RenderPassDX final
     , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR
 {
 public:
-    RenderPassDX(const RenderContextBase& context, const Settings& settings);
+    RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
@@ -67,12 +67,14 @@ private:
         D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
         D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
-        explicit AccessDesc(const Attachment& attachment);
-        explicit AccessDesc(const ColorAttachment& color_attachment);
-        AccessDesc(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment);
-        AccessDesc(const StencilAttachment& stencil_attachment, const DepthAttachment& depth_attachment);
+        explicit AccessDesc(const Attachment& attachment, const Texture::Location& texture_location);
+        explicit AccessDesc(const Attachment* attachment_ptr, const Texture::Location* texture_location_ptr);
+        explicit AccessDesc(const ColorAttachment& color_attachment, const RenderPassBase& render_pass);
+        explicit AccessDesc(const ColorAttachment& color_attachment, const Texture::Location& texture_location);
+        AccessDesc(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt, const RenderPassBase& render_pass);
+        AccessDesc(const Opt<StencilAttachment>& stencil_attachment_opt, const Opt<DepthAttachment>& depth_attachment_opt, const RenderPassBase& render_pass);
 
-        void InitDepthStencilClearValue(const DepthAttachment& depth_attachment, const StencilAttachment& stencil_attachment);
+        void InitDepthStencilClearValue(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt);
 
         static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetBeginningAccessTypeByLoadAction(Attachment::LoadAction load_action);
         static D3D12_RENDER_PASS_ENDING_ACCESS_TYPE    GetEndingAccessTypeByStoreAction(Attachment::StoreAction store_action);
@@ -83,7 +85,7 @@ private:
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle  { };
         std::array<float, 4>        clear_color { };
 
-        explicit RTClearInfo(const RenderPassBase::ColorAttachment& color_attach);
+        RTClearInfo(const ColorAttachment& color_attach, const RenderPassBase& render_pass);
     };
 
     struct DSClearInfo
@@ -96,7 +98,7 @@ private:
         UINT8                       stencil_value   = 0;
 
         DSClearInfo() = default;
-        DSClearInfo(const RenderPassBase::DepthAttachment& depth_attach, const RenderPassBase::StencilAttachment& stencil_attach);
+        DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassBase& render_pass);
     };
 
     void UpdateNativeRenderPassDesc(bool settings_changed);

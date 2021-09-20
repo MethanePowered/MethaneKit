@@ -83,27 +83,41 @@ inline const MutableParameters& GetMutableParameters()
 }
 
 static const std::map<pal::Keyboard::State, AsteroidsAppAction> g_asteroids_action_by_keyboard_state{
-    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
-    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
     { { pal::Keyboard::Key::P            }, AsteroidsAppAction::SwitchParallelRendering     },
     { { pal::Keyboard::Key::L            }, AsteroidsAppAction::SwitchMeshLodsColoring      },
     { { pal::Keyboard::Key::Apostrophe   }, AsteroidsAppAction::IncreaseMeshLodComplexity   },
     { { pal::Keyboard::Key::Semicolon    }, AsteroidsAppAction::DecreaseMeshLodComplexity   },
+    { { pal::Keyboard::Key::RightBracket }, AsteroidsAppAction::IncreaseComplexity          },
+    { { pal::Keyboard::Key::LeftBracket  }, AsteroidsAppAction::DecreaseComplexity          },
+    { { pal::Keyboard::Key::Num0         }, AsteroidsAppAction::SetComplexity0              },
+    { { pal::Keyboard::Key::Num1         }, AsteroidsAppAction::SetComplexity1              },
+    { { pal::Keyboard::Key::Num2         }, AsteroidsAppAction::SetComplexity2              },
+    { { pal::Keyboard::Key::Num3         }, AsteroidsAppAction::SetComplexity3              },
+    { { pal::Keyboard::Key::Num4         }, AsteroidsAppAction::SetComplexity4              },
+    { { pal::Keyboard::Key::Num5         }, AsteroidsAppAction::SetComplexity5              },
+    { { pal::Keyboard::Key::Num6         }, AsteroidsAppAction::SetComplexity6              },
+    { { pal::Keyboard::Key::Num7         }, AsteroidsAppAction::SetComplexity7              },
+    { { pal::Keyboard::Key::Num8         }, AsteroidsAppAction::SetComplexity8              },
+    { { pal::Keyboard::Key::Num9         }, AsteroidsAppAction::SetComplexity9              },
 };
 
 void AsteroidsFrame::ReleaseScreenPassAttachmentTextures()
 {
     META_FUNCTION_TASK();
-    initial_screen_pass_ptr->ReleaseAttachmentTextures();
-    final_screen_pass_ptr->ReleaseAttachmentTextures();
+    asteroids_pass_ptr->ReleaseAttachmentTextures();
     AppFrame::ReleaseScreenPassAttachmentTextures();
 }
 
 AsteroidsApp::AsteroidsApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Asteroids", Samples::AppOptions::Default, gfx::Context::Options::None,
-                                        0.F /* depth clear */, { /* color clearing disabled */ }),
-        { HeadsUpDisplayMode::UserInterface, true },
+        []() {
+            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Asteroids", g_default_app_options_color_with_depth_and_anim);
+            settings.render_context
+                .SetClearDepthStencil(gfx::DepthStencil(0.F, {})) // Clear depth with 0.F
+                .SetClearColor({}); // Disable color clearing, use sky-box instead
+            return settings;
+        }(),
+        { HeadsUpDisplayMode::UserInterface },
         "Methane Asteroids sample is demonstrating parallel rendering\nof massive asteroids field dynamic simulation.")
     , m_view_camera(GetAnimations(), gfx::ActionCamera::Pivot::Aim)
     , m_light_camera(m_view_camera, GetAnimations(), gfx::ActionCamera::Pivot::Aim)
@@ -139,7 +153,7 @@ AsteroidsApp::AsteroidsApp()
     m_light_camera.ResetOrientation({ { -100.F, 120.F, 0.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
     m_light_camera.SetProjection(gfx::Camera::Projection::Orthogonal);
     m_light_camera.SetParameters({ -300.F, 300.F, 90.F });
-    m_light_camera.Resize({ 120.F, 120.F });
+    m_light_camera.Resize(Data::FloatSize(120.F, 120.F));
 
     AddInputControllers({
         std::make_shared<AsteroidsAppController>(*this, g_asteroids_action_by_keyboard_state),
@@ -162,13 +176,13 @@ AsteroidsApp::AsteroidsApp()
                        return true;
                    }
                    return false;
-               }, "simulation complexity", true)
+               }, "simulation complexity")
         ->default_val(m_asteroids_complexity)
         ->expected(0, static_cast<int>(g_max_complexity))
         ->group(options_group);
-    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count", true)->group(options_group);
-    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled", true)->group(options_group);
-    add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled", true)->group(options_group);
+    add_option("-s,--subdiv-count", m_asteroids_array_settings.subdivisions_count, "mesh subdivisions count")->group(options_group);
+    add_option("-t,--texture-array", m_asteroids_array_settings.textures_array_enabled, "texture array enabled")->group(options_group);
+    add_option("-r,--parallel-render", m_is_parallel_rendering_enabled, "parallel rendering enabled")->group(options_group);
 
     // Setup animations
     GetAnimations().push_back(std::make_shared<Data::TimeAnimation>(std::bind(&AsteroidsApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -191,86 +205,94 @@ void AsteroidsApp::Init()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsApp::Init");
 
+    // Create initial render-pass pattern for asteroids rendering
+    gfx::RenderPattern::Settings asteroids_render_pattern_settings     = GetScreenRenderPatternSettings();
+    asteroids_render_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::DontCare;
+    asteroids_render_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Clear;
+    asteroids_render_pattern_settings.depth_attachment->store_action   = gfx::RenderPass::Attachment::StoreAction::Store;
+    m_asteroids_render_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), asteroids_render_pattern_settings);
+
+    // Modify settings of the final screen render-pass pattern so that color and depth attachments are reused from initial asteroids render pass
+    gfx::RenderPattern::Settings& screen_render_pattern_settings    = GetScreenRenderPatternSettings();
+    screen_render_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
+    screen_render_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Load;
+
+    // Screen render pattern and screen passes for all frames are initialized here based on modified settings
     UserInterfaceApp::Init();
 
-    gfx::RenderContext& context = GetRenderContext();
+    const gfx::RenderContext& context = GetRenderContext();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-    const Data::FloatSize float_rect_size(static_cast<float>(context_settings.frame_size.GetWidth()),
-                                          static_cast<float>(context_settings.frame_size.GetHeight()));
-    m_view_camera.Resize(float_rect_size);
+    m_view_camera.Resize(context_settings.frame_size);
 
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(context, GetImageLoader(), gfx::SkyBox::Settings{
-        m_view_camera,
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
+        gfx::SkyBox::Settings
         {
-            "Textures/SkyBox/Galaxy/PositiveX.jpg",
-            "Textures/SkyBox/Galaxy/NegativeX.jpg",
-            "Textures/SkyBox/Galaxy/PositiveY.jpg",
-            "Textures/SkyBox/Galaxy/NegativeY.jpg",
-            "Textures/SkyBox/Galaxy/PositiveZ.jpg",
-            "Textures/SkyBox/Galaxy/NegativeZ.jpg"
-        },
-        m_scene_scale * 100.F,
-        gfx::ImageLoader::Options::Mipmapped,
-        gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
-    });
+            m_view_camera,
+            {
+                "Textures/SkyBox/Galaxy/PositiveX.jpg",
+                "Textures/SkyBox/Galaxy/NegativeX.jpg",
+                "Textures/SkyBox/Galaxy/PositiveY.jpg",
+                "Textures/SkyBox/Galaxy/NegativeY.jpg",
+                "Textures/SkyBox/Galaxy/PositiveZ.jpg",
+                "Textures/SkyBox/Galaxy/NegativeZ.jpg"
+            },
+            m_scene_scale * 100.F,
+            gfx::ImageLoader::Options::Mipmapped,
+            gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
+        });
 
     // Create planet
-    m_planet_ptr = std::make_shared<Planet>(context, GetImageLoader(), Planet::Settings{
-        m_view_camera,
-        m_light_camera,
-        "Textures/Planet/Mars.jpg",             // texture_path
-        hlslpp::float3(0.F, 0.F, 0.F),          // position
-        m_scene_scale * 3.F,                    // scale
-        0.1F,                                   // spin_velocity_rps
-        true,                                   // depth_reversed
-        gfx::ImageLoader::Options::Mipmapped |  // image_options
-        gfx::ImageLoader::Options::SrgbColorSpace,
-        -1.F,                                   // lod_bias
-    });
+    m_planet_ptr = std::make_shared<Planet>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
+        Planet::Settings
+        {
+            m_view_camera,
+            m_light_camera,
+            "Textures/Planet/Mars.jpg",             // texture_path
+            hlslpp::float3(0.F, 0.F, 0.F),          // position
+            m_scene_scale * 3.F,                    // scale
+            0.1F,                                   // spin_velocity_rps
+            true,                                   // depth_reversed
+            gfx::ImageLoader::Options::Mipmapped |  // image_options
+            gfx::ImageLoader::Options::SrgbColorSpace,
+            -1.F,                                   // lod_bias
+        }
+    );
 
     // Create asteroids array
     m_asteroids_array_ptr = m_asteroids_array_state_ptr
-                         ? std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
-                         : std::make_unique<AsteroidsArray>(context, m_asteroids_array_settings);
+                         ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
+                         : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
-    const Data::Size constants_data_size         = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(Constants)));
-    const Data::Size scene_uniforms_data_size    = gfx::Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(SceneUniforms)));
+    const auto       constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
+    const auto       scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
     const Data::Size asteroid_uniforms_data_size = m_asteroids_array_ptr->GetUniformsBufferSize();
 
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } });
+    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }); // NOSONAR
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())
     {
-        // Create initial screen pass for asteroids rendering
-        gfx::RenderPass::Settings initial_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
-        initial_screen_pass_settings.depth_attachment.store_action = gfx::RenderPass::Attachment::StoreAction::Store;
-        frame.initial_screen_pass_ptr = gfx::RenderPass::Create(context, initial_screen_pass_settings);
-
-        // Create final screen pass for sky-box and planet rendering
-        gfx::RenderPass::Settings final_screen_pass_settings = frame.screen_pass_ptr->GetSettings();
-        final_screen_pass_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::Load;
-        final_screen_pass_settings.depth_attachment.load_action     = gfx::RenderPass::Attachment::LoadAction::Load;
-        frame.final_screen_pass_ptr = gfx::RenderPass::Create(context, final_screen_pass_settings);
+        // Create asteroids render pass
+        frame.asteroids_pass_ptr = gfx::RenderPass::Create(*m_asteroids_render_pattern_ptr, frame.screen_pass_ptr->GetSettings());
 
         // Create parallel command list for asteroids rendering
-        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
+        frame.parallel_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.asteroids_pass_ptr);
         frame.parallel_cmd_list_ptr->SetParallelCommandListsCount(std::thread::hardware_concurrency());
         frame.parallel_cmd_list_ptr->SetName(IndexedName("Parallel Rendering", frame.index));
         frame.parallel_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create serial command list for asteroids rendering
-        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.initial_screen_pass_ptr);
+        frame.serial_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.asteroids_pass_ptr);
         frame.serial_cmd_list_ptr->SetName(IndexedName("Serial Rendering", frame.index));
         frame.serial_cmd_list_ptr->SetValidationEnabled(false);
 
         // Create final command list for sky-box and planet rendering
-        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.final_screen_pass_ptr);
+        frame.final_cmd_list_ptr = gfx::RenderCommandList::Create(context.GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.final_cmd_list_ptr->SetName(IndexedName("Final Rendering", frame.index));
         frame.final_cmd_list_ptr->SetValidationEnabled(false);
 
@@ -278,19 +300,19 @@ void AsteroidsApp::Init()
         frame.execute_cmd_list_set_ptr = CreateExecuteCommandListSet(frame);
 
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, scene_uniforms_data_size);
+        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, scene_uniforms_data_size, false, true);
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(gfx::SkyBox::Uniforms));
+        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::Uniforms), false, true);
         frame.skybox.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Planet rendering
-        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, sizeof(Planet::Uniforms));
+        frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(hlslpp::PlanetUniforms), false, true);
         frame.planet.uniforms_buffer_ptr->SetName(IndexedName("Planet Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Asteroids array rendering
-        frame.asteroids.uniforms_buffer_ptr = gfx::Buffer::CreateVolatileBuffer(context, asteroid_uniforms_data_size, true);
+        frame.asteroids.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, asteroid_uniforms_data_size, true, true);
         frame.asteroids.uniforms_buffer_ptr->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
@@ -324,20 +346,18 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     // Update frame buffer and depth textures in initial & final render passes
     for (const AsteroidsFrame& frame : GetFrames())
     {
-        META_CHECK_ARG_NOT_NULL(frame.initial_screen_pass_ptr);
-        gfx::RenderPass::Settings initial_pass_settings             = frame.initial_screen_pass_ptr->GetSettings();
-        initial_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
-        initial_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
-        frame.initial_screen_pass_ptr->Update(initial_pass_settings);
-        
-        META_CHECK_ARG_NOT_NULL(frame.final_screen_pass_ptr);
-        gfx::RenderPass::Settings final_pass_settings             = frame.final_screen_pass_ptr->GetSettings();
-        final_pass_settings.color_attachments[0].texture_location = gfx::Texture::Location(frame.screen_texture_ptr);
-        final_pass_settings.depth_attachment.texture_location     = gfx::Texture::Location(GetDepthTexturePtr());
-        frame.final_screen_pass_ptr->Update(final_pass_settings);
+        META_CHECK_ARG_NOT_NULL(frame.asteroids_pass_ptr);
+        gfx::RenderPass::Settings asteroids_pass_settings{
+            {
+                gfx::Texture::Location(*frame.screen_texture_ptr),
+                gfx::Texture::Location(GetDepthTexture())
+            },
+            frame_size
+        };
+        frame.asteroids_pass_ptr->Update(asteroids_pass_settings);
     }
 
-    m_view_camera.Resize({ static_cast<float>(frame_size.GetWidth()), static_cast<float>(frame_size.GetHeight()) });
+    m_view_camera.Resize(frame_size);
 
     return true;
 }
@@ -393,6 +413,7 @@ bool AsteroidsApp::Render()
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
     m_planet_ptr->Draw(*frame.final_cmd_list_ptr, frame.planet, GetViewState());
     m_sky_box_ptr->Draw(*frame.final_cmd_list_ptr, frame.skybox, GetViewState());
+
     RenderOverlay(*frame.final_cmd_list_ptr);
     frame.final_cmd_list_ptr->Commit();
 
@@ -417,6 +438,7 @@ void AsteroidsApp::OnContextReleased(gfx::Context& context)
     m_planet_ptr.reset();
     m_asteroids_array_ptr.reset();
     m_const_buffer_ptr.reset();
+    m_asteroids_render_pattern_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);
 }

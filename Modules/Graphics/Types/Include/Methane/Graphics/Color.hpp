@@ -135,7 +135,7 @@ public:
         case 1: return GetGreen<V>();
         case 2: return GetBlue<V>();
         case 3: if constexpr (size == 4) return GetAlpha<V>();
-        default: META_UNEXPECTED_ARG_RETURN(component_index, 0.f);
+        default: META_UNEXPECTED_ARG_RETURN(component_index, V{});
         }
     }
 
@@ -237,6 +237,7 @@ private:
     {
         static const std::pair<V, V> s_component_range = GetComponentRange<V>();
         META_CHECK_ARG_RANGE_INC_DESCR(component, s_component_range.first, s_component_range.second, "for {} color component", name);
+        META_UNUSED(name);
     }
 
     void CheckComponentsRange()

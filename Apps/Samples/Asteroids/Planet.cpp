@@ -24,7 +24,7 @@ Planet rendering primitive
 #include "Planet.h"
 
 #include <Methane/Graphics/ImageLoader.h>
-#include <Methane/Graphics/Mesh/SphereMesh.hpp>
+#include <Methane/Graphics/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -32,29 +32,27 @@ Planet rendering primitive
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings)
-    : Planet(context, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
+Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings)
+    : Planet(render_pattern, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_context(context)
-    , m_mesh_buffers(context, mesh, "Planet")
+    , m_context(render_pattern.GetRenderContext())
+    , m_mesh_buffers(m_context, mesh, "Planet")
 {
     META_FUNCTION_TASK();
 
-    const gfx::RenderContext::Settings& context_settings = context.GetSettings();
-
     gfx::RenderState::Settings state_settings;
-    state_settings.program_ptr = gfx::Program::Create(context,
+    state_settings.program_ptr = gfx::Program::Create(m_context,
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
-                gfx::Shader::CreatePixel( context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
+                gfx::Shader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "Planet", "PlanetVS" }, { } }),
+                gfx::Shader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "Planet", "PlanetPS" }, { } }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -67,22 +65,20 @@ Planet::Planet(gfx::RenderContext& context, const gfx::ImageLoader& image_loader
                 { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
                 { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant       },
             },
-            gfx::PixelFormats
-            {
-                context_settings.color_format
-            },
-            context_settings.depth_stencil_format
+            render_pattern.GetAttachmentFormats()
         }
     );
     state_settings.program_ptr->SetName("Planet Shaders");
+    state_settings.render_pattern_ptr = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled = true;
     state_settings.depth.compare = m_settings.depth_reversed ? gfx::Compare::GreaterEqual : gfx::Compare::Less;
-    m_render_state_ptr = gfx::RenderState::Create(context, state_settings);
+
+    m_render_state_ptr = gfx::RenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     
     m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
-    m_texture_sampler_ptr = gfx::Sampler::Create(context, {
+    m_texture_sampler_ptr = gfx::Sampler::Create(m_context, {
         gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
         gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToEdge),
         gfx::Sampler::LevelOfDetail(m_settings.lod_bias)
@@ -100,10 +96,10 @@ Ptr<gfx::ProgramBindings> Planet::CreateProgramBindings(const Ptr<gfx::Buffer>& 
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
 
     return gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { uniforms_buffer_ptr            } } },
-        { { gfx::Shader::Type::Pixel, "g_constants" }, { { constants_buffer_ptr           } } },
-        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexturePtr() } } },
-        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { m_texture_sampler_ptr          } } },
+        { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *uniforms_buffer_ptr            } } },
+        { { gfx::Shader::Type::Pixel, "g_constants" }, { { *constants_buffer_ptr           } } },
+        { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_mesh_buffers.GetTexture() } } },
+        { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr          } } },
     }, frame_index);
 }
 
@@ -116,7 +112,7 @@ bool Planet::Update(double elapsed_seconds, double)
     const hlslpp::float4x4 model_rotation_matrix  = hlslpp::float4x4::rotation_y(static_cast<float>(-m_settings.spin_velocity_rps * elapsed_seconds));
     const hlslpp::float4x4 model_matrix           = hlslpp::mul(hlslpp::mul(model_scale_matrix, model_rotation_matrix), model_translate_matrix);
 
-    Uniforms uniforms{};
+    hlslpp::PlanetUniforms uniforms{};
     uniforms.eye_position   = hlslpp::float4(m_settings.view_camera.GetOrientation().eye, 1.F);
     uniforms.light_position = m_settings.light_camera.GetOrientation().eye;
     uniforms.model_matrix   = hlslpp::transpose(model_matrix);
@@ -132,7 +128,7 @@ void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBinding
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
 
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(hlslpp::PlanetUniforms));
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());

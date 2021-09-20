@@ -11,12 +11,20 @@ and [graphics Core API](../Core).
 to get current graphics application settings and methods to modify individual setting values.
 The following settings are available:
 
-| IApp Setting             | Type     | Default Value | Cmd-Line Option | Description           |
-|--------------------------|----------|---------------|-----------------|-----------------------|
-| screen_pass_access       | uint32_t | 0             |                 | Render pass access mask Graphics::RenderPass::Access |
-| animations_enabled       | bool     | true          | -a,--animations | Flag to enable or disable all animations |
-| show_hud_in_window_title | bool     | true          |                 | Flag to display or hide graphics runtime parameters in window title |         
-| default_device_index     | int32_t  | 0             | -d,--device     | Default GPU device used at startup: 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device |
+| IApp Setting             | Type                 | Default Value | Cmd-Line Option | Description           |
+|--------------------------|----------------------|---------------|-----------------|-----------------------|
+| screen_pass_access       | RenderPass::Access   | None          |                 | Render pass access mask Graphics::RenderPass::Access |
+| animations_enabled       | bool                 | true          | -a,--animations | Flag to enable or disable all animations |
+| show_hud_in_window_title | bool                 | true          |                 | Flag to display or hide graphics runtime parameters in window title |
+| default_device_index     | int32_t              | 0             | -d,--device     | Default GPU device used at startup: 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device |
+| device_capabilities      | Device::Capabilities | Default       |                 | Device capabilities |
+
+| Device::Capabilities     | Type                 | Default Value | Description     |
+|--------------------------|----------------------|---------------|-----------------|
+| features                 | Features             | All           | Required device features mask |
+| present_to_window        | bool                 | true          | Flag of device is going to be used for presenting to window |
+| render_queues_count      | uint32_t             | 1             | Count of render command queues used by application |  
+| blit_queues_count        | uint32_t             | 1             | Count of BLIT command queues used by application |
 
 ### [Graphics::App](Include/Methane/Graphics/App.hpp)
 
@@ -41,11 +49,12 @@ and extended with other frame-dependent resources in final applications.
 
 Some parameters of the render context settings can be also changed with command line flags:
 
-| Render Context Setting   | Type     | Default Value | Cmd-Line Option           | Description           |
-|--------------------------|----------|---------------|---------------------------|-----------------------|
-| vsync_enabled            | bool     | true          | -v,--vsync                | Vertical synchronization |
-| frame_buffers_count      | uint32_t | 3             | -b,--frame-buffers        | Frame buffers count in swap-chain |
-| is_emulated_render_pass  | bool     | false         | -e,--emulated-render-pass | Render pass emulation on Windows |
+| Render Context Setting                               | Type     | Default Value | Cmd-Line Option             | Description           |
+|------------------------------------------------------|----------|---------------|-----------------------------|-----------------------|
+| vsync_enabled                                        | bool     | true          | -v,--vsync                  | Vertical synchronization |
+| frame_buffers_count                                  | uint32_t | 3             | -b,--frame-buffers          | Frame buffers count in swap-chain |
+| options_mask & Options::EmulatedRenderPassOnWindows  | bool     | false         | -e,--emulated-render-pass   | Render pass emulation on Windows |
+| options_mask & Options::BlitWithDirectQueueOnWindows | bool     | false         | -q,--blit-with-direct-queue | BLIT command lists and queues use DIRECT instead of COPY type in DX API |
 
 ## Graphics Application Controllers
 

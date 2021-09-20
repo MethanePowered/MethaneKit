@@ -105,6 +105,7 @@ public:
         Data::Index m_mip_level;
     };
 
+    SubResource() = default;
     explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
     SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
     ~SubResource() = default;
@@ -133,17 +134,15 @@ struct Resource;
 class ResourceLocation
 {
 public:
-    ResourceLocation() = default;
-    ResourceLocation(const Ptr<Resource>& resource_ptr, Data::Size offset = 0U) : ResourceLocation(resource_ptr, SubResource::Index(), offset) { }
-    ResourceLocation(const Ptr<Resource>& resource_ptr, const SubResource::Index& subresource_index, Data::Size offset = 0U);
+    ResourceLocation(Resource& resource, Data::Size offset = 0U) : ResourceLocation(resource, SubResource::Index(), offset) { }
+    ResourceLocation(Resource& resource, const SubResource::Index& subresource_index, Data::Size offset = 0U);
 
     [[nodiscard]] bool operator==(const ResourceLocation& other) const noexcept;
     [[nodiscard]] bool operator!=(const ResourceLocation& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 
-    [[nodiscard]] bool                      IsInitialized() const noexcept       { return !!m_resource_ptr; }
     [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
-    [[nodiscard]] Resource&                 GetResource() const;
+    [[nodiscard]] Resource&                 GetResource() const noexcept         { return *m_resource_ptr; }
     [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
     [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_offset; }
 
@@ -160,7 +159,7 @@ static ResourceLocations CreateResourceLocations(const Ptrs<TResource>& resource
 {
     ResourceLocations resource_locations;
     std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
-                   [](const Ptr<TResource>& resource_ptr) { return ResourceLocation(resource_ptr); });
+                   [](const Ptr<TResource>& resource_ptr) { META_CHECK_ARG_NOT_NULL(resource_ptr); return ResourceLocation(*resource_ptr); });
     return resource_locations;
 }
 

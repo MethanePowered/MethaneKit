@@ -53,12 +53,15 @@ class AppBase : public CLI::App
 public:
     struct Settings
     {
-        std::string name;
-        double      width          = 0.8;   // if width < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        double      height         = 0.8;   // same rule applies for height
-        bool        is_full_screen = false;
-        uint32_t    min_width      = 640;
-        uint32_t    min_height     = 480;
+        std::string       name;
+        Data::FloatSize   size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
+        Data::FrameSize   min_size { 640, 480 };
+        bool              is_full_screen = false;
+
+        Settings& SetName(std::string&& new_name) noexcept;
+        Settings& SetSize(Data::FloatSize&& new_size) noexcept;
+        Settings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
+        Settings& SetFullScreen(bool new_full_screen) noexcept;
     };
 
     struct RunArgs

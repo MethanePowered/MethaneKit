@@ -37,16 +37,14 @@ class DeviceBase
     , public Data::Emitter<IDeviceCallback>
 {
 public:
-    DeviceBase(const std::string& adapter_name, bool is_software_adapter, Features supported_features);
+    DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities);
 
     // Device interface
-    const std::string&  GetAdapterName() const noexcept override                               { return m_adapter_name; }
-    bool                IsSoftwareAdapter() const noexcept override                            { return m_is_software_adapter; }
-    Features            GetSupportedFeatures() const noexcept override                         { return m_supported_features; }
+    const std::string&  GetAdapterName() const noexcept override    { return m_adapter_name; }
+    bool                IsSoftwareAdapter() const noexcept override { return m_is_software_adapter; }
+    const Capabilities& GetCapabilities() const noexcept override   { return m_capabilities; }
     std::string         ToString() const override;
-
-    Ptr<DeviceBase>     GetDevicePtr() { return std::static_pointer_cast<DeviceBase>(GetBasePtr()); }
-
+    
 protected:
     friend class SystemBase;
 
@@ -56,28 +54,28 @@ protected:
 private:
     const std::string m_adapter_name;
     const bool        m_is_software_adapter;
-    const Features    m_supported_features;
+    Capabilities      m_capabilities;
 };
 
 class SystemBase : public System
 {
 public:
-    const Ptrs<Device>&   GetGpuDevices() const override            { return m_devices; }
-    Device::Features      GetGpuSupportedFeatures() const override  { return m_supported_features; }
-    Ptr<Device>           GetNextGpuDevice(const Device& device) const override;
-    Ptr<Device>           GetSoftwareGpuDevice() const override;
-    std::string           ToString() const override;
+    const Ptrs<Device>&         GetGpuDevices() const noexcept override          { return m_devices; }
+    const Device::Capabilities& GetDeviceCapabilities() const noexcept override  { return m_device_caps; }
+    Ptr<Device>                 GetNextGpuDevice(const Device& device) const noexcept override;
+    Ptr<Device>                 GetSoftwareGpuDevice() const noexcept override;
+    std::string                 ToString() const override;
 
 protected:
-    void SetGpuSupportedFeatures(Device::Features supported_features) { m_supported_features = supported_features; }
+    void SetDeviceCapabilities(const Device::Capabilities& device_caps) { m_device_caps = device_caps; }
     void ClearDevices() { m_devices.clear(); }
     void AddDevice(const Ptr<Device>& device_ptr) { m_devices.emplace_back(device_ptr); }
     void RequestRemoveDevice(Device& device) const;
     void RemoveDevice(Device& device);
 
 private:
-    Device::Features m_supported_features = Device::Features::All;
-    Ptrs<Device>     m_devices;
+    Device::Capabilities m_device_caps;
+    Ptrs<Device>         m_devices;
 };
 
 } // namespace Methane::Graphics

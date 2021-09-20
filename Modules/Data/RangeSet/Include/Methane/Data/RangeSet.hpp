@@ -57,8 +57,6 @@ public:
         return *this;
     }
 
-
-
     [[nodiscard]] size_t Size() const noexcept              { return m_container.size();  }
     [[nodiscard]] bool   IsEmpty() const noexcept           { return m_container.empty(); }
     [[nodiscard]] const BaseSet& GetRanges() const noexcept { return *this; }

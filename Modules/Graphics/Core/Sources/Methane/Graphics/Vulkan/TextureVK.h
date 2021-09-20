@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -23,28 +23,59 @@ Vulkan implementation of the texture interface.
 
 #pragma once
 
-#include "ResourceVK.h"
+#include "ResourceVK.hpp"
 
 #include <Methane/Graphics/TextureBase.h>
+
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-class TextureVK final : public ResourceVK<TextureBase>
+class RenderContextVK;
+
+class TextureVK : public ResourceVK<TextureBase, vk::ImageView>
 {
 public:
-    TextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    // Temporary constructor, to be removed
+    TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
-    // Object interface
-    void SetName(const std::string& name) override;
+    const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
+    const vk::ImageView& GetNativeImageView() const noexcept  { return GetNativeResource(); }
 
-    void UpdateFrameBuffer();
+protected:
+    TextureVK(const RenderContextVK& context, const Settings& settings,
+              const DescriptorByUsage& descriptor_by_usage,
+              const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view);
+
+    void ResetNativeImage(const vk::Image& vk_image);
 
 private:
     void GenerateMipLevels();
+
+    vk::Image m_vk_image;
+};
+
+class FrameBufferTextureVK final
+    : public TextureVK
+{
+public:
+    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                         FrameBufferIndex frame_buffer_index);
+
+    [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
+
+    void ResetNativeImage();
+
+private:
+    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                         FrameBufferIndex frame_buffer_index, const vk::Image& image);
+
+    const RenderContextVK& m_render_context;
+    const FrameBufferIndex m_frame_buffer_index;
 };
 
 } // namespace Methane::Graphics

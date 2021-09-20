@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/DescriptorHeapVK.mm
+FILE: Methane/Graphics/Vulkan/DescriptorHeapVK.cpp
 Vulkan "dummy" implementation of the descriptor heap.
 
 ******************************************************************************/

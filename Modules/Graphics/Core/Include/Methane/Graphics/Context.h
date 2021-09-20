@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/IEmitter.h>
+
+#include <stdexcept>
 
 namespace tf // NOSONAR
 {
@@ -83,11 +85,18 @@ struct Context
         EmulatedRenderPassOnWindows  = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
     };
 
+    class IncompatibleException: public std::runtime_error
+    {
+    public:
+        using runtime_error::runtime_error;
+    };
+
     // Context interface
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
     [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
+    [[nodiscard]] virtual const Object::Registry& GetObjectsRegistry() const noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;

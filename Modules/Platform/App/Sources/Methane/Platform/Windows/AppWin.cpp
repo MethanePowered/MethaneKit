@@ -80,8 +80,8 @@ int AppWin::Run(const RunArgs& args)
 
     const Settings& app_settings = GetPlatformAppSettings();
     const Data::FrameSize frame_size(
-        app_settings.width  < 1.0 ? static_cast<uint32_t>(desktop_width * app_settings.width)   : static_cast<uint32_t>(app_settings.width),
-        app_settings.height < 1.0 ? static_cast<uint32_t>(desktop_height * app_settings.height) : static_cast<uint32_t>(app_settings.height)
+        static_cast<uint32_t>(app_settings.size.GetWidth()  * static_cast<float>(app_settings.size.GetWidth()  < 1.0 ? desktop_width : 1U)),
+        static_cast<uint32_t>(app_settings.size.GetHeight() * static_cast<float>(app_settings.size.GetHeight() < 1.0 ? desktop_height : 1U))
     );
 
     RECT window_rect{ 0, 0, static_cast<LONG>(frame_size.GetWidth()), static_cast<LONG>(frame_size.GetHeight()) };
@@ -221,12 +221,12 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
     int header = (window_rect.bottom - window_rect.top) - client_rect.bottom;
 
     
-    const Settings& settings  = GetPlatformAppSettings();
-    int32_t min_window_width  = settings.min_width + border;
-    int32_t min_window_height = settings.min_height + header;
+    const Settings& settings = GetPlatformAppSettings();
+    const int32_t min_window_width  = settings.min_size.GetWidth()  + border;
+    const int32_t min_window_height = settings.min_size.GetHeight() + header;
 
     // Update window rectangle with respect to minimum size limit
-    auto p_window_rect = reinterpret_cast<PRECT>(l_param);
+    auto p_window_rect = reinterpret_cast<PRECT>(l_param); // NOSONAR
 
     if (p_window_rect->right - p_window_rect->left < min_window_width)
     {
@@ -321,10 +321,9 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
     META_FUNCTION_TASK();
     META_UNUSED(w_param);
 
-    const int x = GET_X_LPARAM(l_param);
-    const int y = GET_Y_LPARAM(l_param);
+    const Mouse::Position mouse_pos(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
 
-    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ x, y });
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
 
     if (!GetInputState().GetMouseState().IsInWindow())
     {
@@ -376,11 +375,11 @@ LRESULT CALLBACK AppWin::WindowProc(HWND h_wnd, UINT msg_id, WPARAM w_param, LPA
 
     if (msg_id == WM_CREATE)
     {
-        SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams));
+        SetWindowLongPtr(h_wnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(reinterpret_cast<LPCREATESTRUCT>(l_param)->lpCreateParams)); // NOSONAR
         return 0;
     }
 
-    auto p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA));
+    auto p_app = reinterpret_cast<AppWin*>(GetWindowLongPtr(h_wnd, GWLP_USERDATA)); // NOSONAR
     if (!p_app || !p_app->IsMessageProcessing())
     {
         return DefWindowProc(h_wnd, msg_id, w_param, l_param);

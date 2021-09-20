@@ -146,13 +146,13 @@ public:
 
     void SetName(std::string_view name) noexcept
     {
-        const auto name_ptr = reinterpret_cast<char*>(tracy::tracy_malloc(name.length()));
+        const auto name_ptr = reinterpret_cast<char*>(tracy::tracy_malloc(name.length())); // NOSONAR
         memcpy(name_ptr, name.data(), name.length());
 
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,                  tracy::QueueType::GpuContextName);
         tracy::MemWrite(&item->gpuContextNameFat.context, m_id);
-        tracy::MemWrite(&item->gpuContextNameFat.ptr,     reinterpret_cast<uint64_t>(name_ptr));
+        tracy::MemWrite(&item->gpuContextNameFat.ptr,     reinterpret_cast<uint64_t>(name_ptr)); // NOSONAR
         tracy::MemWrite(&item->gpuContextNameFat.size,    static_cast<uint16_t>(name.length()));
         FinishSerialItem(*item);
     }
@@ -226,7 +226,7 @@ public:
         const tracy::QueueType item_type = call_stack_depth > 0 ? tracy::QueueType::GpuZoneBeginCallstackSerial : tracy::QueueType::GpuZoneBeginSerial;
         tracy::MemWrite(&item->hdr.type,             item_type);
         tracy::MemWrite(&item->gpuZoneBegin.cpuTime, tracy::Profiler::GetTime());
-        tracy::MemWrite(&item->gpuZoneBegin.srcloc,  reinterpret_cast<uint64_t>(src_location));
+        tracy::MemWrite(&item->gpuZoneBegin.srcloc,  reinterpret_cast<uint64_t>(src_location)); // NOSONAR
         tracy::MemWrite(&item->gpuZoneBegin.thread,  m_begin_thread_id);
         tracy::MemWrite(&item->gpuZoneBegin.queryId, m_begin_query_id);
         tracy::MemWrite(&item->gpuZoneBegin.context, m_context.GetId());

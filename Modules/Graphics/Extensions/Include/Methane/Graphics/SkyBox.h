@@ -33,6 +33,13 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include <SkyBoxUniforms.h> // NOSONAR
+#pragma pack(pop)
+}
+
 #include <memory>
 #include <array>
 
@@ -57,7 +64,7 @@ public:
         const Camera&                  view_camera;
         ImageLoader::CubeFaceResources face_resources;
         float                          scale;
-        ImageLoader::Options     image_options  = ImageLoader::Options::None;
+        ImageLoader::Options           image_options  = ImageLoader::Options::None;
         Options                        render_options = Options::None;
         float                          lod_bias       = 0.F;
     };
@@ -67,7 +74,7 @@ public:
         hlslpp::float4x4 mvp_matrix;
     };
 
-    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings);
+    SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings);
 
     Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
@@ -83,13 +90,15 @@ private:
         };
     };
 
-    SkyBox(RenderContext& context, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
+    SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
 
-    Settings                      m_settings;
-    RenderContext&                m_context;
-    TexturedMeshBuffers<Uniforms> m_mesh_buffers;
-    Ptr<Sampler>                  m_texture_sampler_ptr;
-    Ptr<RenderState>              m_render_state_ptr;
+    using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
+
+    Settings         m_settings;
+    RenderContext&   m_context;
+    TexMeshBuffers   m_mesh_buffers;
+    Ptr<Sampler>     m_texture_sampler_ptr;
+    Ptr<RenderState> m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

@@ -31,7 +31,6 @@ Base implementation of the parallel render command list interface.
 #include "ContextBase.h"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Data/Parallel.hpp>
 
 #include <taskflow/taskflow.hpp>
 #include <fmt/format.h>
@@ -48,7 +47,7 @@ inline std::string GetThreadCommandListName(std::string_view name, Data::Index i
 
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListBase(command_queue, Type::ParallelRender)
-    , m_render_pass_ptr(render_pass.GetRenderPassPtr())
+    , m_render_pass_ptr(render_pass.GetPtr<RenderPassBase>())
 {
     META_FUNCTION_TASK();
 }
@@ -105,8 +104,7 @@ void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const R
     // Per-thread render command lists can be reset in parallel only with DirectX 12 on Windows
 #ifdef _WIN32
     tf::Taskflow reset_task_flow;
-    reset_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(m_parallel_command_lists.size()), 1U, reset_command_list_fn,
-                                          Data::GetParallelChunkSize(m_parallel_command_lists.size()));
+    reset_task_flow.for_each_index(0U, static_cast<uint32_t>(m_parallel_command_lists.size()), 1U, reset_command_list_fn);
     GetCommandQueueBase().GetContext().GetParallelExecutor().run(reset_task_flow).get();
 #else
     for(Data::Index command_list_index = 0U; command_list_index < static_cast<Data::Index>(m_parallel_command_lists.size()); ++command_list_index)

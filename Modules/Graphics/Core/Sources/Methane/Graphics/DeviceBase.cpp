@@ -31,10 +31,38 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
-DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, Features supported_features)
+Device::Capabilities& Device::Capabilities::SetFeatures(Features new_features) noexcept
+{
+    META_FUNCTION_TASK();
+    features = new_features;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetPresentToWindow(bool new_present_to_window) noexcept
+{
+    META_FUNCTION_TASK();
+    present_to_window = new_present_to_window;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
+{
+    META_FUNCTION_TASK();
+    render_queues_count = new_render_queues_count;
+    return *this;
+}
+
+Device::Capabilities& Device::Capabilities::SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept
+{
+    META_FUNCTION_TASK();
+    blit_queues_count = new_blit_queues_count;
+    return *this;
+}
+
+DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
     : m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
-    , m_supported_features(supported_features)
+    , m_capabilities(capabilities)
 {
     META_FUNCTION_TASK();
 }
@@ -55,6 +83,19 @@ void DeviceBase::OnRemoved()
 {
     META_FUNCTION_TASK();
     Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
+}
+
+System::GraphicsApi System::GetGraphicsApi() noexcept
+{
+#if defined METHANE_GFX_METAL
+    return GraphicsApi::Metal;
+#elif defined METHANE_GFX_DIRECTX
+    return GraphicsApi::DirectX;
+#elif defined METHANE_GFX_VULKAN
+    return GraphicsApi::Vulkan;
+#else
+    return GraphicsApi::Undefined;
+#endif
 }
 
 void SystemBase::RequestRemoveDevice(Device& device) const
@@ -78,7 +119,7 @@ void SystemBase::RemoveDevice(Device& device)
     static_cast<DeviceBase&>(device).OnRemoved();
 }
 
-Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
+Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const noexcept
 {
     META_FUNCTION_TASK();
     Ptr<Device> next_device_ptr;
@@ -95,7 +136,7 @@ Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
 }
 
-Ptr<Device> SystemBase::GetSoftwareGpuDevice() const
+Ptr<Device> SystemBase::GetSoftwareGpuDevice() const noexcept
 {
     META_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),

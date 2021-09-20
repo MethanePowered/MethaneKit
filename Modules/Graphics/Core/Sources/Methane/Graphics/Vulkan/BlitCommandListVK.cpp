@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/BlitCommandListVK.cpp
+FILE: Methane/Graphics/Vulkan/BlitCommandListVK.cpp
 Vulkan implementation of the blit command list interface.
 
 ******************************************************************************/
@@ -33,61 +33,18 @@ namespace Methane::Graphics
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BlitCommandListVK>(static_cast<CommandQueueBase&>(command_queue));
+#if 0
+    return std::make_shared<BlitCommandListVK>(static_cast<CommandQueueVK&>(command_queue));
+#else
+    META_UNUSED(command_queue);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("BlitCommandList has no Vulkan API implementation yet");
+#endif
 }
 
-BlitCommandListVK::BlitCommandListVK(CommandQueueBase& command_queue)
-    : CommandListBase(command_queue, CommandList::Type::Blit)
+BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
+    : CommandListVK<CommandListBase>(command_queue, CommandList::Type::Blit)
 {
     META_FUNCTION_TASK();
-}
-
-void BlitCommandListVK::Reset(DebugGroup* p_debug_group)
-{
-    META_FUNCTION_TASK();
-    CommandListBase::Reset(p_debug_group);
-}
-
-void BlitCommandListVK::SetName(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    CommandListBase::SetName(name);
-}
-
-void BlitCommandListVK::PushDebugGroup(DebugGroup& debug_group)
-{
-    META_FUNCTION_TASK();
-    CommandListBase::PushDebugGroup(debug_group);
-}
-
-void BlitCommandListVK::PopDebugGroup()
-{
-    META_FUNCTION_TASK();
-    CommandListBase::PopDebugGroup();
-}
-
-void BlitCommandListVK::Commit()
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE(IsCommitted());
-    CommandListBase::Commit();
-}
-
-void BlitCommandListVK::SetResourceBarriers(const Resource::Barriers&)
-{
-    META_FUNCTION_NOT_IMPLEMENTED();
-}
-
-void BlitCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
-{
-    META_FUNCTION_TASK();
-    CommandListBase::Execute(frame_index, completed_callback);
-}
-
-CommandQueueVK& BlitCommandListVK::GetCommandQueueVK() noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
 } // namespace Methane::Graphics

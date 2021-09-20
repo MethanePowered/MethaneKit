@@ -7,18 +7,10 @@ get_module_dirs("Methane/Graphics")
 set(HEADERS
     ${INCLUDE_DIR}/FpsCounter.h
     ${INCLUDE_DIR}/PerlinNoise.h
-    ${INCLUDE_DIR}/Mesh.h
-    ${INCLUDE_DIR}/Mesh/BaseMesh.hpp
-    ${INCLUDE_DIR}/Mesh/QuadMesh.hpp
-    ${INCLUDE_DIR}/Mesh/CubeMesh.hpp
-    ${INCLUDE_DIR}/Mesh/UberMesh.hpp
-    ${INCLUDE_DIR}/Mesh/SphereMesh.hpp
-    ${INCLUDE_DIR}/Mesh/IcosahedronMesh.hpp
 )
 
 set(SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
-    ${SOURCES_DIR}/Mesh.cpp
     ${SOURCES_DIR}/PerlinNoise.cpp
 )
 

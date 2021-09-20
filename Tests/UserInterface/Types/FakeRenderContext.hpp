@@ -25,6 +25,7 @@ Fake render context used for UI types testing
 
 #include <Methane/Exceptions.hpp>
 #include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/RenderContext.h>
@@ -43,22 +44,27 @@ public:
     [[nodiscard]] bool        HasGraphicsObject(const std::string&) const noexcept override { return false; }
 };
 
-class FakeDevice : public Device, public Data::Emitter<IDeviceCallback>
+class FakeDevice
+    : public Device
+    , public Data::Emitter<IDeviceCallback>
+    , public std::enable_shared_from_this<FakeDevice>
 {
 public:
     // Device interface
-    [[nodiscard]] const std::string& GetAdapterName() const noexcept override   { static std::string name; return name; }
-    [[nodiscard]] bool        IsSoftwareAdapter() const noexcept override       { return true; }
-    [[nodiscard]] Features    GetSupportedFeatures() const noexcept override    { return { }; }
-    [[nodiscard]] std::string ToString() const override                         { return { }; }
+    [[nodiscard]] const std::string& GetAdapterName() const noexcept override { static std::string s_name; return s_name; }
+    [[nodiscard]] bool IsSoftwareAdapter() const noexcept override { return true; }
+    [[nodiscard]] const Capabilities& GetCapabilities() const noexcept override { static const Capabilities s_caps; return s_caps; }
+    [[nodiscard]] std::string ToString() const override { return { }; }
 
     // Object interface
     void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return nullptr; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
 };
 
-class FakeCommandQueue : public CommandQueue
+class FakeCommandQueue
+    : public CommandQueue
+    , public std::enable_shared_from_this<FakeCommandQueue>
 {
 public:
     FakeCommandQueue(const Context& context, CommandList::Type type)
@@ -74,14 +80,15 @@ public:
     // Object interface
     void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return nullptr; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
 
 private:
     const Context&    m_context;
     CommandList::Type m_type;
 };
 
-class FakeCommandListSet : public CommandListSet
+class FakeCommandListSet
+    : public CommandListSet
 {
 public:
     [[nodiscard]] Data::Size               GetCount() const noexcept override       { return 0; }
@@ -93,7 +100,9 @@ private:
 };
 
 template<typename CommandListType, CommandList::Type command_list_type>
-class FakeCommandList : public CommandListType
+class FakeCommandList
+    : public CommandListType
+    , public std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>
 {
 public:
     FakeCommandList(CommandQueue& command_queue)
@@ -117,7 +126,7 @@ public:
     // Object interface
     void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return nullptr; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
 
 private:
     CommandQueue& m_command_queue;
@@ -128,6 +137,7 @@ using FakeBlitCommandList   = FakeCommandList<BlitCommandList,   CommandList::Ty
 class FakeRenderContext
     : public RenderContext
     , public Data::Emitter<IContextCallback>
+    , public std::enable_shared_from_this<FakeRenderContext>
 {
 public:
     FakeRenderContext(const Settings& settings, float content_scale, uint32_t font_dpi)
@@ -138,8 +148,8 @@ public:
 
     // RenderContext interface
     [[nodiscard]] bool ReadyToRender() const override                                   { return false; }
-    void Resize(const FrameSize&) override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Present() override                                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Resize(const FrameSize&) override                                              { throw Methane::NotImplementedException("Resize"); }
+    void Present() override                                                             { throw Methane::NotImplementedException("Present"); }
     [[nodiscard]] Platform::AppView GetAppView() const override                         { return { }; }
     [[nodiscard]] const Settings&   GetSettings() const noexcept override               { return m_settings; }
     [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override       { return 0U; }
@@ -156,21 +166,22 @@ public:
     [[nodiscard]] Options GetOptions() const noexcept override                          { return Options::None; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override           { return m_executor; }
     [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override              { return m_object_registry; }
+    [[nodiscard]] const Object::Registry& GetObjectsRegistry() const noexcept override  { return m_object_registry; }
     void RequestDeferredAction(DeferredAction) const noexcept override                  { }
-    void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void CompleteInitialization() override                                              { throw Methane::NotImplementedException("CompleteInitialization"); }
     [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
-    void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void WaitForGpu(WaitFor) override                                                   { throw Methane::NotImplementedException("WaitForGpu"); }
+    void Reset(Device&) override                                                        { throw Methane::NotImplementedException("Reset"); }
+    void Reset() override                                                               { throw Methane::NotImplementedException("Reset"); }
 
     [[nodiscard]] const Device& GetDevice() const override                              { return m_fake_device; }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // Object interface
-    void SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetName(const std::string&) override                                           { throw Methane::NotImplementedException("SetName"); }
     [[nodiscard]] const std::string& GetName() const noexcept override                  { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return nullptr; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return shared_from_this(); }
 
 private:
     Settings               m_settings;
@@ -180,6 +191,30 @@ private:
     FpsCounter             m_fps_counter;
     FakeObjectRegistry     m_object_registry;
     mutable tf::Executor   m_executor;
+};
+
+class FakeRenderPattern
+    : public RenderPattern
+    , public std::enable_shared_from_this<FakeRenderPattern>
+{
+public:
+    FakeRenderPattern(RenderContext& render_context) : m_render_context(render_context) { }
+
+    // RenderPattern interface
+    const RenderContext& GetRenderContext() const noexcept override     { return m_render_context; }
+    RenderContext&       GetRenderContext() noexcept override           { return m_render_context; }
+    const Settings&      GetSettings() const noexcept override          { return m_settings; }
+    Data::Size           GetAttachmentCount() const noexcept override   { return 0U; }
+    AttachmentFormats    GetAttachmentFormats() const noexcept override { return {}; }
+
+    // Object interface
+    void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
+    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
+
+private:
+    RenderContext& m_render_context;
+    Settings m_settings;
 };
 
 } // namespace Methane::Graphics

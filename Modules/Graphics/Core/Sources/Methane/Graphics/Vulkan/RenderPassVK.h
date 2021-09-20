@@ -23,25 +23,72 @@ Vulkan implementation of the render pass interface.
 
 #pragma once
 
+#include "RenderContextVK.h"
+
 #include <Methane/Graphics/RenderPassBase.h>
+
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
 struct IContextVK;
+class RenderContextVK;
 
-class RenderPassVK final : public RenderPassBase
+class RenderPatternVK
+    : public RenderPatternBase
 {
 public:
-    RenderPassVK(const RenderContextBase& context, const Settings& settings);
+    RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
+
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
+
+    [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
+    [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
+
+    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept                   { return m_vk_unique_render_pass.get(); }
+    [[nodiscard]] const std::vector<vk::ClearValue>& GetAttachmentClearValues() const noexcept { return m_attachment_clear_colors; }
+
+private:
+    vk::UniqueRenderPass        m_vk_unique_render_pass;
+    std::vector<vk::ClearValue> m_attachment_clear_colors;
+};
+
+class RenderPassVK final
+    : public RenderPassBase
+    , protected Data::Receiver<IRenderContextVKCallback>
+{
+public:
+    RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
+    void ReleaseAttachmentTextures() override;
+
+    // RenderPassBase overrides
+    void Begin(RenderCommandListBase& command_list) override;
+    void End(RenderCommandListBase& command_list) override;
+
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
     
     void Reset();
 
-private:
     const IContextVK& GetContextVK() const noexcept;
+    RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
+
+    const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
+
+protected:
+    // IRenderContextVKCallback overrides
+    void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
+
+private:
+    vk::RenderPassBeginInfo CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
+
+    vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
+    vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };
 
 } // namespace Methane::Graphics

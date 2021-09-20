@@ -25,12 +25,19 @@ Random generated asteroids array with uber-mesh and textures ready for rendering
 
 #include "Asteroid.h"
 
-#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Mesh.h>
 #include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
 #include <Methane/Graphics/Camera.h>
+
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include "Shaders/AsteroidUniforms.h" // NOSONAR
+#pragma pack(pop)
+}
 
 #include <taskflow/taskflow.hpp>
 
@@ -39,10 +46,10 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-class AsteroidsArray final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class AsteroidsArray final : public gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>
 {
 public:
-    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
+    using BaseBuffers = gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>;
 
     struct Settings
     {
@@ -98,8 +105,8 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::RenderContext& context, const Settings& settings);
-    AsteroidsArray(gfx::RenderContext& context, const Settings& settings, ContentState& state);
+    AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings);
+    AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state);
 
     [[nodiscard]] const Settings& GetSettings() const         { return m_settings; }
     [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
@@ -131,14 +138,14 @@ private:
 
     void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians);
 
-    const Settings               m_settings;
-    Ptr<ContentState>            m_content_state_ptr;
-    Textures                     m_unique_textures;
-    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
-    Ptr<gfx::RenderState>        m_render_state_ptr;
-    MeshSubsetByInstanceIndex    m_mesh_subset_by_instance_index;
-    bool                         m_mesh_lod_coloring_enabled = false;
-    float                        m_min_mesh_lod_screen_size_log_2;
+    const Settings            m_settings;
+    Ptr<ContentState>         m_content_state_ptr;
+    Textures                  m_unique_textures;
+    Ptr<gfx::Sampler>         m_texture_sampler_ptr;
+    Ptr<gfx::RenderState>     m_render_state_ptr;
+    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
+    bool                      m_mesh_lod_coloring_enabled = false;
+    float                     m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples

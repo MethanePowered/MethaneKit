@@ -67,7 +67,6 @@ public:
     // RenderStateBase interface
     virtual void Apply(RenderCommandListBase& command_list, Groups apply_groups) = 0;
 
-    Ptr<RenderStateBase>     GetRenderStatePtr() noexcept      { return std::static_pointer_cast<RenderStateBase>(GetBasePtr()); }
     const RenderContextBase& GetRenderContext() const noexcept { return m_context; }
 
 protected:

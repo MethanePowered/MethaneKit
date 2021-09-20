@@ -25,6 +25,8 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/ProgramBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -35,12 +37,20 @@ class ProgramVK final : public ProgramBase
 {
 public:
     ProgramVK(const ContextBase& context, const Settings& settings);
-    ~ProgramVK() override;
+
+    // ObjectBase overrides
+    void SetName(const std::string& name) override;
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
 
+    std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
+    vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
+    const vk::PipelineLayout& GetNativePipelineLayout() const noexcept { return m_vk_unique_pipeline_layout.get(); }
+
 private:
     const IContextVK& GetContextVK() const noexcept;
+
+    vk::UniquePipelineLayout m_vk_unique_pipeline_layout;
 };
 
 } // namespace Methane::Graphics

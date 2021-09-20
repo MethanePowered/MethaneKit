@@ -44,6 +44,13 @@ Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
     META_FUNCTION_TASK();
 }
 
+Resource::AllocationError::AllocationError(const Resource& resource, std::string_view error_message)
+    : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
+    , m_resource(resource)
+{
+    META_FUNCTION_TASK();
+}
+
 ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
     : m_type(type)
     , m_usage_mask(usage_mask)
@@ -51,7 +58,6 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& conte
     , m_descriptor_by_usage(descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-
     for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
         descriptor.heap.ReplaceResource(*this, descriptor.index);
@@ -61,7 +67,6 @@ ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& conte
 ResourceBase::~ResourceBase()
 {
     META_FUNCTION_TASK();
-
     for (const auto& [usage, descriptor] : m_descriptor_by_usage)
     {
         descriptor.heap.RemoveResource(descriptor.index);
@@ -251,14 +256,9 @@ void ResourceBase::ValidateSubResource(const SubResource& sub_resource) const
     {
         META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
                                    "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
-        META_CHECK_ARG_LESS_DESCR(sub_resource.GetDataSize(), sub_resource_data_size + 1,
-                                  "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
     }
-    else
-    {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
-                                   "Sub-resource {} data size should be equal to full resource size when data range is not specified", sub_resource.GetIndex());
-    }
+    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
+                                       "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
 }
 
 void ResourceBase::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const

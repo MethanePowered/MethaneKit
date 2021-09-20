@@ -1,6 +1,11 @@
 # Methane Kit CI configuration for Windows platform
 # https://aka.ms/yaml
 
+parameters:
+  - name: runTests
+    type: boolean
+    default: true
+
 steps:
 
   - script: |
@@ -32,6 +37,7 @@ steps:
       )
       exit 0
     workingDirectory: '$(installDir)\Tests'
+    enabled: ${{ parameters.runTests }}
     failOnStderr: false
     displayName: 'Run all unit-tests from install directory'
 
@@ -49,6 +55,7 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishTestResults@2
+    enabled: ${{ parameters.runTests }}
     continueOnError: true
     inputs:
       testResultsFormat: 'JUnit'
@@ -64,4 +71,4 @@ steps:
     displayName: 'Publish install artifacts for $(platform) $(configuration)'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: MethaneKit-$(buildName)
+      artifactName: MethaneKit-$(buildName)_v$(product.Version.Full)

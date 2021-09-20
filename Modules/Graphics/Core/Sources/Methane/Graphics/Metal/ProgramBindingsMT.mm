@@ -179,7 +179,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindi
 
 ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings)
     : ArgumentBindingBase(context, settings)
-    , m_settings_mt(std::move(settings))
+    , m_settings_mt(settings)
 {
     META_FUNCTION_TASK();
 }

@@ -37,11 +37,15 @@ DirectX 12 implementation of the shader interface.
 #include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>
+#include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <sstream>
+#include <set>
 
 namespace Methane::Graphics
 {
+
+static const std::set<std::string, std::less<>> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
 [[nodiscard]]
 static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
@@ -117,7 +121,7 @@ ShaderDX::ShaderDX(Type type, const ContextBase& context, const Settings& settin
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(compiled_func_name + ".obj"));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.obj", compiled_func_name)));
     }
 
     META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
@@ -234,6 +238,8 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         if (param_index < shader_desc.InputParameters - 1)
             log_ss << std::endl;
 #endif
+        if (g_skip_semantic_names.count(param_desc.SemanticName))
+            continue;
 
         const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);

@@ -1,6 +1,11 @@
 # Methane Kit CI configuration for MacOS platform
 # https://aka.ms/yaml
 
+parameters:
+  - name: runTests
+    type: boolean
+    default: true
+
 steps:
 
   - script: |
@@ -32,6 +37,7 @@ steps:
         echo  - $test_exe - completed with $? exit status
       done
     workingDirectory: '$(installDir)/Tests'
+    enabled: ${{ parameters.runTests }}
     displayName: 'Run all unit-tests from install directory'
 
   - script: |
@@ -48,6 +54,7 @@ steps:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishTestResults@2
+    enabled: ${{ parameters.runTests }}
     continueOnError: true
     inputs:
       testResultsFormat: 'JUnit'
@@ -63,4 +70,4 @@ steps:
     displayName: 'Publish install artifacts for $(platform) $(configuration)'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: MethaneKit-$(buildName)
+      artifactName: MethaneKit-$(buildName)_v$(product.Version.Full)

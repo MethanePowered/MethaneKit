@@ -88,7 +88,7 @@ set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
     <taskflow/taskflow.hpp>
 )
 
-if (WIN32)
+if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
 
     set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
         <d3d12.h>
@@ -97,6 +97,23 @@ if (WIN32)
 
     set(PLATFORM_LIBRARIES
         D3DX12
+    )
+
+endif()
+
+if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+
+    set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
+        <vulkan/vulkan.hpp>
+    )
+
+    set(PLATFORM_LIBRARIES
+        Vulkan-Headers
+    )
+
+    set(PRECOMPILED_EXTRA_DEFINITIONS
+        VK_NO_PROTOTYPES
+        $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
     )
 
 endif()
@@ -120,6 +137,11 @@ target_link_libraries(${EXTRA_TARGET}
 target_precompile_headers(${EXTRA_TARGET}
     PUBLIC
         ${PRECOMPILED_EXTRA_HEADERS}
+)
+
+target_compile_definitions(${EXTRA_TARGET}
+    PUBLIC
+        ${PRECOMPILED_EXTRA_DEFINITIONS}
 )
 
 set_target_properties(${EXTRA_TARGET}

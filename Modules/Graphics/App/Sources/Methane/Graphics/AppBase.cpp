@@ -41,6 +41,62 @@ namespace Methane::Graphics
 
 static constexpr double g_title_update_interval_sec = 1.0;
 
+IApp::Settings& IApp::Settings::SetScreenPassAccess(RenderPass::Access new_screen_pass_access) noexcept
+{
+    META_FUNCTION_TASK();
+    screen_pass_access = new_screen_pass_access;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetAnimationsEnabled(bool new_animations_enabled) noexcept
+{
+    META_FUNCTION_TASK();
+    animations_enabled = new_animations_enabled;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept
+{
+    META_FUNCTION_TASK();
+    show_hud_in_window_title = new_show_hud_in_window_title;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept
+{
+    META_FUNCTION_TASK();
+    default_device_index = new_default_device_index;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetDeviceCapabilities(Device::Capabilities&& new_device_capabilities) noexcept
+{
+    META_FUNCTION_TASK();
+    device_capabilities = std::move(new_device_capabilities);
+    return *this;
+}
+
+AppSettings& AppSettings::SetPlatformAppSettings(Platform::App::Settings&& new_platform_app_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    platform_app = std::move(new_platform_app_settings);
+    return *this;
+}
+
+AppSettings& AppSettings::SetGraphicsAppSettings(IApp::Settings&& new_graphics_app_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    graphics_app = std::move(new_graphics_app_settings);
+    return *this;
+}
+
+AppSettings& AppSettings::SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    render_context = std::move(new_render_context_settings);
+    return *this;
+}
+
 AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)
@@ -50,10 +106,10 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    add_option("-a,--animations", m_settings.animations_enabled, "Enable animations", true);
-    add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter", true);
-    add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization", true);
-    add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain", true);
+    add_option("-a,--animations", m_settings.animations_enabled, "Enable animations");
+    add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter");
+    add_option("-v,--vsync", m_initial_context_settings.vsync_enabled, "Vertical synchronization");
+    add_option("-b,--frame-buffers", m_initial_context_settings.frame_buffers_count, "Frame buffers count in swap-chain");
 
 #ifdef _WIN32
     add_flag("-e,--emulated-render-pass",
@@ -70,8 +126,8 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     META_FUNCTION_TASK();
     META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
 
-    const Ptrs<Device>& devices = System::Get().UpdateGpuDevices();
-    META_CHECK_ARG_NOT_EMPTY(devices);
+    const Ptrs<Device>& devices = System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
+    META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
 
     Ptr<Device> device_ptr;
     if (m_settings.default_device_index < 0)
@@ -87,6 +143,39 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
     m_context_ptr->SetName("Graphics Context");
     m_context_ptr->Connect(*this);
+
+    // Fill initial screen render-pass pattern settings
+    m_screen_pass_pattern_settings.shader_access_mask = m_settings.screen_pass_access;
+    m_screen_pass_pattern_settings.is_final_pass      = true;
+
+    // Final frame color attachment
+    Data::Index attachment_index = 0U;
+    m_screen_pass_pattern_settings.color_attachments = {
+        RenderPass::ColorAttachment(
+            attachment_index++,
+            m_initial_context_settings.color_format, 1U,
+            m_initial_context_settings.clear_color.has_value()
+            ? RenderPass::Attachment::LoadAction::Clear
+            : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::Store,
+            m_initial_context_settings.clear_color.value_or(Color4F())
+        )
+    };
+
+    // Create frame depth texture and attachment description
+    if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
+    {
+        static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
+        m_screen_pass_pattern_settings.depth_attachment = RenderPass::DepthAttachment(
+            attachment_index++,
+            m_initial_context_settings.depth_stencil_format, 1U,
+            m_initial_context_settings.clear_depth_stencil.has_value()
+            ? RenderPass::Attachment::LoadAction::Clear
+            : RenderPass::Attachment::LoadAction::DontCare,
+            RenderPass::Attachment::StoreAction::DontCare,
+            m_initial_context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
+        );
+    }
 
     AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });
 
@@ -107,17 +196,20 @@ void AppBase::Init()
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
     const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
 
-    // Create depth texture for FB rendering
+    // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
         m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(*m_context_ptr);
         m_depth_texture_ptr->SetName("Depth Texture");
     }
 
+    // Create screen render pass pattern
+    m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+
     m_view_state_ptr = ViewState::Create({
-         { GetFrameViewport(context_settings.frame_size)    },
-         { GetFrameScissorRect(context_settings.frame_size) }
-     });
+        { GetFrameViewport(context_settings.frame_size)    },
+        { GetFrameScissorRect(context_settings.frame_size) }
+    });
 
     Platform::App::Init();
 }
@@ -243,36 +335,26 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Ptr<RenderPass> AppBase::CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture) const
+Texture::Locations AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(frame_buffer_texture);
+    Texture::Locations attachments{
+        Texture::Location(frame_buffer_texture)
+    };
 
-    const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
-    static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
+    if (m_depth_texture_ptr)
+        attachments.emplace_back(*m_depth_texture_ptr);
 
-    return RenderPass::Create(*m_context_ptr, {
-        {
-            RenderPass::ColorAttachment(
-                Texture::Location{ frame_buffer_texture },
-                context_settings.clear_color.has_value()
-                    ? RenderPass::Attachment::LoadAction::Clear
-                    : RenderPass::Attachment::LoadAction::DontCare,
-                RenderPass::Attachment::StoreAction::Store,
-                context_settings.clear_color.value_or(Color4F())
-            )
-        },
-        RenderPass::DepthAttachment(
-            Texture::Location{ m_depth_texture_ptr },
-            context_settings.clear_depth_stencil.has_value()
-                ? RenderPass::Attachment::LoadAction::Clear
-                : RenderPass::Attachment::LoadAction::DontCare,
-            RenderPass::Attachment::StoreAction::DontCare,
-            context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
-        ),
-        RenderPass::StencilAttachment(),
-        m_settings.screen_pass_access,
-        true // final render pass
+    return attachments;
+}
+
+Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_context_ptr);
+    return RenderPass::Create(GetScreenRenderPattern(), {
+        GetScreenPassAttachments(frame_buffer_texture),
+        m_context_ptr->GetSettings().frame_size
     });
 }
 
@@ -308,12 +390,13 @@ void AppBase::UpdateWindowTitle()
     const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
     const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
     const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
-    const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  F1 - help",
+    const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,
                                           average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
                                           context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(),
                                           context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
-                                          m_context_ptr->GetDevice().GetAdapterName());
+                                          m_context_ptr->GetDevice().GetAdapterName(),
+                                          magic_enum::enum_name(System::GetGraphicsApi()));
 
     SetWindowTitle(title);
 }
@@ -330,6 +413,7 @@ void AppBase::OnContextReleased(Context&)
     m_restore_animations_enabled = m_settings.animations_enabled;
     SetBaseAnimationsEnabled(false);
 
+    m_screen_render_pattern_ptr.reset();
     m_depth_texture_ptr.reset();
     m_view_state_ptr.reset();
 

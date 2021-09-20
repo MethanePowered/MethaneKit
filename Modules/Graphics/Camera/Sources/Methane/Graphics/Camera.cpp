@@ -71,7 +71,7 @@ hlslpp::frustum Camera::CreateFrustum() const
         return hlslpp::frustum(m_screen_size.GetWidth(), m_screen_size.GetHeight(), m_parameters.near_depth, m_parameters.far_depth);
 
     default:
-        META_UNEXPECTED_ARG(m_projection);
+        META_UNEXPECTED_ARG_RETURN(m_projection, hlslpp::frustum(0.F, 0.F, 0.F, 0.F));
     }
 }
 
@@ -109,7 +109,7 @@ hlslpp::float4x4 Camera::CreateProjMatrix() const
         return hlslpp::float4x4::orthographic(*m_projection_settings);
 
     default:
-        META_UNEXPECTED_ARG(m_projection);
+        META_UNEXPECTED_ARG_RETURN(m_projection, hlslpp::float4x4{});
     }
 }
 

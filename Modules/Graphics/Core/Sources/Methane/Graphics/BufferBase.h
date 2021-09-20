@@ -24,8 +24,11 @@ Base implementation of the buffer interface.
 #pragma once
 
 #include "ResourceBase.h"
+#include "ContextBase.h"
 
 #include <Methane/Graphics/Buffer.h>
+
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
@@ -43,8 +46,6 @@ public:
     // Buffer interface
     const Settings& GetSettings() const noexcept final { return m_settings; }
     uint32_t GetFormattedItemsCount() const noexcept final;
-
-    Ptr<BufferBase> GetBufferPtr() { return std::static_pointer_cast<BufferBase>(GetBasePtr()); }
 
 private:
     Settings m_settings;

@@ -59,38 +59,39 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(RenderContext& context, const Settings& settings);
-    ScreenQuad(RenderContext& context, const Ptr<Texture>& texture_ptr, const Settings& settings);
+    ScreenQuad(RenderPattern& render_pattern, const Settings& settings);
+    ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings);
 
     void SetBlendColor(const Color4F& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
     void SetTexture(Ptr<Texture> texture_ptr);
 
-    [[nodiscard]] const Settings& GetQuadSettings() const noexcept { return m_settings; }
-    [[nodiscard]] FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / m_context.GetContentScalingFactor(); }
+    [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
+    [[nodiscard]] FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / GetRenderContext().GetContentScalingFactor(); }
     [[nodiscard]] const Texture&  GetTexture() const;
 
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
-    [[nodiscard]] RenderContext& GetRenderContext() noexcept { return m_context; }
+    RenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }
+    const RenderContext& GetRenderContext() const noexcept;
 
 private:
     void UpdateConstantsBuffer() const;
 
     [[nodiscard]] static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
-    Settings             m_settings;
-    RenderContext&       m_context;
-    Ptr<RenderState>     m_render_state_ptr;
-    Ptr<ViewState>       m_view_state_ptr;
-    Ptr<BufferSet>       m_vertex_buffer_set_ptr;
-    Ptr<Buffer>          m_index_buffer_ptr;
-    Ptr<Buffer>          m_const_buffer_ptr;
-    Ptr<Texture>         m_texture_ptr;
-    Ptr<Sampler>         m_texture_sampler_ptr;
-    Ptr<ProgramBindings> m_const_program_bindings_ptr;
+    Settings                 m_settings;
+    const Ptr<RenderPattern> m_render_pattern_ptr;
+    Ptr<RenderState>         m_render_state_ptr;
+    Ptr<ViewState>           m_view_state_ptr;
+    Ptr<BufferSet>           m_vertex_buffer_set_ptr;
+    Ptr<Buffer>              m_index_buffer_ptr;
+    Ptr<Buffer>              m_const_buffer_ptr;
+    Ptr<Texture>             m_texture_ptr;
+    Ptr<Sampler>             m_texture_sampler_ptr;
+    Ptr<ProgramBindings>     m_const_program_bindings_ptr;
 };
 
 } // namespace Methane::Graphics

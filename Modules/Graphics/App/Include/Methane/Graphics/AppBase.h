@@ -45,6 +45,10 @@ struct AppSettings
     Platform::App::Settings platform_app;
     IApp::Settings          graphics_app;
     RenderContext::Settings render_context;
+
+    AppSettings& SetPlatformAppSettings(Platform::App::Settings&& new_platform_app_settings) noexcept;
+    AppSettings& SetGraphicsAppSettings(IApp::Settings&& new_graphics_app_settings) noexcept;
+    AppSettings& SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept;
 };
 
 class AppBase
@@ -73,20 +77,20 @@ public:
     void SetShowHudInWindowTitle(bool show_hud_in_window_title);
 
 protected:
-    struct ResourceRestoreInfo
+    struct ResourceRestoreInfo // NOSONAR - noexcept move constructor should be auto-generated
     {
         Resource::DescriptorByUsage descriptor_by_usage;
         std::string                 name;
 
         ResourceRestoreInfo() = default;
-        ResourceRestoreInfo(const ResourceRestoreInfo&) = default;
         explicit ResourceRestoreInfo(const Ptr<Resource>& resource_ptr)
             : descriptor_by_usage(resource_ptr ? resource_ptr->GetDescriptorByUsage() : Resource::DescriptorByUsage())
             , name(resource_ptr ? resource_ptr->GetName() : std::string())
         { }
     };
 
-    Ptr<RenderPass> CreateScreenRenderPass(const Ptr<Texture>& frame_buffer_texture) const;
+    Texture::Locations GetScreenPassAttachments(Texture& frame_buffer_texture) const;
+    Ptr<RenderPass> CreateScreenRenderPass(Texture& frame_buffer_texture) const;
     ResourceRestoreInfo ReleaseDepthTexture();
     void RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info);
 
@@ -104,27 +108,33 @@ protected:
     void OnContextCompletingInitialization(Context&) override { /* no event handling logic is needed here */ }
     void OnContextInitialized(Context&) override;
 
-    const RenderContext::Settings& GetInitialContextSettings() const noexcept  { return m_initial_context_settings; }
-    bool                           IsRenderContextInitialized() const noexcept { return !!m_context_ptr; }
-    const Ptr<RenderContext>&      GetRenderContextPtr() const noexcept        { return m_context_ptr; }
-    RenderContext&                 GetRenderContext() const                    { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
-    const Ptr<ViewState>&          GetViewStatePtr() const noexcept            { return m_view_state_ptr; }
-    ViewState&                     GetViewState()                              { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
-    FrameSize                      GetFrameSizeInDots() const noexcept         { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
-    ImageLoader&                   GetImageLoader() noexcept                   { return m_image_loader; }
-    Data::AnimationsPool&          GetAnimations() noexcept                    { return m_animations; }
-    const Ptr<Texture>&            GetDepthTexturePtr() const noexcept         { return m_depth_texture_ptr; }
+    const RenderContext::Settings&  GetInitialContextSettings() const noexcept    { return m_initial_context_settings; }
+    RenderPattern::Settings&        GetScreenRenderPatternSettings() noexcept     { return m_screen_pass_pattern_settings; }
+    bool                            IsRenderContextInitialized() const noexcept   { return !!m_context_ptr; }
+    const Ptr<RenderContext>&       GetRenderContextPtr() const noexcept          { return m_context_ptr; }
+    RenderContext&                  GetRenderContext() const                      { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
+    const Ptr<RenderPattern>&       GetScreenRenderPatternPtr() const noexcept    { return m_screen_render_pattern_ptr; }
+    RenderPattern&                  GetScreenRenderPattern() const                { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
+    const Ptr<ViewState>&           GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
+    ViewState&                      GetViewState()                                { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
+    FrameSize                       GetFrameSizeInDots() const noexcept           { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
+    ImageLoader&                    GetImageLoader() noexcept                     { return m_image_loader; }
+    Data::AnimationsPool&           GetAnimations() noexcept                      { return m_animations; }
+    const Ptr<Texture>&             GetDepthTexturePtr() const noexcept           { return m_depth_texture_ptr; }
+    Texture&                        GetDepthTexture() const                       { META_CHECK_ARG_NOT_NULL(m_depth_texture_ptr); return *m_depth_texture_ptr; }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index);
 
 private:
     Graphics::IApp::Settings m_settings;
     RenderContext::Settings  m_initial_context_settings;
+    RenderPattern::Settings  m_screen_pass_pattern_settings;
     Timer                    m_title_update_timer;
     ImageLoader              m_image_loader;
     Data::AnimationsPool     m_animations;
     Ptr<RenderContext>       m_context_ptr;
     Ptr<Texture>             m_depth_texture_ptr;
+    Ptr<RenderPattern>       m_screen_render_pattern_ptr;
     Ptr<ViewState>           m_view_state_ptr;
     bool                     m_restore_animations_enabled = true;
 };

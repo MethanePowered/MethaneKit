@@ -35,6 +35,7 @@ Base implementation of the command list interface.
 #include <magic_enum.hpp>
 #include <stack>
 #include <mutex>
+#include <atomic>
 #include <condition_variable>
 
 namespace Methane::Graphics
@@ -102,7 +103,7 @@ public:
     CommandQueueBase&               GetCommandQueueBase();
     const CommandQueueBase&         GetCommandQueueBase() const;
     const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
-    Ptr<CommandListBase>            GetCommandListPtr()                  { return std::static_pointer_cast<CommandListBase>(GetBasePtr()); }
+    Ptr<CommandListBase>            GetCommandListPtr()                  { return GetPtr<CommandListBase>(); }
 
     inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
     inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
@@ -172,7 +173,9 @@ public:
 
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
-    
+    virtual void WaitUntilCompleted() = 0;
+
+    bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
     Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
@@ -183,10 +186,13 @@ public:
     const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
 
 private:
-    Refs<CommandList>      m_refs;
-    Refs<CommandListBase>  m_base_refs;
-    Ptrs<CommandListBase>  m_base_ptrs;
-    Data::Index            m_executing_on_frame_index = 0U;
+    Refs<CommandList>     m_refs;
+    Refs<CommandListBase> m_base_refs;
+    Ptrs<CommandListBase> m_base_ptrs;
+    Data::Index           m_executing_on_frame_index = 0U;
+
+    mutable TracyLockable(std::mutex, m_command_lists_mutex)
+    mutable std::atomic<bool> m_is_executing = false;
 };
 
 } // namespace Methane::Graphics

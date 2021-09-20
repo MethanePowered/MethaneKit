@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -56,26 +56,38 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
     }
 }
 
-static void ConvertRenderPassAttcachmentToMetal(const RenderPass::Attachment& pass_attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
+static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass, const RenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
 {
     META_FUNCTION_TASK();
+    const Texture::Location& texture_location = render_pass.GetAttachmentTextureLocation(attachment);
+    if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
+    {
+        static_cast<TextureMT&>(texture_location.GetTexture()).UpdateFrameBuffer();
+    }
+
     META_CHECK_ARG_NOT_NULL(mtl_attachment_desc);
-    mtl_attachment_desc.texture       = static_cast<const TextureMT&>(pass_attachment.texture_location.GetTexture()).GetNativeTexture();
-    mtl_attachment_desc.slice         = pass_attachment.texture_location.GetSubresourceIndex().GetArrayIndex();
-    mtl_attachment_desc.level         = pass_attachment.texture_location.GetSubresourceIndex().GetMipLevel();
-    mtl_attachment_desc.depthPlane    = pass_attachment.texture_location.GetSubresourceIndex().GetDepthSlice();
-    mtl_attachment_desc.loadAction    = GetMTLLoadAction(pass_attachment.load_action);
-    mtl_attachment_desc.storeAction   = GetMTLStoreAction(pass_attachment.store_action);
+    mtl_attachment_desc.texture       = static_cast<const TextureMT&>(texture_location.GetTexture()).GetNativeTexture();
+    mtl_attachment_desc.slice         = texture_location.GetSubresourceIndex().GetArrayIndex();
+    mtl_attachment_desc.level         = texture_location.GetSubresourceIndex().GetMipLevel();
+    mtl_attachment_desc.depthPlane    = texture_location.GetSubresourceIndex().GetDepthSlice();
+    mtl_attachment_desc.loadAction    = GetMTLLoadAction(attachment.load_action);
+    mtl_attachment_desc.storeAction   = GetMTLStoreAction(attachment.store_action);
 }
 
-Ptr<RenderPass> RenderPass::Create(const RenderContext& context, const Settings& settings)
+Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassMT>(dynamic_cast<const RenderContextBase&>(context), settings);
+    return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
 }
 
-RenderPassMT::RenderPassMT(const RenderContextBase& context, const Settings& settings)
-    : RenderPassBase(context, settings)
+Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderPassMT>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);
+}
+
+RenderPassMT::RenderPassMT(RenderPatternBase& render_pattern, const Settings& settings)
+    : RenderPassBase(render_pattern, settings)
 {
     META_FUNCTION_TASK();
     Reset();
@@ -94,37 +106,29 @@ void RenderPassMT::Reset()
     META_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-    const Settings& settings = GetSettings();
-    
-    uint32_t color_attach_index = 0;
-    for(const ColorAttachment& color_attach : settings.color_attachments)
-    {
-        META_CHECK_ARG_TRUE_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
-        if (color_attach.texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
-        {
-            static_cast<TextureMT&>(color_attach.texture_location.GetTexture()).UpdateFrameBuffer();
-        }
+    const Pattern::Settings& pattern_settings = GetPatternBase().GetSettings();
 
-        MTLRenderPassColorAttachmentDescriptor* mtl_color_attachment_desc = m_mtl_pass_descriptor.colorAttachments[color_attach_index];
-        ConvertRenderPassAttcachmentToMetal(color_attach, mtl_color_attachment_desc);
+    uint32_t color_attach_index = 0;
+    for(const ColorAttachment& color_attach : pattern_settings.color_attachments)
+    {
+        MTLRenderPassColorAttachmentDescriptor* mtl_color_attachment_desc = m_mtl_pass_descriptor.colorAttachments[color_attach_index++];
+        ConvertRenderPassAttachmentToMetal(*this, color_attach, mtl_color_attachment_desc);
         mtl_color_attachment_desc.clearColor  = TypeConverterMT::ColorToMetalClearColor(color_attach.clear_color);
-        
-        color_attach_index++;
     }
     
-    if (settings.depth_attachment.texture_location.IsInitialized())
+    if (pattern_settings.depth_attachment)
     {
-        ConvertRenderPassAttcachmentToMetal(settings.depth_attachment, m_mtl_pass_descriptor.depthAttachment);
-        m_mtl_pass_descriptor.depthAttachment.clearDepth = settings.depth_attachment.clear_value;
+        ConvertRenderPassAttachmentToMetal(*this, *pattern_settings.depth_attachment, m_mtl_pass_descriptor.depthAttachment);
+        m_mtl_pass_descriptor.depthAttachment.clearDepth = pattern_settings.depth_attachment->clear_value;
     }
     
-    if (settings.stencil_attachment.texture_location.IsInitialized())
+    if (pattern_settings.stencil_attachment)
     {
-        ConvertRenderPassAttcachmentToMetal(settings.stencil_attachment, m_mtl_pass_descriptor.stencilAttachment);
-        m_mtl_pass_descriptor.stencilAttachment.clearStencil  = settings.stencil_attachment.clear_value;
+        ConvertRenderPassAttachmentToMetal(*this, *pattern_settings.stencil_attachment, m_mtl_pass_descriptor.stencilAttachment);
+        m_mtl_pass_descriptor.stencilAttachment.clearStencil  = pattern_settings.stencil_attachment->clear_value;
     }
 }
-    
+
 MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 {
     META_FUNCTION_TASK();
@@ -138,7 +142,7 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 const IContextMT& RenderPassMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const IContextMT&>(GetRenderContext());
+    return static_cast<const IContextMT&>(GetPatternBase().GetRenderContextBase());
 }
 
 } // namespace Methane::Graphics

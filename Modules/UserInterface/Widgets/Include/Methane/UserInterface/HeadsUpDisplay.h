@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -60,6 +60,18 @@ public:
         Color4F                   background_color    { 0.F,  0.F,  0.F,  0.66F };
         Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
         double                    update_interval_sec = 0.33;
+
+        Settings& SetMajorFont(const Font::Description& new_major_font) noexcept;
+        Settings& SetMinorFont(const Font::Description& new_minor_font) noexcept;
+        Settings& SetPosition(const UnitPoint& new_position) noexcept;
+        Settings& SetTextMargins(const UnitSize& new_text_margins) noexcept;
+        Settings& SetTextColor(const Color4F& new_text_color) noexcept;
+        Settings& SetOnColor(const Color4F& new_on_color) noexcept;
+        Settings& SetOffColor(const Color4F& new_off_color) noexcept;
+        Settings& SetHelpColor(const Color4F& new_help_color) noexcept;
+        Settings& SetBackgroundColor(const Color4F& new_background_color) noexcept;
+        Settings& SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept;
+        Settings& SetUpdateIntervalSec(double new_update_interval_sec) noexcept;
     };
 
     HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings);
@@ -80,7 +92,7 @@ private:
         CpuTime,
         GpuName,
         HelpKey,
-        FrameBuffers,
+        FrameBuffersAndApi,
         VSync
     };
 

@@ -60,8 +60,8 @@ public:
 private:
     void InitRootSignature();
 
-    wrl::ComPtr<ID3D12RootSignature>      m_cp_root_signature;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_input_layout;
+    wrl::ComPtr<ID3D12RootSignature> m_cp_root_signature;
+    mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
 };
 
 } // namespace Methane::Graphics

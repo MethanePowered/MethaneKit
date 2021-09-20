@@ -25,7 +25,14 @@ Random generated asteroid model with mesh and texture ready for rendering.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/MeshBuffers.hpp>
-#include <Methane/Graphics/Mesh/IcosahedronMesh.hpp>
+#include <Methane/Graphics/IcosahedronMesh.hpp>
+
+namespace hlslpp // NOSONAR
+{
+#pragma pack(push, 16)
+#include "Shaders/AsteroidUniforms.h" // NOSONAR
+#pragma pack(pop)
+}
 
 #include <utility>
 
@@ -34,20 +41,10 @@ namespace Methane::Samples
 
 namespace gfx = Graphics;
 
-struct META_UNIFORM_ALIGN AsteroidUniforms
-{
-    hlslpp::float4x4  model_matrix;
-    gfx::Color3F      deep_color;
-    gfx::Color3F      shallow_color;
-    float             depth_min;
-    float             depth_max;
-    uint32_t          texture_index;
-};
-
-class Asteroid final : public gfx::TexturedMeshBuffers<AsteroidUniforms>
+class Asteroid final : public gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>
 {
 public:
-    using BaseBuffers = gfx::TexturedMeshBuffers<AsteroidUniforms>;
+    using BaseBuffers = gfx::TexturedMeshBuffers<hlslpp::AsteroidUniforms>;
     
     struct Vertex
     {

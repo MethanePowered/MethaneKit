@@ -40,8 +40,8 @@ Device::Features DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
     return supported_features;
 }
 
-DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device)
-    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, GetSupportedFeatures(mtl_device))
+DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities)
+    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, capabilities)
     , m_mtl_device(mtl_device)
 {
     META_FUNCTION_TASK();
@@ -70,7 +70,13 @@ SystemMT::~SystemMT()
     }
 }
 
-const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Features supported_features)
+const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Platform::AppEnvironment&, const Device::Capabilities& required_device_caps)
+{
+    META_FUNCTION_TASK();
+    return UpdateGpuDevices(required_device_caps);
+}
+
+const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
     if (m_device_observer != nil)
@@ -78,7 +84,7 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(Device::Features supported_featur
         MTLRemoveDeviceObserver(m_device_observer);
     }
 
-    SetGpuSupportedFeatures(supported_features);
+    SetDeviceCapabilities(required_device_caps);
     ClearDevices();
     
     NSArray<id<MTLDevice>>* mtl_devices = MTLCopyAllDevicesWithObserver(&m_device_observer,
@@ -120,10 +126,10 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
     using namespace magic_enum::bitwise_operators;
 
     Device::Features device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetGpuSupportedFeatures()))
+    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device));
+    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device, GetDeviceCapabilities()));
 }
 
 const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const

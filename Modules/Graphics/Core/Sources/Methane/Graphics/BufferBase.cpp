@@ -70,7 +70,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
         META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
                                    "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
         auto& buffer_base = static_cast<BufferBase&>(buffer_ref.get());
-        m_ptrs.emplace_back(buffer_base.GetBufferPtr());
+        m_ptrs.emplace_back(buffer_base.GetPtr<BufferBase>());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));
     }
 }

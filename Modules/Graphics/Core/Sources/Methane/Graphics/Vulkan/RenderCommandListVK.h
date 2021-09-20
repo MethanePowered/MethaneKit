@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ Vulkan implementation of the render command list interface.
 
 #pragma once
 
+#include "CommandListVK.hpp"
+
 #include <Methane/Graphics/RenderCommandListBase.h>
 
 #include <functional>
@@ -33,20 +35,18 @@ namespace Methane::Graphics
 class CommandQueueVK;
 class BufferVK;
 class RenderPassVK;
+class ParallelRenderCommandListVK;
 
-class RenderCommandListVK final : public RenderCommandListBase
+class RenderCommandListVK final : public CommandListVK<RenderCommandListBase>
 {
 public:
-    RenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    explicit RenderCommandListVK(ParallelRenderCommandListBase& parallel_render_command_list);
+    RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
+    explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list);
 
     // CommandList interface
-    void PushDebugGroup(DebugGroup& debug_group) override;
-    void PopDebugGroup() override;
     void Commit() override;
 
     // CommandListBase interface
-    void SetResourceBarriers(const Resource::Barriers&) override { /* not implemented */ }
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
@@ -59,12 +59,11 @@ public:
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
-    // Object interface
-    void SetName(const std::string& label) override;
-
 private:
-    CommandQueueVK& GetCommandQueueVK() noexcept;
-    RenderPassVK&   GetPassVK();
+    void ResetRenderPass();
+    void UpdatePrimitiveTopology(Primitive primitive);
+
+    RenderPassVK& GetPassVK();
 };
 
 } // namespace Methane::Graphics

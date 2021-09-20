@@ -244,7 +244,7 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
         ApplyResourceStates(apply_access_mask) &&
         m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
     {
-        command_list_dx.SetResourceBarriersDX(*m_resource_transition_barriers_ptr);
+        command_list_dx.SetResourceBarriers(*m_resource_transition_barriers_ptr);
     }
 
     // Apply root parameter bindings after resource barriers
@@ -263,8 +263,8 @@ void ProgramBindingsDX::OnProgramArgumentBindingResourceLocationsChanged(const A
     std::set<Resource*> processed_resources;
     for(const Resource::Location& old_resource_location : old_resource_locations)
     {
-        if (!old_resource_location.IsInitialized() || old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
-             processed_resources.count(old_resource_location.GetResourcePtr().get()))
+        if (old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
+            processed_resources.count(old_resource_location.GetResourcePtr().get()))
             continue;
 
         // Check if resource is still used in new resource locations

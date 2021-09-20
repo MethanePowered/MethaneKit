@@ -23,7 +23,7 @@ Vulkan implementation of the sampler interface.
 
 #pragma once
 
-#include "ResourceVK.h"
+#include "ResourceVK.hpp"
 
 #include <Methane/Graphics/SamplerBase.h>
 
@@ -32,13 +32,10 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class SamplerVK final : public ResourceVK<SamplerBase>
+class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler>
 {
 public:
     SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-
-    // Object interface
-    void SetName(const std::string& name) override;
     
 private:
     void ResetSamplerState();

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ Base implementation of the render pass interface.
 ******************************************************************************/
 
 #include "RenderPassBase.h"
+#include "RenderContextBase.h"
 #include "TextureBase.h"
 #include "RenderCommandListBase.h"
 
@@ -33,123 +34,199 @@ Base implementation of the render pass interface.
 #include <fmt/format.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::RenderPass::ColorAttachment>
+struct fmt::formatter<Methane::Graphics::RenderPattern::ColorAttachment>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::RenderPass::ColorAttachment& ca, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(ca)); }
+    [[nodiscard]] auto format(const Methane::Graphics::RenderPattern::ColorAttachment& ca, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(ca)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
 namespace Methane::Graphics
 {
 
-bool RenderPass::Attachment::operator==(const RenderPass::Attachment& other) const
+RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                   LoadAction load_action, StoreAction store_action)
+    : attachment_index(attachment_index)
+    , format(format)
+    , samples_count(samples_count)
+    , load_action(load_action)
+    , store_action(store_action)
 {
     META_FUNCTION_TASK();
-    return std::tie(texture_location, load_action, store_action) ==
-           std::tie(other.texture_location, other.load_action, other.store_action);
 }
 
-bool RenderPass::Attachment::operator!=(const RenderPass::Attachment& other) const
+bool RenderPattern::Attachment::operator==(const RenderPattern::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return std::tie(texture_location, load_action, store_action) !=
-           std::tie(other.texture_location, other.load_action, other.store_action);
+    return std::tie(attachment_index, format, samples_count, load_action, store_action) ==
+           std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
 }
 
-RenderPass::Attachment::operator std::string() const
+bool RenderPattern::Attachment::operator!=(const RenderPattern::Attachment& other) const
 {
     META_FUNCTION_TASK();
-    return fmt::format("attachment for {}, load={}, store={}",
-                       static_cast<std::string>(texture_location),
+    return std::tie(attachment_index, format, samples_count, load_action, store_action) !=
+           std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
+}
+
+RenderPattern::Attachment::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("attachment id {}: format={}, samples={}, load={}, store={}",
+                       attachment_index,
+                       magic_enum::enum_name(format),
+                       samples_count,
                        magic_enum::enum_name(load_action),
                        magic_enum::enum_name(store_action));
 }
 
-bool RenderPass::ColorAttachment::operator==(const RenderPass::ColorAttachment& other) const
+RenderPattern::ColorAttachment::ColorAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                             LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
+    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+    , clear_color(clear_color)
+{
+    META_FUNCTION_TASK();
+}
+
+bool RenderPattern::ColorAttachment::operator==(const RenderPattern::ColorAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator==(other) && clear_color == other.clear_color;
 }
 
-bool RenderPass::ColorAttachment::operator!=(const RenderPass::ColorAttachment& other) const
+bool RenderPattern::ColorAttachment::operator!=(const RenderPattern::ColorAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator!=(other) || clear_color != other.clear_color;
 }
 
-RenderPass::ColorAttachment::operator std::string() const
+RenderPattern::ColorAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
-    if (!texture_location.IsInitialized())
-        return "  - No color attachment";
-
     return fmt::format("  - Color {}, clear_color={}",
                        Attachment::operator std::string(),
                        static_cast<std::string>(clear_color));
 }
 
-bool RenderPass::DepthAttachment::operator==(const RenderPass::DepthAttachment& other) const
+RenderPattern::DepthAttachment::DepthAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                             LoadAction load_action, StoreAction store_action, Depth clear_value)
+    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+    , clear_value(clear_value)
+{
+    META_FUNCTION_TASK();
+}
+
+bool RenderPattern::DepthAttachment::operator==(const RenderPattern::DepthAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator==(other) && clear_value == other.clear_value;
 }
 
-bool RenderPass::DepthAttachment::operator!=(const RenderPass::DepthAttachment& other) const
+bool RenderPattern::DepthAttachment::operator!=(const RenderPattern::DepthAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator!=(other) || clear_value != other.clear_value;
 }
 
-RenderPass::DepthAttachment::operator std::string() const
+RenderPattern::DepthAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
-    if (!texture_location.IsInitialized())
-        return "  - No depth attachment";
-
     return fmt::format("  - Depth {}, clear_value={}",
                        Attachment::operator std::string(),
                        clear_value);
 }
 
-bool RenderPass::StencilAttachment::operator==(const RenderPass::StencilAttachment& other) const
+RenderPattern::StencilAttachment::StencilAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                                 LoadAction load_action, StoreAction store_action, Stencil clear_value)
+    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+    , clear_value(clear_value)
+{
+    META_FUNCTION_TASK();
+}
+
+bool RenderPattern::StencilAttachment::operator==(const RenderPattern::StencilAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator==(other) && clear_value == other.clear_value;
 }
 
-bool RenderPass::StencilAttachment::operator!=(const RenderPass::StencilAttachment& other) const
+bool RenderPattern::StencilAttachment::operator!=(const RenderPattern::StencilAttachment& other) const
 {
     META_FUNCTION_TASK();
     return Attachment::operator!=(other) || clear_value != other.clear_value;
 }
 
-RenderPass::StencilAttachment::operator std::string() const
+RenderPattern::StencilAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
-    if (!texture_location.IsInitialized())
-        return "  - No stencil attachment";
-
     return fmt::format("  - Stencil {}, clear_value={}",
                        Attachment::operator std::string(),
                        clear_value);
 }
 
-bool RenderPass::Settings::operator==(const Settings& other) const
+RenderPatternBase::RenderPatternBase(RenderContextBase& render_context, const Settings& settings)
+    : m_render_context_ptr(std::dynamic_pointer_cast<RenderContextBase>(render_context.GetPtr()))
+    , m_settings(settings)
+{
+    META_FUNCTION_TASK();
+}
+
+const RenderContext& RenderPatternBase::GetRenderContext() const noexcept
+{
+    META_FUNCTION_TASK();
+    return *m_render_context_ptr;
+}
+
+RenderContext& RenderPatternBase::GetRenderContext() noexcept
+{
+    META_FUNCTION_TASK();
+    return *m_render_context_ptr;
+}
+
+Data::Size RenderPatternBase::GetAttachmentCount() const noexcept
+{
+    META_FUNCTION_TASK();
+    auto attachment_count = static_cast<Data::Size>(m_settings.color_attachments.size());
+    if (m_settings.depth_attachment)
+        attachment_count++;
+    if (m_settings.stencil_attachment)
+        attachment_count++;
+    return attachment_count;
+}
+
+AttachmentFormats RenderPatternBase::GetAttachmentFormats() const noexcept
+{
+    META_FUNCTION_TASK();
+    AttachmentFormats attachment_formats;
+
+    attachment_formats.colors.reserve(m_settings.color_attachments.size());
+    std::transform(m_settings.color_attachments.begin(), m_settings.color_attachments.end(), std::back_inserter(attachment_formats.colors),
+                   [](const ColorAttachment& color_attachment) { return color_attachment.format; });
+
+    if (m_settings.depth_attachment)
+        attachment_formats.depth = m_settings.depth_attachment->format;
+
+    if (m_settings.stencil_attachment)
+        attachment_formats.stencil = m_settings.stencil_attachment->format;
+
+    return attachment_formats;
+}
+
+bool RenderPattern::Settings::operator==(const Settings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) ==
            std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
 }
 
-bool RenderPass::Settings::operator!=(const Settings& other) const
+bool RenderPattern::Settings::operator!=(const Settings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) !=
            std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
 }
 
-RenderPass::Settings::operator std::string() const
+RenderPattern::Settings::operator std::string() const
 {
     META_FUNCTION_TASK();
     std::string color_attachments_str = "  - No color attachments";
@@ -158,43 +235,28 @@ RenderPass::Settings::operator std::string() const
 
     return fmt::format("{};\n{};\n{};\n  - shader_access_mask={}, {} pass.",
                        color_attachments_str,
-                       static_cast<std::string>(depth_attachment),
-                       static_cast<std::string>(stencil_attachment),
+                       depth_attachment   ? static_cast<std::string>(*depth_attachment)   : "  - No stencil attachment",
+                       stencil_attachment ? static_cast<std::string>(*stencil_attachment) : "  - No depth attachment",
                        Data::GetBitMaskFlagNames(shader_access_mask),
                        (is_final_pass ? "final" : "intermediate"));
 }
 
-RenderPass::Attachment::Attachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action)
-    : texture_location(std::move(texture_location))
-    , load_action(load_action)
-    , store_action(store_action)
+bool RenderPass::Settings::operator==(const Settings& other) const
 {
     META_FUNCTION_TASK();
+    return std::tie(attachments, frame_size) ==
+           std::tie(other.attachments, other.frame_size);
 }
 
-RenderPass::ColorAttachment::ColorAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
-    : Attachment(std::move(texture_location), load_action, store_action)
-    , clear_color(clear_color)
+bool RenderPass::Settings::operator!=(const Settings& other) const
 {
     META_FUNCTION_TASK();
+    return std::tie(attachments, frame_size) !=
+           std::tie(other.attachments, other.frame_size);
 }
 
-RenderPass::DepthAttachment::DepthAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, Depth clear_value)
-    : Attachment(std::move(texture_location), load_action, store_action)
-    , clear_value(clear_value)
-{
-    META_FUNCTION_TASK();
-}
-
-RenderPass::StencilAttachment::StencilAttachment(Texture::Location&& texture_location, LoadAction load_action, StoreAction store_action, Stencil clear_value)
-    : Attachment(std::move(texture_location), load_action, store_action)
-    , clear_value(clear_value)
-{
-    META_FUNCTION_TASK();
-}
-
-RenderPassBase::RenderPassBase(const RenderContextBase& context, const Settings& settings)
-    : m_render_context(context)
+RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings& settings)
+    : m_pattern_base_ptr(std::dynamic_pointer_cast<RenderPatternBase>(render_pattern.GetBasePtr()))
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -223,12 +285,7 @@ void RenderPassBase::ReleaseAttachmentTextures()
 {
     META_FUNCTION_TASK();
     m_non_frame_buffer_attachment_textures.clear();
-    m_settings.depth_attachment.texture_location = Texture::Location();
-    m_settings.stencil_attachment.texture_location = Texture::Location();
-    for(ColorAttachment& color_attachment : m_settings.color_attachments)
-    {
-        color_attachment.texture_location = Texture::Location();
-    }
+    m_settings.attachments.clear();
 }
 
 void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
@@ -245,7 +302,7 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
-    if (m_settings.is_final_pass)
+    if (GetPatternBase().GetSettings().is_final_pass)
     {
         SetAttachmentStates(Resource::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
     }
@@ -294,17 +351,25 @@ void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& c
     }
 }
 
+const Texture::Location& RenderPassBase::GetAttachmentTextureLocation(const Attachment& attachment) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
+                              "attachment index is out of bounds of render pass attachments array");
+    return m_settings.attachments[attachment.attachment_index];
+}
+
 const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
 {
     META_FUNCTION_TASK();
     if (!m_color_attachment_textures.empty())
         return m_color_attachment_textures;
 
-    m_color_attachment_textures.reserve(m_settings.color_attachments.size());
-    for (const ColorAttachment& color_attach : m_settings.color_attachments)
+    const ColorAttachments& color_attachments = GetPatternBase().GetSettings().color_attachments;
+    m_color_attachment_textures.reserve(color_attachments.size());
+    for (const ColorAttachment& color_attach : color_attachments)
     {
-        META_CHECK_ARG_TRUE_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
-        m_color_attachment_textures.push_back(static_cast<TextureBase&>(color_attach.texture_location.GetTexture()));
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(GetAttachmentTextureLocation(color_attach).GetTexture()));
     }
     return m_color_attachment_textures;
 }
@@ -312,11 +377,29 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
 TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (!m_p_depth_attachment_texture && m_settings.depth_attachment.texture_location.IsInitialized())
-    {
-        m_p_depth_attachment_texture = static_cast<TextureBase*>(m_settings.depth_attachment.texture_location.GetTexturePtr().get());
-    }
+    if (m_p_depth_attachment_texture)
+        return m_p_depth_attachment_texture;
+
+    const Opt<DepthAttachment>& depth_attachment_opt = GetPatternBase().GetSettings().depth_attachment;
+    if (!depth_attachment_opt)
+        return nullptr;
+
+    m_p_depth_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*depth_attachment_opt).GetTexturePtr().get());
     return m_p_depth_attachment_texture;
+}
+
+TextureBase* RenderPassBase::GetStencilAttachmentTexture() const
+{
+    META_FUNCTION_TASK();
+    if (m_p_stencil_attachment_texture)
+        return m_p_stencil_attachment_texture;
+
+    const Opt<StencilAttachment>& stencil_attachment_opt = GetPatternBase().GetSettings().stencil_attachment;
+    if (!stencil_attachment_opt)
+        return nullptr;
+
+    m_p_stencil_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*stencil_attachment_opt).GetTexturePtr().get());
+    return m_p_stencil_attachment_texture;
 }
 
 const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() const
@@ -325,27 +408,27 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
     if (!m_non_frame_buffer_attachment_textures.empty())
         return m_non_frame_buffer_attachment_textures;
 
-    m_non_frame_buffer_attachment_textures.reserve(m_settings.color_attachments.size() + 2);
+    m_non_frame_buffer_attachment_textures.reserve(m_settings.attachments.size());
 
-    for (const ColorAttachment& color_attach : m_settings.color_attachments)
+    for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(color_attach.texture_location.IsInitialized(), "can not use color attachment without texture");
-
-        Ptr<TextureBase> color_attachment_ptr = std::static_pointer_cast<TextureBase>(color_attach.texture_location.GetTexturePtr());
+        Ptr<TextureBase> color_attachment_ptr = color_texture_ref.get().GetPtr<TextureBase>();
         if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)
             continue;
 
         m_non_frame_buffer_attachment_textures.emplace_back(std::move(color_attachment_ptr));
     }
 
-    if (m_settings.depth_attachment.texture_location.IsInitialized())
+    if (TextureBase* depth_texture_ptr = GetDepthAttachmentTexture();
+        depth_texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.depth_attachment.texture_location.GetTexturePtr()));
+        m_non_frame_buffer_attachment_textures.emplace_back(depth_texture_ptr->GetPtr<TextureBase>());
     }
 
-    if (m_settings.stencil_attachment.texture_location.IsInitialized())
+    if (TextureBase* stencil_texture_ptr = GetStencilAttachmentTexture();
+        stencil_texture_ptr)
     {
-        m_non_frame_buffer_attachment_textures.emplace_back(std::static_pointer_cast<TextureBase>(m_settings.stencil_attachment.texture_location.GetTexturePtr()));
+        m_non_frame_buffer_attachment_textures.emplace_back(stencil_texture_ptr->GetPtr<TextureBase>());
     }
 
     return m_non_frame_buffer_attachment_textures;

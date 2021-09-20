@@ -44,11 +44,16 @@ using namespace Methane::Platform;
     if (!self || !p_settings)
         return nil;
 
+    const Methane::Data::FloatSize& frame_size = p_settings->size;
+    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
+
     NSScreen* ns_main_screen = [NSScreen mainScreen];
-    CGFloat frame_width = p_settings->width < 1.0 ? ns_main_screen.frame.size.width * (p_settings->width > 0.0 ? p_settings->width : 0.7)
-                                                  : static_cast<CGFloat>(p_settings->width);
-    CGFloat frame_height = p_settings->height < 1.0 ? ns_main_screen.frame.size.height * (p_settings->height > 0.0 ? p_settings->height : 0.7)
-                                                  : static_cast<CGFloat>(p_settings->height);
+    CGFloat frame_width = frame_size.GetWidth() < 1.0
+                        ? ns_main_screen.frame.size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
+                        : static_cast<CGFloat>(frame_size.GetWidth());
+    CGFloat frame_height = frame_size.GetHeight() < 1.0
+                         ? ns_main_screen.frame.size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
+                         : static_cast<CGFloat>(frame_size.GetHeight());
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
     NSUInteger style_mask = NSWindowStyleMaskTitled |
@@ -59,7 +64,7 @@ using namespace Methane::Platform;
     NSBackingStoreType backing = NSBackingStoreBuffered;
 
     m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
-    m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(p_settings->min_width), static_cast<CGFloat>(p_settings->min_height));
+    m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(min_frame_size.GetWidth()), static_cast<CGFloat>(min_frame_size.GetHeight()));
     m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
     m_window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
     [m_window center];

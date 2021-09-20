@@ -91,7 +91,7 @@ ImageLoader::ImageLoader(Data::Provider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, size_t channels_count, bool create_copy) const
+ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -142,12 +142,12 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const auto image_data_size = static_cast<Data::Size>(image_width * image_height * channels_count * sizeof(stbi_uc));
+    const auto image_data_size = static_cast<Data::Size>(sizeof(stbi_uc) * image_width * image_height * channels_count);
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data),
-                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size));
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data), // NOSONAR
+                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size)); // NOSONAR
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
         stbi_image_free(p_image_data);
         return image_data;
@@ -155,7 +155,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, siz
     else
     {
         return ImageData(image_dimensions, static_cast<uint32_t>(image_channels_count),
-                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size));
+                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size)); // NOSONAR
     }
 
 #endif
@@ -185,7 +185,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(const Context& context, const 
     face_images_data.reserve(image_paths.size());
 
     tf::Taskflow load_task_flow;
-    load_task_flow.for_each_index_guided(0U, static_cast<uint32_t>(image_paths.size()), 1U,
+    load_task_flow.for_each_index(0U, static_cast<uint32_t>(image_paths.size()), 1U,
         [this, &image_paths, &face_images_data, &data_mutex](const uint32_t face_index)
         {
             META_FUNCTION_TASK();

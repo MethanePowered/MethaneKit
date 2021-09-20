@@ -25,10 +25,10 @@ Metal implementation of the render context interface.
 #include "RenderPassMT.hh"
 #include "CommandQueueMT.hh"
 #include "TypesMT.hh"
+#include "RenderContextAppViewMT.hh"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Platform/MacOS/Types.hh>
 
 // Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
 // NOTE: when fences are used for frames synchronization,
@@ -49,13 +49,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 
 RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextMT<RenderContextBase>(device, parallel_executor, settings)
-    , m_app_view([[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)
-                                        appWindow: env.ns_app_delegate.window
-                                           device: ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()
-                                      pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
-                                    drawableCount: settings.frame_buffers_count
-                                     vsyncEnabled: Methane::MacOS::ConvertToNsType<bool, BOOL>(settings.vsync_enabled)
-                            unsyncRefreshInterval: 1.0 / settings.unsync_max_fps])
+    , m_app_view(CreateRenderContextAppView(env, settings))
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()])
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
@@ -66,10 +60,6 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
 
     m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Capture Scope");
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
-
-    // bind metal context with application delegate
-    m_app_view.delegate = env.ns_app_delegate;
-    env.ns_app_delegate.view = m_app_view;
 
     // Start redrawing main view
     m_app_view.redrawing = YES;

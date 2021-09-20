@@ -68,7 +68,6 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-
     using ColorChannels = RenderState::Blending::ColorChannels;
 
     MTLColorWriteMask mtl_color_write_mask = 0U;
@@ -295,9 +294,8 @@ RenderStateMT::~RenderStateMT()
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "can not create state with empty program");
-
     RenderStateBase::Reset(settings);
+
     [m_mtl_pipeline_state_desc release];
     [m_mtl_depth_stencil_state_desc release];
 
@@ -315,7 +313,7 @@ void RenderStateMT::Reset(const Settings& settings)
     m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
     
     // Blending state
-    const std::vector<PixelFormat>& rt_color_formats = metal_program.GetSettings().color_formats;
+    const AttachmentFormats attach_formats = settings.render_pattern_ptr->GetAttachmentFormats();
     for (uint32_t rt_index = 0; rt_index < settings.blending.render_targets.size(); ++rt_index)
     {
         const Blending::RenderTarget& render_target     = settings.blending.is_independent
@@ -324,10 +322,10 @@ void RenderStateMT::Reset(const Settings& settings)
         
         // Set render target blending state for color attachment
         MTLRenderPipelineColorAttachmentDescriptor* mtl_color_attach = m_mtl_pipeline_state_desc.colorAttachments[rt_index];
-        mtl_color_attach.pixelFormat                    = rt_index < rt_color_formats.size()
-                                                        ? TypeConverterMT::DataFormatToMetalPixelType(rt_color_formats[rt_index])
+        mtl_color_attach.pixelFormat                    = rt_index < attach_formats.colors.size()
+                                                        ? TypeConverterMT::DataFormatToMetalPixelType(attach_formats.colors[rt_index])
                                                         : MTLPixelFormatInvalid;
-        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < rt_color_formats.size();
+        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < attach_formats.colors.size();
         mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
         mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
         mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
@@ -338,14 +336,13 @@ void RenderStateMT::Reset(const Settings& settings)
     }
     
     // Color, depth, stencil attachment formats state from program settings
-    const PixelFormat depth_format = metal_program.GetSettings().depth_format;
-    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(depth_format);
-    m_mtl_pipeline_state_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid; // TODO: stencil not supported yet
+    m_mtl_pipeline_state_desc.depthAttachmentPixelFormat   = TypeConverterMT::DataFormatToMetalPixelType(attach_formats.depth);
+    m_mtl_pipeline_state_desc.stencilAttachmentPixelFormat = TypeConverterMT::DataFormatToMetalPixelType(attach_formats.stencil);
     
     // Depth-stencil state
     m_mtl_depth_stencil_state_desc                      = [[MTLDepthStencilDescriptor alloc] init];
-    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = settings.depth.write_enabled && depth_format != PixelFormat::Unknown;
-    m_mtl_depth_stencil_state_desc.depthCompareFunction = settings.depth.enabled && depth_format != PixelFormat::Unknown
+    m_mtl_depth_stencil_state_desc.depthWriteEnabled    = settings.depth.write_enabled && attach_formats.depth != PixelFormat::Unknown;
+    m_mtl_depth_stencil_state_desc.depthCompareFunction = settings.depth.enabled && attach_formats.depth != PixelFormat::Unknown
                                                         ? TypeConverterMT::CompareFunctionToMetal(settings.depth.compare)
                                                         : MTLCompareFunctionAlways;
     m_mtl_depth_stencil_state_desc.backFaceStencil      = ConvertStencilDescriptorToMetal(settings.stencil, false);
@@ -396,7 +393,6 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
 void RenderStateMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-
     RenderStateBase::SetName(name);
     
     NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);

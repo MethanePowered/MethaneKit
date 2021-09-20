@@ -55,7 +55,7 @@ struct Program : virtual Object // NOSONAR
 
         ArgumentSemantics argument_semantics;
         StepType          step_type = StepType::PerVertex;
-        uint32_t          step_rate = 1;
+        uint32_t          step_rate = 1U;
     };
     
     using InputBufferLayouts = std::vector<InputBufferLayout>;
@@ -134,8 +134,7 @@ struct Program : virtual Object // NOSONAR
         Shaders            shaders;
         InputBufferLayouts input_buffer_layouts;
         ArgumentAccessors  argument_accessors;
-        PixelFormats       color_formats;
-        PixelFormat        depth_format = PixelFormat::Unknown;
+        AttachmentFormats  attachment_formats;
     };
 
     // Create Program instance

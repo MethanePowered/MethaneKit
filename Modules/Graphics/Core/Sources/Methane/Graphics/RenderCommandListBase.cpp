@@ -45,7 +45,7 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue)
 
 RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& pass)
     : CommandListBase(command_queue, Type::Render)
-    , m_render_pass_ptr(pass.GetRenderPassPtr())
+    , m_render_pass_ptr(pass.GetPtr<RenderPassBase>())
 {
     META_FUNCTION_TASK();
 }
@@ -53,8 +53,8 @@ RenderCommandListBase::RenderCommandListBase(CommandQueueBase& command_queue, Re
 RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetRenderPassPtr())
-    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetParallelRenderCommandListPtr())
+    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPassBase>())
+    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetPtr<ParallelRenderCommandListBase>())
 {
     META_FUNCTION_TASK();
 }
@@ -65,7 +65,7 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
     CommandListBase::Reset(p_debug_group);
     if (m_render_pass_ptr)
     {
-        META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetSettings()));
+        META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetPattern().GetSettings()));
         m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
     }
 }
@@ -219,7 +219,7 @@ void RenderCommandListBase::DrawIndexed(Primitive primitive_type, uint32_t index
     }
 
     META_LOG("{} Command list '{}' DRAW INDEXED with vertex buffers {} and index buffer '{}' using {} primive type, {} indices from {} index and {} vertex with {} instances count from {} instance",
-             magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(), index_buffer.GetName(),
+             magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(), GetDrawingState().index_buffer_ptr->GetName(),
              magic_enum::enum_name(primitive_type), index_count, start_index, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);
 
@@ -235,7 +235,12 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
     if (m_is_validation_enabled)
     {
         const DrawingState& drawing_state = GetDrawingState();
-        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
+        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before draw call");
+        const size_t input_buffers_count = drawing_state.render_state_ptr->GetSettings().program_ptr->GetSettings().input_buffer_layouts.size();
+        META_CHECK_ARG_TRUE_DESCR(!input_buffers_count || drawing_state.vertex_buffer_set_ptr,
+                                 "vertex buffers must be set when program has non empty input buffer layouts");
+        META_CHECK_ARG_TRUE_DESCR(!drawing_state.vertex_buffer_set_ptr || drawing_state.vertex_buffer_set_ptr->GetCount() == input_buffers_count,
+                                  "vertex buffers count must be equal to the program input buffer layouts count");
         META_CHECK_ARG_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
         META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
 
@@ -283,6 +288,8 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
 {
     META_FUNCTION_TASK();
     META_UNUSED(draw_vertex_count);
+    if (!m_drawing_state.vertex_buffer_set_ptr)
+        return;
 
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)

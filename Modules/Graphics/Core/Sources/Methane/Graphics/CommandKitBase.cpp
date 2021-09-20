@@ -74,7 +74,7 @@ CommandKitBase::CommandKitBase(CommandQueue& cmd_queue)
     : ObjectBase(cmd_queue.GetName())
     , m_context(cmd_queue.GetContext())
     , m_cmd_list_type(cmd_queue.GetCommandListType())
-    , m_cmd_queue_ptr(static_cast<CommandQueueBase&>(cmd_queue).GetCommandQueuePtr())
+    , m_cmd_queue_ptr(static_cast<CommandQueueBase&>(cmd_queue).GetPtr<CommandQueueBase>())
 {
     META_FUNCTION_TASK();
 }

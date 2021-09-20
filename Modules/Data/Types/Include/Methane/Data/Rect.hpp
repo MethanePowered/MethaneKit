@@ -337,7 +337,13 @@ public:
         return RectSize<V>(RoundCast<V>(m_width), RoundCast<V>(m_height));
     }
 
-    explicit operator std::string() const
+    template<typename V>
+    explicit operator Point<V,2>() const noexcept
+    {
+        return Point<V,2>(RoundCast<V>(m_width), RoundCast<V>(m_height));
+    }
+
+    explicit operator std::string() const noexcept
     {
         return fmt::format("Sz({} x {})", m_width, m_height);
     }

@@ -3,6 +3,8 @@ set(TARGET MethaneUserInterfaceTypography)
 include(MethaneShaders)
 get_module_dirs("Methane/UserInterface")
 
+set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
+
 set(HEADERS
     ${INCLUDE_DIR}/Typography.h
     ${INCLUDE_DIR}/Font.h
@@ -14,10 +16,11 @@ set(SOURCES
     ${SOURCES_DIR}/Text.cpp
     ${SOURCES_DIR}/TextMesh.h
     ${SOURCES_DIR}/TextMesh.cpp
+    ${SHADERS_DIR}/TextUniforms.h
 )
 
 set(HLSL_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Text.hlsl
+    ${SHADERS_DIR}/Text.hlsl
 )
 
 add_library(${TARGET} STATIC
@@ -47,6 +50,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_include_directories(${TARGET}
     PRIVATE
         Sources
+        Shaders
     PUBLIC
         Include
 )

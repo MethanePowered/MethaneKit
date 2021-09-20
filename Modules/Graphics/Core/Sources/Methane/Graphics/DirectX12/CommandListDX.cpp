@@ -89,7 +89,7 @@ void CommandListSetDX::Execute(uint32_t frame_index, const CommandList::Complete
     m_execution_completed_fence.Signal();
 }
 
-void CommandListSetDX::WaitUntilCompleted() noexcept
+void CommandListSetDX::WaitUntilCompleted()
 {
     META_FUNCTION_TASK();
     m_execution_completed_fence.WaitOnCpu();

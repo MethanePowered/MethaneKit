@@ -32,7 +32,7 @@ DirectX 12 implementation of the device interface.
 
 #include <optional>
 
-// NOTE: Adapters change handling breaks many frame capture tools, like VS or RenderDoc, so it's disabled for now
+// NOTE: Adapters change handling breaks many frame capture tools, like VS or RenderDoc
 //#define ADAPTERS_CHANGE_HANDLING
 
 namespace Methane::Graphics
@@ -45,9 +45,7 @@ class DeviceDX final : public DeviceBase
 public:
     static Device::Features GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
-    DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
-    DeviceDX(const DeviceDX& device) noexcept = default;
-    ~DeviceDX() override;
+    DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -80,7 +78,8 @@ public:
 
     // System interface
     void  CheckForChanges() override;
-    const Ptrs<Device>& UpdateGpuDevices(Device::Features supported_features) override;
+    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
+    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
 
     [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const;

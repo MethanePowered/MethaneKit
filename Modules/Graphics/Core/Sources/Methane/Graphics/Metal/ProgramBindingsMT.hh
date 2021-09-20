@@ -42,7 +42,6 @@ public:
         };
 
         ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
-        ArgumentBindingMT(const ArgumentBindingMT& other) = default;
 
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;

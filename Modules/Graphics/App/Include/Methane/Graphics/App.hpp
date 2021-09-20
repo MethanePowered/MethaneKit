@@ -95,7 +95,7 @@ public:
             frame.screen_texture_ptr->SetName(IndexedName("Frame Buffer", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
-            frame.screen_pass_ptr = CreateScreenRenderPass(frame.screen_texture_ptr);
+            frame.screen_pass_ptr = CreateScreenRenderPass(*frame.screen_texture_ptr);
 
             m_frames.emplace_back(std::move(frame));
         }
@@ -125,15 +125,12 @@ public:
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            RenderPass::Settings pass_settings      = frame.screen_pass_ptr->GetSettings();
-
             frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index, frame_restore_info.descriptor_by_usage);
             frame.screen_texture_ptr->SetName(frame_restore_info.name);
-
-            pass_settings.color_attachments[0].texture_location = Texture::Location(frame.screen_texture_ptr);
-            pass_settings.depth_attachment.texture_location     = Texture::Location(GetDepthTexturePtr());
-
-            frame.screen_pass_ptr->Update(pass_settings);
+            frame.screen_pass_ptr->Update({
+                GetScreenPassAttachments(*frame.screen_texture_ptr),
+                frame_size
+            });
         }
 
         return true;

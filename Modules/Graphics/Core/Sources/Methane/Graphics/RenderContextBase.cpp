@@ -32,6 +32,76 @@ Base implementation of the render context interface.
 namespace Methane::Graphics
 {
 
+RenderContext::Settings& RenderContext::Settings::SetFrameSize(FrameSize&& new_frame_size) noexcept
+{
+    META_FUNCTION_TASK();
+    frame_size = std::move(new_frame_size);
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetColorFormat(PixelFormat new_color_format) noexcept
+{
+    META_FUNCTION_TASK();
+    color_format = new_color_format;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetDepthStencilFormat(PixelFormat new_ds_format) noexcept
+{
+    META_FUNCTION_TASK();
+    depth_stencil_format = new_ds_format;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetClearColor(Opt<Color4F>&& new_clear_color) noexcept
+{
+    META_FUNCTION_TASK();
+    clear_color = std::move(new_clear_color);
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept
+{
+    META_FUNCTION_TASK();
+    clear_depth_stencil = std::move(new_clear_ds);
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetFrameBuffersCount(uint32_t new_fb_count) noexcept
+{
+    META_FUNCTION_TASK();
+    frame_buffers_count = new_fb_count;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetVSyncEnabled(bool new_vsync_enabled) noexcept
+{
+    META_FUNCTION_TASK();
+    vsync_enabled = new_vsync_enabled;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetFullscreen(bool new_full_screen) noexcept
+{
+    META_FUNCTION_TASK();
+    is_full_screen = new_full_screen;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetOptionsMask(Options new_options_mask) noexcept
+{
+    META_FUNCTION_TASK();
+    options_mask = new_options_mask;
+    return *this;
+}
+
+RenderContext::Settings& RenderContext::Settings::SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept
+{
+    META_FUNCTION_TASK();
+    unsync_max_fps = new_unsync_max_fps;
+    return *this;
+}
+
 RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings)
     : ContextBase(device, parallel_executor, Type::Render)
     , m_settings(settings)
@@ -127,7 +197,7 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<DeviceBase> device_ptr = GetDeviceBase().GetDevicePtr();
+    Ptr<DeviceBase> device_ptr = GetDeviceBase().GetPtr<DeviceBase>();
     m_settings = settings;
 
     Release();

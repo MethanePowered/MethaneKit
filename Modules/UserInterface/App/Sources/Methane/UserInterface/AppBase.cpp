@@ -63,6 +63,55 @@ static void SplitTextToColumns(std::string_view text_str, std::string& left_colu
     right_column_str = text_str.substr(middle_line_break_position + 1);
 };
 
+IApp::Settings& IApp::Settings::SetHeadsUpDisplayMode(HeadsUpDisplayMode new_heads_up_display_mode) noexcept
+{
+    META_FUNCTION_TASK();
+    heads_up_display_mode = new_heads_up_display_mode;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetLogoBadgeVisible(bool new_logo_badge_visible) noexcept
+{
+    META_FUNCTION_TASK();
+    logo_badge_visible = new_logo_badge_visible;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetLogoBadgeColor(const Color4F& new_logo_badge_color) noexcept
+{
+    META_FUNCTION_TASK();
+    logo_badge_color = new_logo_badge_color;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetTextColor(const Color4F& new_text_color) noexcept
+{
+    META_FUNCTION_TASK();
+    text_color = new_text_color;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetTextMargings(const UnitPoint& new_text_margings) noexcept
+{
+    META_FUNCTION_TASK();
+    text_margins = new_text_margings;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetMainFont(const Font::Description& new_main_font) noexcept
+{
+    META_FUNCTION_TASK();
+    main_font = new_main_font;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetHudSettings(const HeadsUpDisplay::Settings& new_hud_settings) noexcept
+{
+    META_FUNCTION_TASK();
+    hud_settings = new_hud_settings;
+    return *this;
+}
+
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
 {
@@ -80,15 +129,15 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(gfx::RenderContext& render_context, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(render_context);
+    m_ui_context_ptr = std::make_unique<Context>(render_pattern);
     m_frame_size    = UnitSize(Units::Pixels, frame_size);
     m_text_margins  = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
 
     // Create Methane logo badge
-    if (m_app_settings.show_logo_badge)
+    if (m_app_settings.logo_badge_visible)
     {
         Badge::Settings logo_badge_settings { "Methane Logo" };
         logo_badge_settings.blend_color = m_app_settings.logo_badge_color;

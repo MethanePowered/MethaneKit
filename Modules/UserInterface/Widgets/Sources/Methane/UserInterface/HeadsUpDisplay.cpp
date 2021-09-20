@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2020-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
  ╟───────────────┥ 123 FPS (Major Font)           ║
  ║ CPU Time %    │                                ║
  ╟───────────────┼────────────────────────────────╢
- ║ VSync ON/OFF  │ Frame Buffs Resolution & Count ║
+ ║ VSync ON/OFF  │ W x H       N FB      GFX API  ║
  ╚═══════════════╧════════════════════════════════╝
 
 ******************************************************************************/
@@ -61,6 +61,83 @@ inline uint32_t GetFpsTextHeightInDots(const Context& ui_context, const Font& ma
 inline uint32_t GetTimingTextHeightInDots(const Context& ui_context, const Font& major_font, const Font& minor_font, const UnitSize& text_margins)
 {
     return (GetFpsTextHeightInDots(ui_context, major_font, minor_font, text_margins) - ui_context.ConvertTo<Units::Dots>(text_margins).GetHeight()) / 2U;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetMajorFont(const Font::Description& new_major_font) noexcept
+{
+    META_FUNCTION_TASK();
+    major_font = new_major_font;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetMinorFont(const Font::Description& new_minor_font) noexcept
+{
+    META_FUNCTION_TASK();
+    minor_font = new_minor_font;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetPosition(const UnitPoint& new_position) noexcept
+{
+    META_FUNCTION_TASK();
+    position = new_position;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetTextMargins(const UnitSize& new_text_margins) noexcept
+{
+    META_FUNCTION_TASK();
+    text_margins = new_text_margins;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetTextColor(const Color4F& new_text_color) noexcept
+{
+    META_FUNCTION_TASK();
+    text_color = new_text_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetOnColor(const Color4F& new_on_color) noexcept
+{
+    META_FUNCTION_TASK();
+    on_color = new_on_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetOffColor(const Color4F& new_off_color) noexcept
+{
+    META_FUNCTION_TASK();
+    off_color = new_off_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpColor(const Color4F& new_help_color) noexcept
+{
+    META_FUNCTION_TASK();
+    help_color = new_help_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetBackgroundColor(const Color4F& new_background_color) noexcept
+{
+    META_FUNCTION_TASK();
+    background_color = new_background_color;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept
+{
+    META_FUNCTION_TASK();
+    help_shortcut = new_help_shortcut;
+    return *this;
+}
+
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double new_update_interval_sec) noexcept
+{
+    META_FUNCTION_TASK();
+    update_interval_sec = new_update_interval_sec;
+    return *this;
 }
 
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
@@ -141,9 +218,9 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
             Text::SettingsUtf8
             {
                 "Frame Buffers",
-                "0000 x 0000   3 FB",
+                "0000 x 0000   3 FB   DirectX",
                 UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
-                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
+                Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Justify, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
@@ -207,7 +284,11 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
     GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
     GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffers).SetText(fmt::format("{:d} x {:d}    {:d} FB", context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(), context_settings.frame_buffers_count));
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}  {:d} FB  {:s}", // NOSONAR - string contains invisible NBSP symbols
+                                                                    context_settings.frame_size.GetWidth(),
+                                                                    context_settings.frame_size.GetHeight(),
+                                                                    context_settings.frame_buffers_count,
+                                                                    magic_enum::enum_name(Graphics::System::GetGraphicsApi())));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
@@ -262,11 +343,12 @@ void HeadsUpDisplay::LayoutTextBlocks()
     // Layout right column text blocks
     const FrameSize gpu_name_size      = GetTextBlock(TextBlock::GpuName).GetRectInDots().size;
     const FrameSize fps_size           = GetTextBlock(TextBlock::Fps).GetRectInDots().size;
-    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffers).GetRectInDots().size;
+    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffersAndApi).GetRectInDots().size;
     const uint32_t  right_column_width = std::max({ gpu_name_size.GetWidth(), fps_size.GetWidth(), frame_buffers_size.GetWidth() });
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
-    GetTextBlock(TextBlock::FrameBuffers).SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetRelOrigin(position);
+    GetTextBlock(TextBlock::FrameBuffersAndApi).SetSize(UnitSize(Units::Dots, right_column_width, frame_buffers_size.GetHeight()));
 
     const UnitPoint right_bottom_position = position;
 
