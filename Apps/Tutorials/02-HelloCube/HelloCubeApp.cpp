@@ -69,7 +69,8 @@ public:
                 Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Cube", Samples::g_default_app_options_color_only_and_anim);
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
-            }())
+            }(),
+            "Tutorial demonstrating colored rotating cube rendering with Methane Kit.")
         , m_proj_vertices(m_cube_mesh.GetVertices())
     {
         m_camera.ResetOrientation({ { 13.0F, 13.0F, 13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });

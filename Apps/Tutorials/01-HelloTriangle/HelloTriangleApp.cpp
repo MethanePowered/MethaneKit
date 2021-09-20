@@ -48,7 +48,8 @@ public:
                 Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
-            }())
+            }(),
+            "Tutorial demonstrating colored triangle rendering with Methane Kit.")
     { }
 
     ~HelloTriangleApp() override
