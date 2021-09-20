@@ -112,6 +112,7 @@ class SystemVK final : public SystemBase
 {
 public:
     SystemVK();
+    ~SystemVK();
 
     // System interface
     void CheckForChanges() override;

@@ -541,6 +541,14 @@ SystemVK::SystemVK()
     META_FUNCTION_TASK();
 }
 
+SystemVK::~SystemVK()
+{
+    META_FUNCTION_TASK();
+
+    // Devices have to be destroyed strictly before Vulkan instance
+    ClearDevices();
+}
+
 void SystemVK::CheckForChanges()
 {
     META_FUNCTION_TASK();
