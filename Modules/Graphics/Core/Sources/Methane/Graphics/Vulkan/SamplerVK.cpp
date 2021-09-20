@@ -40,9 +40,7 @@ SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings, const
     : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
-    
-    ResetSamplerState();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Sampler has no Vulkan API implementation yet");
 }
 
 void SamplerVK::ResetSamplerState()

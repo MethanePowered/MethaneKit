@@ -105,7 +105,7 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, c
     : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture has no Vulkan API implementation yet");
 }
 
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,

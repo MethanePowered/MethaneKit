@@ -40,6 +40,7 @@ BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
     : CommandListVK<CommandListBase>(command_queue, CommandList::Type::Blit)
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("BlitCommandList has no Vulkan API implementation yet");
 }
 
 } // namespace Methane::Graphics

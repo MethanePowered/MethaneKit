@@ -42,6 +42,7 @@ ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& comma
     : ParallelRenderCommandListBase(command_queue, render_pass)
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ParallelRenderCommandList has no Vulkan API implementation yet");
 }
 
 void ParallelRenderCommandListVK::SetName(const std::string& name)

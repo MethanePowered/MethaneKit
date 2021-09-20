@@ -67,12 +67,14 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const Reso
     : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
     : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
 }
 
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
