@@ -35,14 +35,19 @@ namespace Methane::Graphics
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<ParallelRenderCommandListVK>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
+#else
+    META_UNUSED(command_queue);
+    META_UNUSED(render_pass);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ParallelRenderCommandList has no Vulkan API implementation yet");
+#endif
 }
 
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ParallelRenderCommandList has no Vulkan API implementation yet");
 }
 
 void ParallelRenderCommandListVK::SetName(const std::string& name)

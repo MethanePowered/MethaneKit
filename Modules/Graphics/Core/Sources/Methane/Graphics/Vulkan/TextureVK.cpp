@@ -67,7 +67,14 @@ static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settin
 Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), settings, descriptor_by_usage);
+#else
+    META_UNUSED(context);
+    META_UNUSED(settings);
+    META_UNUSED(descriptor_by_usage);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Render Target Texture has no Vulkan API implementation yet");
+#endif
 }
 
 Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
@@ -81,23 +88,49 @@ Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBuffe
 Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+#if 0
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
+#else
+    META_UNUSED(context);
+    META_UNUSED(descriptor_by_usage);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Depth-Stencil Texture has no Vulkan API implementation yet");
+#endif
 }
 
 Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+#if 0
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
+#else
+    META_UNUSED(context);
+    META_UNUSED(dimensions);
+    META_UNUSED(array_length);
+    META_UNUSED(pixel_format);
+    META_UNUSED(mipmapped);
+    META_UNUSED(descriptor_by_usage);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Image Texture has no Vulkan API implementation yet");
+#endif
 }
 
 Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
+#if 0
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
+#else
+    META_UNUSED(context);
+    META_UNUSED(dimension_size);
+    META_UNUSED(array_length);
+    META_UNUSED(pixel_format);
+    META_UNUSED(mipmapped);
+    META_UNUSED(descriptor_by_usage);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Cube Texture has no Vulkan API implementation yet");
+#endif
 }
 
 // TODO: Temporary constructor, to be removed
@@ -105,7 +138,7 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, c
     : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture has no Vulkan API implementation yet");
+    InitializeDefaultDescriptors();
 }
 
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,

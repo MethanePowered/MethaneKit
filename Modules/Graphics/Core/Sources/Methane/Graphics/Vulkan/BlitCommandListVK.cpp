@@ -33,14 +33,18 @@ namespace Methane::Graphics
 Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
+#if 0
     return std::make_shared<BlitCommandListVK>(static_cast<CommandQueueVK&>(command_queue));
+#else
+    META_UNUSED(command_queue);
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("BlitCommandList has no Vulkan API implementation yet");
+#endif
 }
 
 BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
     : CommandListVK<CommandListBase>(command_queue, CommandList::Type::Blit)
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("BlitCommandList has no Vulkan API implementation yet");
 }
 
 } // namespace Methane::Graphics
