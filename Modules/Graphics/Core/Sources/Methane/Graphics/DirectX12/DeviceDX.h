@@ -32,7 +32,7 @@ DirectX 12 implementation of the device interface.
 
 #include <optional>
 
-// NOTE: Adapters change handling breaks many frame capture tools, like VS or RenderDoc, so it's disabled for now
+// NOTE: Adapters change handling breaks many frame capture tools, like VS or RenderDoc
 //#define ADAPTERS_CHANGE_HANDLING
 
 namespace Methane::Graphics
@@ -46,8 +46,6 @@ public:
     static Device::Features GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
-    DeviceDX(const DeviceDX& device) noexcept = default;
-    ~DeviceDX() override;
 
     // Object interface
     void SetName(const std::string& name) override;

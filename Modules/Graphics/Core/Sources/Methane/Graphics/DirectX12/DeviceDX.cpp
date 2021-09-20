@@ -74,11 +74,6 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
     META_FUNCTION_TASK();
 }
 
-DeviceDX::~DeviceDX()
-{
-    META_FUNCTION_TASK();
-}
-
 void DeviceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
@@ -229,7 +224,7 @@ void SystemDX::CheckForChanges()
 
     const Ptrs<Device>& devices = GetGpuDevices();
     Ptrs<Device>   prev_devices = devices;
-    UpdateGpuDevices(GetGpuSupportedFeatures());
+    UpdateGpuDevices(GetDeviceCapabilities());
 
     for (const Ptr<Device>& prev_device_ptr : prev_devices)
     {
