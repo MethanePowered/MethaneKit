@@ -34,7 +34,7 @@ elseif(APPLE)
         "-framework AppKit"
     )
 
-else() # Linux
+else(UNIX)
 
     set(PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppLin.h
@@ -43,6 +43,8 @@ else() # Linux
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppLin.cpp
     )
+
+    set(PLATFORM_LIBRARIES ${XCB_LIBRARIES})
 
 endif()
 
@@ -89,6 +91,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_include_directories(${TARGET}
     PRIVATE
         Sources
+        $<$<BOOL:${LINUX}>:${XCB_INCLUDE_DIRS}>
     PUBLIC
         Include
 )

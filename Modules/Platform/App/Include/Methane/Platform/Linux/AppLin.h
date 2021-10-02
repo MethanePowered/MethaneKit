@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ Linux application implementation.
 #include <vector>
 #include <memory>
 
+struct xcb_connection_t;
+
 namespace Methane::Platform
 {
 
@@ -37,6 +39,7 @@ class AppLin : public AppBase
 {
 public:
     explicit AppLin(const Settings& settings);
+    ~AppLin() override;
 
     // AppBase interface
     int Run(const RunArgs& args) override;
@@ -51,6 +54,7 @@ protected:
 
 private:
     AppEnvironment m_env;
+    xcb_connection_t* m_xcb_connection = nullptr;
 };
 
 } // namespace Methane::Platform

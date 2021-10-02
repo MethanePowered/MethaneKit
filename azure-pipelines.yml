@@ -411,7 +411,7 @@ jobs:
         extraInitSteps:
           - bash: |
               sudo apt-get update
-              sudo apt-get install lcov
+              sudo apt-get install lcov libx11-xcb-dev
             displayName: 'Install prerequisite packages on Linux'
         extraScanSteps:
           - bash: |

@@ -22,8 +22,6 @@ if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
 
-enable_testing()
-
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED        "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED        "Enable applications build" ON)
@@ -95,6 +93,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_library(MethaneBuildOptions INTERFACE)
 
+if(NOT WIN32 AND NOT APPLE AND UNIX)
+    set(LINUX 1)
+endif()
+
 if(WIN32)
 
     include(FindWindowsSDK)
@@ -125,6 +127,10 @@ elseif(APPLE)
 
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
+
+else(UNIX)
+
+    find_package(XCB REQUIRED)
 
 endif()
 
@@ -233,6 +239,7 @@ endif()
 
 if (METHANE_TESTS_BUILD_ENABLED)
     message(STATUS "Methane tests build is enabled")
+    enable_testing()
 endif()
 
 if (METHANE_CHECKS_ENABLED)
