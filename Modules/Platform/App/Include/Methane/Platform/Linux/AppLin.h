@@ -30,7 +30,7 @@ Linux application implementation.
 #include <vector>
 #include <memory>
 
-struct xcb_connection_t;
+#include <xcb/xcb.h>
 
 namespace Methane::Platform
 {
@@ -53,8 +53,12 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
+    void ScheduleAlert();
+    void HandleEvent(xcb_generic_event_t& xcb_event);
+
     AppEnvironment m_env;
-    xcb_connection_t* m_xcb_connection = nullptr;
+    xcb_intern_atom_reply_t* m_xcb_atom_wm_delete_window = nullptr;
+    bool m_is_event_processing = false;
 };
 
 } // namespace Methane::Platform

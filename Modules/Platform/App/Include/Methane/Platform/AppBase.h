@@ -140,6 +140,12 @@ protected:
     const Message& GetDeferredMessage() const;
     void ResetDeferredMessage() noexcept { m_deferred_message_ptr.reset(); }
 
+    template<typename ScalarType>
+    static ScalarType GetScaledSize(float scaled_size, ScalarType full_size)
+    {
+        return static_cast<ScalarType>(scaled_size < 1.F ? scaled_size * static_cast<float>(full_size) : scaled_size);
+    }
+
 private:
     bool UpdateAndRender();
 
