@@ -205,12 +205,12 @@ const vk::Semaphore& RenderContextVK::GetNativeFrameImageAvailableSemaphore() co
 uint32_t RenderContextVK::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    uint32_t next_frame_index = 0;
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[GetFrameIndex() % m_vk_frame_semaphores_pool.size()].get();
-    vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_frame_index);
+    uint32_t next_image_index = 0;
+    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[RenderContextBase::GetFrameBufferIndex()].get();
+    vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_image_index);
     META_CHECK_ARG_EQUAL_DESCR(image_acquire_result, vk::Result::eSuccess, "Failed to acquire next image");
-    m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
-    return next_frame_index;
+    m_vk_frame_image_available_semaphores[next_image_index % m_vk_frame_image_available_semaphores.size()] = vk_image_available_semaphore;
+    return next_image_index % RenderContextBase::GetSettings().frame_buffers_count;
 }
 
 vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const

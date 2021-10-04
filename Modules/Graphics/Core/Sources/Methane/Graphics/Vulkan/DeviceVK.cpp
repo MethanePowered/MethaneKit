@@ -252,10 +252,12 @@ static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loade
 template<bool exact_flags_matching>
 std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                         vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                        const std::vector<uint32_t>& reserved_queues_count_per_family,
                                         const vk::PhysicalDevice& vk_physical_device = {},
                                         const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(reserved_queues_count_per_family.size(), vk_queue_family_properties.size());
     for(size_t family_index = 0; family_index < vk_queue_family_properties.size(); ++family_index)
     {
         const vk::QueueFamilyProperties& vk_family_props = vk_queue_family_properties[family_index];
@@ -270,7 +272,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
                 continue;
         }
 
-        if (vk_family_props.queueCount < queues_count)
+        if (vk_family_props.queueCount < reserved_queues_count_per_family[family_index] + queues_count)
             continue;
 
         if (queue_flags == vk::QueueFlagBits::eGraphics && vk_physical_device && vk_present_surface &&
@@ -285,18 +287,21 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
 
 static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                                vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                               const std::vector<uint32_t>& reserved_queues_count_per_family,
                                                const vk::PhysicalDevice& vk_physical_device = {},
                                                const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
 
     // Try to find queue family with exact flags match
-    if (const std::optional<uint32_t> family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
+    if (const std::optional<uint32_t> family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count,
+                                                                           reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
         family_index)
         return *family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags
-    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count, vk_physical_device, vk_present_surface);
+    return FindQueueFamily<false>(vk_queue_family_properties, queue_flags, queues_count,
+                                  reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
 }
 
 static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_device)
@@ -397,10 +402,12 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
         throw IncompatibleException("Device does not support some of required extensions");
 
-    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, vk_queue_family_properties,
+    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count,
+                       vk_queue_family_properties, reserved_queues_count_per_family,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count, vk_queue_family_properties);
+    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count,
+                       vk_queue_family_properties, reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;
@@ -502,6 +509,7 @@ Opt<uint32_t> DeviceVK::FindMemoryType(uint32_t type_filter, vk::MemoryPropertyF
 
 void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,
                                   const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                                  std::vector<uint32_t>& reserved_queues_count_per_family,
                                   const vk::SurfaceKHR& vk_surface)
 {
     META_FUNCTION_TASK();
@@ -509,7 +517,8 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
         return;
 
     const vk::QueueFlagBits queue_flags = GetQueueFlagBitsByType(cmd_list_type);
-    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count, m_vk_physical_device, vk_surface);
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count,
+                                                                          reserved_queues_count_per_family, m_vk_physical_device, vk_surface);
     if (!vk_queue_family_index)
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
 
@@ -521,6 +530,7 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
     if (!is_new_queue_family_reservation && queue_family_reservation_it->second)
         queue_family_reservation_it->second->IncrementQueuesCount(queues_count);
 
+    reserved_queues_count_per_family[*vk_queue_family_index] += queues_count;
     m_queue_family_reservation_by_type.try_emplace(cmd_list_type,
         is_new_queue_family_reservation
             ? std::make_shared<QueueFamilyReservationVK>(*vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface))

@@ -98,6 +98,7 @@ private:
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
                             const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                            std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
     bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;

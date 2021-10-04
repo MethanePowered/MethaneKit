@@ -242,7 +242,6 @@ void RenderContextBase::OnGpuWaitStart(WaitFor wait_for)
 void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
@@ -257,13 +256,16 @@ void RenderContextBase::OnGpuWaitComplete(WaitFor wait_for)
     
 void RenderContextBase::UpdateFrameBufferIndex()
 {
+    META_FUNCTION_TASK();
     m_frame_buffer_index = GetNextFrameBufferIndex();
+    META_CHECK_ARG_LESS(m_frame_buffer_index, GetSettings().frame_buffers_count);
     m_frame_index++;
     m_is_frame_buffer_in_use = true;
 }
     
 uint32_t RenderContextBase::GetNextFrameBufferIndex()
 {
+    META_FUNCTION_TASK();
     return (m_frame_buffer_index + 1) % m_settings.frame_buffers_count;
 }
 

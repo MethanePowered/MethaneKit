@@ -115,6 +115,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
 AppLin::~AppLin()
 {
     META_FUNCTION_TASK();
+    free(m_xcb_atom_wm_delete_window);
     xcb_disconnect(m_env.connection);
 }
 
@@ -148,7 +149,7 @@ int AppLin::Run(const RunArgs& args)
     }
 
     // Application Initialization
-#if 0
+#if 1
     bool init_success = InitContextWithErrorHandling(m_env, frame_size);
     if (init_success)
     {
@@ -166,7 +167,7 @@ int AppLin::Run(const RunArgs& args)
             free(xcb_event);
         }
 
-#if 0
+#if 1
         if (!init_success || !m_is_event_processing)
             continue;
 
