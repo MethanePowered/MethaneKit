@@ -55,9 +55,14 @@ protected:
 private:
     void ScheduleAlert();
     void HandleEvent(xcb_generic_event_t& xcb_event);
+    void OnWindowResized(const xcb_configure_notify_event_t& xcb_cfg_event);
+    void OnPropertyChanged(const xcb_property_notify_event_t& xcb_prop_event);
 
     AppEnvironment m_env;
-    xcb_intern_atom_reply_t* m_xcb_atom_wm_delete_window = nullptr;
+    xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
+    xcb_atom_t m_state_atom = XCB_ATOM_NONE;
+    xcb_atom_t m_state_hidden_atom = XCB_ATOM_NONE;
+    xcb_atom_t m_state_fullscreen_atom = XCB_ATOM_NONE;
     bool m_is_event_processing = false;
 };
 

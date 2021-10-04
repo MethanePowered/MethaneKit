@@ -27,14 +27,36 @@ Linux application implementation.
 #include <Methane/Instrumentation.h>
 
 #include <string_view>
+#include <optional>
 
 namespace Methane::Platform
 {
 
-static xcb_intern_atom_reply_t* GetInternAtomReply(xcb_connection_t* xcb_connection, bool only_if_exists, std::string_view name)
+static xcb_intern_atom_reply_t* GetInternAtomReply(xcb_connection_t* xcb_connection, std::string_view name) noexcept
 {
-    const xcb_intern_atom_cookie_t xcb_cookie = xcb_intern_atom(xcb_connection, only_if_exists, name.length(), name.data());
+    META_FUNCTION_TASK();
+    const xcb_intern_atom_cookie_t xcb_cookie = xcb_intern_atom(xcb_connection, false, name.length(), name.data());
     return xcb_intern_atom_reply(xcb_connection, xcb_cookie, nullptr);
+}
+
+static xcb_atom_t GetInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept
+{
+    META_FUNCTION_TASK();
+    xcb_intern_atom_reply_t* atom_reply = GetInternAtomReply(xcb_connection, name);
+    const xcb_atom_t atom = atom_reply ? atom_reply->atom : static_cast<xcb_atom_t>(XCB_ATOM_NONE);
+    free(atom_reply);
+    return atom;
+}
+
+template<typename T>
+static std::optional<T> GetWindowPropertyValue(xcb_connection_t* connection, xcb_window_t window, xcb_atom_t atom)
+{
+    META_FUNCTION_TASK();
+    xcb_get_property_cookie_t cookie = xcb_get_property(connection, false, window, atom, XCB_ATOM_ATOM, 0, 32);
+    xcb_get_property_reply_t* reply = xcb_get_property_reply(connection, cookie, nullptr);
+    const std::optional<T> value_opt = reply ? std::optional<T>(*reinterpret_cast<T*>(xcb_get_property_value(reply))) : std::nullopt;
+    free(reply);
+    return value_opt;
 }
 
 AppLin::AppLin(const AppBase::Settings& settings)
@@ -56,10 +78,16 @@ AppLin::AppLin(const AppBase::Settings& settings)
     const xcb_screen_t* xcb_screen = xcb_screen_iter.data;
 
     // Prepare initial window properties
-    const uint32_t value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-    const std::array<uint32_t, 2> values{{
-         xcb_screen->black_pixel,
-         XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_EXPOSURE
+    const uint32_t value_mask = XCB_CW_EVENT_MASK;
+    const std::array<uint32_t, 1> values{{
+         XCB_EVENT_MASK_KEY_RELEASE |
+         XCB_EVENT_MASK_KEY_PRESS |
+         XCB_EVENT_MASK_EXPOSURE |
+         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+         XCB_EVENT_MASK_PROPERTY_CHANGE |
+         XCB_EVENT_MASK_POINTER_MOTION |
+         XCB_EVENT_MASK_BUTTON_PRESS |
+         XCB_EVENT_MASK_BUTTON_RELEASE
     }};
 
     // Calculate frame size relative to screen size in case of floating point value
@@ -81,12 +109,11 @@ AppLin::AppLin(const AppBase::Settings& settings)
                       value_mask, values.data());
 
     // Create window delete atom used to receive event when window is destroyed
-    xcb_intern_atom_reply_t* xcb_intern_atom_reply = GetInternAtomReply(m_env.connection, true, "WM_PROTOCOLS");
-    m_xcb_atom_wm_delete_window = GetInternAtomReply(m_env.connection, false, "WM_DELETE_WINDOW");
+    const xcb_atom_t protocols_atom = GetInternAtom(m_env.connection, "WM_PROTOCOLS");
+    m_window_delete_atom = GetInternAtom(m_env.connection, "WM_DELETE_WINDOW");
     xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE,
-                        m_env.window, xcb_intern_atom_reply->atom, 4, 32, 1,
-                        &m_xcb_atom_wm_delete_window->atom);
-    free(xcb_intern_atom_reply);
+                        m_env.window, protocols_atom, 4, 32, 1,
+                        &m_window_delete_atom);
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -99,23 +126,22 @@ AppLin::AppLin(const AppBase::Settings& settings)
                         m_env.window, XCB_ATOM_WM_CLASS,XCB_ATOM_STRING, 8,
                         wm_class.size() + 2, wm_class.c_str());
 
+    m_state_atom            = GetInternAtom(m_env.connection,"_NET_WM_STATE");
+    m_state_hidden_atom     = GetInternAtom(m_env.connection,"_NET_WM_STATE_HIDDEN");
+    m_state_fullscreen_atom = GetInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
+
     if (settings.is_full_screen)
     {
         // Set window state to full-screen
-        xcb_intern_atom_reply_t* xcb_atom_wm_state = GetInternAtomReply(m_env.connection, false, "_NET_WM_STATE");
-        xcb_intern_atom_reply_t* xcb_atom_wm_fullscreen = GetInternAtomReply(m_env.connection, false, "_NET_WM_STATE_FULLSCREEN");
-        xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE,
-                            m_env.window, xcb_atom_wm_state->atom,
-                            XCB_ATOM_ATOM, 32, 1, &(xcb_atom_wm_fullscreen->atom));
-        free(xcb_atom_wm_fullscreen);
-        free(xcb_atom_wm_state);
+        xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE, m_env.window, m_state_atom,
+                            XCB_ATOM_ATOM, 32, 1, &m_state_fullscreen_atom);
     }
 }
 
 AppLin::~AppLin()
 {
     META_FUNCTION_TASK();
-    free(m_xcb_atom_wm_delete_window);
+    xcb_destroy_window(m_env.connection, m_env.window);
     xcb_disconnect(m_env.connection);
 }
 
@@ -149,13 +175,11 @@ int AppLin::Run(const RunArgs& args)
     }
 
     // Application Initialization
-#if 1
     bool init_success = InitContextWithErrorHandling(m_env, frame_size);
     if (init_success)
     {
         init_success = InitWithErrorHandling();
     }
-#endif
 
     // Event processing loop
     m_is_event_processing = true;
@@ -167,12 +191,13 @@ int AppLin::Run(const RunArgs& args)
             free(xcb_event);
         }
 
-#if 1
         if (!init_success || !m_is_event_processing)
             continue;
 
+        if (IsResizing())
+            EndResizing();
+
         UpdateAndRenderWithErrorHandling();
-#endif
     }
 
     return 0;
@@ -223,15 +248,62 @@ void AppLin::HandleEvent(xcb_generic_event_t& xcb_event)
     switch (xcb_event_type)
     {
     case XCB_CLIENT_MESSAGE:
-        m_is_event_processing = !(m_xcb_atom_wm_delete_window && reinterpret_cast<xcb_client_message_event_t&>(xcb_event).data.data32[0] == m_xcb_atom_wm_delete_window->atom);
+        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(xcb_event).data.data32[0] == m_window_delete_atom);
         break;
 
     case XCB_DESTROY_NOTIFY:
         m_is_event_processing = false;
         break;
 
+    case XCB_CONFIGURE_NOTIFY:
+        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(xcb_event));
+        break;
+
+    case XCB_PROPERTY_NOTIFY:
+        OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(xcb_event));
+        break;
+
     default:
         break;
+    }
+}
+
+void AppLin::OnWindowResized(const xcb_configure_notify_event_t& xcb_cfg_event)
+{
+    META_FUNCTION_TASK();
+    if (!IsResizing())
+        StartResizing();
+
+
+    if (xcb_cfg_event.width == 0 || xcb_cfg_event.height == 0 ||
+        !Resize(Data::FrameSize(xcb_cfg_event.width, xcb_cfg_event.height), false))
+        return;
+
+    if (IsResizing())
+    {
+        UpdateAndRenderWithErrorHandling();
+    }
+}
+
+void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& xcb_prop_event)
+{
+    META_FUNCTION_TASK();
+    if (xcb_prop_event.atom != m_state_atom)
+        return;
+
+    const std::optional<xcb_atom_t> state_value_opt = GetWindowPropertyValue<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom);
+    if (!state_value_opt)
+        return;
+
+    if (state_value_opt == m_state_hidden_atom)
+    {
+        // Window was minimized
+        Resize(GetFrameSize(), true);
+    }
+    else if (IsMinimized())
+    {
+        // Window was shown
+        Resize(GetFrameSize(), false);
     }
 }
 
