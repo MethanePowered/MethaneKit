@@ -32,11 +32,11 @@ Linux application implementation.
 namespace Methane::Platform
 {
 
-static xcb_intern_atom_reply_t* GetInternAtomReply(xcb_connection_t* xcb_connection, std::string_view name) noexcept
+static xcb_intern_atom_reply_t* GetInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept
 {
     META_FUNCTION_TASK();
-    const xcb_intern_atom_cookie_t xcb_cookie = xcb_intern_atom(xcb_connection, false, name.length(), name.data());
-    return xcb_intern_atom_reply(xcb_connection, xcb_cookie, nullptr);
+    const xcb_intern_atom_cookie_t cookie = xcb_intern_atom(connection, false, name.length(), name.data());
+    return xcb_intern_atom_reply(connection, cookie, nullptr);
 }
 
 static xcb_atom_t GetInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept
@@ -65,17 +65,17 @@ AppLin::AppLin(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
 
     // Establish connection to X-server
-    int screen = 0;
-    m_env.connection = xcb_connect(nullptr, &screen);
-    const int xcb_connection_error = xcb_connection_has_error(m_env.connection);
-    META_CHECK_ARG_EQUAL_DESCR(xcb_connection_error, 0, "XCB connection to display has failed");
+    int screen_id = 0;
+    m_env.connection = xcb_connect(nullptr, &screen_id);
+    const int connection_error = xcb_connection_has_error(m_env.connection);
+    META_CHECK_ARG_EQUAL_DESCR(connection_error, 0, "XCB connection to display has failed");
 
-    // Find default screen setup
-    const xcb_setup_t*    xcb_setup       = xcb_get_setup(m_env.connection);
-    xcb_screen_iterator_t xcb_screen_iter = xcb_setup_roots_iterator(xcb_setup);
-    while (screen-- > 0)
-        xcb_screen_next(&xcb_screen_iter);
-    const xcb_screen_t* xcb_screen = xcb_screen_iter.data;
+    // Find default screen_id setup
+    const xcb_setup_t*    setup = xcb_get_setup(m_env.connection);
+    xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
+    while (screen_id-- > 0)
+        xcb_screen_next(&screen_iter);
+    const xcb_screen_t* screen = screen_iter.data;
 
     // Prepare initial window properties
     const uint32_t value_mask = XCB_CW_EVENT_MASK;
@@ -90,22 +90,22 @@ AppLin::AppLin(const AppBase::Settings& settings)
          XCB_EVENT_MASK_BUTTON_RELEASE
     }};
 
-    // Calculate frame size relative to screen size in case of floating point value
+    // Calculate frame size relative to screen_id size in case of floating point value
     const uint16_t frame_width  = settings.is_full_screen
-                                ? xcb_screen->width_in_pixels
-                                : AppBase::GetScaledSize(settings.size.GetWidth(), xcb_screen->width_in_pixels);
+                                ? screen->width_in_pixels
+                                : AppBase::GetScaledSize(settings.size.GetWidth(), screen->width_in_pixels);
     const uint16_t frame_height = settings.is_full_screen
-                                ? xcb_screen->height_in_pixels
-                                : AppBase::GetScaledSize(settings.size.GetHeight(), xcb_screen->height_in_pixels);
-    const int16_t pos_x = settings.is_full_screen ? 0 : static_cast<int16_t>(xcb_screen->width_in_pixels - frame_width) / 2;
-    const int16_t pos_y = settings.is_full_screen ? 0 : static_cast<int16_t>(xcb_screen->height_in_pixels - frame_height) / 2;
+                                ? screen->height_in_pixels
+                                : AppBase::GetScaledSize(settings.size.GetHeight(), screen->height_in_pixels);
+    const int16_t pos_x = settings.is_full_screen ? 0 : static_cast<int16_t>(screen->width_in_pixels - frame_width) / 2;
+    const int16_t pos_y = settings.is_full_screen ? 0 : static_cast<int16_t>(screen->height_in_pixels - frame_height) / 2;
 
-    // Create window and position it in the center of the screen
+    // Create window and position it in the center of the screen_id
     m_env.window = xcb_generate_id(m_env.connection);
-    xcb_create_window(m_env.connection, xcb_screen->root_depth,
-                      m_env.window, xcb_screen->root,
+    xcb_create_window(m_env.connection, screen->root_depth,
+                      m_env.window, screen->root,
                       pos_x, pos_y, frame_width, frame_height, 1,
-                      XCB_WINDOW_CLASS_INPUT_OUTPUT, xcb_screen->root_visual,
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual,
                       value_mask, values.data());
 
     // Create window delete atom used to receive event when window is destroyed
@@ -132,7 +132,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
 
     if (settings.is_full_screen)
     {
-        // Set window state to full-screen
+        // Set window state to full-screen_id
         xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE, m_env.window, m_state_atom,
                             XCB_ATOM_ATOM, 32, 1, &m_state_fullscreen_atom);
     }
@@ -153,7 +153,7 @@ int AppLin::Run(const RunArgs& args)
         return base_return_code;
 
     // Request window geometry
-    const xcb_get_geometry_cookie_t xcb_geometry_cookie = xcb_get_geometry(m_env.connection, m_env.window);
+    const xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry(m_env.connection, m_env.window);
 
     // Show window on screen
     xcb_map_window(m_env.connection, m_env.window);
@@ -166,12 +166,12 @@ int AppLin::Run(const RunArgs& args)
     }
 
     Data::FrameSize frame_size;
-    if (xcb_get_geometry_reply_t* xcb_geometry_reply = xcb_get_geometry_reply(m_env.connection, xcb_geometry_cookie, nullptr);
-        xcb_geometry_reply)
+    if (xcb_get_geometry_reply_t* geometry_reply = xcb_get_geometry_reply(m_env.connection, geometry_cookie, nullptr);
+        geometry_reply)
     {
-        frame_size.SetWidth(xcb_geometry_reply->width);
-        frame_size.SetHeight(xcb_geometry_reply->height);
-        free(xcb_geometry_reply);
+        frame_size.SetWidth(geometry_reply->width);
+        frame_size.SetHeight(geometry_reply->height);
+        free(geometry_reply);
     }
 
     // Application Initialization
@@ -185,10 +185,10 @@ int AppLin::Run(const RunArgs& args)
     m_is_event_processing = true;
     while (m_is_event_processing)
     {
-        while (xcb_generic_event_t* xcb_event = xcb_poll_for_event(m_env.connection))
+        while (xcb_generic_event_t* event = xcb_poll_for_event(m_env.connection))
         {
-            HandleEvent(*xcb_event);
-            free(xcb_event);
+            HandleEvent(*event);
+            free(event);
         }
 
         if (!init_success || !m_is_event_processing)
@@ -241,14 +241,14 @@ void AppLin::ScheduleAlert()
     META_FUNCTION_TASK();
 }
 
-void AppLin::HandleEvent(xcb_generic_event_t& xcb_event)
+void AppLin::HandleEvent(xcb_generic_event_t& event)
 {
     META_FUNCTION_TASK();
-    const uint32_t xcb_event_type = xcb_event.response_type & 0x7f;
+    const uint32_t xcb_event_type = event.response_type & 0x7f;
     switch (xcb_event_type)
     {
     case XCB_CLIENT_MESSAGE:
-        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(xcb_event).data.data32[0] == m_window_delete_atom);
+        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom);
         break;
 
     case XCB_DESTROY_NOTIFY:
@@ -256,11 +256,11 @@ void AppLin::HandleEvent(xcb_generic_event_t& xcb_event)
         break;
 
     case XCB_CONFIGURE_NOTIFY:
-        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(xcb_event));
+        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event));
         break;
 
     case XCB_PROPERTY_NOTIFY:
-        OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(xcb_event));
+        OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(event));
         break;
 
     default:
@@ -268,15 +268,15 @@ void AppLin::HandleEvent(xcb_generic_event_t& xcb_event)
     }
 }
 
-void AppLin::OnWindowResized(const xcb_configure_notify_event_t& xcb_cfg_event)
+void AppLin::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)
 {
     META_FUNCTION_TASK();
     if (!IsResizing())
         StartResizing();
 
 
-    if (xcb_cfg_event.width == 0 || xcb_cfg_event.height == 0 ||
-        !Resize(Data::FrameSize(xcb_cfg_event.width, xcb_cfg_event.height), false))
+    if (cfg_event.width == 0 || cfg_event.height == 0 ||
+        !Resize(Data::FrameSize(cfg_event.width, cfg_event.height), false))
         return;
 
     if (IsResizing())
@@ -285,10 +285,10 @@ void AppLin::OnWindowResized(const xcb_configure_notify_event_t& xcb_cfg_event)
     }
 }
 
-void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& xcb_prop_event)
+void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
 {
     META_FUNCTION_TASK();
-    if (xcb_prop_event.atom != m_state_atom)
+    if (prop_event.atom != m_state_atom)
         return;
 
     const std::optional<xcb_atom_t> state_value_opt = GetWindowPropertyValue<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom);

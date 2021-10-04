@@ -54,9 +54,9 @@ protected:
 
 private:
     void ScheduleAlert();
-    void HandleEvent(xcb_generic_event_t& xcb_event);
-    void OnWindowResized(const xcb_configure_notify_event_t& xcb_cfg_event);
-    void OnPropertyChanged(const xcb_property_notify_event_t& xcb_prop_event);
+    void HandleEvent(xcb_generic_event_t& event);
+    void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
+    void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
 
     AppEnvironment m_env;
     xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
