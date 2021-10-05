@@ -27,9 +27,13 @@ Platform abstraction of keyboard events.
 
 #include "Windows/Keyboard.h"
 
+#elif defined __APPLE__
+
+#include "MacOS/Keyboard.h"
+
 #else
 
-#include "Unix/Keyboard.h"
+#include "Linux/Keyboard.h"
 
 #endif
 
