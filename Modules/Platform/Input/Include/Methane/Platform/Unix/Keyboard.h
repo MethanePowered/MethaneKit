@@ -30,7 +30,7 @@ namespace Methane::Platform::Keyboard
 
 struct NativeKey
 {
-    using Code  = uint16_t;
+    using Code  = uint8_t;
     using Flags = uint64_t;
 
     Code  code;

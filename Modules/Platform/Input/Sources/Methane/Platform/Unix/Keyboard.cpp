@@ -26,6 +26,11 @@ Linux platform specific types and implementation of Keyboard abstractions.
 
 #include <map>
 
+#ifdef __linux__
+#include <magic_enum.hpp>
+#include <xcb/xcb.h>
+#endif
+
 namespace Methane::Platform::Keyboard
 {
 
@@ -157,11 +162,25 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
 
 #ifdef __linux__
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& /*native_key*/)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
 
     Modifiers modifiers_mask = Modifiers::None;
+    if (native_key.flags & XCB_MOD_MASK_SHIFT)
+        modifiers_mask |= Keyboard::Modifiers::Shift;
+    if (native_key.flags & XCB_MOD_MASK_CONTROL)
+        modifiers_mask |= Keyboard::Modifiers::Control;
+    if (native_key.flags & XCB_MOD_MASK_1)
+        modifiers_mask |= Keyboard::Modifiers::Alt;
+    if (native_key.flags & XCB_MOD_MASK_4)
+        modifiers_mask |= Keyboard::Modifiers::Super;
+    if (native_key.flags & XCB_MOD_MASK_2)
+        modifiers_mask |= Keyboard::Modifiers::NumLock;
+    if (native_key.flags & XCB_MOD_MASK_LOCK)
+        modifiers_mask |= Keyboard::Modifiers::CapsLock;
+
     return modifiers_mask;
 }
 

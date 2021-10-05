@@ -80,14 +80,15 @@ AppLin::AppLin(const AppBase::Settings& settings)
     // Prepare initial window properties
     const uint32_t value_mask = XCB_CW_EVENT_MASK;
     const std::array<uint32_t, 1> values{{
-         XCB_EVENT_MASK_KEY_RELEASE |
-         XCB_EVENT_MASK_KEY_PRESS |
-         XCB_EVENT_MASK_EXPOSURE |
          XCB_EVENT_MASK_STRUCTURE_NOTIFY |
          XCB_EVENT_MASK_PROPERTY_CHANGE |
-         XCB_EVENT_MASK_POINTER_MOTION |
+         XCB_EVENT_MASK_KEY_RELEASE |
+         XCB_EVENT_MASK_KEY_PRESS |
          XCB_EVENT_MASK_BUTTON_PRESS |
-         XCB_EVENT_MASK_BUTTON_RELEASE
+         XCB_EVENT_MASK_BUTTON_RELEASE |
+         XCB_EVENT_MASK_POINTER_MOTION |
+         XCB_EVENT_MASK_ENTER_WINDOW |
+         XCB_EVENT_MASK_LEAVE_WINDOW
     }};
 
     // Calculate frame size relative to screen_id size in case of floating point value
@@ -263,6 +264,34 @@ void AppLin::HandleEvent(xcb_generic_event_t& event)
         OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(event));
         break;
 
+    case XCB_KEY_PRESS:
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Pressed);
+        break;
+
+    case XCB_KEY_RELEASE:
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Released);
+        break;
+
+    case XCB_BUTTON_PRESS:
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Pressed);
+        break;
+
+    case XCB_BUTTON_RELEASE:
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Released);
+        break;
+
+    case XCB_MOTION_NOTIFY:
+        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event));
+        break;
+
+    case XCB_ENTER_NOTIFY:
+        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), true);
+        break;
+
+    case XCB_LEAVE_NOTIFY:
+        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), false);
+        break;
+
     default:
         break;
     }
@@ -273,7 +302,6 @@ void AppLin::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)
     META_FUNCTION_TASK();
     if (!IsResizing())
         StartResizing();
-
 
     if (cfg_event.width == 0 || cfg_event.height == 0 ||
         !Resize(Data::FrameSize(cfg_event.width, cfg_event.height), false))
@@ -305,6 +333,63 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
         // Window was shown
         Resize(GetFrameSize(), false);
     }
+}
+
+void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state)
+{
+    META_FUNCTION_TASK();
+    const Keyboard::Key key = Keyboard::KeyConverter({ key_press_event.detail, key_press_event.state }).GetKey();
+    if (key == Keyboard::Key::Unknown)
+        return;
+
+    ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
+}
+
+void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state)
+{
+    META_FUNCTION_TASK();
+    Mouse::Button button = Mouse::Button::Unknown;
+    int delta_sign = -1;
+
+    switch(button_press_event.detail)
+    {
+    case XCB_BUTTON_INDEX_1: button = Mouse::Button::Left; break;
+    case XCB_BUTTON_INDEX_2: button = Mouse::Button::Middle; break;
+    case XCB_BUTTON_INDEX_3: button = Mouse::Button::Right; break;
+    case XCB_BUTTON_INDEX_4: delta_sign = 1; [[fallthrough]];
+    case XCB_BUTTON_INDEX_5: button = Mouse::Button::VScroll; break;
+    case XCB_BUTTON_INDEX_5 + 1: delta_sign = 1; [[fallthrough]];
+    case XCB_BUTTON_INDEX_5 + 2: button = Mouse::Button::HScroll; break;
+    default: META_UNEXPECTED_ARG_DESCR(button_press_event.detail, "Mouse button is not supported");
+    }
+
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
+
+    if ((button == Mouse::Button::HScroll || button == Mouse::Button::VScroll) && button_state == Mouse::ButtonState::Released)
+    {
+        const float scroll_value = button_press_event.state
+                                 ? static_cast<float>(delta_sign * button_press_event.state / 1024)
+                                 : static_cast<float>(delta_sign);
+        const Mouse::Scroll mouse_scroll(
+            button == Mouse::Button::HScroll ? scroll_value : 0.F,
+            button == Mouse::Button::VScroll ? scroll_value : 0.F
+        );
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, mouse_scroll);
+    }
+}
+
+void AppLin::OnMouseMoved(const xcb_motion_notify_event_t& motion_event)
+{
+    META_FUNCTION_TASK();
+    const Mouse::Position mouse_pos(motion_event.event_x, motion_event.event_y);
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
+}
+
+void AppLin::OnMouseInWindowChanged(const xcb_enter_notify_event_t& enter_event, bool mouse_in_window)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(enter_event);
+    ProcessInputWithErrorHandling(&Input::IActionController::OnMouseInWindowChanged, mouse_in_window);
 }
 
 } // namespace Methane::Platform
