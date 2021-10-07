@@ -44,7 +44,7 @@ else(UNIX)
         ${SOURCES_PLATFORM_DIR}/AppLin.cpp
     )
 
-    set(PLATFORM_LIBRARIES ${XCB_LIBRARIES})
+    set(PLATFORM_LIBRARIES ${XCB_LIBRARIES} ${X11_LIBRARIES} X11-xcb)
 
 endif()
 
@@ -91,7 +91,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_include_directories(${TARGET}
     PRIVATE
         Sources
-        $<$<BOOL:${LINUX}>:${XCB_INCLUDE_DIRS}>
+        $<$<BOOL:${LINUX}>:${XCB_INCLUDE_DIRS} ${X11_INCLUDE_DIR}>
     PUBLIC
         Include
 )

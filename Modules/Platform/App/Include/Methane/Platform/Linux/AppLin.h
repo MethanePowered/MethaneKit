@@ -32,6 +32,8 @@ Linux application implementation.
 
 #include <xcb/xcb.h>
 
+struct _XDisplay; // X11 display
+
 namespace Methane::Platform
 {
 
@@ -58,11 +60,13 @@ private:
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
     void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state);
+    void OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_event);
     void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state);
     void OnMouseMoved(const xcb_motion_notify_event_t& motion_event);
     void OnMouseInWindowChanged(const xcb_enter_notify_event_t& enter_event, bool mouse_in_window);
 
     AppEnvironment m_env;
+    _XDisplay* m_display = nullptr;
     xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_hidden_atom = XCB_ATOM_NONE;

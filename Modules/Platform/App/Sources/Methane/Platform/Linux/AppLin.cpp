@@ -29,6 +29,10 @@ Linux application implementation.
 #include <string_view>
 #include <optional>
 
+#include <X11/Xlib-xcb.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+
 namespace Methane::Platform
 {
 
@@ -64,9 +68,13 @@ AppLin::AppLin(const AppBase::Settings& settings)
 {
     META_FUNCTION_TASK();
 
+    m_display = XOpenDisplay(nullptr);
+    META_CHECK_ARG_NOT_NULL_DESCR(m_display, "failed to open X11 display");
+    XSetEventQueueOwner(m_display, XCBOwnsEventQueue);
+
     // Establish connection to X-server
     int screen_id = 0;
-    m_env.connection = xcb_connect(nullptr, &screen_id);
+    m_env.connection = XGetXCBConnection(m_display);
     const int connection_error = xcb_connection_has_error(m_env.connection);
     META_CHECK_ARG_EQUAL_DESCR(connection_error, 0, "XCB connection to display has failed");
 
@@ -245,8 +253,8 @@ void AppLin::ScheduleAlert()
 void AppLin::HandleEvent(xcb_generic_event_t& event)
 {
     META_FUNCTION_TASK();
-    const uint32_t xcb_event_type = event.response_type & 0x7f;
-    switch (xcb_event_type)
+    const uint32_t event_type = event.response_type & 0x7f;
+    switch (event_type)
     {
     case XCB_CLIENT_MESSAGE:
         m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom);
@@ -262,6 +270,10 @@ void AppLin::HandleEvent(xcb_generic_event_t& event)
 
     case XCB_PROPERTY_NOTIFY:
         OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(event));
+        break;
+
+    case XCB_MAPPING_NOTIFY:
+        OnKeyboardMappingChanged(reinterpret_cast<const xcb_mapping_notify_event_t&>(event));
         break;
 
     case XCB_KEY_PRESS:
@@ -338,11 +350,37 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
 void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
-    const Keyboard::Key key = Keyboard::KeyConverter({ key_press_event.detail, key_press_event.state }).GetKey();
-    if (key == Keyboard::Key::Unknown)
-        return;
+    XKeyEvent x_key_event{ 0 };
+    x_key_event.display = m_display;
+    x_key_event.window = m_env.window;
+    x_key_event.state = key_press_event.state;
+    x_key_event.keycode = key_press_event.detail;
+
+    Keyboard::Key key = Keyboard::Key::Unknown;
+    for (int i = 0; i < 4; ++i)
+    {
+        const KeySym key_sym = XLookupKeysym(&x_key_event, i);
+        key = Keyboard::KeyConverter({ key_sym, key_press_event.state }).GetKey();
+        if (key != Keyboard::Key::Unknown)
+            break;
+    }
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
+}
+
+void AppLin::OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_event)
+{
+    META_FUNCTION_TASK();
+    XMappingEvent x_mapping_event{ 0 };
+    x_mapping_event.type          = MappingNotify;
+    x_mapping_event.send_event    = false;
+    x_mapping_event.display       = m_display;
+    x_mapping_event.window        = m_env.window;
+    x_mapping_event.serial        = mapping_event.sequence;
+    x_mapping_event.request       = mapping_event.request;
+    x_mapping_event.first_keycode = mapping_event.first_keycode;
+    x_mapping_event.count         = mapping_event.response_type;
+    XRefreshKeyboardMapping(&x_mapping_event);
 }
 
 void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state)

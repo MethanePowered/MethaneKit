@@ -130,6 +130,7 @@ elseif(APPLE)
 
 else(UNIX)
 
+    find_package(X11 REQUIRED)
     find_package(XCB REQUIRED)
 
 endif()

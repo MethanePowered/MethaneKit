@@ -30,11 +30,11 @@ namespace Methane::Platform::Keyboard
 
 struct NativeKey
 {
-    using Code  = uint8_t;
+    using KeySym  = unsigned long;
     using Flags = uint16_t;
 
-    Code  code;
-    Flags flags;
+    KeySym key;
+    Flags  flags;
 };
 
 } // namespace Methane::Platform::Keyboard

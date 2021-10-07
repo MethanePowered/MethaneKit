@@ -103,7 +103,10 @@ public:
         if (resource_barriers.IsEmpty())
             return;
 
-        META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
+        META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
+                 magic_enum::enum_name(CommandListBase::GetType()),
+                 CommandListBase::GetName(),
+                 static_cast<std::string>(resource_barriers));
 
         // TODO: set Vulkan resource barriers
     }
