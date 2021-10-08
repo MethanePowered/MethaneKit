@@ -189,7 +189,7 @@ Run built applications from the installation directory `Build\Output\VisualStudi
 #### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS Build with XCode
 
 Start Terminal, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Posix/Build.sh](Build/Posix/Build.sh) or build with CMake command line:
+and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.sh) or build with CMake command line:
 
 ```console
 mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
@@ -205,7 +205,7 @@ Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it fr
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
-by running `Build/Posix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
+by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
 on top of Metal, which is not currently supporting all extensions required by Methane Kit.
 
 Run built applications from the installation directory `Build/Output/XCode/Install/Apps`
@@ -260,7 +260,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
   - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
   - Ninja build with CMake native support (pre-configured with [CMakeSettings.json](/CMakeSettings.json))
 - Apple XCode
-  - XCode workspace and projects (generate with [Build.sh](/Build/Posix/Build.sh))
+  - XCode workspace and projects (generate with [Build.sh](/Build/Unix/Build.sh))
 - Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/egorodet/MethaneKit) (pre-configured with [.vscode/settings.json](/.vscode/settings.json))
 - Jet Brains CLion (pre-configured with [.idea](/.idea))
 - Jet Brains ReSharper C++ (pre-configured with [Folder.DotSettings](/Folder.DotSettings))
