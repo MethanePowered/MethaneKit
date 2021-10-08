@@ -5,6 +5,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: extraInitSteps
+    type: stepList
+    default: [ ]
 
 steps:
 
@@ -15,6 +18,9 @@ steps:
       fi
       mkdir -p $(buildDir)
     displayName: 'Make build directories for $(platform) $(configuration)'
+
+  - ${{ each step in parameters.extraInitSteps }}:
+      - ${{ step }}
 
   - task: CMake@1
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'

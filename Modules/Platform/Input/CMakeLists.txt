@@ -55,6 +55,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_include_directories(${TARGET}
     PRIVATE
         Sources
+        $<$<BOOL:${LINUX}>:${X11_xcb_INCLUDE_PATH} ${X11_X11_INCLUDE_PATH}>
     PUBLIC
         Include
 )

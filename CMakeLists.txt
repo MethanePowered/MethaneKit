@@ -131,7 +131,9 @@ elseif(APPLE)
 else(UNIX)
 
     find_package(X11 REQUIRED)
-    find_package(XCB REQUIRED)
+    if (NOT X11_xcb_FOUND OR NOT X11_X11_xcb_FOUND)
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `apt install libx11-xcb-dev`")
+    endif()
 
 endif()
 

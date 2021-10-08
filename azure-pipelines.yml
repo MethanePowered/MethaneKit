@@ -381,6 +381,12 @@ jobs:
 
   steps:
   - template: Build/Posix/AzureBuild.yml
+    parameters:
+      extraInitSteps:
+        - bash: |
+            sudo apt-get update
+            sudo apt-get install libx11-xcb-dev
+          displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_Sonar_Scan
   continueOnError: true
