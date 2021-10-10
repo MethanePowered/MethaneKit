@@ -26,16 +26,17 @@ Linux application implementation.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/Mouse.h>
+#include <Methane/Memory.hpp>
 
 #include <vector>
 #include <memory>
 
 #include <xcb/xcb.h>
 
-struct _XDisplay; // X11 display
-
 namespace Methane::Platform
 {
+
+class MessageBox;
 
 class AppLin : public AppBase
 {
@@ -55,7 +56,6 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
-    void ScheduleAlert();
     void HandleEvent(xcb_generic_event_t& event);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
@@ -65,13 +65,15 @@ private:
     void OnMouseMoved(const xcb_motion_notify_event_t& motion_event);
     void OnMouseInWindowChanged(const xcb_enter_notify_event_t& enter_event, bool mouse_in_window);
 
+    MessageBox& GetMessageBox();
+
     AppEnvironment m_env;
-    _XDisplay* m_display = nullptr;
     xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_hidden_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_fullscreen_atom = XCB_ATOM_NONE;
     bool m_is_event_processing = false;
+    UniquePtr<MessageBox> m_message_box_ptr;
 };
 
 } // namespace Methane::Platform

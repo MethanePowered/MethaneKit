@@ -42,6 +42,10 @@ else(LINUX)
 
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppLin.cpp
+        ${SOURCES_PLATFORM_DIR}/MessageBox.h
+        ${SOURCES_PLATFORM_DIR}/MessageBox.cpp
+        ${SOURCES_PLATFORM_DIR}/XcbUtils.h
+        ${SOURCES_PLATFORM_DIR}/XcbUtils.cpp
     )
 
     set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb)
@@ -49,6 +53,7 @@ else(LINUX)
 endif()
 
 set(HEADERS ${PLATFORM_HEADERS}
+    ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
@@ -77,6 +82,7 @@ target_link_libraries(${TARGET}
         MethanePrecompiledHeaders
         MethanePlatformUtils
         TaskFlow
+        fmt
         nowide
         ${PLATFORM_LIBRARIES}
 )
