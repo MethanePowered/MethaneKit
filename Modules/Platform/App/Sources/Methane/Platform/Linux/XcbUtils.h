@@ -32,6 +32,7 @@ namespace Methane::Platform::Linux
 {
 
 void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t *connection, std::string_view error_message);
+void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_view text, uint32_t& width, uint32_t& height, uint32_t& ascent);
 xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;
 xcb_atom_t GetXcbInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept;
 void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value);
@@ -42,7 +43,9 @@ void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
                               const std::array<T, atoms_count>& values)
 {
     constexpr size_t type_size = sizeof(T) * 8;
-    XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, type_size, values.size(), values.data()),
+    constexpr uint8_t format = static_cast<uint8_t>(std::min(type_size, size_t(32)));
+    constexpr uint32_t data_length = values.size() * type_size / format;
+    XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, format, data_length, values.data()),
              connection, "failed to set window property");
 }
 

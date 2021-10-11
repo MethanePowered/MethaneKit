@@ -22,4 +22,36 @@ Methane platform utility functions
 ******************************************************************************/
 
 #include <Methane/Platform/Utils.h>
+#include <Methane/Instrumentation.h>
 
+namespace Methane::Platform
+{
+
+std::vector<std::string_view> SplitString(const std::string_view str, const char delimiter, bool with_empty_parts)
+{
+    META_FUNCTION_TASK();
+    std::vector<std::string_view> parts;
+    size_t begin_part_index = 0;
+
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        if (str[i] != delimiter)
+            continue;
+
+        if (!with_empty_parts && begin_part_index == i)
+        {
+            begin_part_index = i + 1;
+            continue;
+        }
+
+        parts.emplace_back(str.data() + begin_part_index, i - begin_part_index);
+        begin_part_index = i + 1;
+    }
+
+    if (begin_part_index < str.length() - 1)
+        parts.emplace_back(str.data() + begin_part_index, str.length() - begin_part_index);
+
+    return parts;
+}
+
+} // namespace Methane::Platform

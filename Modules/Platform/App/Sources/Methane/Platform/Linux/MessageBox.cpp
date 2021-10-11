@@ -26,14 +26,13 @@ Linux message box implementation with X11/XCB.
 #include <Methane/Platform/Linux/MessageBox.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Checks.hpp>
+#include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 
 #include <string_view>
 #include <optional>
 
-#include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
-#include <X11/keysym.h>
 
 namespace Methane::Platform
 {
@@ -61,8 +60,8 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
     }};
 
     // Calculate frame size relative to screen_id size in case of floating point value
-    const uint16_t frame_width  = 720;
-    const uint16_t frame_height = 360;
+    const uint16_t frame_width  = 640;
+    const uint16_t frame_height = 240;
 
     // Create window and position it in the center of the screen_id
     m_dialog_window = xcb_generate_id(m_app_env.connection);
@@ -91,8 +90,8 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
     Linux::SetXcbWindowAtomProperty<xcb_window_t, 1>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, { { m_app_env.window } });
 
     // Create font
-    xcb_font_t font = xcb_generate_id(m_app_env.connection);
-    Linux::XcbCheck(xcb_open_font_checked(m_app_env.connection, font, g_default_font_name.length(), g_default_font_name.data()),
+    m_font = xcb_generate_id(m_app_env.connection);
+    Linux::XcbCheck(xcb_open_font_checked(m_app_env.connection, m_font, g_default_font_name.length(), g_default_font_name.data()),
                     m_app_env.connection, "failed to open font");
 
     // Create graphics context
@@ -101,19 +100,17 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
     const std::array<uint32_t, 4> gfx_context_values{{
         m_app_env.screen->black_pixel,
         m_app_env.screen->white_pixel,
-        font,
+        m_font,
         0
     }};
     Linux::XcbCheck(xcb_create_gc_checked(m_app_env.connection, m_gfx_context, m_app_env.screen->root, gfx_context_values_mask, gfx_context_values.data()),
                     m_app_env.connection, "failed to create font context");
-
-    Linux::XcbCheck(xcb_close_font_checked(m_app_env.connection, font),
-                    m_app_env.connection, "failed to close fonts");
 }
 
 MessageBox::~MessageBox()
 {
     META_FUNCTION_TASK();
+    Linux::XcbCheck(xcb_close_font_checked(m_app_env.connection, m_font), m_app_env.connection, "failed to close font");
     xcb_free_gc(m_app_env.connection, m_gfx_context);
     xcb_destroy_window(m_app_env.connection, m_dialog_window);
 }
@@ -188,20 +185,67 @@ void MessageBox::Draw(const xcb_expose_event_t&)
 {
     META_FUNCTION_TASK();
 
-    const xcb_point_t points[5] = { {11, 24}, {30, 10}, {49, 24}, {42, 46}, {18, 46} };
-    const xcb_segment_t segments[2] = { {60, 20, 90, 40}, {60, 40, 90, 20} };
-    const xcb_rectangle_t rect = {15, 65, 30, 20};
-    const xcb_arc_t arc = {60, 70, 30, 20, 0, 180 << 6};
+    const int16_t margin_size = 10;
+    int16_t x_pos = margin_size;
+    int16_t y_pos = margin_size;
+    uint32_t text_width = 0U;
+    uint32_t text_height = 0U;
+    uint32_t line_height = 0U;
+    const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true);
 
-    xcb_fill_poly(m_app_env.connection, m_dialog_window, m_gfx_context, XCB_POLY_SHAPE_CONVEX, XCB_COORD_MODE_ORIGIN, 5, points);
-    xcb_poly_segment(m_app_env.connection, m_dialog_window, m_gfx_context, 2, segments);
-    xcb_poly_fill_rectangle(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &rect);
-    xcb_poly_arc(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &arc);
-    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, m_message.information.length(), m_dialog_window, m_gfx_context, 10, 100, m_message.information.data()),
-                    m_app_env.connection, "failed to draw text");
+    for(const std::string_view& info_line : info_lines)
+    {
+        if (info_line.empty())
+        {
+            y_pos += line_height;
+            text_height += line_height;
+            continue;
+        }
+
+        uint32_t line_width  = 0U;
+        uint32_t line_ascent = 0U;
+        Linux::XcbMeasureText(m_app_env.connection, m_font, info_line, line_width, line_height, line_ascent);
+        Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, info_line.length(), m_dialog_window, m_gfx_context, x_pos, y_pos + line_ascent, info_line.data()),
+                        m_app_env.connection, "failed to draw text");
+        y_pos += line_height;
+        text_height += line_height;
+        text_width = std::max(text_width, line_width);
+    }
+
+    Resize(text_width + margin_size * 2, text_height + margin_size * 2);
 
     xcb_flush(m_app_env.connection);
+}
 
+void MessageBox::Resize(int width, int height)
+{
+    META_FUNCTION_TASK();
+
+    struct WMSizeHints
+    {
+        uint32_t flags;
+        int32_t  x, y;
+        int32_t  width, height;
+        int32_t  min_width, min_height;
+        int32_t  max_width, max_height;
+        int32_t  width_inc, height_inc;
+        int32_t  min_aspect_num, min_aspect_den;
+        int32_t  max_aspect_num, max_aspect_den;
+        int32_t  base_width, base_height;
+        uint32_t win_gravity;
+    };
+
+    WMSizeHints size_hints{0};
+    size_hints.flags       = PWinGravity | PSize | PMinSize | PMaxSize;
+    size_hints.win_gravity = XCB_GRAVITY_CENTER;
+    size_hints.width = width;
+    size_hints.height = height;
+    size_hints.min_width = width;
+    size_hints.min_height = height;
+    size_hints.max_width = width;
+    size_hints.max_height = height;
+
+    Linux::SetXcbWindowAtomProperty<WMSizeHints, 1>(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
 }
 
 void MessageBox::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)

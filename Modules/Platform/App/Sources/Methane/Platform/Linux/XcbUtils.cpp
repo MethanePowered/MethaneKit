@@ -28,14 +28,33 @@ X11/XCB utility functions.
 namespace Methane::Platform::Linux
 {
 
-void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t *connection, std::string_view error_message)
+void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t* connection, std::string_view error_message)
 {
+    META_FUNCTION_TASK();
     const xcb_generic_error_t* error = xcb_request_check(connection, cookie);
     if (error)
     {
         xcb_disconnect(connection);
         throw std::runtime_error(fmt::format("X11/XCB error: {}, error code {}", error_message, error->error_code));
     }
+}
+
+void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_view text, uint32_t& width, uint32_t& height, uint32_t& ascent)
+{
+    META_FUNCTION_TASK();
+    std::vector<xcb_char2b_t> xcb_str;
+    xcb_str.reserve(text.length());
+    std::transform(text.begin(), text.end(), std::back_inserter(xcb_str),
+                   [](const char c) { return xcb_char2b_t{ 0, static_cast<uint8_t>(c) }; });
+
+    const xcb_query_text_extents_cookie_t cookie = xcb_query_text_extents(connection, font, xcb_str.size(), xcb_str.data());
+    xcb_query_text_extents_reply_t* reply = xcb_query_text_extents_reply(connection, cookie, NULL);
+    META_CHECK_ARG_NOT_NULL_DESCR(reply, "failed to query XCB text extents");
+
+    width  = reply->overall_width;
+    height = reply->font_ascent + reply->font_descent;
+    ascent = reply->font_ascent;
+    free(reply);
 }
 
 xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept
@@ -56,6 +75,7 @@ xcb_atom_t GetXcbInternAtom(xcb_connection_t* xcb_connection, std::string_view n
 
 void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value)
 {
+    META_FUNCTION_TASK();
     XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, XCB_ATOM_STRING, 8, value.size(), value.data()),
              connection, "failed to set string property");
 }

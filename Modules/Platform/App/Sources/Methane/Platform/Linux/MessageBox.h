@@ -43,11 +43,13 @@ public:
 private:
     void HandleEvent(const xcb_generic_event_t& event);
     void Draw(const xcb_expose_event_t&);
+    void Resize(int width, int height);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, bool is_key_pressed);
     void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, bool is_button_pressed);
 
     const AppEnvironment m_app_env;
+    xcb_font_t m_font;
     IApp::Message m_message;
     xcb_window_t m_dialog_window = 0U;
     xcb_gcontext_t m_gfx_context = 0U;
