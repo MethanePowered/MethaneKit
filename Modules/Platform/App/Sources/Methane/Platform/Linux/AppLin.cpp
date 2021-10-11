@@ -94,12 +94,12 @@ AppLin::AppLin(const AppBase::Settings& settings)
                       value_mask, values.data());
 
     // Create window delete atom used to receive event when window is destroyed
-    //const xcb_atom_t protocols_atom = Linux::GetInternAtom(m_env.connection, "WM_PROTOCOLS");
-    m_window_delete_atom = Linux::GetInternAtom(m_env.connection, "WM_DELETE_WINDOW");
+    //const xcb_atom_t protocols_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_PROTOCOLS");
+    m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
     //xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE,
     //                    m_env.window, protocols_atom, 4, 32, 1,
     //                    &m_window_delete_atom);
-    Linux::SetWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, {{ m_window_delete_atom }});
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -108,15 +108,15 @@ AppLin::AppLin(const AppBase::Settings& settings)
     wm_class = wm_class.insert(settings.name.size(), 1, '\0');
     wm_class = wm_class.insert(settings.name.size() + 1, settings.name);
     wm_class = wm_class.insert(wm_class.size(), 1, '\0');
-    Linux::SetWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
+    Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
 
-    m_state_atom            = Linux::GetInternAtom(m_env.connection,"_NET_WM_STATE");
-    m_state_hidden_atom     = Linux::GetInternAtom(m_env.connection,"_NET_WM_STATE_HIDDEN");
-    m_state_fullscreen_atom = Linux::GetInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
+    m_state_atom            = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE");
+    m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
+    m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
     if (settings.is_full_screen)
     {
-        Linux::SetWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, {{ m_state_fullscreen_atom }});
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_state_fullscreen_atom } });
     }
 }
 
@@ -199,7 +199,7 @@ void AppLin::Alert(const Message& msg, bool deferred)
 void AppLin::SetWindowTitle(const std::string& title_text)
 {
     META_FUNCTION_TASK();
-    Linux::SetWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_NAME, title_text);
+    Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_NAME, title_text);
 }
 
 bool AppLin::SetFullScreen(bool is_full_screen)
@@ -308,7 +308,7 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
     if (prop_event.atom != m_state_atom || prop_event.window != m_env.window)
         return;
 
-    const std::optional<xcb_atom_t> state_value_opt = Linux::GetWindowPropertyValue<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom);
+    const std::optional<xcb_atom_t> state_value_opt = Linux::GetXcbWindowPropertyValue<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom);
     if (!state_value_opt)
         return;
 

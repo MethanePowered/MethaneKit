@@ -38,6 +38,8 @@ Linux message box implementation with X11/XCB.
 namespace Methane::Platform
 {
 
+static const std::string_view g_default_font_name = "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
+
 MessageBox::MessageBox(const AppEnvironment& app_env)
     : m_app_env(app_env)
 {
@@ -64,43 +66,55 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 
     // Create window and position it in the center of the screen_id
     m_dialog_window = xcb_generate_id(m_app_env.connection);
-    xcb_create_window(m_app_env.connection, m_app_env.screen->root_depth,
-                      m_dialog_window, m_app_env.screen->root,
-                      0, 0, frame_width, frame_height, 1,
-                      XCB_WINDOW_CLASS_INPUT_OUTPUT, m_app_env.screen->root_visual,
-                      value_mask, values.data());
+    Linux::XcbCheck(xcb_create_window_checked(m_app_env.connection, m_app_env.screen->root_depth,
+                                              m_dialog_window, m_app_env.screen->root,
+                                              0, 0, frame_width, frame_height, 1,
+                                              XCB_WINDOW_CLASS_INPUT_OUTPUT, m_app_env.screen->root_visual,
+                                              value_mask, values.data()),
+                    m_app_env.connection, "failed to create message box window");
 
     // Create window delete atom used to receive event when window is destroyed
-    m_window_delete_atom = Linux::GetInternAtom(m_app_env.connection, "WM_DELETE_WINDOW");
-    Linux::SetWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_PROTOCOLS", XCB_ATOM_ATOM, {{ m_window_delete_atom }});
+    m_window_delete_atom = Linux::GetXcbInternAtom(m_app_env.connection, "WM_DELETE_WINDOW");
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
 
-    Linux::SetWindowAtomProperty<xcb_atom_t, 4>(m_app_env.connection, m_dialog_window, "WM_STATE", XCB_ATOM_ATOM, {{
-        Linux::GetInternAtom(m_app_env.connection, "WM_STATE_SKIP_TASKBAR"),
-        Linux::GetInternAtom(m_app_env.connection, "WM_STATE_SKIP_PAGER"),
-        Linux::GetInternAtom(m_app_env.connection, "WM_STATE_FOCUSED"),
-        Linux::GetInternAtom(m_app_env.connection, "WM_STATE_MODAL")
-    }});
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 4>(m_app_env.connection, m_dialog_window, "WM_STATE", XCB_ATOM_ATOM, { {
+        Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_SKIP_TASKBAR"),
+        Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_SKIP_PAGER"),
+        Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_FOCUSED"),
+        Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_MODAL")
+    } });
 
-    Linux::SetWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_WINDOW_TYPE", XCB_ATOM_ATOM, {{
-        Linux::GetInternAtom(m_app_env.connection, "WM_WINDOW_TYPE_DIALOG")
-    }});
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_WINDOW_TYPE", XCB_ATOM_ATOM, { {
+        Linux::GetXcbInternAtom(m_app_env.connection, "WM_WINDOW_TYPE_DIALOG")
+    } });
 
-    Linux::SetWindowAtomProperty<xcb_window_t, 1>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, {{ m_app_env.window }});
+    Linux::SetXcbWindowAtomProperty<xcb_window_t, 1>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, { { m_app_env.window } });
+
+    // Create font
+    xcb_font_t font = xcb_generate_id(m_app_env.connection);
+    Linux::XcbCheck(xcb_open_font_checked(m_app_env.connection, font, g_default_font_name.length(), g_default_font_name.data()),
+                    m_app_env.connection, "failed to open font");
 
     // Create graphics context
     m_gfx_context = xcb_generate_id(m_app_env.connection);
-    const uint32_t gfx_context_values_mask = XCB_GC_BACKGROUND | XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
-    const std::array<uint32_t, 3> gfx_context_values{{
+    const uint32_t gfx_context_values_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_FONT | XCB_GC_GRAPHICS_EXPOSURES;
+    const std::array<uint32_t, 4> gfx_context_values{{
         m_app_env.screen->black_pixel,
         m_app_env.screen->white_pixel,
+        font,
         0
     }};
-    xcb_create_gc(m_app_env.connection, m_gfx_context, m_app_env.screen->root, gfx_context_values_mask, gfx_context_values.data());
+    Linux::XcbCheck(xcb_create_gc_checked(m_app_env.connection, m_gfx_context, m_app_env.screen->root, gfx_context_values_mask, gfx_context_values.data()),
+                    m_app_env.connection, "failed to create font context");
+
+    Linux::XcbCheck(xcb_close_font_checked(m_app_env.connection, font),
+                    m_app_env.connection, "failed to close fonts");
 }
 
 MessageBox::~MessageBox()
 {
     META_FUNCTION_TASK();
+    xcb_free_gc(m_app_env.connection, m_gfx_context);
     xcb_destroy_window(m_app_env.connection, m_dialog_window);
 }
 
@@ -110,7 +124,7 @@ void MessageBox::Show(const IApp::Message& message)
 
     // Show window on screen
     xcb_map_window(m_app_env.connection, m_dialog_window);
-    Linux::SetWindowStringProperty(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NAME, m_message.title);
+    Linux::SetXcbWindowStringProperty(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NAME, m_message.title);
     xcb_flush(m_app_env.connection);
 
     // Event processing loop
@@ -183,6 +197,8 @@ void MessageBox::Draw(const xcb_expose_event_t&)
     xcb_poly_segment(m_app_env.connection, m_dialog_window, m_gfx_context, 2, segments);
     xcb_poly_fill_rectangle(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &rect);
     xcb_poly_arc(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &arc);
+    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, m_message.information.length(), m_dialog_window, m_gfx_context, 10, 100, m_message.information.data()),
+                    m_app_env.connection, "failed to draw text");
 
     xcb_flush(m_app_env.connection);
 

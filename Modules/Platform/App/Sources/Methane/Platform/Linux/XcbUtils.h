@@ -31,34 +31,32 @@ X11/XCB utility functions.
 namespace Methane::Platform::Linux
 {
 
-xcb_intern_atom_reply_t* GetInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;
-xcb_atom_t GetInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept;
-
-inline void SetWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value)
-{
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window, property_id, XCB_ATOM_STRING, 8, value.size(), value.data());
-}
+void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t *connection, std::string_view error_message);
+xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;
+xcb_atom_t GetXcbInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept;
+void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value);
 
 template<typename T, size_t atoms_count>
-void SetWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
-                           xcb_atom_t property_id, xcb_atom_enum_t property_type,
-                           const std::array<T, atoms_count>& values)
+void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
+                              xcb_atom_t property_id, xcb_atom_enum_t property_type,
+                              const std::array<T, atoms_count>& values)
 {
     constexpr size_t type_size = sizeof(T) * 8;
-    xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, type_size, values.size(), values.data());
+    XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, type_size, values.size(), values.data()),
+             connection, "failed to set window property");
 }
 
 template<typename T, size_t values_count>
-void SetWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
-                           std::string_view property_atom_name, xcb_atom_enum_t property_type,
-                           const std::array<T, values_count>& values)
+void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
+                              std::string_view property_atom_name, xcb_atom_enum_t property_type,
+                              const std::array<T, values_count>& values)
 {
-    const xcb_atom_t property_atom = GetInternAtom(connection, property_atom_name.data());
-    SetWindowAtomProperty<T, values_count>(connection, window, property_atom, property_type, values);
+    const xcb_atom_t property_atom = GetXcbInternAtom(connection, property_atom_name.data());
+    SetXcbWindowAtomProperty<T, values_count>(connection, window, property_atom, property_type, values);
 }
 
 template<typename T>
-std::optional <T> GetWindowPropertyValue(xcb_connection_t* connection, xcb_window_t window, xcb_atom_t atom)
+std::optional<T> GetXcbWindowPropertyValue(xcb_connection_t* connection, xcb_window_t window, xcb_atom_t atom)
 {
     xcb_get_property_cookie_t cookie = xcb_get_property(connection, false, window, atom, XCB_ATOM_ATOM, 0, 32);
     xcb_get_property_reply_t* reply = xcb_get_property_reply(connection, cookie, nullptr);
