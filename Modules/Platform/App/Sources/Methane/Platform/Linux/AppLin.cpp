@@ -34,7 +34,6 @@ Linux application implementation.
 
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
-#include <X11/keysym.h>
 
 namespace Methane::Platform
 {
@@ -222,6 +221,11 @@ void AppLin::ShowAlert(const Message& message)
     META_FUNCTION_TASK();
     GetMessageBox().Show(message);
     AppBase::ShowAlert(message);
+
+    if (message.type == Message::Type::Error)
+    {
+        Close();
+    }
 }
 
 void AppLin::HandleEvent(xcb_generic_event_t& event)
@@ -327,21 +331,7 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
 void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
-    XKeyEvent x_key_event{ 0 };
-    x_key_event.display = m_env.display;
-    x_key_event.window = m_env.window;
-    x_key_event.state = key_press_event.state;
-    x_key_event.keycode = key_press_event.detail;
-
-    Keyboard::Key key = Keyboard::Key::Unknown;
-    for (int i = 0; i < 4; ++i)
-    {
-        const KeySym key_sym = XLookupKeysym(&x_key_event, i);
-        key = Keyboard::KeyConverter({ key_sym, key_press_event.state }).GetKey();
-        if (key != Keyboard::Key::Unknown)
-            break;
-    }
-
+    const Keyboard::Key key = Linux::ConvertXcbKey(m_env.display, m_env.window, key_press_event.detail, key_press_event.state);
     ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
 }
 
@@ -365,18 +355,7 @@ void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_e
     META_FUNCTION_TASK();
     Mouse::Button button = Mouse::Button::Unknown;
     int delta_sign = -1;
-
-    switch(button_press_event.detail)
-    {
-    case XCB_BUTTON_INDEX_1: button = Mouse::Button::Left; break;
-    case XCB_BUTTON_INDEX_2: button = Mouse::Button::Middle; break;
-    case XCB_BUTTON_INDEX_3: button = Mouse::Button::Right; break;
-    case XCB_BUTTON_INDEX_4: delta_sign = 1; [[fallthrough]];
-    case XCB_BUTTON_INDEX_5: button = Mouse::Button::VScroll; break;
-    case XCB_BUTTON_INDEX_5 + 1: delta_sign = 1; [[fallthrough]];
-    case XCB_BUTTON_INDEX_5 + 2: button = Mouse::Button::HScroll; break;
-    default: META_UNEXPECTED_ARG_DESCR(button_press_event.detail, "Mouse button is not supported");
-    }
+    std::tie(button, delta_sign) = Linux::ConvertXcbMouseButton(button_press_event.detail);
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 

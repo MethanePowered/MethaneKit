@@ -24,9 +24,9 @@ Linux message box implementation with X11/XCB.
 #include "XcbUtils.h"
 
 #include <Methane/Platform/Linux/MessageBox.h>
+#include <Methane/Platform/Keyboard.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Checks.hpp>
-#include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 
 #include <string_view>
@@ -37,7 +37,10 @@ Linux message box implementation with X11/XCB.
 namespace Methane::Platform
 {
 
-static const std::string_view g_default_font_name = "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
+static const std::string_view g_default_font_name = "-*-fixed-medium-r-*--15-*-*-*-*-*-*-*";
+static const std::string_view g_ok_button_label = "Ok";
+static const int16_t g_margin_size  = 30;
+static const int16_t g_padding_size = 15;
 
 MessageBox::MessageBox(const AppEnvironment& app_env)
     : m_app_env(app_env)
@@ -48,15 +51,18 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
     META_CHECK_ARG_NOT_NULL_DESCR(m_app_env.connection, "XCB connection should be initialized");
 
     // Prepare initial window properties
+    const uint32_t back_color = Linux::GetXcbSystemColor(Linux::SystemColor::Background);
+    const uint32_t text_color = Linux::GetXcbSystemColor(Linux::SystemColor::Text);
     const uint32_t value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
     const std::array<uint32_t, 2> values{{
-        m_app_env.screen->white_pixel,
+        back_color,
         XCB_EVENT_MASK_EXPOSURE |
         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
         XCB_EVENT_MASK_KEY_RELEASE |
         XCB_EVENT_MASK_KEY_PRESS |
         XCB_EVENT_MASK_BUTTON_PRESS |
-        XCB_EVENT_MASK_BUTTON_RELEASE
+        XCB_EVENT_MASK_BUTTON_RELEASE |
+        XCB_EVENT_MASK_POINTER_MOTION
     }};
 
     // Calculate frame size relative to screen_id size in case of floating point value
@@ -96,13 +102,8 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 
     // Create graphics context
     m_gfx_context = xcb_generate_id(m_app_env.connection);
-    const uint32_t gfx_context_values_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_FONT | XCB_GC_GRAPHICS_EXPOSURES;
-    const std::array<uint32_t, 4> gfx_context_values{{
-        m_app_env.screen->black_pixel,
-        m_app_env.screen->white_pixel,
-        m_font,
-        0
-    }};
+    const uint32_t gfx_context_values_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_LINE_WIDTH | XCB_GC_FONT | XCB_GC_GRAPHICS_EXPOSURES;
+    const std::array<uint32_t, 5> gfx_context_values{{ text_color, back_color, 2, m_font, 0 }};
     Linux::XcbCheck(xcb_create_gc_checked(m_app_env.connection, m_gfx_context, m_app_env.screen->root, gfx_context_values_mask, gfx_context_values.data()),
                     m_app_env.connection, "failed to create font context");
 }
@@ -153,11 +154,7 @@ void MessageBox::HandleEvent(const xcb_generic_event_t& event)
         break;
 
     case XCB_EXPOSE:
-        Draw(reinterpret_cast<const xcb_expose_event_t&>(event));
-        break;
-
-    case XCB_CONFIGURE_NOTIFY:
-        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event));
+        DrawDialog();
         break;
 
     case XCB_KEY_PRESS:
@@ -176,23 +173,34 @@ void MessageBox::HandleEvent(const xcb_generic_event_t& event)
         OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), false);
         break;
 
+    case XCB_MOTION_NOTIFY:
+        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event));
+        break;
+
     default:
         break;
     }
 }
 
-void MessageBox::Draw(const xcb_expose_event_t&)
+void MessageBox::DrawDialog()
 {
     META_FUNCTION_TASK();
 
-    const int16_t margin_size = 10;
-    int16_t x_pos = margin_size;
-    int16_t y_pos = margin_size;
+    const uint32_t info_text_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
+    const std::array<uint32_t, 2> info_text_values{{
+        Linux::GetXcbSystemColor(Linux::SystemColor::Text),
+        Linux::GetXcbSystemColor(Linux::SystemColor::Background)
+    }};
+    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, info_text_mask, info_text_values.data()),
+                    m_app_env.connection, "failed to change graphics context parameters");
+
+    int16_t x_pos = g_margin_size;
+    int16_t y_pos = g_margin_size;
     uint32_t text_width = 0U;
     uint32_t text_height = 0U;
     uint32_t line_height = 0U;
-    const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true);
 
+    const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true);
     for(const std::string_view& info_line : info_lines)
     {
         if (info_line.empty())
@@ -206,13 +214,70 @@ void MessageBox::Draw(const xcb_expose_event_t&)
         uint32_t line_ascent = 0U;
         Linux::XcbMeasureText(m_app_env.connection, m_font, info_line, line_width, line_height, line_ascent);
         Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, info_line.length(), m_dialog_window, m_gfx_context, x_pos, y_pos + line_ascent, info_line.data()),
-                        m_app_env.connection, "failed to draw text");
+                        m_app_env.connection, "failed to draw message box information text");
         y_pos += line_height;
         text_height += line_height;
         text_width = std::max(text_width, line_width);
     }
 
-    Resize(text_width + margin_size * 2, text_height + margin_size * 2);
+    const uint32_t button_height = line_height + g_padding_size * 2;
+    m_dialog_size = { text_width + g_margin_size * 2, text_height + button_height + g_margin_size * 3 };
+
+    Resize(m_dialog_size.GetWidth(), m_dialog_size.GetHeight());
+
+    DrawButtons();
+}
+
+void MessageBox::DrawButtons()
+{
+    META_FUNCTION_TASK();
+    uint32_t ok_label_width  = 0U;
+    uint32_t ok_label_height = 0U;
+    uint32_t ok_label_ascent = 0U;
+    Linux::XcbMeasureText(m_app_env.connection, m_font, g_ok_button_label, ok_label_width, ok_label_height, ok_label_ascent);
+
+    const uint32_t button_height = ok_label_height + g_padding_size * 2;
+    const uint32_t button_width  = button_height * 4;
+    m_ok_button_rect = {
+        static_cast<int16_t>((m_dialog_size.GetWidth() - button_width) / 2),
+        static_cast<int16_t>(m_dialog_size.GetHeight() - button_height - g_margin_size),
+        static_cast<uint16_t>(button_width),
+        static_cast<uint16_t>(button_height)
+    };
+
+    const Linux::SystemColor button_pressed_color_type    = m_mouse_pressed_ok_button
+                                                          ? Linux::SystemColor::ButtonBackgroundPressed : Linux::SystemColor::ButtonBackgroundHovered;
+    const Linux::SystemColor button_background_color_type = m_mouse_over_ok_button
+                                                          ? button_pressed_color_type
+                                                          : Linux::SystemColor::ButtonBackgroundNormal;
+
+    const uint32_t button_back_mask = XCB_GC_FOREGROUND;
+    const std::array<uint32_t, 1> button_back_values{{ Linux::GetXcbSystemColor(button_background_color_type) }};
+    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_back_mask, button_back_values.data()),
+                    m_app_env.connection, "failed to change graphics context parameters");
+    Linux::XcbCheck(xcb_poly_fill_rectangle_checked(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &m_ok_button_rect),
+                    m_app_env.connection, "failed to draw OK button rectangle");
+
+    const uint32_t button_border_mask = XCB_GC_FOREGROUND | XCB_GC_LINE_WIDTH;
+    const std::array<uint32_t, 2> button_border_values{{ Linux::GetXcbSystemColor(Linux::SystemColor::ButtonBorderSelected), 2 }};
+    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_border_mask, button_border_values.data()),
+                    m_app_env.connection, "failed to change graphics context parameters");
+    Linux::XcbCheck(xcb_poly_rectangle_checked(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &m_ok_button_rect),
+                    m_app_env.connection, "failed to draw OK button rectangle");
+
+    const uint32_t button_label_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
+    const std::array<uint32_t, 2> button_label_values{{
+        Linux::GetXcbSystemColor(Linux::SystemColor::Text),
+        Linux::GetXcbSystemColor(button_background_color_type)
+    }};
+    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_label_mask, button_label_values.data()),
+                    m_app_env.connection, "failed to change graphics context parameters");
+
+    const int16_t ok_label_x = m_ok_button_rect.x + static_cast<int16_t>((m_ok_button_rect.width - ok_label_width) / 2);
+    const int16_t ok_label_y = m_ok_button_rect.y + static_cast<int16_t>((m_ok_button_rect.height - ok_label_height) / 2);
+    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, g_ok_button_label.length(), m_dialog_window, m_gfx_context,
+                                             ok_label_x, ok_label_y + ok_label_ascent, g_ok_button_label.data()),
+                    m_app_env.connection, "failed to draw button label text");
 
     xcb_flush(m_app_env.connection);
 }
@@ -220,22 +285,7 @@ void MessageBox::Draw(const xcb_expose_event_t&)
 void MessageBox::Resize(int width, int height)
 {
     META_FUNCTION_TASK();
-
-    struct WMSizeHints
-    {
-        uint32_t flags;
-        int32_t  x, y;
-        int32_t  width, height;
-        int32_t  min_width, min_height;
-        int32_t  max_width, max_height;
-        int32_t  width_inc, height_inc;
-        int32_t  min_aspect_num, min_aspect_den;
-        int32_t  max_aspect_num, max_aspect_den;
-        int32_t  base_width, base_height;
-        uint32_t win_gravity;
-    };
-
-    WMSizeHints size_hints{0};
+    Linux::WMSizeHints size_hints{0};
     size_hints.flags       = PWinGravity | PSize | PMinSize | PMaxSize;
     size_hints.win_gravity = XCB_GRAVITY_CENTER;
     size_hints.width = width;
@@ -245,40 +295,51 @@ void MessageBox::Resize(int width, int height)
     size_hints.max_width = width;
     size_hints.max_height = height;
 
-    Linux::SetXcbWindowAtomProperty<WMSizeHints, 1>(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
-}
-
-void MessageBox::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)
-{
-    META_FUNCTION_TASK();
-    if (cfg_event.window != m_dialog_window)
-        return;
+    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints, 1>(
+        m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
 }
 
 void MessageBox::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, bool is_key_pressed)
 {
     META_FUNCTION_TASK();
     META_UNUSED(is_key_pressed);
+    const Keyboard::Key key = Linux::ConvertXcbKey(m_app_env.display, m_app_env.window, key_press_event.detail, key_press_event.state);
 
-    XKeyEvent x_key_event{ 0 };
-    x_key_event.display = m_app_env.display;
-    x_key_event.window = m_dialog_window;
-    x_key_event.state = key_press_event.state;
-    x_key_event.keycode = key_press_event.detail;
+    // Close message box when Enter or Escape key is released
+    if (!is_key_pressed && (key == Keyboard::Key::Enter || key == Keyboard::Key::KeyPadEnter || key == Keyboard::Key::Escape))
+        m_is_event_processing = false;
+}
 
-    for (int i = 0; i < 4; ++i)
-    {
-        const KeySym key_sym = XLookupKeysym(&x_key_event, i);
-        META_UNUSED(key_sym);
-    }
+void MessageBox::OnMouseMoved(const xcb_motion_notify_event_t& motion_event)
+{
+    META_FUNCTION_TASK();
+    const bool mouse_was_over_ok_button = m_mouse_over_ok_button;
+
+    m_mouse_state.SetPosition(Mouse::Position(motion_event.event_x, motion_event.event_y));
+    m_mouse_over_ok_button = m_ok_button_rect.x <= motion_event.event_x && motion_event.event_x <= m_ok_button_rect.x + static_cast<int16_t>(m_ok_button_rect.width) &&
+                             m_ok_button_rect.y <= motion_event.event_y && motion_event.event_y <= m_ok_button_rect.y + static_cast<int16_t>(m_ok_button_rect.height);
+
+    if (m_mouse_over_ok_button != mouse_was_over_ok_button)
+        DrawButtons();
 }
 
 void MessageBox::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, bool is_button_pressed)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(is_button_pressed);
-    if (button_press_event.detail != XCB_BUTTON_INDEX_1) // Left mouse button
-        return;
+    const bool mouse_was_pressing_ok_button = m_mouse_pressed_ok_button;
+
+    m_mouse_state.SetButton(Linux::ConvertXcbMouseButton(button_press_event.detail).first,
+                            is_button_pressed ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released);
+    m_mouse_pressed_ok_button = m_mouse_over_ok_button && m_mouse_state.GetPressedButtons().count(Mouse::Button::Left);
+
+    if (m_mouse_pressed_ok_button != mouse_was_pressing_ok_button)
+    {
+        DrawButtons();
+
+        // Close the dialog when mouse button is released over OK button
+        if (!m_mouse_pressed_ok_button && m_mouse_over_ok_button)
+            m_is_event_processing = false;
+    }
 }
 
 } // namespace Methane::Platform

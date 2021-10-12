@@ -25,8 +25,70 @@ X11/XCB utility functions.
 
 #include <fmt/format.h>
 
+#include <X11/Xlib-xcb.h>
+#include <X11/keysym.h>
+
 namespace Methane::Platform::Linux
 {
+
+uint32_t PackXcbColor(const RgbColor& color)
+{
+    META_FUNCTION_TASK();
+    return static_cast<uint32_t>(color.r) << 16 |
+           static_cast<uint32_t>(color.g) << 8 |
+           static_cast<uint32_t>(color.b);
+}
+
+uint32_t GetXcbSystemColor(SystemColor color_type)
+{
+    META_FUNCTION_TASK();
+    static const std::array<RgbColor, 7> s_system_colors{{ // Ubuntu 20.04 dark theme
+        { 52, 52, 52 },     // Background
+        { 247, 247, 247 },  // Text
+        { 34, 34, 34 },     // ButtonBorderNormal
+        { 179, 106, 80 },   // ButtonBorderSelected
+        { 72, 72, 72 },     // ButtonBackgroundNormal
+        { 78, 78, 78 },     // ButtonBackgroundHovered
+        { 39, 39, 39 },     // ButtonBackgroundPressed
+    }};
+    return PackXcbColor(s_system_colors[static_cast<size_t>(color_type)]);
+}
+
+std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
+{
+    META_FUNCTION_TASK();
+    switch(button)
+    {
+    case XCB_BUTTON_INDEX_1: return { Mouse::Button::Left, 0 };
+    case XCB_BUTTON_INDEX_2: return { Mouse::Button::Middle, 0 };
+    case XCB_BUTTON_INDEX_3: return { Mouse::Button::Right, 0 };
+    case XCB_BUTTON_INDEX_4: return { Mouse::Button::VScroll, 1 };
+    case XCB_BUTTON_INDEX_5: return { Mouse::Button::VScroll, -1 };
+    case XCB_BUTTON_INDEX_5 + 1: return { Mouse::Button::HScroll, 1 };
+    case XCB_BUTTON_INDEX_5 + 2: return { Mouse::Button::HScroll, -1 };
+    default: META_UNEXPECTED_ARG_DESCR(button, "XCB mouse button is not supported");
+    }
+}
+
+Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state)
+{
+    META_FUNCTION_TASK();
+    XKeyEvent x_key_event{ 0 };
+    x_key_event.display = display;
+    x_key_event.window = window;
+    x_key_event.state = key_state;
+    x_key_event.keycode = key_detail;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        const KeySym key_sym = XLookupKeysym(&x_key_event, i);
+        const Keyboard::Key key = Keyboard::KeyConverter({ key_sym, key_state }).GetKey();
+        if (key != Keyboard::Key::Unknown)
+            return key;
+    }
+
+    return Keyboard::Key::Unknown;
+}
 
 void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t* connection, std::string_view error_message)
 {

@@ -23,14 +23,59 @@ X11/XCB utility functions.
 
 #pragma once
 
+#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Keyboard.h>
+
 #include <string_view>
 #include <array>
 
 #include <xcb/xcb.h>
 
+struct _XDisplay; // X11 display
+
+#ifndef xcb_window_t
+using xcb_window_t = uint32_t;
+#endif
+
 namespace Methane::Platform::Linux
 {
 
+enum class SystemColor : size_t
+{
+    Background,
+    Text,
+    ButtonBorderNormal,
+    ButtonBorderSelected,
+    ButtonBackgroundNormal,
+    ButtonBackgroundHovered,
+    ButtonBackgroundPressed,
+};
+
+struct RgbColor
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+struct WMSizeHints
+{
+    uint32_t flags;
+    int32_t  x, y;
+    int32_t  width, height;
+    int32_t  min_width, min_height;
+    int32_t  max_width, max_height;
+    int32_t  width_inc, height_inc;
+    int32_t  min_aspect_num, min_aspect_den;
+    int32_t  max_aspect_num, max_aspect_den;
+    int32_t  base_width, base_height;
+    uint32_t win_gravity;
+};
+
+uint32_t PackXcbColor(const RgbColor& color);
+uint32_t GetXcbSystemColor(SystemColor color_type);
+std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button);
+Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state);
 void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t *connection, std::string_view error_message);
 void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_view text, uint32_t& width, uint32_t& height, uint32_t& ascent);
 xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;

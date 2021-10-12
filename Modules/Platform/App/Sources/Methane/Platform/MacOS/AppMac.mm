@@ -83,8 +83,6 @@ int AppMac::Run(const RunArgs& args)
 void AppMac::Alert(const Message& msg, bool deferred)
 {
     META_FUNCTION_TASK();
-    AppBase::Alert(msg, deferred);
-
     if (deferred)
     {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -99,6 +97,8 @@ void AppMac::Alert(const Message& msg, bool deferred)
     {
         ShowAlert(msg);
     }
+
+    AppBase::Alert(msg, deferred);
 }
 
 void AppMac::SetWindowTitle(const std::string& title_text)
