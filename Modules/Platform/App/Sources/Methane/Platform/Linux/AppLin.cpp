@@ -93,11 +93,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
                       value_mask, values.data());
 
     // Create window delete atom used to receive event when window is destroyed
-    //const xcb_atom_t protocols_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_PROTOCOLS");
     m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
-    //xcb_change_property(m_env.connection, XCB_PROP_MODE_REPLACE,
-    //                    m_env.window, protocols_atom, 4, 32, 1,
-    //                    &m_window_delete_atom);
     Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment

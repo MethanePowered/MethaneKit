@@ -40,6 +40,7 @@ namespace Methane::Platform
 static const std::string_view g_default_font_name = "-*-fixed-medium-r-*--15-*-*-*-*-*-*-*";
 static const int16_t g_margin_size  = 30;
 static const int16_t g_padding_size = 15;
+static const size_t g_max_line_length = 80U;
 
 struct MessageButtonStyle
 {
@@ -222,7 +223,7 @@ void MessageBox::DrawDialog()
     Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, info_text_mask, info_text_values.data()),
                     m_app_env.connection, "failed to change graphics context parameters");
 
-    const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true);
+    const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true, g_max_line_length);
     for(const std::string_view& info_line : info_lines)
     {
         if (info_line.empty())

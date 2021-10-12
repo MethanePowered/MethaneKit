@@ -27,7 +27,20 @@ Methane platform utility functions
 namespace Methane::Platform
 {
 
-std::vector<std::string_view> SplitString(const std::string_view str, const char delimiter, bool with_empty_parts)
+inline void SplitInChunks(const std::string_view str, size_t max_chunk_size, std::vector<std::string_view>& output)
+{
+    if (str.empty())
+    {
+        output.emplace_back(str);
+        return;
+    }
+    for (size_t i = 0; i < str.size(); i += max_chunk_size)
+    {
+        output.emplace_back(str.data() + i, std::min(str.size() - i, max_chunk_size));
+    }
+}
+
+std::vector<std::string_view> SplitString(const std::string_view str, const char delimiter, bool with_empty_parts, size_t max_chunk_size)
 {
     META_FUNCTION_TASK();
     std::vector<std::string_view> parts;
@@ -44,12 +57,12 @@ std::vector<std::string_view> SplitString(const std::string_view str, const char
             continue;
         }
 
-        parts.emplace_back(str.data() + begin_part_index, i - begin_part_index);
+        SplitInChunks(std::string_view(str.data() + begin_part_index, i - begin_part_index), max_chunk_size, parts);
         begin_part_index = i + 1;
     }
 
     if (begin_part_index < str.length() - 1)
-        parts.emplace_back(str.data() + begin_part_index, str.length() - begin_part_index);
+        SplitInChunks(std::string_view(str.data() + begin_part_index, str.length() - begin_part_index), max_chunk_size, parts);
 
     return parts;
 }

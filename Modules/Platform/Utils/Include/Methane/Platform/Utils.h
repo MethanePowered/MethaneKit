@@ -48,6 +48,7 @@ void PrintToDebugOutput(std::string_view msg);
 std::string GetExecutableDir();
 std::string GetExecutableFileName();
 std::string GetResourceDir();
-std::vector<std::string_view> SplitString(const std::string_view str, const char delimiter, bool with_empty_parts = false);
+std::vector<std::string_view> SplitString(const std::string_view str, const char delimiter,
+                                          bool with_empty_parts = false, size_t max_chunk_size = std::numeric_limits<size_t>::max());
 
 } // namespace Methane::Platform
