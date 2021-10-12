@@ -50,17 +50,17 @@ private:
     void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, bool is_button_pressed);
 
     const AppEnvironment m_app_env;
-    xcb_font_t m_font;
-    IApp::Message m_message;
-    Data::FrameSize m_dialog_size;
-    xcb_window_t m_dialog_window = 0U;
-    xcb_gcontext_t m_gfx_context = 0U;
-    xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
-    xcb_rectangle_t m_ok_button_rect;
-    Mouse::State m_mouse_state;
-    bool m_mouse_over_ok_button = false;
-    bool m_mouse_pressed_ok_button = false;
-    bool m_is_event_processing = false;
+    xcb_font_t           m_default_font;
+    IApp::Message        m_message;
+    Data::FrameSize      m_dialog_size;
+    xcb_window_t         m_dialog_window = 0U;
+    xcb_gcontext_t       m_gfx_context = 0U;
+    xcb_atom_t           m_window_delete_atom = XCB_ATOM_NONE;
+    xcb_rectangle_t      m_ok_button_rect;
+    Mouse::State         m_mouse_state;
+    bool                 m_mouse_over_ok_button = false;
+    bool                 m_mouse_pressed_ok_button = false;
+    bool                 m_is_event_processing = false;
 };
 
 } // namespace Methane::Platform

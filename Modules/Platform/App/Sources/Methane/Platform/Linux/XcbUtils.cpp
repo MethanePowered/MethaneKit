@@ -42,13 +42,17 @@ uint32_t PackXcbColor(const RgbColor& color)
 uint32_t GetXcbSystemColor(SystemColor color_type)
 {
     META_FUNCTION_TASK();
-    static const std::array<RgbColor, 7> s_system_colors{{ // Ubuntu 20.04 dark theme
+    static const std::array<RgbColor, 11> s_system_colors{{ // Ubuntu 20.04 dark theme
         { 52, 52, 52 },     // Background
-        { 247, 247, 247 },  // Text
+        { 247, 247, 247 },  // DefaultText
         { 34, 34, 34 },     // ButtonBorderNormal
         { 179, 106, 80 },   // ButtonBorderSelected
         { 72, 72, 72 },     // ButtonBackgroundNormal
         { 78, 78, 78 },     // ButtonBackgroundHovered
+        { 162, 18, 35 },    // ButtonBackgroundError
+        { 171, 19, 37 },    // ButtonBackgroundErrorHovered
+        { 208, 139, 0 },    // ButtonBackgroundWarning,
+        { 209, 158, 56 },   // ButtonBackgroundWarningHovered,
         { 39, 39, 39 },     // ButtonBackgroundPressed
     }};
     return PackXcbColor(s_system_colors[static_cast<size_t>(color_type)]);

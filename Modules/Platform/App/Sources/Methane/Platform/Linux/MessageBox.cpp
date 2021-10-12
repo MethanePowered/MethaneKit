@@ -38,9 +38,27 @@ namespace Methane::Platform
 {
 
 static const std::string_view g_default_font_name = "-*-fixed-medium-r-*--15-*-*-*-*-*-*-*";
-static const std::string_view g_ok_button_label = "Ok";
 static const int16_t g_margin_size  = 30;
 static const int16_t g_padding_size = 15;
+
+struct MessageButtonStyle
+{
+    std::string_view label;
+    Linux::SystemColor default_back_color = Linux::SystemColor::ButtonBackgroundNormal;
+    Linux::SystemColor hovered_back_color = Linux::SystemColor::ButtonBackgroundHovered;
+};
+
+MessageButtonStyle GetMessageButtonStyle(IApp::Message::Type message_type)
+{
+    META_FUNCTION_TASK();
+    switch(message_type)
+    {
+    case IApp::Message::Type::Information: return { "OK",       Linux::SystemColor::ButtonBackgroundNormal,  Linux::SystemColor::ButtonBackgroundHovered };
+    case IApp::Message::Type::Warning:     return { "Continue", Linux::SystemColor::ButtonBackgroundWarning, Linux::SystemColor::ButtonBackgroundWarningHovered };
+    case IApp::Message::Type::Error:       return { "Close",    Linux::SystemColor::ButtonBackgroundError,   Linux::SystemColor::ButtonBackgroundErrorHovered };
+    }
+    META_UNEXPECTED_ARG_RETURN(message_type, MessageButtonStyle{});
+}
 
 MessageBox::MessageBox(const AppEnvironment& app_env)
     : m_app_env(app_env)
@@ -52,7 +70,7 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 
     // Prepare initial window properties
     const uint32_t back_color = Linux::GetXcbSystemColor(Linux::SystemColor::Background);
-    const uint32_t text_color = Linux::GetXcbSystemColor(Linux::SystemColor::Text);
+    const uint32_t text_color = Linux::GetXcbSystemColor(Linux::SystemColor::DefaultText);
     const uint32_t value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
     const std::array<uint32_t, 2> values{{
         back_color,
@@ -95,15 +113,15 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 
     Linux::SetXcbWindowAtomProperty<xcb_window_t, 1>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, { { m_app_env.window } });
 
-    // Create font
-    m_font = xcb_generate_id(m_app_env.connection);
-    Linux::XcbCheck(xcb_open_font_checked(m_app_env.connection, m_font, g_default_font_name.length(), g_default_font_name.data()),
-                    m_app_env.connection, "failed to open font");
+    // Create default font
+    m_default_font = xcb_generate_id(m_app_env.connection);
+    Linux::XcbCheck(xcb_open_font_checked(m_app_env.connection, m_default_font, g_default_font_name.length(), g_default_font_name.data()),
+                    m_app_env.connection, "failed to open default font");
 
     // Create graphics context
     m_gfx_context = xcb_generate_id(m_app_env.connection);
     const uint32_t gfx_context_values_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_LINE_WIDTH | XCB_GC_FONT | XCB_GC_GRAPHICS_EXPOSURES;
-    const std::array<uint32_t, 5> gfx_context_values{{ text_color, back_color, 2, m_font, 0 }};
+    const std::array<uint32_t, 5> gfx_context_values{{ text_color, back_color, 2, m_default_font, 0 }};
     Linux::XcbCheck(xcb_create_gc_checked(m_app_env.connection, m_gfx_context, m_app_env.screen->root, gfx_context_values_mask, gfx_context_values.data()),
                     m_app_env.connection, "failed to create font context");
 }
@@ -111,7 +129,7 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 MessageBox::~MessageBox()
 {
     META_FUNCTION_TASK();
-    Linux::XcbCheck(xcb_close_font_checked(m_app_env.connection, m_font), m_app_env.connection, "failed to close font");
+    Linux::XcbCheck(xcb_close_font_checked(m_app_env.connection, m_default_font), m_app_env.connection, "failed to close font");
     xcb_free_gc(m_app_env.connection, m_gfx_context);
     xcb_destroy_window(m_app_env.connection, m_dialog_window);
 }
@@ -120,9 +138,11 @@ void MessageBox::Show(const IApp::Message& message)
 {
     m_message = message;
 
+    // Update window title
+    Linux::SetXcbWindowStringProperty(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NAME, m_message.title);
+
     // Show window on screen
     xcb_map_window(m_app_env.connection, m_dialog_window);
-    Linux::SetXcbWindowStringProperty(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NAME, m_message.title);
     xcb_flush(m_app_env.connection);
 
     // Event processing loop
@@ -136,6 +156,7 @@ void MessageBox::Show(const IApp::Message& message)
         }
     }
 
+    // Hide window
     xcb_unmap_window(m_app_env.connection, m_dialog_window);
 }
 
@@ -186,19 +207,20 @@ void MessageBox::DrawDialog()
 {
     META_FUNCTION_TASK();
 
-    const uint32_t info_text_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
-    const std::array<uint32_t, 2> info_text_values{{
-        Linux::GetXcbSystemColor(Linux::SystemColor::Text),
-        Linux::GetXcbSystemColor(Linux::SystemColor::Background)
-    }};
-    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, info_text_mask, info_text_values.data()),
-                    m_app_env.connection, "failed to change graphics context parameters");
-
     int16_t x_pos = g_margin_size;
     int16_t y_pos = g_margin_size;
     uint32_t text_width = 0U;
     uint32_t text_height = 0U;
     uint32_t line_height = 0U;
+
+    // Draw information text
+    const uint32_t info_text_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
+    const std::array<uint32_t, 3> info_text_values{{
+        Linux::GetXcbSystemColor(Linux::SystemColor::DefaultText),
+        Linux::GetXcbSystemColor(Linux::SystemColor::Background)
+    }};
+    Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, info_text_mask, info_text_values.data()),
+                    m_app_env.connection, "failed to change graphics context parameters");
 
     const std::vector<std::string_view> info_lines = SplitString(m_message.information, '\n', true);
     for(const std::string_view& info_line : info_lines)
@@ -212,7 +234,7 @@ void MessageBox::DrawDialog()
 
         uint32_t line_width  = 0U;
         uint32_t line_ascent = 0U;
-        Linux::XcbMeasureText(m_app_env.connection, m_font, info_line, line_width, line_height, line_ascent);
+        Linux::XcbMeasureText(m_app_env.connection, m_default_font, info_line, line_width, line_height, line_ascent);
         Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, info_line.length(), m_dialog_window, m_gfx_context, x_pos, y_pos + line_ascent, info_line.data()),
                         m_app_env.connection, "failed to draw message box information text");
         y_pos += line_height;
@@ -223,7 +245,7 @@ void MessageBox::DrawDialog()
     const uint32_t button_height = line_height + g_padding_size * 2;
     m_dialog_size = { text_width + g_margin_size * 2, text_height + button_height + g_margin_size * 3 };
 
-    Resize(m_dialog_size.GetWidth(), m_dialog_size.GetHeight());
+    Resize(static_cast<int>(m_dialog_size.GetWidth()), static_cast<int>(m_dialog_size.GetHeight()));
 
     DrawButtons();
 }
@@ -231,11 +253,17 @@ void MessageBox::DrawDialog()
 void MessageBox::DrawButtons()
 {
     META_FUNCTION_TASK();
+    const MessageButtonStyle button_style = GetMessageButtonStyle(m_message.type);
+    const Linux::SystemColor button_pressed_color_type    = m_mouse_pressed_ok_button ? Linux::SystemColor::ButtonBackgroundPressed : button_style.hovered_back_color;
+    const Linux::SystemColor button_background_color_type = m_mouse_over_ok_button ? button_pressed_color_type : button_style.default_back_color;
+
+    // Measure text of button label
     uint32_t ok_label_width  = 0U;
     uint32_t ok_label_height = 0U;
     uint32_t ok_label_ascent = 0U;
-    Linux::XcbMeasureText(m_app_env.connection, m_font, g_ok_button_label, ok_label_width, ok_label_height, ok_label_ascent);
+    Linux::XcbMeasureText(m_app_env.connection, m_default_font, button_style.label, ok_label_width, ok_label_height, ok_label_ascent);
 
+    // Calculate button rectangle
     const uint32_t button_height = ok_label_height + g_padding_size * 2;
     const uint32_t button_width  = button_height * 4;
     m_ok_button_rect = {
@@ -245,12 +273,7 @@ void MessageBox::DrawButtons()
         static_cast<uint16_t>(button_height)
     };
 
-    const Linux::SystemColor button_pressed_color_type    = m_mouse_pressed_ok_button
-                                                          ? Linux::SystemColor::ButtonBackgroundPressed : Linux::SystemColor::ButtonBackgroundHovered;
-    const Linux::SystemColor button_background_color_type = m_mouse_over_ok_button
-                                                          ? button_pressed_color_type
-                                                          : Linux::SystemColor::ButtonBackgroundNormal;
-
+    // Draw button background
     const uint32_t button_back_mask = XCB_GC_FOREGROUND;
     const std::array<uint32_t, 1> button_back_values{{ Linux::GetXcbSystemColor(button_background_color_type) }};
     Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_back_mask, button_back_values.data()),
@@ -258,6 +281,7 @@ void MessageBox::DrawButtons()
     Linux::XcbCheck(xcb_poly_fill_rectangle_checked(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &m_ok_button_rect),
                     m_app_env.connection, "failed to draw OK button rectangle");
 
+    // Draw button border
     const uint32_t button_border_mask = XCB_GC_FOREGROUND | XCB_GC_LINE_WIDTH;
     const std::array<uint32_t, 2> button_border_values{{ Linux::GetXcbSystemColor(Linux::SystemColor::ButtonBorderSelected), 2 }};
     Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_border_mask, button_border_values.data()),
@@ -265,18 +289,19 @@ void MessageBox::DrawButtons()
     Linux::XcbCheck(xcb_poly_rectangle_checked(m_app_env.connection, m_dialog_window, m_gfx_context, 1, &m_ok_button_rect),
                     m_app_env.connection, "failed to draw OK button rectangle");
 
-    const uint32_t button_label_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND;
-    const std::array<uint32_t, 2> button_label_values{{
-        Linux::GetXcbSystemColor(Linux::SystemColor::Text),
-        Linux::GetXcbSystemColor(button_background_color_type)
+    // Draw button label text
+    const int16_t ok_label_x = m_ok_button_rect.x + static_cast<int16_t>((m_ok_button_rect.width - ok_label_width) / 2);
+    const int16_t ok_label_y = m_ok_button_rect.y + static_cast<int16_t>((m_ok_button_rect.height - ok_label_height) / 2);
+    const uint32_t button_label_mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_FONT;
+    const std::array<uint32_t, 3> button_label_values{{
+        Linux::GetXcbSystemColor(Linux::SystemColor::DefaultText),
+        Linux::GetXcbSystemColor(button_background_color_type),
+        m_default_font
     }};
     Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_label_mask, button_label_values.data()),
                     m_app_env.connection, "failed to change graphics context parameters");
-
-    const int16_t ok_label_x = m_ok_button_rect.x + static_cast<int16_t>((m_ok_button_rect.width - ok_label_width) / 2);
-    const int16_t ok_label_y = m_ok_button_rect.y + static_cast<int16_t>((m_ok_button_rect.height - ok_label_height) / 2);
-    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, g_ok_button_label.length(), m_dialog_window, m_gfx_context,
-                                             ok_label_x, ok_label_y + ok_label_ascent, g_ok_button_label.data()),
+    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, button_style.label.length(), m_dialog_window, m_gfx_context,
+                                             ok_label_x, ok_label_y + ok_label_ascent, button_style.label.data()),
                     m_app_env.connection, "failed to draw button label text");
 
     xcb_flush(m_app_env.connection);

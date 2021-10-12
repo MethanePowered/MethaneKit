@@ -43,11 +43,15 @@ namespace Methane::Platform::Linux
 enum class SystemColor : size_t
 {
     Background,
-    Text,
+    DefaultText,
     ButtonBorderNormal,
     ButtonBorderSelected,
     ButtonBackgroundNormal,
     ButtonBackgroundHovered,
+    ButtonBackgroundError,
+    ButtonBackgroundErrorHovered,
+    ButtonBackgroundWarning,
+    ButtonBackgroundWarningHovered,
     ButtonBackgroundPressed,
 };
 
