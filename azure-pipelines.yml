@@ -385,7 +385,33 @@ jobs:
       extraInitSteps:
         - bash: |
             sudo apt-get update
-            sudo apt-get install libx11-xcb-dev
+            sudo apt-get install xcb libx11-dev libx11-xcb-dev
+          displayName: 'Install prerequisite packages on Linux'
+
+- job: Ubuntu_VK_Profiling
+
+  pool:
+    vmImage: 'ubuntu-20.04'
+
+  variables:
+    platform: 'Ubuntu'
+    configuration: 'RelWithDebInfo'
+    generatorName: '"Unix Makefiles"'
+    cmakeFlags: -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF $(buildProfilingCmakeFlags)
+    buildName: 'Ubuntu-VK-Profiling'
+    buildDir: 'Build/Output/$(buildName)/Build'
+    installDir: 'Build/Output/$(buildName)/Install'
+    buildInstallDir: '../Install'
+    rootDir: '../../../..'
+
+  steps:
+  - template: Build/Unix/AzureBuild.yml
+    parameters:
+      runTests: false
+      extraInitSteps:
+        - bash: |
+            sudo apt-get update
+            sudo apt-get install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_Sonar_Scan
@@ -417,7 +443,7 @@ jobs:
         extraInitSteps:
           - bash: |
               sudo apt-get update
-              sudo apt-get install lcov libx11-xcb-dev
+              sudo apt-get install lcov xcb libx11-dev libx11-xcb-dev
             displayName: 'Install prerequisite packages on Linux'
         extraScanSteps:
           - bash: |
