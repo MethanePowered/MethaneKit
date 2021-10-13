@@ -82,7 +82,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
 
 ### Features
 
-- **Cross-platform application & input classes**: Windows & MacOS are supported, Linux is coming soon
+- **Cross-platform application & input classes**: Windows, MacOS and Linux are supported
   - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
   - **HLSL++ Math** library with [HLSL-like syntax](https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-reference) in C++
