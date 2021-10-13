@@ -385,7 +385,7 @@ jobs:
       extraInitSteps:
         - bash: |
             sudo apt-get update
-            sudo apt-get install xcb libx11-dev libx11-xcb-dev
+            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_Profiling
@@ -411,7 +411,7 @@ jobs:
       extraInitSteps:
         - bash: |
             sudo apt-get update
-            sudo apt-get install xcb libx11-dev libx11-xcb-dev
+            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_Sonar_Scan
@@ -443,7 +443,7 @@ jobs:
         extraInitSteps:
           - bash: |
               sudo apt-get update
-              sudo apt-get install lcov xcb libx11-dev libx11-xcb-dev
+              sudo apt-get -y install lcov xcb libx11-dev libx11-xcb-dev
             displayName: 'Install prerequisite packages on Linux'
         extraScanSteps:
           - bash: |

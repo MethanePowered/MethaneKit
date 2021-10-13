@@ -12,6 +12,10 @@ github:
 image:
   file: .gitpod.dockerfile
 
+ports:
+  - port: 6080
+    onOpen: open-preview
+
 vscode:
   extensions:
     - twxs.cmake
