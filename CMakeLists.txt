@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.18.0)
 
 if(APPLE)
 
@@ -132,7 +132,7 @@ else(UNIX)
 
     find_package(X11 REQUIRED)
     if (NOT X11_xcb_FOUND OR NOT X11_X11_xcb_FOUND)
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `apt install libx11-xcb-dev`")
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libx11-xcb-dev`")
     endif()
 
 endif()
