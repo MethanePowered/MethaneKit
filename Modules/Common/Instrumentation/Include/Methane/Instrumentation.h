@@ -32,8 +32,17 @@ NOTE:
 #include "IttApiHelper.h"
 #include "ScopeTimer.h"
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 #include <Tracy.hpp>
 #include <TracyC.h>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #include <string_view>
 
