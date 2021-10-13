@@ -9,11 +9,11 @@ github:
     addBadge: false
     addLabel: false
 
+image:
+  file: .gitpod.dockerfile
+
 vscode:
   extensions:
-    - twxs.cmake@0.0.17:aQNzlYa74rJFJ5/BnUF1yA==
-    - ms-vscode.cmake-tools@1.6.0:lvoCR5usjseB5thI3sZhWA==
-    - hbenl.vscode-test-explorer@2.19.6:Zu8g2BF3mKoDggoMjLfMRw==
-    - eamodio.gitlens@11.3.0:nveccfBvqLaoshf8Tw80AA==
-    - ms-vscode.cpptools@1.2.2:biwrcYLYE4X65DEZ/ZVDCA==
-    - matepek.vscode-catch2-test-adapter@3.6.24:09jPlT60PUWnCdDH+5nXeg==
+    - twxs.cmake
+    - ms-vscode.cmake-tools
+    - hbenl.vscode-test-explorer
