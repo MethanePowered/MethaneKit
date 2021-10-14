@@ -53,13 +53,6 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             ${METHANE_APP_RESOURCE_FILE_PATH}
         )
 
-        install(TARGETS ${TARGET}
-            CONFIGURATIONS Release RelWithDebInfo
-            RUNTIME
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
-        )
-
         # Disable default manifest generation with linker, since manually written manifest is added to resources
         set_target_properties(${TARGET}
             PROPERTIES
@@ -85,12 +78,6 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         add_executable(${TARGET} MACOSX_BUNDLE
             ${SOURCES}
             ${ICON_FILE_PATH}
-        )
-
-        install(TARGETS ${TARGET}
-            BUNDLE
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
         )
 
         # Set bundle location of the icon and metal library files
@@ -134,6 +121,13 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     target_include_directories(${TARGET}
         PRIVATE
             .
+    )
+
+    install(TARGETS ${TARGET}
+        CONFIGURATIONS Release RelWithDebInfo
+        RUNTIME
+            DESTINATION ${INSTALL_DIR}
+            COMPONENT Runtime
     )
 
     if (WIN32 AND MSVC)
