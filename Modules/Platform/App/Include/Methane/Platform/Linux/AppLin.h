@@ -56,6 +56,7 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
+    void ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position = nullptr);
     void HandleEvent(xcb_generic_event_t& event);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
@@ -70,10 +71,13 @@ private:
     AppEnvironment m_env;
     xcb_atom_t m_window_delete_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_atom = XCB_ATOM_NONE;
+    xcb_atom_t m_state_add_atom = XCB_ATOM_NONE;
+    xcb_atom_t m_state_remove_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_hidden_atom = XCB_ATOM_NONE;
     xcb_atom_t m_state_fullscreen_atom = XCB_ATOM_NONE;
     bool m_is_event_processing = false;
     UniquePtr<MessageBox> m_message_box_ptr;
+    Data::FrameSize m_windowed_frame_size;
 };
 
 } // namespace Methane::Platform

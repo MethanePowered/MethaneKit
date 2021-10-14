@@ -94,7 +94,11 @@ AppLin::AppLin(const AppBase::Settings& settings)
 
     // Create window delete atom used to receive event when window is destroyed
     m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
-    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
+
+    if (settings.is_full_screen)
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 2>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_window_delete_atom, m_state_fullscreen_atom } });
+    else
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -106,13 +110,12 @@ AppLin::AppLin(const AppBase::Settings& settings)
     Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
 
     m_state_atom            = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE");
+    m_state_add_atom        = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_ADD");
+    m_state_remove_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_REMOVE");
     m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
     m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
-    if (settings.is_full_screen)
-    {
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_state_fullscreen_atom } });
-    }
+    AppBase::Resize(Data::FrameSize(frame_width, frame_height), false);
 }
 
 AppLin::~AppLin()
@@ -203,6 +206,35 @@ bool AppLin::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
+    xcb_client_message_event_t msg{0};
+    msg.response_type  = XCB_CLIENT_MESSAGE;
+    msg.type           = m_state_atom;
+    msg.format         = 32;
+    msg.window         = m_env.window;
+    msg.data.data32[0] = static_cast<uint32_t>(is_full_screen ? Linux::NetWmState::Add : Linux::NetWmState::Remove);
+    msg.data.data32[1] = m_state_fullscreen_atom;
+    msg.data.data32[2] = XCB_ATOM_NONE;
+
+    Linux::XcbCheck(xcb_send_event_checked(m_env.connection, 1, m_env.window, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                                   reinterpret_cast<const char*>(&msg)),
+                    m_env.connection, "failed to send full screen state message");
+
+    Data::FrameSize new_size;
+    if (is_full_screen)
+    {
+        m_windowed_frame_size = GetFrameSize();
+        new_size.SetWidth(m_env.screen->width_in_pixels);
+        new_size.SetHeight(m_env.screen->height_in_pixels);
+    }
+    else
+    {
+        new_size = m_windowed_frame_size;
+    }
+
+    StartResizing();
+    ResizeWindow(new_size, GetPlatformAppSettings().min_size);
+    EndResizing();
+
     return true;
 }
 
@@ -222,6 +254,41 @@ void AppLin::ShowAlert(const Message& message)
     {
         Close();
     }
+}
+
+void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)
+{
+    META_FUNCTION_TASK();
+    Linux::WMSizeHints size_hints{0};
+    std::vector<uint32_t> config_values;
+    uint32_t config_value_mask = 0U;
+
+    size_hints.flags      = PSize | PMinSize;
+    size_hints.width      = static_cast<int32_t>(frame_size.GetWidth());
+    size_hints.height     = static_cast<int32_t>(frame_size.GetHeight());
+    size_hints.min_width  = static_cast<int32_t>(min_size.GetWidth());
+    size_hints.min_height = static_cast<int32_t>(min_size.GetHeight());
+
+    if (position)
+    {
+        size_hints.flags |= PPosition;
+        size_hints.x = position->GetX();
+        size_hints.y = position->GetY();
+
+        config_value_mask |= XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
+        config_values.emplace_back(static_cast<uint32_t>(position->GetX()));
+        config_values.emplace_back(static_cast<uint32_t>(position->GetY()));
+    }
+
+    config_value_mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+    config_values.emplace_back(frame_size.GetWidth());
+    config_values.emplace_back(frame_size.GetHeight());
+
+    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints, 1>(m_env.connection, m_env.window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
+    Linux::XcbCheck(xcb_configure_window_checked(m_env.connection, m_env.window, config_value_mask, config_values.data()),
+                    m_env.connection, "Failed to configure window size");
+
+    xcb_flush(m_env.connection);
 }
 
 void AppLin::HandleEvent(xcb_generic_event_t& event)

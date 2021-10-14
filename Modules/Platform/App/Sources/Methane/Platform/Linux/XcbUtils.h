@@ -76,6 +76,13 @@ struct WMSizeHints
     uint32_t win_gravity;
 };
 
+enum class NetWmState : uint32_t
+{
+    Remove, // 0: _NET_WM_STATE_REMOVE
+    Add,    // 1: _NET_WM_STATE_ADD
+    Toggle  // 2: _NET_WM_STATE_TOGGLE
+};
+
 uint32_t PackXcbColor(const RgbColor& color);
 uint32_t GetXcbSystemColor(SystemColor color_type);
 std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button);
