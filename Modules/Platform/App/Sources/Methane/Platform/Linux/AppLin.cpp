@@ -48,7 +48,6 @@ AppLin::AppLin(const AppBase::Settings& settings)
     XSetEventQueueOwner(m_env.display, XCBOwnsEventQueue);
 
     // Establish connection to X-server
-    int screen_id = 0;
     m_env.connection = XGetXCBConnection(m_env.display);
     const int connection_error = xcb_connection_has_error(m_env.connection);
     META_CHECK_ARG_EQUAL_DESCR(connection_error, 0, "XCB connection to display has failed");
@@ -56,66 +55,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
     // Find default screen_id setup
     const xcb_setup_t*    setup = xcb_get_setup(m_env.connection);
     xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
-    while (screen_id-- > 0)
-        xcb_screen_next(&screen_iter);
     m_env.screen = screen_iter.data;
-
-    // Prepare initial window properties
-    const uint32_t value_mask = XCB_CW_EVENT_MASK;
-    const std::array<uint32_t, 1> values{{
-         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-         XCB_EVENT_MASK_PROPERTY_CHANGE |
-         XCB_EVENT_MASK_KEY_RELEASE |
-         XCB_EVENT_MASK_KEY_PRESS |
-         XCB_EVENT_MASK_BUTTON_PRESS |
-         XCB_EVENT_MASK_BUTTON_RELEASE |
-         XCB_EVENT_MASK_POINTER_MOTION |
-         XCB_EVENT_MASK_ENTER_WINDOW |
-         XCB_EVENT_MASK_LEAVE_WINDOW
-    }};
-
-    // Calculate frame size relative to screen_id size in case of floating point value
-    const uint16_t frame_width  = settings.is_full_screen
-                                ? m_env.screen->width_in_pixels
-                                : AppBase::GetScaledSize(settings.size.GetWidth(), m_env.screen->width_in_pixels);
-    const uint16_t frame_height = settings.is_full_screen
-                                ? m_env.screen->height_in_pixels
-                                : AppBase::GetScaledSize(settings.size.GetHeight(), m_env.screen->height_in_pixels);
-    const int16_t pos_x = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->width_in_pixels - frame_width) / 2;
-    const int16_t pos_y = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->height_in_pixels - frame_height) / 2;
-
-    // Create window and position it in the center of the screen_id
-    m_env.window = xcb_generate_id(m_env.connection);
-    xcb_create_window(m_env.connection, m_env.screen->root_depth,
-                      m_env.window, m_env.screen->root,
-                      pos_x, pos_y, frame_width, frame_height, 1,
-                      XCB_WINDOW_CLASS_INPUT_OUTPUT, m_env.screen->root_visual,
-                      value_mask, values.data());
-
-    // Create window delete atom used to receive event when window is destroyed
-    m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
-
-    if (settings.is_full_screen)
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 2>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_window_delete_atom, m_state_fullscreen_atom } });
-    else
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
-
-    // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
-    SetWindowTitle(settings.name);
-    std::string wm_class;
-    wm_class = wm_class.insert(0, settings.name);
-    wm_class = wm_class.insert(settings.name.size(), 1, '\0');
-    wm_class = wm_class.insert(settings.name.size() + 1, settings.name);
-    wm_class = wm_class.insert(wm_class.size(), 1, '\0');
-    Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
-
-    m_state_atom            = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE");
-    m_state_add_atom        = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_ADD");
-    m_state_remove_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_REMOVE");
-    m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
-    m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
-
-    AppBase::Resize(Data::FrameSize(frame_width, frame_height), false);
 }
 
 AppLin::~AppLin()
@@ -132,24 +72,13 @@ int AppLin::Run(const RunArgs& args)
         base_return_code)
         return base_return_code;
 
-    // Request window geometry
-    const xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry(m_env.connection, m_env.window);
-
-    // Show window on screen
+    // Init window and show on screen
+    const Data::FrameSize init_frame_size = InitWindow();
     xcb_map_window(m_env.connection, m_env.window);
     xcb_flush(m_env.connection);
 
-    Data::FrameSize frame_size;
-    if (xcb_get_geometry_reply_t* geometry_reply = xcb_get_geometry_reply(m_env.connection, geometry_cookie, nullptr);
-        geometry_reply)
-    {
-        frame_size.SetWidth(geometry_reply->width);
-        frame_size.SetHeight(geometry_reply->height);
-        free(geometry_reply);
-    }
-
     // Application Initialization
-    bool init_success = InitContextWithErrorHandling(m_env, frame_size);
+    bool init_success = InitContextWithErrorHandling(m_env, init_frame_size);
     if (init_success)
     {
         init_success = InitWithErrorHandling();
@@ -254,6 +183,71 @@ void AppLin::ShowAlert(const Message& message)
     {
         Close();
     }
+}
+
+Data::FrameSize AppLin::InitWindow()
+{
+    META_FUNCTION_TASK();
+    const IApp::Settings& settings = GetPlatformAppSettings();
+
+    // Prepare initial window properties
+    const uint32_t value_mask = XCB_CW_EVENT_MASK;
+    const std::array<uint32_t, 1> values{{
+        XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+        XCB_EVENT_MASK_PROPERTY_CHANGE |
+        XCB_EVENT_MASK_KEY_RELEASE |
+        XCB_EVENT_MASK_KEY_PRESS |
+        XCB_EVENT_MASK_BUTTON_PRESS |
+        XCB_EVENT_MASK_BUTTON_RELEASE |
+        XCB_EVENT_MASK_POINTER_MOTION |
+        XCB_EVENT_MASK_ENTER_WINDOW |
+        XCB_EVENT_MASK_LEAVE_WINDOW
+    }};
+
+    // Calculate frame size relative to screen_id size in case of floating point value
+    const uint16_t frame_width  = settings.is_full_screen
+                                  ? m_env.screen->width_in_pixels
+                                  : AppBase::GetScaledSize(settings.size.GetWidth(), m_env.screen->width_in_pixels);
+    const uint16_t frame_height = settings.is_full_screen
+                                  ? m_env.screen->height_in_pixels
+                                  : AppBase::GetScaledSize(settings.size.GetHeight(), m_env.screen->height_in_pixels);
+    const int16_t pos_x = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->width_in_pixels - frame_width) / 2;
+    const int16_t pos_y = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->height_in_pixels - frame_height) / 2;
+
+    // Create window and position it in the center of the screen_id
+    m_env.window = xcb_generate_id(m_env.connection);
+    xcb_create_window(m_env.connection, m_env.screen->root_depth,
+                      m_env.window, m_env.screen->root,
+                      pos_x, pos_y, frame_width, frame_height, 1,
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT, m_env.screen->root_visual,
+                      value_mask, values.data());
+
+    // Create window delete atom used to receive event when window is destroyed
+    m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
+
+    if (settings.is_full_screen)
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 2>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_window_delete_atom, m_state_fullscreen_atom } });
+    else
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
+
+    // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
+    SetWindowTitle(settings.name);
+    std::string wm_class;
+    wm_class = wm_class.insert(0, settings.name);
+    wm_class = wm_class.insert(settings.name.size(), 1, '\0');
+    wm_class = wm_class.insert(settings.name.size() + 1, settings.name);
+    wm_class = wm_class.insert(wm_class.size(), 1, '\0');
+    Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
+
+    m_state_atom            = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE");
+    m_state_add_atom        = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_ADD");
+    m_state_remove_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_REMOVE");
+    m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
+    m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
+
+    Data::FrameSize frame_size(frame_width, frame_height);
+    AppBase::Resize(frame_size, false);
+    return frame_size;
 }
 
 void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)
