@@ -1,8 +1,8 @@
 # Hello Triangle Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) |
-| -------------------- | ------------- |
-| ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) |
+| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan) |
+| -------------------- | ------------- | -------------- |
+| ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) | ![Hello Triangle on Linux](Screenshots/HelloTriangleLinVulkan.jpg) |
 
 This tutorial demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
 - [HelloTriangleApp.cpp](HelloTriangleApp.cpp)
