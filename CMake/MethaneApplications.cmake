@@ -123,12 +123,20 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             .
     )
 
-    install(TARGETS ${TARGET}
-        CONFIGURATIONS Release RelWithDebInfo
-        RUNTIME
-            DESTINATION ${INSTALL_DIR}
-            COMPONENT Runtime
-    )
+    if (APPLE)
+        install(TARGETS ${TARGET}
+            BUNDLE
+                DESTINATION ${INSTALL_DIR}
+                COMPONENT Runtime
+        )
+    else()
+        install(TARGETS ${TARGET}
+            CONFIGURATIONS Release RelWithDebInfo
+            RUNTIME
+                DESTINATION ${INSTALL_DIR}
+                COMPONENT Runtime
+        )
+    endif()
 
     if (WIN32 AND MSVC)
         install(FILES $<TARGET_PDB_FILE:${TARGET}>
