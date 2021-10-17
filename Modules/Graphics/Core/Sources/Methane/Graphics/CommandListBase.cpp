@@ -124,7 +124,6 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
              p_debug_group ? fmt::format("with debug group '{}'", p_debug_group->GetName()) : "");
 
-    ResetCommandState();
     SetCommandListStateNoLock(State::Encoding);
 
     const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
@@ -260,6 +259,7 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
                                "{} command list '{}' committed on frame {} can not be completed on frame {}",
                                magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
 
+    ResetCommandState();
     SetCommandListStateNoLock(State::Pending);
 
     TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
