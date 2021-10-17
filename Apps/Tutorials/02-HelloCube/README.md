@@ -266,7 +266,7 @@ class HelloCubeApp final : public GraphicsApp
 
         // Update vertex buffer with vertices in camera's projection view
         (*frame.vertex_buffer_set_ptr)[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
+            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
             &GetRenderContext().GetRenderCommandKit().GetQueue()
         );
 
@@ -393,6 +393,6 @@ target_link_libraries(MethaneHelloCube
 
 ## Continue learning
 
-Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../03-HelloCube), 
+Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../03-TexturedCube), 
 which is demonstrating textured cube rendering with phong lighting using vertex position transformation on GPU,
 uniform buffers and program bindings.
