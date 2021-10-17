@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ Platform abstraction of keyboard events.
 #include <array>
 #include <set>
 #include <string>
+#include <string_view>
 #include <ostream>
 
 namespace Methane::Platform::Keyboard
@@ -48,8 +49,16 @@ namespace Methane::Platform::Keyboard
 
 enum class Key : uint32_t
 {
+    // Control keys
+    LeftShift, RightShift,
+    LeftControl, RightControl,
+    LeftAlt, RightAlt,
+    LeftSuper, RightSuper,
+    CapsLock, ScrollLock, NumLock,
+    Menu,
+
     // Printable keys
-    Space           = 0,
+    Space,
     Semicolon,      // ; NOSONAR
     Apostrophe,     // ' "
     BackSlash,      // '\' |
@@ -70,7 +79,7 @@ enum class Key : uint32_t
     Escape, Enter, Tab,  Backspace, Insert, Delete,
     Right,  Left,  Down, Up,
     PageUp, PageDown, Home, End,
-    CapsLock, ScrollLock, NumLock, PrintScreen, Pause,
+    PrintScreen, Pause,
     F1,  F2,  F3,  F4,  F5,  F6,  F7,  F8,  F9,  F10,
     F11, F12, F13, F14, F15, F16, F17, F18, F19, F20,
     F21, F22, F23, F24, F25,
@@ -79,11 +88,6 @@ enum class Key : uint32_t
     KeyPadDecimal,  KeyPadDivide, KeyPadMultiply,
     KeyPadSubtract, KeyPadAdd,
     KeyPadEnter,    KeyPadEqual,
-    
-    // Control keys
-    LeftShift,  LeftControl,  LeftAlt,  LeftSuper,
-    RightShift, RightControl, RightAlt, RightSuper,
-    Menu,
 
     // Always keep at the end
     Unknown
@@ -109,9 +113,9 @@ using Keys = std::set<Key>;
 enum class Modifiers : uint32_t
 {
     None     = 0U,
-    Shift    = 1U << 0U,
+    Alt      = 1U << 0U,
     Control  = 1U << 1U,
-    Alt      = 1U << 2U,
+    Shift    = 1U << 2U,
     Super    = 1U << 3U,
     CapsLock = 1U << 4U,
     NumLock  = 1U << 5U,
@@ -133,14 +137,15 @@ public:
     KeyConverter(Key key, Modifiers modifiers);
     explicit KeyConverter(const NativeKey& native_key);
     
-    [[nodiscard]] Key         GetKey() const noexcept         { return m_key; }
-    [[nodiscard]] Modifiers   GetModifiers() const noexcept   { return m_modifiers; }
-    [[nodiscard]] Modifiers   GetModifierKey() const noexcept;
-    [[nodiscard]] std::string ToString() const;
+    [[nodiscard]] Key              GetKey() const noexcept         { return m_key; }
+    [[nodiscard]] Modifiers        GetModifiers() const noexcept   { return m_modifiers; }
+    [[nodiscard]] Modifiers        GetModifierKey() const noexcept;
+    [[nodiscard]] std::string_view GetKeyName() const;
+    [[nodiscard]] std::string      ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
-    [[nodiscard]] static Key       GetKeyByNativeCode(const NativeKey& native_key);
-    [[nodiscard]] static Modifiers GetModifiersByNativeCode(const NativeKey& native_key);
+    [[nodiscard]] static Key       GetKeyByNativeCode(const NativeKey& native_key) noexcept;
+    [[nodiscard]] static Modifiers GetModifiersByNativeCode(const NativeKey& native_key) noexcept;
     
 private:
     [[nodiscard]] static Key GetControlKey(const NativeKey& native_key);
@@ -173,20 +178,20 @@ public:
 
     [[nodiscard]] bool operator<(const State& other) const noexcept;
     [[nodiscard]] bool operator==(const State& other) const noexcept;
-    [[nodiscard]] bool operator!=(const State& other) const noexcept    { return !operator==(other); }
-    [[nodiscard]] const  KeyState& operator[](Key key) const noexcept     { return m_key_states[static_cast<size_t>(key)]; }
-    [[nodiscard]] explicit operator std::string() const                   { return ToString(); }
+    [[nodiscard]] bool operator!=(const State& other) const noexcept  { return !operator==(other); }
+    [[nodiscard]] const  KeyState& operator[](Key key) const noexcept { return m_key_states[static_cast<size_t>(key)]; }
+    [[nodiscard]] explicit operator std::string() const               { return ToString(); }
     [[nodiscard]] explicit operator bool() const noexcept;
 
     virtual KeyType SetKey(Key key, KeyState key_state);
 
-    void    SetModifiersMask(Modifiers mask) noexcept  { m_modifiers_mask = mask; }
-    void    PressKey(Key key)                               { SetKey(key, KeyState::Pressed); }
-    void    ReleaseKey(Key key)                             { SetKey(key, KeyState::Released); }
+    void SetModifiersMask(Modifiers mask) noexcept { m_modifiers_mask = mask; }
+    void PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
+    void ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
 
     [[nodiscard]] Keys             GetPressedKeys() const noexcept;
-    [[nodiscard]] const KeyStates& GetKeyStates() const noexcept          { return m_key_states; }
-    [[nodiscard]] Modifiers        GetModifiersMask() const noexcept      { return m_modifiers_mask; }
+    [[nodiscard]] const KeyStates& GetKeyStates() const noexcept     { return m_key_states; }
+    [[nodiscard]] Modifiers        GetModifiersMask() const noexcept { return m_modifiers_mask; }
     [[nodiscard]] Properties       GetDiff(const State& other) const noexcept;
     [[nodiscard]] std::string      ToString() const;
 

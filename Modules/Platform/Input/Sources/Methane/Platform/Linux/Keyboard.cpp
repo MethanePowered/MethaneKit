@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ Linux platform specific types and implementation of Keyboard abstractions.
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Instrumentation.h>
 
-#include <map>
 #include <magic_enum.hpp>
 
 #include <xcb/xcb.h>
@@ -33,7 +32,7 @@ Linux platform specific types and implementation of Keyboard abstractions.
 namespace Methane::Platform::Keyboard
 {
 
-Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
+Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
     switch (native_key.key)
@@ -161,7 +160,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     }
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -88,151 +88,154 @@ Modifiers KeyConverter::GetModifierKey() const noexcept
     }
 }
 
+std::string_view KeyConverter::GetKeyName() const
+{
+    META_FUNCTION_TASK();
+    switch (m_key)
+    {
+        // Control Keys
+        case Key::LeftShift: return "LEFT_SHIFT";
+        case Key::RightShift: return "RIGHT_SHIFT";
+        case Key::LeftControl: return "LEFT_CONTROL";
+        case Key::RightControl: return "RIGHT_CONTROL";
+        case Key::LeftAlt: return "LEFT_ALT";
+        case Key::RightAlt: return "RIGHT_ALT";
+#ifdef __APPLE__
+        case Key::LeftSuper: return "LEFT_COMMAND";
+        case Key::RightSuper: return "RIGHT_COMMAND";
+#else
+        case Key::LeftSuper: return "LEFT_SUPER";
+        case Key::RightSuper: return "RIGHT_SUPER";
+#endif
+        case Key::CapsLock: return "CAPSLOCK";
+        case Key::ScrollLock: return "SCROLLOCK";
+        case Key::NumLock: return "NUMLOCK";
+        case Key::Menu: return "MENU";
+
+        // Printable keys
+        case Key::Space: return "SPACE";
+        case Key::Apostrophe: return "'";
+        case Key::Comma: return ",";
+        case Key::Minus: return "-";
+        case Key::Period: return ".";
+        case Key::Slash: return "/";
+        case Key::Num0: return "0";
+        case Key::Num1: return "1";
+        case Key::Num2: return "2";
+        case Key::Num3: return "3";
+        case Key::Num4: return "4";
+        case Key::Num5: return "5";
+        case Key::Num6: return "6";
+        case Key::Num7: return "7";
+        case Key::Num8: return "8";
+        case Key::Num9: return "9";
+        case Key::Semicolon: return ";";
+        case Key::Equal: return "=";
+        case Key::A: return "A";
+        case Key::B: return "B";
+        case Key::C: return "C";
+        case Key::D: return "D";
+        case Key::E: return "E";
+        case Key::F: return "F";
+        case Key::G: return "G";
+        case Key::H: return "H";
+        case Key::I: return "I";
+        case Key::J: return "J";
+        case Key::K: return "K";
+        case Key::L: return "L";
+        case Key::M: return "M";
+        case Key::N: return "N";
+        case Key::O: return "O";
+        case Key::P: return "P";
+        case Key::Q: return "Q";
+        case Key::R: return "R";
+        case Key::S: return "S";
+        case Key::T: return "T";
+        case Key::U: return "U";
+        case Key::V: return "V";
+        case Key::W: return "W";
+        case Key::X: return "X";
+        case Key::Y: return "Y";
+        case Key::Z: return "Z";
+        case Key::LeftBracket: return "[";
+        case Key::BackSlash: return "\\";
+        case Key::RightBracket: return "]";
+        case Key::GraveAccent: return "`";
+        case Key::World1: return "W1";
+        case Key::World2: return "W2";
+
+        // Function Keys
+        case Key::Escape: return "ESC";
+        case Key::Enter: return "ENTER";
+        case Key::Tab: return "TAB";
+        case Key::Backspace: return "BACKSPACE";
+        case Key::Insert: return "INSERT";
+        case Key::Delete: return "DELETE";
+        case Key::Right: return "RIGHT";
+        case Key::Left: return "LEFT";
+        case Key::Down: return "DOWN";
+        case Key::Up: return "UP";
+        case Key::PageUp: return "PAGEUP";
+        case Key::PageDown: return "PAGEDOWN";
+        case Key::Home: return "HOME";
+        case Key::End: return "END";
+        case Key::PrintScreen: return "PRINTSCREEN";
+        case Key::Pause: return "PAUSE";
+        case Key::F1: return "F1";
+        case Key::F2: return "F2";
+        case Key::F3: return "F3";
+        case Key::F4: return "F4";
+        case Key::F5: return "F5";
+        case Key::F6: return "F6";
+        case Key::F7: return "F7";
+        case Key::F8: return "F8";
+        case Key::F9: return "F9";
+        case Key::F10: return "F10";
+        case Key::F11: return "F11";
+        case Key::F12: return "F12";
+        case Key::F13: return "F13";
+        case Key::F14: return "F14";
+        case Key::F15: return "F15";
+        case Key::F16: return "F16";
+        case Key::F17: return "F17";
+        case Key::F18: return "F18";
+        case Key::F19: return "F19";
+        case Key::F20: return "F20";
+        case Key::F21: return "F21";
+        case Key::F22: return "F22";
+        case Key::F23: return "F23";
+        case Key::F24: return "F24";
+        case Key::F25: return "F25";
+        case Key::KeyPad0: return "KP0";
+        case Key::KeyPad1: return "KP1";
+        case Key::KeyPad2: return "KP2";
+        case Key::KeyPad3: return "KP3";
+        case Key::KeyPad4: return "KP4";
+        case Key::KeyPad5: return "KP5";
+        case Key::KeyPad6: return "KP6";
+        case Key::KeyPad7: return "KP7";
+        case Key::KeyPad8: return "KP8";
+        case Key::KeyPad9: return "KP9";
+        case Key::KeyPadDecimal: return "KP.";
+        case Key::KeyPadDivide: return "KP/";
+        case Key::KeyPadMultiply: return "KP*";
+        case Key::KeyPadSubtract: return "KP-";
+        case Key::KeyPadAdd: return "KP+";
+        case Key::KeyPadEnter: return "KP-ENTER";
+        case Key::KeyPadEqual: return "KP=";
+
+        case Key::Unknown: return "Unknown";
+        default:
+            META_UNEXPECTED_ARG_DESCR_RETURN(m_key, "", "unexpected key value");
+    };
+}
+
 std::string KeyConverter::ToString() const
 {
     META_FUNCTION_TASK();
-    static const std::map<Key, std::string> s_name_by_key =
-    {
-        // Printable keys
-        { Key::Space, "SPACE" },
-        { Key::Apostrophe, "'" },
-        { Key::Comma, "," },
-        { Key::Minus, "-" },
-        { Key::Period, "." },
-        { Key::Slash, "/" },
-        { Key::Num0, "0" },
-        { Key::Num1, "1" },
-        { Key::Num2, "2" },
-        { Key::Num3, "3" },
-        { Key::Num4, "4" },
-        { Key::Num5, "5" },
-        { Key::Num6, "6" },
-        { Key::Num7, "7" },
-        { Key::Num8, "8" },
-        { Key::Num9, "9" },
-        { Key::Semicolon, ";" },
-        { Key::Equal, "=" },
-        { Key::A, "A" },
-        { Key::B, "B" },
-        { Key::C, "C" },
-        { Key::D, "D" },
-        { Key::E, "E" },
-        { Key::F, "F" },
-        { Key::G, "G" },
-        { Key::H, "H" },
-        { Key::I, "I" },
-        { Key::J, "J" },
-        { Key::K, "K" },
-        { Key::L, "L" },
-        { Key::M, "M" },
-        { Key::N, "N" },
-        { Key::O, "O" },
-        { Key::P, "P" },
-        { Key::Q, "Q" },
-        { Key::R, "R" },
-        { Key::S, "S" },
-        { Key::T, "T" },
-        { Key::U, "U" },
-        { Key::V, "V" },
-        { Key::W, "W" },
-        { Key::X, "X" },
-        { Key::Y, "Y" },
-        { Key::Z, "Z" },
-        { Key::LeftBracket, "[" },
-        { Key::BackSlash, "\\" },
-        { Key::RightBracket, "]" },
-        { Key::GraveAccent, "`" },
-        { Key::World1, "W1" },
-        { Key::World2, "W2" },
-
-        // Function Keys
-        { Key::Escape, "ESC" },
-        { Key::Enter, "ENTER" },
-        { Key::Tab, "TAB" },
-        { Key::Backspace, "BACKSPACE" },
-        { Key::Insert, "INSERT" },
-        { Key::Delete, "DELETE" },
-        { Key::Right, "RIGHT" },
-        { Key::Left, "LEFT" },
-        { Key::Down, "DOWN" },
-        { Key::Up, "UP" },
-        { Key::PageUp, "PAGEUP" },
-        { Key::PageDown, "PAGEDOWN" },
-        { Key::Home, "HOME" },
-        { Key::End, "END" },
-        { Key::CapsLock, "CAPSLOCK" },
-        { Key::ScrollLock, "SCROLLOCK" },
-        { Key::NumLock, "NUMLOCK" },
-        { Key::PrintScreen, "PRINTSCREEN" },
-        { Key::Pause, "PAUSE" },
-        { Key::F1, "F1" },
-        { Key::F2, "F2" },
-        { Key::F3, "F3" },
-        { Key::F4, "F4" },
-        { Key::F5, "F5" },
-        { Key::F6, "F6" },
-        { Key::F7, "F7" },
-        { Key::F8, "F8" },
-        { Key::F9, "F9" },
-        { Key::F10, "F10" },
-        { Key::F11, "F11" },
-        { Key::F12, "F12" },
-        { Key::F13, "F13" },
-        { Key::F14, "F14" },
-        { Key::F15, "F15" },
-        { Key::F16, "F16" },
-        { Key::F17, "F17" },
-        { Key::F18, "F18" },
-        { Key::F19, "F19" },
-        { Key::F20, "F20" },
-        { Key::F21, "F21" },
-        { Key::F22, "F22" },
-        { Key::F23, "F23" },
-        { Key::F24, "F24" },
-        { Key::F25, "F25" },
-        { Key::KeyPad0, "KEYPAD0" },
-        { Key::KeyPad1, "KEYPAD0" },
-        { Key::KeyPad2, "KEYPAD0" },
-        { Key::KeyPad3, "KEYPAD0" },
-        { Key::KeyPad4, "KEYPAD0" },
-        { Key::KeyPad5, "KEYPAD0" },
-        { Key::KeyPad6, "KEYPAD0" },
-        { Key::KeyPad7, "KEYPAD0" },
-        { Key::KeyPad8, "KEYPAD0" },
-        { Key::KeyPad9, "KEYPAD0" },
-        { Key::KeyPadDecimal, "KEYPAD." },
-        { Key::KeyPadDivide, "KEYPAD/" },
-        { Key::KeyPadMultiply, "KEYPAD*" },
-        { Key::KeyPadSubtract, "KEYPAD-" },
-        { Key::KeyPadAdd, "KEYPAD+" },
-        { Key::KeyPadEnter, "KEYPAD_ENTER" },
-        { Key::KeyPadEqual, "KEYPAD=" },
-
-        // Control keys
-        { Key::LeftShift, "LEFT_SHIFT" },
-        { Key::RightShift, "RIGHT_SHIFT" },
-        { Key::LeftControl, "LEFT_CONTROL" },
-        { Key::RightControl, "RIGHT_CONTROL" },
-        { Key::LeftAlt, "LEFT_ALT" },
-        { Key::RightAlt, "RIGHT_ALT" },
-#ifdef __APPLE__
-        { Key::LeftSuper, "LEFT_COMMAND" },
-        { Key::RightSuper, "RIGHT_COMMAND" },
-#else
-        { Key::LeftSuper,       "LEFT_SUPER"    },
-        { Key::RightSuper,      "RIGHT_SUPER"   },
-#endif
-        { Key::Menu, "MENU" },
-
-        { Key::Unknown, "Unknown" }
-    };
-
-    auto key_and_name_it = s_name_by_key.find(m_key);
-    META_CHECK_ARG_DESCR(m_key, key_and_name_it != s_name_by_key.end(), "key name was not found");
-
     return m_modifiers == Modifiers::None
-           ? key_and_name_it->second
-           : fmt::format("{}{}{}", magic_enum::enum_name(m_modifiers), g_keys_separator, key_and_name_it->second);
+           ? std::string(GetKeyName())
+           : fmt::format("{}{}{}", magic_enum::flags::enum_name(m_modifiers), g_keys_separator, GetKeyName());
 };
 
 State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
@@ -382,22 +385,33 @@ std::string State::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    const bool has_modifiers = m_modifiers_mask != Modifiers::None;
-    if (has_modifiers)
-    {
-        ss << magic_enum::enum_name(m_modifiers_mask);
-    }
-    
     bool is_first_key = true;
+
+    if (m_modifiers_mask != Modifiers::None)
+    {
+        // Serialize modifiers
+        for(Modifiers modifier : magic_enum::flags::enum_values<Modifiers>())
+        {
+            using namespace magic_enum::bitwise_operators;
+            if (!magic_enum::flags::enum_contains(m_modifiers_mask & modifier))
+                continue;
+
+            if (!is_first_key)
+                ss << g_keys_separator;
+
+            ss << magic_enum::enum_name(modifier);
+            is_first_key = false;
+        }
+    }
+
+    // Serialize regular keys
     for (size_t key_index = 0; key_index < m_key_states.size(); ++key_index)
     {
         if (m_key_states[key_index] != KeyState::Pressed)
             continue;
         
-        if (!is_first_key || has_modifiers)
-        {
+        if (!is_first_key)
             ss << g_keys_separator;
-        }
         
         const auto key = static_cast<Key>(key_index);
         ss << KeyConverter(key).ToString();

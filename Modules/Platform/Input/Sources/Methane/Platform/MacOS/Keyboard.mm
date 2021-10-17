@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -31,133 +31,132 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 namespace Methane::Platform::Keyboard
 {
 
-Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
+Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
-    static const std::map<NativeKey::Code, Key> s_key_by_native_code {
-        { 0x1D, Key::Num0           },
-        { 0x12, Key::Num1           },
-        { 0x13, Key::Num2           },
-        { 0x14, Key::Num3           },
-        { 0x15, Key::Num4           },
-        { 0x17, Key::Num5           },
-        { 0x16, Key::Num6           },
-        { 0x1A, Key::Num7           },
-        { 0x1C, Key::Num8           },
-        { 0x19, Key::Num9           },
+    switch(native_key.code)
+    {
+        case 0x1D: return Key::Num0;
+        case 0x12: return Key::Num1;
+        case 0x13: return Key::Num2;
+        case 0x14: return Key::Num3;
+        case 0x15: return Key::Num4;
+        case 0x17: return Key::Num5;
+        case 0x16: return Key::Num6;
+        case 0x1A: return Key::Num7;
+        case 0x1C: return Key::Num8;
+        case 0x19: return Key::Num9;
 
-        { 0x00, Key::A              },
-        { 0x0B, Key::B              },
-        { 0x08, Key::C              },
-        { 0x02, Key::D              },
-        { 0x0E, Key::E              },
-        { 0x03, Key::F              },
-        { 0x05, Key::G              },
-        { 0x04, Key::H              },
-        { 0x22, Key::I              },
-        { 0x26, Key::J              },
-        { 0x28, Key::K              },
-        { 0x25, Key::L              },
-        { 0x2E, Key::M              },
-        { 0x2D, Key::N              },
-        { 0x1F, Key::O              },
-        { 0x23, Key::P              },
-        { 0x0C, Key::Q              },
-        { 0x0F, Key::R              },
-        { 0x01, Key::S              },
-        { 0x11, Key::T              },
-        { 0x20, Key::U              },
-        { 0x09, Key::V              },
-        { 0x0D, Key::W              },
-        { 0x07, Key::X              },
-        { 0x10, Key::Y              },
-        { 0x06, Key::Z              },
+        case 0x00: return Key::A;
+        case 0x0B: return Key::B;
+        case 0x08: return Key::C;
+        case 0x02: return Key::D;
+        case 0x0E: return Key::E;
+        case 0x03: return Key::F;
+        case 0x05: return Key::G;
+        case 0x04: return Key::H;
+        case 0x22: return Key::I;
+        case 0x26: return Key::J;
+        case 0x28: return Key::K;
+        case 0x25: return Key::L;
+        case 0x2E: return Key::M;
+        case 0x2D: return Key::N;
+        case 0x1F: return Key::O;
+        case 0x23: return Key::P;
+        case 0x0C: return Key::Q;
+        case 0x0F: return Key::R;
+        case 0x01: return Key::S;
+        case 0x11: return Key::T;
+        case 0x20: return Key::U;
+        case 0x09: return Key::V;
+        case 0x0D: return Key::W;
+        case 0x07: return Key::X;
+        case 0x10: return Key::Y;
+        case 0x06: return Key::Z;
 
-        { 0x27, Key::Apostrophe     },
-        { 0x2A, Key::BackSlash      },
-        { 0x2B, Key::Comma          },
-        { 0x18, Key::Equal          },
-        { 0x32, Key::GraveAccent    },
-        { 0x21, Key::LeftBracket    },
-        { 0x1B, Key::Minus          },
-        { 0x2F, Key::Period         },
-        { 0x1E, Key::RightBracket   },
-        { 0x29, Key::Semicolon      },
-        { 0x2C, Key::Slash          },
-        { 0x0A, Key::World1         },
+        case 0x27: return Key::Apostrophe;
+        case 0x2A: return Key::BackSlash;
+        case 0x2B: return Key::Comma;
+        case 0x18: return Key::Equal;
+        case 0x32: return Key::GraveAccent;
+        case 0x21: return Key::LeftBracket;
+        case 0x1B: return Key::Minus;
+        case 0x2F: return Key::Period;
+        case 0x1E: return Key::RightBracket;
+        case 0x29: return Key::Semicolon;
+        case 0x2C: return Key::Slash;
+        case 0x0A: return Key::World1;
 
-        { 0x7B, Key::Left           },
-        { 0x7C, Key::Right          },
-        { 0x7E, Key::Up             },
-        { 0x7D, Key::Down           },
+        case 0x7B: return Key::Left;
+        case 0x7C: return Key::Right;
+        case 0x7E: return Key::Up;
+        case 0x7D: return Key::Down;
 
-        { 0x73, Key::Home           },
-        { 0x77, Key::End            },
-        { 0x74, Key::PageUp         },
-        { 0x79, Key::PageDown       },
-        { 0x72, Key::Insert         },
-        { 0x75, Key::Delete         },
-        { 0x24, Key::Enter          },
-        { 0x35, Key::Escape         },
-        { 0x31, Key::Space          },
-        { 0x30, Key::Tab            },
+        case 0x73: return Key::Home;
+        case 0x77: return Key::End;
+        case 0x74: return Key::PageUp;
+        case 0x79: return Key::PageDown;
+        case 0x72: return Key::Insert;
+        case 0x75: return Key::Delete;
+        case 0x24: return Key::Enter;
+        case 0x35: return Key::Escape;
+        case 0x31: return Key::Space;
+        case 0x30: return Key::Tab;
 
-        { 0x7A, Key::F1             },
-        { 0x78, Key::F2             },
-        { 0x63, Key::F3             },
-        { 0x76, Key::F4             },
-        { 0x60, Key::F5             },
-        { 0x61, Key::F6             },
-        { 0x62, Key::F7             },
-        { 0x64, Key::F8             },
-        { 0x65, Key::F9             },
-        { 0x6D, Key::F10            },
-        { 0x67, Key::F11            },
-        { 0x6F, Key::F12            },
-        { 0x69, Key::F13            },
-        { 0x6B, Key::F14            },
-        { 0x71, Key::F15            },
-        { 0x6A, Key::F16            },
-        { 0x40, Key::F17            },
-        { 0x4F, Key::F18            },
-        { 0x50, Key::F19            },
-        { 0x5A, Key::F20            },
+        case 0x7A: return Key::F1;
+        case 0x78: return Key::F2;
+        case 0x63: return Key::F3;
+        case 0x76: return Key::F4;
+        case 0x60: return Key::F5;
+        case 0x61: return Key::F6;
+        case 0x62: return Key::F7;
+        case 0x64: return Key::F8;
+        case 0x65: return Key::F9;
+        case 0x6D: return Key::F10;
+        case 0x67: return Key::F11;
+        case 0x6F: return Key::F12;
+        case 0x69: return Key::F13;
+        case 0x6B: return Key::F14;
+        case 0x71: return Key::F15;
+        case 0x6A: return Key::F16;
+        case 0x40: return Key::F17;
+        case 0x4F: return Key::F18;
+        case 0x50: return Key::F19;
+        case 0x5A: return Key::F20;
 
-        { 0x3A, Key::LeftAlt        },
-        { 0x3B, Key::LeftControl    },
-        { 0x38, Key::LeftShift      },
-        { 0x37, Key::LeftSuper      },
-        { 0x3D, Key::RightAlt       },
-        { 0x3E, Key::RightControl   },
-        { 0x3C, Key::RightShift     },
-        { 0x36, Key::RightSuper     },
-        { 0x6E, Key::Menu           },
-        { 0x47, Key::NumLock        },
+        case 0x3A: return Key::LeftAlt;
+        case 0x3B: return Key::LeftControl;
+        case 0x38: return Key::LeftShift;
+        case 0x37: return Key::LeftSuper;
+        case 0x3D: return Key::RightAlt;
+        case 0x3E: return Key::RightControl;
+        case 0x3C: return Key::RightShift;
+        case 0x36: return Key::RightSuper;
+        case 0x6E: return Key::Menu;
+        case 0x47: return Key::NumLock;
 
-        { 0x52, Key::KeyPad0        },
-        { 0x53, Key::KeyPad1        },
-        { 0x54, Key::KeyPad2        },
-        { 0x55, Key::KeyPad3        },
-        { 0x56, Key::KeyPad4        },
-        { 0x57, Key::KeyPad5        },
-        { 0x58, Key::KeyPad6        },
-        { 0x59, Key::KeyPad7        },
-        { 0x5B, Key::KeyPad8        },
-        { 0x5C, Key::KeyPad9        },
-        { 0x45, Key::KeyPadAdd      },
-        { 0x41, Key::KeyPadDecimal  },
-        { 0x4B, Key::KeyPadDivide   },
-        { 0x4C, Key::KeyPadEnter    },
-        { 0x51, Key::KeyPadEqual    },
-        { 0x43, Key::KeyPadMultiply },
-        { 0x4E, Key::KeyPadSubtract },
-        };
-
-    auto native_code_and_key_it = s_key_by_native_code.find(native_key.code);
-    return native_code_and_key_it == s_key_by_native_code.end() ? Key::Unknown : native_code_and_key_it->second;
+        case 0x52: return Key::KeyPad0;
+        case 0x53: return Key::KeyPad1;
+        case 0x54: return Key::KeyPad2;
+        case 0x55: return Key::KeyPad3;
+        case 0x56: return Key::KeyPad4;
+        case 0x57: return Key::KeyPad5;
+        case 0x58: return Key::KeyPad6;
+        case 0x59: return Key::KeyPad7;
+        case 0x5B: return Key::KeyPad8;
+        case 0x5C: return Key::KeyPad9;
+        case 0x45: return Key::KeyPadAdd;
+        case 0x41: return Key::KeyPadDecimal;
+        case 0x4B: return Key::KeyPadDivide;
+        case 0x4C: return Key::KeyPadEnter;
+        case 0x51: return Key::KeyPadEqual;
+        case 0x43: return Key::KeyPadMultiply;
+        case 0x4E: return Key::KeyPadSubtract;
+        default:   return Key::Unknown;
+    };
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

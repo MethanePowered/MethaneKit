@@ -67,7 +67,7 @@ public:
                 continue;
             
             help_lines.push_back({
-                Mouse::ButtonConverter(action_by_mouse_button_it->first).ToString(),
+                std::string(Mouse::ButtonConverter(action_by_mouse_button_it->first).ToString()),
                 GetMouseActionName(action_by_mouse_button_it->second)
             });
         }
