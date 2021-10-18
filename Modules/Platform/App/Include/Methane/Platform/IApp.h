@@ -26,6 +26,11 @@ Platform application interface.
 #include <Methane/Data/Types.h>
 #include <string>
 
+namespace Methane::Data
+{
+    struct Provider;
+}
+
 namespace Methane::Platform
 {
 
@@ -36,15 +41,17 @@ struct IApp
 public:
     struct Settings
     {
-        std::string       name;
-        Data::FloatSize   size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        Data::FrameSize   min_size { 640, 480 };
-        bool              is_full_screen = false;
+        std::string     name;
+        Data::FloatSize size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
+        Data::FrameSize min_size { 640U, 480U };
+        bool            is_full_screen = false;
+        Data::Provider* icon_provider = nullptr;
 
         Settings& SetName(std::string&& new_name) noexcept;
         Settings& SetSize(Data::FloatSize&& new_size) noexcept;
         Settings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
         Settings& SetFullScreen(bool new_full_screen) noexcept;
+        Settings& SetIconProvider(Data::Provider* new_icon_provider) noexcept;
     };
 
     struct RunArgs

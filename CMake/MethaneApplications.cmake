@@ -23,6 +23,7 @@ Creates and configures cross-platform graphics application cmake build target.
 
 include(MethaneUtils)
 include(MethaneModules)
+include(MethaneResources)
 
 function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NAME DESCRIPTION COPYRIGHT VERSION BUILD_NUMBER)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -102,6 +103,10 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         add_executable(${TARGET}
             ${SOURCES}
         )
+
+        set(ICONS_DIR ${RESOURCES_DIR}/Icons/Linux)
+        file(GLOB ICON_FILES "${ICONS_DIR}/Methane*.png")
+        add_methane_embedded_icons(${TARGET} "${ICONS_DIR}" "${ICON_FILES}")
     
     endif()
 

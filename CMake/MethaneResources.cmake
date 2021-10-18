@@ -87,6 +87,38 @@ function(add_methane_embedded_textures TARGET EMBEDDED_TEXTURES_DIR EMBEDDED_TEX
 
 endfunction()
 
+function(add_methane_embedded_icons TARGET EMBEDDED_ICONS_DIR EMBEDDED_ICONS)
+
+    set(ICON_RESOURCES_TARGET ${TARGET}_Icons)
+    set(ICON_RESOURCES_NAMESPACE ${TARGET}::Icons)
+
+    cmrc_add_resource_library(${ICON_RESOURCES_TARGET}
+        ALIAS Methane::Resources::Icons
+        WHENCE "${EMBEDDED_ICONS_DIR}"
+        NAMESPACE ${ICON_RESOURCES_NAMESPACE}
+        ${EMBEDDED_ICONS}
+    )
+
+    set_target_properties(${ICON_RESOURCES_TARGET}
+        PROPERTIES
+        FOLDER "Build/${TARGET}/Resources"
+    )
+
+    target_link_libraries(${ICON_RESOURCES_TARGET} PRIVATE
+        MethaneBuildOptions
+    )
+
+    target_link_libraries(${TARGET} PRIVATE
+        ${ICON_RESOURCES_TARGET}
+    )
+
+    target_compile_definitions(${TARGET}
+        PRIVATE
+        ICON_RESOURCES_NAMESPACE=${ICON_RESOURCES_NAMESPACE}
+    )
+
+endfunction()
+
 function(add_methane_copy_textures TARGET COPY_TEXTURES)
 
     add_custom_command(TARGET ${TARGET} POST_BUILD

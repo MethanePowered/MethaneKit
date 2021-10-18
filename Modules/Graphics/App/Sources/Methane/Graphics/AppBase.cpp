@@ -76,14 +76,14 @@ IApp::Settings& IApp::Settings::SetDeviceCapabilities(Device::Capabilities&& new
     return *this;
 }
 
-AppSettings& AppSettings::SetPlatformAppSettings(Platform::App::Settings&& new_platform_app_settings) noexcept
+AppSettings& AppSettings::SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept
 {
     META_FUNCTION_TASK();
     platform_app = std::move(new_platform_app_settings);
     return *this;
 }
 
-AppSettings& AppSettings::SetGraphicsAppSettings(IApp::Settings&& new_graphics_app_settings) noexcept
+AppSettings& AppSettings::SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept
 {
     META_FUNCTION_TASK();
     graphics_app = std::move(new_graphics_app_settings);

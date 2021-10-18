@@ -26,6 +26,7 @@ Linux application implementation.
 
 #include <Methane/Platform/Linux/AppLin.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Data/Provider.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -245,9 +246,20 @@ Data::FrameSize AppLin::InitWindow()
     m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
     m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
+    if (settings.icon_provider)
+    {
+        SetWindowIcon(*settings.icon_provider);
+    }
+
     Data::FrameSize frame_size(frame_width, frame_height);
     AppBase::Resize(frame_size, false);
     return frame_size;
+}
+
+void AppLin::SetWindowIcon(Data::Provider& icon_provider)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(icon_provider);
 }
 
 void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)

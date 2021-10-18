@@ -81,6 +81,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledHeaders
         MethanePlatformUtils
+        MethaneDataProvider
         TaskFlow
         fmt
         nowide
