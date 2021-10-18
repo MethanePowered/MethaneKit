@@ -44,7 +44,7 @@ using IconProvider = ICON_RESOURCES_NAMESPACE::ResourceProvider;
 
 namespace Methane::Data
 {
-    using TextureProvider = FileProvider;
+    using IconProvider = FileProvider;
 }
 
-#endif // ifdef TEXTURE_RESOURCES_NAMESPACE
+#endif // ifdef ICON_RESOURCES_NAMESPACE
