@@ -33,6 +33,7 @@ Linux application implementation.
 #include <string_view>
 #include <optional>
 
+#include <stb_image.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 
@@ -227,9 +228,9 @@ Data::FrameSize AppLin::InitWindow()
     m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
 
     if (settings.is_full_screen)
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 2>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { { m_window_delete_atom, m_state_fullscreen_atom } });
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { m_window_delete_atom, m_state_fullscreen_atom });
     else
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { m_window_delete_atom });
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -241,8 +242,6 @@ Data::FrameSize AppLin::InitWindow()
     Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_CLASS, std::string_view(wm_class.c_str(), wm_class.size() + 2));
 
     m_state_atom            = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE");
-    m_state_add_atom        = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_ADD");
-    m_state_remove_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_REMOVE");
     m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
     m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
@@ -256,10 +255,55 @@ Data::FrameSize AppLin::InitWindow()
     return frame_size;
 }
 
-void AppLin::SetWindowIcon(Data::Provider& icon_provider)
+static void AddIconData(Data::Chunk icon_data, std::vector<uint32_t>& combined_icons_data)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(icon_provider);
+    int image_width = 0;
+    int image_height = 0;
+    int image_channels_count = 0;
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(icon_data.GetDataPtr()), // NOSONAR
+                                                  static_cast<int>(icon_data.GetDataSize()),
+                                                  &image_width, &image_height, &image_channels_count, 4);
+
+    META_CHECK_ARG_NOT_NULL_DESCR(p_image_data, "failed to load image data from memory");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 2, "invalid image width");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 2, "invalid image height");
+    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 3, "invalid image channels count");
+
+    combined_icons_data.reserve(combined_icons_data.size() + 2 + image_width * image_height);
+    combined_icons_data.push_back(image_width);
+    combined_icons_data.push_back(image_height);
+
+    for(size_t y = 0; y < static_cast<size_t>(image_height); y++)
+        for(size_t x = 0; x < static_cast<size_t>(image_width); x++)
+        {
+            uint32_t bgra_pixel_data = 0;
+            uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data);
+            uint8_t* rgba_pixel = &p_image_data[(y * image_width + x) * 4]; // NOSONAR
+
+            bgra_pixel[0] = rgba_pixel[2];
+            bgra_pixel[1] = rgba_pixel[1];
+            bgra_pixel[2] = rgba_pixel[0];
+            bgra_pixel[3] = rgba_pixel[3];
+
+            combined_icons_data.push_back(bgra_pixel_data);
+        }
+}
+
+void AppLin::SetWindowIcon(const Data::Provider& icon_provider)
+{
+    META_FUNCTION_TASK();
+    const std::vector<std::string> icon_paths = icon_provider.GetFiles("");
+    if (icon_paths.empty())
+        return;
+
+    std::vector<uint32_t> combined_icons_data;
+    for(const std::string& icon_path : icon_paths)
+    {
+        AddIconData(icon_provider.GetData(icon_path), combined_icons_data);
+    }
+
+    Linux::SetXcbWindowAtomProperty<uint32_t>(m_env.connection, m_env.window, "_NET_WM_ICON", XCB_ATOM_CARDINAL, combined_icons_data);
 }
 
 void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)
@@ -290,7 +334,7 @@ void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSi
     config_values.emplace_back(frame_size.GetWidth());
     config_values.emplace_back(frame_size.GetHeight());
 
-    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints, 1>(m_env.connection, m_env.window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
+    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints>(m_env.connection, m_env.window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, { size_hints });
     Linux::XcbCheck(xcb_configure_window_checked(m_env.connection, m_env.window, config_value_mask, config_values.data()),
                     m_env.connection, "Failed to configure window size");
 

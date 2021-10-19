@@ -27,7 +27,7 @@ X11/XCB utility functions.
 #include <Methane/Platform/Keyboard.h>
 
 #include <string_view>
-#include <array>
+#include <vector>
 
 #include <xcb/xcb.h>
 
@@ -93,25 +93,26 @@ xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std
 xcb_atom_t GetXcbInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept;
 void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value);
 
-template<typename T, size_t atoms_count>
+template<typename T>
 void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
                               xcb_atom_t property_id, xcb_atom_enum_t property_type,
-                              const std::array<T, atoms_count>& values)
+                              const std::vector<T>& values)
 {
     constexpr size_t type_size = sizeof(T) * 8;
     constexpr uint8_t format = static_cast<uint8_t>(std::min(type_size, size_t(32)));
-    constexpr uint32_t data_length = values.size() * type_size / format;
+    const uint32_t data_length = values.size() * type_size / format;
     XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, format, data_length, values.data()),
              connection, "failed to set window property");
 }
 
-template<typename T, size_t values_count>
+
+template<typename T>
 void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
                               std::string_view property_atom_name, xcb_atom_enum_t property_type,
-                              const std::array<T, values_count>& values)
+                              const std::vector<T>& values)
 {
     const xcb_atom_t property_atom = GetXcbInternAtom(connection, property_atom_name.data());
-    SetXcbWindowAtomProperty<T, values_count>(connection, window, property_atom, property_type, values);
+    SetXcbWindowAtomProperty<T>(connection, window, property_atom, property_type, values);
 }
 
 template<typename T>

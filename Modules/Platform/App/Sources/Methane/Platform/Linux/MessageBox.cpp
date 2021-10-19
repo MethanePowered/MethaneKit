@@ -99,20 +99,20 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
 
     // Create window delete atom used to receive event when window is destroyed
     m_window_delete_atom = Linux::GetXcbInternAtom(m_app_env.connection, "WM_DELETE_WINDOW");
-    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { { m_window_delete_atom } });
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_app_env.connection, m_dialog_window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { m_window_delete_atom });
 
-    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 4>(m_app_env.connection, m_dialog_window, "WM_STATE", XCB_ATOM_ATOM, { {
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_app_env.connection, m_dialog_window, "WM_STATE", XCB_ATOM_ATOM, {
         Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_SKIP_TASKBAR"),
         Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_SKIP_PAGER"),
         Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_FOCUSED"),
         Linux::GetXcbInternAtom(m_app_env.connection, "WM_STATE_MODAL")
-    } });
+    });
 
-    Linux::SetXcbWindowAtomProperty<xcb_atom_t, 1>(m_app_env.connection, m_dialog_window, "WM_WINDOW_TYPE", XCB_ATOM_ATOM, { {
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_app_env.connection, m_dialog_window, "WM_WINDOW_TYPE", XCB_ATOM_ATOM, {
         Linux::GetXcbInternAtom(m_app_env.connection, "WM_WINDOW_TYPE_DIALOG")
-    } });
+    });
 
-    Linux::SetXcbWindowAtomProperty<xcb_window_t, 1>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, { { m_app_env.window } });
+    Linux::SetXcbWindowAtomProperty<xcb_window_t>(m_app_env.connection, m_dialog_window, "WM_TRANSIENT_FOR", XCB_ATOM_WINDOW, { m_app_env.window });
 
     // Create default font
     m_default_font = xcb_generate_id(m_app_env.connection);
@@ -321,8 +321,7 @@ void MessageBox::Resize(int width, int height)
     size_hints.max_width = width;
     size_hints.max_height = height;
 
-    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints, 1>(
-        m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, {{ size_hints }});
+    Linux::SetXcbWindowAtomProperty<Linux::WMSizeHints>(m_app_env.connection, m_dialog_window, XCB_ATOM_WM_NORMAL_HINTS, XCB_ATOM_WM_SIZE_HINTS, { size_hints });
 }
 
 void MessageBox::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, bool is_key_pressed)

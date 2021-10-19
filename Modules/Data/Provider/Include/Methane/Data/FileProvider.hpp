@@ -70,6 +70,12 @@ public:
         return Data::Chunk(std::move(buffer));
     }
 
+    [[nodiscard]] std::vector<std::string> GetFiles(const std::string&) const override
+    {
+        META_FUNCTION_TASK();
+        return { };
+    }
+
 protected:
     FileProvider() = default;
 

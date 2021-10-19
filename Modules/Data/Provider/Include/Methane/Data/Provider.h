@@ -26,6 +26,7 @@ Data provider interface used for loading application resources and resource file
 #include <Methane/Data/Chunk.hpp>
 
 #include <string>
+#include <vector>
 
 namespace Methane::Data
 {
@@ -34,6 +35,7 @@ struct Provider
 {
     virtual bool  HasData(const std::string& path) const noexcept = 0;
     virtual Chunk GetData(const std::string& path) const = 0;
+    virtual std::vector<std::string> GetFiles(const std::string& directory) const = 0;
 
     virtual ~Provider() = default;
 };

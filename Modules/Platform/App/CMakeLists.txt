@@ -48,7 +48,7 @@ else(LINUX)
         ${SOURCES_PLATFORM_DIR}/XcbUtils.cpp
     )
 
-    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb)
+    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb STB)
 
 endif()
 
