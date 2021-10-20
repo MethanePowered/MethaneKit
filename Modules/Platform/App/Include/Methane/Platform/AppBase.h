@@ -122,6 +122,7 @@ private:
         {
 #else
         META_UNUSED(stage_name);
+        META_UNUSED(is_error_deferred);
 #endif
             (obj.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 #ifndef _DEBUG
