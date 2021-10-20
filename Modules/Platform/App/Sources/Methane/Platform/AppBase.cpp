@@ -176,21 +176,14 @@ int AppBase::Run(const RunArgs& args)
     {
         parse(args.cmd_arg_count, args.cmd_arg_values);
     }
-    catch (const CLI::CallForHelp&)
+    catch (const CLI::CallForHelp& h)
     {
-        Alert(Message{
-            Message::Type::Information,
-            "Command Line Options",
-            help()
-        }, true);
+        std::cout << help();
+        return 1;
     }
     catch (const CLI::ParseError& e)
     {
-        Alert(Message{
-            Message::Type::Error,
-            "Command Line Parse Error",
-            std::string("Failed to parse command line: ") + e.what()
-        });
+        std::cerr << "Failed to parse command line:" << std::endl;
         return exit(e);
     }
 

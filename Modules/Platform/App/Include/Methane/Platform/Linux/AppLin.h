@@ -70,7 +70,7 @@ private:
 
     MessageBox& GetMessageBox();
 
-    AppEnvironment        m_env;
+    AppEnvironment        m_env{ 0 };
     xcb_atom_t            m_window_delete_atom    = XCB_ATOM_NONE;
     xcb_atom_t            m_state_atom            = XCB_ATOM_NONE;
     xcb_atom_t            m_state_hidden_atom     = XCB_ATOM_NONE;

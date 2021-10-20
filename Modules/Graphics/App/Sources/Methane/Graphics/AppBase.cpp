@@ -403,7 +403,20 @@ void AppBase::UpdateWindowTitle()
 
 void AppBase::CompleteInitialization() const
 {
-    m_context_ptr->CompleteInitialization();
+    META_FUNCTION_TASK();
+    if (m_context_ptr)
+    {
+        m_context_ptr->CompleteInitialization();
+    }
+}
+
+void AppBase::WaitForRenderComplete() const
+{
+    META_FUNCTION_TASK();
+    if (m_context_ptr)
+    {
+        m_context_ptr->WaitForGpu(Context::WaitFor::RenderComplete);
+    }
 }
 
 void AppBase::OnContextReleased(Context&)

@@ -99,6 +99,7 @@ protected:
 
     void UpdateWindowTitle();
     void CompleteInitialization() const;
+    void WaitForRenderComplete() const;
 
     // Platform::AppBase interface
     Platform::AppView GetView() const override { return m_context_ptr->GetAppView(); }

@@ -54,7 +54,7 @@ public:
 
     ~HelloTriangleApp() override
     {
-        GetRenderContext().WaitForGpu(Context::WaitFor::RenderComplete);
+        WaitForRenderComplete();
     }
 
     void Init() override

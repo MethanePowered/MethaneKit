@@ -63,7 +63,10 @@ AppLin::AppLin(const AppBase::Settings& settings)
 AppLin::~AppLin()
 {
     META_FUNCTION_TASK();
-    xcb_destroy_window(m_env.connection, m_env.window);
+    if (m_env.window)
+    {
+        xcb_destroy_window(m_env.connection, m_env.window);
+    }
     xcb_disconnect(m_env.connection);
 }
 
@@ -102,7 +105,7 @@ int AppLin::Run(const RunArgs& args)
         }
 
         if (!init_success || !m_is_event_processing)
-            continue;
+            break;
 
         if (IsResizing())
             EndResizing();
@@ -126,13 +129,16 @@ void AppLin::Alert(const Message& msg, bool deferred)
 void AppLin::SetWindowTitle(const std::string& title_text)
 {
     META_FUNCTION_TASK();
+    if (!m_env.window)
+        return;
+
     Linux::SetXcbWindowStringProperty(m_env.connection, m_env.window, XCB_ATOM_WM_NAME, title_text);
 }
 
 bool AppLin::SetFullScreen(bool is_full_screen)
 {
     META_FUNCTION_TASK();
-    if (!AppBase::SetFullScreen(is_full_screen))
+    if (!AppBase::SetFullScreen(is_full_screen) || !m_env.window)
         return false;
 
     xcb_client_message_event_t msg{0};
@@ -295,6 +301,7 @@ static void AddIconData(Data::Chunk icon_data, std::vector<uint32_t>& combined_i
 void AppLin::SetWindowIcon(const Data::Provider& icon_provider)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_env.window);
     const std::vector<std::string> icon_paths = icon_provider.GetFiles("");
     if (icon_paths.empty())
         return;
@@ -311,6 +318,8 @@ void AppLin::SetWindowIcon(const Data::Provider& icon_provider)
 void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_env.window);
+
     Linux::WMSizeHints size_hints{0};
     std::vector<uint32_t> config_values;
     uint32_t config_value_mask = 0U;
@@ -350,7 +359,8 @@ void AppLin::HandleEvent(xcb_generic_event_t& event)
     switch (event_type)
     {
     case XCB_CLIENT_MESSAGE:
-        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom);
+        if (m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom)
+            m_is_event_processing = false;
         break;
 
     case XCB_DESTROY_NOTIFY:

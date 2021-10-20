@@ -197,7 +197,7 @@ AsteroidsApp::~AsteroidsApp()
 {
     META_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    WaitForRenderComplete();
 }
 
 void AsteroidsApp::Init()
@@ -453,7 +453,7 @@ void AsteroidsApp::SetAsteroidsComplexity(uint32_t asteroids_complexity)
 
     if (IsRenderContextInitialized())
     {
-        GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+        WaitForRenderComplete();
     }
 
     m_asteroids_complexity = asteroids_complexity;

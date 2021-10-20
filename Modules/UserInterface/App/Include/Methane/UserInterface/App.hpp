@@ -96,7 +96,7 @@ public:
             return false;
 
         GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::IApp::HeadsUpDisplayMode::WindowTitle);
-        GraphicsApp::GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+        GraphicsApp::WaitForRenderComplete();
 
         return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }

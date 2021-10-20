@@ -159,6 +159,7 @@ void MessageBox::Show(const IApp::Message& message)
 
     // Hide window
     xcb_unmap_window(m_app_env.connection, m_dialog_window);
+    xcb_flush(m_app_env.connection);
 }
 
 void MessageBox::HandleEvent(const xcb_generic_event_t& event)

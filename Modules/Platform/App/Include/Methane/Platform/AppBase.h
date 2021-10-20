@@ -33,6 +33,7 @@ Base application interface and platform-independent implementation.
 #include <CLI/App.hpp>
 
 #include <fmt/format.h>
+#include <string_view>
 
 namespace tf // NOSONAR
 {
@@ -67,14 +68,14 @@ public:
     void ShowParameters() override { /* no parameters are displayed by default, but can be overridden */ }
 
     bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
-    { return ExecuteWithErrorHandling("Render Context Initialization", *this, &AppBase::InitContext, env, frame_size); }
+    { return ExecuteWithErrorHandling("Render Context Initialization", true, *this, &AppBase::InitContext, env, frame_size); }
 
-    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", *this, &AppBase::Init); }
-    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", *this, &AppBase::UpdateAndRender); }
+    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", true, *this, &AppBase::Init); }
+    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", false, *this, &AppBase::UpdateAndRender); }
 
     template<typename FuncType, typename... ArgTypes>
     void ProcessInputWithErrorHandling(FuncType&& func_ptr, ArgTypes&&... args)
-    { ExecuteWithErrorHandling("Application Input", m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
+    { ExecuteWithErrorHandling("Application Input", false, m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
 
     tf::Executor&           GetParallelExecutor() const;
     const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
@@ -110,7 +111,7 @@ private:
     bool UpdateAndRender();
 
     template<typename ObjectType, typename FuncType, typename... ArgTypes>
-    bool ExecuteWithErrorHandling(const char* stage_name, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
+    bool ExecuteWithErrorHandling(std::string_view stage_name, bool is_error_deferred, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
 #ifdef _DEBUG
         const
 #endif
@@ -127,12 +128,12 @@ private:
         }
         catch (std::exception& e)
         {
-            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() });
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() }, is_error_deferred);
             return false;
         }
         catch (...)
         {
-            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." });
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." }, is_error_deferred);
             return false;
         }
 #endif

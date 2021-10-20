@@ -68,7 +68,7 @@ ShadowCubeApp::ShadowCubeApp()
 ShadowCubeApp::~ShadowCubeApp()
 {
     // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    WaitForRenderComplete();
 }
 
 void ShadowCubeApp::Init()
