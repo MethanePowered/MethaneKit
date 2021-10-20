@@ -40,7 +40,7 @@ namespace Methane::Platform
 static const std::string_view g_default_font_name = "-*-fixed-medium-r-*--15-*-*-*-*-*-*-*";
 static const int16_t g_margin_size  = 30;
 static const int16_t g_padding_size = 15;
-static const size_t g_max_line_length = 80U;
+static const size_t g_max_line_length = 100U;
 
 struct MessageButtonStyle
 {

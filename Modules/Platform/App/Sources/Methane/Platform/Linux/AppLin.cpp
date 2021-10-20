@@ -76,8 +76,6 @@ int AppLin::Run(const RunArgs& args)
 
     // Init window and show on screen
     const Data::FrameSize init_frame_size = InitWindow();
-    xcb_map_window(m_env.connection, m_env.window);
-    xcb_flush(m_env.connection);
 
     // Application Initialization
     bool init_success = InitContextWithErrorHandling(m_env, init_frame_size);
@@ -249,6 +247,10 @@ Data::FrameSize AppLin::InitWindow()
     {
         SetWindowIcon(*settings.icon_provider);
     }
+
+    xcb_map_window(m_env.connection, m_env.window);
+    XMoveWindow(m_env.display, m_env.window, pos_x, pos_y);
+    xcb_flush(m_env.connection);
 
     Data::FrameSize frame_size(frame_width, frame_height);
     AppBase::Resize(frame_size, false);
