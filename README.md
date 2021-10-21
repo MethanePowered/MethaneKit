@@ -109,11 +109,10 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
   - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
   - Widgets library (under development)
 - **Platform Infrastructure**:
-  - Base application with window management and input handling
+  - Base application with window management and input handling for Windows, MacOS and Linux
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
-  - Range Set implementation
 - **Integrated debugging and profiling capabilities**:
   - Library instrumentation for performance analysis with [trace profiling tools](#trace-profiling-tools)
   - Debug names for all GPU objects and debug regions for graphics API calls for use with [frame profiling tools](#frame-profiling-and-debugging-tools)
@@ -129,7 +128,7 @@ For detailed features description and development plans please refer to [Modules
 
 - **Common**
   - Git (required to pull sub-modules)
-  - CMake 3.16 or later
+  - CMake 3.18 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019 with MSVC v142 or later
@@ -176,9 +175,9 @@ Start Command Prompt, go to MethaneKit root directory (don't forget to pull depe
 and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with CMake command line:
 
 ```console
-mkdir Build\Output\VisualStudio\Build && cd Build\Output\VisualStudio\Build
-cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\..\Install" "..\..\..\.."
-cmake --build . --config Release --target install
+set OUTPUT_DIR=Build\Output\VisualStudio\x64-MSVC
+cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
+cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio or [any other IDE of choice](#development-environments)
@@ -196,9 +195,9 @@ Start Terminal, go to MethaneKit root directory (don't forget to pull dependent 
 and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.sh) or build with CMake command line:
 
 ```console
-mkdir -p Build/Output/XCode/Build && cd Build/Output/XCode/Build
-cmake -H../../../.. -B. -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
-cmake --build . --config Release --target install
+OUTPUT_DIR=Build/Output/XCode
+cmake -H . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake --build $OUTPUT_DIR/Build --config Release --target install
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
@@ -220,9 +219,9 @@ Start Terminal, go to MethaneKit root directory (don't forget to pull dependent 
 and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.sh) or build with CMake command line:
 
 ```console
-mkdir -p Build/Output/Linux/Build && cd Build/Output/Linux/Build
-cmake -H../../../.. -B. -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/../Install"
-cmake --build . --config Release --target install
+OUTPUT_DIR=Build/Output/Linux
+cmake -H . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake --build $OUTPUT_DIR/Build --config Release --target install
 ```
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
