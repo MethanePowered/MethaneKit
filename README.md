@@ -139,9 +139,9 @@ For detailed features description and development plans please refer to [Modules
 - **Linux**
   - Ubuntu 20.04 or later
   - GCC 9 or later
-  - X11 & XCB libraries
+  - LCov, X11 & XCB libraries
   ```console
-  sudo apt-get update && sudo apt-get install xcb libx11-dev libx11-xcb-dev
+  sudo apt-get update && sudo apt-get install lcov xcb libx11-dev libx11-xcb-dev
   ```
 
 ### Fetch Sources
