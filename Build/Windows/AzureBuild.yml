@@ -26,7 +26,7 @@ steps:
     displayName: 'Build with $(generatorName) for $(platform) $(configuration)'
     inputs:
       workingDirectory: $(buildDir)
-      cmakeArgs: '--build . --config $(configuration) --target install'
+      cmakeArgs: '--build . --config $(configuration) --target install --parallel'
 
   - script: |
       setlocal enabledelayedexpansion

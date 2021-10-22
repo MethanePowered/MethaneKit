@@ -177,7 +177,7 @@ and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/
 ```console
 set OUTPUT_DIR=Build\Output\VisualStudio\x64-MSVC
 cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
-cmake --build %OUTPUT_DIR%\Build --config Release --target install
+cmake --build %OUTPUT_DIR%\Build --config Release --target install --parallel
 ```
 
 Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio or [any other IDE of choice](#development-environments)
@@ -196,8 +196,8 @@ and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.s
 
 ```console
 OUTPUT_DIR=Build/Output/XCode
-cmake -H . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install
+cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
@@ -220,8 +220,8 @@ and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.s
 
 ```console
 OUTPUT_DIR=Build/Output/Linux
-cmake -H . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install
+cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel
 ```
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.

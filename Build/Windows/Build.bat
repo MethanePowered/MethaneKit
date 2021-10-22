@@ -163,7 +163,7 @@ IF DEFINED ANALYZE_BUILD (
     ECHO ----------
     ECHO Building with %CMAKE_GENERATOR% and SonarScanner build wrapper...
     "%SONAR_BUILD_WRAPPER_EXE%" --out-dir "%BUILD_DIR%"^
-         cmake --build . --config Debug
+         cmake --build . --config Debug --parallel
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     ECHO ----------
@@ -211,7 +211,7 @@ IF DEFINED ANALYZE_BUILD (
 
     ECHO ----------
     ECHO Building with %CMAKE_GENERATOR%...
-    cmake --build . --config %BUILD_TYPE% --target install
+    cmake --build . --config %BUILD_TYPE% --target install --parallel
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
     ECHO ----------

@@ -177,10 +177,18 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
 
     echo ----------
     echo Building with Sonar Scanner wrapper...
-    if ! "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
-        xcodebuild -project "$BUILD_DIR/MethaneKit.xcodeproj" -configuration Debug; then
-        echo "Sonar-scanner CMake generation failed."
-        exit 1
+    if [ "$CMAKE_GENERATOR" == "Xcode" ]; then
+        if ! "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
+            xcodebuild -project "$BUILD_DIR/MethaneKit.xcodeproj" -configuration Debug; then
+            echo "Sonar-scanner CMake generation failed."
+            exit 1
+        fi
+    else
+        if ! "$SONAR_BUILD_WRAPPER_EXE" --out-dir "$BUILD_DIR" \
+            make install -j 6; then
+            echo "Sonar-scanner CMake generation failed."
+            exit 1
+        fi
     fi
 
     echo ----------
@@ -232,7 +240,7 @@ else
 
     echo ----------
     echo Build with $CMAKE_GENERATOR...
-    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install; then
+    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel; then
         echo "Methane build failed."
         exit 1
     fi
