@@ -141,13 +141,15 @@ if (MSVC)
 
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         # Enable multi-threaded build with MSVC
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
         target_compile_options(MethaneBuildOptions INTERFACE
+            # Exception handling mode
+            /EHsc
             # Set maximum warnings level and treat warnings as errors
             /W4 /WX
             # Disable useless warnings

@@ -240,7 +240,7 @@ else
 
     echo ----------
     echo Build with $CMAKE_GENERATOR...
-    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel; then
+    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8; then
         echo "Methane build failed."
         exit 1
     fi

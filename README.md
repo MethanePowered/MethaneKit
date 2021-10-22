@@ -197,7 +197,7 @@ and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.s
 ```console
 OUTPUT_DIR=Build/Output/XCode
 cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel
+cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
