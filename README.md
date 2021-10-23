@@ -226,6 +226,10 @@ cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
 
+Run built applications from the installation directory `Build/Output/Linux/Install/Apps`.
+In Ubuntu Linux applications should be started from `terminal` app, 
+because of `noexec` permission is set for all applications located in user's home folder.
+
 #### CMake Build Options
 
 Build options can be configured in cmake generator command line:
@@ -235,9 +239,9 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 
 | Build Option Name                               | Default Value           | Release Build           | Profiling Build         | Description             |
 | ----------------------------------------------- | ----------------------- | ----------------------- | ----------------------- | ----------------------- |
-| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub><b>OFF</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
+| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>...</b></sub>   | <sub><b>...</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
 | <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
-| <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable tests build</sub> |
+| <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>OFF</b></sub>   | <sub>Enable tests build</sub> |
 | <sub>METHANE_CHECKS_ENABLED</sub>               | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable runtime checks of input arguments</sub> |
 | <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub><b>ON</b></sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable test auto-run after module build</sub> |
 | <sub>METHANE_UNITY_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable unity build speedup for some modules</sub> |
