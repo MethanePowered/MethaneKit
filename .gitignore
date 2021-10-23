@@ -1,6 +1,7 @@
 ﻿/.vs
 /.idea/workspace.xml
 /.idea/sonarIssues.xml
+/.idea/jsonSchemas.xml
 /.scannerwork
 /.sonarqube
 /*.srctrl*
