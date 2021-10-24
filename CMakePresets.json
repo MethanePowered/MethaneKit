@@ -279,6 +279,16 @@
             "inherits": [
                 "Ninja-Multi-Profile-Mac-MTL"
             ]
+        },
+        {
+            "name": "Xcode-Scan-Mac-MTL",
+            "displayName": "Scanning - Xcode - MacOS (Metal)",
+            "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Multi-Scan",
+                "Ninja-Multi-Default-Mac"
+            ]
         }
     ],
     "buildPresets": [
@@ -431,6 +441,14 @@
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Xcode-Profile-Mac-MTL",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Xcode-Mac-MTL-Scan",
+            "displayName": "Scanning - Xcode - MacOS (Metal)",
+            "description": "Scanning build with Xcode for MacOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Scan-Mac-MTL",
+            "configuration": "Debug"
         }
     ]
 }
