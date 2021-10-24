@@ -23,6 +23,11 @@ steps:
       - ${{ step }}
 
   - task: CMake@1
+    displayName: 'Check CMake version'
+    inputs:
+      cmakeArgs: '--version'
+
+  - task: CMake@1
     displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
     inputs:
       workingDirectory: $(buildDir)
