@@ -7,7 +7,8 @@
     },
     "configurePresets": [
         {
-            "name": "Default",
+            "name": "Ninja-Multi-Default",
+            "description": "Default Ninja Multi configuration for Release and Debug builds",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/Build/Output/${presetName}/Build",
@@ -84,8 +85,9 @@
             }
         },
         {
-            "name": "Profile",
-            "inherits": "Default",
+            "name": "Ninja-Multi-Profile",
+            "description": "Profiling Ninja Multi configuration for runtime executiion profiling with Tracy and Intel GPA",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_SHADERS_CODEVIEW_ENABLED": {
@@ -127,8 +129,9 @@
             }
         },
         {
-            "name": "Scan",
-            "inherits": "Default",
+            "name": "Ninja-Multi-Scan",
+            "description": "Static scanning Ninja Multi configuration for builds under Sonar Cloud code analyzer",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_CODE_COVERAGE_ENABLED": {
@@ -139,10 +142,6 @@
                     "type": "BOOL",
                     "value": "OFF"
                 },
-                "METHANE_RUN_TESTS_DURING_BUILD": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
                 "METHANE_UNITY_BUILD_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
@@ -150,8 +149,8 @@
             }
         },
         {
-            "name": "Vulkan",
-            "inherits": "Default",
+            "name": "Ninja-Multi-Vulkan",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_GFX_VULKAN_ENABLED": {
@@ -162,7 +161,7 @@
         },
         {
             "name": "Ninja-Multi-Default-Win",
-            "inherits": "Default",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "condition": {
                 "type": "equals",
@@ -172,7 +171,7 @@
         },
         {
             "name": "Ninja-Multi-Default-Lin",
-            "inherits": "Default",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "condition": {
                 "type": "equals",
@@ -182,7 +181,7 @@
         },
         {
             "name": "Ninja-Multi-Default-Mac",
-            "inherits": "Default",
+            "inherits": "Ninja-Multi-Default",
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64"
@@ -206,7 +205,7 @@
             "displayName": "Default - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Vulkan",
+                "Ninja-Multi-Vulkan",
                 "Ninja-Multi-Default-Win"
             ]
         },
@@ -215,7 +214,7 @@
             "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
-                "Profile",
+                "Ninja-Multi-Profile",
                 "Ninja-Multi-Default-Win"
             ]
         },
@@ -224,8 +223,8 @@
             "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Vulkan",
-                "Profile",
+                "Ninja-Multi-Vulkan",
+                "Ninja-Multi-Profile",
                 "Ninja-Multi-Default-Win"
             ]
         },
@@ -242,7 +241,7 @@
             "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
-                "Profile",
+                "Ninja-Multi-Profile",
                 "Ninja-Multi-Default-Lin"
             ]
         },
@@ -259,14 +258,14 @@
             "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
-                "Profile",
+                "Ninja-Multi-Profile",
                 "Ninja-Multi-Default-Mac"
             ]
         },
         {
             "name": "Xcode-Default-Mac-MTL",
             "displayName": "Default - Xcode - MacOS (Metal)",
-            "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "description": "Default configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
                 "Ninja-Multi-Default-Mac-MTL"
@@ -275,7 +274,7 @@
         {
             "name": "Xcode-Profile-Mac-MTL",
             "displayName": "Profiling - Xcode - MacOS (Metal)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "description": "Profiling configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
                 "Ninja-Multi-Profile-Mac-MTL"
