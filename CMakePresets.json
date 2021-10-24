@@ -228,6 +228,133 @@
                 "Ninja-Multi-Default-Win"
             ]
         },
+
+        {
+            "name": "VS2019-Default-Win64-DX",
+            "displayName": "Default - VS2019 - Windows x64 (DirectX)",
+            "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "architecture":{
+                "value": "x64",
+                "strategy": "set"
+            },
+            "inherits": [
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "VS2019-Default-Win32-DX",
+            "displayName": "Default - VS2019 - Windows x86 (DirectX)",
+            "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "architecture":{
+                "value": "Win32",
+                "strategy": "set"
+            },
+            "inherits": [
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "VS2019-Default-Win64-VK",
+            "displayName": "Default - VS2019 - Windows x64 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Default-Win64-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Default-Win32-VK",
+            "displayName": "Default - VS2019 - Windows x86 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Default-Win32-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Profile-Win64-DX",
+            "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
+            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Profile",
+                "VS2019-Default-Win64-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Profile-Win32-DX",
+            "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
+            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Profile",
+                "VS2019-Default-Win32-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Profile-Win64-VK",
+            "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
+            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Profile-Win64-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Profile-Win32-VK",
+            "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
+            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Profile-Win32-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Scan-Win64-DX",
+            "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
+            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Scan",
+                "VS2019-Default-Win64-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Scan-Win32-DX",
+            "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
+            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Scan",
+                "VS2019-Default-Win32-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Scan-Win64-VK",
+            "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
+            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Scan-Win64-DX"
+            ]
+        },
+        {
+            "name": "VS2019-Scan-Win32-VK",
+            "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
+            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 16 2019",
+            "inherits": [
+                "Ninja-Multi-Vulkan",
+                "VS2019-Scan-Win32-DX"
+            ]
+        },
         {
             "name": "Ninja-Multi-Default-Lin-VK",
             "displayName": "Default - Ninja Multi-Config - Linux (Vulkan)",
@@ -397,6 +524,135 @@
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Multi-Profile-Win-VK",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2019-Win64-DX-Debug",
+            "displayName": "Debug - VS2019 - Windows x64 (DirectX)",
+            "description": "Debug build with Visual Studio 2019 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win64-DX",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win32-DX-Debug",
+            "displayName": "Debug - VS2019 - Windows x86 (DirectX)",
+            "description": "Debug build with Visual Studio 2019 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win32-DX",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win64-DX-Release",
+            "displayName": "Release - VS2019 - Windows x64 (DirectX)",
+            "description": "Release build with Visual Studio 2019 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win64-DX",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2019-Win32-DX-Release",
+            "displayName": "Release - VS2019 - Windows x86 (DirectX)",
+            "description": "Release build with Visual Studio 2019 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win32-DX",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2019-Win64-DX-Profile",
+            "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
+            "description": "Profiling build with Visual Studio 2019 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Profile-Win64-DX",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2019-Win32-DX-Profile",
+            "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
+            "description": "Profiling build with Visual Studio 2019 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Profile-Win32-DX",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2019-Win64-DX-Scan",
+            "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
+            "description": "Scanning build with Visual Studio 2019 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Scan-Win64-DX",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win32-DX-Scan",
+            "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
+            "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Scan-Win32-DX",
+            "configuration": "Debug"
+        },
+
+        {
+            "name": "VS2019-Win64-VK-Debug",
+            "displayName": "Debug - VS2019 - Windows x64 (Vulkan)",
+            "description": "Debug build with Visual Studio 2019 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win64-VK",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win32-VK-Debug",
+            "displayName": "Debug - VS2019 - Windows x86 (Vulkan)",
+            "description": "Debug build with Visual Studio 2019 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win32-VK",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win64-VK-Release",
+            "displayName": "Release - VS2019 - Windows x64 (Vulkan)",
+            "description": "Release build with Visual Studio 2019 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win64-VK",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2019-Win32-VK-Release",
+            "displayName": "Release - VS2019 - Windows x86 (Vulkan)",
+            "description": "Release build with Visual Studio 2019 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Default-Win32-VK",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2019-Win64-VK-Profile",
+            "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2019 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Profile-Win64-VK",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2019-Win32-VK-Profile",
+            "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2019 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Profile-Win32-VK",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2019-Win64-VK-Scan",
+            "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
+            "description": "Scanning build with Visual Studio 2019 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Scan-Win64-VK",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2019-Win32-VK-Scan",
+            "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
+            "description": "Scanning build with Visual Studio 2019 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2019-Scan-Win32-VK",
+            "configuration": "Debug"
         },
         {
             "name": "Ninja-Multi-Lin-VK-Debug",
