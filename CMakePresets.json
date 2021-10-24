@@ -9,7 +9,7 @@
         {
             "name": "Default",
             "hidden": true,
-            "generator": "Ninja",
+            "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/Build/Output/${presetName}/Build",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/Build/Output/${presetName}/Install",
@@ -127,6 +127,29 @@
             }
         },
         {
+            "name": "Scan",
+            "inherits": "Default",
+            "hidden": true,
+            "cacheVariables": {
+                "METHANE_CODE_COVERAGE_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "METHANE_ITT_INSTRUMENTATION_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "METHANE_RUN_TESTS_DURING_BUILD": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "METHANE_UNITY_BUILD_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
             "name": "Vulkan",
             "inherits": "Default",
             "hidden": true,
@@ -138,22 +161,9 @@
             }
         },
         {
-            "name": "Ninja-Multi-Default",
+            "name": "Ninja-Multi-Default-Win",
             "inherits": "Default",
             "hidden": true,
-            "generator": "Ninja Multi-Config"
-        },
-        {
-            "name": "Ninja-Multi-Profile",
-            "inherits": "Profile",
-            "hidden": true,
-            "generator": "Ninja Multi-Config"
-        },
-        {
-            "name": "Ninja-Multi-Win-DX",
-            "displayName": "Ninja Multi-Config for Windows (DirectX)",
-            "description": "Default configuration using Ninja Multi-Config generator for Windows with DirectX",
-            "inherits": [ "Ninja-Multi-Default" ],
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -161,37 +171,9 @@
             }
         },
         {
-            "name": "Ninja-Multi-Win-VK",
-            "displayName": "Ninja Multi-Config for Windows (Vulkan)",
-            "description": "Default configuration using Ninja Multi-Config generator for Windows with Vulkan",
-            "inherits": [
-                "Vulkan",
-                "Ninja-Multi-Win-DX"
-            ]
-        },
-        {
-            "name": "Ninja-Multi-Profile-Win-DX",
-            "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Win-DX"
-            ],
-            "displayName": "Ninja Multi-Config Profiling for Windows (DirectX)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for Windows with DirectX"
-        },
-        {
-            "name": "Ninja-Multi-Profile-Win-VK",
-            "displayName": "Ninja Multi-Config Profiling for Windows (Vulkan)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for Windows with Vulkan",
-            "inherits": [
-                "Vulkan",
-                "Ninja-Multi-Profile-Win-DX"
-            ]
-        },
-        {
-            "name": "Ninja-Multi-Linux",
-            "inherits": "Ninja-Multi-Default",
-            "displayName": "Ninja Multi-Config Profiling for Linux (Vulkan)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for Linux with Vulkan",
+            "name": "Ninja-Multi-Default-Lin",
+            "inherits": "Default",
+            "hidden": true,
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -199,19 +181,9 @@
             }
         },
         {
-            "name": "Ninja-Multi-Profile-Linux",
-            "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Linux"
-            ],
-            "displayName": "Ninja Multi-Config Profiling for Linux (Vulkan)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for Linux with Vulkan"
-        },
-        {
-            "name": "Ninja-Multi-MacOS",
-            "inherits": "Ninja-Multi-Default",
-            "displayName": "Ninja Multi-Config for MacOS (Metal)",
-            "description": "Default configuration using Ninja Multi-Config generator for MacOS with Metal",
+            "name": "Ninja-Multi-Default-Mac",
+            "inherits": "Default",
+            "hidden": true,
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64"
             },
@@ -222,13 +194,92 @@
             }
         },
         {
-            "name": "Ninja-Multi-Profile-MacOS",
+            "name": "Ninja-Multi-Default-Win-DX",
+            "displayName": "Default - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Default configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-MacOS"
-            ],
-            "displayName": "Ninja Multi-Config Profiling for MacOS (Metal)",
-            "description": "Profiling configuration using Ninja Multi-Config generator for MacOS with Metal"
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Default-Win-VK",
+            "displayName": "Default - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Default configuration using Ninja Multi-Config generator for Windows (Vulkan)",
+            "inherits": [
+                "Vulkan",
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Profile-Win-DX",
+            "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for Windows (DirectX)",
+            "inherits": [
+                "Profile",
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Profile-Win-VK",
+            "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
+            "inherits": [
+                "Vulkan",
+                "Profile",
+                "Ninja-Multi-Default-Win"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Default-Lin-VK",
+            "displayName": "Default - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Default configuration using Ninja Multi-Config generator for Linux (Vulkan)",
+            "inherits": [
+                "Ninja-Multi-Default-Lin"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Profile-Lin-VK",
+            "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
+            "inherits": [
+                "Profile",
+                "Ninja-Multi-Default-Lin"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Default-Mac-MTL",
+            "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "inherits": [
+                "Ninja-Multi-Default-Mac"
+            ]
+        },
+        {
+            "name": "Ninja-Multi-Profile-Mac-MTL",
+            "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "inherits": [
+                "Profile",
+                "Ninja-Multi-Default-Mac"
+            ]
+        },
+        {
+            "name": "Xcode-Default-Mac-MTL",
+            "displayName": "Default - Xcode - MacOS (Metal)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Multi-Default-Mac-MTL"
+            ]
+        },
+        {
+            "name": "Xcode-Profile-Mac-MTL",
+            "displayName": "Profiling - Xcode - MacOS (Metal)",
+            "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Multi-Profile-Mac-MTL"
+            ]
         }
     ],
     "buildPresets": [
@@ -264,98 +315,122 @@
         },
         {
             "name": "Ninja-Multi-Win-DX-Debug",
-            "displayName": "Debug build for Windows (DirectX)",
-            "description": "Debug build with Ninja Multi-Config generator for Windows (DirectX)",
+            "displayName": "Debug - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Debug build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Win-DX",
+            "configurePreset": "Ninja-Multi-Default-Win-DX",
             "configuration": "Debug"
         },
         {
             "name": "Ninja-Multi-Win-DX-Release",
-            "displayName": "Release build for Windows (DirectX)",
-            "description": "Release build with Ninja Multi-Config generator for Windows (DirectX)",
+            "displayName": "Release - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Release build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Win-DX",
-            "configuration": "Debug"
+            "configurePreset": "Ninja-Multi-Default-Win-DX",
+            "configuration": "Release"
         },
         {
             "name": "Ninja-Multi-Win-DX-Profile",
-            "displayName": "Profiling build for Windows (DirectX)",
-            "description": "Profiling build with Ninja Multi-Config generator for Windows (DirectX)",
+            "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Profiling build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Multi-Profile-Win-DX",
             "configuration": "RelWithDebInfo"
         },
         {
             "name": "Ninja-Multi-Win-VK-Debug",
-            "displayName": "Debug build for Windows (Vulkan)",
-            "description": "Debug build with Ninja Multi-Config generator for Windows (Vulkan)",
+            "displayName": "Debug - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Debug build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Win-VK",
+            "configurePreset": "Ninja-Multi-Default-Win-VK",
             "configuration": "Debug"
         },
         {
             "name": "Ninja-Multi-Win-VK-Release",
-            "displayName": "Release build for Windows (Vulkan)",
-            "description": "Release build with Ninja Multi-Config generator for Windows (Vulkan)",
+            "displayName": "Release - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Release build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Win-VK",
-            "configuration": "Debug"
+            "configurePreset": "Ninja-Multi-Default-Win-VK",
+            "configuration": "Release"
         },
         {
             "name": "Ninja-Multi-Win-VK-Profile",
-            "displayName": "Profiling build for Windows (Vulkan)",
-            "description": "Profiling build with Ninja Multi-Config generator for Windows (Vulkan)",
+            "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Profiling build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Multi-Profile-Win-VK",
             "configuration": "RelWithDebInfo"
         },
         {
-            "name": "Ninja-Multi-Lin-Debug",
+            "name": "Ninja-Multi-Lin-VK-Debug",
             "displayName": "Debug build for Linux (Vulkan)",
-            "description": "Debug build with Ninja Multi-Config generator for Linux (Vulkan)",
+            "description": "Debug build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Linux",
+            "configurePreset": "Ninja-Multi-Default-Lin-VK",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Lin-Release",
-            "displayName": "Release build for Linux (Vulkan)",
-            "description": "Release build with Ninja Multi-Config generator for Linux (Vulkan)",
+            "name": "Ninja-Multi-Lin-VK-Release",
+            "displayName": "Release - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Release build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Linux",
-            "configuration": "Debug"
+            "configurePreset": "Ninja-Multi-Default-Lin-VK",
+            "configuration": "Release"
         },
         {
-            "name": "Ninja-Multi-Lin-Profile",
-            "displayName": "Profiling build for Linux (Vulkan)",
-            "description": "Profiling build with Ninja Multi-Config generator for Linux (Vulkan)",
+            "name": "Ninja-Multi-Lin-VK-Profile",
+            "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Profiling build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-Linux",
+            "configurePreset": "Ninja-Multi-Profile-Lin-VK",
             "configuration": "RelWithDebInfo"
         },
         {
-            "name": "Ninja-Multi-Mac-Debug",
-            "displayName": "Debug build for MacOS (Metal)",
-            "description": "Debug build with Ninja Multi-Config generator for MacOS (Metal)",
+            "name": "Ninja-Multi-Mac-MTL-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Debug build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-MacOS",
+            "configurePreset": "Ninja-Multi-Default-Mac-MTL",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Mac-Release",
-            "displayName": "Release build for MacOS (Metal)",
-            "description": "Release build with Ninja Multi-Config generator for MacOS (Metal)",
+            "name": "Ninja-Multi-Mac-MTL-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Release build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-MacOS",
+            "configurePreset": "Ninja-Multi-Default-Mac-MTL",
+            "configuration": "Release"
+        },
+        {
+            "name": "Ninja-Multi-Mac-MTL-Profile",
+            "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Profiling build with Ninja Multi-Config for MacOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Multi-Profile-Mac-MTL",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Xcode-Mac-MTL-Debug",
+            "displayName": "Debug - Xcode - MacOS (Metal)",
+            "description": "Debug build with Xcode for MacOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Default-Mac-MTL",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Mac-Profile",
-            "displayName": "Profiling build for MacOS (Metal)",
-            "description": "Profiling build with Ninja Multi-Config generator for MacOS (Metal)",
+            "name": "Xcode-Mac-MTL-Release",
+            "displayName": "Release - Xcode - MacOS (Metal)",
+            "description": "Release build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-MacOS",
+            "configurePreset": "Xcode-Default-Mac-MTL",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-MTL-Profile",
+            "displayName": "Profiling - Xcode - MacOS (Metal)",
+            "description": "Profiling build with Xcode for MacOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Profile-Mac-MTL",
             "configuration": "RelWithDebInfo"
         }
     ]

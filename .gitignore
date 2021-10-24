@@ -6,5 +6,6 @@
 /.sonarqube
 /*.srctrl*
 /out
-/compileData.scor
+/compileData.scors
 /CMakeLists.txt.user
+/CMakeUserPresets.json
