@@ -246,6 +246,34 @@
             ]
         },
         {
+            "name": "Make-Default-Lin-VK",
+            "displayName": "Default - Unix Makefiles - Linux (Vulkan)",
+            "description": "Default configuration using Unix Makefiles generator for Linux (Vulkan)",
+            "generator": "Unix Makefiles",
+            "inherits": [
+                "Ninja-Multi-Default-Lin-VK"
+            ]
+        },
+        {
+            "name": "Make-Profile-Lin-VK",
+            "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
+            "description": "Profiling configuration using Unix Makefiles generator for Linux (Vulkan)",
+            "generator": "Unix Makefiles",
+            "inherits": [
+                "Ninja-Multi-Profile-Lin-VK"
+            ]
+        },
+        {
+            "name": "Make-Scan-Lin-VK",
+            "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
+            "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
+            "generator": "Unix Makefiles",
+            "inherits": [
+                "Ninja-Multi-Scan",
+                "Ninja-Multi-Default-Lin-VK"
+            ]
+        },
+        {
             "name": "Ninja-Multi-Default-Mac-MTL",
             "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
             "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
@@ -295,7 +323,7 @@
         {
             "name": "Windows-Build",
             "hidden": true,
-            "jobs": 16,
+            "jobs": 8,
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -305,7 +333,7 @@
         {
             "name": "Linux-Build",
             "hidden": true,
-            "jobs": 16,
+            "jobs": 8,
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -372,7 +400,7 @@
         },
         {
             "name": "Ninja-Multi-Lin-VK-Debug",
-            "displayName": "Debug build for Linux (Vulkan)",
+            "displayName": "Debug - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Debug build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Ninja-Multi-Default-Lin-VK",
@@ -393,6 +421,38 @@
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Ninja-Multi-Profile-Lin-VK",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Make-Lin-VK-Debug",
+            "displayName": "Debug - Unix Makefiles - Linux (Vulkan)",
+            "description": "Debug build with Unix Makefiles for Linux (Vulkan)",
+            "inherits": [ "Linux-Build" ],
+            "configurePreset": "Make-Default-Lin-VK",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Make-Lin-VK-Release",
+            "displayName": "Release - Unix Makefiles - Linux (Vulkan)",
+            "description": "Release build with Unix Makefiles for Linux (Vulkan)",
+            "inherits": [ "Linux-Build" ],
+            "configurePreset": "Make-Default-Lin-VK",
+            "configuration": "Release"
+        },
+        {
+            "name": "Make-Lin-VK-Profile",
+            "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
+            "description": "Profiling build with Unix Makefiles for Linux (Vulkan)",
+            "inherits": [ "Linux-Build" ],
+            "configurePreset": "Make-Profile-Lin-VK",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Make-Lin-VK-Scan",
+            "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
+            "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
+            "inherits": [ "Linux-Build" ],
+            "configurePreset": "Make-Scan-Lin-VK",
+            "configuration": "Debug"
         },
         {
             "name": "Ninja-Multi-Mac-MTL-Debug",
