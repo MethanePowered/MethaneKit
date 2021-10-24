@@ -7,7 +7,7 @@
     },
     "configurePresets": [
         {
-            "name": "Ninja-Multi-Default",
+            "name": "Ninja-Default",
             "description": "Default Ninja Multi configuration for Release and Debug builds",
             "hidden": true,
             "generator": "Ninja Multi-Config",
@@ -85,9 +85,9 @@
             }
         },
         {
-            "name": "Ninja-Multi-Profile",
+            "name": "Ninja-Profile",
             "description": "Profiling Ninja Multi configuration for runtime executiion profiling with Tracy and Intel GPA",
-            "inherits": "Ninja-Multi-Default",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_SHADERS_CODEVIEW_ENABLED": {
@@ -129,9 +129,9 @@
             }
         },
         {
-            "name": "Ninja-Multi-Scan",
+            "name": "Ninja-Scan",
             "description": "Static scanning Ninja Multi configuration for builds under Sonar Cloud code analyzer",
-            "inherits": "Ninja-Multi-Default",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_CODE_COVERAGE_ENABLED": {
@@ -149,8 +149,8 @@
             }
         },
         {
-            "name": "Ninja-Multi-Vulkan",
-            "inherits": "Ninja-Multi-Default",
+            "name": "Ninja-Vulkan",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_GFX_VULKAN_ENABLED": {
@@ -160,8 +160,8 @@
             }
         },
         {
-            "name": "Ninja-Multi-Default-Win",
-            "inherits": "Ninja-Multi-Default",
+            "name": "Ninja-Win-Default",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "condition": {
                 "type": "equals",
@@ -170,8 +170,8 @@
             }
         },
         {
-            "name": "Ninja-Multi-Default-Lin",
-            "inherits": "Ninja-Multi-Default",
+            "name": "Ninja-Lin-Default",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "condition": {
                 "type": "equals",
@@ -180,8 +180,8 @@
             }
         },
         {
-            "name": "Ninja-Multi-Default-Mac",
-            "inherits": "Ninja-Multi-Default",
+            "name": "Ninja-Mac-Default",
+            "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64"
@@ -193,44 +193,44 @@
             }
         },
         {
-            "name": "Ninja-Multi-Default-Win-DX",
+            "name": "Ninja-Win-DX-Default",
             "displayName": "Default - Ninja Multi-Config - Windows (DirectX)",
             "description": "Default configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
-                "Ninja-Multi-Default-Win"
+                "Ninja-Win-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Default-Win-VK",
+            "name": "Ninja-Win-VK-Default",
             "displayName": "Default - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "Ninja-Multi-Default-Win"
+                "Ninja-Vulkan",
+                "Ninja-Win-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Profile-Win-DX",
+            "name": "Ninja-Win-DX-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Default-Win"
+                "Ninja-Profile",
+                "Ninja-Win-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Profile-Win-VK",
+            "name": "Ninja-Win-VK-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Default-Win"
+                "Ninja-Vulkan",
+                "Ninja-Profile",
+                "Ninja-Win-Default"
             ]
         },
 
         {
-            "name": "VS2019-Default-Win64-DX",
+            "name": "VS2019-Win64-DX-Default",
             "displayName": "Default - VS2019 - Windows x64 (DirectX)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
@@ -239,11 +239,11 @@
                 "strategy": "set"
             },
             "inherits": [
-                "Ninja-Multi-Default-Win"
+                "Ninja-Win-Default"
             ]
         },
         {
-            "name": "VS2019-Default-Win32-DX",
+            "name": "VS2019-Win32-DX-Default",
             "displayName": "Default - VS2019 - Windows x86 (DirectX)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
@@ -252,142 +252,142 @@
                 "strategy": "set"
             },
             "inherits": [
-                "Ninja-Multi-Default-Win"
+                "Ninja-Win-Default"
             ]
         },
         {
-            "name": "VS2019-Default-Win64-VK",
+            "name": "VS2019-Win64-VK-Default",
             "displayName": "Default - VS2019 - Windows x64 (Vulkan)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Default-Win64-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Default-Win32-VK",
+            "name": "VS2019-Win32-VK-Default",
             "displayName": "Default - VS2019 - Windows x86 (Vulkan)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Default-Win32-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win32-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Profile-Win64-DX",
+            "name": "VS2019-Win64-DX-Profile",
             "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "VS2019-Default-Win64-DX"
+                "Ninja-Profile",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Profile-Win32-DX",
+            "name": "VS2019-Win32-DX-Profile",
             "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "VS2019-Default-Win32-DX"
+                "Ninja-Profile",
+                "VS2019-Win32-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Profile-Win64-VK",
+            "name": "VS2019-Win64-VK-Profile",
             "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Profile-Win64-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win64-DX-Profile"
             ]
         },
         {
-            "name": "VS2019-Profile-Win32-VK",
+            "name": "VS2019-Win32-VK-Profile",
             "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Profile-Win32-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win32-DX-Profile"
             ]
         },
         {
-            "name": "VS2019-Scan-Win64-DX",
+            "name": "VS2019-Win64-DX-Scan",
             "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Scan",
-                "VS2019-Default-Win64-DX"
+                "Ninja-Scan",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Scan-Win32-DX",
+            "name": "VS2019-Win32-DX-Scan",
             "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Scan",
-                "VS2019-Default-Win32-DX"
+                "Ninja-Scan",
+                "VS2019-Win32-DX-Default"
             ]
         },
         {
-            "name": "VS2019-Scan-Win64-VK",
+            "name": "VS2019-Win64-VK-Scan",
             "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Scan-Win64-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win64-DX-Scan"
             ]
         },
         {
-            "name": "VS2019-Scan-Win32-VK",
+            "name": "VS2019-Win32-VK-Scan",
             "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Multi-Vulkan",
-                "VS2019-Scan-Win32-DX"
+                "Ninja-Vulkan",
+                "VS2019-Win32-DX-Scan"
             ]
         },
         {
-            "name": "Ninja-Multi-Default-Lin-VK",
+            "name": "Ninja-Lin-VK-Default",
             "displayName": "Default - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
-                "Ninja-Multi-Default-Lin"
+                "Ninja-Lin-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Profile-Lin-VK",
+            "name": "Ninja-Lin-VK-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Default-Lin"
+                "Ninja-Profile",
+                "Ninja-Lin-Default"
             ]
         },
         {
-            "name": "Make-Default-Lin-VK",
+            "name": "Make-Lin-VK-Default",
             "displayName": "Default - Unix Makefiles - Linux (Vulkan)",
             "description": "Default configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
-                "Ninja-Multi-Default-Lin-VK"
+                "Ninja-Lin-VK-Default"
             ]
         },
         {
-            "name": "Make-Profile-Lin-VK",
+            "name": "Make-Lin-VK-Profile",
             "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
             "description": "Profiling configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
-                "Ninja-Multi-Profile-Lin-VK"
+                "Ninja-Lin-VK-Profile"
             ]
         },
         {
@@ -396,43 +396,43 @@
             "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
-                "Ninja-Multi-Scan",
-                "Ninja-Multi-Default-Lin-VK"
+                "Ninja-Scan",
+                "Ninja-Lin-VK-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Default-Mac-MTL",
+            "name": "Ninja-Mac-Default-MTL",
             "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
             "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
-                "Ninja-Multi-Default-Mac"
+                "Ninja-Mac-Default"
             ]
         },
         {
-            "name": "Ninja-Multi-Profile-Mac-MTL",
+            "name": "Ninja-Mac-MTL-Profile",
             "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
-                "Ninja-Multi-Profile",
-                "Ninja-Multi-Default-Mac"
+                "Ninja-Profile",
+                "Ninja-Mac-Default"
             ]
         },
         {
-            "name": "Xcode-Default-Mac-MTL",
+            "name": "Xcode-Mac-Default-MTL",
             "displayName": "Default - Xcode - MacOS (Metal)",
             "description": "Default configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Multi-Default-Mac-MTL"
+                "Ninja-Mac-Default-MTL"
             ]
         },
         {
-            "name": "Xcode-Profile-Mac-MTL",
+            "name": "Xcode-Mac-MTL-Profile",
             "displayName": "Profiling - Xcode - MacOS (Metal)",
             "description": "Profiling configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Multi-Profile-Mac-MTL"
+                "Ninja-Mac-MTL-Profile"
             ]
         },
         {
@@ -441,8 +441,8 @@
             "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Multi-Scan",
-                "Ninja-Multi-Default-Mac"
+                "Ninja-Scan",
+                "Ninja-Mac-Default"
             ]
         }
     ],
@@ -478,51 +478,51 @@
             }
         },
         {
-            "name": "Ninja-Multi-Win-DX-Debug",
+            "name": "Ninja-Win-DX-Debug",
             "displayName": "Debug - Ninja Multi-Config - Windows (DirectX)",
             "description": "Debug build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Win-DX",
+            "configurePreset": "Ninja-Win-DX-Default",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Win-DX-Release",
+            "name": "Ninja-Win-DX-Release",
             "displayName": "Release - Ninja Multi-Config - Windows (DirectX)",
             "description": "Release build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Win-DX",
+            "configurePreset": "Ninja-Win-DX-Default",
             "configuration": "Release"
         },
         {
-            "name": "Ninja-Multi-Win-DX-Profile",
+            "name": "Ninja-Win-DX-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-Win-DX",
+            "configurePreset": "Ninja-Win-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
-            "name": "Ninja-Multi-Win-VK-Debug",
+            "name": "Ninja-Win-VK-Debug",
             "displayName": "Debug - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Debug build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Win-VK",
+            "configurePreset": "Ninja-Win-VK-Default",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Win-VK-Release",
+            "name": "Ninja-Win-VK-Release",
             "displayName": "Release - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Release build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Win-VK",
+            "configurePreset": "Ninja-Win-VK-Default",
             "configuration": "Release"
         },
         {
-            "name": "Ninja-Multi-Win-VK-Profile",
+            "name": "Ninja-Win-VK-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-Win-VK",
+            "configurePreset": "Ninja-Win-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -530,7 +530,7 @@
             "displayName": "Debug - VS2019 - Windows x64 (DirectX)",
             "description": "Debug build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win64-DX",
+            "configurePreset": "VS2019-Win64-DX-Default",
             "configuration": "Debug"
         },
         {
@@ -538,7 +538,7 @@
             "displayName": "Debug - VS2019 - Windows x86 (DirectX)",
             "description": "Debug build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win32-DX",
+            "configurePreset": "VS2019-Win32-DX-Default",
             "configuration": "Debug"
         },
         {
@@ -546,7 +546,7 @@
             "displayName": "Release - VS2019 - Windows x64 (DirectX)",
             "description": "Release build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win64-DX",
+            "configurePreset": "VS2019-Win64-DX-Default",
             "configuration": "Release"
         },
         {
@@ -554,7 +554,7 @@
             "displayName": "Release - VS2019 - Windows x86 (DirectX)",
             "description": "Release build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win32-DX",
+            "configurePreset": "VS2019-Win32-DX-Default",
             "configuration": "Release"
         },
         {
@@ -562,7 +562,7 @@
             "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
             "description": "Profiling build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Profile-Win64-DX",
+            "configurePreset": "VS2019-Win64-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -570,7 +570,7 @@
             "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
             "description": "Profiling build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Profile-Win32-DX",
+            "configurePreset": "VS2019-Win32-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -578,7 +578,7 @@
             "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
             "description": "Scanning build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Scan-Win64-DX",
+            "configurePreset": "VS2019-Win64-DX-Scan",
             "configuration": "Debug"
         },
         {
@@ -586,7 +586,7 @@
             "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
             "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Scan-Win32-DX",
+            "configurePreset": "VS2019-Win32-DX-Scan",
             "configuration": "Debug"
         },
 
@@ -595,7 +595,7 @@
             "displayName": "Debug - VS2019 - Windows x64 (Vulkan)",
             "description": "Debug build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win64-VK",
+            "configurePreset": "VS2019-Win64-VK-Default",
             "configuration": "Debug"
         },
         {
@@ -603,7 +603,7 @@
             "displayName": "Debug - VS2019 - Windows x86 (Vulkan)",
             "description": "Debug build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win32-VK",
+            "configurePreset": "VS2019-Win32-VK-Default",
             "configuration": "Debug"
         },
         {
@@ -611,7 +611,7 @@
             "displayName": "Release - VS2019 - Windows x64 (Vulkan)",
             "description": "Release build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win64-VK",
+            "configurePreset": "VS2019-Win64-VK-Default",
             "configuration": "Release"
         },
         {
@@ -619,7 +619,7 @@
             "displayName": "Release - VS2019 - Windows x86 (Vulkan)",
             "description": "Release build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Default-Win32-VK",
+            "configurePreset": "VS2019-Win32-VK-Default",
             "configuration": "Release"
         },
         {
@@ -627,7 +627,7 @@
             "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
             "description": "Profiling build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Profile-Win64-VK",
+            "configurePreset": "VS2019-Win64-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -635,7 +635,7 @@
             "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
             "description": "Profiling build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Profile-Win32-VK",
+            "configurePreset": "VS2019-Win32-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -643,7 +643,7 @@
             "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
             "description": "Scanning build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Scan-Win64-VK",
+            "configurePreset": "VS2019-Win64-VK-Scan",
             "configuration": "Debug"
         },
         {
@@ -651,31 +651,31 @@
             "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
             "description": "Scanning build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Scan-Win32-VK",
+            "configurePreset": "VS2019-Win32-VK-Scan",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Lin-VK-Debug",
+            "name": "Ninja-Lin-VK-Debug",
             "displayName": "Debug - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Debug build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Lin-VK",
+            "configurePreset": "Ninja-Lin-VK-Default",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Lin-VK-Release",
+            "name": "Ninja-Lin-VK-Release",
             "displayName": "Release - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Release build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Lin-VK",
+            "configurePreset": "Ninja-Lin-VK-Default",
             "configuration": "Release"
         },
         {
-            "name": "Ninja-Multi-Lin-VK-Profile",
+            "name": "Ninja-Lin-VK-Profile",
             "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-Lin-VK",
+            "configurePreset": "Ninja-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -683,7 +683,7 @@
             "displayName": "Debug - Unix Makefiles - Linux (Vulkan)",
             "description": "Debug build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Default-Lin-VK",
+            "configurePreset": "Make-Lin-VK-Default",
             "configuration": "Debug"
         },
         {
@@ -691,7 +691,7 @@
             "displayName": "Release - Unix Makefiles - Linux (Vulkan)",
             "description": "Release build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Default-Lin-VK",
+            "configurePreset": "Make-Lin-VK-Default",
             "configuration": "Release"
         },
         {
@@ -699,7 +699,7 @@
             "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
             "description": "Profiling build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Profile-Lin-VK",
+            "configurePreset": "Make-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -711,27 +711,27 @@
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Mac-MTL-Debug",
+            "name": "Ninja-Mac-MTL-Debug",
             "displayName": "Debug - Ninja Multi-Config - MacOS (Metal)",
             "description": "Debug build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Mac-MTL",
+            "configurePreset": "Ninja-Mac-Default-MTL",
             "configuration": "Debug"
         },
         {
-            "name": "Ninja-Multi-Mac-MTL-Release",
+            "name": "Ninja-Mac-MTL-Release",
             "displayName": "Release - Ninja Multi-Config - MacOS (Metal)",
             "description": "Release build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-Default-Mac-MTL",
+            "configurePreset": "Ninja-Mac-Default-MTL",
             "configuration": "Release"
         },
         {
-            "name": "Ninja-Multi-Mac-MTL-Profile",
+            "name": "Ninja-Mac-MTL-Profile",
             "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Multi-Profile-Mac-MTL",
+            "configurePreset": "Ninja-Mac-MTL-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
@@ -739,7 +739,7 @@
             "displayName": "Debug - Xcode - MacOS (Metal)",
             "description": "Debug build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Default-Mac-MTL",
+            "configurePreset": "Xcode-Mac-Default-MTL",
             "configuration": "Debug"
         },
         {
@@ -747,7 +747,7 @@
             "displayName": "Release - Xcode - MacOS (Metal)",
             "description": "Release build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Default-Mac-MTL",
+            "configurePreset": "Xcode-Mac-Default-MTL",
             "configuration": "Release"
         },
         {
@@ -755,7 +755,7 @@
             "displayName": "Profiling - Xcode - MacOS (Metal)",
             "description": "Profiling build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Profile-Mac-MTL",
+            "configurePreset": "Xcode-Mac-MTL-Profile",
             "configuration": "RelWithDebInfo"
         },
         {
