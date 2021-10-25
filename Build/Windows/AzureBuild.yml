@@ -8,30 +8,20 @@ parameters:
 
 steps:
 
-  - script: |
-      if exist $(buildDir) (
-        echo Build directory '$(buildDir)' already exists, removing all contents...
-        rmdir /S /Q $(buildDir)
-      )
-      mkdir $(buildDir)
-    displayName: 'Make build directories for $(platform) $(configuration)'
-
   - task: CMake@1
     displayName: 'Check CMake version'
     inputs:
       cmakeArgs: '--version'
 
   - task: CMake@1
-    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
+    displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
-      workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -A $(platform) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - task: CMake@1
-    displayName: 'Build with $(generatorName) for $(platform) $(configuration)'
+    displayName: 'Build with preset $(cmake.BuildPreset)'
     inputs:
-      workingDirectory: $(buildDir)
-      cmakeArgs: '--build . --config $(configuration) --target install --parallel'
+      cmakeArgs: '--preset $(cmake.BuildPreset) --target install'
 
   - script: |
       setlocal enabledelayedexpansion
@@ -47,13 +37,12 @@ steps:
     displayName: 'Run all unit-tests from install directory'
 
   - script: |
-      copy $(rootDir)\README.md README.md
-      echo Methane Kit v. $(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >Build.txt
-    workingDirectory: '$(installDir)'
+      copy README.md $(installDir)\README.md
+      echo Methane Kit v.$(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >$(installDir)\Build.txt
     displayName: 'Copy ReadMe and write build information'
 
   - task: CopyFiles@2
-    displayName: 'Copy install artifacts for $(platform) $(configuration)'
+    displayName: 'Copy install artifacts of build $(cmake.BuildPreset)'
     inputs:
       SourceFolder: $(installDir)
       Contents: '**\*'
@@ -68,12 +57,10 @@ steps:
       searchFolder: '$(Build.ArtifactStagingDirectory)\Tests'
       mergeTestResults: true
       failTaskOnFailedTests: true
-      buildPlatform: $(platform)
-      buildConfiguration: $(configuration)
-      testRunTitle: 'Methane Tests $(platform) $(configuration)'
+      testRunTitle: 'Methane Tests $(cmake.BuildPreset)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish install artifacts for $(platform) $(configuration)'
+    displayName: 'Publish install built artifacts $(cmake.BuildPreset)'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: MethaneKit-$(buildName)_v$(product.Version.Full)
+      artifactName: MethaneKit-$(cmake.BuildPreset)_v$(product.Version.Full)

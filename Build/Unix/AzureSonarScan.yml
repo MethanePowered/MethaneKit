@@ -10,27 +10,13 @@ parameters:
     default: []
 
 steps:
-  - script: |
-      if [ -d $(buildDir) ]; then
-        echo Directory '$(buildDir)' already exists, removing all contents...
-        rmdir -rf $(buildDir)
-      fi
-      mkdir -p $(buildDir)
-    displayName: 'Make build directories for $(platform) $(configuration)'
-
   - ${{ each step in parameters.extraInitSteps }}:
     - ${{ step }}
 
   - task: CMake@1
-    displayName: 'Check CMake version'
+    displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
-      cmakeArgs: '--version'
-
-  - task: CMake@1
-    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
-    inputs:
-      workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -DCMAKE_BUILD_TYPE=$(configuration) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)' -DCMAKE_BUILD_TYPE=Debug
 
   - script: |
       curl '$(sonar.BuildWrapperUrl)' --output build-wrapper.zip
@@ -41,7 +27,7 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(sonar.ScannerVersion)"'
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(cmake.ConfigurePreset) | "$(sonar.ScannerVersion)"'
       path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
@@ -64,10 +50,10 @@ steps:
         sonar.coverageReportPaths=$(installDir)/Tests/Coverage/Report/SonarQube.xml
 
   - script: |
-      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
+      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput cmake --build . --config $(cmake.BuildPreset) --target install
     workingDirectory: $(buildDir)
     continueOnError: true
-    displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+    displayName: 'Build under Sonar Build-Wrapper with preset $(cmake.BuildPreset)'
 
   - ${{ each step in parameters.extraScanSteps }}:
     - ${{ step }}
@@ -79,7 +65,7 @@ steps:
       reports: $(coverageReports)
       targetdir: '$(installDir)/Tests/Coverage/Report'
       reporttypes: 'SonarQube'
-      title: 'Methane Tests Code Coverage on $(platform)'
+      title: 'Methane Tests Code Coverage for $(cmake.BuildPreset)'
       tag: '$(product.Version.Full)'
 
   - task: SonarCloudAnalyze@1

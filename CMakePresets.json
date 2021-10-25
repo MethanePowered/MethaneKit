@@ -391,7 +391,7 @@
             ]
         },
         {
-            "name": "Make-Scan-Lin-VK",
+            "name": "Make-Lin-VK-Scan",
             "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
             "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
@@ -401,7 +401,7 @@
             ]
         },
         {
-            "name": "Ninja-Mac-Default-MTL",
+            "name": "Ninja-Mac-MTL-Default",
             "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
             "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
@@ -418,12 +418,12 @@
             ]
         },
         {
-            "name": "Xcode-Mac-Default-MTL",
+            "name": "Xcode-Mac-MTL-Default",
             "displayName": "Default - Xcode - MacOS (Metal)",
             "description": "Default configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Mac-Default-MTL"
+                "Ninja-Mac-MTL-Default"
             ]
         },
         {
@@ -436,7 +436,7 @@
             ]
         },
         {
-            "name": "Xcode-Scan-Mac-MTL",
+            "name": "Xcode-Mac-MTL-Scan",
             "displayName": "Scanning - Xcode - MacOS (Metal)",
             "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
@@ -707,7 +707,7 @@
             "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
             "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Scan-Lin-VK",
+            "configurePreset": "Make-Lin-VK-Scan",
             "configuration": "Debug"
         },
         {
@@ -715,7 +715,7 @@
             "displayName": "Debug - Ninja Multi-Config - MacOS (Metal)",
             "description": "Debug build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-Default-MTL",
+            "configurePreset": "Ninja-Mac-MTL-Default",
             "configuration": "Debug"
         },
         {
@@ -723,7 +723,7 @@
             "displayName": "Release - Ninja Multi-Config - MacOS (Metal)",
             "description": "Release build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Ninja-Mac-Default-MTL",
+            "configurePreset": "Ninja-Mac-MTL-Default",
             "configuration": "Release"
         },
         {
@@ -739,7 +739,7 @@
             "displayName": "Debug - Xcode - MacOS (Metal)",
             "description": "Debug build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-Default-MTL",
+            "configurePreset": "Xcode-Mac-MTL-Default",
             "configuration": "Debug"
         },
         {
@@ -747,7 +747,7 @@
             "displayName": "Release - Xcode - MacOS (Metal)",
             "description": "Release build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Mac-Default-MTL",
+            "configurePreset": "Xcode-Mac-MTL-Default",
             "configuration": "Release"
         },
         {
@@ -763,7 +763,7 @@
             "displayName": "Scanning - Xcode - MacOS (Metal)",
             "description": "Scanning build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
-            "configurePreset": "Xcode-Scan-Mac-MTL",
+            "configurePreset": "Xcode-Mac-MTL-Scan",
             "configuration": "Debug"
         }
     ]

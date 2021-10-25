@@ -3,24 +3,10 @@
 
 steps:
 
-  - script: |
-      if exist $(buildDir) (
-        echo Build directory '$(buildDir)' already exists, removing all contents...
-        rmdir /S /Q $(buildDir)
-      )
-      mkdir $(buildDir)
-    displayName: 'Make build directories for $(platform) $(configuration)'
-
   - task: CMake@1
-    displayName: 'Check CMake version'
+    displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
-      cmakeArgs: '--version'
-
-  - task: CMake@1
-    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
-    inputs:
-      workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -A $(platform) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
+      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - powershell: |
       Invoke-WebRequest -Uri '$(sonar.BuildWrapperUrl)' -OutFile 'build-wrapper.zip'
@@ -36,7 +22,7 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(sonar.ScannerVersion)"'
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(cmake.ConfigurePreset) | "$(sonar.ScannerVersion)"'
       path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
@@ -62,9 +48,9 @@ steps:
 
   - script: |
       call "$(vcVarsBatFile)"
-      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
+      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput cmake --build . --config $(cmake.BuildPreset) --target install
     workingDirectory: $(buildDir)
-    displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+    displayName: 'Build under Sonar Build-Wrapper with $(cmake.BuildPreset)'
 
   - script: |
       setlocal enabledelayedexpansion
@@ -86,7 +72,7 @@ steps:
       reports: '$(installDir)\Tests\Coverage\*.xml'
       targetdir: '$(installDir)\Tests\Coverage\Report'
       reporttypes: 'Cobertura;SonarQube'
-      title: 'Methane Tests Code Coverage on Windows $(platform)'
+      title: 'Methane Tests Code Coverage for $(cmake.BuildPreset)'
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1
@@ -118,4 +104,4 @@ steps:
     inputs:
       targetPath: '$(Build.ArtifactStagingDirectory)'
       archiveFilePatterns: '*.zip'
-      artifactName: MethaneKit-$(buildName)-Errors_$(product.Version.Full)
+      artifactName: MethaneKit-$(cmake.BuildPreset)-Errors_$(product.Version.Full)
