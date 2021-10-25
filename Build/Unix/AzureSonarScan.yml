@@ -16,6 +16,7 @@ steps:
   - task: CMake@1
     displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
+      workingDirectory: $(Build.SourcesDirectory)
       cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - script: |
@@ -50,8 +51,8 @@ steps:
         sonar.coverageReportPaths=$(installDir)/Tests/Coverage/Report/SonarQube.xml
 
   - script: |
-      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput cmake --build . --config $(cmake.BuildPreset) --target install
-    workingDirectory: $(buildDir)
+      $(sonar.BuildWrapperExe) --out-dir $(buildDir)/BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
+    workingDirectory: $(Build.SourcesDirectory)
     continueOnError: true
     displayName: 'Build under Sonar Build-Wrapper with preset $(cmake.BuildPreset)'
 

@@ -16,12 +16,14 @@ steps:
   - task: CMake@1
     displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
+      workingDirectory: $(Build.SourcesDirectory)
       cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - task: CMake@1
     displayName: 'Build with preset $(cmake.BuildPreset)'
     inputs:
-      cmakeArgs: '--preset $(cmake.BuildPreset) --target install'
+      workingDirectory: $(Build.SourcesDirectory)
+      cmakeArgs: '--build --preset $(cmake.BuildPreset) --target install'
 
   - script: |
       setlocal enabledelayedexpansion
