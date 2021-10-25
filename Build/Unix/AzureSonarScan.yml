@@ -16,7 +16,7 @@ steps:
   - task: CMake@1
     displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
-      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)' -DCMAKE_BUILD_TYPE=Debug
+      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - script: |
       curl '$(sonar.BuildWrapperUrl)' --output build-wrapper.zip
