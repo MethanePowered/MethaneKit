@@ -40,7 +40,8 @@ steps:
 
   - script: |
       copy README.md $(installDir)\README.md
-      echo Methane Kit v.$(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) >$(installDir)\Build.txt
+      echo Methane Kit v.$(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) > $(installDir)\Build.txt
+    workingDirectory: $(Build.SourcesDirectory)
     displayName: 'Copy ReadMe and write build information'
 
   - task: CopyFiles@2

@@ -51,7 +51,7 @@ steps:
         sonar.coverageReportPaths=$(installDir)/Tests/Coverage/Report/SonarQube.xml
 
   - script: |
-      $(sonar.BuildWrapperExe) --out-dir $(buildDir)/BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
+      $(buildDir)/$(sonar.BuildWrapperExe) --out-dir $(buildDir)/BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
     workingDirectory: $(Build.SourcesDirectory)
     continueOnError: true
     displayName: 'Build under Sonar Build-Wrapper with preset $(cmake.BuildPreset)'

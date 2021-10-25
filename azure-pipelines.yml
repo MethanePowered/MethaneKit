@@ -57,8 +57,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Default'
     cmake.BuildPreset: 'VS2019-Win64-DX-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -71,8 +71,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win64-DX-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -87,8 +87,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Default'
     cmake.BuildPreset: 'VS2019-Win32-DX-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -99,10 +99,10 @@ jobs:
     vmImage: 'windows-2019'
 
   variables:
-    cmake.ConfigurePreset: 'VS2019-Win32-DX-Default'
+    cmake.ConfigurePreset: 'VS2019-Win32-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win32-DX-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -117,8 +117,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Default'
     cmake.BuildPreset: 'VS2019-Win64-VK-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -133,8 +133,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win64-VK-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -149,8 +149,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Default'
     cmake.BuildPreset: 'VS2019-Win32-VK-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -165,8 +165,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win32-VK-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -182,8 +182,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Scan'
     cmake.BuildPreset: 'VS2019-Win64-DX-Scan'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
     rootDir: '..\..\..\..'
     vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
     sonar.ProjectKey: 'egorodet_MethaneKit_Windows'

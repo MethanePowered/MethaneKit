@@ -48,7 +48,7 @@ steps:
         sonar.verbose=$(sonar.Verbose)
 
   - script: |
-      $(sonar.BuildWrapperExe) --out-dir $(buildDir)\BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
+      $(buildDir)\$(sonar.BuildWrapperExe) --out-dir $(buildDir)\BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
     workingDirectory: $(Build.SourcesDirectory)
     displayName: 'Build under Sonar Build-Wrapper with $(cmake.BuildPreset)'
 
