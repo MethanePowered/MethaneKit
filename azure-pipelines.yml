@@ -55,8 +55,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Default'
     cmake.BuildPreset: 'VS2019-Win64-DX-Release'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -69,8 +68,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win64-DX-Profile'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -85,8 +83,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Default'
     cmake.BuildPreset: 'VS2019-Win32-DX-Release'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -99,8 +96,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win32-DX-Profile'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -115,8 +111,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Default'
     cmake.BuildPreset: 'VS2019-Win64-VK-Release'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -131,8 +126,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win64-VK-Profile'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -147,8 +141,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Default'
     cmake.BuildPreset: 'VS2019-Win32-VK-Release'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -163,8 +156,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win32-VK-Profile'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -180,8 +172,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Scan'
     cmake.BuildPreset: 'VS2019-Win64-DX-Scan'
-    buildDir: 'Build\Output\$(Agent.JobName)\Build'
-    installDir: 'Build\Output\$(Agent.JobName)\Install'
+    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
+    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
     sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
@@ -198,8 +190,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Release'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -212,8 +203,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -229,8 +219,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Scan'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
     coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
@@ -274,8 +264,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Default'
     cmake.BuildPreset: 'Make-Lin-VK-Release'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -294,8 +283,7 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Profile'
     cmake.BuildPreset: 'Make-Lin-VK-Profile'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -316,8 +304,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Scan'
     cmake.BuildPreset: 'Make-Lin-VK-Scan'
-    buildDir: 'Build/Output/$(Agent.JobName)/Build'
-    installDir: 'Build/Output/$(Agent.JobName)/Install'
+    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
     coverageReports: '$(buildDir)/MethaneTestCoverage.info'
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
