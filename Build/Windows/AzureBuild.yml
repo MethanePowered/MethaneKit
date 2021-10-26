@@ -41,11 +41,14 @@ steps:
   - script: |
       copy README.md $(installDir)\README.md
       echo Methane Kit v.$(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) > $(installDir)\Build.txt
+      echo   - Built with CMake configure preset $(cmake.ConfigurePreset) and build preset $(cmake.BuildPreset) >> $(installDir)\Build.txt
+      echo   - Built on agent $(Agent.Name), $(Agent.OS), $(Agent.OSArchitecture): >> $(installDir)/Build.txt
+      systeminfo >> $(installDir)\Build.txt
     workingDirectory: $(Build.SourcesDirectory)
     displayName: 'Copy ReadMe and write build information'
 
   - task: CopyFiles@2
-    displayName: 'Copy install artifacts of build $(cmake.BuildPreset)'
+    displayName: 'Copy install artifacts to staging directory'
     inputs:
       SourceFolder: $(installDir)
       Contents: '**\*'
@@ -60,10 +63,10 @@ steps:
       searchFolder: '$(Build.ArtifactStagingDirectory)\Tests'
       mergeTestResults: true
       failTaskOnFailedTests: true
-      testRunTitle: 'Methane Tests $(cmake.BuildPreset)'
+      testRunTitle: 'Methane Tests $(Agent.JobName)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish install built artifacts $(cmake.BuildPreset)'
+    displayName: 'Publish install artifacts'
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: MethaneKit-$(cmake.BuildPreset)_v$(product.Version.Full)
+      artifactName: MethaneKit-$(Agent.JobName)_v$(product.Version.Full)

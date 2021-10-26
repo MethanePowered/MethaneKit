@@ -58,7 +58,7 @@ steps:
       mkdir Results
       mkdir Coverage
       for /r "." %%a in (*Test.exe) do (
-        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+        "$(Build.SourcesDirectory)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0

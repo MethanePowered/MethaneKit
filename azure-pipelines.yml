@@ -49,7 +49,7 @@ variables:
 
 jobs:
 
-- job: Win64_DX_Release
+- job: Win64-DX-Release
 
   pool:
     vmImage: 'windows-2019'
@@ -57,13 +57,13 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Default'
     cmake.BuildPreset: 'VS2019-Win64-DX-Release'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Win64_DX_Profiling
+- job: Win64-DX-Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -71,15 +71,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win64-DX-Profile'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
     parameters:
       runTests: false
 
-- job: Win32_DX_Release
+- job: Win32-DX-Release
 
   pool:
     vmImage: 'windows-2019'
@@ -87,13 +87,13 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Default'
     cmake.BuildPreset: 'VS2019-Win32-DX-Release'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Win32_DX_Profiling
+- job: Win32-DX-Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -101,15 +101,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win32-DX-Profile'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
   - template: Build/Windows/AzureBuild.yml
     parameters:
       runTests: false
 
-- job: Win64_VK_Release
+- job: Win64-VK-Release
 
   pool:
     vmImage: 'windows-2019'
@@ -117,15 +117,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Default'
     cmake.BuildPreset: 'VS2019-Win64-VK-Release'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
       parameters:
         runTests: false
 
-- job: Win64_VK_Profiling
+- job: Win64-VK-Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -133,15 +133,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win64-VK-Profile'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
       parameters:
         runTests: false
 
-- job: Win32_VK_Release
+- job: Win32-VK-Release
 
   pool:
     vmImage: 'windows-2019'
@@ -149,15 +149,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Default'
     cmake.BuildPreset: 'VS2019-Win32-VK-Release'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
       parameters:
         runTests: false
 
-- job: Win32_VK_Profiling
+- job: Win32-VK-Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -165,15 +165,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win32-VK-Profile'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
 
   steps:
     - template: Build/Windows/AzureBuild.yml
       parameters:
         runTests: false
 
-- job: Win64_DX_Sonar_Scan
+- job: Win64-DX-SonarScan
   continueOnError: true
 
   pool:
@@ -182,10 +182,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Scan'
     cmake.BuildPreset: 'VS2019-Win64-DX-Scan'
-    buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
-    installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
-    rootDir: '..\..\..\..'
-    vcVarsBatFile: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat'
+    buildDir: 'Build\Output\$(Agent.JobName)\Build'
+    installDir: 'Build\Output\$(Agent.JobName)\Install'
     sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
@@ -194,7 +192,7 @@ jobs:
   steps:
     - template: Build/Windows/AzureSonarScan.yml
 
-- job: MacOS_MTL_Release
+- job: MacOS-MTL-Release
 
   pool:
     vmImage: 'macOS-10.15'
@@ -202,13 +200,13 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
 
-- job: MacOS_MTL_Profiling
+- job: MacOS-MTL-Profiling
 
   pool:
     vmImage: 'macOS-10.15'
@@ -216,15 +214,15 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
     parameters:
       runTests: false
 
-- job: MacOS_MTL_Sonar_Scan
+- job: MacOS-MTL-SonarScan
   continueOnError: true
 
   pool:
@@ -233,8 +231,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Scan'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
     coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
     sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
@@ -270,7 +268,7 @@ jobs:
             workingDirectory: '$(installDir)/Tests'
             displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
-- job: Ubuntu_VK_Release
+- job: Ubuntu-VK-Release
 
   pool:
     vmImage: 'ubuntu-20.04'
@@ -278,8 +276,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Default'
     cmake.BuildPreset: 'Make-Lin-VK-Release'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -290,7 +288,7 @@ jobs:
             sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
-- job: Ubuntu_VK_Profiling
+- job: Ubuntu-VK-Profiling
 
   pool:
     vmImage: 'ubuntu-20.04'
@@ -298,8 +296,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Profile'
     cmake.BuildPreset: 'Make-Lin-VK-Profile'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -311,7 +309,7 @@ jobs:
             sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
-- job: Ubuntu_VK_Sonar_Scan
+- job: Ubuntu-VK-SonarScan
   continueOnError: true
 
   pool:
@@ -320,8 +318,8 @@ jobs:
   variables:
     cmake.ConfigurePreset: 'Make-Lin-VK-Scan'
     cmake.BuildPreset: 'Make-Lin-VK-Scan'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    buildDir: 'Build/Output/$(Agent.JobName)/Build'
+    installDir: 'Build/Output/$(Agent.JobName)/Install'
     coverageReports: '$(buildDir)/MethaneTestCoverage.info'
     sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
