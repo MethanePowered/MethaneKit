@@ -104,4 +104,4 @@ steps:
     inputs:
       targetPath: '$(Build.ArtifactStagingDirectory)'
       archiveFilePatterns: '*.zip'
-      artifactName: MethaneKit-$(cmake.BuildPreset)-Errors_$(product.Version.Full)
+      artifactName: MethaneKit_$(cmake.BuildPreset)_Errors_$(product.Version.Full)

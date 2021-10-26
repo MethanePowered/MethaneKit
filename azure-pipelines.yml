@@ -10,7 +10,6 @@ trigger:
     exclude:
     - Build/Windows/Build.bat
     - Build/Unix/Build.sh
-    - CMakeSettings.json
     - README.md
     - LICENSE
 
@@ -22,7 +21,6 @@ pr:
     exclude:
     - README.md
     - LICENSE
-    - CMakeSettings.json
 
 resources:
   repositories:
@@ -49,7 +47,7 @@ variables:
 
 jobs:
 
-- job: Win64-DX-Release
+- job: Win64_DX_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -63,7 +61,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Win64-DX-Profiling
+- job: Win64_DX_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -79,7 +77,7 @@ jobs:
     parameters:
       runTests: false
 
-- job: Win32-DX-Release
+- job: Win32_DX_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -93,7 +91,7 @@ jobs:
   steps:
   - template: Build/Windows/AzureBuild.yml
 
-- job: Win32-DX-Profiling
+- job: Win32_DX_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -109,7 +107,7 @@ jobs:
     parameters:
       runTests: false
 
-- job: Win64-VK-Release
+- job: Win64_VK_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -125,7 +123,7 @@ jobs:
       parameters:
         runTests: false
 
-- job: Win64-VK-Profiling
+- job: Win64_VK_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -141,7 +139,7 @@ jobs:
       parameters:
         runTests: false
 
-- job: Win32-VK-Release
+- job: Win32_VK_Release
 
   pool:
     vmImage: 'windows-2019'
@@ -157,7 +155,7 @@ jobs:
       parameters:
         runTests: false
 
-- job: Win32-VK-Profiling
+- job: Win32_VK_Profiling
 
   pool:
     vmImage: 'windows-2019'
@@ -173,7 +171,7 @@ jobs:
       parameters:
         runTests: false
 
-- job: Win64-DX-SonarScan
+- job: Win64_DX_SonarScan
   continueOnError: true
 
   pool:
@@ -192,7 +190,7 @@ jobs:
   steps:
     - template: Build/Windows/AzureSonarScan.yml
 
-- job: MacOS-MTL-Release
+- job: MacOS_MTL_Release
 
   pool:
     vmImage: 'macOS-10.15'
@@ -206,7 +204,7 @@ jobs:
   steps:
   - template: Build/Unix/AzureBuild.yml
 
-- job: MacOS-MTL-Profiling
+- job: MacOS_MTL_Profiling
 
   pool:
     vmImage: 'macOS-10.15'
@@ -222,7 +220,7 @@ jobs:
     parameters:
       runTests: false
 
-- job: MacOS-MTL-SonarScan
+- job: MacOS_MTL_SonarScan
   continueOnError: true
 
   pool:
@@ -268,7 +266,7 @@ jobs:
             workingDirectory: '$(installDir)/Tests'
             displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
-- job: Ubuntu-VK-Release
+- job: Ubuntu_VK_Release
 
   pool:
     vmImage: 'ubuntu-20.04'
@@ -288,7 +286,7 @@ jobs:
             sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
-- job: Ubuntu-VK-Profiling
+- job: Ubuntu_VK_Profiling
 
   pool:
     vmImage: 'ubuntu-20.04'
@@ -309,7 +307,7 @@ jobs:
             sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
           displayName: 'Install prerequisite packages on Linux'
 
-- job: Ubuntu-VK-SonarScan
+- job: Ubuntu_VK_SonarScan
   continueOnError: true
 
   pool:
