@@ -266,10 +266,19 @@ cmake --build --preset [BuildPresetName]
 ```
 
 Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to next schema:
-- `[VS2019|Xcode|Make]-[DX|VK|MTL]-[Default|Profile|Scan]` uses platform native build system
-- `Ninja-[Win|Lin|Mac]-[DX|VK|MTL]-[Default|Profile]` uses platform-independent Ninja Multi-Config generator (installed separately)
+```console
+[ConfigPresetName] = [VS2019|Xcode|Make|Ninja]-[Win64|Win32|Lin|Mac]-[DX|VK|MTL]-[Default|Profile|Scan]
+```
 
-Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`.
+| Preset Matrix | VS2019    | Xcode     | Make      | Ninja     |   
+|---------------|-----------|-----------|-----------|-----------|
+| Win64         | DX | VK   | -         | -         | DX | VK   |
+| Win32         | DX | VK   | -         | -         | DX | VK   |
+| Mac           | -         | MTL       | -         | MTL       |
+| Lin           | -         | -         | VK        | VK        |
+
+Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
+"x64/x86 Native Tools Command Prompt for VS2019" command line environment.
 
 [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
 [CMake presets can be used in VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
