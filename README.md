@@ -30,9 +30,9 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 
 |     Platform     | Sonar Quality Gate |  Master Scan Status  |  Develop Scan Status  |
 | ---------------- | ------------------ | -------------------- | --------------------- |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** Metal | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows** DirectX | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** Vulkan | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** Metal | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows** DirectX | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** Vulkan | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 
 [![Windows Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
@@ -230,14 +230,14 @@ Run built applications from the installation directory `Build/Output/Linux/Insta
 In Ubuntu Linux applications should be started from `terminal` app, 
 because of `noexec` permission is set for all applications located in user's home folder.
 
-#### CMake Build Options
+#### CMake Options
 
-Build options can be configured in cmake generator command line:
+Build options listed in table below can be used in cmake generator command line:
 ```console
-cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
+cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 ```
 
-| Build Option Name                               | Default Value           | Release Build           | Profiling Build         | Description             |
+| Build Option Name                               | Initial Value           | Default Preset          | Profiling Preset        | Description             |
 | ----------------------------------------------- | ----------------------- | ----------------------- | ----------------------- | ----------------------- |
 | <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>...</b></sub>   | <sub><b>...</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
 | <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
@@ -256,6 +256,24 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=ON
 | <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable GPU instrumentation to collect command list execution timings</sub> |
 | <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable realtime profiling with Tracy</sub> |
 | <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable Tracy data collection on demand, after client connection</sub> |
+
+#### CMake Presets
+
+[CMake Presets](CMakePresets.json) can be used to configure and build project with a set of predefined settings (CMake 3.21 is required):
+```console
+cmake --preset [ConfigPresetName]
+cmake --build --preset [BuildPresetName]
+```
+
+Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to next schema:
+- `[VS2019|Xcode|Make]-[DX|VK|MTL]-[Default|Profile|Scan]` uses platform native build system
+- `Ninja-[Win|Lin|Mac]-[DX|VK|MTL]-[Default|Profile]` uses platform-independent Ninja Multi-Config generator (installed separately)
+
+Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`.
+
+[Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
+[CMake presets can be used in VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
+to reproduce the same build results on the development system.
 
 ## Supported Development Tools
 
@@ -282,7 +300,7 @@ separately for all supported platforms.
 
 | Master Scan Results  | Windows       | MacOS        | Linux        |     
 | -------------------- | ------------- |------------- |------------- |
-| Scan Build Status    | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Windows_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_Sonar_Scan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | 
+| Scan Build Status    | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Windows_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | 
 | Quality Gate         | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![MacOS Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![Linux Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) |
 | Maintainability      | [![Windows Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![MacOS Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![Linux Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) |
 | Reliability          | [![Windows Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![MacOS Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![Linux Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | 
