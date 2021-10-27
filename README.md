@@ -272,11 +272,11 @@ Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-pre
 
 | Preset Matrix | VS2019    | Xcode     | Make      | Ninja     |   
 |---------------|-----------|-----------|-----------|-----------|
-| Win64         | DX | VK   | -         | -         | -         |
-| Win32         | DX | VK   | -         | -         | -         |
-| Win           | -         | -         | -         | DX | VK   |
-| Mac           | -         | MTL       | -         | MTL       |
-| Lin           | -         | -         | VK        | VK        |
+| Win64         | `DX | VK` | -         | -         | -         |
+| Win32         | `DX | VK` | -         | -         | -         |
+| Win           | -         | -         | -         | `DX | VK` |
+| Mac           | -         | `MTL`     | -         | `MTL`     |
+| Lin           | -         | -         | `VK`      | `VK`      |
 
 Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
 "x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or from VS IDE.
