@@ -211,7 +211,7 @@ void MessageBox::DrawDialog()
 
     int16_t x_pos = g_margin_size;
     int16_t y_pos = g_margin_size;
-    uint32_t text_width = 0U;
+    uint32_t text_width = 600U; // minimum reserved width
     uint32_t text_height = 0U;
     uint32_t line_height = 0U;
 
