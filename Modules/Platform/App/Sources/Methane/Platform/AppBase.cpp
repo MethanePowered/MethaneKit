@@ -166,7 +166,10 @@ AppBase::AppBase(const AppBase::Settings& settings)
 #endif
 }
 
-AppBase::~AppBase() = default;
+AppBase::~AppBase()
+{
+    m_parallel_executor_ptr->wait_for_all();
+}
 
 int AppBase::Run(const RunArgs& args)
 {
