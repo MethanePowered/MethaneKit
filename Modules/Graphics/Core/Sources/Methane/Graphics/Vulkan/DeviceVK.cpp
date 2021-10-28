@@ -541,8 +541,8 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
 System& System::Get()
 {
     META_FUNCTION_TASK();
-    static SystemVK s_system;
-    return s_system;
+    static const auto s_system_ptr = std::make_shared<SystemVK>();
+    return *s_system_ptr;
 }
 
 SystemVK::SystemVK()
@@ -567,12 +567,20 @@ void SystemVK::CheckForChanges()
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(app_env);
     if (required_device_caps.present_to_window && !m_vk_unique_surface)
     {
+        // Temporary surface object is used only to test devices for ability to present to the window
         m_vk_unique_surface = PlatformVK::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);
     }
-    return UpdateGpuDevices(required_device_caps);
+
+    const Ptrs<Device>& gpu_devices = UpdateGpuDevices(required_device_caps);
+
+    if (m_vk_unique_surface)
+    {
+        // When devices are created, temporary surface can be released
+        m_vk_unique_surface.release();
+    }
+    return gpu_devices;
 }
 
 const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
@@ -586,7 +594,7 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& requi
     {
         try
         {
-            AddDevice(std::make_shared<DeviceVK>(vk_physical_device, GetNativeSurface(), required_device_caps));
+            AddDevice(std::make_shared<DeviceVK>(vk_physical_device, m_vk_unique_surface.get(), required_device_caps));
         }
         catch(const DeviceVK::IncompatibleException& ex)
         {

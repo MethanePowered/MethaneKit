@@ -126,9 +126,7 @@ public:
     vk::Instance&       GetNativeInstance() noexcept          { return m_vk_unique_instance.get(); }
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
 
-    const vk::SurfaceKHR& GetNativeSurface() const noexcept   { return m_vk_unique_surface.get(); }
-
-private:
+private:    
     vk::DynamicLoader    m_vk_loader;
     vk::UniqueInstance   m_vk_unique_instance;
     vk::UniqueSurfaceKHR m_vk_unique_surface;

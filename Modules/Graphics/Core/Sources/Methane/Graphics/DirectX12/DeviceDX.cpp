@@ -126,8 +126,8 @@ void DeviceDX::ReleaseNativeDevice()
 System& System::Get()
 {
     META_FUNCTION_TASK();
-    static SystemDX s_system;
-    return s_system;
+    static const auto s_system_ptr = std::make_shared<SystemDX>();
+    return *s_system_ptr;
 }
 
 SystemDX::SystemDX()
