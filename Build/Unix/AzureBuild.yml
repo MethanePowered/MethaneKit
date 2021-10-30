@@ -75,3 +75,4 @@ steps:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: MethaneKit_$(Agent.JobName)_v$(product.Version.Full)
+      storeAsTar: true
