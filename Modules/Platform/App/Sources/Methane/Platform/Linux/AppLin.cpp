@@ -287,7 +287,7 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
         for(size_t x = 0; x < static_cast<size_t>(image_width); x++)
         {
             uint32_t bgra_pixel_data = 0;
-            uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data); // NODONAR
+            uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data); // NOSONAR
             uint8_t* rgba_pixel = &p_image_data[(y * image_width + x) * 4];     // NOSONAR
 
             bgra_pixel[0] = rgba_pixel[2];

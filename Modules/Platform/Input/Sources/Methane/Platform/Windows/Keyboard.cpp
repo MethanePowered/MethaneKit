@@ -37,8 +37,8 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
     if (native_key.w_param == VK_PROCESSKEY)
         return Key::Unknown; // IME notifies that keys have been filtered by setting the virtual key-code to VK_PROCESSKEY
 
-    const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
-    switch(native_key_code)
+    switch(const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF); // NOSONAR - long switch
+           native_key_code)
     {
         case 0x00B: return Key::Num0;
         case 0x002: return Key::Num1;
@@ -165,7 +165,7 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
         case 0x037: return Key::KeyPadMultiply;
         case 0x04A: return Key::KeyPadSubtract;
         default:    return Key::Unknown;
-    };
+    }
 }
 
 Key KeyConverter::GetControlKey(const NativeKey& native_key)

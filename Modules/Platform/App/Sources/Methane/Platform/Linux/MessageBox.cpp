@@ -166,7 +166,7 @@ void MessageBox::Show(const IApp::Message& message)
 void MessageBox::HandleEvent(const xcb_generic_event_t& event)
 {
     META_FUNCTION_TASK();
-    const uint8_t event_type = event.response_type & 0x7f;
+    const uint8_t event_type = event.response_type & 0x7f; // NOSONAR
     switch (event_type)
     {
     case XCB_CLIENT_MESSAGE:
