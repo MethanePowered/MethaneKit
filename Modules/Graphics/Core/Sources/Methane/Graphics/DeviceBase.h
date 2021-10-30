@@ -55,7 +55,7 @@ protected:
 
 private:
     // System should be released only after all its devices, so devices hold it's shared pointer
-    const Ptr<SystemBase> m_system_ptr; 
+    const Ptr<SystemBase> m_system_ptr;
     const std::string     m_adapter_name;
     const bool            m_is_software_adapter;
     Capabilities          m_capabilities;

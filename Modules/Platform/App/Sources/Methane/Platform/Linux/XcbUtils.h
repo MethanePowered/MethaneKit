@@ -27,6 +27,7 @@ X11/XCB utility functions.
 #include <Methane/Platform/Keyboard.h>
 
 #include <string_view>
+#include <stdexcept>
 #include <vector>
 
 #include <xcb/xcb.h>
@@ -65,14 +66,22 @@ struct RgbColor
 struct WMSizeHints
 {
     uint32_t flags;
-    int32_t  x, y;
-    int32_t  width, height;
-    int32_t  min_width, min_height;
-    int32_t  max_width, max_height;
-    int32_t  width_inc, height_inc;
-    int32_t  min_aspect_num, min_aspect_den;
-    int32_t  max_aspect_num, max_aspect_den;
-    int32_t  base_width, base_height;
+    int32_t  x;
+    int32_t  y;
+    int32_t  width;
+    int32_t  height;
+    int32_t  min_width;
+    int32_t  min_height;
+    int32_t  max_width;
+    int32_t  max_height;
+    int32_t  width_inc;
+    int32_t  height_inc;
+    int32_t  min_aspect_num;
+    int32_t  min_aspect_den;
+    int32_t  max_aspect_num;
+    int32_t  max_aspect_den;
+    int32_t  base_width;
+    int32_t  base_height;
     uint32_t win_gravity;
 };
 
@@ -81,6 +90,17 @@ enum class NetWmState : uint32_t
     Remove, // 0: _NET_WM_STATE_REMOVE
     Add,    // 1: _NET_WM_STATE_ADD
     Toggle  // 2: _NET_WM_STATE_TOGGLE
+};
+
+class XcbException : public std::runtime_error
+{
+public:
+    XcbException(std::string_view error_message, const xcb_generic_error_t& error);
+
+    const xcb_generic_error_t& GetErrorCode() const { return m_error; }
+
+private:
+    const xcb_generic_error_t m_error;
 };
 
 uint32_t PackXcbColor(const RgbColor& color);
@@ -99,8 +119,8 @@ void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
                               const std::vector<T>& values)
 {
     constexpr size_t type_size = sizeof(T) * 8;
-    constexpr uint8_t format = static_cast<uint8_t>(std::min(type_size, size_t(32)));
-    const uint32_t data_length = values.size() * type_size / format;
+    constexpr auto format  = static_cast<uint8_t>(std::min(type_size, size_t(32)));
+    const auto data_length = static_cast<uint32_t>(values.size() * type_size / format);
     XcbCheck(xcb_change_property_checked(connection, XCB_PROP_MODE_REPLACE, window, property_id, property_type, format, data_length, values.data()),
              connection, "failed to set window property");
 }
@@ -120,8 +140,8 @@ std::optional<T> GetXcbWindowPropertyValue(xcb_connection_t* connection, xcb_win
 {
     xcb_get_property_cookie_t cookie = xcb_get_property(connection, false, window, atom, XCB_ATOM_ATOM, 0, 32);
     xcb_get_property_reply_t* reply = xcb_get_property_reply(connection, cookie, nullptr);
-    const std::optional <T> value_opt = reply ? std::optional<T>(*reinterpret_cast<T*>(xcb_get_property_value(reply))) : std::nullopt;
-    free(reply);
+    const std::optional <T> value_opt = reply ? std::optional<T>(*reinterpret_cast<T*>(xcb_get_property_value(reply))) : std::nullopt; // NOSONAR
+    free(reply); // NOSONAR
     return value_opt;
 }
 

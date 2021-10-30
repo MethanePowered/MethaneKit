@@ -91,7 +91,7 @@ Modifiers KeyConverter::GetModifierKey() const noexcept
 std::string_view KeyConverter::GetKeyName() const
 {
     META_FUNCTION_TASK();
-    switch (m_key)
+    switch (m_key) // NOSONAR - long switch
     {
         // Control Keys
         case Key::LeftShift: return "LEFT_SHIFT";
@@ -227,7 +227,7 @@ std::string_view KeyConverter::GetKeyName() const
         case Key::Unknown: return "Unknown";
         default:
             META_UNEXPECTED_ARG_DESCR_RETURN(m_key, "", "unexpected key value");
-    };
+    }
 }
 
 std::string KeyConverter::ToString() const

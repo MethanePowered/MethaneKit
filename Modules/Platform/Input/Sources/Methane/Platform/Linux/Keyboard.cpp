@@ -35,7 +35,7 @@ namespace Methane::Platform::Keyboard
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
-    switch (native_key.key)
+    switch (native_key.key) // NOSONAR - long switch
     {
     case XK_0:            return Key::Num0;
     case XK_1:            return Key::Num1;

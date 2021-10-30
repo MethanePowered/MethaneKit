@@ -94,7 +94,7 @@ int AppLin::Run(const RunArgs& args)
         while (xcb_generic_event_t* event = xcb_poll_for_event(m_env.connection))
         {
             HandleEvent(*event);
-            free(event);
+            free(event); // NOSONAR
         }
 
         // If there's a deferred message, schedule it to show for the current window event loop
@@ -150,8 +150,9 @@ bool AppLin::SetFullScreen(bool is_full_screen)
     msg.data.data32[1] = m_state_fullscreen_atom;
     msg.data.data32[2] = XCB_ATOM_NONE;
 
-    Linux::XcbCheck(xcb_send_event_checked(m_env.connection, 1, m_env.window, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
-                                   reinterpret_cast<const char*>(&msg)),
+    Linux::XcbCheck(xcb_send_event_checked(m_env.connection, 1, m_env.window,
+                                           XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                                           reinterpret_cast<const char*>(&msg)), // NOSONAR
                     m_env.connection, "failed to send full screen state message");
 
     Data::FrameSize new_size;
@@ -263,13 +264,13 @@ Data::FrameSize AppLin::InitWindow()
     return frame_size;
 }
 
-static void AddIconData(Data::Chunk icon_data, std::vector<uint32_t>& combined_icons_data)
+static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& combined_icons_data)
 {
     META_FUNCTION_TASK();
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(icon_data.GetDataPtr()), // NOSONAR
+    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(icon_data.GetDataPtr()), // NOSONAR
                                                   static_cast<int>(icon_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count, 4);
 
@@ -286,8 +287,8 @@ static void AddIconData(Data::Chunk icon_data, std::vector<uint32_t>& combined_i
         for(size_t x = 0; x < static_cast<size_t>(image_width); x++)
         {
             uint32_t bgra_pixel_data = 0;
-            uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data);
-            uint8_t* rgba_pixel = &p_image_data[(y * image_width + x) * 4]; // NOSONAR
+            uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data); // NODONAR
+            uint8_t* rgba_pixel = &p_image_data[(y * image_width + x) * 4];     // NOSONAR
 
             bgra_pixel[0] = rgba_pixel[2];
             bgra_pixel[1] = rgba_pixel[1];
@@ -322,7 +323,7 @@ void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSi
 
     Linux::WMSizeHints size_hints{0};
     std::vector<uint32_t> config_values;
-    uint32_t config_value_mask = 0U;
+    uint16_t config_value_mask = 0U;
 
     size_hints.flags      = PSize | PMinSize;
     size_hints.width      = static_cast<int32_t>(frame_size.GetWidth());
@@ -341,7 +342,7 @@ void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSi
         config_values.emplace_back(static_cast<uint32_t>(position->GetY()));
     }
 
-    config_value_mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+    config_value_mask |= XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
     config_values.emplace_back(frame_size.GetWidth());
     config_values.emplace_back(frame_size.GetHeight());
 
@@ -352,14 +353,14 @@ void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSi
     xcb_flush(m_env.connection);
 }
 
-void AppLin::HandleEvent(xcb_generic_event_t& event)
+void AppLin::HandleEvent(const xcb_generic_event_t& event)
 {
     META_FUNCTION_TASK();
-    const uint32_t event_type = event.response_type & 0x7f;
+    const uint8_t event_type = event.response_type & 0x7f; // NOSONAR
     switch (event_type)
     {
     case XCB_CLIENT_MESSAGE:
-        if (m_window_delete_atom && reinterpret_cast<xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom)
+        if (m_window_delete_atom && reinterpret_cast<const xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom) // NOSONAR
             m_is_event_processing = false;
         break;
 
@@ -368,43 +369,43 @@ void AppLin::HandleEvent(xcb_generic_event_t& event)
         break;
 
     case XCB_CONFIGURE_NOTIFY:
-        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event));
+        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_PROPERTY_NOTIFY:
-        OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(event));
+        OnPropertyChanged(reinterpret_cast<const xcb_property_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_MAPPING_NOTIFY:
-        OnKeyboardMappingChanged(reinterpret_cast<const xcb_mapping_notify_event_t&>(event));
+        OnKeyboardMappingChanged(reinterpret_cast<const xcb_mapping_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_KEY_PRESS:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Pressed);
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Pressed); // NOSONAR
         break;
 
     case XCB_KEY_RELEASE:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Released);
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Released); // NOSONAR
         break;
 
     case XCB_BUTTON_PRESS:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Pressed);
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Pressed); // NOSONAR
         break;
 
     case XCB_BUTTON_RELEASE:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Released);
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Released); // NOSONAR
         break;
 
     case XCB_MOTION_NOTIFY:
-        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event));
+        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_ENTER_NOTIFY:
-        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), true);
+        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), true); // NOSONAR
         break;
 
     case XCB_LEAVE_NOTIFY:
-        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), false);
+        OnMouseInWindowChanged(reinterpret_cast<const xcb_enter_notify_event_t&>(event), false); // NOSONAR
         break;
 
     default:

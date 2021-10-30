@@ -59,7 +59,7 @@ private:
     Data::FrameSize InitWindow();
     void SetWindowIcon(const Data::Provider& icon_provider);
     void ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position = nullptr);
-    void HandleEvent(xcb_generic_event_t& event);
+    void HandleEvent(const xcb_generic_event_t& event);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
     void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state);
@@ -70,7 +70,7 @@ private:
 
     MessageBox& GetMessageBox();
 
-    AppEnvironment        m_env{ 0 };
+    AppEnvironment        m_env{ };
     xcb_atom_t            m_window_delete_atom    = XCB_ATOM_NONE;
     xcb_atom_t            m_state_atom            = XCB_ATOM_NONE;
     xcb_atom_t            m_state_hidden_atom     = XCB_ATOM_NONE;

@@ -46,7 +46,7 @@ void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 std::string GetExecutableDir()
 {
     META_FUNCTION_TASK();
-    char exe_path[PATH_MAX] = { 0 };
+    char exe_path[PATH_MAX] = { 0 }; // NOSONAR
     if (readlink(g_proc_self_exe.data(), exe_path, PATH_MAX) <= 0)
         return std::string();
 
@@ -56,7 +56,7 @@ std::string GetExecutableDir()
 std::string GetExecutableFileName()
 {
     META_FUNCTION_TASK();
-    char exe_path[PATH_MAX] = { 0 };
+    char exe_path[PATH_MAX] = { 0 }; // NOSONAR
     if (readlink(g_proc_self_exe.data(), exe_path, PATH_MAX) <= 0)
         return std::string();
 

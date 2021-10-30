@@ -181,12 +181,12 @@ int AppBase::Run(const RunArgs& args)
     }
     catch (const CLI::CallForHelp&)
     {
-        std::cout << help();
+        std::cout << help(); // NOSONAR
         return 1;
     }
     catch (const CLI::ParseError& e)
     {
-        std::cerr << "Failed to parse command line:" << std::endl;
+        std::cerr << "Failed to parse command line:" << std::endl; // NOSONAR
         return exit(e);
     }
 

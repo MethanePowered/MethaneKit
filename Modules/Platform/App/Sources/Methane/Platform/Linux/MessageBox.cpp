@@ -57,8 +57,9 @@ MessageButtonStyle GetMessageButtonStyle(IApp::Message::Type message_type)
     case IApp::Message::Type::Information: return { "OK",       Linux::SystemColor::ButtonBackgroundNormal,  Linux::SystemColor::ButtonBackgroundHovered };
     case IApp::Message::Type::Warning:     return { "Continue", Linux::SystemColor::ButtonBackgroundWarning, Linux::SystemColor::ButtonBackgroundWarningHovered };
     case IApp::Message::Type::Error:       return { "Close",    Linux::SystemColor::ButtonBackgroundError,   Linux::SystemColor::ButtonBackgroundErrorHovered };
+    default:
+        META_UNEXPECTED_ARG_RETURN(message_type, MessageButtonStyle{}); 
     }
-    META_UNEXPECTED_ARG_RETURN(message_type, MessageButtonStyle{});
 }
 
 MessageBox::MessageBox(const AppEnvironment& app_env)
@@ -153,7 +154,7 @@ void MessageBox::Show(const IApp::Message& message)
         while (xcb_generic_event_t* event = xcb_poll_for_event(m_app_env.connection))
         {
             HandleEvent(*event);
-            free(event);
+            free(event); // NOSONAR
         }
     }
 
@@ -165,11 +166,11 @@ void MessageBox::Show(const IApp::Message& message)
 void MessageBox::HandleEvent(const xcb_generic_event_t& event)
 {
     META_FUNCTION_TASK();
-    const uint32_t event_type = event.response_type & 0x7f;
+    const uint8_t event_type = event.response_type & 0x7f;
     switch (event_type)
     {
     case XCB_CLIENT_MESSAGE:
-        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<const xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom);
+        m_is_event_processing = !(m_window_delete_atom && reinterpret_cast<const xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom); // NOSONAR
         break;
 
     case XCB_DESTROY_NOTIFY:
@@ -181,23 +182,23 @@ void MessageBox::HandleEvent(const xcb_generic_event_t& event)
         break;
 
     case XCB_KEY_PRESS:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), true);
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), true); // NOSONAR
         break;
 
     case XCB_KEY_RELEASE:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), false);
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), false); // NOSONAR
         break;
 
     case XCB_BUTTON_PRESS:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), true);
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), true); // NOSONAR
         break;
 
     case XCB_BUTTON_RELEASE:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), false);
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), false); // NOSONAR
         break;
 
     case XCB_MOTION_NOTIFY:
-        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event));
+        OnMouseMoved(reinterpret_cast<const xcb_motion_notify_event_t&>(event)); // NOSONAR
         break;
 
     default:
@@ -237,7 +238,8 @@ void MessageBox::DrawDialog()
         uint32_t line_width  = 0U;
         uint32_t line_ascent = 0U;
         Linux::XcbMeasureText(m_app_env.connection, m_default_font, info_line, line_width, line_height, line_ascent);
-        Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, info_line.length(), m_dialog_window, m_gfx_context, x_pos, y_pos + line_ascent, info_line.data()),
+        Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, static_cast<uint8_t>(info_line.length()), m_dialog_window, m_gfx_context,
+                                                 x_pos, static_cast<int16_t>(y_pos + line_ascent), info_line.data()),
                         m_app_env.connection, "failed to draw message box information text");
         y_pos += line_height;
         text_height += line_height;
@@ -302,14 +304,14 @@ void MessageBox::DrawButtons()
     }};
     Linux::XcbCheck(xcb_change_gc_checked(m_app_env.connection, m_gfx_context, button_label_mask, button_label_values.data()),
                     m_app_env.connection, "failed to change graphics context parameters");
-    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, button_style.label.length(), m_dialog_window, m_gfx_context,
-                                             ok_label_x, ok_label_y + ok_label_ascent, button_style.label.data()),
+    Linux::XcbCheck(xcb_image_text_8_checked(m_app_env.connection, static_cast<uint8_t>(button_style.label.length()), m_dialog_window, m_gfx_context,
+                                             ok_label_x, static_cast<int16_t>(ok_label_y + ok_label_ascent), button_style.label.data()),
                     m_app_env.connection, "failed to draw button label text");
 
     xcb_flush(m_app_env.connection);
 }
 
-void MessageBox::Resize(int width, int height)
+void MessageBox::Resize(int width, int height) const
 {
     META_FUNCTION_TASK();
     Linux::WMSizeHints size_hints{0};

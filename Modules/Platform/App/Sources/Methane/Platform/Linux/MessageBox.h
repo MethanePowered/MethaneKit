@@ -32,11 +32,17 @@ Linux message box implementation with X11/XCB.
 namespace Methane::Platform
 {
 
-class MessageBox
+class MessageBox // NOSONAR
 {
 public:
     explicit MessageBox(const AppEnvironment& app_env);
     ~MessageBox();
+
+    MessageBox(const MessageBox&) = delete;
+    MessageBox(MessageBox&&) = delete;
+
+    MessageBox& operator=(const MessageBox&) = delete;
+    MessageBox& operator=(MessageBox&&) = delete;
 
     void Show(const IApp::Message& message);
 
@@ -44,7 +50,7 @@ private:
     void HandleEvent(const xcb_generic_event_t& event);
     void DrawDialog();
     void DrawButtons();
-    void Resize(int width, int height);
+    void Resize(int width, int height) const;
     void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, bool is_key_pressed);
     void OnMouseMoved(const xcb_motion_notify_event_t& motion_event);
     void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, bool is_button_pressed);

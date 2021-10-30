@@ -45,13 +45,19 @@ class Executor;
 namespace Methane::Platform
 {
 
-class AppBase
+class AppBase // NOSONAR
     : public CLI::App
     , public IApp
 {
 public:
     explicit AppBase(const Settings& settings);
     ~AppBase() override;
+
+    AppBase(const AppBase&) = delete;
+    AppBase(AppBase&&) = delete;
+
+    AppBase& operator=(const AppBase&) = delete;
+    AppBase& operator=(AppBase&&) = delete;
 
     // IApp overrides
     int  Run(const RunArgs& args) override;
@@ -127,12 +133,12 @@ private:
             (obj.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 #ifndef _DEBUG
         }
-        catch (std::exception& e)
+        catch (const std::exception& e) // NOSONAR - general exception type is caught intentionally here
         {
             Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() }, is_error_deferred);
             return false;
         }
-        catch (...)
+        catch (...) // NOSONAR - all exception types are caught intentionally here
         {
             Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." }, is_error_deferred);
             return false;
