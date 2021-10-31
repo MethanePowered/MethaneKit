@@ -175,19 +175,19 @@ Start Command Prompt, go to MethaneKit root directory (don't forget to pull depe
 and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with CMake command line:
 
 ```console
-set OUTPUT_DIR=Build\Output\VisualStudio\x64-MSVC
+set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
 cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
-cmake --build %OUTPUT_DIR%\Build --config Release --target install --parallel
+cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) directly in Visual Studio or [any other IDE of choice](#development-environments)
-with native CMake support and build it using cmake presets from [CMakePresets.json](CMakePresets.json).
+Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in Visual Studio or 
+[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
 
-[Methane Graphics Core](Modules/Graphics/Core) is built using **DirectX 12** graphics API on Windows by default. 
+[Methane Graphics Core](Modules/Graphics/Core) is built using **DirectX 12** graphics API by default on Windows. 
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or 
 by running `Build/Windows/Build.bat --vulkan`.
 
-Run built applications from the installation directory `Build\Output\VisualStudio\Install\Apps`
+Run built applications from the installation directory `Build\Output\VisualStudio\Win64-DX\Install\Apps`
 
 #### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS Build with XCode
 
@@ -197,21 +197,22 @@ and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.s
 ```console
 OUTPUT_DIR=Build/Output/XCode
 cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
+cmake --build $OUTPUT_DIR/Build --config Release --target install
 ```
 
 Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
 using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build the fat binary.
-This option can be omitted with earlier versions of Clang on macOS.
+This option should be omitted with earlier versions of Clang on macOS.
 
-Alternatively you can open root [CMakeLists.txt](CMakeLists.txt) and build it from [any IDE with native CMake support](#development-environments).
+Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in Visual Studio or 
+[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
 by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
 on top of Metal, which is not currently supporting all extensions required by Methane Kit.
 
-Run built applications from the installation directory `Build/Output/XCode/Install/Apps`
+Run built applications from the installation directory `Build/Output/XCode/Install/Apps`.
 
 #### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux Build with Unix Makefiles
 
@@ -221,14 +222,17 @@ and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.s
 ```console
 OUTPUT_DIR=Build/Output/Linux
 cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel
+cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
 ```
 
 [Methane Graphics Core](Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
 
+Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in 
+[any IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
+
 Run built applications from the installation directory `Build/Output/Linux/Install/Apps`.
-In Ubuntu Linux applications should be started from `terminal` app, 
-because of `noexec` permission is set for all applications located in user's home folder.
+Note that in Ubuntu Linux even GUI applications should be started from "Terminal" app, 
+because of `noexec` permission set on user's home directory by security reasons.
 
 #### CMake Options
 
@@ -262,10 +266,10 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 [CMake Presets](CMakePresets.json) can be used to configure and build project with a set of predefined settings (CMake 3.21 is required):
 ```console
 cmake --preset [ConfigPresetName]
-cmake --build --preset [BuildPresetName]
+cmake --build --preset [BuildPresetName] --target install
 ```
 
-Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to next schema:
+Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to the next schema using compatible kets according to preset matrix:
 ```console
 [ConfigPresetName] = [VS2019|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac]-[DX|VK|MTL]-[Default|Profile|Scan]
 ```
@@ -279,7 +283,7 @@ Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-pre
 | Lin           | -         | -         | VK        | VK        |
 
 Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
-"x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or from VS IDE.
+"x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or directly from Visual Studio.
 
 [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
 CMake presets can be also used in [VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
