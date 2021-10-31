@@ -6,9 +6,9 @@
 [![CodeQL](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/egorodet/MethaneKit/actions/workflows/codeql-analysis.yml)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
-- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Metal on MacOS and Vulkan on Linux & Windows.
+- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Metal on MacOS and Vulkan on Linux.
 - **Simplifies modern graphics programming** with object-oriented medium-level graphics API inspired by simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
-- **Provides cross-platform application framework** from CMake-based build toolchain to platform independent application foundation classes.
+- **Provides cross-platform application framework** with CMake build toolchain, platform-independent application foundation classes and native-GUI layer for Windows, Linux and MacOS.
 
 Download [release builds](https://github.com/egorodet/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
 Check latest build status, tests, code coverage and analysis results or get build artifacts from [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI and [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
@@ -263,7 +263,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 
 #### CMake Presets
 
-[CMake Presets](CMakePresets.json) can be used to configure and build project with a set of predefined settings (CMake 3.21 is required):
+[CMake Presets](CMakePresets.json) can be used to configure and build project with a set of predefined options (CMake 3.20 is required):
 ```console
 cmake --preset [ConfigPresetName]
 cmake --build --preset [BuildPresetName] --target install
