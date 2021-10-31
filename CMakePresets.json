@@ -149,8 +149,19 @@
             }
         },
         {
-            "name": "Ninja-Vulkan",
+            "name": "Ninja-Default-Vulkan",
             "inherits": "Ninja-Default",
+            "hidden": true,
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Ninja-Profile-Vulkan",
+            "inherits": "Ninja-Profile",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_GFX_VULKAN_ENABLED": {
@@ -205,7 +216,7 @@
             "displayName": "Default - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Default-Vulkan",
                 "Ninja-Win-Default"
             ]
         },
@@ -223,8 +234,7 @@
             "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Vulkan",
-                "Ninja-Profile",
+                "Ninja-Profile-Vulkan",
                 "Ninja-Win-Default"
             ]
         },
@@ -261,7 +271,7 @@
             "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Default-Vulkan",
                 "VS2019-Win64-DX-Default"
             ]
         },
@@ -271,7 +281,7 @@
             "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Default-Vulkan",
                 "VS2019-Win32-DX-Default"
             ]
         },
@@ -301,7 +311,7 @@
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Profile-Vulkan",
                 "VS2019-Win64-DX-Profile"
             ]
         },
@@ -311,7 +321,7 @@
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Profile-Vulkan",
                 "VS2019-Win32-DX-Profile"
             ]
         },
@@ -341,7 +351,7 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Default-Vulkan",
                 "VS2019-Win64-DX-Scan"
             ]
         },
@@ -351,7 +361,7 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Vulkan",
+                "Ninja-Default-Vulkan",
                 "VS2019-Win32-DX-Scan"
             ]
         },
