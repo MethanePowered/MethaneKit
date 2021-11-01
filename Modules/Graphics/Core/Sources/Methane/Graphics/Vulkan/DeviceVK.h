@@ -98,6 +98,7 @@ private:
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
                             const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
+                            std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
     bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
@@ -125,9 +126,7 @@ public:
     vk::Instance&       GetNativeInstance() noexcept          { return m_vk_unique_instance.get(); }
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
 
-    const vk::SurfaceKHR& GetNativeSurface() const noexcept   { return m_vk_unique_surface.get(); }
-
-private:
+private:    
     vk::DynamicLoader    m_vk_loader;
     vk::UniqueInstance   m_vk_unique_instance;
     vk::UniqueSurfaceKHR m_vk_unique_surface;

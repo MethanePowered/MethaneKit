@@ -51,8 +51,6 @@ ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Shadow Cube", Samples::g_default_app_options_color_with_depth_and_anim), {},
         "Methane tutorial of shadow pass rendering")
-    , m_shadow_pass(false, "Shadow Render Pass")
-    , m_final_pass(true, "Final Render Pass")
 {
     m_view_camera.ResetOrientation({ { 15.0F, 22.5F, -15.0F }, { 0.0F, 7.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
@@ -68,7 +66,7 @@ ShadowCubeApp::ShadowCubeApp()
 ShadowCubeApp::~ShadowCubeApp()
 {
     // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    WaitForRenderComplete();
 }
 
 void ShadowCubeApp::Init()

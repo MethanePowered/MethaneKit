@@ -23,11 +23,23 @@ Linux application environment.
 
 #pragma once
 
+struct xcb_connection_t;
+struct xcb_screen_t;
+struct _XDisplay; // X11 display
+
+#ifndef xcb_window_t
+using xcb_window_t = uint32_t;
+#endif
+
 namespace Methane::Platform
 {
 
 struct AppEnvironment
 {
+    xcb_connection_t* connection;
+    xcb_window_t window;
+    _XDisplay* display;
+    xcb_screen_t* screen;
 };
 
 } // namespace Methane::Platform

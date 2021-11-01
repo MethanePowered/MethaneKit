@@ -62,7 +62,7 @@ TexturedCubeApp::TexturedCubeApp()
 TexturedCubeApp::~TexturedCubeApp()
 {
     // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    WaitForRenderComplete();
 }
 
 void TexturedCubeApp::Init()

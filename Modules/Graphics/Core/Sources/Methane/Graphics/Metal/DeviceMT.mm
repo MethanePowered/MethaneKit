@@ -57,8 +57,8 @@ DeviceMT::~DeviceMT()
 System& System::Get()
 {
     META_FUNCTION_TASK();
-    static SystemMT s_system;
-    return s_system;
+    static const auto s_system_ptr = std::make_shared<SystemMT>();
+    return *s_system_ptr;
 }
 
 SystemMT::~SystemMT()

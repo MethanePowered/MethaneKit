@@ -35,6 +35,14 @@ jobs:
       NAME: CodeQL-${{ matrix.os }}
 
     steps:
+
+    - name: Install prerequisites
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+             sudo apt install libx11-xcb-dev
+        fi
+      shell: bash
+
     - name: Checkout repository
       uses: actions/checkout@v2
       with:

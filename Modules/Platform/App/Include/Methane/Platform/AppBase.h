@@ -23,18 +23,17 @@ Base application interface and platform-independent implementation.
 
 #pragma once
 
+#include "IApp.h"
+
 #include <Methane/Platform/AppView.h>
 #include <Methane/Platform/Input/State.h>
-#include <Methane/Data/Types.h>
 #include <Methane/Memory.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <CLI/App.hpp>
 
 #include <fmt/format.h>
-#include <string>
-#include <vector>
-#include <memory>
+#include <string_view>
 
 namespace tf // NOSONAR
 {
@@ -46,75 +45,43 @@ class Executor;
 namespace Methane::Platform
 {
 
-struct AppEnvironment;
-
-class AppBase : public CLI::App
+class AppBase // NOSONAR
+    : public CLI::App
+    , public IApp
 {
 public:
-    struct Settings
-    {
-        std::string       name;
-        Data::FloatSize   size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        Data::FrameSize   min_size { 640, 480 };
-        bool              is_full_screen = false;
-
-        Settings& SetName(std::string&& new_name) noexcept;
-        Settings& SetSize(Data::FloatSize&& new_size) noexcept;
-        Settings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
-        Settings& SetFullScreen(bool new_full_screen) noexcept;
-    };
-
-    struct RunArgs
-    {
-        int          cmd_arg_count;
-        const char** cmd_arg_values;
-    };
-    
-    struct Message
-    {
-        enum class Type : uint32_t
-        {
-            Information = 0,
-            Warning,
-            Error
-        };
-        
-        Type        type;
-        std::string title;
-        std::string information;
-    };
-
     explicit AppBase(const Settings& settings);
     ~AppBase() override;
 
-    // AppBase interface
-    virtual int  Run(const RunArgs& args);
-    virtual void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
-    virtual void Init();
-    virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds);
-    virtual void StartResizing();
-    virtual void EndResizing();
-    virtual bool Resize(const Data::FrameSize& frame_size, bool is_minimized);
-    virtual bool Update() = 0;
-    virtual bool Render() = 0;
-    virtual void Alert(const Message& msg, bool deferred = false);
-    virtual void SetWindowTitle(const std::string& title_text) = 0;
-    virtual bool SetFullScreen(bool is_full_screen);
-    virtual bool SetKeyboardFocus(bool has_keyboard_focus);
-    virtual void ShowControlsHelp();
-    virtual void ShowCommandLineHelp();
-    virtual void ShowParameters() { /* no parameters are displayed by default, but can be overridden */ }
-    virtual void Close() = 0;
+    AppBase(const AppBase&) = delete;
+    AppBase(AppBase&&) = delete;
+
+    AppBase& operator=(const AppBase&) = delete;
+    AppBase& operator=(AppBase&&) = delete;
+
+    // IApp overrides
+    int  Run(const RunArgs& args) override;
+    void Init() override;
+    void ChangeWindowBounds(const Data::FrameRect& window_bounds) override;
+    void StartResizing() override;
+    void EndResizing() override;
+    bool Resize(const Data::FrameSize& frame_size, bool is_minimized) override;
+    void Alert(const Message& msg, bool deferred = false) override;
+    bool SetFullScreen(bool is_full_screen) override;
+    bool SetKeyboardFocus(bool has_keyboard_focus) override;
+    void ShowControlsHelp() override;
+    void ShowCommandLineHelp() override;
+    void ShowParameters() override { /* no parameters are displayed by default, but can be overridden */ }
 
     bool InitContextWithErrorHandling(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size)
-    { return ExecuteWithErrorHandling("Render Context Initialization", *this, &AppBase::InitContext, env, frame_size); }
+    { return ExecuteWithErrorHandling("Render Context Initialization", true, *this, &AppBase::InitContext, env, frame_size); }
 
-    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", *this, &AppBase::Init); }
-    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", *this, &AppBase::UpdateAndRender); }
+    bool InitWithErrorHandling()            { return ExecuteWithErrorHandling("Application Initialization", true, *this, &AppBase::Init); }
+    bool UpdateAndRenderWithErrorHandling() { return ExecuteWithErrorHandling("Application Rendering", false, *this, &AppBase::UpdateAndRender); }
 
     template<typename FuncType, typename... ArgTypes>
     void ProcessInputWithErrorHandling(FuncType&& func_ptr, ArgTypes&&... args)
-    { ExecuteWithErrorHandling("Application Input", m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
+    { ExecuteWithErrorHandling("Application Input", false, m_input_state, std::forward<FuncType>(func_ptr), std::forward<ArgTypes>(args)...); }
 
     tf::Executor&           GetParallelExecutor() const;
     const Settings&         GetPlatformAppSettings() const noexcept { return m_settings; }
@@ -140,11 +107,17 @@ protected:
     const Message& GetDeferredMessage() const;
     void ResetDeferredMessage() noexcept { m_deferred_message_ptr.reset(); }
 
+    template<typename ScalarType>
+    static ScalarType GetScaledSize(float scaled_size, ScalarType full_size)
+    {
+        return static_cast<ScalarType>(scaled_size < 1.F ? scaled_size * static_cast<float>(full_size) : scaled_size);
+    }
+
 private:
     bool UpdateAndRender();
 
     template<typename ObjectType, typename FuncType, typename... ArgTypes>
-    bool ExecuteWithErrorHandling(const char* stage_name, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
+    bool ExecuteWithErrorHandling(std::string_view stage_name, bool is_error_deferred, ObjectType& obj, FuncType&& func_ptr, ArgTypes&&... args)
 #ifdef _DEBUG
         const
 #endif
@@ -155,18 +128,19 @@ private:
         {
 #else
         META_UNUSED(stage_name);
+        META_UNUSED(is_error_deferred);
 #endif
             (obj.*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 #ifndef _DEBUG
         }
-        catch (std::exception& e)
+        catch (const std::exception& e) // NOSONAR - general exception type is caught intentionally here
         {
-            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() });
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), e.what() }, is_error_deferred);
             return false;
         }
-        catch (...)
+        catch (...) // NOSONAR - all exception types are caught intentionally here
         {
-            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." });
+            Alert({ Message::Type::Error, fmt::format("{} Error", stage_name), "Unknown exception occurred." }, is_error_deferred);
             return false;
         }
 #endif

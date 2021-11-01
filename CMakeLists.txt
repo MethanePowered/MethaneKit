@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.18.0)
 
 if(APPLE)
 
@@ -21,8 +21,6 @@ endif()
 if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
-
-enable_testing()
 
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED        "Enable Vulkan graphics API instead of platform native API" OFF)
@@ -95,6 +93,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_library(MethaneBuildOptions INTERFACE)
 
+if(NOT WIN32 AND NOT APPLE AND UNIX)
+    set(LINUX 1)
+endif()
+
 if(WIN32)
 
     include(FindWindowsSDK)
@@ -126,19 +128,28 @@ elseif(APPLE)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
 
+else(UNIX)
+
+    find_package(X11 REQUIRED)
+    if (NOT X11_xcb_FOUND OR NOT X11_X11_xcb_FOUND)
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libx11-xcb-dev`")
+    endif()
+
 endif()
 
 if (MSVC)
 
     set(VS_STARTUP_PROJECT MethaneAsteroids)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         # Enable multi-threaded build with MSVC
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
         target_compile_options(MethaneBuildOptions INTERFACE
+            # Exception handling mode
+            /EHsc
             # Set maximum warnings level and treat warnings as errors
             /W4 /WX
             # Disable useless warnings
@@ -233,6 +244,7 @@ endif()
 
 if (METHANE_TESTS_BUILD_ENABLED)
     message(STATUS "Methane tests build is enabled")
+    enable_testing()
 endif()
 
 if (METHANE_CHECKS_ENABLED)

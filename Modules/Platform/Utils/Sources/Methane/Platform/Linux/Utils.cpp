@@ -23,14 +23,18 @@ MacOS platform utility functions.
 
 #include <Methane/Platform/MacOS/Utils.hh>
 #include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
 
-#include <stdexcept>
 #include <string_view>
 #include <iostream>
 
+#include <libgen.h>
+#include <unistd.h>
+#include <linux/limits.h>
+
 namespace Methane::Platform
 {
+
+static const std::string_view g_proc_self_exe = "/proc/self/exe";
 
 void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 {
@@ -41,17 +45,27 @@ void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 
 std::string GetExecutableDir()
 {
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
+    META_FUNCTION_TASK();
+    char exe_path[PATH_MAX] = { 0 }; // NOSONAR
+    if (readlink(g_proc_self_exe.data(), exe_path, PATH_MAX) <= 0)
+        return std::string();
+
+    return dirname(exe_path);
 }
 
 std::string GetExecutableFileName()
 {
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
+    META_FUNCTION_TASK();
+    char exe_path[PATH_MAX] = { 0 }; // NOSONAR
+    if (readlink(g_proc_self_exe.data(), exe_path, PATH_MAX) <= 0)
+        return std::string();
+
+    return basename(exe_path);
 }
 
 std::string GetResourceDir()
 {
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN("");
+    return GetExecutableDir();
 }
 
 } // namespace Methane::Platform

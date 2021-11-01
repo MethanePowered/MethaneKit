@@ -155,3 +155,33 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::InWindow);
     }
 }
+
+TEST_CASE("Mouse state getters and converters", "[keyboard-state]")
+{
+    SECTION("Button state getter")
+    {
+        const State mouse_state({ Button::Left, Button::VScroll }, g_test_position, g_test_scroll, true);
+        CHECK(mouse_state[Button::Left] == ButtonState::Pressed);
+        CHECK(mouse_state[Button::Right] == ButtonState::Released);
+        CHECK(mouse_state[Button::VScroll] == ButtonState::Pressed);
+        CHECK(mouse_state[Button::HScroll] == ButtonState::Released);
+        CHECK(mouse_state.GetPosition() == g_test_position);
+        CHECK(mouse_state.GetScroll() == g_test_scroll);
+        CHECK(mouse_state.IsInWindow());
+    }
+
+    SECTION("State conversion to string")
+    {
+        const State mouse_state_a({}, g_test_position);
+        CHECK(mouse_state_a.ToString() == "(12 x 34), out of window");
+        CHECK(mouse_state_a.ToString() == static_cast<std::string>(mouse_state_a));
+
+        const State mouse_state_b({ Button::Left, Button::VScroll }, g_test_position, {}, true);
+        CHECK(mouse_state_b.ToString() == "(12 x 34) LEFT+V_SCROLL, in window");
+        CHECK(mouse_state_b.ToString() == static_cast<std::string>(mouse_state_b));
+
+        const State mouse_state_c({ Button::Right, Button::HScroll }, g_test_position, g_test_scroll, false);
+        CHECK(mouse_state_c.ToString() == "(12 x 34) RIGHT+H_SCROLL, scroll=(2 x 3), out of window");
+        CHECK(mouse_state_c.ToString() == static_cast<std::string>(mouse_state_c));
+    }
+}

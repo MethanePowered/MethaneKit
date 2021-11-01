@@ -60,7 +60,8 @@ Device::Capabilities& Device::Capabilities::SetBlitQueuesCount(uint32_t new_blit
 }
 
 DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
-    : m_adapter_name(adapter_name)
+    : m_system_ptr(static_cast<SystemBase&>(System::Get()).GetBasePtr()) // NOSONAR
+    , m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
     , m_capabilities(capabilities)
 {

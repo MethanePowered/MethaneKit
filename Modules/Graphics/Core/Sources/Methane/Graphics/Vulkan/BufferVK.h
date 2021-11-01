@@ -40,6 +40,11 @@ public:
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
+
+private:
+    vk::UniqueBuffer            m_vk_unique_staging_buffer;
+    vk::UniqueDeviceMemory      m_vk_unique_staging_memory;
+    std::vector<vk::BufferCopy> m_vk_copy_regions;
 };
 
 class BufferSetVK final : public BufferSetBase

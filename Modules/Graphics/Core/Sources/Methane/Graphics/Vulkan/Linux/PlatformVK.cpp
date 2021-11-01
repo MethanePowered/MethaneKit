@@ -31,14 +31,17 @@ namespace Methane::Graphics
 const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtensions()
 {
     META_FUNCTION_TASK();
-    static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({ });
+    static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({
+        VK_KHR_XCB_SURFACE_EXTENSION_NAME
+    });
     return s_instance_extensions;
 }
 
-vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance&, const Platform::AppEnvironment&)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Vulkan surface creation is not implemented for Linux.");
+    META_CHECK_ARG_NOT_NULL(env.connection);
+    return instance.createXcbSurfaceKHRUnique(vk::XcbSurfaceCreateInfoKHR({}, env.connection, env.window));
 }
 
 } // namespace Methane::Graphics

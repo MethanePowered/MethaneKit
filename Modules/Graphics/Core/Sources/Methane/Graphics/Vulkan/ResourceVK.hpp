@@ -25,10 +25,12 @@ Vulkan implementation of the resource interface.
 
 #include "ContextVK.h"
 #include "DeviceVK.h"
+#include "BlitCommandListVK.h"
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
@@ -83,23 +85,28 @@ protected:
     const IContextVK& GetContextVK() const noexcept                 { return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase()); }
     const vk::Device& GetNativeDevice() const noexcept              { return m_vk_device; }
 
-    void AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
+    vk::UniqueDeviceMemory AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
     {
         META_FUNCTION_TASK();
-        m_vk_unique_device_memory.release();
-
         const Opt<uint32_t> memory_type_opt = GetContextVK().GetDeviceVK().FindMemoryType(memory_requirements.memoryTypeBits, memory_property_flags);
         if (!memory_type_opt)
             throw Resource::AllocationError(*this, "suitable memory type was not found");
 
         try
         {
-            m_vk_unique_device_memory = GetContextVK().GetDeviceVK().GetNativeDevice().allocateMemoryUnique(vk::MemoryAllocateInfo(memory_requirements.size, *memory_type_opt));
+            return GetNativeDevice().allocateMemoryUnique(vk::MemoryAllocateInfo(memory_requirements.size, *memory_type_opt));
         }
         catch(const vk::SystemError& error)
         {
             throw Resource::AllocationError(*this, error.what());
         }
+    }
+
+    void AllocateResourceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
+    {
+        META_FUNCTION_TASK();
+        m_vk_unique_device_memory.release();
+        m_vk_unique_device_memory = AllocateDeviceMemory(memory_requirements, memory_property_flags);
     }
 
     void ResetNativeResource(UniqueResourceType&& vk_unique_resource)
@@ -108,10 +115,19 @@ protected:
         m_vk_unique_resource = std::move(vk_unique_resource);
     }
 
+    BlitCommandListVK& PrepareResourceUpload(CommandQueue* sync_cmd_queue)
+    {
+        META_FUNCTION_TASK();
+        META_UNUSED(sync_cmd_queue);
+        auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(ResourceBase::GetContext().GetUploadCommandKit().GetListForEncoding());
+        upload_cmd_list.RetainResource(*this);
+        return upload_cmd_list;
+    }
+
 private:
-    vk::Device             m_vk_device;
-    vk::UniqueDeviceMemory m_vk_unique_device_memory;
-    UniqueResourceType     m_vk_unique_resource;
+    vk::Device              m_vk_device;
+    vk::UniqueDeviceMemory  m_vk_unique_device_memory;
+    UniqueResourceType      m_vk_unique_resource;
 };
 
 } // namespace Methane::Graphics

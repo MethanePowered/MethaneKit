@@ -42,12 +42,12 @@ struct RenderPass;
 
 struct AppSettings
 {
-    Platform::App::Settings platform_app;
-    IApp::Settings          graphics_app;
-    RenderContext::Settings render_context;
+    Platform::IApp::Settings platform_app;
+    Graphics::IApp::Settings graphics_app;
+    RenderContext::Settings  render_context;
 
-    AppSettings& SetPlatformAppSettings(Platform::App::Settings&& new_platform_app_settings) noexcept;
-    AppSettings& SetGraphicsAppSettings(IApp::Settings&& new_graphics_app_settings) noexcept;
+    AppSettings& SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept;
+    AppSettings& SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept;
     AppSettings& SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept;
 };
 
@@ -99,6 +99,7 @@ protected:
 
     void UpdateWindowTitle();
     void CompleteInitialization() const;
+    void WaitForRenderComplete() const;
 
     // Platform::AppBase interface
     Platform::AppView GetView() const override { return m_context_ptr->GetAppView(); }

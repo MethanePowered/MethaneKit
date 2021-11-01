@@ -52,7 +52,6 @@ public:
     [[nodiscard]] bool HasData(const std::string& path) const noexcept override
     {
         META_FUNCTION_TASK();
-
         if (m_resource_fs.exists(path))
             return true;
 
@@ -62,7 +61,6 @@ public:
     [[nodiscard]] Methane::Data::Chunk GetData(const std::string& path) const override
     {
         META_FUNCTION_TASK();
-
         if (m_resource_fs.exists(path))
         {
             cmrc::file res_file = m_resource_fs.open(path);
@@ -74,8 +72,30 @@ public:
         return FileProvider::GetData(path);
     }
 
+    [[nodiscard]] std::vector<std::string> GetFiles(const std::string& directory_path) const override
+    {
+        META_FUNCTION_TASK();
+        std::vector<std::string> file_paths;
+        AddFilesInDirectory(directory_path, file_paths);
+        return file_paths;
+    }
+
 private:
     ResourceProvider() = default;
+
+    void AddFilesInDirectory(const std::string& directory_path, std::vector<std::string>& file_paths) const
+    {
+        META_FUNCTION_TASK();
+        for(cmrc::directory_iterator dir_it = m_resource_fs.iterate_directory(directory_path); dir_it != dir_it.end(); dir_it++)
+        {
+            cmrc::directory_entry entry = *dir_it;
+            std::string entry_path = directory_path + "/" + entry.filename();
+            if (entry.is_directory())
+                AddFilesInDirectory(entry_path, file_paths);
+            else
+                file_paths.emplace_back(std::move(entry_path));
+        }
+    }
 
     cmrc::embedded_filesystem m_resource_fs = cmrc::RESOURCE_NAMESPACE::get_filesystem();
 };

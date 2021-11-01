@@ -113,31 +113,38 @@ static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Da
     return *option_ptr;
 }
 
-AppBase::Settings& AppBase::Settings::SetName(std::string&& new_name) noexcept
+IApp::Settings& IApp::Settings::SetName(std::string&& new_name) noexcept
 {
     META_FUNCTION_TASK();
     name = std::move(new_name);
     return *this;
 }
 
-AppBase::Settings& AppBase::Settings::SetSize(Data::FloatSize&& new_size) noexcept
+IApp::Settings& IApp::Settings::SetSize(Data::FloatSize&& new_size) noexcept
 {
     META_FUNCTION_TASK();
     size = std::move(new_size);
     return *this;
 }
 
-AppBase::Settings& AppBase::Settings::SetMinSize(Data::FrameSize&& new_min_size) noexcept
+IApp::Settings& IApp::Settings::SetMinSize(Data::FrameSize&& new_min_size) noexcept
 {
     META_FUNCTION_TASK();
     min_size = std::move(new_min_size);
     return *this;
 }
 
-AppBase::Settings& AppBase::Settings::SetFullScreen(bool new_full_screen) noexcept
+IApp::Settings& IApp::Settings::SetFullScreen(bool new_full_screen) noexcept
 {
     META_FUNCTION_TASK();
     is_full_screen = new_full_screen;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetIconProvider(Data::Provider* new_icon_provider) noexcept
+{
+    META_FUNCTION_TASK();
+    icon_provider = new_icon_provider;
     return *this;
 }
 
@@ -159,7 +166,10 @@ AppBase::AppBase(const AppBase::Settings& settings)
 #endif
 }
 
-AppBase::~AppBase() = default;
+AppBase::~AppBase()
+{
+    m_parallel_executor_ptr->wait_for_all();
+}
 
 int AppBase::Run(const RunArgs& args)
 {
@@ -171,19 +181,12 @@ int AppBase::Run(const RunArgs& args)
     }
     catch (const CLI::CallForHelp&)
     {
-        Alert(Message{
-            Message::Type::Information,
-            "Command Line Options",
-            help()
-        }, true);
+        std::cout << help(); // NOSONAR
+        return 1;
     }
     catch (const CLI::ParseError& e)
     {
-        Alert(Message{
-            Message::Type::Error,
-            "Command Line Parse Error",
-            std::string("Failed to parse command line: ") + e.what()
-        });
+        std::cerr << "Failed to parse command line:" << std::endl; // NOSONAR
         return exit(e);
     }
 

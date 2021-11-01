@@ -49,6 +49,26 @@ static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Buffer>& buffer_refs)
     return vk_buffers;
 }
 
+static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, Buffer::StorageMode storage_mode)
+{
+    META_FUNCTION_TASK();
+    vk::BufferUsageFlags vk_usage_flags;
+    switch(buffer_type)
+    {
+    case Buffer::Type::Data:     vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
+    case Buffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
+    case Buffer::Type::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
+    case Buffer::Type::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
+        // Buffer::Type::ReadBack - unsupported
+    default: META_UNEXPECTED_ARG_DESCR(buffer_type, "Unsupported buffer type");
+    }
+
+    if (storage_mode == Buffer::StorageMode::Private)
+        vk_usage_flags |= vk::BufferUsageFlagBits::eTransferDst;
+
+    return vk_usage_flags;
+}
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
@@ -73,39 +93,39 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type)
-{
-    META_FUNCTION_TASK();
-    vk::BufferUsageFlags vk_usage_flags;
-    switch(buffer_type)
-    {
-    case Buffer::Type::Data:     vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
-    case Buffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
-    case Buffer::Type::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
-    case Buffer::Type::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
-    // Buffer::Type::ReadBack - unsupported
-    default: META_UNEXPECTED_ARG_DESCR(buffer_type, "Unsupported buffer type");
-    }
-    return vk_usage_flags;
-}
-
 BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
     : ResourceVK(context, settings, descriptor_by_usage,
                  dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice().createBufferUnique(
                      vk::BufferCreateInfo(
                          vk::BufferCreateFlags{},
                          settings.size,
-                         GetVulkanBufferUsageFlags(settings.type),
+                         GetVulkanBufferUsageFlags(settings.type, settings.storage_mode),
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
     InitializeDefaultDescriptors();
 
-    // TODO: set memory properties based on settings.storage_mode
-    const vk::MemoryPropertyFlags vk_memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible
-                                                           | vk::MemoryPropertyFlagBits::eHostCoherent;
-    AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(GetNativeResource()), vk_memory_property_flags);
+    const bool is_private_storage = settings.storage_mode == Buffer::StorageMode::Private;
+    const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+    const vk::MemoryPropertyFlags vk_memory_property_flags = is_private_storage ? vk::MemoryPropertyFlagBits::eDeviceLocal : vk_staging_memory_flags;
+
+    // Allocate resource primary memory
+    AllocateResourceMemory(GetNativeDevice().getBufferMemoryRequirements(GetNativeResource()), vk_memory_property_flags);
     GetNativeDevice().bindBufferMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
+
+    if (!is_private_storage)
+        return;
+
+    // Create staging buffer and allocate staging memory
+    m_vk_unique_staging_buffer = GetNativeDevice().createBufferUnique(
+        vk::BufferCreateInfo(vk::BufferCreateFlags{},
+            settings.size,
+            vk::BufferUsageFlagBits::eTransferSrc,
+            vk::SharingMode::eExclusive)
+    );
+
+    m_vk_unique_staging_memory = AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(m_vk_unique_staging_buffer.get()), vk_staging_memory_flags);
+    GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
 void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
@@ -113,8 +133,15 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     META_FUNCTION_TASK();
     ResourceVK::SetData(sub_resources, sync_cmd_queue);
 
-    const vk::Device&       vk_device        = GetNativeDevice();
-    const vk::DeviceMemory& vk_device_memory = GetNativeDeviceMemory();
+    const bool is_private_storage = GetSettings().storage_mode == Buffer::StorageMode::Private;
+    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
+
+    if (is_private_storage)
+    {
+        m_vk_copy_regions.clear();
+        m_vk_copy_regions.reserve(sub_resources.size());
+    }
+
     for(const SubResource& sub_resource : sub_resources)
     {
         ValidateSubResource(sub_resource);
@@ -122,15 +149,30 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
         // TODO: calculate memory offset by sub-resource index
         const vk::DeviceSize sub_resource_offset = 0U;
         Data::RawPtr sub_resource_data_ptr = nullptr;
-        const vk::Result vk_map_result = vk_device.mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
+        const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
                                                              reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
 
         META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
         META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
         std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
 
-        vk_device.unmapMemory(vk_device_memory);
+        GetNativeDevice().unmapMemory(vk_device_memory);
+
+        if (is_private_storage)
+        {
+            m_vk_copy_regions.emplace_back(sub_resource_offset, sub_resource_offset, static_cast<vk::DeviceSize>(sub_resource.GetDataSize()));
+        }
     }
+
+    if (!is_private_storage)
+        return;
+
+    // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
+    const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+    upload_cmd_list.GetNativeCommandBuffer().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
+    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
+
+    m_vk_copy_regions.clear();
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

@@ -12,38 +12,8 @@ if(APPLE)
 
 endif()
 
-if (WIN32)
-
-    set(PLATFORM_HEADERS
-        ${INCLUDE_DIR}/Windows/Keyboard.h
-    )
-    set(PLATFORM_SOURCES
-        ${SOURCES_DIR}/Windows/Keyboard.cpp
-    )
-
-endif()
-
-if (APPLE)
-
-    set(PLATFORM_SOURCES
-        ${SOURCES_DIR}/MacOS/Keyboard.mm
-    )
-
-endif()
-
-if (UNIX) # Linux & MacOS
-
-    set(PLATFORM_HEADERS
-        ${INCLUDE_DIR}/Unix/Keyboard.h
-    )
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
-        ${SOURCES_DIR}/Unix/Keyboard.cpp
-    )
-
-endif()
-
 set(HEADERS
-    ${PLATFORM_HEADERS}
+    ${INCLUDE_PLATFORM_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
@@ -52,10 +22,10 @@ set(HEADERS
     ${INCLUDE_DIR}/Input/Controller.h
     ${INCLUDE_DIR}/Input/ControllersPool.h
     ${INCLUDE_DIR}/Input/State.h
-    )
+)
 
 set(SOURCES
-    ${PLATFORM_SOURCES}
+    ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp
@@ -85,6 +55,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_include_directories(${TARGET}
     PRIVATE
         Sources
+        $<$<BOOL:${LINUX}>:${X11_xcb_INCLUDE_PATH} ${X11_X11_INCLUDE_PATH}>
     PUBLIC
         Include
 )
@@ -100,7 +71,7 @@ set_target_properties(${TARGET}
 if (APPLE)
     # Disable precompiled headers on MacOS for Objective-C files:
     set_source_files_properties(
-        ${PLATFORM_SOURCES}
+        ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
         PROPERTIES
             SKIP_PRECOMPILE_HEADERS ON
     )

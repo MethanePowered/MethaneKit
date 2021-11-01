@@ -31,6 +31,8 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
+class SystemBase;
+
 class DeviceBase
     : public Device
     , public ObjectBase
@@ -52,19 +54,26 @@ protected:
     void OnRemoved();
 
 private:
-    const std::string m_adapter_name;
-    const bool        m_is_software_adapter;
-    Capabilities      m_capabilities;
+    // System should be released only after all its devices, so devices hold it's shared pointer
+    const Ptr<SystemBase> m_system_ptr;
+    const std::string     m_adapter_name;
+    const bool            m_is_software_adapter;
+    Capabilities          m_capabilities;
 };
 
-class SystemBase : public System
+class SystemBase
+    : public System
+    , public std::enable_shared_from_this<SystemBase>
 {
 public:
+    // System interface
     const Ptrs<Device>&         GetGpuDevices() const noexcept override          { return m_devices; }
     const Device::Capabilities& GetDeviceCapabilities() const noexcept override  { return m_device_caps; }
     Ptr<Device>                 GetNextGpuDevice(const Device& device) const noexcept override;
     Ptr<Device>                 GetSoftwareGpuDevice() const noexcept override;
     std::string                 ToString() const override;
+
+    Ptr<SystemBase> GetBasePtr() { return shared_from_this(); }
 
 protected:
     void SetDeviceCapabilities(const Device::Capabilities& device_caps) { m_device_caps = device_caps; }

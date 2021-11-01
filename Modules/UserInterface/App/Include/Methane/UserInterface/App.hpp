@@ -38,11 +38,11 @@ namespace gfx = Methane::Graphics;
 
 template<typename FrameT>
 class App
-    : public Graphics::App<FrameT, IApp>
+    : public Graphics::App<FrameT, UserInterface::IApp>
     , public AppBase
 {
 public:
-    using GraphicsApp = Graphics::App<FrameT, IApp>;
+    using GraphicsApp = Graphics::App<FrameT, UserInterface::IApp>;
 
     explicit App(const Graphics::AppSettings& graphics_app_settings,
                  const IApp::Settings& ui_app_settings = { },
@@ -96,7 +96,7 @@ public:
             return false;
 
         GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::IApp::HeadsUpDisplayMode::WindowTitle);
-        GraphicsApp::GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+        GraphicsApp::WaitForRenderComplete();
 
         return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
     }

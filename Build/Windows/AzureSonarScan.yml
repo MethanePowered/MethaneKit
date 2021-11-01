@@ -3,19 +3,11 @@
 
 steps:
 
-  - script: |
-      if exist $(buildDir) (
-        echo Build directory '$(buildDir)' already exists, removing all contents...
-        rmdir /S /Q $(buildDir)
-      )
-      mkdir $(buildDir)
-    displayName: 'Make build directories for $(platform) $(configuration)'
-
   - task: CMake@1
-    displayName: 'Generate with $(generatorName) for $(platform) $(configuration)'
+    displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:
-      workingDirectory: $(buildDir)
-      cmakeArgs: '-G $(generatorName) -A $(platform) -DCMAKE_INSTALL_PREFIX:PATH=$(buildInstallDir) $(cmakeFlags) $(rootDir)'
+      workingDirectory: $(Build.SourcesDirectory)
+      cmakeArgs: '--preset $(cmake.ConfigurePreset) $(cmake.ConfigureFlags)'
 
   - powershell: |
       Invoke-WebRequest -Uri '$(sonar.BuildWrapperUrl)' -OutFile 'build-wrapper.zip'
@@ -31,7 +23,7 @@ steps:
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
-      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(configuration) | $(platform) | "$(sonar.ScannerVersion)"'
+      key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(cmake.ConfigurePreset) | "$(sonar.ScannerVersion)"'
       path: $(sonar.CacheDir)
 
   - task: SonarCloudPrepare@1
@@ -56,10 +48,9 @@ steps:
         sonar.verbose=$(sonar.Verbose)
 
   - script: |
-      call "$(vcVarsBatFile)"
-      $(sonar.BuildWrapperExe) --out-dir BuildWrapperOutput $(sonar.BuildCommand)
-    workingDirectory: $(buildDir)
-    displayName: 'Build under Sonar Build-Wrapper with $(generatorName) for $(platform) $(configuration)'
+      $(buildDir)\$(sonar.BuildWrapperExe) --out-dir $(buildDir)\BuildWrapperOutput cmake --build --preset $(cmake.BuildPreset) --target install
+    workingDirectory: $(Build.SourcesDirectory)
+    displayName: 'Build under Sonar Build-Wrapper with $(cmake.BuildPreset)'
 
   - script: |
       setlocal enabledelayedexpansion
@@ -67,7 +58,7 @@ steps:
       mkdir Results
       mkdir Coverage
       for /r "." %%a in (*Test.exe) do (
-        "..\$(rootDir)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+        "$(Build.SourcesDirectory)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0
@@ -81,7 +72,7 @@ steps:
       reports: '$(installDir)\Tests\Coverage\*.xml'
       targetdir: '$(installDir)\Tests\Coverage\Report'
       reporttypes: 'Cobertura;SonarQube'
-      title: 'Methane Tests Code Coverage on Windows $(platform)'
+      title: 'Methane Tests Code Coverage for $(cmake.BuildPreset)'
       tag: '$(product.Version.Full)'
 
   - task: PublishCodeCoverageResults@1
@@ -113,4 +104,4 @@ steps:
     inputs:
       targetPath: '$(Build.ArtifactStagingDirectory)'
       archiveFilePatterns: '*.zip'
-      artifactName: MethaneKit-$(buildName)-Errors_$(product.Version.Full)
+      artifactName: MethaneKit_$(cmake.BuildPreset)_Errors_$(product.Version.Full)

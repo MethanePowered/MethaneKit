@@ -154,7 +154,7 @@ TypographyApp::TypographyApp()
 TypographyApp::~TypographyApp()
 {
     // Wait for GPU rendering is completed to release resources
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    WaitForRenderComplete();
 
     // Clear the font library to release all atlas textures
     gui::Font::Library::Get().Clear();

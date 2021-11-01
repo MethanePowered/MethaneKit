@@ -125,3 +125,52 @@ TEST_CASE("Keyboard state comparison", "[keyboard-state]")
         CHECK(keyboard_state_a.GetDiff(keyboard_state_b) == State::Properties::Modifiers);
     }
 }
+
+TEST_CASE("Keyboard state getters and converters", "[keyboard-state]")
+{
+    SECTION("Key state getter")
+    {
+        using namespace magic_enum::bitwise_operators;
+        const StateExt keyboard_state{ Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5, Key::KeyPad3, Key::F7 };
+        CHECK(magic_enum::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Control));
+        CHECK(magic_enum::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Shift));
+        CHECK(keyboard_state[Key::Up] == KeyState::Pressed);
+        CHECK(keyboard_state[Key::Down] == KeyState::Released);
+        CHECK(keyboard_state[Key::Y] == KeyState::Pressed);
+        CHECK(keyboard_state[Key::Z] == KeyState::Released);
+        CHECK(keyboard_state[Key::Num5] == KeyState::Pressed);
+        CHECK(keyboard_state[Key::Num4] == KeyState::Released);
+        CHECK(keyboard_state[Key::KeyPad3] == KeyState::Pressed);
+        CHECK(keyboard_state[Key::KeyPad2] == KeyState::Released);
+        CHECK(keyboard_state[Key::F7] == KeyState::Pressed);
+        CHECK(keyboard_state[Key::F8] == KeyState::Released);
+    }
+
+    SECTION("State conversion to string")
+    {
+        const State keyboard_state{ Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5, Key::KeyPad3, Key::F7 };
+        CHECK(keyboard_state.ToString() == "Control+Shift+5+Y+UP+F7+KP3");
+        CHECK(keyboard_state.ToString() == static_cast<std::string>(keyboard_state));
+    }
+
+    SECTION("Empty state conversion to boolean")
+    {
+        using namespace magic_enum::bitwise_operators;
+        const State keyboard_state({});
+        CHECK_FALSE(static_cast<bool>(keyboard_state));
+    }
+
+    SECTION("State with modifiers pressed conversion to boolean")
+    {
+        using namespace magic_enum::bitwise_operators;
+        const State keyboard_state({}, Modifiers::Control | Modifiers::Alt);
+        CHECK(static_cast<bool>(keyboard_state));
+    }
+
+    SECTION("State with keys pressed conversion to boolean")
+    {
+        using namespace magic_enum::bitwise_operators;
+        const State keyboard_state({ Key::Enter });
+        CHECK(static_cast<bool>(keyboard_state));
+    }
+}

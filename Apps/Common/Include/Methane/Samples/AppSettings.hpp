@@ -24,6 +24,7 @@ Common application settings for Methane samples and tutorials.
 #pragma once
 
 #include <Methane/Graphics/App.hpp>
+#include <Methane/Data/AppIconsProvider.h>
 
 #include <magic_enum.hpp>
 
@@ -40,7 +41,6 @@ enum class AppOptions : uint32_t
     Fullscreen  = 1U << 4U,
     VSync       = 1U << 5U
 };
-
 
 static constexpr AppOptions g_default_app_options_color_only = []()
 {
@@ -100,9 +100,12 @@ static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.
 
     return Graphics::AppSettings
     {                                                           // =========================
-        Platform::App::Settings {                               // platform_app:
+        Platform::IApp::Settings {                               // platform_app:
             app_name,                                           //   - name
-            { 0.8, 0.8 },                                       //   - width, height
+            { 0.8, 0.8 },                                       //   - size
+            { 640U, 480U },                                     //   - min_size
+            fullscreen_enabled,                                 //   - is_full_screen
+            &Data::IconProvider::Get(),                         //   - icon_resources_ptr
         },                                                      // =========================
         Graphics::IApp::Settings {                              // graphics_app:
             g_default_screen_pass_access,                       //   - screen_pass_access

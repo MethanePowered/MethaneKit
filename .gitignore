@@ -1,9 +1,11 @@
 ﻿/.vs
 /.idea/workspace.xml
 /.idea/sonarIssues.xml
+/.idea/jsonSchemas.xml
 /.scannerwork
 /.sonarqube
 /*.srctrl*
 /out
 /compileData.scor
 /CMakeLists.txt.user
+/CMakeUserPresets.json

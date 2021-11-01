@@ -34,7 +34,7 @@ elseif(APPLE)
         "-framework AppKit"
     )
 
-else() # Linux
+else(LINUX)
 
     set(PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppLin.h
@@ -42,11 +42,18 @@ else() # Linux
 
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppLin.cpp
+        ${SOURCES_PLATFORM_DIR}/MessageBox.h
+        ${SOURCES_PLATFORM_DIR}/MessageBox.cpp
+        ${SOURCES_PLATFORM_DIR}/XcbUtils.h
+        ${SOURCES_PLATFORM_DIR}/XcbUtils.cpp
     )
+
+    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb STB)
 
 endif()
 
 set(HEADERS ${PLATFORM_HEADERS}
+    ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
@@ -74,7 +81,9 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledHeaders
         MethanePlatformUtils
+        MethaneDataProvider
         TaskFlow
+        fmt
         nowide
         ${PLATFORM_LIBRARIES}
 )

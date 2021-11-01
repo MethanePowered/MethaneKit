@@ -87,7 +87,7 @@ public:
     ~HelloCubeApp() override
     {
         // Wait for GPU rendering is completed to release resources
-        GetRenderContext().WaitForGpu(Context::WaitFor::RenderComplete);
+        WaitForRenderComplete();
     }
 
     void Init() override

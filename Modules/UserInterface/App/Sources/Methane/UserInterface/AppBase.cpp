@@ -265,6 +265,9 @@ bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_
 
     m_app_settings.heads_up_display_mode = heads_up_display_mode;
 
+    // Wait for all in-flight rendering to complete before creating and releasing GPU resources
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
     {
         m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
@@ -283,6 +286,9 @@ bool AppBase::SetHelpText(std::string_view help_str)
     META_FUNCTION_TASK();
     if (m_help_text_str == help_str)
         return false;
+
+    // Wait for all in-flight rendering to complete before creating and releasing GPU resources
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     m_help_text_str = help_str;
     m_help_columns.first.text_str = help_str;
@@ -327,6 +333,9 @@ bool AppBase::SetParametersText(std::string_view parameters_str)
 
     if (!m_ui_context_ptr)
         return true;
+
+    // Wait for all in-flight rendering to complete before creating and releasing GPU resources
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
 
     if (!UpdateTextItem(m_parameters))
         return false;

@@ -23,6 +23,7 @@ Creates and configures cross-platform graphics application cmake build target.
 
 include(MethaneUtils)
 include(MethaneModules)
+include(MethaneResources)
 
 function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NAME DESCRIPTION COPYRIGHT VERSION BUILD_NUMBER)
     set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -53,13 +54,6 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             ${METHANE_APP_RESOURCE_FILE_PATH}
         )
 
-        install(TARGETS ${TARGET}
-            CONFIGURATIONS Release RelWithDebInfo
-            RUNTIME
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
-        )
-
         # Disable default manifest generation with linker, since manually written manifest is added to resources
         set_target_properties(${TARGET}
             PROPERTIES
@@ -87,12 +81,6 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             ${ICON_FILE_PATH}
         )
 
-        install(TARGETS ${TARGET}
-            BUNDLE
-                DESTINATION ${INSTALL_DIR}
-                COMPONENT Runtime
-        )
-
         # Set bundle location of the icon and metal library files
         set_source_files_properties(${ICON_FILE_PATH}
             PROPERTIES MACOSX_PACKAGE_LOCATION
@@ -115,6 +103,10 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         add_executable(${TARGET}
             ${SOURCES}
         )
+
+        set(ICONS_DIR ${RESOURCES_DIR}/Icons/Linux)
+        file(GLOB ICON_FILES "${ICONS_DIR}/Methane*.png")
+        add_methane_embedded_icons(${TARGET} "${ICONS_DIR}" "${ICON_FILES}")
     
     endif()
 
@@ -135,6 +127,21 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         PRIVATE
             .
     )
+
+    if (APPLE)
+        install(TARGETS ${TARGET}
+            BUNDLE
+                DESTINATION ${INSTALL_DIR}
+                COMPONENT Runtime
+        )
+    else()
+        install(TARGETS ${TARGET}
+            CONFIGURATIONS Release RelWithDebInfo
+            RUNTIME
+                DESTINATION ${INSTALL_DIR}
+                COMPONENT Runtime
+        )
+    endif()
 
     if (WIN32 AND MSVC)
         install(FILES $<TARGET_PDB_FILE:${TARGET}>

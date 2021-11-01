@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ Platform abstraction of mouse events.
 #include <array>
 #include <set>
 #include <string>
+#include <string_view>
 #include <sstream>
 
 namespace Methane::Platform::Mouse
@@ -57,7 +58,7 @@ class ButtonConverter
 public:
     explicit ButtonConverter(Button button) : m_button(button) { }
 
-    [[nodiscard]] std::string ToString() const;
+    [[nodiscard]] std::string_view ToString() const;
     
 private:
     Button m_button;

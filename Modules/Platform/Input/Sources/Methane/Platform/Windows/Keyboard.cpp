@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,140 +24,12 @@ Windows platform specific types and implementation of Keyboard abstractions.
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Instrumentation.h>
 
-#include <map>
-
 namespace Methane::Platform::Keyboard
 {
 
-Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
+Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
-    static const std::map<uint32_t, Key> s_key_by_native_code =
-    {
-        { 0x00B, Key::Num0          },
-        { 0x002, Key::Num1          },
-        { 0x003, Key::Num2          },
-        { 0x004, Key::Num3          },
-        { 0x005, Key::Num4          },
-        { 0x006, Key::Num5          },
-        { 0x007, Key::Num6          },
-        { 0x008, Key::Num7          },
-        { 0x009, Key::Num8          },
-        { 0x00A, Key::Num9          },
-        { 0x01E, Key::A             },
-        { 0x030, Key::B             },
-        { 0x02E, Key::C             },
-        { 0x020, Key::D             },
-        { 0x012, Key::E             },
-        { 0x021, Key::F             },
-        { 0x022, Key::G             },
-        { 0x023, Key::H             },
-        { 0x017, Key::I             },
-        { 0x024, Key::J             },
-        { 0x025, Key::K             },
-        { 0x026, Key::L             },
-        { 0x032, Key::M             },
-        { 0x031, Key::N             },
-        { 0x018, Key::O             },
-        { 0x019, Key::P             },
-        { 0x010, Key::Q             },
-        { 0x013, Key::R             },
-        { 0x01F, Key::S             },
-        { 0x014, Key::T             },
-        { 0x016, Key::U             },
-        { 0x02F, Key::V             },
-        { 0x011, Key::W             },
-        { 0x02D, Key::X             },
-        { 0x015, Key::Y             },
-        { 0x02C, Key::Z             },
-
-        { 0x028, Key::Apostrophe    },
-        { 0x02B, Key::BackSlash     },
-        { 0x033, Key::Comma         },
-        { 0x00D, Key::Equal         },
-        { 0x029, Key::GraveAccent   },
-        { 0x01A, Key::LeftBracket   },
-        { 0x00C, Key::Minus         },
-        { 0x034, Key::Period        },
-        { 0x01B, Key::RightBracket  },
-        { 0x027, Key::Semicolon     },
-        { 0x035, Key::Slash         },
-        { 0x056, Key::World2        },
-
-        { 0x00E, Key::Backspace     },
-        { 0x153, Key::Delete        },
-        { 0x14F, Key::End           },
-        { 0x01C, Key::Enter         },
-        { 0x001, Key::Escape        },
-        { 0x147, Key::Home          },
-        { 0x152, Key::Insert        },
-        { 0x15D, Key::Menu          },
-        { 0x151, Key::PageDown      },
-        { 0x149, Key::PageUp        },
-        { 0x045, Key::Pause         },
-        { 0x146, Key::Pause         },
-        { 0x039, Key::Space         },
-        { 0x00F, Key::Tab           },
-        { 0x03A, Key::CapsLock      },
-        { 0x145, Key::NumLock       },
-        { 0x046, Key::ScrollLock    },
-        { 0x03B, Key::F1            },
-        { 0x03C, Key::F2            },
-        { 0x03D, Key::F3            },
-        { 0x03E, Key::F4            },
-        { 0x03F, Key::F5            },
-        { 0x040, Key::F6            },
-        { 0x041, Key::F7            },
-        { 0x042, Key::F8            },
-        { 0x043, Key::F9            },
-        { 0x044, Key::F10           },
-        { 0x057, Key::F11           },
-        { 0x058, Key::F12           },
-        { 0x064, Key::F13           },
-        { 0x065, Key::F14           },
-        { 0x066, Key::F15           },
-        { 0x067, Key::F16           },
-        { 0x068, Key::F17           },
-        { 0x069, Key::F18           },
-        { 0x06A, Key::F19           },
-        { 0x06B, Key::F20           },
-        { 0x06C, Key::F21           },
-        { 0x06D, Key::F22           },
-        { 0x06E, Key::F23           },
-        { 0x076, Key::F24           },
-        { 0x038, Key::LeftAlt       },
-        { 0x01D, Key::LeftControl   },
-        { 0x02A, Key::LeftShift     },
-        { 0x15B, Key::LeftSuper     },
-        { 0x137, Key::PrintScreen   },
-        { 0x138, Key::RightAlt      },
-        { 0x11D, Key::RightControl  },
-        { 0x036, Key::RightShift    },
-        { 0x15C, Key::RightSuper    },
-        { 0x150, Key::Down          },
-        { 0x14B, Key::Left          },
-        { 0x14D, Key::Right         },
-        { 0x148, Key::Up            },
-
-        { 0x052, Key::KeyPad0       },
-        { 0x04F, Key::KeyPad1       },
-        { 0x050, Key::KeyPad2       },
-        { 0x051, Key::KeyPad3       },
-        { 0x04B, Key::KeyPad4       },
-        { 0x04C, Key::KeyPad5       },
-        { 0x04D, Key::KeyPad6       },
-        { 0x047, Key::KeyPad7       },
-        { 0x048, Key::KeyPad8       },
-        { 0x049, Key::KeyPad9       },
-        { 0x04E, Key::KeyPadAdd     },
-        { 0x053, Key::KeyPadDecimal },
-        { 0x135, Key::KeyPadDivide  },
-        { 0x11C, Key::KeyPadEnter   },
-        { 0x059, Key::KeyPadEqual   },
-        { 0x037, Key::KeyPadMultiply},
-        { 0x04A, Key::KeyPadSubtract},
-    };
-
     // The Ctrl keys require special handling
     if (native_key.w_param == VK_CONTROL)
         return GetControlKey(native_key);
@@ -165,10 +37,135 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key)
     if (native_key.w_param == VK_PROCESSKEY)
         return Key::Unknown; // IME notifies that keys have been filtered by setting the virtual key-code to VK_PROCESSKEY
 
-    const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF);
-    auto native_code_and_key_it = s_key_by_native_code.find(native_key_code);
-    return native_code_and_key_it == s_key_by_native_code.end()
-         ? Key::Unknown : native_code_and_key_it->second;
+    switch(const auto native_key_code = static_cast<uint32_t>(HIWORD(native_key.l_param) & 0x1FF); // NOSONAR - long switch
+           native_key_code)
+    {
+        case 0x00B: return Key::Num0;
+        case 0x002: return Key::Num1;
+        case 0x003: return Key::Num2;
+        case 0x004: return Key::Num3;
+        case 0x005: return Key::Num4;
+        case 0x006: return Key::Num5;
+        case 0x007: return Key::Num6;
+        case 0x008: return Key::Num7;
+        case 0x009: return Key::Num8;
+        case 0x00A: return Key::Num9;
+
+        case 0x01E: return Key::A;
+        case 0x030: return Key::B;
+        case 0x02E: return Key::C;
+        case 0x020: return Key::D;
+        case 0x012: return Key::E;
+        case 0x021: return Key::F;
+        case 0x022: return Key::G;
+        case 0x023: return Key::H;
+        case 0x017: return Key::I;
+        case 0x024: return Key::J;
+        case 0x025: return Key::K;
+        case 0x026: return Key::L;
+        case 0x032: return Key::M;
+        case 0x031: return Key::N;
+        case 0x018: return Key::O;
+        case 0x019: return Key::P;
+        case 0x010: return Key::Q;
+        case 0x013: return Key::R;
+        case 0x01F: return Key::S;
+        case 0x014: return Key::T;
+        case 0x016: return Key::U;
+        case 0x02F: return Key::V;
+        case 0x011: return Key::W;
+        case 0x02D: return Key::X;
+        case 0x015: return Key::Y;
+        case 0x02C: return Key::Z;
+
+        case 0x028: return Key::Apostrophe;
+        case 0x02B: return Key::BackSlash;
+        case 0x033: return Key::Comma;
+        case 0x00D: return Key::Equal;
+        case 0x029: return Key::GraveAccent;
+        case 0x027: return Key::Semicolon;
+        case 0x035: return Key::Slash;
+        case 0x00C: return Key::Minus;
+        case 0x034: return Key::Period;
+        case 0x01A: return Key::LeftBracket;
+        case 0x01B: return Key::RightBracket;
+        case 0x056: return Key::World2;
+
+        case 0x00E: return Key::Backspace;
+        case 0x153: return Key::Delete;
+        case 0x147: return Key::Home;
+        case 0x14F: return Key::End;
+        case 0x01C: return Key::Enter;
+        case 0x001: return Key::Escape;
+
+        case 0x152: return Key::Insert;
+        case 0x15D: return Key::Menu;
+        case 0x151: return Key::PageDown;
+        case 0x149: return Key::PageUp;
+        case 0x045: return Key::Pause;
+        case 0x146: return Key::Pause;
+        case 0x039: return Key::Space;
+        case 0x00F: return Key::Tab;
+        case 0x03A: return Key::CapsLock;
+        case 0x145: return Key::NumLock;
+        case 0x046: return Key::ScrollLock;
+        case 0x03B: return Key::F1;
+        case 0x03C: return Key::F2;
+        case 0x03D: return Key::F3;
+        case 0x03E: return Key::F4;
+        case 0x03F: return Key::F5;
+        case 0x040: return Key::F6;
+        case 0x041: return Key::F7;
+        case 0x042: return Key::F8;
+        case 0x043: return Key::F9;
+        case 0x044: return Key::F10;
+        case 0x057: return Key::F11;
+        case 0x058: return Key::F12;
+        case 0x064: return Key::F13;
+        case 0x065: return Key::F14;
+        case 0x066: return Key::F15;
+        case 0x067: return Key::F16;
+        case 0x068: return Key::F17;
+        case 0x069: return Key::F18;
+        case 0x06A: return Key::F19;
+        case 0x06B: return Key::F20;
+        case 0x06C: return Key::F21;
+        case 0x06D: return Key::F22;
+        case 0x06E: return Key::F23;
+        case 0x076: return Key::F24;
+        case 0x038: return Key::LeftAlt;
+        case 0x01D: return Key::LeftControl;
+        case 0x02A: return Key::LeftShift;
+        case 0x15B: return Key::LeftSuper;
+        case 0x137: return Key::PrintScreen;
+        case 0x138: return Key::RightAlt;
+        case 0x11D: return Key::RightControl;
+        case 0x036: return Key::RightShift;
+        case 0x15C: return Key::RightSuper;
+        case 0x150: return Key::Down;
+        case 0x14B: return Key::Left;
+        case 0x14D: return Key::Right;
+        case 0x148: return Key::Up;
+
+        case 0x052: return Key::KeyPad0;
+        case 0x04F: return Key::KeyPad1;
+        case 0x050: return Key::KeyPad2;
+        case 0x051: return Key::KeyPad3;
+        case 0x04B: return Key::KeyPad4;
+        case 0x04C: return Key::KeyPad5;
+        case 0x04D: return Key::KeyPad6;
+        case 0x047: return Key::KeyPad7;
+        case 0x048: return Key::KeyPad8;
+        case 0x049: return Key::KeyPad9;
+        case 0x04E: return Key::KeyPadAdd;
+        case 0x053: return Key::KeyPadDecimal;
+        case 0x135: return Key::KeyPadDivide;
+        case 0x11C: return Key::KeyPadEnter;
+        case 0x059: return Key::KeyPadEqual;
+        case 0x037: return Key::KeyPadMultiply;
+        case 0x04A: return Key::KeyPadSubtract;
+        default:    return Key::Unknown;
+    }
 }
 
 Key KeyConverter::GetControlKey(const NativeKey& native_key)
@@ -195,7 +192,7 @@ Key KeyConverter::GetControlKey(const NativeKey& native_key)
     return Key::LeftControl;
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
+Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
     switch (native_key.w_param)

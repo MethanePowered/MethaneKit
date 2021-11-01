@@ -1,8 +1,8 @@
 # Hello Cube Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) |
-| -------------------- | ------------- |
-| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) |
+| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan) |
+| -------------------- | ------------- | -------------- |
+| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) |
 
 This tutorial demonstrates colored cube rendering implemented in just 220 lines of code using Methane Kit:
 - [HelloCubeApp.cpp](HelloCubeApp.cpp)
@@ -266,7 +266,7 @@ class HelloCubeApp final : public GraphicsApp
 
         // Update vertex buffer with vertices in camera's projection view
         (*frame.vertex_buffer_set_ptr)[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
+            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
             &GetRenderContext().GetRenderCommandKit().GetQueue()
         );
 
@@ -393,6 +393,6 @@ target_link_libraries(MethaneHelloCube
 
 ## Continue learning
 
-Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../03-HelloCube), 
+Continue learning Methane Graphics programming in the next tutorial [Textured Cube](../03-TexturedCube), 
 which is demonstrating textured cube rendering with phong lighting using vertex position transformation on GPU,
 uniform buffers and program bindings.
