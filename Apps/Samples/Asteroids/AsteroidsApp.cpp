@@ -231,12 +231,12 @@ void AsteroidsApp::Init()
         {
             m_view_camera,
             {
-                "Textures/SkyBox/Galaxy/PositiveX.jpg",
-                "Textures/SkyBox/Galaxy/NegativeX.jpg",
-                "Textures/SkyBox/Galaxy/PositiveY.jpg",
-                "Textures/SkyBox/Galaxy/NegativeY.jpg",
-                "Textures/SkyBox/Galaxy/PositiveZ.jpg",
-                "Textures/SkyBox/Galaxy/NegativeZ.jpg"
+                "SkyBox/Galaxy/PositiveX.jpg",
+                "SkyBox/Galaxy/NegativeX.jpg",
+                "SkyBox/Galaxy/PositiveY.jpg",
+                "SkyBox/Galaxy/NegativeY.jpg",
+                "SkyBox/Galaxy/PositiveZ.jpg",
+                "SkyBox/Galaxy/NegativeZ.jpg"
             },
             m_scene_scale * 100.F,
             gfx::ImageLoader::Options::Mipmapped,
@@ -249,7 +249,7 @@ void AsteroidsApp::Init()
         {
             m_view_camera,
             m_light_camera,
-            "Textures/Planet/Mars.jpg",             // texture_path
+            "Planet/Mars.jpg",                      // texture_path
             hlslpp::float3(0.F, 0.F, 0.F),          // position
             m_scene_scale * 3.F,                    // scale
             0.1F,                                   // spin_velocity_rps

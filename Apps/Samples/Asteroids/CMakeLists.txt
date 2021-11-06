@@ -20,15 +20,15 @@ set(SOURCES
     Shaders/SceneConstants.h
 )
 
-set(IMAGES_DIR ${RESOURCES_DIR}/Images)
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES
-    ${IMAGES_DIR}/Textures/Planet/Mars.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveX.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeX.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveY.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeY.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/PositiveZ.jpg
-    ${IMAGES_DIR}/Textures/SkyBox/Galaxy/NegativeZ.jpg
+    ${TEXTURES_DIR}/Planet/Mars.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveX.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeX.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveY.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeY.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveZ.jpg
+    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeZ.jpg
 )
 
 set(SHADERS_HLSL
@@ -46,7 +46,7 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
-add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 add_methane_shaders(${TARGET} "${SHADERS_HLSL}" "6_0")
 
 target_link_libraries(${TARGET}

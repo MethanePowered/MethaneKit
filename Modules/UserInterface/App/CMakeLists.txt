@@ -16,9 +16,9 @@ set(SOURCES
     ${SOURCES_DIR}/AppController.cpp
 )
 
-set(IMAGES_DIR ${RESOURCES_DIR}/Images)
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES
-    ${IMAGES_DIR}/Logo/MethaneLogoNameWatermark.png
+    ${TEXTURES_DIR}/MethaneLogoNameWatermark.png
 )
 
 set(FONTS
@@ -31,7 +31,7 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-add_methane_embedded_textures(${TARGET} "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 target_include_directories(${TARGET}

@@ -240,7 +240,7 @@ void TexturedCubeApp::Init()
 
 Cube face texture is created using `Graphics::ImageLoader` class through the instance provided by 
 `Graphics::App::GetImageLoader()` function. Texture is loaded from JPEG image embedded in application resources
-by path in embedded file system `Textures/MethaneBubbles.jpg`. Image is added to application resources in build time and
+by path in embedded file system `MethaneBubbles.jpg`. Image is added to application resources in build time and
 [configured in CMakeLists.txt](#cmake-build-configuration). `Graphics::ImageLoader::Options` is passed to
 image loading function to request mipmaps generation and using SRGB texture format.
 
@@ -256,7 +256,7 @@ void TexturedCubeApp::Init()
     using namespace magic_enum::bitwise_operators;
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
-    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options, "Cube Face Texture");
+    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -559,8 +559,8 @@ set(SOURCES
 )
 
 set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Cube.hlsl)
-set(IMAGES_DIR ${RESOURCES_DIR}/Images)
-set(TEXTURES ${IMAGES_DIR}/Textures/MethaneBubbles.jpg)
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
+set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
 
 add_methane_application(MethaneTexturedCube
     "${SOURCES}"
@@ -572,7 +572,7 @@ add_methane_application(MethaneTexturedCube
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
-add_methane_embedded_textures(MethaneTexturedCube "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_embedded_textures(MethaneTexturedCube "${TEXTURES_DIR}" "${TEXTURES}")
 add_methane_shaders(MethaneTexturedCube "${SHADERS_HLSL}" "6_0")
 
 target_link_libraries(MethaneTexturedCube

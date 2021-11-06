@@ -131,7 +131,7 @@ void TexturedCubeApp::Init()
     using namespace magic_enum::bitwise_operators;
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
-    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options, "Cube Face Texture");
+    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),

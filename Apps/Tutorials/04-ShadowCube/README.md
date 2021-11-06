@@ -761,10 +761,10 @@ set(SOURCES
 )
 
 set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)
-set(IMAGES_DIR ${RESOURCES_DIR}/Images)
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES
-    ${IMAGES_DIR}/Textures/MethaneBubbles.jpg
-    ${IMAGES_DIR}/Textures/MarbleWhite.jpg
+    ${TEXTURES_DIR}/MethaneBubbles.jpg
+    ${TEXTURES_DIR}/MarbleWhite.jpg
 )
 
 add_methane_application(MethaneShadowCube
@@ -777,7 +777,7 @@ add_methane_application(MethaneShadowCube
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
-add_methane_embedded_textures(MethaneShadowCube "${IMAGES_DIR}" "${TEXTURES}")
+add_methane_embedded_textures(MethaneShadowCube "${TEXTURES_DIR}" "${TEXTURES}")
 add_methane_shaders(MethaneShadowCube "${SHADERS_HLSL}" "6_0")
 
 target_link_libraries(MethaneShadowCube

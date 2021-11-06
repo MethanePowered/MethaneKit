@@ -142,7 +142,7 @@ void AppBase::InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& f
         Badge::Settings logo_badge_settings { "Methane Logo" };
         logo_badge_settings.blend_color = m_app_settings.logo_badge_color;
         m_logo_badge_ptr = std::make_shared<Badge>(
-            *m_ui_context_ptr, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
+            *m_ui_context_ptr, Data::TextureProvider::Get(), "MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
         );
     }
 

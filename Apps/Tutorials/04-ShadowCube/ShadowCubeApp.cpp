@@ -86,10 +86,10 @@ void ShadowCubeApp::Init()
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
 
     m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), cube_mesh, "Cube");
-    m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MethaneBubbles.jpg", image_options, "Cube Face Texture"));
+    m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MethaneBubbles.jpg", image_options, "Cube Face Texture"));
 
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
-    m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "Textures/MarbleWhite.jpg", image_options, "Floor Texture"));
+    m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MarbleWhite.jpg", image_options, "Floor Texture"));
 
     const auto constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
     const auto scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
