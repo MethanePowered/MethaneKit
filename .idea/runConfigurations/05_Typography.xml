@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="05-Typography" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneTypography" CONFIG_NAME="MSVC DX Debug x64" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneTypography">
+  <configuration default="false" name="05-Typography" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="MethaneKit" TARGET_NAME="MethaneTypography" CONFIG_NAME="Win64 DX Debug" RUN_TARGET_PROJECT_NAME="MethaneKit" RUN_TARGET_NAME="MethaneTypography">
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
     </method>
