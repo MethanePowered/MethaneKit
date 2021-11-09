@@ -26,6 +26,7 @@ Windows application implementation.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Platform/Mouse.h>
+#include <Methane/Memory.hpp>
 
 #include <windows.h>
 
@@ -35,10 +36,13 @@ Windows application implementation.
 namespace Methane::Platform
 {
 
+class ConsoleStreams;
+
 class AppWin : public AppBase
 {
 public:
     explicit AppWin(const Settings& settings);
+    ~AppWin();
 
     // AppBase interface
     int Run(const RunArgs& args) override;
@@ -68,10 +72,11 @@ protected:
     static LRESULT CALLBACK WindowProc(HWND h_wnd, UINT message, WPARAM w_param, LPARAM l_param);
 
 private:
-    AppEnvironment m_env;
-    Mouse::State   m_mouse_state;
-    RECT           m_window_rect {};
-    bool           m_is_message_processing = true;
+    AppEnvironment            m_env;
+    Mouse::State              m_mouse_state;
+    RECT                      m_window_rect {};
+    bool                      m_is_message_processing = true;
+    UniquePtr<ConsoleStreams> m_console_streams_ptr;
 };
 
 } // namespace Methane::Platform

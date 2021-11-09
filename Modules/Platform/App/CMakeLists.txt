@@ -12,6 +12,8 @@ if (WIN32)
 
     set(PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppWin.cpp
+        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.h
+        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.cpp
     )
 
 elseif(APPLE)
