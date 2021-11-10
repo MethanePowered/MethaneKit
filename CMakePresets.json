@@ -1,10 +1,12 @@
 {
     "version": 3,
+    
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 18,
         "patch": 0
     },
+    
     "configurePresets": [
         {
             "name": "Ninja-Default",
@@ -148,6 +150,7 @@
                 }
             }
         },
+
         {
             "name": "Ninja-Default-Vulkan",
             "inherits": "Ninja-Default",
@@ -170,6 +173,7 @@
                 }
             }
         },
+
         {
             "name": "Ninja-Win-Default",
             "inherits": "Ninja-Default",
@@ -178,6 +182,11 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Windows" ]
+                }
             }
         },
         {
@@ -188,6 +197,14 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Linux" ]
+                },
+                "jetbrains.com/clion": {
+                    "toolchain": "GCC"
+                }
             }
         },
         {
@@ -201,8 +218,17 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Darwin"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "macOS" ]
+                },
+                "jetbrains.com/clion": {
+                    "toolchain": "XCode"
+                }
             }
         },
+
         {
             "name": "Ninja-Win-DX-Default",
             "displayName": "Default - Ninja Multi-Config - Windows (DirectX)",
@@ -222,7 +248,7 @@
         },
         {
             "name": "Ninja-Win-DX-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
+            "displayName": "Profile - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
                 "Ninja-Profile",
@@ -231,7 +257,7 @@
         },
         {
             "name": "Ninja-Win-VK-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
+            "displayName": "Profile - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
                 "Ninja-Profile-Vulkan",
@@ -248,6 +274,11 @@
                 "value": "x64",
                 "strategy": "set"
             },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2019 x64"
+                }
+            },
             "inherits": [
                 "Ninja-Win-Default"
             ]
@@ -260,6 +291,11 @@
             "architecture":{
                 "value": "Win32",
                 "strategy": "set"
+            },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2019 x86"
+                }
             },
             "inherits": [
                 "Ninja-Win-Default"
@@ -285,9 +321,10 @@
                 "VS2019-Win32-DX-Default"
             ]
         },
+
         {
             "name": "VS2019-Win64-DX-Profile",
-            "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
+            "displayName": "Profile - VS2019 - Windows x64 (DirectX)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -297,7 +334,7 @@
         },
         {
             "name": "VS2019-Win32-DX-Profile",
-            "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
+            "displayName": "Profile - VS2019 - Windows x86 (DirectX)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -307,7 +344,7 @@
         },
         {
             "name": "VS2019-Win64-VK-Profile",
-            "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
+            "displayName": "Profile - VS2019 - Windows x64 (Vulkan)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -317,7 +354,7 @@
         },
         {
             "name": "VS2019-Win32-VK-Profile",
-            "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
+            "displayName": "Profile - VS2019 - Windows x86 (Vulkan)",
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -325,9 +362,10 @@
                 "VS2019-Win32-DX-Profile"
             ]
         },
+
         {
             "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
+            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -337,7 +375,7 @@
         },
         {
             "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
+            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -347,7 +385,7 @@
         },
         {
             "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
+            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -357,7 +395,7 @@
         },
         {
             "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
+            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
@@ -365,6 +403,102 @@
                 "VS2019-Win32-DX-Scan"
             ]
         },
+
+        {
+            "name": "VS2022-Win64",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022",
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2022 x64"
+                }
+            }
+        },
+        {
+            "name": "VS2022-Win32",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022",
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 2022 x86"
+                }
+            }
+        },
+
+        {
+            "name": "VS2022-Win64-DX-Default",
+            "displayName": "Default - VS2022 - Windows x64 (DirectX)",
+            "description": "Default configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
+            "inherits": [
+                "VS2022-Win64",
+                "VS2019-Win64-DX-Default"
+            ]
+        },
+        {
+            "name": "VS2022-Win32-DX-Default",
+            "displayName": "Default - VS2022 - Windows x86 (DirectX)",
+            "description": "Default configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
+            "inherits": [
+                "VS2022-Win32",
+                "VS2019-Win32-DX-Default"
+            ]
+        },
+        {
+            "name": "VS2022-Win64-VK-Default",
+            "displayName": "Default - VS2022 - Windows x64 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2022 generator for Windows x64 (Vulkan)",
+            "inherits": [
+                "VS2022-Win64",
+                "VS2019-Win64-VK-Default"
+            ]
+        },
+        {
+            "name": "VS2022-Win32-VK-Default",
+            "displayName": "Default - VS2022 - Windows x86 (Vulkan)",
+            "description": "Default configuration using Visual Studio 2022 generator for Windows x86 (Vulkan)",
+            "inherits": [
+                "VS2022-Win32",
+                "VS2019-Win32-VK-Default"
+            ]
+        },
+
+        {
+            "name": "VS2022-Win64-DX-Profile",
+            "displayName": "Profile - VS2022 - Windows x64 (DirectX)",
+            "description": "Profile configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
+            "inherits": [
+                "VS2022-Win64",
+                "VS2019-Win64-DX-Profile"
+            ]
+        },
+        {
+            "name": "VS2022-Win32-DX-Profile",
+            "displayName": "Profile - VS2022 - Windows x86 (DirectX)",
+            "description": "Profile configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
+            "inherits": [
+                "VS2022-Win32",
+                "VS2019-Win32-DX-Profile"
+            ]
+        },
+        {
+            "name": "VS2022-Win64-VK-Profile",
+            "displayName": "Profile - VS2022 - Windows x64 (Vulkan)",
+            "description": "Profile configuration using Visual Studio 2022 generator for Windows x64 (Vulkan)",
+            "inherits": [
+                "VS2022-Win64",
+                "VS2019-Win64-VK-Profile"
+            ]
+        },
+        {
+            "name": "VS2022-Win32-VK-Profile",
+            "displayName": "Profile - VS2022 - Windows x86 (Vulkan)",
+            "description": "Profile configuration using Visual Studio 2022 generator for Windows x86 (Vulkan)",
+            "inherits": [
+                "VS2022-Win32",
+                "VS2019-Win32-VK-Profile"
+            ]
+        },
+
         {
             "name": "Ninja-Lin-VK-Default",
             "displayName": "Default - Ninja Multi-Config - Linux (Vulkan)",
@@ -375,13 +509,14 @@
         },
         {
             "name": "Ninja-Lin-VK-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
+            "displayName": "Profile - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
                 "Ninja-Profile",
                 "Ninja-Lin-Default"
             ]
         },
+
         {
             "name": "Make-Lin-VK-Default",
             "displayName": "Default - Unix Makefiles - Linux (Vulkan)",
@@ -393,7 +528,7 @@
         },
         {
             "name": "Make-Lin-VK-Profile",
-            "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
+            "displayName": "Profile - Unix Makefiles - Linux (Vulkan)",
             "description": "Profiling configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
@@ -402,7 +537,7 @@
         },
         {
             "name": "Make-Lin-VK-Scan",
-            "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
+            "displayName": "Scan - Unix Makefiles - Linux (Vulkan)",
             "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
@@ -410,6 +545,7 @@
                 "Ninja-Lin-VK-Default"
             ]
         },
+
         {
             "name": "Ninja-Mac-MTL-Default",
             "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
@@ -420,13 +556,14 @@
         },
         {
             "name": "Ninja-Mac-MTL-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
+            "displayName": "Profile - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
                 "Ninja-Profile",
                 "Ninja-Mac-Default"
             ]
         },
+
         {
             "name": "Xcode-Mac-MTL-Default",
             "displayName": "Default - Xcode - MacOS (Metal)",
@@ -438,7 +575,7 @@
         },
         {
             "name": "Xcode-Mac-MTL-Profile",
-            "displayName": "Profiling - Xcode - MacOS (Metal)",
+            "displayName": "Profile - Xcode - MacOS (Metal)",
             "description": "Profiling configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
@@ -447,7 +584,7 @@
         },
         {
             "name": "Xcode-Mac-MTL-Scan",
-            "displayName": "Scanning - Xcode - MacOS (Metal)",
+            "displayName": "Scan - Xcode - MacOS (Metal)",
             "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
@@ -456,6 +593,7 @@
             ]
         }
     ],
+
     "buildPresets": [
         {
             "name": "Windows-Build",
@@ -487,6 +625,7 @@
                 "rhs": "Darwin"
             }
         },
+
         {
             "name": "Ninja-Win-DX-Debug",
             "displayName": "Debug - Ninja Multi-Config - Windows (DirectX)",
@@ -505,12 +644,13 @@
         },
         {
             "name": "Ninja-Win-DX-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Windows (DirectX)",
+            "displayName": "Profile - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Win-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "Ninja-Win-VK-Debug",
             "displayName": "Debug - Ninja Multi-Config - Windows (Vulkan)",
@@ -529,12 +669,13 @@
         },
         {
             "name": "Ninja-Win-VK-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Windows (Vulkan)",
+            "displayName": "Profile - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling build with Ninja Multi-Config for Windows (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Win-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "VS2019-Win64-DX-Debug",
             "displayName": "Debug - VS2019 - Windows x64 (DirectX)",
@@ -569,7 +710,7 @@
         },
         {
             "name": "VS2019-Win64-DX-Profile",
-            "displayName": "Profiling - VS2019 - Windows x64 (DirectX)",
+            "displayName": "Profile - VS2019 - Windows x64 (DirectX)",
             "description": "Profiling build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win64-DX-Profile",
@@ -577,15 +718,16 @@
         },
         {
             "name": "VS2019-Win32-DX-Profile",
-            "displayName": "Profiling - VS2019 - Windows x86 (DirectX)",
+            "displayName": "Profile - VS2019 - Windows x86 (DirectX)",
             "description": "Profiling build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scanning - VS2019 - Windows x64 (DirectX)",
+            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
             "description": "Scanning build with Visual Studio 2019 for Windows x64 (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win64-DX-Scan",
@@ -593,7 +735,7 @@
         },
         {
             "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scanning - VS2019 - Windows x86 (DirectX)",
+            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
             "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-DX-Scan",
@@ -634,7 +776,7 @@
         },
         {
             "name": "VS2019-Win64-VK-Profile",
-            "displayName": "Profiling - VS2019 - Windows x64 (Vulkan)",
+            "displayName": "Profile - VS2019 - Windows x64 (Vulkan)",
             "description": "Profiling build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win64-VK-Profile",
@@ -642,15 +784,16 @@
         },
         {
             "name": "VS2019-Win32-VK-Profile",
-            "displayName": "Profiling - VS2019 - Windows x86 (Vulkan)",
+            "displayName": "Profile - VS2019 - Windows x86 (Vulkan)",
             "description": "Profiling build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scanning - VS2019 - Windows x64 (Vulkan)",
+            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
             "description": "Scanning build with Visual Studio 2019 for Windows x64 (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win64-VK-Scan",
@@ -658,12 +801,111 @@
         },
         {
             "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scanning - VS2019 - Windows x86 (Vulkan)",
+            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
             "description": "Scanning build with Visual Studio 2019 for Windows x86 (Vulkan)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "VS2019-Win32-VK-Scan",
             "configuration": "Debug"
         },
+
+        {
+            "name": "VS2022-Win64-DX-Debug",
+            "displayName": "Debug - VS2022 - Windows x64 (DirectX)",
+            "description": "Debug build with Visual Studio 2022 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-DX-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win32-DX-Debug",
+            "displayName": "Debug - VS2022 - Windows x86 (DirectX)",
+            "description": "Debug build with Visual Studio 2022 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-DX-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win64-DX-Release",
+            "displayName": "Release - VS2022 - Windows x64 (DirectX)",
+            "description": "Release build with Visual Studio 2022 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-DX-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2022-Win32-DX-Release",
+            "displayName": "Release - VS2022 - Windows x86 (DirectX)",
+            "description": "Release build with Visual Studio 2022 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-DX-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2022-Win64-DX-Profile",
+            "displayName": "Profile - VS2022 - Windows x64 (DirectX)",
+            "description": "Profiling build with Visual Studio 2022 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-DX-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2022-Win32-DX-Profile",
+            "displayName": "Profile - VS2022 - Windows x86 (DirectX)",
+            "description": "Profiling build with Visual Studio 2022 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-DX-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+
+        {
+            "name": "VS2022-Win64-VK-Debug",
+            "displayName": "Debug - VS2022 - Windows x64 (Vulkan)",
+            "description": "Debug build with Visual Studio 2022 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win32-VK-Debug",
+            "displayName": "Debug - VS2022 - Windows x86 (Vulkan)",
+            "description": "Debug build with Visual Studio 2022 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win64-VK-Release",
+            "displayName": "Release - VS2022 - Windows x64 (Vulkan)",
+            "description": "Release build with Visual Studio 2022 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2022-Win32-VK-Release",
+            "displayName": "Release - VS2022 - Windows x86 (Vulkan)",
+            "description": "Release build with Visual Studio 2022 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "VS2022-Win64-VK-Profile",
+            "displayName": "Profile - VS2022 - Windows x64 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2022 for Windows x64 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-VK-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "VS2022-Win32-VK-Profile",
+            "displayName": "Profile - VS2022 - Windows x86 (Vulkan)",
+            "description": "Profiling build with Visual Studio 2022 for Windows x86 (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-VK-Profile",
+            "configuration": "RelWithDebInfo"
+        },
+
         {
             "name": "Ninja-Lin-VK-Debug",
             "displayName": "Debug - Ninja Multi-Config - Linux (Vulkan)",
@@ -682,12 +924,13 @@
         },
         {
             "name": "Ninja-Lin-VK-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - Linux (Vulkan)",
+            "displayName": "Profile - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling build with Ninja Multi-Config for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Ninja-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "Make-Lin-VK-Debug",
             "displayName": "Debug - Unix Makefiles - Linux (Vulkan)",
@@ -706,20 +949,22 @@
         },
         {
             "name": "Make-Lin-VK-Profile",
-            "displayName": "Profiling - Unix Makefiles - Linux (Vulkan)",
+            "displayName": "Profile - Unix Makefiles - Linux (Vulkan)",
             "description": "Profiling build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Make-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "Make-Lin-VK-Scan",
-            "displayName": "Scanning - Unix Makefiles - Linux (Vulkan)",
+            "displayName": "Scan - Unix Makefiles - Linux (Vulkan)",
             "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Make-Lin-VK-Scan",
             "configuration": "Debug"
         },
+
         {
             "name": "Ninja-Mac-MTL-Debug",
             "displayName": "Debug - Ninja Multi-Config - MacOS (Metal)",
@@ -738,12 +983,13 @@
         },
         {
             "name": "Ninja-Mac-MTL-Profile",
-            "displayName": "Profiling - Ninja Multi-Config - MacOS (Metal)",
+            "displayName": "Profile - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling build with Ninja Multi-Config for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Ninja-Mac-MTL-Profile",
             "configuration": "RelWithDebInfo"
         },
+
         {
             "name": "Xcode-Mac-MTL-Debug",
             "displayName": "Debug - Xcode - MacOS (Metal)",
@@ -762,15 +1008,16 @@
         },
         {
             "name": "Xcode-Mac-MTL-Profile",
-            "displayName": "Profiling - Xcode - MacOS (Metal)",
+            "displayName": "Profile - Xcode - MacOS (Metal)",
             "description": "Profiling build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Xcode-Mac-MTL-Profile",
             "configuration": "RelWithDebInfo"
         },
+        
         {
             "name": "Xcode-Mac-MTL-Scan",
-            "displayName": "Scanning - Xcode - MacOS (Metal)",
+            "displayName": "Scan - Xcode - MacOS (Metal)",
             "description": "Scanning build with Xcode for MacOS (Metal)",
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Xcode-Mac-MTL-Scan",
