@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Windows/IOStream.cpp
-Windows IO Stream used for console output from GUI app.
+FILE: Methane/Platform/Windows/ConsoleStreams.cpp
+IO Stream class used for standard and error output redirection from GUI app to console.
 
 ******************************************************************************/
 
@@ -58,17 +58,18 @@ bool IOStream::RedirectToFile(std::string_view file_name, std::string_view file_
     if (m_is_redirected || GetStdHandle(m_std_handle) == INVALID_HANDLE_VALUE)
         return false;
 
-    if (!IsMappedToFile(m_std_stream))
-    {
-        FILE* target_stream = nullptr;
-        const errno_t error = freopen_s(&target_stream, file_name.data(), file_mode.data(), m_std_stream);
-        if (error)
-            return false;
+    if (IsMappedToFile(m_std_stream))
+        return true;
 
-        setvbuf(m_std_stream, nullptr, _IONBF, 0);
-        m_std_stream = target_stream;
-    }
+    FILE* target_stream = nullptr;
+    const errno_t error = freopen_s(&target_stream, file_name.data(), file_mode.data(), m_std_stream);
+    if (error)
+        return false;
+
+    setvbuf(m_std_stream, nullptr, _IONBF, 0);
+    m_std_stream = target_stream;
     return true;
+    
 }
 
 ConsoleStreams::ConsoleStreams()

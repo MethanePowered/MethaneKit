@@ -26,6 +26,7 @@ Methane object interface: represents any named object.
 #include <Methane/Memory.hpp>
 
 #include <string>
+#include <stdexcept>
 
 namespace Methane::Graphics
 {

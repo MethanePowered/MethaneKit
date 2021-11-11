@@ -26,6 +26,7 @@ Planet rendering primitive
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 

@@ -136,7 +136,6 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
         )
     else()
         install(TARGETS ${TARGET}
-            CONFIGURATIONS Release RelWithDebInfo
             RUNTIME
                 DESTINATION ${INSTALL_DIR}
                 COMPONENT Runtime

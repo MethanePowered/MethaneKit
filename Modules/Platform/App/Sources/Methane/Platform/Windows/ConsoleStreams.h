@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/Windows/IOStream.h
-Windows IO Stream used for console output from GUI app.
+FILE: Methane/Platform/Windows/ConsoleStreams.h
+IO Stream class used for standard and error output redirection from GUI app to console.
 
 ******************************************************************************/
 #pragma once
