@@ -34,27 +34,13 @@ namespace Methane::Graphics
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-#if 0
     return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
-#else
-    META_UNUSED(program_ptr);
-    META_UNUSED(resource_locations_by_argument);
-    META_UNUSED(frame_index);
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
-#endif
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-#if 0
     return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
-#else
-    META_UNUSED(other_program_bindings);
-    META_UNUSED(replace_resource_location_by_argument);
-    META_UNUSED(frame_index);
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("ProgramBindings has no Vulkan API implementation yet");
-#endif
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)

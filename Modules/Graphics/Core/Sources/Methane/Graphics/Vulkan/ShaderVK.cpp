@@ -25,6 +25,7 @@ Vulkan implementation of the shader interface.
 #include "ProgramVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
+#include "ProgramBindingsVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
@@ -110,6 +111,38 @@ static vk::Format GetVertexAttributeFormatFromSpirvType(const spirv_cross::SPIRT
     }
 }
 
+static uint32_t GetArraySize(const spirv_cross::SPIRType& resource_type) noexcept
+{
+    META_FUNCTION_TASK();
+    if (resource_type.array.empty())
+        return 1;
+
+    return resource_type.array.front()
+           ? resource_type.array.front()
+           : std::numeric_limits<uint32_t>::max();
+}
+
+static Resource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_descriptor_type)
+{
+    META_FUNCTION_TASK();
+    switch(vk_descriptor_type)
+    {
+    case vk::DescriptorType::eUniformBuffer:
+    case vk::DescriptorType::eStorageBuffer:
+        return Resource::Type::Buffer;
+
+    case vk::DescriptorType::eStorageImage:
+    case vk::DescriptorType::eSampledImage:
+        return Resource::Type::Texture;
+
+    case vk::DescriptorType::eSampler:
+        return Resource::Type::Sampler;
+
+    default:
+        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, Resource::Type::Buffer);
+    }
+}
+
 Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
@@ -125,10 +158,54 @@ ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const S
     META_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors&) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
+    const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
+    const Shader::Type shader_type = GetType();
     ArgumentBindings argument_bindings;
+
+    const auto add_spirv_resources_to_argument_bindings = [&](const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
+                                                              const vk::DescriptorType vk_descriptor_type)
+    {
+        const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);
+        for (const spirv_cross::Resource& resource : spirv_resources)
+        {
+            const Program::Argument shader_argument(shader_type, spirv_compiler.get_name(resource.id));
+            const auto argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
+            const Program::ArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
+                                                           ? Program::ArgumentAccessor(shader_argument)
+                                                           : *argument_acc_it;
+
+            const uint32_t binding_point = spirv_compiler.get_decoration(resource.id, spv::DecorationBinding);
+            const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
+
+            argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
+                GetContext(),
+                ProgramBindingsVK::ArgumentBindingVK::SettingsVK
+                {
+                    ProgramBindings::ArgumentBinding::Settings
+                    {
+                        argument_acc,
+                        resource_type,
+                        GetArraySize(spirv_type)
+                    },
+                    vk_descriptor_type,
+                    binding_point,
+                }
+            ));
+        }
+    };
+
+    const spirv_cross::ShaderResources spirv_resources = spirv_compiler.get_shader_resources();
+    add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,   vk::DescriptorType::eUniformBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,   vk::DescriptorType::eStorageBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,    vk::DescriptorType::eStorageImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,    vk::DescriptorType::eSampledImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eStorageImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
+    // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
+
     return argument_bindings;
 }
 

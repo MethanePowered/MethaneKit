@@ -38,6 +38,8 @@ public:
     public:
         struct SettingsVK : Settings
         {
+            vk::DescriptorType descriptor_type;
+            uint32_t           binding;
         };
 
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);

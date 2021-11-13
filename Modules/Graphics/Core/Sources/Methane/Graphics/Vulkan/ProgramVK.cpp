@@ -33,9 +33,16 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-static vk::UniquePipelineLayout CreateVulkanPipelineLayout(const vk::Device& vk_device)
+static vk::UniquePipelineLayout CreateVulkanPipelineLayout(const Program::Settings& settings, const vk::Device& vk_device)
 {
     META_FUNCTION_TASK();
+    for(const Ptr<Shader>& shader_ptr : settings.shaders)
+    {
+        META_CHECK_ARG_NOT_NULL(shader_ptr);
+        const ShaderBase& base_shader = dynamic_cast<const ShaderBase&>(*shader_ptr);
+        ShaderBase::ArgumentBindings argument_bindings = base_shader.GetArgumentBindings(settings.argument_accessors);
+        META_UNUSED(argument_bindings);
+    }
     return vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo());
 }
 
@@ -47,7 +54,7 @@ Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 
 ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
-    , m_vk_unique_pipeline_layout(CreateVulkanPipelineLayout(GetContextVK().GetDeviceVK().GetNativeDevice()))
+    , m_vk_unique_pipeline_layout(CreateVulkanPipelineLayout(settings, GetContextVK().GetDeviceVK().GetNativeDevice()))
 {
     META_FUNCTION_TASK();
 }

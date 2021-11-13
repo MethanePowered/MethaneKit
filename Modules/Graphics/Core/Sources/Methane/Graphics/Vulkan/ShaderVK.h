@@ -54,11 +54,11 @@ public:
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
 
-    const Data::Chunk&                     GetNativeByteCode() const noexcept { return *m_byte_code_chunk_ptr; }
-    const vk::ShaderModule&                GetNativeModule() const noexcept   { return m_vk_unique_module.get(); }
-    const spirv_cross::Compiler&           GetNativeCompiler() const;
-    vk::PipelineShaderStageCreateInfo      GetNativeStageCreateInfo() const;
-    vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo(const ProgramVK& program);
+    const Data::Chunk&                          GetNativeByteCode() const noexcept { return *m_byte_code_chunk_ptr; }
+    const vk::ShaderModule&                     GetNativeModule() const noexcept   { return m_vk_unique_module.get(); }
+    const spirv_cross::Compiler&                GetNativeCompiler() const;
+    vk::PipelineShaderStageCreateInfo           GetNativeStageCreateInfo() const;
+    vk::PipelineVertexInputStateCreateInfo      GetNativeVertexInputStateCreateInfo(const ProgramVK& program);
 
 private:
     void InitializeVertexInputDescriptions(const ProgramVK& program);
