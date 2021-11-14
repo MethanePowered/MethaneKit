@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -26,25 +26,13 @@ Vulkan implementation of the program interface.
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "UtilsVK.hpp"
+#include "ProgramBindingsVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
-
-static vk::UniquePipelineLayout CreateVulkanPipelineLayout(const Program::Settings& settings, const vk::Device& vk_device)
-{
-    META_FUNCTION_TASK();
-    for(const Ptr<Shader>& shader_ptr : settings.shaders)
-    {
-        META_CHECK_ARG_NOT_NULL(shader_ptr);
-        const ShaderBase& base_shader = dynamic_cast<const ShaderBase&>(*shader_ptr);
-        ShaderBase::ArgumentBindings argument_bindings = base_shader.GetArgumentBindings(settings.argument_accessors);
-        META_UNUSED(argument_bindings);
-    }
-    return vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo());
-}
 
 Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 {
@@ -54,9 +42,9 @@ Ptr<Program> Program::Create(const Context& context, const Settings& settings)
 
 ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
-    , m_vk_unique_pipeline_layout(CreateVulkanPipelineLayout(settings, GetContextVK().GetDeviceVK().GetNativeDevice()))
 {
     META_FUNCTION_TASK();
+    InitArgumentBindings(settings.argument_accessors);
 }
 
 void ProgramVK::SetName(const std::string& name)
@@ -100,6 +88,44 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
     META_FUNCTION_TASK();
     auto& vertex_shader = static_cast<ShaderVK&>(GetShaderRef(Shader::Type::Vertex));
     return vertex_shader.GetNativeVertexInputStateCreateInfo(*this);
+}
+
+const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout() const
+{
+    META_FUNCTION_TASK();
+    if (m_vk_unique_descriptor_set_layout)
+        return m_vk_unique_descriptor_set_layout.get();
+
+    std::vector<vk::DescriptorSetLayoutBinding> layout_bindings;
+    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr);
+        const ProgramBindingsVK::ArgumentBindingVK::SettingsVK& vulkan_binding_settings = vulkan_argument_binding.GetSettingsVK();
+        layout_bindings.emplace_back(
+            vulkan_binding_settings.binding,
+            vulkan_binding_settings.descriptor_type,
+            vulkan_binding_settings.resource_count,
+            ShaderVK::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
+        );
+    }
+
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    m_vk_unique_descriptor_set_layout = vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_bindings));
+    return m_vk_unique_descriptor_set_layout.get();
+}
+
+const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout() const
+{
+    META_FUNCTION_TASK();
+    if (m_vk_unique_pipeline_layout)
+        return m_vk_unique_pipeline_layout.get();
+
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    const vk::DescriptorSetLayout& vk_descriptor_set_layout = GetNativeDescriptorSetLayout();
+
+    m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, 1, &vk_descriptor_set_layout));
+    return m_vk_unique_pipeline_layout.get();
 }
 
 } // namespace Methane::Graphics

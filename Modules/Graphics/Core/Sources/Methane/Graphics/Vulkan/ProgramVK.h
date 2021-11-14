@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -45,12 +45,14 @@ public:
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
-    const vk::PipelineLayout& GetNativePipelineLayout() const noexcept { return m_vk_unique_pipeline_layout.get(); }
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout() const;
+    const vk::PipelineLayout& GetNativePipelineLayout() const;
 
 private:
     const IContextVK& GetContextVK() const noexcept;
 
-    vk::UniquePipelineLayout m_vk_unique_pipeline_layout;
+    mutable vk::UniqueDescriptorSetLayout m_vk_unique_descriptor_set_layout;
+    mutable vk::UniquePipelineLayout      m_vk_unique_pipeline_layout;
 };
 
 } // namespace Methane::Graphics

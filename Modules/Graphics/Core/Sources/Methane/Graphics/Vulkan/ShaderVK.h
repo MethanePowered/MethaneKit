@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -59,6 +59,8 @@ public:
     const spirv_cross::Compiler&                GetNativeCompiler() const;
     vk::PipelineShaderStageCreateInfo           GetNativeStageCreateInfo() const;
     vk::PipelineVertexInputStateCreateInfo      GetNativeVertexInputStateCreateInfo(const ProgramVK& program);
+
+    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(Shader::Type shader_type);
 
 private:
     void InitializeVertexInputDescriptions(const ProgramVK& program);

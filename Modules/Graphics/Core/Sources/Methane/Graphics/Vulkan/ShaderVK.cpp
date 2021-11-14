@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -35,18 +35,6 @@ Vulkan implementation of the shader interface.
 
 namespace Methane::Graphics
 {
-
-static vk::ShaderStageFlagBits ConvertShaderTypeToStageFlagBits(Shader::Type shader_type)
-{
-    META_FUNCTION_TASK();
-    switch(shader_type)
-    {
-    case Shader::Type::All:    return vk::ShaderStageFlagBits::eAll;
-    case Shader::Type::Vertex: return vk::ShaderStageFlagBits::eVertex;
-    case Shader::Type::Pixel:  return vk::ShaderStageFlagBits::eFragment;
-    default:                   META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
-    }
-}
 
 static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(Program::InputBufferLayout::StepType step_type)
 {
@@ -225,7 +213,7 @@ vk::PipelineShaderStageCreateInfo ShaderVK::GetNativeStageCreateInfo() const
     META_FUNCTION_TASK();
     return vk::PipelineShaderStageCreateInfo(
         vk::PipelineShaderStageCreateFlags{},
-        ConvertShaderTypeToStageFlagBits(GetType()),
+        ConvertTypeToStageFlagBits(GetType()),
         GetNativeModule(),
         GetSettings().entry_function.function_name.c_str()
     );
@@ -300,6 +288,18 @@ const IContextVK& ShaderVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextVK&>(GetContext());
+}
+
+vk::ShaderStageFlagBits ShaderVK::ConvertTypeToStageFlagBits(Shader::Type shader_type)
+{
+    META_FUNCTION_TASK();
+    switch(shader_type)
+    {
+    case Shader::Type::All:    return vk::ShaderStageFlagBits::eAll;
+    case Shader::Type::Vertex: return vk::ShaderStageFlagBits::eVertex;
+    case Shader::Type::Pixel:  return vk::ShaderStageFlagBits::eFragment;
+    default:                   META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
+    }
 }
 
 } // namespace Methane::Graphics
