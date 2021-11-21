@@ -29,7 +29,7 @@ DirectX 12 implementation of the resource interface.
 #include "BlitCommandListDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
