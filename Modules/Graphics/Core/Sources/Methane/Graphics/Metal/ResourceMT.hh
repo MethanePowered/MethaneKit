@@ -40,8 +40,8 @@ class ResourceMT : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceMT(const ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
-        : ReourceBaseType(context, settings, descriptor_by_usage)
+    ResourceMT(const ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage&)
+        : ReourceBaseType(context, settings)
     {
         META_FUNCTION_TASK();
     }
@@ -51,6 +51,19 @@ public:
         META_FUNCTION_TASK();
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+    }
+
+    // IResource overrides
+    const Resource::DescriptorByUsage& GetDescriptorByUsage() const noexcept final
+    {
+        META_FUNCTION_TASK();
+        static const Resource::DescriptorByUsage descriptor_by_usage;
+        return descriptor_by_usage;
+    }
+
+    const Resource::Descriptor& GetDescriptor(Resource::Usage) const final
+    {
+        META_FUNCTION_NOT_IMPLEMENTED();
     }
 
 protected:

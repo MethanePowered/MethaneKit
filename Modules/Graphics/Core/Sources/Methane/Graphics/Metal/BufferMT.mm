@@ -79,7 +79,6 @@ BufferMT::BufferMT(const ContextBase& context, const Settings& settings, const D
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
 }
 
 void BufferMT::SetName(const std::string& name)

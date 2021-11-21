@@ -102,8 +102,6 @@ SamplerMT::SamplerMT(const ContextBase& context, const Settings& settings, const
 {
     META_FUNCTION_TASK();
 
-    InitializeDefaultDescriptors();
-    
     m_mtl_sampler_desc.rAddressMode = ConvertAddressModeToMetal(settings.address.r);
     m_mtl_sampler_desc.sAddressMode = ConvertAddressModeToMetal(settings.address.s);
     m_mtl_sampler_desc.tAddressMode = ConvertAddressModeToMetal(settings.address.t);

@@ -22,6 +22,7 @@ Base implementation of the program bindings interface.
 ******************************************************************************/
 
 #include "ProgramBindingsBase.h"
+#include "ProgramBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Checks.hpp>

@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ResourceManagerVK.h
-Dummy Vulkan resource manager.
+FILE: Methane/Graphics/Metal/ResourceManagerMT.h
+Dummy Metal resource manager.
 
 ******************************************************************************/
 
@@ -28,7 +28,7 @@ Dummy Vulkan resource manager.
 namespace Methane::Graphics
 {
 
-struct ResourceManagerVK : ResourceManager
+struct ResourceManagerMT : ResourceManager
 {
     void CompleteInitialization() final {}
     void Release() final {}

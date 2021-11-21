@@ -119,7 +119,6 @@ TextureMT::TextureMT(const ContextBase& context, const Settings& settings, const
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
 }
 
 void TextureMT::SetName(const std::string& name)

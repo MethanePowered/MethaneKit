@@ -26,6 +26,7 @@ Metal template implementation of the base context interface.
 #include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "ProgramLibraryMT.hh"
+#include "ResourceManagerMT.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -57,6 +58,8 @@ public:
     }
 
     // IContextMT overrides
+
+    ResourceManager& GetResourceManager() noexcept final { return m_resource_manager; }
 
     const DeviceMT& GetDeviceMT() const noexcept final
     {
@@ -95,6 +98,7 @@ protected:
 private:
     using LibraryByName = std::map<std::string, Ptr<ProgramLibraryMT>>;
 
+    ResourceManagerMT m_resource_manager;
     mutable LibraryByName m_library_by_name;
     NSString* m_ns_name;
 };
