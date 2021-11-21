@@ -23,6 +23,7 @@ DirectX 12 implementation of the resource interface.
 
 #pragma once
 
+#include "DescriptorHeap.h"
 #include "ResourceBarriersDX.h"
 
 #include <Methane/Graphics/ResourceBase.h>

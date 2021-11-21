@@ -22,7 +22,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps
 ******************************************************************************/
 
 #include "DescriptorHeap.h"
-#include "ResourceBase.h"
+#include "Methane/Graphics/ResourceBase.h"
 
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Exceptions.hpp>

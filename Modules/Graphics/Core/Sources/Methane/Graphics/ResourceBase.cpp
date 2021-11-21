@@ -51,56 +51,12 @@ Resource::AllocationError::AllocationError(const Resource& resource, std::string
     META_FUNCTION_TASK();
 }
 
-ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
+ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context)
     : m_type(type)
     , m_usage_mask(usage_mask)
     , m_context(context)
-    , m_descriptor_by_usage(descriptor_by_usage)
 {
     META_FUNCTION_TASK();
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        descriptor.heap.ReplaceResource(*this, descriptor.index);
-    }
-}
-
-ResourceBase::~ResourceBase()
-{
-    META_FUNCTION_TASK();
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        descriptor.heap.RemoveResource(descriptor.index);
-    }
-}
-
-void ResourceBase::InitializeDefaultDescriptors()
-{
-    META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    for (Usage usage : GetPrimaryUsageValues())
-    {
-        if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
-            continue;
-
-        if (const auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-            descriptor_by_usage_it == m_descriptor_by_usage.end())
-        {
-            // Create default resource descriptor by usage
-            const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-            DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
-            m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
-        }
-    }
-}
-
-const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
-{
-    META_FUNCTION_TASK();
-    auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "resource '{}' does not support '{}' usage",
-                         GetName(), magic_enum::enum_name(usage));
-    return descriptor_by_usage_it->second;
 }
 
 void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue*)
@@ -152,48 +108,6 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
-}
-
-DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
-{
-    META_FUNCTION_TASK();
-    switch (resource_usage)
-    {
-    case Resource::Usage::ShaderRead:
-        return (m_type == Type::Sampler)
-                ? DescriptorHeap::Type::Samplers
-                : DescriptorHeap::Type::ShaderResources;
-
-    case Resource::Usage::ShaderWrite:
-    case Resource::Usage::RenderTarget:
-        return (m_type == Type::Texture && static_cast<const TextureBase&>(*this).GetSettings().type == Texture::Type::DepthStencilBuffer)
-                ? DescriptorHeap::Type::DepthStencil
-                : DescriptorHeap::Type::RenderTargets;
-
-    default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined, "resource usage does not map to descriptor heap");
-    }
-}
-
-const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage usage) const
-{
-    META_FUNCTION_TASK();
-    auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "Resource '{}' does not have descriptor for usage '{}'",
-                         GetName(), magic_enum::enum_name(usage));
-    return descriptor_by_usage_it->second;
-}
-
-DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
-{
-    META_FUNCTION_TASK();
-    DescriptorHeap::Types heap_types;
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        heap_types.insert(descriptor.heap.GetSettings().type);
-    }
-    return heap_types;
 }
 
 bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)

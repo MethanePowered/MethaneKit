@@ -38,7 +38,7 @@ class BufferBase
     , public ResourceBase
 {
 public:
-    BufferBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferBase(const ContextBase& context, const Settings& settings);
 
     // Resource interface
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;

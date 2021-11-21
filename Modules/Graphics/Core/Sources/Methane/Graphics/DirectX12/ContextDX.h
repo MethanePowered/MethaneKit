@@ -32,12 +32,14 @@ namespace Methane::Graphics
 
 class CommandQueueDX;
 class DeviceDX;
+class ResourceManagerDX;
 
 struct IContextDX
 {
     virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
     virtual CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) = 0;
     virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const = 0;
+    virtual ResourceManagerDX& GetResourceManagerDX() const noexcept = 0;
 
     virtual ~IContextDX() = default;
 };

@@ -22,7 +22,6 @@ Base implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureBase.h"
-#include "DescriptorHeap.h"
 #include "RenderContextBase.h"
 
 #include <Methane/Graphics/TypeFormatters.hpp>
@@ -103,8 +102,8 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
     return settings;
 }
 
-TextureBase::TextureBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
+TextureBase::TextureBase(const ContextBase& context, const Settings& settings)
+    : ResourceBase(Resource::Type::Texture, settings.usage_mask, context)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

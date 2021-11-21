@@ -24,7 +24,6 @@ Base implementation of the shader interface.
 #pragma once
 
 #include "CommandListBase.h"
-#include "DescriptorHeap.h"
 #include "ProgramBindingsBase.h"
 
 #include <Methane/Graphics/Shader.h>

@@ -22,7 +22,6 @@ Base implementation of the program bindings interface.
 ******************************************************************************/
 
 #include "ProgramBindingsBase.h"
-#include "RenderContextBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Checks.hpp>
@@ -52,21 +51,6 @@ struct fmt::formatter<Methane::Graphics::Resource::Location>
 
 namespace Methane::Graphics
 {
-
-DescriptorsCountByAccess::DescriptorsCountByAccess()
-{
-    std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
-}
-
-uint32_t& DescriptorsCountByAccess::operator[](Program::ArgumentAccessor::Type access_type)
-{
-    return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
-}
-
-uint32_t DescriptorsCountByAccess::operator[](Program::ArgumentAccessor::Type access_type) const
-{
-    return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
-}
 
 ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const Program::Argument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
@@ -171,8 +155,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO(program_ptr);
-
-    ReserveDescriptorHeapRanges();
+    InitializeArgumentBindings();
     SetResourcesForArguments(resource_locations_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
@@ -182,9 +165,9 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_frame_index(frame_index.value_or(other_program_bindings.m_frame_index))
-    , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
+    InitializeArgumentBindings();
 
     // Form map of volatile resource bindings with replaced resource locations
     ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
@@ -204,29 +187,8 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
         );
     }
 
-    ReserveDescriptorHeapRanges();
     SetResourcesForArguments(resource_locations_by_argument);
     VerifyAllArgumentsAreBoundToResources();
-}
-
-ProgramBindingsBase::~ProgramBindingsBase()
-{
-    META_FUNCTION_TASK();
-
-    // Release mutable descriptor ranges in heaps (constant ranges are released by the program)
-    for (auto& heap_reservation_opt : m_descriptor_heap_reservations_by_type)
-    {
-        if (!heap_reservation_opt)
-            continue;
-
-        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
-            !mutable_descriptor_range.IsEmpty())
-        {
-            heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
-        }
-
-        heap_reservation_opt.reset();
-    }
 }
 
 Program& ProgramBindingsBase::GetProgram() const
@@ -249,79 +211,21 @@ void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const
     // Implementation is API specific, not handled by default
 }
 
-void ProgramBindingsBase::ReserveDescriptorHeapRanges()
+void ProgramBindingsBase::InitializeArgumentBindings()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_program_ptr);
     const auto& program = static_cast<const ProgramBase&>(GetProgram());
-    const uint32_t frames_count = program.GetContext().GetType() == Context::Type::Render
-                                ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
-                                : 1U;
-
-    // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
-    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);
         if (!m_binding_by_argument.count(program_argument))
         {
-            Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
+            Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr,
+                                                                                                                                m_frame_index);
             if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Program::ArgumentAccessor::Type::Mutable)
                 argument_binding_instance_ptr->Connect(*this);
             m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
-        }
-
-        // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
-        const auto& binding_settings = argument_binding_ptr->GetSettings();
-        if (binding_settings.argument.IsAddressable())
-            continue;
-
-        const DescriptorHeap::Type            heap_type = argument_binding_ptr->GetDescriptorHeapType();
-        const Program::ArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
-
-        uint32_t resources_count = binding_settings.resource_count;
-        if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
-        {
-            // For Frame Constant bindings we reserve descriptors range for all frames at once
-            resources_count *= frames_count;
-        }
-
-        descriptors_count_by_heap_type[heap_type][access_type] += resources_count;
-    }
-
-    // Reserve descriptor ranges in heaps for resource bindings state
-    const ResourceManager& resource_manager = program.GetContext().GetResourceManager();
-    auto& mutable_program = static_cast<ProgramBase&>(*m_program_ptr);
-    for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
-    {
-        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
-        if (!descriptor_heap_reservation_opt)
-        {
-            descriptor_heap_reservation_opt.emplace(resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type));
-        }
-
-        DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
-        META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
-        META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
-
-        for (Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
-        {
-            const uint32_t accessor_descr_count = descriptors_count[access_type];
-            if (!accessor_descr_count)
-                continue;
-
-            DescriptorHeap::Range& heap_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
-            heap_range = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
-
-            if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
-            {
-                // Since Frame Constant binding range was reserved for all frames at once
-                // we need to take only one sub-range related to the frame of current bindings
-                const Data::Index frame_range_length = heap_range.GetLength() / frames_count;
-                const Data::Index frame_range_start  = heap_range.GetStart() + frame_range_length * m_frame_index;
-                heap_range = DescriptorHeap::Range(frame_range_start, frame_range_start + frame_range_length);
-            }
         }
     }
 }
@@ -389,13 +293,6 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
-}
-
-const std::optional<DescriptorHeap::Reservation>& ProgramBindingsBase::GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EQUAL(heap_type, DescriptorHeap::Type::Undefined);
-    return m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
 }
 
 } // namespace Methane::Graphics

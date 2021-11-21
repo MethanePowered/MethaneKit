@@ -114,7 +114,7 @@ void DescriptorHeapDX::Allocate()
     {
         // Copy descriptors from old heap to the new one. It works for non-shader-visible CPU heaps only.
         // Shader-visible heaps must be re-filled with updated descriptors
-        // using ProgramBindings::CompleteInitialization() & ResourceManager::CompleteInitialization()
+        // using ProgramBindings::CompleteInitialization() & ResourceManagerDX::CompleteInitialization()
         cp_device->CopyDescriptorsSimple(allocated_size,
                                          m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                          cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),

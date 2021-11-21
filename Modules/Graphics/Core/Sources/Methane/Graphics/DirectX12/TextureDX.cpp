@@ -176,7 +176,7 @@ DepthStencilBufferTextureDX::TextureDX(const ContextBase& render_context, const 
         if (!magic_enum::flags::enum_contains(usage & usage_mask))
             continue;
 
-        const Descriptor& desc = ResourceBase::GetDescriptorByUsage(usage);
+        const Descriptor& desc = GetDescriptorByUsage(usage);
         switch (const DescriptorHeap::Type descriptor_heap_type = desc.heap.GetSettings().type;
                 descriptor_heap_type)
         {

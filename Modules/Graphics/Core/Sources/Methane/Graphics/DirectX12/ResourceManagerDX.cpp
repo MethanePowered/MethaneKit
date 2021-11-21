@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ResourceManager.cpp
+FILE: Methane/Graphics/ResourceManagerDX.cpp
 Resource manager used as a central place for creating and accessing descriptor heaps
 and deferred releasing of GPU resource.
 
 ******************************************************************************/
 
-#include "ResourceManager.h"
-#include "ContextBase.h"
+#include "ResourceManagerDX.h"
+#include "../ContextBase.h"
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -35,7 +35,7 @@ namespace Methane::Graphics
 {
 
 inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, const ContextBase& context, bool deferred_heap_allocation,
-                              const ResourceManager::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
+                              const ResourceManagerDX::Settings& settings, DescriptorHeap::Type heap_type, bool is_shader_visible)
 {
     const auto heap_type_idx = magic_enum::enum_integer(heap_type);
     const uint32_t heap_size = is_shader_visible ? settings.shader_visible_heap_sizes[heap_type_idx] : settings.default_heap_sizes[heap_type_idx];
@@ -43,13 +43,13 @@ inline void AddDescriptorHeap(Ptrs<DescriptorHeap>& desc_heaps, const ContextBas
     desc_heaps.push_back(DescriptorHeap::Create(context, heap_settings));
 }
 
-ResourceManager::ResourceManager(ContextBase& context)
+ResourceManagerDX::ResourceManagerDX(ContextBase& context)
     : m_context(context)
 {
     META_FUNCTION_TASK();
 }
 
-void ResourceManager::Initialize(const Settings& settings)
+void ResourceManagerDX::Initialize(const Settings& settings)
 {
     META_FUNCTION_TASK();
 
@@ -73,11 +73,13 @@ void ResourceManager::Initialize(const Settings& settings)
     }
 }
 
-void ResourceManager::CompleteInitialization()
+void ResourceManagerDX::CompleteInitialization()
 {
     META_FUNCTION_TASK();
     if (!IsDeferredHeapAllocation())
         return;
+
+    m_context.WaitForGpu(Context::WaitFor::RenderComplete);
 
     std::scoped_lock lock_guard(m_program_bindings_mutex);
 
@@ -108,9 +110,12 @@ void ResourceManager::CompleteInitialization()
         }
     );
     m_context.GetParallelExecutor().run(task_flow).get();
+
+    // Enable deferred heap allocation in case if more resources will be created in runtime
+    m_deferred_heap_allocation = true;
 }
 
-void ResourceManager::Release()
+void ResourceManagerDX::Release()
 {
     META_FUNCTION_TASK();
     for (Ptrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
@@ -119,7 +124,7 @@ void ResourceManager::Release()
     }
 }
 
-void ResourceManager::SetDeferredHeapAllocation(bool deferred_heap_allocation)
+void ResourceManagerDX::SetDeferredHeapAllocation(bool deferred_heap_allocation)
 {
     META_FUNCTION_TASK();
     if (m_deferred_heap_allocation == deferred_heap_allocation)
@@ -132,7 +137,7 @@ void ResourceManager::SetDeferredHeapAllocation(bool deferred_heap_allocation)
     });
 }
 
-void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
+void ResourceManagerDX::AddProgramBindings(ProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
 
@@ -151,7 +156,7 @@ void ResourceManager::AddProgramBindings(ProgramBindings& program_bindings)
     m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr<ProgramBindingsBase>());
 }
 
-uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
+uint32_t ResourceManagerDX::CreateDescriptorHeap(const DescriptorHeap::Settings& settings)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(settings.type, settings.type != DescriptorHeap::Type::Undefined,
@@ -162,7 +167,7 @@ uint32_t ResourceManager::CreateDescriptorHeap(const DescriptorHeap::Settings& s
     return static_cast<uint32_t>(desc_heaps.size() - 1);
 }
 
-const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index)
+const Ptr<DescriptorHeap>& ResourceManagerDX::GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index)
 {
     META_FUNCTION_TASK();
 
@@ -178,7 +183,7 @@ const Ptr<DescriptorHeap>& ResourceManager::GetDescriptorHeapPtr(DescriptorHeap:
     return desc_heaps[heap_index];
 }
 
-DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
+DescriptorHeap& ResourceManagerDX::GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_DESCR(type, type != DescriptorHeap::Type::Undefined,
@@ -190,7 +195,7 @@ DescriptorHeap& ResourceManager::GetDescriptorHeap(DescriptorHeap::Type type, Da
     return *resource_heap_ptr;
 }
 
-const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
+const Ptr<DescriptorHeap>&  ResourceManagerDX::GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const
 {
     META_FUNCTION_TASK();
 
@@ -212,7 +217,7 @@ const Ptr<DescriptorHeap>&  ResourceManager::GetDefaultShaderVisibleDescriptorHe
     return descriptor_heaps_it != descriptor_heaps.end() ? *descriptor_heaps_it : s_empty_heap_ptr;
 }
 
-DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const
+DescriptorHeap& ResourceManagerDX::GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const
 {
     META_FUNCTION_TASK();
 
@@ -222,7 +227,7 @@ DescriptorHeap& ResourceManager::GetDefaultShaderVisibleDescriptorHeap(Descripto
     return *resource_heap_ptr;
 }
 
-ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
+ResourceManagerDX::DescriptorHeapSizeByType ResourceManagerDX::GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const
 {
     META_FUNCTION_TASK();
 
@@ -242,7 +247,7 @@ ResourceManager::DescriptorHeapSizeByType ResourceManager::GetDescriptorHeapSize
 }
 
 template<typename FuncType>
-void ResourceManager::ForEachDescriptorHeap(FuncType process_heap) const
+void ResourceManagerDX::ForEachDescriptorHeap(FuncType process_heap) const
 {
     META_FUNCTION_TASK();
     for (const DescriptorHeap::Type desc_heaps_type : magic_enum::enum_values<DescriptorHeap::Type>())

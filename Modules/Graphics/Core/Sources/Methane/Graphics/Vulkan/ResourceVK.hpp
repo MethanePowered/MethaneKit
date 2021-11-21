@@ -45,9 +45,10 @@ public:
     using UniqueResourceType = vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>;
 
     template<typename SettingsType>
-    ResourceVK(const ContextBase& context, const SettingsType& settings, const ResourceBase::DescriptorByUsage& descriptor_by_usage,
+    ResourceVK(const ContextBase& context, const SettingsType& settings,
+               const ResourceBase::DescriptorByUsage&,
                UniqueResourceType&& vk_unique_resource)
-        : ReourceBaseType(context, settings, descriptor_by_usage)
+        : ReourceBaseType(context, settings)
         , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
         , m_vk_unique_resource(std::move(vk_unique_resource))
     {
@@ -76,6 +77,19 @@ public:
 
         ReourceBaseType::SetName(name);
         SetVulkanObjectName(m_vk_device, m_vk_unique_resource.get(), name.c_str());
+    }
+
+    // IResource overrides
+    const Resource::DescriptorByUsage& GetDescriptorByUsage() const noexcept final
+    {
+        META_FUNCTION_TASK();
+        static const Resource::DescriptorByUsage descriptor_by_usage;
+        return descriptor_by_usage;
+    }
+
+    const Resource::Descriptor& GetDescriptor(Resource::Usage) const final
+    {
+        META_FUNCTION_NOT_IMPLEMENTED();
     }
 
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_unique_device_memory.get(); }

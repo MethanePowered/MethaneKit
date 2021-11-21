@@ -24,7 +24,6 @@ Base implementation of the context interface.
 #pragma once
 
 #include "ObjectBase.h"
-#include "ResourceManager.h"
 
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
@@ -50,6 +49,7 @@ class CommandQueueBase;
 struct CommandQueue;
 struct CommandList;
 struct CommandListSet;
+struct ResourceManager;
 
 class ContextBase
     : public ObjectBase
@@ -76,6 +76,7 @@ public:
     const Device&     GetDevice() const final;
 
     // ContextBase interface
+    virtual ResourceManager& GetResourceManager() noexcept = 0;
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
     virtual void Release();
 
@@ -83,7 +84,6 @@ public:
     void SetName(const std::string& name) override;
 
     DeferredAction    GetRequestedAction() const noexcept  { return m_requested_action; }
-    ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
     Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept { return m_device_ptr; }
@@ -105,8 +105,6 @@ private:
     Ptr<DeviceBase>             m_device_ptr;
     tf::Executor&               m_parallel_executor;
     ObjectBase::RegistryBase    m_objects_cache;
-    ResourceManager::Settings   m_resource_manager_init_settings{ true, {}, {} };
-    mutable ResourceManager     m_resource_manager;
     mutable CommandKitPtrByType m_default_command_kit_ptrs;
     mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
     mutable DeferredAction      m_requested_action = DeferredAction::None;

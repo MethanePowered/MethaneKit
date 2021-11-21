@@ -137,19 +137,6 @@ ProgramBase::ProgramBase(const ContextBase& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-ProgramBase::~ProgramBase()
-{
-    META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    for (const auto& [heap_and_access_type, heap_reservation] : m_constant_descriptor_range_by_heap_and_access_type)
-    {
-        if (heap_reservation.range.IsEmpty())
-            continue;
-
-        heap_reservation.heap.get().ReleaseRange(heap_reservation.range);
-    }
-}
-
 void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();
@@ -241,37 +228,6 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBinding
     case ArgumentAccessor::Type::FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
     default:                                    META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);
     }
-}
-
-DescriptorHeap::Range ProgramBase::ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
-{
-    META_FUNCTION_TASK();
-    if (access_type == ArgumentAccessor::Type::Mutable)
-    {
-        DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
-        META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
-        return descriptor_range;
-    }
-
-    const DescriptorHeap::Type heap_type = heap.GetSettings().type;
-    const auto heap_and_access_type      = std::make_pair(heap_type, access_type);
-
-    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
-    if (auto constant_descriptor_range_it = m_constant_descriptor_range_by_heap_and_access_type.find(heap_and_access_type);
-        constant_descriptor_range_it != m_constant_descriptor_range_by_heap_and_access_type.end())
-    {
-        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
-        META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
-                                  "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
-        META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
-                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
-        return heap_reservation.range;
-    }
-
-    DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
-    META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
-    m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
-    return descriptor_range;
 }
 
 Shader& ProgramBase::GetShaderRef(Shader::Type shader_type) const

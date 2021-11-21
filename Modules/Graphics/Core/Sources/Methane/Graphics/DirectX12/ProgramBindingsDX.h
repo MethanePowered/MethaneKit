@@ -100,6 +100,7 @@ public:
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index);
+    ~ProgramBindingsDX();
 
     void Initialize();
 
@@ -130,6 +131,7 @@ private:
 
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
+    void ReserveDescriptorHeapRanges();
     void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
@@ -147,9 +149,23 @@ private:
 
     using ResourceStates = std::vector<ResourceState>;
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
-    ResourceStatesByAccess m_resource_states_by_access;
-
+    ResourceStatesByAccess          m_resource_states_by_access;
     mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
+
+    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
+};
+
+class DescriptorsCountByAccess
+{
+public:
+    DescriptorsCountByAccess();
+
+    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
+    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
+
+private:
+    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
 };
 
 } // namespace Methane::Graphics

@@ -138,7 +138,6 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings, c
     : ResourceVK(context, settings, descriptor_by_usage, {})
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
 }
 
 TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
@@ -148,7 +147,6 @@ TextureVK::TextureVK(const RenderContextVK& context, const Settings& settings,
     , m_vk_image(vk_image)
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
 }
 
 void TextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)

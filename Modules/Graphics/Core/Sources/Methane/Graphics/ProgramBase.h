@@ -28,7 +28,7 @@ Base implementation of the program interface.
 
 #include "ShaderBase.h"
 #include "ProgramBindingsBase.h"
-#include "DescriptorHeap.h"
+#include "Methane/Graphics/DirectX12/DescriptorHeap.h"
 
 #include <magic_enum.hpp>
 #include <memory>
@@ -51,7 +51,6 @@ class ProgramBase
 
 public:
     ProgramBase(const ContextBase& context, const Settings& settings);
-    ~ProgramBase() override;
 
     // Program interface
     const Settings&      GetSettings() const final                          { return m_settings; }
@@ -78,22 +77,12 @@ protected:
     static ShadersByType CreateShadersByType(const Ptrs<Shader>& shaders);
 
 private:
-    struct DescriptorHeapReservation
-    {
-        Ref<DescriptorHeap>   heap;
-        DescriptorHeap::Range range;
-    };
-
-    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
-
     const ContextBase&                    m_context;
     const Settings                        m_settings;
     const ShadersByType                   m_shaders_by_type;
     const Shader::Types                   m_shader_types;
     ProgramBindingsBase::ArgumentBindings m_binding_by_argument;
     FrameArgumentBindings                 m_frame_bindings_by_argument;
-    DescriptorRangeByHeapAndAccessType    m_constant_descriptor_range_by_heap_and_access_type;
-    TracyLockable(std::mutex,             m_constant_descriptor_ranges_reservation_mutex)
 };
 
 } // namespace Methane::Graphics

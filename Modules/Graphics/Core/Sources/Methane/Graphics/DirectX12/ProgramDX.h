@@ -43,8 +43,11 @@ namespace wrl = Microsoft::WRL;
 
 class ProgramDX final : public ProgramBase
 {
+    friend class ProgramBindingsDX;
+
 public:
     ProgramDX(const ContextBase& context, const Settings& settings);
+    ~ProgramDX() override;
 
     // Object interface
     void SetName(const std::string& name) override;
@@ -57,11 +60,25 @@ public:
 
     const IContextDX& GetContextDX() const noexcept;
 
+protected:
+    DescriptorHeap::Range ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
+
 private:
     void InitRootSignature();
 
-    wrl::ComPtr<ID3D12RootSignature> m_cp_root_signature;
+    struct DescriptorHeapReservation
+    {
+        Ref<DescriptorHeap>   heap;
+        DescriptorHeap::Range range;
+    };
+
+    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
+
+    wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
+
+    DescriptorRangeByHeapAndAccessType m_constant_descriptor_range_by_heap_and_access_type;
+    TracyLockable(std::mutex,          m_constant_descriptor_ranges_reservation_mutex)
 };
 
 } // namespace Methane::Graphics

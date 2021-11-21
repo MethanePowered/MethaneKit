@@ -54,13 +54,22 @@ class ResourceDX
 public:
     template<typename SettingsType>
     ResourceDX(const ContextBase& context, const SettingsType& settings, const DescriptorByUsage& descriptor_by_usage)
-        : ResourceBaseType(context, settings, descriptor_by_usage)
+        : ResourceBaseType(context, settings)
+        , m_descriptor_by_usage(descriptor_by_usage)
     {
         META_FUNCTION_TASK();
+        for (const auto& [usage, descriptor] : m_descriptor_by_usage)
+        {
+            descriptor.heap.ReplaceResource(*this, descriptor.index);
+        }
     }
 
     ~ResourceDX() override
     {
+        for (const auto& [usage, descriptor] : m_descriptor_by_usage)
+        {
+            descriptor.heap.RemoveResource(descriptor.index);
+        }
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
@@ -84,6 +93,19 @@ public:
         }
     }
 
+    // IResource overrides
+    const DescriptorByUsage& GetDescriptorByUsage() const noexcept final { return m_descriptor_by_usage; }
+
+    const Descriptor& GetDescriptor(Usage usage) const final
+    {
+        META_FUNCTION_TASK();
+        auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
+        META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                             "resource '{}' does not support '{}' usage",
+                             GetName(), magic_enum::enum_name(usage));
+        return descriptor_by_usage_it->second;
+    }
+
     // IResourceDX overrides
     ID3D12Resource&                    GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
     ID3D12Resource*                    GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
@@ -93,14 +115,81 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
-    DescriptorHeap::Types              GetDescriptorHeapTypes() const noexcept final                             { return GetUsedDescriptorHeapTypes(); }
+
+    DescriptorHeap::Types  GetDescriptorHeapTypes() const noexcept final
+    {
+        META_FUNCTION_TASK();
+        DescriptorHeap::Types heap_types;
+        for (const auto& [usage, descriptor] : m_descriptor_by_usage)
+        {
+            heap_types.insert(descriptor.heap.GetSettings().type);
+        }
+        return heap_types;
+    }
 
 protected:
     const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }
 
+    void InitializeDefaultDescriptors()
+    {
+        META_FUNCTION_TASK();
+        const Usage usage_mask = GetUsage();
+        ResourceManagerDX& resource_manager = GetContextDX().GetResourceManagerDX();
+
+        using namespace magic_enum::bitwise_operators;
+        for (Usage usage : GetPrimaryUsageValues())
+        {
+            if (!magic_enum::flags::enum_contains(usage & usage_mask))
+                continue;
+
+            if (const auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
+                descriptor_by_usage_it == m_descriptor_by_usage.end())
+            {
+                // Create default resource descriptor by usage
+                const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
+                DescriptorHeap& heap = resource_manager.GetDescriptorHeap(heap_type);
+                m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
+            }
+        }
+    }
+
+    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
+    {
+        META_FUNCTION_TASK();
+        switch (resource_usage)
+        {
+        case Resource::Usage::ShaderRead:
+            return (GetResourceType() == Resource::Type::Sampler)
+                 ? DescriptorHeap::Type::Samplers
+                 : DescriptorHeap::Type::ShaderResources;
+
+        case Resource::Usage::ShaderWrite:
+        case Resource::Usage::RenderTarget:
+            return (GetResourceType() == Resource::Type::Texture &&
+                    dynamic_cast<const TextureBase&>(*this).GetSettings().type == Texture::Type::DepthStencilBuffer)
+                 ? DescriptorHeap::Type::DepthStencil
+                 : DescriptorHeap::Type::RenderTargets;
+
+        default:
+            META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined,
+                                             "resource usage does not map to descriptor heap");
+        }
+    }
+
+    const Resource::Descriptor& GetDescriptorByUsage(Usage usage) const
+    {
+        META_FUNCTION_TASK();
+        auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
+        META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
+                             "Resource '{}' does not have descriptor for usage '{}'",
+                             GetName(), magic_enum::enum_name(usage));
+        return descriptor_by_usage_it->second;
+    }
+
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                                         D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
     {
+        META_FUNCTION_TASK();
         wrl::ComPtr<ID3D12Resource> cp_resource;
         const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
         const wrl::ComPtr<ID3D12Device>& cp_native_device = GetContextDX().GetDeviceDX().GetNativeDevice();
@@ -167,6 +256,7 @@ protected:
     }
 
 private:
+    DescriptorByUsage           m_descriptor_by_usage;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;

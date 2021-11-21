@@ -103,8 +103,6 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const D
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
-
     const bool is_private_storage = settings.storage_mode == Buffer::StorageMode::Private;
     const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
     const vk::MemoryPropertyFlags vk_memory_property_flags = is_private_storage ? vk::MemoryPropertyFlagBits::eDeviceLocal : vk_staging_memory_flags;

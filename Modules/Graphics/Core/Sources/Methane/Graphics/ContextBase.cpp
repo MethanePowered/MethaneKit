@@ -24,6 +24,7 @@ Base implementation of the context interface.
 #include "ContextBase.h"
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
+#include "ResourceManager.h"
 
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
@@ -51,7 +52,6 @@ ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Ty
     : m_type(type)
     , m_device_ptr(device.GetPtr<DeviceBase>())
     , m_parallel_executor(parallel_executor)
-    , m_resource_manager(*this)
 {
     META_FUNCTION_TASK();
 }
@@ -72,17 +72,8 @@ void ContextBase::CompleteInitialization()
     META_LOG("Complete initialization of context '{}'", GetName());
 
     Emit(&IContextCallback::OnContextCompletingInitialization, *this);
-
-    if (m_resource_manager.IsDeferredHeapAllocation())
-    {
-        WaitForGpu(WaitFor::RenderComplete);
-        m_resource_manager.CompleteInitialization();
-    }
-
+    GetResourceManager().CompleteInitialization();
     UploadResources();
-
-    // Enable deferred heap allocation in case if more resources will be created in runtime
-    m_resource_manager.SetDeferredHeapAllocation(true);
 
     m_requested_action             = DeferredAction::None;
     m_is_completing_initialization = false;
@@ -150,14 +141,10 @@ void ContextBase::Release()
         cmd_kit_ptr.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
-
-    m_resource_manager_init_settings.default_heap_sizes        = m_resource_manager.GetDescriptorHeapSizes(true, false);
-    m_resource_manager_init_settings.shader_visible_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true, true);
-
-    m_resource_manager.Release();
+    GetResourceManager().Release();
 }
 
-void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
+void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocation */, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     META_LOG("Context '{}' INITIALIZE", GetName());
@@ -168,15 +155,6 @@ void ContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, 
     {
         m_device_ptr->SetName(fmt::format("{} Device", context_name));
     }
-
-    m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
-    if (deferred_heap_allocation)
-    {
-        m_resource_manager_init_settings.default_heap_sizes        = {};
-        m_resource_manager_init_settings.shader_visible_heap_sizes = {};
-    }
-
-    m_resource_manager.Initialize(m_resource_manager_init_settings);
 
     if (is_callback_emitted)
     {

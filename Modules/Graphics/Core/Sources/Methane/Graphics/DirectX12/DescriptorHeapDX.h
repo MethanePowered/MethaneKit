@@ -23,7 +23,7 @@ DirectX 12 implementation of the descriptor heap wrapper.
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorHeap.h>
+#include "DescriptorHeap.h"
 
 #include <wrl.h>
 #include <d3d12.h>

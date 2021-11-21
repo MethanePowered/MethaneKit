@@ -27,7 +27,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include "DescriptorHeap.h"
+#include "Methane/Graphics/DirectX12/DescriptorHeap.h"
 #include "CommandListBase.h"
 #include "ObjectBase.h"
 
@@ -82,7 +82,6 @@ public:
     ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {}, const Opt<Data::Index>& frame_index = {});
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
-    ~ProgramBindingsBase() override;
 
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
@@ -106,33 +105,16 @@ protected:
     void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
 
     Program& GetProgram();
-    void ReserveDescriptorHeapRanges();
+    void InitializeArgumentBindings();
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
     void VerifyAllArgumentsAreBoundToResources() const;
-
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const std::optional<DescriptorHeap::Reservation>& GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const;
 
 private:
-    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
-
     const Ptr<Program>              m_program_ptr;
     Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
     ArgumentBindings                m_binding_by_argument;
-    DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
-};
-
-class DescriptorsCountByAccess
-{
-public:
-    DescriptorsCountByAccess();
-
-    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
-    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
-
-private:
-    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
 };
 
 } // namespace Methane::Graphics

@@ -26,6 +26,7 @@ Vulkan template implementation of the base context interface.
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "CommandQueueVK.h"
+#include "ResourceManagerVK.h"
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -51,6 +52,8 @@ public:
 
     // Context interface
 
+    ResourceManager& GetResourceManager() noexcept override { return m_resource_manager; }
+
     void WaitForGpu(Context::WaitFor wait_for) override
     {
         META_FUNCTION_TASK();
@@ -72,6 +75,9 @@ public:
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
+
+private:
+    ResourceManagerVK m_resource_manager;
 };
 
 } // namespace Methane::Graphics

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,38 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/DescriptorHeapVK.cpp
-Vulkan "dummy" implementation of the descriptor heap.
+FILE: Methane/Graphics/Vulkan/ResourceManagerVK.h
+Dummy Vulkan resource manager.
 
 ******************************************************************************/
 
-#include "DescriptorHeapVK.h"
+#pragma once
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ResourceManager.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<DescriptorHeap> DescriptorHeap::Create(const ContextBase& context, const Settings& settings)
+struct ResourceManagerVK : ResourceManager
 {
-    META_FUNCTION_TASK();
-    auto descriptor_heap_ptr = std::make_shared<DescriptorHeapVK>(context, settings);
-    if (settings.size > 0)
-    {
-        descriptor_heap_ptr->Allocate();
-    }
-    return descriptor_heap_ptr;
-}
-
-DescriptorHeapVK::DescriptorHeapVK(const ContextBase& context, const Settings& settings)
-    : DescriptorHeap(context, settings)
-{
-    META_FUNCTION_TASK();
-}
-
-DescriptorHeapVK::~DescriptorHeapVK()
-{
-    META_FUNCTION_TASK();
-}
+    void CompleteInitialization() final {}
+    void Release() final {}
+};
 
 } // namespace Methane::Graphics
