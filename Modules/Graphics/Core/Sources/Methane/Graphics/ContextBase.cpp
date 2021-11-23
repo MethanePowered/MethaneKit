@@ -48,9 +48,11 @@ static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()>
 }};
 #endif
 
-ContextBase::ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type)
+ContextBase::ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+                         tf::Executor& parallel_executor, Type type)
     : m_type(type)
     , m_device_ptr(device.GetPtr<DeviceBase>())
+    , m_resource_manager_ptr(std::move(resource_manager_ptr))
     , m_parallel_executor(parallel_executor)
 {
     META_FUNCTION_TASK();
@@ -206,6 +208,13 @@ const DeviceBase& ContextBase::GetDeviceBase() const
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
+}
+
+ResourceManager& ContextBase::GetResourceManager() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_resource_manager_ptr);
+    return *m_resource_manager_ptr;
 }
 
 void ContextBase::SetName(const std::string& name)

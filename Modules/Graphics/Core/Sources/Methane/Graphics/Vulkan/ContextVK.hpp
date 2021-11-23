@@ -45,14 +45,12 @@ class ContextVK : public ContextBaseT
 {
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<ResourceManagerVK>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
 
     // Context interface
-
-    ResourceManager& GetResourceManager() noexcept override { return m_resource_manager; }
 
     void WaitForGpu(Context::WaitFor wait_for) override
     {
@@ -75,9 +73,6 @@ public:
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
-
-private:
-    ResourceManagerVK m_resource_manager;
 };
 
 } // namespace Methane::Graphics

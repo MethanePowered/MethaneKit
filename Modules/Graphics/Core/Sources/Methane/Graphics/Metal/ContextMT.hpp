@@ -47,7 +47,7 @@ class ContextMT : public ContextBaseT
 {
 public:
     ContextMT(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<ResourceManagerMT>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
@@ -58,8 +58,6 @@ public:
     }
 
     // IContextMT overrides
-
-    ResourceManager& GetResourceManager() noexcept final { return m_resource_manager; }
 
     const DeviceMT& GetDeviceMT() const noexcept final
     {
@@ -98,7 +96,6 @@ protected:
 private:
     using LibraryByName = std::map<std::string, Ptr<ProgramLibraryMT>>;
 
-    ResourceManagerMT m_resource_manager;
     mutable LibraryByName m_library_by_name;
     NSString* m_ns_name;
 };

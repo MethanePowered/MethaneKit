@@ -50,15 +50,12 @@ class ContextDX : public ContextBaseT
 {
 public:
     ContextDX(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, parallel_executor, settings)
-        , m_resource_manager(*this)
+        : ContextBaseT(device, std::make_unique<ResourceManagerDX>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
 
     // ContextBase interface
-
-    ResourceManager& GetResourceManager() noexcept override { return m_resource_manager; }
 
     void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted) override
     {
@@ -72,7 +69,7 @@ public:
             m_resource_manager_init_settings.shader_visible_heap_sizes = {};
         }
 
-        m_resource_manager.Initialize(m_resource_manager_init_settings);
+        GetResourceManagerDX().Initialize(m_resource_manager_init_settings);
 
         if (is_callback_emitted)
         {
@@ -83,8 +80,10 @@ public:
     void Release() override
     {
         META_FUNCTION_TASK();
-        m_resource_manager_init_settings.default_heap_sizes        = m_resource_manager.GetDescriptorHeapSizes(true, false);
-        m_resource_manager_init_settings.shader_visible_heap_sizes = m_resource_manager.GetDescriptorHeapSizes(true, true);
+
+        ResourceManagerDX& resource_manager = GetResourceManagerDX();
+        m_resource_manager_init_settings.default_heap_sizes        = resource_manager.GetDescriptorHeapSizes(true, false);
+        m_resource_manager_init_settings.shader_visible_heap_sizes = resource_manager.GetDescriptorHeapSizes(true, true);
 
         for(wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap : m_query_heaps)
         {
@@ -101,7 +100,7 @@ public:
 
     const DeviceDX&    GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
     CommandQueueDX&    GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
-    ResourceManagerDX& GetResourceManagerDX() const noexcept final            { return m_resource_manager; }
+    ResourceManagerDX& GetResourceManagerDX() const noexcept final            { return static_cast<ResourceManagerDX&>(ContextBase::GetResourceManager()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
@@ -127,7 +126,6 @@ private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
 
     ResourceManagerDX::Settings m_resource_manager_init_settings{ true, {}, {} };
-    mutable ResourceManagerDX   m_resource_manager;
     mutable NativeQueryHeaps    m_query_heaps;
 };
 

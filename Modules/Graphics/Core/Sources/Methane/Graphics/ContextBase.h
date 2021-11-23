@@ -58,7 +58,8 @@ class ContextBase
     , public Data::Emitter<IContextCallback>
 {
 public:
-    ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
+    ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+                tf::Executor& parallel_executor, Type type);
 
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
@@ -76,17 +77,17 @@ public:
     const Device&     GetDevice() const final;
 
     // ContextBase interface
-    virtual ResourceManager& GetResourceManager() noexcept = 0;
     virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
     virtual void Release();
 
     // Object interface
     void SetName(const std::string& name) override;
 
-    DeferredAction    GetRequestedAction() const noexcept  { return m_requested_action; }
+    DeferredAction    GetRequestedAction() const noexcept { return m_requested_action; }
+    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
-    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept { return m_device_ptr; }
+    ResourceManager&  GetResourceManager() const;
 
 protected:
     void PerformRequestedAction();
@@ -101,14 +102,15 @@ private:
     using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
     using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
 
-    const Type                  m_type;
-    Ptr<DeviceBase>             m_device_ptr;
-    tf::Executor&               m_parallel_executor;
-    ObjectBase::RegistryBase    m_objects_cache;
-    mutable CommandKitPtrByType m_default_command_kit_ptrs;
-    mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
-    mutable DeferredAction      m_requested_action = DeferredAction::None;
-    mutable bool                m_is_completing_initialization = false;
+    const Type                       m_type;
+    Ptr<DeviceBase>                  m_device_ptr;
+    const UniquePtr<ResourceManager> m_resource_manager_ptr;
+    tf::Executor&                    m_parallel_executor;
+    ObjectBase::RegistryBase         m_objects_cache;
+    mutable CommandKitPtrByType      m_default_command_kit_ptrs;
+    mutable CommandKitByQueue        m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction           m_requested_action = DeferredAction::None;
+    mutable bool                     m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

@@ -37,7 +37,8 @@ class RenderContextBase
     , public RenderContext
 {
 public:
-    RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
+    RenderContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+                      tf::Executor& parallel_executor, const Settings& settings);
 
     // Context interface
     [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
