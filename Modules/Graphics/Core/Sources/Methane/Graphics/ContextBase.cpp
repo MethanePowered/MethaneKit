@@ -58,6 +58,8 @@ ContextBase::ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resour
     META_FUNCTION_TASK();
 }
 
+ContextBase::~ContextBase() = default;
+
 void ContextBase::RequestDeferredAction(DeferredAction action) const noexcept
 {
     META_FUNCTION_TASK();

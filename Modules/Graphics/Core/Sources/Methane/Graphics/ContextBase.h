@@ -60,6 +60,7 @@ class ContextBase
 public:
     ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
                 tf::Executor& parallel_executor, Type type);
+    ~ContextBase() override;
 
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
