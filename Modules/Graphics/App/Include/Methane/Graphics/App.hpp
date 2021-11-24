@@ -115,13 +115,13 @@ public:
             frame_restore_infos.emplace_back(frame.screen_texture_ptr);
             frame.ReleaseScreenPassAttachmentTextures();
         }
-        const ResourceRestoreInfo depth_restore_info = ReleaseDepthTexture();
+        const Opt<ResourceRestoreInfo> depth_restore_info_opt = ReleaseDepthTexture();
 
         // Resize render context
         GetRenderContext().Resize(frame_size);
 
         // Restore frame and depth buffers with new size and update textures in render pass settings
-        RestoreDepthTexture(depth_restore_info);
+        RestoreDepthTexture(depth_restore_info_opt);
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];

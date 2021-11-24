@@ -91,8 +91,8 @@ protected:
 
     Texture::Locations GetScreenPassAttachments(Texture& frame_buffer_texture) const;
     Ptr<RenderPass> CreateScreenRenderPass(Texture& frame_buffer_texture) const;
-    ResourceRestoreInfo ReleaseDepthTexture();
-    void RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info);
+    Opt<ResourceRestoreInfo> ReleaseDepthTexture();
+    void RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt);
 
     const Graphics::IApp::Settings& GetBaseGraphicsAppSettings() const noexcept { return m_settings; }
     bool SetBaseAnimationsEnabled(bool animations_enabled);

@@ -358,7 +358,7 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) c
     });
 }
 
-AppBase::ResourceRestoreInfo AppBase::ReleaseDepthTexture()
+Opt<AppBase::ResourceRestoreInfo> AppBase::ReleaseDepthTexture()
 {
     META_FUNCTION_TASK();
     ResourceRestoreInfo depth_restore_info(m_depth_texture_ptr);
@@ -366,14 +366,14 @@ AppBase::ResourceRestoreInfo AppBase::ReleaseDepthTexture()
     return depth_restore_info;
 }
 
-void AppBase::RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info)
+void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt)
 {
     META_FUNCTION_TASK();
-    if (depth_restore_info.descriptor_by_usage.empty())
+    if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext(), depth_restore_info.descriptor_by_usage);
-    m_depth_texture_ptr->SetName(depth_restore_info.name);
+    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext(), depth_restore_info_opt->descriptor_by_usage);
+    m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }
 
 void AppBase::UpdateWindowTitle()
