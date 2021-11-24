@@ -361,7 +361,10 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) c
 Opt<AppBase::ResourceRestoreInfo> AppBase::ReleaseDepthTexture()
 {
     META_FUNCTION_TASK();
-    ResourceRestoreInfo depth_restore_info(m_depth_texture_ptr);
+    if (!m_depth_texture_ptr)
+        return std::nullopt;
+
+    ResourceRestoreInfo depth_restore_info(*m_depth_texture_ptr);
     m_depth_texture_ptr.reset();
     return depth_restore_info;
 }

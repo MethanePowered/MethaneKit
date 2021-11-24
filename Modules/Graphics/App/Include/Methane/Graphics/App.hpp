@@ -112,7 +112,8 @@ public:
         frame_restore_infos.reserve(m_frames.size());
         for (FrameT& frame : m_frames)
         {
-            frame_restore_infos.emplace_back(frame.screen_texture_ptr);
+            META_CHECK_ARG_NOT_NULL(frame.screen_texture_ptr);
+            frame_restore_infos.emplace_back(*frame.screen_texture_ptr);
             frame.ReleaseScreenPassAttachmentTextures();
         }
         const Opt<ResourceRestoreInfo> depth_restore_info_opt = ReleaseDepthTexture();

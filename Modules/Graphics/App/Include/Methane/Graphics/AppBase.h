@@ -82,10 +82,9 @@ protected:
         Resource::DescriptorByUsage descriptor_by_usage;
         std::string                 name;
 
-        ResourceRestoreInfo() = default;
-        explicit ResourceRestoreInfo(const Ptr<Resource>& resource_ptr)
-            : descriptor_by_usage(resource_ptr ? resource_ptr->GetDescriptorByUsage() : Resource::DescriptorByUsage())
-            , name(resource_ptr ? resource_ptr->GetName() : std::string())
+        explicit ResourceRestoreInfo(const Resource& resource)
+            : descriptor_by_usage(resource.GetDescriptorByUsage())
+            , name(resource.GetName())
         { }
     };
 
