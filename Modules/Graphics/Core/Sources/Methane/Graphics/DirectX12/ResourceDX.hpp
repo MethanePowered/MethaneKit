@@ -115,17 +115,7 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
-
-    DescriptorHeap::Types  GetDescriptorHeapTypes() const noexcept final
-    {
-        META_FUNCTION_TASK();
-        DescriptorHeap::Types heap_types;
-        for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-        {
-            heap_types.insert(descriptor.heap.GetSettings().type);
-        }
-        return heap_types;
-    }
+    const DescriptorHeap::Types&       GetDescriptorHeapTypes() const noexcept final                             { return m_descriptor_heap_types; }
 
 protected:
     const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }
@@ -135,6 +125,9 @@ protected:
         META_FUNCTION_TASK();
         const Usage usage_mask = GetUsage();
         ResourceManagerDX& resource_manager = GetContextDX().GetResourceManagerDX();
+
+        m_descriptor_by_usage.clear();
+        m_descriptor_heap_types.clear();
 
         using namespace magic_enum::bitwise_operators;
         for (Usage usage : GetPrimaryUsageValues())
@@ -149,6 +142,7 @@ protected:
                 const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
                 DescriptorHeap& heap = resource_manager.GetDescriptorHeap(heap_type);
                 m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
+                m_descriptor_heap_types.insert(heap.GetSettings().type);
             }
         }
     }
@@ -257,6 +251,7 @@ protected:
 
 private:
     DescriptorByUsage           m_descriptor_by_usage;
+    DescriptorHeap::Types       m_descriptor_heap_types;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;

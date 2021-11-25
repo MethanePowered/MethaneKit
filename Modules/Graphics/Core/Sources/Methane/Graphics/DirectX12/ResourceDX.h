@@ -73,7 +73,7 @@ public:
     [[nodiscard]] virtual D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage usage) const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
-    [[nodiscard]] virtual DescriptorHeap::Types               GetDescriptorHeapTypes() const noexcept = 0;
+    [[nodiscard]] virtual const DescriptorHeap::Types&        GetDescriptorHeapTypes() const noexcept = 0;
 
     ~IResourceDX() override = default;
 };
