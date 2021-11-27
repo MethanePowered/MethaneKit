@@ -28,7 +28,6 @@ Base implementation of the program interface.
 
 #include "ShaderBase.h"
 #include "ProgramBindingsBase.h"
-#include "Methane/Graphics/DirectX12/DescriptorHeap.h"
 
 #include <magic_enum.hpp>
 #include <memory>
@@ -68,7 +67,6 @@ protected:
     const FrameArgumentBindings&                   GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
     const Ptr<ProgramBindingsBase::ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const;
     Ptr<ProgramBindingsBase::ArgumentBindingBase>  CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
-    DescriptorHeap::Range ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
 
     Shader& GetShaderRef(Shader::Type shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;

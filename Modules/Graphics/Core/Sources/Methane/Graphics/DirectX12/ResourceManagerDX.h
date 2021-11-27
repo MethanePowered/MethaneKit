@@ -24,7 +24,7 @@ and deferred releasing of GPU resource.
 
 #pragma once
 
-#include "DescriptorHeap.h"
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/ResourceManager.h>
 #include <Methane/Graphics/ResourceBase.h>
@@ -43,7 +43,7 @@ class ContextBase;
 class ResourceManagerDX : public ResourceManager
 {
 public:
-    using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
 
     struct Settings
     {
@@ -65,18 +65,16 @@ public:
 
     void AddProgramBindings(ProgramBindings& program_bindings);
 
-    [[nodiscard]] uint32_t                    CreateDescriptorHeap(const DescriptorHeap::Settings& settings); // returns index of the created descriptor heap
-    [[nodiscard]] const Ptr<DescriptorHeap>&  GetDescriptorHeapPtr(DescriptorHeap::Type type, Data::Index heap_index = 0);
-    [[nodiscard]] DescriptorHeap&             GetDescriptorHeap(DescriptorHeap::Type type, Data::Index heap_index = 0);
-    [[nodiscard]] const Ptr<DescriptorHeap>&  GetDefaultShaderVisibleDescriptorHeapPtr(DescriptorHeap::Type type) const;
-    [[nodiscard]] DescriptorHeap&             GetDefaultShaderVisibleDescriptorHeap(DescriptorHeap::Type type) const;
-    [[nodiscard]] DescriptorHeapSizeByType    GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
+    [[nodiscard]] uint32_t                     CreateDescriptorHeap(const DescriptorHeapDX::Settings& settings); // returns index of the created descriptor heap
+    [[nodiscard]] DescriptorHeapDX&            GetDescriptorHeap(DescriptorHeapDX::Type type, Data::Index heap_index = 0);
+    [[nodiscard]] DescriptorHeapDX&            GetDefaultShaderVisibleDescriptorHeap(DescriptorHeapDX::Type type) const;
+    [[nodiscard]] DescriptorHeapSizeByType     GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
 
 private:
-    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    template<typename FuncType> // function void(DescriptorHeapDX& descriptor_heap)
     void ForEachDescriptorHeap(FuncType process_heap) const;
 
-    using DescriptorHeapTypes = std::array<Ptrs<DescriptorHeap>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    using DescriptorHeapTypes = std::array<UniquePtrs<DescriptorHeapDX>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
 
     bool                      m_deferred_heap_allocation = false;
     ContextBase&              m_context;

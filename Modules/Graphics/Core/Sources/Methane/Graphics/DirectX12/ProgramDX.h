@@ -61,18 +61,18 @@ public:
     const IContextDX& GetContextDX() const noexcept;
 
 protected:
-    DescriptorHeap::Range ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
+    DescriptorHeapDX::Range ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
 
 private:
     void InitRootSignature();
 
     struct DescriptorHeapReservation
     {
-        Ref<DescriptorHeap>   heap;
-        DescriptorHeap::Range range;
+        Ref<DescriptorHeapDX>   heap;
+        DescriptorHeapDX::Range range;
     };
 
-    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
+    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeapDX::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
     wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;

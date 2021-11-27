@@ -25,9 +25,9 @@ DirectX 12 implementation of the buffer interface.
 
 #include "BlitCommandListDX.h"
 #include "ResourceDX.hpp"
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/BufferBase.h>
-#include <Methane/Graphics/DirectX12/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

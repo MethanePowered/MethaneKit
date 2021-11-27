@@ -27,7 +27,6 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include "Methane/Graphics/DirectX12/DescriptorHeap.h"
 #include "CommandListBase.h"
 #include "ObjectBase.h"
 
@@ -62,7 +61,6 @@ public:
         void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
         explicit operator std::string() const override;
 
-        DescriptorHeap::Type       GetDescriptorHeapType() const;
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
 
         bool IsAlreadyApplied(const Program& program,

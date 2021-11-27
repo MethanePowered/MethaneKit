@@ -17,56 +17,150 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/DescriptorHeapDX.cpp
-DirectX 12 implementation of the descriptor heap wrapper.
+Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 ******************************************************************************/
 
 #include "DescriptorHeapDX.h"
 #include "DeviceDX.h"
 
+#include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeap::Type type)
+static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapDX::Type type)
 {
     META_FUNCTION_TASK();
     switch (type)
     {
-    case DescriptorHeap::Type::ShaderResources: return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    case DescriptorHeap::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-    case DescriptorHeap::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    case DescriptorHeap::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    case DescriptorHeapDX::Type::ShaderResources: return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    case DescriptorHeapDX::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+    case DescriptorHeapDX::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    case DescriptorHeapDX::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     default:                                    META_UNEXPECTED_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     }
 }
 
-Ptr<DescriptorHeap> DescriptorHeap::Create(const ContextBase& context, const Settings& settings)
+DescriptorHeapDX::Reservation::Reservation(const Ref<DescriptorHeapDX>& heap)
+    : heap(heap)
 {
     META_FUNCTION_TASK();
-    auto descriptor_heap_ptr = std::make_shared<DescriptorHeapDX>(context, settings);
-    if (settings.size > 0)
-    {
-        descriptor_heap_ptr->Allocate();
-    }
-    return descriptor_heap_ptr;
+    std::fill(ranges.begin(), ranges.end(), DescriptorHeapDX::Range(0, 0));
+}
+
+DescriptorHeapDX::Reservation::Reservation(const Ref<DescriptorHeapDX>& heap, const Ranges& ranges)
+    : heap(heap)
+    , ranges(ranges)
+{
+    META_FUNCTION_TASK();
 }
 
 DescriptorHeapDX::DescriptorHeapDX(const ContextBase& context, const Settings& settings)
-    : DescriptorHeap(context, settings)
+    : m_context(context)
+    , m_settings(settings)
+    , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
     , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
     META_FUNCTION_TASK();
+    if (m_deferred_size > 0)
+    {
+        m_resources.reserve(m_deferred_size);
+        m_free_ranges.Add({ 0, m_deferred_size });
+    }
+    if (m_settings.size > 0)
+    {
+        Allocate();
+    }
 }
 
 DescriptorHeapDX::~DescriptorHeapDX()
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_modification_mutex);
+
+    // All descriptor ranges must be released when heap is destroyed
+    assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
+           m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
+}
+
+Data::Index DescriptorHeapDX::AddResource(const ResourceBase& resource)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_modification_mutex);
+
+    if (!m_settings.deferred_allocation)
+    {
+        META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1,
+                                  "{} descriptor heap is full, no free space to add a resource",
+                                  magic_enum::enum_name(m_settings.type));
+    }
+    else if (m_resources.size() >= m_settings.size)
+    {
+        m_deferred_size++;
+        Allocate();
+    }
+
+    m_resources.push_back(&resource);
+
+    const auto resource_index = static_cast<Data::Index>(m_resources.size() - 1);
+    m_free_ranges.Remove(Range(resource_index, resource_index + 1));
+
+    return static_cast<int32_t>(resource_index);
+}
+
+Data::Index DescriptorHeapDX::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_modification_mutex);
+
+    META_CHECK_ARG_LESS(at_index, m_resources.size());
+    m_resources[at_index] = &resource;
+    return at_index;
+}
+
+void DescriptorHeapDX::RemoveResource(Data::Index at_index)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_modification_mutex);
+
+    META_CHECK_ARG_LESS(at_index, m_resources.size());
+    m_resources[at_index] = nullptr;
+    m_free_ranges.Add(Range(at_index, at_index + 1));
+}
+
+DescriptorHeapDX::Range DescriptorHeapDX::ReserveRange(Data::Size length)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
+    std::scoped_lock lock_guard(m_modification_mutex);
+
+    if (const Range reserved_range = Data::ReserveRange(m_free_ranges, length);
+        reserved_range || !m_settings.deferred_allocation)
+        return reserved_range;
+
+    Range deferred_range(m_deferred_size, m_deferred_size + length);
+    m_deferred_size += length;
+    return deferred_range;
+}
+
+void DescriptorHeapDX::ReleaseRange(const Range& range)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_modification_mutex);
+    m_free_ranges.Add(range);
+}
+
+void DescriptorHeapDX::SetDeferredAllocation(bool deferred_allocation)
+{
+    META_FUNCTION_TASK();
+    m_settings.deferred_allocation = deferred_allocation;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapDX::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const
@@ -121,13 +215,14 @@ void DescriptorHeapDX::Allocate()
                                          m_descriptor_heap_type);
     }
 
-    DescriptorHeap::Allocate();
+    m_allocated_size = m_deferred_size;
+    Emit(&IDescriptorHeapCallback::OnDescriptorHeapAllocated, std::ref(*this));
 }
 
 const IContextDX& DescriptorHeapDX::GetContextDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(GetContext());
+    return static_cast<const IContextDX&>(m_context);
 }
 
 } // namespace Methane::Graphics

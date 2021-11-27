@@ -115,7 +115,7 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
-    const DescriptorHeap::Types&       GetDescriptorHeapTypes() const noexcept final                             { return m_descriptor_heap_types; }
+    const DescriptorHeapDX::Types&       GetDescriptorHeapTypes() const noexcept final                             { return m_descriptor_heap_types; }
 
 protected:
     const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }
@@ -139,33 +139,33 @@ protected:
                 descriptor_by_usage_it == m_descriptor_by_usage.end())
             {
                 // Create default resource descriptor by usage
-                const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-                DescriptorHeap& heap = resource_manager.GetDescriptorHeap(heap_type);
+                const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
+                DescriptorHeapDX& heap = resource_manager.GetDescriptorHeap(heap_type);
                 m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
                 m_descriptor_heap_types.insert(heap.GetSettings().type);
             }
         }
     }
 
-    DescriptorHeap::Type GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
+    DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
     {
         META_FUNCTION_TASK();
         switch (resource_usage)
         {
         case Resource::Usage::ShaderRead:
             return (GetResourceType() == Resource::Type::Sampler)
-                 ? DescriptorHeap::Type::Samplers
-                 : DescriptorHeap::Type::ShaderResources;
+                 ? DescriptorHeapDX::Type::Samplers
+                 : DescriptorHeapDX::Type::ShaderResources;
 
         case Resource::Usage::ShaderWrite:
         case Resource::Usage::RenderTarget:
             return (GetResourceType() == Resource::Type::Texture &&
                     dynamic_cast<const TextureBase&>(*this).GetSettings().type == Texture::Type::DepthStencilBuffer)
-                 ? DescriptorHeap::Type::DepthStencil
-                 : DescriptorHeap::Type::RenderTargets;
+                 ? DescriptorHeapDX::Type::DepthStencil
+                 : DescriptorHeapDX::Type::RenderTargets;
 
         default:
-            META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined,
+            META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeapDX::Type::Undefined,
                                              "resource usage does not map to descriptor heap");
         }
     }
@@ -251,7 +251,7 @@ protected:
 
 private:
     DescriptorByUsage           m_descriptor_by_usage;
-    DescriptorHeap::Types       m_descriptor_heap_types;
+    DescriptorHeapDX::Types       m_descriptor_heap_types;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;

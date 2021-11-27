@@ -65,7 +65,7 @@ public:
 
         struct DescriptorRange
         {
-            DescriptorHeap::Type  heap_type = DescriptorHeap::Type::Undefined;
+            DescriptorHeapDX::Type  heap_type = DescriptorHeapDX::Type::Undefined;
             uint32_t              offset    = 0;
             uint32_t              count     = 0;
         };
@@ -85,16 +85,17 @@ public:
         uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
         const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
         const IResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        DescriptorHeapDX::Type          GetDescriptorHeapType() const;
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                 { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation);
+        void SetDescriptorHeapReservation(const DescriptorHeapDX::Reservation* p_reservation);
 
     private:
         const SettingsDX                   m_settings_dx;
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
+        const DescriptorHeapDX::Reservation* m_p_descriptor_heap_reservation = nullptr;
         IResourceDX::LocationsDX           m_resource_locations_dx;
     };
     
@@ -129,19 +130,19 @@ private:
         Resource::State   state;
     };
 
-    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
+    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeapDX::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void ReserveDescriptorHeapRanges();
     void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
-    void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
+    void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
     bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
     void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
-    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const;
+    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
     using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
@@ -152,7 +153,7 @@ private:
     ResourceStatesByAccess          m_resource_states_by_access;
     mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
 
-    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeapDX::Reservation>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
 };
 

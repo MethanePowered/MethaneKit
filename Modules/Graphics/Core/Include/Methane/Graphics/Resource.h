@@ -39,7 +39,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandQueue;
 struct Resource;
-class DescriptorHeap;
+class DescriptorHeapDX;
 
 struct IResourceCallback
 {
@@ -78,10 +78,10 @@ struct Resource
 
     struct Descriptor
     {
-        DescriptorHeap& heap;
-        Data::Index     index;
+        DescriptorHeapDX& heap;
+        Data::Index       index;
 
-        Descriptor(DescriptorHeap& in_heap, Data::Index in_index);
+        Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index);
     };
 
     class AllocationError : public std::runtime_error

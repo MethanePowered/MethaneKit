@@ -102,6 +102,14 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX&
     }
 }
 
+DescriptorHeapDX::Type ProgramBindingsDX::ArgumentBindingDX::GetDescriptorHeapType() const
+{
+    META_FUNCTION_TASK();
+    return (GetSettings().resource_type == Resource::Type::Sampler)
+           ? DescriptorHeapDX::Type::Samplers
+           : DescriptorHeapDX::Type::ShaderResources;
+}
+
 void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
@@ -121,9 +129,9 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     const DescriptorHeapDX*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
                                                       ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
                                                       : nullptr;
-    const DescriptorHeap::Type   descriptor_heap_type = p_dx_descriptor_heap
+    const DescriptorHeapDX::Type   descriptor_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetSettings().type
-                                                      : DescriptorHeap::Type::Undefined;
+                                                      : DescriptorHeapDX::Type::Undefined;
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -163,7 +171,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
 void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)
 {
     META_FUNCTION_TASK();
-    const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
+    const DescriptorHeapDX::Type expected_heap_type = GetDescriptorHeapType();
     META_CHECK_ARG_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
                                "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
                                magic_enum::enum_name(descriptor_range.heap_type),
@@ -175,7 +183,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRa
     m_descriptor_range = descriptor_range;
 }
 
-void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation)
+void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const DescriptorHeapDX::Reservation* p_reservation)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NAME_DESCR("p_reservation",
@@ -225,7 +233,7 @@ ProgramBindingsDX::~ProgramBindingsDX()
         if (!heap_reservation_opt)
             continue;
 
-        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
+        if (const DescriptorHeapDX::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable).value()];
             !mutable_descriptor_range.IsEmpty())
         {
             heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
@@ -331,7 +339,7 @@ void ProgramBindingsDX::ForEachArgumentBinding(FuncType argument_binding_functio
         auto& argument_binding = static_cast<ArgumentBindingDX&>(*argument_binding_ptr);
         const ArgumentBindingDX::DescriptorRange& descriptor_range = argument_binding.GetDescriptorRange();
 
-        if (descriptor_range.heap_type == DescriptorHeap::Type::Undefined)
+        if (descriptor_range.heap_type == DescriptorHeapDX::Type::Undefined)
         {
             argument_binding_function(argument_binding, nullptr);
             continue;
@@ -357,7 +365,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
                                 : 1U;
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
-    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
+    std::map<DescriptorHeapDX::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -367,7 +375,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
         if (binding_settings.argument.IsAddressable())
             continue;
 
-        const DescriptorHeap::Type            heap_type = argument_binding_ptr->GetDescriptorHeapType();
+        const DescriptorHeapDX::Type heap_type = static_cast<const ArgumentBindingDX&>(*argument_binding_ptr).GetDescriptorHeapType();
         const Program::ArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
 
         uint32_t resources_count = binding_settings.resource_count;
@@ -385,13 +393,13 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
     auto& mutable_program = static_cast<ProgramDX&>(GetProgram());
     for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
-        std::optional<DescriptorHeap::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
+        std::optional<DescriptorHeapDX::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
             descriptor_heap_reservation_opt.emplace(resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type));
         }
 
-        DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
+        DescriptorHeapDX::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
         META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
         META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
@@ -401,7 +409,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
             if (!accessor_descr_count)
                 continue;
 
-            DescriptorHeap::Range& heap_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
+            DescriptorHeapDX::Range& heap_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
             heap_range = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
 
             if (access_type == Program::ArgumentAccessor::Type::FrameConstant)
@@ -410,7 +418,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
                 // we need to take only one sub-range related to the frame of current bindings
                 const Data::Index frame_range_length = heap_range.GetLength() / frames_count;
                 const Data::Index frame_range_start  = heap_range.GetStart() + frame_range_length * GetFrameIndex();
-                heap_range = DescriptorHeap::Range(frame_range_start, frame_range_start + frame_range_length);
+                heap_range = DescriptorHeapDX::Range(frame_range_start, frame_range_start + frame_range_length);
             }
         }
     }
@@ -444,7 +452,7 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
     ForEachArgumentBinding(std::bind(&ProgramBindingsDX::AddRootParameterBindingsForArgument, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation)
+void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation)
 {
     META_FUNCTION_TASK();
     using DXBindingType     = ArgumentBindingDX::Type;
@@ -568,7 +576,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpu()
     ForEachArgumentBinding(std::bind(&ProgramBindingsDX::CopyDescriptorsToGpuForArgument, this, cp_d3d12_device, std::placeholders::_1, std::placeholders::_2));
 }
 
-void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const
+void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation) const
 {
     META_FUNCTION_TASK();
     if (!p_heap_reservation)
@@ -578,8 +586,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
 
     const auto&                               dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
     const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
-    const DescriptorHeap::Type                heap_type          = dx_descriptor_heap.GetSettings().type;
-    const DescriptorHeap::Range&              heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
+    const DescriptorHeapDX::Type                heap_type          = dx_descriptor_heap.GetSettings().type;
+    const DescriptorHeapDX::Range&              heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
     const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(p_heap_reservation);
@@ -590,7 +598,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
     uint32_t resource_index = 0;
     for (const IResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
     {
-        const DescriptorHeap::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
+        const DescriptorHeapDX::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
         META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
                              "can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
                              magic_enum::enum_name(resource_location_dx.GetResourceDX().GetUsage()),

@@ -37,7 +37,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
+Resource::Descriptor::Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {

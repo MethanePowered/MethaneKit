@@ -23,7 +23,7 @@ DirectX 12 implementation of the render pass interface.
 
 #pragma once
 
-#include "DescriptorHeap.h"
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/RenderPassBase.h>
 #include <Methane/Data/Receiver.hpp>
@@ -106,11 +106,11 @@ private:
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
 
-    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    template<typename FuncType> // function void(DescriptorHeapDX& descriptor_heap)
     void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
 
     // IDescriptorHeapCallback implementation
-    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;
+    void OnDescriptorHeapAllocated(DescriptorHeapDX& descriptor_heap) override;
 
     // D3D12 Render-Pass description
     std::optional<bool>                                 m_is_native_render_pass_available;

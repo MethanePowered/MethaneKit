@@ -117,14 +117,6 @@ ProgramBindingsBase::ArgumentBindingBase::operator std::string() const
     return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_locations, ", "));
 }
 
-DescriptorHeap::Type ProgramBindingsBase::ArgumentBindingBase::GetDescriptorHeapType() const
-{
-    META_FUNCTION_TASK();
-    return (m_settings.resource_type == Resource::Type::Sampler)
-        ? DescriptorHeap::Type::Samplers
-        : DescriptorHeap::Type::ShaderResources;
-}
-
 bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program,
                                                                 const ProgramBindingsBase& applied_program_bindings,
                                                                 bool check_binding_value_changes) const

@@ -177,11 +177,11 @@ DepthStencilBufferTextureDX::TextureDX(const ContextBase& render_context, const 
             continue;
 
         const Descriptor& desc = GetDescriptorByUsage(usage);
-        switch (const DescriptorHeap::Type descriptor_heap_type = desc.heap.GetSettings().type;
+        switch (const DescriptorHeapDX::Type descriptor_heap_type = desc.heap.GetSettings().type;
                 descriptor_heap_type)
         {
-        case DescriptorHeap::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
-        case DescriptorHeap::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
+        case DescriptorHeapDX::Type::ShaderResources: CreateShaderResourceView(settings, cp_device, desc); break;
+        case DescriptorHeapDX::Type::DepthStencil:    CreateDepthStencilView(settings, view_write_format, cp_device, desc); break;
         default:
             META_UNEXPECTED_ARG_DESCR(descriptor_heap_type,
                                       "unsupported usage '{}' and descriptor heap type '{}' for Depth-Stencil buffer",

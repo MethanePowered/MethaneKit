@@ -55,8 +55,6 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceManagerDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceManagerDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeap.h
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeap.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
         ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h

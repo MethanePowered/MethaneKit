@@ -172,16 +172,16 @@ RenderPassDX::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(RenderPass::Access access)
+static DescriptorHeapDX::Type GetDescriptorHeapTypeByAccess(RenderPass::Access access)
 {
     META_FUNCTION_TASK();
     switch (access)
     {
-    case RenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
-    case RenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
-    case RenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
-    case RenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                  META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
+    case RenderPass::Access::ShaderResources: return DescriptorHeapDX::Type::ShaderResources;
+    case RenderPass::Access::Samplers:        return DescriptorHeapDX::Type::Samplers;
+    case RenderPass::Access::RenderTargets:   return DescriptorHeapDX::Type::RenderTargets;
+    case RenderPass::Access::DepthStencil:    return DescriptorHeapDX::Type::DepthStencil;
+    default:                                  META_UNEXPECTED_ARG_RETURN(access, DescriptorHeapDX::Type::Undefined);
     }
 }
 
@@ -209,7 +209,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
     }
 
     // Connect the descriptor heap callback event
-    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
+    ForEachAccessibleDescriptorHeap([this](DescriptorHeapDX& descriptor_heap)
     {
         descriptor_heap.Connect(*this);
     });
@@ -324,12 +324,12 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
         if (!magic_enum::flags::enum_contains(settings.shader_access_mask & access))
             continue;
 
-        const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
+        const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByAccess(access);
         do_action(context.GetResourceManagerDX().GetDefaultShaderVisibleDescriptorHeap(heap_type));
     }
 }
 
-void RenderPassDX::OnDescriptorHeapAllocated(DescriptorHeap&)
+void RenderPassDX::OnDescriptorHeapAllocated(DescriptorHeapDX&)
 {
     META_FUNCTION_TASK();
 
@@ -432,7 +432,7 @@ const std::vector<ID3D12DescriptorHeap*>& RenderPassDX::GetNativeDescriptorHeaps
     if (!m_native_descriptor_heaps.empty())
         return m_native_descriptor_heaps;
 
-    ForEachAccessibleDescriptorHeap([this](DescriptorHeap& descriptor_heap)
+    ForEachAccessibleDescriptorHeap([this](DescriptorHeapDX& descriptor_heap)
     {
         m_native_descriptor_heaps.push_back(static_cast<DescriptorHeapDX&>(descriptor_heap).GetNativeDescriptorHeap());
     });
