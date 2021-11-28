@@ -61,6 +61,7 @@ public:
         for (const auto& [usage, descriptor] : m_descriptor_by_usage)
         {
             descriptor.heap.ReplaceResource(*this, descriptor.index);
+            m_descriptor_heap_types.insert(descriptor.heap.GetSettings().type);
         }
     }
 
@@ -125,9 +126,6 @@ protected:
         META_FUNCTION_TASK();
         const Usage usage_mask = GetUsage();
         ResourceManagerDX& resource_manager = GetContextDX().GetResourceManagerDX();
-
-        m_descriptor_by_usage.clear();
-        m_descriptor_heap_types.clear();
 
         using namespace magic_enum::bitwise_operators;
         for (Usage usage : GetPrimaryUsageValues())
@@ -251,7 +249,7 @@ protected:
 
 private:
     DescriptorByUsage           m_descriptor_by_usage;
-    DescriptorHeapDX::Types       m_descriptor_heap_types;
+    DescriptorHeapDX::Types     m_descriptor_heap_types;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;
