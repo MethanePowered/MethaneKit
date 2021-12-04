@@ -60,13 +60,15 @@ public:
     const ContextBase&   GetContext() const { return m_context; }
 
 protected:
+    using ArgumentBindings      = ProgramBindingsBase::ArgumentBindings;
+    using ArgumentBindingBase   = ProgramBindingsBase::ArgumentBindingBase;
     using FrameArgumentBindings = std::unordered_map<Program::Argument, Ptrs<ProgramBindingsBase::ArgumentBindingBase>, Program::Argument::Hash>;
 
     void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
-    const ProgramBindingsBase::ArgumentBindings&   GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
-    const FrameArgumentBindings&                   GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
-    const Ptr<ProgramBindingsBase::ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const;
-    Ptr<ProgramBindingsBase::ArgumentBindingBase>  CreateArgumentBindingInstance(const Ptr<ProgramBindingsBase::ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
+    const ArgumentBindings&         GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
+    const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
+    const Ptr<ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const;
+    Ptr<ArgumentBindingBase>        CreateArgumentBindingInstance(const Ptr<ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
 
     Shader& GetShaderRef(Shader::Type shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;

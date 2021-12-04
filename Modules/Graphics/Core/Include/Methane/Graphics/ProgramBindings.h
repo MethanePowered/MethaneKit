@@ -50,7 +50,6 @@ struct ProgramBindings
     struct ArgumentBinding
         : virtual Data::IEmitter<IArgumentBindingCallback> // NOSONAR
     {
-        // ArgumentBinding settings
         struct Settings
         {
             Program::ArgumentAccessor argument;

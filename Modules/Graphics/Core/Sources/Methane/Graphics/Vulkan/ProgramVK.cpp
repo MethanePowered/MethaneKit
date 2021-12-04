@@ -44,6 +44,7 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
 {
     META_FUNCTION_TASK();
+    std::fill(m_descriptor_set_layout_index_by_access_type.begin(), m_descriptor_set_layout_index_by_access_type.end(), -1);
     InitArgumentBindings(settings.argument_accessors);
 }
 
@@ -90,19 +91,21 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
     return vertex_shader.GetNativeVertexInputStateCreateInfo(*this);
 }
 
-const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout() const
+const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts() const
 {
     META_FUNCTION_TASK();
-    if (m_vk_unique_descriptor_set_layout)
-        return m_vk_unique_descriptor_set_layout.get();
+    if (!m_vk_descriptor_set_layouts.empty())
+        return m_vk_descriptor_set_layouts;
 
-    std::vector<vk::DescriptorSetLayoutBinding> layout_bindings;
+    std::array<std::vector<vk::DescriptorSetLayoutBinding>, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> layout_bindings_by_access_type;
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
         const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr);
         const ProgramBindingsVK::ArgumentBindingVK::SettingsVK& vulkan_binding_settings = vulkan_argument_binding.GetSettingsVK();
-        layout_bindings.emplace_back(
+        const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();
+
+        layout_bindings_by_access_type[accessor_type_index].emplace_back(
             vulkan_binding_settings.binding,
             vulkan_binding_settings.descriptor_type,
             vulkan_binding_settings.resource_count,
@@ -111,8 +114,27 @@ const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout() const
     }
 
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
-    m_vk_unique_descriptor_set_layout = vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_bindings));
-    return m_vk_unique_descriptor_set_layout.get();
+
+    m_vk_unique_descriptor_set_layouts.clear();
+    for(size_t layout_index = 0; layout_index < layout_bindings_by_access_type.size(); layout_index++)
+    {
+        const std::vector<vk::DescriptorSetLayoutBinding>& layout_bindings = layout_bindings_by_access_type[layout_index];
+        if (layout_bindings.empty())
+            continue;
+
+        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_bindings)));
+        m_descriptor_set_layout_index_by_access_type[layout_index] = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
+    }
+
+    m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
+    return m_vk_descriptor_set_layouts;
+}
+
+const vk::DescriptorSetLayout* ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+{
+    META_FUNCTION_TASK();
+    const int layout_index = m_descriptor_set_layout_index_by_access_type[magic_enum::enum_index(argument_access_type).value()];
+    return layout_index >= 0 ? &m_vk_unique_descriptor_set_layouts[layout_index].get() : nullptr;
 }
 
 const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout() const
@@ -121,10 +143,10 @@ const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout() const
     if (m_vk_unique_pipeline_layout)
         return m_vk_unique_pipeline_layout.get();
 
+    const std::vector<vk::DescriptorSetLayout>& vk_descriptor_set_layouts = GetNativeDescriptorSetLayouts();
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
-    const vk::DescriptorSetLayout& vk_descriptor_set_layout = GetNativeDescriptorSetLayout();
 
-    m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, 1, &vk_descriptor_set_layout));
+    m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, vk_descriptor_set_layouts));
     return m_vk_unique_pipeline_layout.get();
 }
 

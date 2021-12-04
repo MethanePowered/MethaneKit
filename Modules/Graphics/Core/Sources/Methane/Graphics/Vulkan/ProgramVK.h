@@ -25,7 +25,10 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/ProgramBase.h>
 
+#include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
+
+#include <array>
 
 namespace Methane::Graphics
 {
@@ -45,14 +48,17 @@ public:
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout() const;
+    const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
+    const vk::DescriptorSetLayout* GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
     const vk::PipelineLayout& GetNativePipelineLayout() const;
 
 private:
     const IContextVK& GetContextVK() const noexcept;
 
-    mutable vk::UniqueDescriptorSetLayout m_vk_unique_descriptor_set_layout;
-    mutable vk::UniquePipelineLayout      m_vk_unique_pipeline_layout;
+    mutable std::array<int32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_descriptor_set_layout_index_by_access_type;
+    mutable std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
+    mutable std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;
+    mutable vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
 };
 
 } // namespace Methane::Graphics
