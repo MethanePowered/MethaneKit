@@ -186,7 +186,9 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
         }
     };
 
-    const spirv_cross::ShaderResources spirv_resources = spirv_compiler.get_shader_resources();
+    // Get only resources that are statically used in SPIRV-code (skip all resources that are never accessed by the shader)
+    const spirv_cross::ShaderResources spirv_resources = spirv_compiler.get_shader_resources(spirv_compiler.get_active_interface_variables());
+
     add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,   vk::DescriptorType::eUniformBuffer);
     add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,   vk::DescriptorType::eStorageBuffer);
     add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,    vk::DescriptorType::eStorageImage);
