@@ -325,7 +325,7 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
             continue;
 
         const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByAccess(access);
-        do_action(context.GetResourceManagerDX().GetDefaultShaderVisibleDescriptorHeap(heap_type));
+        do_action(context.GetDescriptorManagerDX().GetDefaultShaderVisibleDescriptorHeap(heap_type));
     }
 }
 

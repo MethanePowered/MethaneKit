@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ResourceManagerDX.h
+FILE: Methane/Graphics/DescriptorManagerDX.h
 Resource manager used as a central place for creating and accessing descriptor heaps
 and deferred releasing of GPU resource.
 
@@ -26,7 +26,7 @@ and deferred releasing of GPU resource.
 
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/ResourceManager.h>
+#include <Methane/Graphics/DescriptorManager.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Graphics/ProgramBase.h>
 #include <Methane/Instrumentation.h>
@@ -40,7 +40,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 
-class ResourceManagerDX : public ResourceManager
+class DescriptorManagerDX : public DescriptorManager
 {
 public:
     using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
@@ -52,11 +52,11 @@ public:
         DescriptorHeapSizeByType shader_visible_heap_sizes;
     };
 
-    explicit ResourceManagerDX(ContextBase& context);
+    explicit DescriptorManagerDX(ContextBase& context);
 
     void Initialize(const Settings& settings);
 
-    // ResourceManager overrides
+    // DescriptorManager overrides
     void CompleteInitialization() override;
     void Release() override;
 

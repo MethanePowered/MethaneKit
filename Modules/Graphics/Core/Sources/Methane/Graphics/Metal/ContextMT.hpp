@@ -26,7 +26,7 @@ Metal template implementation of the base context interface.
 #include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "ProgramLibraryMT.hh"
-#include "ResourceManagerMT.h"
+#include "DescriptorManagerMT.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -47,7 +47,7 @@ class ContextMT : public ContextBaseT
 {
 public:
     ContextMT(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<ResourceManagerMT>(), parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerMT>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }

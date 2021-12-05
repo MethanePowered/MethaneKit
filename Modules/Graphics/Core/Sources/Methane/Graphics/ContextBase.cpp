@@ -24,7 +24,7 @@ Base implementation of the context interface.
 #include "ContextBase.h"
 #include "DeviceBase.h"
 #include "CommandQueueBase.h"
-#include "ResourceManager.h"
+#include "DescriptorManager.h"
 
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
@@ -48,11 +48,11 @@ static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()>
 }};
 #endif
 
-ContextBase::ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+ContextBase::ContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
                          tf::Executor& parallel_executor, Type type)
     : m_type(type)
     , m_device_ptr(device.GetPtr<DeviceBase>())
-    , m_resource_manager_ptr(std::move(resource_manager_ptr))
+    , m_descriptor_manager_ptr(std::move(descriptor_manager_ptr))
     , m_parallel_executor(parallel_executor)
 {
     META_FUNCTION_TASK();
@@ -76,7 +76,7 @@ void ContextBase::CompleteInitialization()
     META_LOG("Complete initialization of context '{}'", GetName());
 
     Emit(&IContextCallback::OnContextCompletingInitialization, *this);
-    GetResourceManager().CompleteInitialization();
+    GetDescriptorManager().CompleteInitialization();
     UploadResources();
 
     m_requested_action             = DeferredAction::None;
@@ -145,7 +145,7 @@ void ContextBase::Release()
         cmd_kit_ptr.reset();
 
     Emit(&IContextCallback::OnContextReleased, std::ref(*this));
-    GetResourceManager().Release();
+    GetDescriptorManager().Release();
 }
 
 void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocation */, bool is_callback_emitted)
@@ -212,11 +212,11 @@ const DeviceBase& ContextBase::GetDeviceBase() const
     return *m_device_ptr;
 }
 
-ResourceManager& ContextBase::GetResourceManager() const
+DescriptorManager& ContextBase::GetDescriptorManager() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_resource_manager_ptr);
-    return *m_resource_manager_ptr;
+    META_CHECK_ARG_NOT_NULL(m_descriptor_manager_ptr);
+    return *m_descriptor_manager_ptr;
 }
 
 void ContextBase::SetName(const std::string& name)

@@ -26,7 +26,7 @@ DirectX 12 implementation of the program bindings interface.
 #include "ProgramDX.h"
 #include "CommandListDX.h"
 #include "DescriptorHeapDX.h"
-#include "ResourceManagerDX.h"
+#include "DescriptorManagerDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/ContextBase.h>
@@ -247,11 +247,11 @@ void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();
     const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
-    ResourceManagerDX&   resource_manager = context.GetResourceManagerDX();
+    DescriptorManagerDX&   descriptor_manager = context.GetDescriptorManagerDX();
 
-    resource_manager.AddProgramBindings(*this);
+    descriptor_manager.AddProgramBindings(*this);
 
-    if (resource_manager.IsDeferredHeapAllocation())
+    if (descriptor_manager.IsDeferredHeapAllocation())
     {
         context.RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
     }
@@ -389,14 +389,14 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
     }
 
     // Reserve descriptor ranges in heaps for resource bindings state
-    const ResourceManagerDX& resource_manager = program.GetContext().GetResourceManagerDX();
+    const DescriptorManagerDX& descriptor_manager = program.GetContext().GetDescriptorManagerDX();
     auto& mutable_program = static_cast<ProgramDX&>(GetProgram());
     for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
         std::optional<DescriptorHeapDX::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];
         if (!descriptor_heap_reservation_opt)
         {
-            descriptor_heap_reservation_opt.emplace(resource_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type));
+            descriptor_heap_reservation_opt.emplace(descriptor_manager.GetDefaultShaderVisibleDescriptorHeap(heap_type));
         }
 
         DescriptorHeapDX::Reservation& heap_reservation = *descriptor_heap_reservation_opt;

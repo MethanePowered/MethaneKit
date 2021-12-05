@@ -53,8 +53,8 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceManagerDX.h
-        ${SOURCES_GRAPHICS_DIR}/ResourceManagerDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
         ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
@@ -116,7 +116,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ResourceManagerMT.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerMT.h
         ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
@@ -172,7 +172,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.h
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceManagerVK.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerVK.h
         ${SOURCES_GRAPHICS_DIR}/BufferVK.h
         ${SOURCES_GRAPHICS_DIR}/BufferVK.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureVK.h

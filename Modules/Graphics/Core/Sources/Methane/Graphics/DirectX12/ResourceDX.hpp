@@ -125,7 +125,7 @@ protected:
     {
         META_FUNCTION_TASK();
         const Usage usage_mask = GetUsage();
-        ResourceManagerDX& resource_manager = GetContextDX().GetResourceManagerDX();
+        DescriptorManagerDX& descriptor_manager = GetContextDX().GetDescriptorManagerDX();
 
         using namespace magic_enum::bitwise_operators;
         for (Usage usage : GetPrimaryUsageValues())
@@ -138,7 +138,7 @@ protected:
             {
                 // Create default resource descriptor by usage
                 const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-                DescriptorHeapDX& heap = resource_manager.GetDescriptorHeap(heap_type);
+                DescriptorHeapDX& heap = descriptor_manager.GetDescriptorHeap(heap_type);
                 m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
                 m_descriptor_heap_types.insert(heap.GetSettings().type);
             }

@@ -16,19 +16,19 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ResourceManagerVK.h
+FILE: Methane/Graphics/Vulkan/DescriptorManagerVK.h
 Dummy Vulkan resource manager.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ResourceManager.h>
+#include <Methane/Graphics/DescriptorManager.h>
 
 namespace Methane::Graphics
 {
 
-struct ResourceManagerVK : ResourceManager
+struct DescriptorManagerVK : DescriptorManager
 {
     void CompleteInitialization() final {}
     void Release() final {}

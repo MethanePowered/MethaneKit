@@ -37,7 +37,7 @@ class RenderContextBase
     , public RenderContext
 {
 public:
-    RenderContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+    RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
                       tf::Executor& parallel_executor, const Settings& settings);
 
     // Context interface

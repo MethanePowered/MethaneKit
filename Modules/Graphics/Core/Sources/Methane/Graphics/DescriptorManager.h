@@ -16,22 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/ResourceManagerMT.h
-Dummy Metal resource manager.
+FILE: Methane/Graphics/DescriptorManager.h
+Resource manager interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ResourceManager.h>
-
 namespace Methane::Graphics
 {
 
-struct ResourceManagerMT : ResourceManager
+struct DescriptorManager
 {
-    void CompleteInitialization() final {}
-    void Release() final {}
+    virtual void CompleteInitialization() = 0;
+    virtual void Release() = 0;
+
+    virtual ~DescriptorManager() = default;
 };
 
 } // namespace Methane::Graphics

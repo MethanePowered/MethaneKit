@@ -26,7 +26,7 @@ Vulkan template implementation of the base context interface.
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "CommandQueueVK.h"
-#include "ResourceManagerVK.h"
+#include "DescriptorManagerVK.h"
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -45,7 +45,7 @@ class ContextVK : public ContextBaseT
 {
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<ResourceManagerVK>(), parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerVK>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }

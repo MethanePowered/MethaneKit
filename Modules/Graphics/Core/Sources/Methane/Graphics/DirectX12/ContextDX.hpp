@@ -27,7 +27,7 @@ DirectX 12 base template implementation of the context interface.
 #include "DeviceDX.h"
 #include "ContextDX.h"
 #include "CommandQueueDX.h"
-#include "ResourceManagerDX.h"
+#include "DescriptorManagerDX.h"
 
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/ContextBase.h>
@@ -50,7 +50,7 @@ class ContextDX : public ContextBaseT
 {
 public:
     ContextDX(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<ResourceManagerDX>(*this), parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerDX>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
@@ -62,14 +62,14 @@ public:
         META_FUNCTION_TASK();
         ContextBaseT::Initialize(device, deferred_heap_allocation, false);
 
-        m_resource_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
+        m_descriptor_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
         if (deferred_heap_allocation)
         {
-            m_resource_manager_init_settings.default_heap_sizes        = {};
-            m_resource_manager_init_settings.shader_visible_heap_sizes = {};
+            m_descriptor_manager_init_settings.default_heap_sizes        = {};
+            m_descriptor_manager_init_settings.shader_visible_heap_sizes = {};
         }
 
-        GetResourceManagerDX().Initialize(m_resource_manager_init_settings);
+        GetDescriptorManagerDX().Initialize(m_descriptor_manager_init_settings);
 
         if (is_callback_emitted)
         {
@@ -81,9 +81,9 @@ public:
     {
         META_FUNCTION_TASK();
 
-        ResourceManagerDX& resource_manager = GetResourceManagerDX();
-        m_resource_manager_init_settings.default_heap_sizes        = resource_manager.GetDescriptorHeapSizes(true, false);
-        m_resource_manager_init_settings.shader_visible_heap_sizes = resource_manager.GetDescriptorHeapSizes(true, true);
+        DescriptorManagerDX& descriptor_manager = GetDescriptorManagerDX();
+        m_descriptor_manager_init_settings.default_heap_sizes        = descriptor_manager.GetDescriptorHeapSizes(true, false);
+        m_descriptor_manager_init_settings.shader_visible_heap_sizes = descriptor_manager.GetDescriptorHeapSizes(true, true);
 
         for(wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap : m_query_heaps)
         {
@@ -100,7 +100,7 @@ public:
 
     const DeviceDX&    GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
     CommandQueueDX&    GetDefaultCommandQueueDX(CommandList::Type type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
-    ResourceManagerDX& GetResourceManagerDX() const noexcept final            { return static_cast<ResourceManagerDX&>(ContextBase::GetResourceManager()); }
+    DescriptorManagerDX& GetDescriptorManagerDX() const noexcept final            { return static_cast<DescriptorManagerDX&>(ContextBase::GetDescriptorManager()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
@@ -125,7 +125,7 @@ protected:
 private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
 
-    ResourceManagerDX::Settings m_resource_manager_init_settings{ true, {}, {} };
+    DescriptorManagerDX::Settings m_descriptor_manager_init_settings{ true, {}, {} };
     mutable NativeQueryHeaps    m_query_heaps;
 };
 

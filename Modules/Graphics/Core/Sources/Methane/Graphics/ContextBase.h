@@ -49,7 +49,7 @@ class CommandQueueBase;
 struct CommandQueue;
 struct CommandList;
 struct CommandListSet;
-struct ResourceManager;
+struct DescriptorManager;
 
 class ContextBase
     : public ObjectBase
@@ -58,7 +58,7 @@ class ContextBase
     , public Data::Emitter<IContextCallback>
 {
 public:
-    ContextBase(DeviceBase& device, UniquePtr<ResourceManager>&& resource_manager_ptr,
+    ContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
                 tf::Executor& parallel_executor, Type type);
     ~ContextBase() override;
 
@@ -88,7 +88,7 @@ public:
     Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
     DeviceBase&       GetDeviceBase();
     const DeviceBase& GetDeviceBase() const;
-    ResourceManager&  GetResourceManager() const;
+    DescriptorManager&  GetDescriptorManager() const;
 
 protected:
     void PerformRequestedAction();
@@ -105,7 +105,7 @@ private:
 
     const Type                       m_type;
     Ptr<DeviceBase>                  m_device_ptr;
-    const UniquePtr<ResourceManager> m_resource_manager_ptr;
+    const UniquePtr<DescriptorManager> m_descriptor_manager_ptr;
     tf::Executor&                    m_parallel_executor;
     ObjectBase::RegistryBase         m_objects_cache;
     mutable CommandKitPtrByType      m_default_command_kit_ptrs;
