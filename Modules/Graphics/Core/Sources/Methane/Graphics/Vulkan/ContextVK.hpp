@@ -45,7 +45,7 @@ class ContextVK : public ContextBaseT
 {
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<DescriptorManagerVK>(), parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerVK>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
