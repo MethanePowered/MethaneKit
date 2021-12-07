@@ -48,17 +48,21 @@ public:
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
-    const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
-    const vk::DescriptorSetLayout* GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
-    const vk::PipelineLayout& GetNativePipelineLayout() const;
+    const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts();
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
+    const vk::PipelineLayout& GetNativePipelineLayout();
+    const vk::DescriptorSet& GetConstantDescriptorSet();
+    const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
     const IContextVK& GetContextVK() const noexcept;
 
-    mutable std::array<int32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_descriptor_set_layout_index_by_access_type;
-    mutable std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
-    mutable std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;
-    mutable vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
+    std::array<int32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_descriptor_set_layout_index_by_access_type;
+    std::vector<vk::UniqueDescriptorSetLayout>    m_vk_unique_descriptor_set_layouts;
+    std::vector<vk::DescriptorSetLayout>          m_vk_descriptor_set_layouts;
+    vk::UniquePipelineLayout                      m_vk_unique_pipeline_layout;
+    std::optional<vk::DescriptorSet>              m_vk_constant_descriptor_set_opt;
+    std::vector<vk::DescriptorSet>                m_vk_frame_constant_descriptor_sets;
 };
 
 } // namespace Methane::Graphics

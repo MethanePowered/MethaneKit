@@ -397,8 +397,8 @@ void RenderStateVK::Reset(const Settings& settings)
         dynamic_states
     );
 
-    const auto& program = static_cast<const ProgramVK&>(*GetSettings().program_ptr);
-    const auto& render_pattern = static_cast<const RenderPatternVK&>(*GetSettings().render_pattern_ptr);
+    auto& program = static_cast<ProgramVK&>(*GetSettings().program_ptr);
+    auto& render_pattern = static_cast<RenderPatternVK&>(*GetSettings().render_pattern_ptr);
 
     const vk::PipelineVertexInputStateCreateInfo vk_vertex_input_state_info = program.GetNativeVertexInputStateCreateInfo();
     const std::vector<vk::PipelineShaderStageCreateInfo> vk_stages_info = program.GetNativeShaderStageCreateInfos();

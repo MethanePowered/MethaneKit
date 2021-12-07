@@ -73,6 +73,11 @@ public:
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
+
+    DescriptorManagerVK& GetDescriptorManagerVK() const override
+    {
+        return static_cast<DescriptorManagerVK&>(ContextBase::GetDescriptorManager());
+    }
 };
 
 } // namespace Methane::Graphics

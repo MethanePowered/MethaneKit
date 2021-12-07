@@ -27,8 +27,10 @@ Vulkan implementation of the program interface.
 #include "DeviceVK.h"
 #include "UtilsVK.hpp"
 #include "ProgramBindingsVK.h"
+#include "DescriptorManagerVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -91,7 +93,7 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
     return vertex_shader.GetNativeVertexInputStateCreateInfo(*this);
 }
 
-const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts() const
+const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts()
 {
     META_FUNCTION_TASK();
     if (!m_vk_descriptor_set_layouts.empty())
@@ -130,14 +132,15 @@ const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLay
     return m_vk_descriptor_set_layouts;
 }
 
-const vk::DescriptorSetLayout* ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept
 {
     META_FUNCTION_TASK();
+    static const vk::DescriptorSetLayout s_empty_layout;
     const int layout_index = m_descriptor_set_layout_index_by_access_type[magic_enum::enum_index(argument_access_type).value()];
-    return layout_index >= 0 ? &m_vk_unique_descriptor_set_layouts[layout_index].get() : nullptr;
+    return layout_index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_index].get() : s_empty_layout;
 }
 
-const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout() const
+const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout()
 {
     META_FUNCTION_TASK();
     if (m_vk_unique_pipeline_layout)
@@ -148,6 +151,47 @@ const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout() const
 
     m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, vk_descriptor_set_layouts));
     return m_vk_unique_pipeline_layout.get();
+}
+
+const vk::DescriptorSet& ProgramVK::GetConstantDescriptorSet()
+{
+    META_FUNCTION_TASK();
+    if (m_vk_constant_descriptor_set_opt.has_value())
+        return m_vk_constant_descriptor_set_opt.value();
+
+    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Constant);
+    m_vk_constant_descriptor_set_opt = layout
+                                     ? GetContextVK().GetDescriptorManagerVK().AllocDescriptorSet(layout)
+                                     : vk::DescriptorSet();
+    return m_vk_constant_descriptor_set_opt.value();
+}
+
+const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index frame_index)
+{
+    META_FUNCTION_TASK();
+    if (!m_vk_frame_constant_descriptor_sets.empty())
+    {
+        META_CHECK_ARG_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
+        return m_vk_frame_constant_descriptor_sets.at(frame_index);
+    }
+
+    const Data::Size frames_count = GetContext().GetType() == Context::Type::Render
+                                  ? dynamic_cast<const RenderContextBase&>(GetContext()).GetSettings().frame_buffers_count
+                                  : 1U;
+    m_vk_frame_constant_descriptor_sets.resize(frames_count);
+    META_CHECK_ARG_LESS(frame_index, frames_count);
+
+    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::FrameConstant);
+    if (!layout)
+        return m_vk_frame_constant_descriptor_sets.at(frame_index);
+
+    DescriptorManagerVK& descriptor_manager = GetContextVK().GetDescriptorManagerVK();
+    for(vk::DescriptorSet& frame_descriptor_set : m_vk_frame_constant_descriptor_sets)
+    {
+        frame_descriptor_set = descriptor_manager.AllocDescriptorSet(layout);
+    }
+
+    return m_vk_frame_constant_descriptor_sets.at(frame_index);
 }
 
 } // namespace Methane::Graphics

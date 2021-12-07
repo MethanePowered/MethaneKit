@@ -31,11 +31,13 @@ namespace Methane::Graphics
 
 class DeviceVK;
 class CommandQueueVK;
+class DescriptorManagerVK;
 
 struct IContextVK
 {
     virtual const DeviceVK& GetDeviceVK() const noexcept = 0;
     virtual CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) = 0;
+    virtual DescriptorManagerVK& GetDescriptorManagerVK() const = 0;
 
     virtual ~IContextVK() = default;
 };
