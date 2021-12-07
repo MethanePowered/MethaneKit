@@ -74,9 +74,9 @@ public:
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
     }
 
-    DescriptorManagerVK& GetDescriptorManagerVK() const override
+    DescriptorManagerVK& GetDescriptorManagerVK() const final
     {
-        return static_cast<DescriptorManagerVK&>(ContextBase::GetDescriptorManager());
+        return static_cast<DescriptorManagerVK&>(ContextBaseT::GetDescriptorManager());
     }
 };
 
