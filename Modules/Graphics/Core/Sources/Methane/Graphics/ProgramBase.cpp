@@ -34,9 +34,9 @@ Base implementation of the program interface.
 namespace Methane::Graphics
 {
 
-static const std::hash<std::string> g_argument_name_hash;
+static const std::hash<std::string_view> g_argument_name_hash;
 
-Program::Argument::Argument(Shader::Type shader_type, const std::string& argument_name) noexcept
+Program::Argument::Argument(Shader::Type shader_type, std::string_view argument_name) noexcept
     : m_shader_type(shader_type)
     , m_name(argument_name)
     , m_hash(g_argument_name_hash(m_name) ^ (static_cast<size_t>(shader_type) << 1))
@@ -57,7 +57,7 @@ Program::Argument::operator std::string() const noexcept
     return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
 }
 
-Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type, bool addressable) noexcept
+Program::ArgumentAccessor::ArgumentAccessor(Shader::Type shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
     : Argument(shader_type, argument_name)
     , m_accessor_type(accessor_type)
     , m_addressable(addressable)
@@ -141,7 +141,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
 {
     META_FUNCTION_TASK();
     Shader::Types all_shader_types;
-    std::map<std::string, Shader::Types, std::less<>> shader_types_by_argument_name_map;
+    std::map<std::string_view, Shader::Types, std::less<>> shader_types_by_argument_name_map;
     
     m_binding_by_argument.clear();
     for (const Ptr<Shader>& shader_ptr : m_settings.shaders)

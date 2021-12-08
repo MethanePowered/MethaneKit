@@ -60,6 +60,12 @@ uint32_t ShaderBase::GetProgramInputBufferIndexByArgumentSemantic(const ProgramB
     return program.GetInputBufferIndexByArgumentSemantic(argument_semantic);
 }
 
+std::string_view ShaderBase::GetCachedArgName(std::string_view arg_name) const
+{
+    META_FUNCTION_TASK();
+    return *m_cached_arg_names.emplace(arg_name).first;
+}
+
 std::string ShaderBase::GetCompiledEntryFunctionName(const Settings& settings)
 {
     META_FUNCTION_TASK();

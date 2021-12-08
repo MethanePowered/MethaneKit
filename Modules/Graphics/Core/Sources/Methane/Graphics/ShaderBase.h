@@ -28,6 +28,7 @@ Base implementation of the shader interface.
 
 #include <Methane/Graphics/Shader.h>
 
+#include <set>
 #include <string_view>
 
 namespace Methane::Graphics
@@ -57,14 +58,16 @@ public:
 protected:
     const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
+    std::string_view    GetCachedArgName(std::string_view arg_name) const;
     std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
 
     static std::string GetCompiledEntryFunctionName(const Settings& settings);
 
 private:
-    const Type         m_type;
-    const ContextBase& m_context;
-    const Settings     m_settings;
+    const Type                    m_type;
+    const ContextBase&            m_context;
+    const Settings                m_settings;
+    mutable std::set<std::string> m_cached_arg_names;
 };
 
 } // namespace Methane::Graphics

@@ -150,7 +150,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Program::Argument         shader_argument(GetType(), binding_desc.Name);
+        const Program::Argument         shader_argument(GetType(), ShaderBase::GetCachedArgName(binding_desc.Name));
         const auto                      argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
         const Program::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
                                                          ? Program::ArgumentAccessor(shader_argument)

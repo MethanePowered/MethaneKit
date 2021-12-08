@@ -160,7 +160,7 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
         const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);
         for (const spirv_cross::Resource& resource : spirv_resources)
         {
-            const Program::Argument shader_argument(shader_type, spirv_compiler.get_name(resource.id));
+            const Program::Argument shader_argument(shader_type, ShaderBase::GetCachedArgName(spirv_compiler.get_name(resource.id)));
             const auto argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
             const Program::ArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
                                                            ? Program::ArgumentAccessor(shader_argument)
