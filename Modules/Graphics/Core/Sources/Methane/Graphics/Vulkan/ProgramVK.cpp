@@ -46,7 +46,6 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
 {
     META_FUNCTION_TASK();
-    std::fill(m_descriptor_set_layout_index_by_access_type.begin(), m_descriptor_set_layout_index_by_access_type.end(), -1);
     InitArgumentBindings(settings.argument_accessors);
 }
 
@@ -99,7 +98,6 @@ const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLay
     if (!m_vk_descriptor_set_layouts.empty())
         return m_vk_descriptor_set_layouts;
 
-    std::array<std::vector<vk::DescriptorSetLayoutBinding>, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> layout_bindings_by_access_type;
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
@@ -107,7 +105,9 @@ const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLay
         const ProgramBindingsVK::ArgumentBindingVK::SettingsVK& vulkan_binding_settings = vulkan_argument_binding.GetSettingsVK();
         const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();
 
-        layout_bindings_by_access_type[accessor_type_index].emplace_back(
+        DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
+        layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
+        layout_info.bindings.emplace_back(
             vulkan_binding_settings.binding,
             vulkan_binding_settings.descriptor_type,
             vulkan_binding_settings.resource_count,
@@ -118,14 +118,13 @@ const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLay
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
 
     m_vk_unique_descriptor_set_layouts.clear();
-    for(size_t layout_index = 0; layout_index < layout_bindings_by_access_type.size(); layout_index++)
+    for(DescriptorSetLayoutInfo& layout_info : m_descriptor_set_layout_info_by_access_type)
     {
-        const std::vector<vk::DescriptorSetLayoutBinding>& layout_bindings = layout_bindings_by_access_type[layout_index];
-        if (layout_bindings.empty())
+        if (layout_info.bindings.empty())
             continue;
 
-        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_bindings)));
-        m_descriptor_set_layout_index_by_access_type[layout_index] = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
+        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)));
+        layout_info.index = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
     }
 
     m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
@@ -136,8 +135,20 @@ const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::
 {
     META_FUNCTION_TASK();
     static const vk::DescriptorSetLayout s_empty_layout;
-    const int layout_index = m_descriptor_set_layout_index_by_access_type[magic_enum::enum_index(argument_access_type).value()];
-    return layout_index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_index].get() : s_empty_layout;
+    const DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()];
+    return layout_info.index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_info.index].get() : s_empty_layout;
+}
+
+const std::vector<vk::DescriptorSetLayoutBinding>& ProgramVK::GetNativeDescriptorSetLayoutBindings(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()].bindings;
+}
+
+const std::vector<Program::Argument>& ProgramVK::GetLayoutArguments(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()].arguments;
 }
 
 const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout()
