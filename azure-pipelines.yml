@@ -8,9 +8,15 @@ trigger:
     - develop
   paths:
     exclude:
+    - .github/**
+    - .idea/**
+    - .vscode/**
+    - .gitpod.yml
+    - Docs/**
     - Build/Windows/Build.bat
     - Build/Unix/Build.sh
     - README.md
+    - SECURITY.md
     - LICENSE
 
 pr:
