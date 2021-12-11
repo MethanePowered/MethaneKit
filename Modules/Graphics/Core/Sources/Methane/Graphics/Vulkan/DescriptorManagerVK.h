@@ -72,7 +72,6 @@ private:
     ContextBase&                          m_context;
     uint32_t                              m_pool_sets_count;
     PoolSizeRatioByDescType               m_pool_size_ratio_by_desc_type;
-    vk::Device                            m_vk_device;
     std::vector<vk::UniqueDescriptorPool> m_vk_descriptor_pools;
     std::vector<vk::DescriptorPool>       m_vk_used_pools;
     std::vector<vk::DescriptorPool>       m_vk_free_pools;

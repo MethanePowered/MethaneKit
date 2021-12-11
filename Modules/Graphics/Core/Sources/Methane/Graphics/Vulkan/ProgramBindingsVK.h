@@ -25,6 +25,8 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -64,6 +66,11 @@ public:
     void CompleteInitialization() override { /* not implemented yet */ }
 
     void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+
+private:
+    using DescriptorSetByAccessType = std::array<vk::DescriptorSet, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+
+    DescriptorSetByAccessType m_descriptor_set_by_access_type;
 };
 
 } // namespace Methane::Graphics

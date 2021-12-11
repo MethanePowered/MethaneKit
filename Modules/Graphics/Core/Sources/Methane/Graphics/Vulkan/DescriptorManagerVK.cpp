@@ -35,7 +35,6 @@ DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_set
     : m_context(context)
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
-    , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
 {
     META_FUNCTION_TASK();
 }
@@ -48,9 +47,10 @@ void DescriptorManagerVK::CompleteInitialization()
 void DescriptorManagerVK::Release()
 {
     META_FUNCTION_TASK();
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
     for(vk::DescriptorPool& vk_pool : m_vk_used_pools)
     {
-        m_vk_device.resetDescriptorPool(vk_pool);
+        vk_device.resetDescriptorPool(vk_pool);
         m_vk_free_pools.emplace_back(vk_pool);
     }
     m_vk_used_pools.clear();
@@ -69,9 +69,11 @@ vk::DescriptorSet DescriptorManagerVK::AllocDescriptorSet(vk::DescriptorSetLayou
     if (!m_vk_current_pool)
         m_vk_current_pool = AcquireDescriptorPool();
 
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+
     try
     {
-        const auto descriptor_sets = m_vk_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_vk_current_pool, 1, &layout));
+        const auto descriptor_sets = vk_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_vk_current_pool, 1, &layout));
         if (!descriptor_sets.empty())
             return descriptor_sets.back();
     }
@@ -84,7 +86,7 @@ vk::DescriptorSet DescriptorManagerVK::AllocDescriptorSet(vk::DescriptorSetLayou
 
     // Reallocate descriptor set for the new pool
     m_vk_current_pool = AcquireDescriptorPool();
-    const auto descriptor_sets = m_vk_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_vk_current_pool, 1, &layout));
+    const auto descriptor_sets = vk_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_vk_current_pool, 1, &layout));
     META_CHECK_ARG_NOT_EMPTY(descriptor_sets);
     return descriptor_sets.back();
 }
@@ -98,7 +100,8 @@ vk::DescriptorPool DescriptorManagerVK::CreateDescriptorPool()
     {
         pool_sizes.emplace_back(desc_type, static_cast<uint32_t>(m_pool_sets_count * size_ratio));
     }
-    m_vk_descriptor_pools.emplace_back(m_vk_device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, m_pool_sets_count, pool_sizes)));
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    m_vk_descriptor_pools.emplace_back(vk_device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, m_pool_sets_count, pool_sizes)));
     return m_vk_descriptor_pools.back().get();
 }
 

@@ -95,60 +95,30 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
 const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts()
 {
     META_FUNCTION_TASK();
-    if (!m_vk_descriptor_set_layouts.empty())
-        return m_vk_descriptor_set_layouts;
+    if (!m_vk_descriptor_set_layouts_opt)
+        InitializeDescriptorSetLayouts();
 
-    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
-    {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr);
-        const ProgramBindingsVK::ArgumentBindingVK::SettingsVK& vulkan_binding_settings = vulkan_argument_binding.GetSettingsVK();
-        const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();
-
-        DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
-        layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
-        layout_info.bindings.emplace_back(
-            vulkan_binding_settings.binding,
-            vulkan_binding_settings.descriptor_type,
-            vulkan_binding_settings.resource_count,
-            ShaderVK::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
-        );
-    }
-
-    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
-
-    m_vk_unique_descriptor_set_layouts.clear();
-    for(DescriptorSetLayoutInfo& layout_info : m_descriptor_set_layout_info_by_access_type)
-    {
-        if (layout_info.bindings.empty())
-            continue;
-
-        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)));
-        layout_info.index = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
-    }
-
-    m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
-    return m_vk_descriptor_set_layouts;
+    return *m_vk_descriptor_set_layouts_opt;
 }
 
-const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type)
 {
     META_FUNCTION_TASK();
+    if (!m_vk_descriptor_set_layouts_opt)
+        InitializeDescriptorSetLayouts();
+
     static const vk::DescriptorSetLayout s_empty_layout;
-    const DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()];
+    const DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
     return layout_info.index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_info.index].get() : s_empty_layout;
 }
 
-const std::vector<vk::DescriptorSetLayoutBinding>& ProgramVK::GetNativeDescriptorSetLayoutBindings(Program::ArgumentAccessor::Type argument_access_type) const noexcept
+const ProgramVK::DescriptorSetLayoutInfo& ProgramVK::GetNativeDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type)
 {
     META_FUNCTION_TASK();
-    return m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()].bindings;
-}
+    if (!m_vk_descriptor_set_layouts_opt)
+        InitializeDescriptorSetLayouts();
 
-const std::vector<Program::Argument>& ProgramVK::GetLayoutArguments(Program::ArgumentAccessor::Type argument_access_type) const noexcept
-{
-    META_FUNCTION_TASK();
-    return m_descriptor_set_layout_info_by_access_type[magic_enum::enum_index(argument_access_type).value()].arguments;
+    return m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
 }
 
 const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout()
@@ -203,6 +173,42 @@ const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index fr
     }
 
     return m_vk_frame_constant_descriptor_sets.at(frame_index);
+}
+
+void ProgramVK::InitializeDescriptorSetLayouts()
+{
+    META_FUNCTION_TASK();
+    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr);
+        const ProgramBindingsVK::ArgumentBindingVK::SettingsVK& vulkan_binding_settings = vulkan_argument_binding.GetSettingsVK();
+        const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();
+
+        DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
+        layout_info.descriptors_count += vulkan_binding_settings.resource_count;
+        layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
+        layout_info.bindings.emplace_back(
+            vulkan_binding_settings.binding,
+            vulkan_binding_settings.descriptor_type,
+            vulkan_binding_settings.resource_count,
+            ShaderVK::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
+        );
+    }
+
+    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+
+    m_vk_unique_descriptor_set_layouts.clear();
+    for(DescriptorSetLayoutInfo& layout_info : m_descriptor_set_layout_info_by_access_type)
+    {
+        if (layout_info.bindings.empty())
+            continue;
+
+        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)));
+        layout_info.index = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
+    }
+
+    m_vk_descriptor_set_layouts_opt = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
 }
 
 } // namespace Methane::Graphics

@@ -247,7 +247,7 @@ void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();
     const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
-    DescriptorManagerDX&   descriptor_manager = context.GetDescriptorManagerDX();
+    DescriptorManagerDX& descriptor_manager = context.GetDescriptorManagerDX();
 
     descriptor_manager.AddProgramBindings(*this);
 

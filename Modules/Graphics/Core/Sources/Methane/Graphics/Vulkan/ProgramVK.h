@@ -39,41 +39,42 @@ class ShaderVK;
 class ProgramVK final : public ProgramBase
 {
 public:
+    struct DescriptorSetLayoutInfo
+    {
+        int32_t                                     index = -1;
+        uint32_t                                    descriptors_count = 0U;
+        std::vector<vk::DescriptorSetLayoutBinding> bindings;
+        std::vector<Program::Argument>              arguments; // related arguments for each layout binding
+    };
+
     ProgramVK(const ContextBase& context, const Settings& settings);
 
     // ObjectBase overrides
     void SetName(const std::string& name) override;
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
+    const IContextVK& GetContextVK() const noexcept;
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts();
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
-    const std::vector<vk::DescriptorSetLayoutBinding>& GetNativeDescriptorSetLayoutBindings(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
-    const std::vector<Program::Argument>& GetLayoutArguments(Program::ArgumentAccessor::Type argument_access_type) const noexcept;
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type);
+    const DescriptorSetLayoutInfo& GetNativeDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type);
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
-    const IContextVK& GetContextVK() const noexcept;
-
-    struct DescriptorSetLayoutInfo
-    {
-        int32_t                                     index = -1;
-        std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        std::vector<Program::Argument>              arguments; // related arguments for each layout binding
-    };
-
     using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
 
-    DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
-    std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
-    std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;
-    vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
-    std::optional<vk::DescriptorSet>           m_vk_constant_descriptor_set_opt;
-    std::vector<vk::DescriptorSet>             m_vk_frame_constant_descriptor_sets;
+    void InitializeDescriptorSetLayouts();
+
+    DescriptorSetLayoutInfoByAccessType                 m_descriptor_set_layout_info_by_access_type;
+    std::vector<vk::UniqueDescriptorSetLayout>          m_vk_unique_descriptor_set_layouts;
+    std::optional<std::vector<vk::DescriptorSetLayout>> m_vk_descriptor_set_layouts_opt;
+    vk::UniquePipelineLayout                            m_vk_unique_pipeline_layout;
+    std::optional<vk::DescriptorSet>                    m_vk_constant_descriptor_set_opt;
+    std::vector<vk::DescriptorSet>                      m_vk_frame_constant_descriptor_sets;
 };
 
 } // namespace Methane::Graphics

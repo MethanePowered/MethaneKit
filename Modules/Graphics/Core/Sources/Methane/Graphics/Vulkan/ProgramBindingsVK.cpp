@@ -22,7 +22,11 @@ Vulkan implementation of the program interface.
 ******************************************************************************/
 
 #include "ProgramBindingsVK.h"
+#include "ProgramVK.h"
+#include "ContextVK.h"
+#include "DeviceVK.h"
 #include "CommandListVK.h"
+#include "DescriptorManagerVK.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -63,16 +67,52 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     ArgumentBindingBase::SetResourceLocations(resource_locations);
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
+                                     const ResourceLocationsByArgument& resource_locations_by_argument,
+                                     Data::Index frame_index)
     : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
+    auto& program = static_cast<ProgramVK&>(GetProgram());
+    m_descriptor_set_by_access_type[*magic_enum::enum_index(Program::ArgumentAccessor::Type::Constant)] = program.GetConstantDescriptorSet();
+    m_descriptor_set_by_access_type[*magic_enum::enum_index(Program::ArgumentAccessor::Type::FrameConstant)] = program.GetFrameConstantDescriptorSet(frame_index);
+
+    const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Mutable);
+    if (!vk_mutable_descriptor_set_layout)
+        return;
+
+    DescriptorManagerVK& descriptor_manager = program.GetContextVK().GetDescriptorManagerVK();
+    m_descriptor_set_by_access_type[*magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable)] = descriptor_manager.AllocDescriptorSet(vk_mutable_descriptor_set_layout);
 }
 
-ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
+ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings,
+                                     const ResourceLocationsByArgument& replace_resource_location_by_argument,
+                                     const Opt<Data::Index>& frame_index)
     : ProgramBindingsBase(other_program_bindings, replace_resource_location_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
+    std::copy(other_program_bindings.m_descriptor_set_by_access_type.begin(),
+              other_program_bindings.m_descriptor_set_by_access_type.end(),
+              m_descriptor_set_by_access_type.begin());
+
+    vk::DescriptorSet& mutable_descriptor_set = m_descriptor_set_by_access_type[*magic_enum::enum_index(Program::ArgumentAccessor::Type::Mutable)];
+    if (mutable_descriptor_set)
+    {
+        //  Allocate new mutable descriptor set
+        auto& program = static_cast<ProgramVK&>(GetProgram());
+        const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Mutable);
+        META_CHECK_ARG_NOT_NULL(vk_mutable_desc_set_layout);
+        vk::DescriptorSet mutable_copy_descriptor_set = program.GetContextVK().GetDescriptorManagerVK().AllocDescriptorSet(vk_mutable_desc_set_layout);
+
+        // Copy descriptors from original to new mutable descriptor set
+        const vk::Device& vk_device = program.GetContextVK().GetDeviceVK().GetNativeDevice();
+        const ProgramVK::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetNativeDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type::Mutable);
+        vk_device.updateDescriptorSets({}, {
+            vk::CopyDescriptorSet(mutable_descriptor_set, {}, {}, mutable_copy_descriptor_set, {}, mutable_desc_set_layout_info.descriptors_count)
+        });
+
+        mutable_descriptor_set = mutable_copy_descriptor_set;
+    }
 }
 
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
