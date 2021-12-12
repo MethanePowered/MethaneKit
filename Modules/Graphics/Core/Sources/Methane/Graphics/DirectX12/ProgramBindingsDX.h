@@ -65,9 +65,9 @@ public:
 
         struct DescriptorRange
         {
-            DescriptorHeapDX::Type  heap_type = DescriptorHeapDX::Type::Undefined;
-            uint32_t              offset    = 0;
-            uint32_t              count     = 0;
+            DescriptorHeapDX::Type heap_type = DescriptorHeapDX::Type::Undefined;
+            uint32_t               offset    = 0;
+            uint32_t               count     = 0;
         };
 
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);

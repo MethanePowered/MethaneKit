@@ -112,7 +112,7 @@ const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::
     return layout_info.index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_info.index].get() : s_empty_layout;
 }
 
-const ProgramVK::DescriptorSetLayoutInfo& ProgramVK::GetNativeDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type)
+const ProgramVK::DescriptorSetLayoutInfo& ProgramVK::GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type)
 {
     META_FUNCTION_TASK();
     if (!m_vk_descriptor_set_layouts_opt)
@@ -153,7 +153,7 @@ const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index fr
     if (!m_vk_frame_constant_descriptor_sets.empty())
     {
         META_CHECK_ARG_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
-        return m_vk_frame_constant_descriptor_sets.at(frame_index);
+        return m_vk_frame_constant_descriptor_sets[frame_index];
     }
 
     const Data::Size frames_count = GetContext().GetType() == Context::Type::Render

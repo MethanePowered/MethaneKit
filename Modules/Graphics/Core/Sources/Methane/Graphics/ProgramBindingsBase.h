@@ -77,8 +77,10 @@ public:
 
     using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ArgumentBindingBase>, Program::Argument::Hash>;
 
-    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {}, const Opt<Data::Index>& frame_index = {});
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
 
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
@@ -104,6 +106,8 @@ protected:
 
     Program& GetProgram();
     void InitializeArgumentBindings();
+    ResourceLocationsByArgument ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
+                                                         const ResourceLocationsByArgument& replace_resource_locations);
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }

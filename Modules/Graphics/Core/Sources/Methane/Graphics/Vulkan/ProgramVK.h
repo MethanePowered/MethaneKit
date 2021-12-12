@@ -59,7 +59,7 @@ public:
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts();
     const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type);
-    const DescriptorSetLayoutInfo& GetNativeDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type);
+    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type);
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);

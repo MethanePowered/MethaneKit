@@ -47,13 +47,18 @@ public:
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
+        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
+
+        void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
+        void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
+
         // ArgumentBinding interface
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
-
     private:
-        const SettingsVK m_settings_vk;
+        const SettingsVK         m_settings_vk;
+        const vk::DescriptorSet* m_vk_descriptor_set_ptr   = nullptr;
+        uint32_t                 m_vk_layout_binding_index = 0U;
     };
 
     ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
@@ -68,9 +73,8 @@ public:
     void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
-    using DescriptorSetByAccessType = std::array<vk::DescriptorSet, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
 
-    DescriptorSetByAccessType m_descriptor_set_by_access_type;
+    vk::DescriptorSet m_vk_mutable_descriptor_set;
 };
 
 } // namespace Methane::Graphics

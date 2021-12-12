@@ -129,7 +129,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     const DescriptorHeapDX*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
                                                       ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
                                                       : nullptr;
-    const DescriptorHeapDX::Type   descriptor_heap_type = p_dx_descriptor_heap
+    const DescriptorHeapDX::Type descriptor_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetSettings().type
                                                       : DescriptorHeapDX::Type::Undefined;
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap

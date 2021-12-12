@@ -143,17 +143,31 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, frame_index)
+{
+    META_FUNCTION_TASK();
+    SetResourcesForArguments(resource_locations_by_argument);
+    VerifyAllArgumentsAreBoundToResources();
+}
+
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, frame_index)
+{
+    META_FUNCTION_TASK();
+    SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_locations_by_argument));
+    VerifyAllArgumentsAreBoundToResources();
+}
+
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index)
     : m_program_ptr(program_ptr)
     , m_frame_index(frame_index)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO(program_ptr);
     InitializeArgumentBindings();
-    SetResourcesForArguments(resource_locations_by_argument);
-    VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const Opt<Data::Index>& frame_index)
     : ObjectBase(other_program_bindings)
     , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
@@ -161,27 +175,6 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
 {
     META_FUNCTION_TASK();
     InitializeArgumentBindings();
-
-    // Form map of volatile resource bindings with replaced resource locations
-    ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations_by_argument;
-    for (const auto& [program_argument, argument_binding_ptr] : other_program_bindings.m_binding_by_argument)
-    {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
-
-        // NOTE: constant resource bindings are reusing single binding-object for the whole program,
-        //       so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_binding_ptr->GetSettings().argument.IsConstant() ||
-            resource_locations_by_argument.count(program_argument))
-            continue;
-
-        resource_locations_by_argument.try_emplace(
-            program_argument,
-            argument_binding_ptr->GetResourceLocations()
-        );
-    }
-
-    SetResourcesForArguments(resource_locations_by_argument);
-    VerifyAllArgumentsAreBoundToResources();
 }
 
 Program& ProgramBindingsBase::GetProgram() const
@@ -212,15 +205,36 @@ void ProgramBindingsBase::InitializeArgumentBindings()
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);
-        if (!m_binding_by_argument.count(program_argument))
-        {
-            Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr,
-                                                                                                                                m_frame_index);
-            if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Program::ArgumentAccessor::Type::Mutable)
-                argument_binding_instance_ptr->Connect(*this);
-            m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
-        }
+        if (m_binding_by_argument.count(program_argument))
+            continue;
+
+        Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
+        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Program::ArgumentAccessor::Type::Mutable)
+            argument_binding_instance_ptr->Connect(*this);
+
+        m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
     }
+}
+
+ProgramBindings::ResourceLocationsByArgument ProgramBindingsBase::ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
+                                                                                           const ResourceLocationsByArgument& replace_resource_locations)
+{
+    META_FUNCTION_TASK();
+    ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations;
+    for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
+    {
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+
+        // NOTE:
+        // constant resource bindings are reusing single binding-object for the whole program,
+        // so there's no need in setting its value, since it was already set by the original resource binding
+        if (argument_binding_ptr->GetSettings().argument.IsConstant() ||
+            resource_locations_by_argument.count(program_argument))
+            continue;
+
+        resource_locations_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceLocations());
+    }
+    return resource_locations_by_argument;
 }
 
 void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const
