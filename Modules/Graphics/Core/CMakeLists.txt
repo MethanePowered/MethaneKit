@@ -169,6 +169,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/RenderContextVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.h
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.cpp

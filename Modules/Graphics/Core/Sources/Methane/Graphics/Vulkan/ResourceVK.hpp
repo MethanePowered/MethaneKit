@@ -23,6 +23,7 @@ Vulkan implementation of the resource interface.
 
 #pragma once
 
+#include "ResourceVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "BlitCommandListVK.h"
@@ -39,7 +40,9 @@ namespace Methane::Graphics
 {
 
 template<typename ReourceBaseType, typename NativeResourceType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
-class ResourceVK : public ReourceBaseType // NOSONAR - destructor in use
+class ResourceVK // NOSONAR - destructor in use
+    : public ReourceBaseType
+    , public IResourceVK
 {
 public:
     using UniqueResourceType = vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>;
@@ -92,12 +95,27 @@ public:
         META_FUNCTION_NOT_IMPLEMENTED();
     }
 
-    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept  { return m_vk_unique_device_memory.get(); }
-    const NativeResourceType& GetNativeResource() const noexcept    { return m_vk_unique_resource.get(); }
+    // IResourceVK overrides
+    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept override
+    {
+        return m_vk_unique_device_memory.get();
+    }
+
+    const NativeResourceType& GetNativeResource() const noexcept
+    {
+        return m_vk_unique_resource.get();
+    }
 
 protected:
-    const IContextVK& GetContextVK() const noexcept                 { return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase()); }
-    const vk::Device& GetNativeDevice() const noexcept              { return m_vk_device; }
+    const IContextVK& GetContextVK() const noexcept
+    {
+        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
+    }
+
+    const vk::Device& GetNativeDevice() const noexcept
+    {
+        return m_vk_device;
+    }
 
     vk::UniqueDeviceMemory AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
     {

@@ -86,12 +86,14 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
 
+    m_resource_locations_vk.clear();
+    m_resource_locations_vk.reserve(resource_locations.size());
+
     std::vector<vk::WriteDescriptorSet> vk_write_descriptor_sets;
     for(const Resource::Location& resource_location : resource_locations)
     {
-        const vk::DescriptorBufferInfo* p_buffer_info       = nullptr; // TODO: add buffers support
-        const vk::DescriptorImageInfo*  p_image_info        = nullptr; // TODO: add images support
-        const vk::BufferView*           p_texel_buffer_view = nullptr; // TODO: add texel buffer views
+        m_resource_locations_vk.emplace_back(resource_location);
+        const IResourceVK::LocationVK& resource_location_vk = m_resource_locations_vk.back();
 
         vk_write_descriptor_sets.emplace_back(
             *m_vk_descriptor_set_ptr,
@@ -99,9 +101,9 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
             resource_location.GetSubresourceIndex().GetArrayIndex(),
             1U,
             m_settings_vk.descriptor_type,
-            p_image_info,
-            p_buffer_info,
-            p_texel_buffer_view
+            resource_location_vk.GetNativeDescriptorImageInfo(),
+            resource_location_vk.GetNativeDescriptorBufferInfo(),
+            resource_location_vk.GetNativeDescriptorBufferView()
         );
     }
 

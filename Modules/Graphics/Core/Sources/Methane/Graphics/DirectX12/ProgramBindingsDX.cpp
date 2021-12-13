@@ -144,7 +144,6 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     for(const Resource::Location& resource_location : resource_locations)
     {
         m_resource_locations_dx.emplace_back(resource_location);
-
         if (!p_dx_descriptor_heap)
             continue;
 

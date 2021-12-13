@@ -23,6 +23,8 @@ Vulkan implementation of the program interface.
 
 #pragma once
 
+#include "ResourceVK.h"
+
 #include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <vulkan/vulkan.hpp>
@@ -47,7 +49,8 @@ public:
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
-        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
+        const SettingsVK& GetSettingsVK() const noexcept                        { return m_settings_vk; }
+        const IResourceVK::LocationsVK& GetResourceLocationsVK() const noexcept { return m_resource_locations_vk; }
 
         void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
         void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
@@ -57,6 +60,7 @@ public:
 
     private:
         const SettingsVK         m_settings_vk;
+        IResourceVK::LocationsVK m_resource_locations_vk;
         const vk::DescriptorSet* m_vk_descriptor_set_ptr   = nullptr;
         uint32_t                 m_vk_layout_binding_index = 0U;
     };

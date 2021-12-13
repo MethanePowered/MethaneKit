@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/ResourceDX.h
-DirectX 12 implementation of the resource interface.
+DirectX 12 specialization of the resource interface.
 
 ******************************************************************************/
 
@@ -26,7 +26,7 @@ DirectX 12 implementation of the resource interface.
 #include "DescriptorHeapDX.h"
 #include "ResourceBarriersDX.h"
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/Resource.h>
 
 #include <wrl.h>
 #include <d3d12.h>

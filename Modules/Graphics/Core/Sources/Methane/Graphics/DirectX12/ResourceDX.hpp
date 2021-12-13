@@ -47,7 +47,7 @@ struct IContextDX;
 class DescriptorHeapDX;
 
 template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
-class ResourceDX
+class ResourceDX // NOSONAR - destructor in use
     : public ResourceBaseType
     , public IResourceDX
 {
