@@ -28,8 +28,9 @@ Vulkan implementation of the program interface.
 #include "CommandListVK.h"
 #include "DescriptorManagerVK.h"
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CoreFormatters.hpp>
+#include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
@@ -104,7 +105,8 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
         );
     }
 
-    static_cast<const IContextVK&>(GetContext()).GetDeviceVK().GetNativeDevice().updateDescriptorSets(vk_write_descriptor_sets, {});
+    const auto& vulkan_context = dynamic_cast<const IContextVK&>(GetContext());
+    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(vk_write_descriptor_sets, {});
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
