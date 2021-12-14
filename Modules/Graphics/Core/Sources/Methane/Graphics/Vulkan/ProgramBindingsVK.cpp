@@ -63,11 +63,11 @@ ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& conte
     META_FUNCTION_TASK();
 }
 
-void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept
+void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
 {
     META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr   = &descriptor_set;
-    m_vk_layout_binding_index = layout_binding_index;
+    m_vk_descriptor_set_ptr = &descriptor_set;
+    m_vk_binding_value      = binding_value;
 }
 
 void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept
@@ -97,7 +97,7 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 
         vk_write_descriptor_sets.emplace_back(
             *m_vk_descriptor_set_ptr,
-            m_vk_layout_binding_index,
+            m_vk_binding_value,
             resource_location.GetSubresourceIndex().GetArrayIndex(),
             1U,
             m_settings_vk.descriptor_type,
@@ -118,11 +118,22 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
 {
     META_FUNCTION_TASK();
     auto& program = static_cast<ProgramVK&>(GetProgram());
-    const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Mutable);
-    if (vk_mutable_descriptor_set_layout)
+
+    const vk::DescriptorSet& vk_constant_descriptor_set = program.GetConstantDescriptorSet();
+    if (vk_constant_descriptor_set)
+        m_descriptor_sets.emplace_back(vk_constant_descriptor_set);
+
+    const vk::DescriptorSet& vk_frame_constant_descriptor_set = program.GetFrameConstantDescriptorSet(frame_index);
+    if (vk_frame_constant_descriptor_set)
+        m_descriptor_sets.emplace_back(vk_frame_constant_descriptor_set);
+
+    vk::DescriptorSet mutable_descriptor_set;
+    if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Mutable);
+        vk_mutable_descriptor_set_layout)
     {
         DescriptorManagerVK& descriptor_manager = program.GetContextVK().GetDescriptorManagerVK();
-        m_vk_mutable_descriptor_set = descriptor_manager.AllocDescriptorSet(vk_mutable_descriptor_set_layout);
+        m_descriptor_sets.emplace_back(descriptor_manager.AllocDescriptorSet(vk_mutable_descriptor_set_layout));
+        m_has_mutable_descriptor_set = true;
     }
 
     // Initialize each argument binding with descriptor set pointer and binding index
@@ -137,19 +148,23 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
         const uint32_t layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
+        const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
 
         switch(access_type)
         {
         case Program::ArgumentAccessor::Type::Constant:
-            argument_binding.SetDescriptorSetBinding(program.GetConstantDescriptorSet(), layout_binding_index);
+            META_CHECK_ARG_TRUE(vk_constant_descriptor_set);
+            argument_binding.SetDescriptorSetBinding(vk_constant_descriptor_set, binding_value);
             break;
 
         case Program::ArgumentAccessor::Type::FrameConstant:
-            argument_binding.SetDescriptorSetBinding(program.GetFrameConstantDescriptorSet(frame_index), layout_binding_index);
+            META_CHECK_ARG_TRUE(vk_frame_constant_descriptor_set);
+            argument_binding.SetDescriptorSetBinding(vk_frame_constant_descriptor_set, binding_value);
             break;
 
         case Program::ArgumentAccessor::Type::Mutable:
-            argument_binding.SetDescriptorSetBinding(m_vk_mutable_descriptor_set, layout_binding_index);
+            META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
+            argument_binding.SetDescriptorSetBinding(m_descriptor_sets.back(), binding_value);
             break;
         }
     }
@@ -162,10 +177,12 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
                                      const ResourceLocationsByArgument& replace_resource_location_by_argument,
                                      const Opt<Data::Index>& frame_index)
     : ProgramBindingsBase(other_program_bindings, frame_index)
+    , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
+    , m_has_mutable_descriptor_set(other_program_bindings.m_has_mutable_descriptor_set)
 {
     META_FUNCTION_TASK();
 
-    if (other_program_bindings.m_vk_mutable_descriptor_set)
+    if (m_has_mutable_descriptor_set)
     {
         // Allocate new mutable descriptor set
         auto& program = static_cast<ProgramVK&>(GetProgram());
@@ -177,21 +194,22 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
         const vk::Device& vk_device = program.GetContextVK().GetDeviceVK().GetNativeDevice();
         const ProgramVK::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type::Mutable);
         vk_device.updateDescriptorSets({}, {
-            vk::CopyDescriptorSet(other_program_bindings.m_vk_mutable_descriptor_set, {}, {}, copy_mutable_descriptor_set, {}, mutable_desc_set_layout_info.descriptors_count)
+            vk::CopyDescriptorSet(other_program_bindings.m_descriptor_sets.back(), {}, {}, copy_mutable_descriptor_set, {}, mutable_desc_set_layout_info.descriptors_count)
         });
 
-        m_vk_mutable_descriptor_set = copy_mutable_descriptor_set;
-    }
+        vk::DescriptorSet& vk_mutable_descriptor_set = m_descriptor_sets.back();
+        vk_mutable_descriptor_set = copy_mutable_descriptor_set;
 
-    // Update mutable argument bindings with a pointer to the copied descriptor set
-    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
-    {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        auto& argument_binding = static_cast<ArgumentBindingVK&>(*argument_binding_ptr);
-        if (argument_binding.GetSettingsVK().argument.GetAccessorType() != Program::ArgumentAccessor::Type::Mutable)
-            continue;
+        // Update mutable argument bindings with a pointer to the copied descriptor set
+        for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+        {
+            META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+            auto& argument_binding = static_cast<ArgumentBindingVK&>(*argument_binding_ptr);
+            if (argument_binding.GetSettingsVK().argument.GetAccessorType() != Program::ArgumentAccessor::Type::Mutable)
+                continue;
 
-        argument_binding.SetDescriptorSet(m_vk_mutable_descriptor_set);
+            argument_binding.SetDescriptorSet(vk_mutable_descriptor_set);
+        }
     }
 
     SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_location_by_argument));
@@ -204,22 +222,24 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
     Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
 }
 
-void ProgramBindingsVK::Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
-    META_UNUSED(command_list);
+    META_UNUSED(apply_behavior);
+    META_UNUSED(p_applied_program_bindings);
     using namespace magic_enum::bitwise_operators;
 
-    for(const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
-    {
-        if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
-             magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
-            p_applied_program_bindings &&
-             static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(*argument_binding_ptr).IsAlreadyApplied(
-                 GetProgram(), *p_applied_program_bindings,
-                 magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
-            continue;
-    }
+    // TODO Set resource transition barriers before applying resource bindings
+    const vk::CommandBuffer& vk_command_buffer = command_list_vk.GetNativeCommandBuffer();
+
+    // Bind descriptor sets to pipeline
+    auto& program = static_cast<ProgramVK&>(GetProgram());
+    vk_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,  // TODO: determine bind point from command list type
+                                         program.GetNativePipelineLayout(),
+                                         0,                                 // TODO: determine first set from apply behavior
+                                         m_descriptor_sets,
+                                         {});
+
 }
 
 } // namespace Methane::Graphics

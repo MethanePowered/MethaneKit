@@ -61,8 +61,8 @@ public:
     private:
         const SettingsVK         m_settings_vk;
         IResourceVK::LocationsVK m_resource_locations_vk;
-        const vk::DescriptorSet* m_vk_descriptor_set_ptr   = nullptr;
-        uint32_t                 m_vk_layout_binding_index = 0U;
+        const vk::DescriptorSet* m_vk_descriptor_set_ptr = nullptr;
+        uint32_t                 m_vk_binding_value      = 0U;
     };
 
     ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
@@ -77,8 +77,8 @@ public:
     void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
-
-    vk::DescriptorSet m_vk_mutable_descriptor_set;
+    std::vector<vk::DescriptorSet> m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
+    bool                           m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
 };
 
 } // namespace Methane::Graphics
