@@ -42,7 +42,8 @@ IResourceVK::LocationVK::LocationVK(const Location& location)
     case Resource::Type::Buffer:
         m_descriptor_info_var = vk::DescriptorBufferInfo(
             dynamic_cast<BufferVK&>(GetResource()).GetNativeResource(),
-            static_cast<vk::DeviceSize>(GetOffset())
+            static_cast<vk::DeviceSize>(GetOffset()),
+            static_cast<vk::DeviceSize>(GetResource().GetSubResourceDataSize(GetSubresourceIndex()) - GetOffset())
         );
         break;
 
