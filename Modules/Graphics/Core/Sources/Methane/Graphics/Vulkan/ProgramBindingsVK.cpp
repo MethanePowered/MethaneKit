@@ -153,12 +153,12 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         switch(access_type)
         {
         case Program::ArgumentAccessor::Type::Constant:
-            META_CHECK_ARG_TRUE(vk_constant_descriptor_set);
+            META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
             argument_binding.SetDescriptorSetBinding(vk_constant_descriptor_set, binding_value);
             break;
 
         case Program::ArgumentAccessor::Type::FrameConstant:
-            META_CHECK_ARG_TRUE(vk_frame_constant_descriptor_set);
+            META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
             argument_binding.SetDescriptorSetBinding(vk_frame_constant_descriptor_set, binding_value);
             break;
 
