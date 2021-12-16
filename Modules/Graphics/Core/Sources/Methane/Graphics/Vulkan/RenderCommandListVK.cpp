@@ -186,6 +186,12 @@ void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback&
     RenderCommandListBase::Execute(frame_index, completed_callback);
 }
 
+vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const
+{
+    META_FUNCTION_TASK();
+    return vk::PipelineBindPoint::eGraphics;
+}
+
 void RenderCommandListVK::ResetRenderPass()
 {
     META_FUNCTION_TASK();

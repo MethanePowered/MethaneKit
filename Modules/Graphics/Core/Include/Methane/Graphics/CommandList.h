@@ -32,6 +32,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 #include <Methane/Data/TimeRange.hpp>
 
 #include <string>
+#include <functional>
 
 namespace Methane::Graphics
 {

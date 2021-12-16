@@ -28,6 +28,8 @@ Vulkan implementation of the blit command list interface.
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Graphics/CommandListBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -39,6 +41,9 @@ class BlitCommandListVK final
 {
 public:
     explicit BlitCommandListVK(CommandQueueVK& command_queue);
+
+    // ICommandListVK interface
+    vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 };
 
 } // namespace Methane::Graphics

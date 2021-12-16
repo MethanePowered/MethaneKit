@@ -48,6 +48,7 @@ struct ICommandListVK
     virtual CommandQueueVK&          GetCommandQueueVK() = 0;
     virtual const CommandQueueVK&    GetCommandQueueVK() const = 0;
     virtual const vk::CommandBuffer& GetNativeCommandBuffer() const = 0;
+    virtual vk::PipelineBindPoint    GetNativePipelineBindPoint() const = 0;
     virtual void SetResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
 
     virtual ~ICommandListVK() = default;

@@ -42,4 +42,10 @@ BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
     META_FUNCTION_TASK();
 }
 
+// ICommandListVK interface
+vk::PipelineBindPoint BlitCommandListVK::GetNativePipelineBindPoint() const
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Resources binding is not supported for BLIT command lists");
+}
+
 } // namespace Methane::Graphics

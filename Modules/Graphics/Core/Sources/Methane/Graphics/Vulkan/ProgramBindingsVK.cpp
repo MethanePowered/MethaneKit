@@ -225,18 +225,26 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
 void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
-    META_UNUSED(apply_behavior);
-    META_UNUSED(p_applied_program_bindings);
-    using namespace magic_enum::bitwise_operators;
+    META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
+
+    uint32_t first_descriptor_set_layout_index = 0U;
+    if (apply_behavior == ApplyBehavior::ConstantOnce && p_applied_program_bindings)
+    {
+        if (!m_has_mutable_descriptor_set)
+            return;
+
+        first_descriptor_set_layout_index = static_cast<uint32_t>(m_descriptor_sets.size() - 1);
+    }
 
     // TODO Set resource transition barriers before applying resource bindings
-    const vk::CommandBuffer& vk_command_buffer = command_list_vk.GetNativeCommandBuffer();
+    const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBuffer();
+    const vk::PipelineBindPoint vk_pipeline_bind_point = command_list_vk.GetNativePipelineBindPoint();
 
     // Bind descriptor sets to pipeline
     auto& program = static_cast<ProgramVK&>(GetProgram());
-    vk_command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,  // TODO: determine bind point from command list type
+    vk_command_buffer.bindDescriptorSets(vk_pipeline_bind_point,
                                          program.GetNativePipelineLayout(),
-                                         0,                                 // TODO: determine first set from apply behavior
+                                         first_descriptor_set_layout_index,
                                          m_descriptor_sets,
                                          {});
 

@@ -27,7 +27,7 @@ Vulkan implementation of the render command list interface.
 
 #include <Methane/Graphics/RenderCommandListBase.h>
 
-#include <functional>
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
@@ -58,6 +58,9 @@ public:
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
+
+    // ICommandListVK interface
+    vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 
 private:
     void ResetRenderPass();
