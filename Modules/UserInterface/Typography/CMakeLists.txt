@@ -28,7 +28,16 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
+add_methane_shaders_source(
+    TARGET ${TARGET}
+    SOURCE Shaders/Text.hlsl
+    VERSION 6_0
+    TYPES
+        frag=TextPS
+        vert=TextVS
+)
+
+add_methane_shaders_library(${TARGET})
 
 target_link_libraries(${TARGET}
     PUBLIC

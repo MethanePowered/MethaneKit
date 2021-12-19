@@ -77,3 +77,20 @@ function(get_full_file_version MAJOR_MINOR_VERSION BUILD_NUMBER OUT_FULL_VERSION
     endif()
     set(${OUT_FULL_VERSION} ${FULL_VERSION} PARENT_SCOPE)
 endfunction()
+
+function(send_cmake_parse_errors FUNCTION_NAME PREFIX KEYWORDS_MISSING_VALUES UNPARSED_ARGUMENTS REQUIRED_ARGUMENTS)
+    foreach(KEYWORD ${KEYWORDS_MISSING_VALUES})
+        message(SEND_ERROR "Function '${FUNCTION_NAME}' argument '${KEYWORD}' values are missing")
+    endforeach()
+
+    foreach(ARGUMENT ${UNPARSED_ARGUMENTS})
+        message(SEND_ERROR "Function '${FUNCTION_NAME}' argument '${ARGUMENT}' is unexpected")
+    endforeach()
+
+    foreach(ARGUMENT ${REQUIRED_ARGUMENTS})
+        set(VAR_NAME ${PREFIX}_${ARGUMENT})
+        if (NOT ${VAR_NAME})
+            message(SEND_ERROR "Function '${FUNCTION_NAME}' argument '${ARGUMENT}' is required")
+        endif()
+    endforeach()
+endfunction()

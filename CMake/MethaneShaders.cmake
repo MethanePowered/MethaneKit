@@ -196,12 +196,11 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
     add_dependencies(${FOR_TARGET} ${METAL_LIB_TARGET})
 endfunction()
 
-function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_SHADER_BINS)
+function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES OUT_COMPILED_SHADER_BINARIES OUT_COMPILE_SHADER_TARGETS)
 
     get_platform_arch_dir(PLATFORM_ARCH_DIR CPP_EXT)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
-    get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
     get_generated_shader_extension(OUTPUT_FILE_EXT)
 
     set(DXC_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_ARCH_DIR}/bin")
@@ -225,8 +224,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi /Qembed_debug)
     endif()
 
-    file(STRINGS ${SHADERS_CONFIG} CONFIG_STRINGS)
-    foreach(KEY_VALUE_STRING ${CONFIG_STRINGS})
+    foreach(KEY_VALUE_STRING ${SHADER_TYPES})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
         split_by_first_delimiter(${KEY_VALUE_STRING} "=" SHADER_TYPE ENTRY_POINT_WITH_DEFINES)
         split_by_first_delimiter(${ENTRY_POINT_WITH_DEFINES} ":" ORIG_ENTRY_POINT SHADER_DEFINITIONS)
@@ -252,8 +250,6 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
         set(SHADER_OBJ_FILE "${SHADERS_NAME}_${NEW_ENTRY_POINT}.${OUTPUT_FILE_EXT}")
         set(SHADER_OBJ_PATH "${TARGET_SHADERS_DIR}/${SHADER_OBJ_FILE}")
 
-        list(APPEND _OUT_COMPILED_SHADER_BINS ${SHADER_OBJ_PATH})
-
         shorten_target_name(${FOR_TARGET}_HLSL_${NEW_ENTRY_POINT} COMPILE_SHADER_TARGET)
         add_custom_target(${COMPILE_SHADER_TARGET}
             COMMENT "Compiling HLSL shader from file ${SHADERS_HLSL} with profile ${SHADER_PROFILE} and macro-definitions \"${SHADER_DEFINITIONS}\" to ${OUTPUT_FILE_EXT} file ${SHADER_OBJ_FILE}"
@@ -271,11 +267,12 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER OUT_COMPILED_S
             FOLDER "Build/${FOR_TARGET}/Shaders"
         )
 
-        shorten_target_name(${FOR_TARGET}_Shaders SHADER_RESOURCES_TARGET)
-        add_dependencies(${SHADER_RESOURCES_TARGET} ${COMPILE_SHADER_TARGET})
+        list(APPEND _OUT_COMPILED_SHADER_BINARIES ${SHADER_OBJ_PATH})
+        list(APPEND _OUT_COMPILE_SHADER_TARGETS ${COMPILE_SHADER_TARGET})
     endforeach()
 
-    set(${OUT_COMPILED_SHADER_BINS} ${_OUT_COMPILED_SHADER_BINS} PARENT_SCOPE)
+    set(${OUT_COMPILED_SHADER_BINARIES} ${_OUT_COMPILED_SHADER_BINARIES} PARENT_SCOPE)
+    set(${OUT_COMPILE_SHADER_TARGETS} ${_OUT_COMPILE_SHADER_TARGETS} PARENT_SCOPE)
 endfunction()
 
 function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
@@ -283,60 +280,7 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
     set(RESOURCE_NAMESPACE ${TARGET})
     get_generated_shader_extension(GENERATED_SHADER_EXT)
 
-    if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX OR
-        METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-
-        foreach(SHADERS_HLSL ${HLSL_SOURCES})
-            get_shaders_config(${SHADERS_HLSL} SHADERS_CONFIG)
-            get_generated_shaders(${TARGET} "${SHADERS_CONFIG}" ${GENERATED_SHADER_EXT} SHADERS_OBJ)
-            list(APPEND SHADERS_OBJ_FILES ${SHADERS_OBJ})
-            list(APPEND CONFIG_SOURCES ${SHADERS_CONFIG})
-        endforeach()
-        
-        get_target_shaders_dir(${TARGET} TARGET_SHADERS_DIR)
-
-        shorten_target_name(${TARGET}_Shaders SHADER_RESOURCES_TARGET)
-        cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
-            ALIAS Methane::Resources::Shaders
-            WHENCE "${TARGET_SHADERS_DIR}"
-            NAMESPACE ${RESOURCE_NAMESPACE}::Shaders
-            ${SHADERS_OBJ_FILES}
-        )
-
-        target_link_libraries(${SHADER_RESOURCES_TARGET} PRIVATE
-            MethaneBuildOptions
-        )
-
-        foreach(SHADERS_HLSL ${HLSL_SOURCES})
-            compile_hlsl_shaders(${TARGET} ${SHADERS_HLSL} ${PROFILE_VER} OUT_COMPILED_SHADER_BINS)
-        endforeach()
-
-        target_sources(${TARGET} PRIVATE
-            ${HLSL_SOURCES}
-            ${CONFIG_SOURCES}
-        )
-
-        target_link_libraries(${TARGET} PRIVATE
-            ${SHADER_RESOURCES_TARGET}
-        )
-
-        # Disable automatic HLSL shaders compilation in Visual Studio, since it's compiled by custom target
-        set_source_files_properties(${HLSL_SOURCES}
-            PROPERTIES
-            VS_TOOL_OVERRIDE "None"
-        )
-
-        set_target_properties(${SHADER_RESOURCES_TARGET}
-            PROPERTIES
-            FOLDER "Build/${TARGET}/Resources"
-        )
-
-        target_compile_definitions(${TARGET}
-            PRIVATE
-            SHADER_RESOURCES_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
-        )
-
-    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    if(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
 
         # Get list of generated Metal shaders
         foreach(SHADERS_HLSL ${HLSL_SOURCES})
@@ -397,5 +341,96 @@ function(add_methane_shaders TARGET HLSL_SOURCES PROFILE_VER)
         ${HLSL_SOURCES}
         ${CONFIG_SOURCES}
     )
+
+endfunction()
+
+function(add_methane_shaders_source)
+    set(ARGS_OPTIONS )
+    set(ARGS_SINGLE_VALUE TARGET SOURCE VERSION)
+    set(ARGS_MULTI_VALUE TYPES)
+    list(APPEND ARGS_REQUIRED ${ARGS_SINGLE_VALUE})
+    list(APPEND ARGS_REQUIRED ${ARGS_MULTI_VALUE})
+
+    cmake_parse_arguments(SHADERS "${ARGS_OPTIONS}" "${ARGS_SINGLE_VALUE}" "${ARGS_MULTI_VALUE}" ${ARGN})
+    send_cmake_parse_errors("add_methane_shaders_source" "SHADERS"
+                            "${SHADERS_KEYWORDS_MISSING_VALUES}" "${SHADERS_UNPARSED_ARGUMENTS}" "${ARGS_REQUIRED}")
+
+    get_target_property(TARGET_SHADER_SOURCES ${SHADERS_TARGET} SHADER_SOURCES)
+    list(APPEND TARGET_SHADER_SOURCES ${SHADERS_SOURCE})
+    set_target_properties(${SHADERS_TARGET} PROPERTIES SHADER_SOURCES "${TARGET_SHADER_SOURCES}")
+
+    set(SHADERS_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${SHADERS_SOURCE}")
+    target_sources(${SHADERS_TARGET} PRIVATE ${SHADERS_SOURCE_PATH})
+
+    # Disable automatic HLSL shaders compilation in Visual Studio, since it's compiled by custom target
+    set_source_files_properties(${SHADERS_SOURCE_PATH}
+        PROPERTIES
+            VS_TOOL_OVERRIDE "None"
+    )
+
+    if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX OR
+        METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+
+        compile_hlsl_shaders(${SHADERS_TARGET} "${SHADERS_SOURCE_PATH}" "${SHADERS_VERSION}" "${SHADERS_TYPES}" COMPILED_SHADER_BINARIES COMPILE_SHADER_TARGETS)
+        set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY COMPILED_SHADER_BINARIES ${COMPILED_SHADER_BINARIES})
+        set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY COMPILE_SHADER_TARGETS ${COMPILE_SHADER_TARGETS})
+
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+
+        # TODO: not implemented yet
+
+    endif()
+
+endfunction()
+
+function(add_methane_shaders_library TARGET)
+
+    set(RESOURCE_NAMESPACE ${TARGET})
+    get_generated_shader_extension(GENERATED_SHADER_EXT)
+
+    get_target_property(TARGET_SHADER_SOURCES ${TARGET} SHADER_SOURCES)
+    source_group("Source Shaders" FILES ${TARGET_SHADER_SOURCES})
+
+    if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX OR
+        METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+
+        get_target_property(TARGET_COMPILED_SHADER_BINARIES ${TARGET} COMPILED_SHADER_BINARIES)
+        get_target_property(TARGET_COMPILE_SHADER_TARGETS ${TARGET} COMPILE_SHADER_TARGETS)
+
+        get_target_shaders_dir(${TARGET} TARGET_SHADERS_DIR)
+
+        shorten_target_name(${TARGET}_Shaders SHADER_RESOURCES_TARGET)
+        cmrc_add_resource_library(${SHADER_RESOURCES_TARGET}
+            ALIAS Methane::Resources::Shaders
+            WHENCE "${TARGET_SHADERS_DIR}"
+            NAMESPACE ${RESOURCE_NAMESPACE}::Shaders
+            ${TARGET_COMPILED_SHADER_BINARIES}
+        )
+
+        add_dependencies(${SHADER_RESOURCES_TARGET} ${TARGET_COMPILE_SHADER_TARGETS})
+
+        target_link_libraries(${SHADER_RESOURCES_TARGET} PRIVATE
+            MethaneBuildOptions
+        )
+
+        target_link_libraries(${TARGET} PRIVATE
+            ${SHADER_RESOURCES_TARGET}
+        )
+
+        target_compile_definitions(${TARGET}
+            PRIVATE
+            SHADER_RESOURCES_NAMESPACE=${RESOURCE_NAMESPACE}::Shaders
+        )
+
+        set_target_properties(${SHADER_RESOURCES_TARGET}
+            PROPERTIES
+            FOLDER "Build/${TARGET}/Resources"
+        )
+
+    elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+
+        # TODO: not implemented yet
+
+    endif()
 
 endfunction()

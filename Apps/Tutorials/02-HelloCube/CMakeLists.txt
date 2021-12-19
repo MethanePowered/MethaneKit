@@ -20,15 +20,22 @@ foreach(VARIANT ${SIMPLE_VARIANT} ${UNIFORMS_VARIANT})
     )
 
     if(VARIANT STREQUAL "${UNIFORMS_VARIANT}")
+        set(VERTEX_SHADER_DEFINES ":UNIFORMS_BUFFER_ENABLED")
         target_compile_definitions(${TARGET}
             PRIVATE UNIFORMS_BUFFER_ENABLED
         )
     endif()
 
-    add_methane_shaders(${TARGET}
-        "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloCube.hlsl"
-        "6_0"
+    add_methane_shaders_source(
+        TARGET ${TARGET}
+        SOURCE Shaders/HelloCube.hlsl
+        VERSION 6_0
+        TYPES
+            vert=CubeVS${VERTEX_SHADER_DEFINES}
+            frag=CubePS
     )
+
+    add_methane_shaders_library(${TARGET})
 
     target_link_libraries(${TARGET}
         PRIVATE
