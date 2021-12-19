@@ -34,9 +34,9 @@ add_methane_shaders_source(
     SOURCE Shaders/ShadowCube.hlsl
     VERSION 6_0
     TYPES
-        "frag=CubePS:ENABLE_SHADOWS ENABLE_TEXTURING"
-        "vert=CubeVS:ENABLE_SHADOWS ENABLE_TEXTURING"
-        "vert=CubeVS:ENABLE_TEXTURING"
+        frag=CubePS:ENABLE_SHADOWS,ENABLE_TEXTURING
+        vert=CubeVS:ENABLE_SHADOWS,ENABLE_TEXTURING
+        vert=CubeVS:ENABLE_TEXTURING
 )
 
 add_methane_shaders_library(${TARGET})

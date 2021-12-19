@@ -80,7 +80,7 @@ add_methane_shaders_source(
     TYPES
     "vert=QuadVS"
     "frag=QuadPS"
-    "frag=QuadPS:TTEXEL=float RMASK=r WMASK=a"
+    "frag=QuadPS:TTEXEL=float,RMASK=r,WMASK=a"
     "frag=QuadPS:TEXTURE_DISABLED"
 )
 
