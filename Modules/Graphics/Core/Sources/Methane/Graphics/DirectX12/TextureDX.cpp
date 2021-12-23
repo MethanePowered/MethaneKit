@@ -64,7 +64,7 @@ Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, co
     switch (settings.type)
     {
     case Texture::Type::Texture:            return std::make_shared<RenderTargetTextureDX>(static_cast<const RenderContextBase&>(render_context), settings, descriptor_by_usage);
-    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilBufferTextureDX>(static_cast<const RenderContextBase&>(render_context), settings, descriptor_by_usage, render_context.GetSettings().clear_depth_stencil);
+    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilTextureDX>(static_cast<const RenderContextBase&>(render_context), settings, descriptor_by_usage, render_context.GetSettings().clear_depth_stencil);
     case Texture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
     default:                                META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
@@ -83,21 +83,21 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& render_conte
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<DepthStencilBufferTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
+    return std::make_shared<DepthStencilTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
 }
 
 Ptr<Texture> Texture::CreateImage(const Context& render_context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
+    return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTokenDX());
 }
 
 Ptr<Texture> Texture::CreateCube(const Context& render_context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTextureArg());
+    return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, descriptor_by_usage, ImageTokenDX());
 }
 
 template<>
@@ -130,8 +130,8 @@ void FrameBufferTextureDX::Initialize(FrameBufferIndex frame_buffer_index)
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, descriptor_handle);
 }
 
-DepthStencilBufferTextureDX::TextureDX(const ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
-                                       const std::optional<DepthStencil>& clear_depth_stencil)
+DepthStencilTextureDX::TextureDX(const ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                                 const Opt<DepthStencil>& clear_depth_stencil)
     : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();
@@ -191,8 +191,8 @@ DepthStencilBufferTextureDX::TextureDX(const ContextBase& render_context, const 
     }
 }
 
-void DepthStencilBufferTextureDX::CreateShaderResourceView(const Texture::Settings& settings, const wrl::ComPtr <ID3D12Device>& cp_device,
-                                                           const Resource::Descriptor& desc) const
+void DepthStencilTextureDX::CreateShaderResourceView(const Texture::Settings& settings, const wrl::ComPtr <ID3D12Device>& cp_device,
+                                                     const Resource::Descriptor& desc) const
 {
     META_FUNCTION_TASK();
 
@@ -205,8 +205,8 @@ void DepthStencilBufferTextureDX::CreateShaderResourceView(const Texture::Settin
     cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
-void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings& settings, const DXGI_FORMAT& view_write_format,
-                                                         const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const
+void DepthStencilTextureDX::CreateDepthStencilView(const Texture::Settings& settings, const DXGI_FORMAT& view_write_format,
+                                                   const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const
 {
     META_FUNCTION_TASK();
 
@@ -218,7 +218,7 @@ void DepthStencilBufferTextureDX::CreateDepthStencilView(const Texture::Settings
     cp_device->CreateDepthStencilView(GetNativeResource(), &dsv_desc, GetNativeCpuDescriptorHandle(desc));
 }
 
-ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg)
+ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTokenDX)
     : ResourceDX(render_context, settings, descriptor_by_usage)
 {
     META_FUNCTION_TASK();

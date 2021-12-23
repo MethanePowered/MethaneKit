@@ -67,13 +67,13 @@ private:
     void Initialize(ExtraArgs...);
 };
 
-struct ImageTextureArg { };
+struct ImageTokenDX { };
 
 template<>
-class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
+class TextureDX<ImageTokenDX> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTokenDX);
 
     // Object overrides
     void SetName(const std::string& name) override;
@@ -90,10 +90,10 @@ private:
 };
 
 template<>
-class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
+class TextureDX<const Opt<DepthStencil>&> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
+    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const Opt<DepthStencil>& clear_depth_stencil);
 
     // Resource overrides
     void SetData(const SubResources&, CommandQueue*) override
@@ -106,9 +106,9 @@ private:
     void CreateDepthStencilView(const Settings& settings, const DXGI_FORMAT& view_write_format, const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const;
 };
 
-using FrameBufferTextureDX          = TextureDX<Texture::FrameBufferIndex>;
-using RenderTargetTextureDX         = TextureDX<>;
-using DepthStencilBufferTextureDX   = TextureDX<const std::optional<DepthStencil>&>;
-using ImageTextureDX                = TextureDX<ImageTextureArg>;
+using FrameBufferTextureDX  = TextureDX<Texture::FrameBufferIndex>;
+using RenderTargetTextureDX = TextureDX<>;
+using DepthStencilTextureDX = TextureDX<const Opt<DepthStencil>&>;
+using ImageTextureDX        = TextureDX<ImageTokenDX>;
 
 } // namespace Methane::Graphics
