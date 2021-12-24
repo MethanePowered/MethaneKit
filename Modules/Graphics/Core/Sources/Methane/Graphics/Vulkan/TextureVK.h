@@ -34,48 +34,70 @@ namespace Methane::Graphics
 
 class RenderContextVK;
 
-class TextureVK : public ResourceVK<TextureBase, vk::ImageView>
+class FrameBufferTextureVK final : public ResourceVK<TextureBase, vk::ImageView>
 {
 public:
-    // Temporary constructor, to be removed
-    TextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
-
-    // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
-
-    const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
-    const vk::ImageView& GetNativeImageView() const noexcept  { return GetNativeResource(); }
-
-protected:
-    TextureVK(const RenderContextVK& context, const Settings& settings,
-              const DescriptorByUsage& descriptor_by_usage,
-              const vk::Image& vk_image, vk::UniqueImageView&& vk_unique_image_view);
-
-    void ResetNativeImage(const vk::Image& vk_image);
-
-private:
-    void GenerateMipLevels();
-
-    vk::Image m_vk_image;
-};
-
-class FrameBufferTextureVK final
-    : public TextureVK
-{
-public:
-    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+    FrameBufferTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                          FrameBufferIndex frame_buffer_index);
 
-    [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
+    [[nodiscard]] FrameBufferIndex     GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
+    [[nodiscard]] const vk::Image&     GetNativeImage() const noexcept      { return m_vk_image; }
+    [[nodiscard]] const vk::ImageView& GetNativeImageView() const noexcept  { return GetNativeResource(); }
 
     void ResetNativeImage();
 
 private:
-    FrameBufferTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+    FrameBufferTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
                          FrameBufferIndex frame_buffer_index, const vk::Image& image);
+
+    // Resource interface
+    void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
     const RenderContextVK& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
+    vk::Image              m_vk_image;
+};
+
+class DepthStencilTextureVK final : public ResourceVK<TextureBase, vk::ImageView>
+{
+public:
+    DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+                          const Opt<DepthStencil>& depth_stencil_opt);
+
+    // Resource interface
+    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+
+private:
+    const RenderContextVK& m_render_context;
+    Opt<DepthStencil>      m_depth_stencil_opt;
+};
+
+class RenderTargetTextureVK final : public ResourceVK<TextureBase, vk::ImageView>
+{
+public:
+    RenderTargetTextureVK(const RenderContextVK& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+
+    // Resource interface
+    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+
+private:
+    const RenderContextVK& m_render_context;
+};
+
+class ImageTextureVK final : public ResourceVK<TextureBase, vk::Image>
+{
+public:
+    ImageTextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+
+    // Resource interface
+    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+
+private:
+    void GenerateMipLevels();
+
+    vk::ImageView          m_vk_image_view;
+    vk::UniqueBuffer       m_vk_unique_staging_buffer;
+    vk::UniqueDeviceMemory m_vk_unique_staging_memory;
 };
 
 } // namespace Methane::Graphics

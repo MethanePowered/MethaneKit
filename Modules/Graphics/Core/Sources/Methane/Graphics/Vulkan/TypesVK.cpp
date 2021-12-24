@@ -75,4 +75,11 @@ vk::CompareOp TypeConverterVK::CompareFunctionToVulkan(Compare compare_func)
     }
 }
 
+vk::Extent3D TypeConverterVK::DimensionsToExtent3D(const Dimensions& dimensions)
+{
+    META_FUNCTION_TASK();
+    return vk::Extent3D(dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
+}
+
+
 } // namespace Methane::Graphics
