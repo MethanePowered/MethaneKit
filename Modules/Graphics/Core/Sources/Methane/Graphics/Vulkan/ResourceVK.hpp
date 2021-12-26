@@ -178,7 +178,7 @@ protected:
         m_vk_resource = std::forward<T>(vk_resource);
     }
 
-    template<typename T = ViewStorageType, typename = std::enable_if_t<std::is_class_v<NativeViewType>, void*>>
+    template<typename T = ViewStorageType, typename V = NativeViewType, typename = std::enable_if_t<std::is_class_v<V>>>
     void ResetNativeView(T&& vk_view)
     {
         META_FUNCTION_TASK();
