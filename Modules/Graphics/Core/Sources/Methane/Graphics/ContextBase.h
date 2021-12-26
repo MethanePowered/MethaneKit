@@ -105,7 +105,7 @@ private:
 
     const Type                       m_type;
     Ptr<DeviceBase>                  m_device_ptr;
-    const UniquePtr<DescriptorManager> m_descriptor_manager_ptr;
+    UniquePtr<DescriptorManager>     m_descriptor_manager_ptr;
     tf::Executor&                    m_parallel_executor;
     ObjectBase::RegistryBase         m_objects_cache;
     mutable CommandKitPtrByType      m_default_command_kit_ptrs;
