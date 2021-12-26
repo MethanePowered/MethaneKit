@@ -81,5 +81,4 @@ vk::Extent3D TypeConverterVK::DimensionsToExtent3D(const Dimensions& dimensions)
     return vk::Extent3D(dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
 }
 
-
 } // namespace Methane::Graphics

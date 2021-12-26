@@ -45,21 +45,29 @@ public:
     public:
         explicit LocationVK(const Location& location);
 
-        [[nodiscard]] IResourceVK&                    GetResourceVK() const noexcept                 { return m_vulkan_resource_ref.get(); }
-        [[nodiscard]] const vk::DescriptorBufferInfo* GetNativeDescriptorBufferInfo() const noexcept { return std::get_if<vk::DescriptorBufferInfo>(&m_descriptor_info_var); }
-        [[nodiscard]] const vk::DescriptorImageInfo*  GetNativeDescriptorImageInfo() const noexcept  { return std::get_if<vk::DescriptorImageInfo>(&m_descriptor_info_var); }
-        [[nodiscard]] const vk::BufferView*           GetNativeDescriptorBufferView() const noexcept { return std::get_if<vk::BufferView>(&m_descriptor_info_var); }
+        [[nodiscard]] IResourceVK&                    GetResourceVK() const noexcept;
+        [[nodiscard]] const vk::DescriptorBufferInfo* GetNativeDescriptorBufferInfo() const noexcept;
+        [[nodiscard]] const vk::DescriptorImageInfo*  GetNativeDescriptorImageInfo() const noexcept;
+        [[nodiscard]] const vk::BufferView*           GetNativeBufferView() const noexcept;
+        [[nodiscard]] const vk::ImageView*            GetNativeImageView() const noexcept;
 
     private:
-        using DescriptorInfoVariant = std::variant<void*, vk::DescriptorBufferInfo, vk::DescriptorImageInfo, vk::BufferView>;
+        using DescriptorVariant = std::variant<void*, vk::DescriptorBufferInfo, vk::DescriptorImageInfo>;
+        using ViewVariant = std::variant<void*, vk::UniqueImageView, vk::UniqueBufferView>;
 
-        Ref<IResourceVK>      m_vulkan_resource_ref;
-        DescriptorInfoVariant m_descriptor_info_var;
+        void InitBufferLocation();
+        void InitTextureLocation();
+        void InitSamplerLocation();
+
+        Ref<IResourceVK>  m_vulkan_resource_ref;
+        DescriptorVariant m_descriptor_var;
+        Ptr<ViewVariant>  m_view_var_ptr;
     };
 
     using LocationsVK = std::vector<LocationVK>;
 
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
+    [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

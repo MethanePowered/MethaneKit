@@ -147,7 +147,7 @@ static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(vk_attachment_views),
         [](const Texture::Location& texture_location)
         {
-            return dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).GetNativeImageView();
+            return dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).GetNativeView();
         }
     );
 

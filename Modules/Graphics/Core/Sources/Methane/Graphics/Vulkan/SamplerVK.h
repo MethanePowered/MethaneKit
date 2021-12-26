@@ -32,10 +32,10 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler>
+class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler, false>
 {
 public:
-    SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerVK(const ContextBase& context, const Settings& settings);
     
 private:
     void ResetSamplerState();

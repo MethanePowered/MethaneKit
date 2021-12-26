@@ -103,7 +103,7 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
             m_settings_vk.descriptor_type,
             resource_location_vk.GetNativeDescriptorImageInfo(),
             resource_location_vk.GetNativeDescriptorBufferInfo(),
-            resource_location_vk.GetNativeDescriptorBufferView()
+            resource_location_vk.GetNativeBufferView()
         );
     }
 

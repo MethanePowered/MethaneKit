@@ -25,6 +25,7 @@ Vulkan implementation of the resource objects.
 #include "BufferVK.h"
 #include "TextureVK.h"
 #include "SamplerVK.h"
+#include "TypesVK.h"
 
 #include <Methane/Instrumentation.h>
 
@@ -39,22 +40,84 @@ IResourceVK::LocationVK::LocationVK(const Location& location)
     const Resource::Type resource_type = GetResource().GetResourceType();
     switch(resource_type)
     {
-    case Resource::Type::Buffer:
-        m_descriptor_info_var = vk::DescriptorBufferInfo(
-            dynamic_cast<BufferVK&>(GetResource()).GetNativeResource(),
-            static_cast<vk::DeviceSize>(GetOffset()),
-            static_cast<vk::DeviceSize>(GetResource().GetSubResourceDataSize(GetSubresourceIndex()) - GetOffset())
-        );
-        break;
-
-    case Resource::Type::Texture:
-        // TODO: Textures binding is not supported yet
-        break;
-
-    case Resource::Type::Sampler:
-        // TODO: Samplers binding is not supported yet
-        break;
+    case Resource::Type::Buffer:  InitBufferLocation();  break;
+    case Resource::Type::Texture: InitTextureLocation(); break;
+    case Resource::Type::Sampler: InitSamplerLocation(); break;
+    default:                      META_UNEXPECTED_ARG(resource_type);
     }
+}
+
+IResourceVK& IResourceVK::LocationVK::GetResourceVK() const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_vulkan_resource_ref.get();
+}
+
+const vk::DescriptorBufferInfo* IResourceVK::LocationVK::GetNativeDescriptorBufferInfo() const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::get_if<vk::DescriptorBufferInfo>(&m_descriptor_var);
+}
+
+const vk::DescriptorImageInfo* IResourceVK::LocationVK::GetNativeDescriptorImageInfo() const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::get_if<vk::DescriptorImageInfo>(&m_descriptor_var);
+}
+
+const vk::BufferView* IResourceVK::LocationVK::GetNativeBufferView() const noexcept
+{
+    META_FUNCTION_TASK();
+    const vk::UniqueBufferView* vk_unique_buffer_view_ptr = std::get_if<vk::UniqueBufferView>(m_view_var_ptr.get());
+    return vk_unique_buffer_view_ptr ? &vk_unique_buffer_view_ptr->get() : nullptr;
+}
+
+const vk::ImageView* IResourceVK::LocationVK::GetNativeImageView() const noexcept
+{
+    META_FUNCTION_TASK();
+    const vk::UniqueImageView* vk_unique_image_view_ptr = std::get_if<vk::UniqueImageView>(m_view_var_ptr.get());
+    return vk_unique_image_view_ptr ? &vk_unique_image_view_ptr->get() : nullptr;
+}
+
+void IResourceVK::LocationVK::InitBufferLocation()
+{
+    META_FUNCTION_TASK();
+    m_descriptor_var = vk::DescriptorBufferInfo(
+        dynamic_cast<BufferVK&>(GetResource()).GetNativeResource(),
+        static_cast<vk::DeviceSize>(GetOffset()),
+        static_cast<vk::DeviceSize>(GetResource().GetSubResourceDataSize(GetSubresourceIndex()) - GetOffset())
+    );
+}
+
+void IResourceVK::LocationVK::InitTextureLocation()
+{
+    META_FUNCTION_TASK();
+    const Texture& texture = dynamic_cast<const Texture&>(GetResource());
+    const Texture::Settings& texture_settings = texture.GetSettings();
+    m_view_var_ptr = std::make_shared<ViewVariant>();
+    *m_view_var_ptr = GetResourceVK().GetNativeDevice().createImageViewUnique(
+        vk::ImageViewCreateInfo(
+            vk::ImageViewCreateFlags{},
+            dynamic_cast<ITextureVK&>(GetResource()).GetNativeImage(),
+            ITextureVK::DimensionTypeToImageViewType(texture_settings.dimension_type),
+            TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
+            vk::ComponentMapping(),
+            // TODO: add support for levels and layers count
+            vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor,
+                                      GetSubresourceIndex().GetMipLevel(),   1U,
+                                      GetSubresourceIndex().GetArrayIndex(), 1U)
+    ));
+    m_descriptor_var = vk::DescriptorImageInfo(
+        vk::Sampler(),
+        *GetNativeImageView(),
+        vk::ImageLayout::eUndefined
+    );
+}
+
+void IResourceVK::LocationVK::InitSamplerLocation()
+{
+    META_FUNCTION_TASK();
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("vulkan sampler support is not implemented yet");
 }
 
 } // using namespace Methane::Graphics

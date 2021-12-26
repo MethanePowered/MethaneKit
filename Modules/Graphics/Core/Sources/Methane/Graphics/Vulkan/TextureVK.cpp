@@ -34,7 +34,20 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-static vk::ImageType GetNativeImageType(Texture::DimensionType dimension_type)
+static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
+{
+    META_FUNCTION_TASK();
+    return vk_device.createImageViewUnique(vk::ImageViewCreateInfo(
+        vk::ImageViewCreateFlags(),
+        vk_image,
+        ITextureVK::DimensionTypeToImageViewType(settings.dimension_type),
+        TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
+        vk::ComponentMapping(),
+        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+    ));
+}
+
+vk::ImageType ITextureVK::DimensionTypeToImageType(Texture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
@@ -57,7 +70,7 @@ static vk::ImageType GetNativeImageType(Texture::DimensionType dimension_type)
     }
 }
 
-static vk::ImageViewType GetNativeImageViewType(Texture::DimensionType dimension_type)
+vk::ImageViewType ITextureVK::DimensionTypeToImageViewType(Texture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
@@ -74,72 +87,49 @@ static vk::ImageViewType GetNativeImageViewType(Texture::DimensionType dimension
     }
 }
 
-static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
-    return vk_device.createImageViewUnique(vk::ImageViewCreateInfo(
-        vk::ImageViewCreateFlags(),
-        vk_image,
-        GetNativeImageViewType(settings.dimension_type),
-        TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
-        vk::ComponentMapping(),
-        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
-    ));
+    return std::make_shared<RenderTargetTextureVK>(dynamic_cast<const RenderContextVK&>(context), settings);
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<RenderTargetTextureVK>(dynamic_cast<const RenderContextVK&>(context), settings, descriptor_by_usage);
-}
-
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<FrameBufferTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage, frame_buffer_index);
+    return std::make_shared<FrameBufferTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, frame_buffer_index);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<DepthStencilTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage, context_settings.clear_depth_stencil);
+    return std::make_shared<DepthStencilTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<ImageTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<ImageTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<ImageTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings);
 }
 
-FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
-                                           FrameBufferIndex frame_buffer_index)
-    : FrameBufferTextureVK(render_context, settings, descriptor_by_usage, frame_buffer_index,
-                           render_context.GetNativeFrameImage(frame_buffer_index))
-{
-    META_FUNCTION_TASK();
-}
-
-FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
-                                           FrameBufferIndex frame_buffer_index, const vk::Image& vk_image)
-    : ResourceVK(render_context, settings, descriptor_by_usage,
-                CreateNativeImageView(settings, render_context.GetDeviceVK().GetNativeDevice(), vk_image))
+FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& render_context, const Settings& settings, FrameBufferIndex frame_buffer_index)
+    : ResourceVK(render_context, settings, render_context.GetNativeFrameImage(frame_buffer_index))
     , m_render_context(render_context)
     , m_frame_buffer_index(frame_buffer_index)
-    , m_vk_image(vk_image)
 {
     META_FUNCTION_TASK();
+    ResetNativeView(CreateNativeImageView(GetSettings(), GetNativeDevice(), GetNativeResource()));
 }
 
 void FrameBufferTextureVK::SetData(const SubResources&, CommandQueue*)
@@ -150,13 +140,13 @@ void FrameBufferTextureVK::SetData(const SubResources&, CommandQueue*)
 void FrameBufferTextureVK::ResetNativeImage()
 {
     META_FUNCTION_TASK();
-    m_vk_image = m_render_context.GetNativeFrameImage(m_frame_buffer_index);
-    ResetNativeResource(CreateNativeImageView(GetSettings(), m_render_context.GetDeviceVK().GetNativeDevice(), GetNativeImage()));
+    ResetNativeResource(m_render_context.GetNativeFrameImage(m_frame_buffer_index));
+    ResetNativeView(CreateNativeImageView(GetSettings(), m_render_context.GetDeviceVK().GetNativeDevice(), GetNativeResource()));
 }
 
-DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage,
+DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings,
                                              const Opt<DepthStencil>& depth_stencil_opt)
-    : ResourceVK(render_context, settings, descriptor_by_usage, {}) // TODO: initialize native resource
+    : ResourceVK(render_context, settings, {}) // TODO: initialize native resource
     , m_render_context(render_context)
     , m_depth_stencil_opt(depth_stencil_opt)
 {
@@ -168,8 +158,8 @@ void DepthStencilTextureVK::SetData(const SubResources&, CommandQueue*)
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth-stencil textures do not support data setup");
 }
 
-RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(render_context, settings, descriptor_by_usage, {}) // TODO: initialize native resource
+RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings)
+    : ResourceVK(render_context, settings, {}) // TODO: initialize native resource
     , m_render_context(render_context)
 {
     META_FUNCTION_TASK();
@@ -180,12 +170,12 @@ void RenderTargetTextureVK::SetData(const SubResources&, CommandQueue*)
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("render-target textures do not support data setup");
 }
 
-ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(context, settings, descriptor_by_usage,
+ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings)
+    : ResourceVK(context, settings,
                  dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice().createImageUnique(
                      vk::ImageCreateInfo(
                          vk::ImageCreateFlags{},
-                         GetNativeImageType(settings.dimension_type),
+                         ITextureVK::DimensionTypeToImageType(settings.dimension_type),
                          TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
                          TypeConverterVK::DimensionsToExtent3D(settings.dimensions),
                          settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1U,

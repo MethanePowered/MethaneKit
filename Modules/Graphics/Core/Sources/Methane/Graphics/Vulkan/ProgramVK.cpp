@@ -57,8 +57,8 @@ void ProgramVK::SetName(const std::string& name)
 
     ProgramBase::SetName(name);
 
-    const std::string pipeline_name = name + " Pipeline Layout";
-    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline_layout.get(), pipeline_name.c_str());
+    const std::string pipeline_name = fmt::format("{} Pipeline Layout", name);
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), GetNativePipelineLayout(), pipeline_name.c_str());
 }
 
 const IContextVK& ProgramVK::GetContextVK() const noexcept

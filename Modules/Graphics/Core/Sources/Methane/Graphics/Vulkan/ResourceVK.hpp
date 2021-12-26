@@ -36,24 +36,38 @@ Vulkan implementation of the resource interface.
 
 #include <vulkan/vulkan.hpp>
 
+#include <type_traits>
+
 namespace Methane::Graphics
 {
 
-template<typename ReourceBaseType, typename NativeResourceType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+template<typename, typename = void>
+constexpr bool is_defined_v = false;
+
+template<typename T>
+constexpr bool is_defined_v<T, std::void_t<decltype(sizeof(T))>> = true;
+
+template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource, typename NativeViewType = void*,
+         bool is_unique_view = std::is_class_v<NativeViewType>,
+         typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
 class ResourceVK // NOSONAR - destructor in use
-    : public ReourceBaseType
+    : public ResourceBaseType
     , public IResourceVK
 {
-public:
-    using UniqueResourceType = vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>;
+    using ResourceStorageType = std::conditional_t<is_unique_resource,
+                                                   vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>,
+                                                   NativeResourceType>;
 
-    template<typename SettingsType>
-    ResourceVK(const ContextBase& context, const SettingsType& settings,
-               const ResourceBase::DescriptorByUsage&,
-               UniqueResourceType&& vk_unique_resource)
-        : ReourceBaseType(context, settings)
+    using ViewStorageType = std::conditional_t<is_unique_view,
+                                               vk::UniqueHandle<NativeViewType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>,
+                                               NativeViewType>;
+
+public:
+    template<typename SettingsType, typename T = ResourceStorageType>
+    ResourceVK(const ContextBase& context, const SettingsType& settings, T&& vk_resource)
+        : ResourceBaseType(context, settings)
         , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
-        , m_vk_unique_resource(std::move(vk_unique_resource))
+        , m_vk_resource(std::forward<T>(vk_resource))
     {
         META_FUNCTION_TASK();
     }
@@ -78,8 +92,12 @@ public:
         if (ObjectBase::GetName() == name)
             return;
 
-        ReourceBaseType::SetName(name);
-        SetVulkanObjectName(m_vk_device, m_vk_unique_resource.get(), name.c_str());
+        ResourceBaseType::SetName(name);
+
+        if (m_vk_resource)
+        {
+            SetVulkanObjectName(m_vk_device, GetNativeResource(), name.c_str());
+        }
     }
 
     // IResource overrides
@@ -101,20 +119,32 @@ public:
         return m_vk_unique_device_memory.get();
     }
 
-    const NativeResourceType& GetNativeResource() const noexcept
+    const vk::Device& GetNativeDevice() const noexcept override
     {
-        return m_vk_unique_resource.get();
+        return m_vk_device;
+    }
+
+    const auto& GetNativeResource() const noexcept
+    {
+        if constexpr (is_unique_resource)
+            return m_vk_resource.get();
+        else
+            return m_vk_resource;
+    }
+
+    template<typename T = NativeViewType>
+    std::enable_if_t<std::is_class_v<T>, const T&> GetNativeView() const noexcept
+    {
+        if constexpr (is_unique_view)
+            return m_vk_view.get();
+        else
+            return m_vk_view;
     }
 
 protected:
     const IContextVK& GetContextVK() const noexcept
     {
         return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
-    }
-
-    const vk::Device& GetNativeDevice() const noexcept
-    {
-        return m_vk_device;
     }
 
     vk::UniqueDeviceMemory AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
@@ -141,10 +171,18 @@ protected:
         m_vk_unique_device_memory = AllocateDeviceMemory(memory_requirements, memory_property_flags);
     }
 
-    void ResetNativeResource(UniqueResourceType&& vk_unique_resource)
+    template<typename T = ResourceStorageType>
+    void ResetNativeResource(T&& vk_resource)
     {
         META_FUNCTION_TASK();
-        m_vk_unique_resource = std::move(vk_unique_resource);
+        m_vk_resource = std::forward<T>(vk_resource);
+    }
+
+    template<typename T = ViewStorageType, typename = std::enable_if_t<std::is_class_v<NativeViewType>, void*>>
+    void ResetNativeView(T&& vk_view)
+    {
+        META_FUNCTION_TASK();
+        m_vk_view = std::forward<T>(vk_view);
     }
 
     BlitCommandListVK& PrepareResourceUpload(CommandQueue* sync_cmd_queue)
@@ -159,7 +197,8 @@ protected:
 private:
     vk::Device              m_vk_device;
     vk::UniqueDeviceMemory  m_vk_unique_device_memory;
-    UniqueResourceType      m_vk_unique_resource;
+    ResourceStorageType     m_vk_resource;
+    ViewStorageType         m_vk_view;
 };
 
 } // namespace Methane::Graphics
