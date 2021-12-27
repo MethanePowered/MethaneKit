@@ -27,6 +27,8 @@ Vulkan implementation of the sampler interface.
 
 #include <Methane/Graphics/SamplerBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
@@ -36,9 +38,11 @@ class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler, false>
 {
 public:
     SamplerVK(const ContextBase& context, const Settings& settings);
+
+    const vk::Sampler& GetNativeSampler() const noexcept { return m_vk_unique_sampler.get(); }
     
 private:
-    void ResetSamplerState();
+    vk::UniqueSampler m_vk_unique_sampler;
 };
 
 } // namespace Methane::Graphics

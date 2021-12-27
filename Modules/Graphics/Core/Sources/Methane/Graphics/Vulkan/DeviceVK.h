@@ -103,7 +103,6 @@ private:
 
     bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
 
-    Capabilities                 m_device_caps;
     vk::PhysicalDevice           m_vk_physical_device;
     vk::UniqueDevice             m_vk_unique_device;
     QueueFamilyReservationByType m_queue_family_reservation_by_type;

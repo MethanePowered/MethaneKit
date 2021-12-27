@@ -59,6 +59,7 @@ struct Device
         Unknown                 = 0U,
         BasicRendering          = 1U << 0U,
         TextureAndSamplerArrays = 1U << 1U,
+        AnysotropicFiltering    = 1U << 2U,
         All                     = ~0U,
     };
 
@@ -75,10 +76,10 @@ struct Device
         Capabilities& SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept;
     };
 
-    [[nodiscard]] virtual const std::string&          GetAdapterName() const noexcept = 0;
-    [[nodiscard]] virtual bool                        IsSoftwareAdapter() const noexcept = 0;
-    [[nodiscard]] virtual const Capabilities&         GetCapabilities() const noexcept = 0;
-    [[nodiscard]] virtual std::string                 ToString() const = 0;
+    [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool                IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual const Capabilities& GetCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string         ToString() const = 0;
 };
 
 struct System

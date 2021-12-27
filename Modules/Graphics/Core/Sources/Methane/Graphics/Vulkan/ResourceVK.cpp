@@ -94,6 +94,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
     META_FUNCTION_TASK();
     const Texture& texture = dynamic_cast<const Texture&>(GetResource());
     const Texture::Settings& texture_settings = texture.GetSettings();
+
     m_view_var_ptr = std::make_shared<ViewVariant>();
     *m_view_var_ptr = GetResourceVK().GetNativeDevice().createImageViewUnique(
         vk::ImageViewCreateInfo(
@@ -107,6 +108,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
                                       GetSubresourceIndex().GetMipLevel(),   1U,
                                       GetSubresourceIndex().GetArrayIndex(), 1U)
     ));
+
     m_descriptor_var = vk::DescriptorImageInfo(
         vk::Sampler(),
         *GetNativeImageView(),
@@ -117,7 +119,8 @@ void IResourceVK::LocationVK::InitTextureLocation()
 void IResourceVK::LocationVK::InitSamplerLocation()
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("vulkan sampler support is not implemented yet");
+    const SamplerVK& sampler = dynamic_cast<const SamplerVK&>(GetResource());
+    m_descriptor_var = vk::DescriptorImageInfo(sampler.GetNativeSampler());
 }
 
 } // using namespace Methane::Graphics

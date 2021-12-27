@@ -377,10 +377,15 @@ void QueueFamilyReservationVK::IncrementQueuesCount(uint32_t extra_queues_count)
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice&)
+Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
-    return Device::Features::BasicRendering;
+    using namespace magic_enum::bitwise_operators;
+    vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
+    Device::Features device_features = Device::Features::BasicRendering;
+    if (vk_device_features.samplerAnisotropy)
+        device_features |= Device::Features::AnysotropicFiltering;
+    return device_features;
 }
 
 DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)

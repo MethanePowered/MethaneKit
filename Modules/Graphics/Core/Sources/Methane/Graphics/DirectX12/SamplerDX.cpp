@@ -36,7 +36,7 @@ namespace Methane::Graphics
 using FilterMinMag = Sampler::Filter::MinMag;
 using FilterMip = Sampler::Filter::Mip;
 
-static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagNearestToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -51,7 +51,7 @@ static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagLinearToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -66,15 +66,15 @@ static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter&
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearesetToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
 
     switch(filter.mag)
     {
-    case FilterMinMag::Nearest: return ConvertFilterMinNearesetMagNearestToDX(filter);
-    case FilterMinMag::Linear:  return ConvertFilterMinNearesetMagLinearToDX(filter);
+    case FilterMinMag::Nearest: return ConvertFilterMinNearestMagNearestToDX(filter);
+    case FilterMinMag::Linear:  return ConvertFilterMinNearestMagLinearToDX(filter);
     default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
@@ -128,7 +128,7 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
 
     switch (filter.min)
     {
-    case FilterMinMag::Nearest: return ConvertFilterMinNearesetToDX(filter);
+    case FilterMinMag::Nearest: return ConvertFilterMinNearestToDX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinLinearToDX(filter);
     default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
