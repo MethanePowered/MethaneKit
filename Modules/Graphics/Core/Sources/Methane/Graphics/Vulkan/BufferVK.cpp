@@ -132,14 +132,13 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     ResourceVK::SetData(sub_resources, sync_cmd_queue);
 
     const bool is_private_storage = GetSettings().storage_mode == Buffer::StorageMode::Private;
-    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
-
     if (is_private_storage)
     {
         m_vk_copy_regions.clear();
         m_vk_copy_regions.reserve(sub_resources.size());
     }
 
+    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
     for(const SubResource& sub_resource : sub_resources)
     {
         ValidateSubResource(sub_resource);
@@ -169,8 +168,6 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
     upload_cmd_list.GetNativeCommandBuffer().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
-
-    m_vk_copy_regions.clear();
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

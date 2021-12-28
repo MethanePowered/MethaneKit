@@ -39,7 +39,7 @@ struct ITextureVK
     static vk::ImageType     DimensionTypeToImageType(Texture::DimensionType dimension_type);
     static vk::ImageViewType DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
 
-    [[nodiscard]] virtual const vk::Image&     GetNativeImage() const noexcept = 0;
+    [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
 
     virtual ~ITextureVK() = default;
 };
@@ -53,7 +53,7 @@ public:
 
     [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
 
-    // TextureVK
+    // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
 
     void ResetNativeImage();
@@ -78,7 +78,7 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
-    // TextureVK
+    // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
 
 private:
@@ -96,7 +96,7 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
-    // TextureVK
+    // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
 
 private:
@@ -113,14 +113,15 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
-    // TextureVK
+    // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
 
 private:
     void GenerateMipLevels();
 
-    vk::UniqueBuffer       m_vk_unique_staging_buffer;
-    vk::UniqueDeviceMemory m_vk_unique_staging_memory;
+    vk::UniqueBuffer                 m_vk_unique_staging_buffer;
+    vk::UniqueDeviceMemory           m_vk_unique_staging_memory;
+    std::vector<vk::BufferImageCopy> m_vk_copy_regions;
 };
 
 } // namespace Methane::Graphics

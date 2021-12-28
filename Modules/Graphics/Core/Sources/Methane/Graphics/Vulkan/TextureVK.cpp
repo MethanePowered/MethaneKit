@@ -188,12 +188,13 @@ ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& setti
     META_FUNCTION_TASK();
 
     // Allocate resource primary memory
-    const vk::MemoryRequirements vk_image_memory_requirements = GetNativeDevice().getImageMemoryRequirements(GetNativeResource());
+    const vk::Device& vk_device = GetNativeDevice();
+    const vk::MemoryRequirements vk_image_memory_requirements = vk_device.getImageMemoryRequirements(GetNativeResource());
     AllocateResourceMemory(vk_image_memory_requirements, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    GetNativeDevice().bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
+    vk_device.bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
 
     // Create staging buffer and allocate staging memory
-    m_vk_unique_staging_buffer = GetNativeDevice().createBufferUnique(
+    m_vk_unique_staging_buffer = vk_device.createBufferUnique(
         vk::BufferCreateInfo(vk::BufferCreateFlags{},
                              vk_image_memory_requirements.size,
                              vk::BufferUsageFlagBits::eTransferSrc,
@@ -201,14 +202,52 @@ ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& setti
     );
 
     const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-    m_vk_unique_staging_memory = AllocateDeviceMemory(GetNativeDevice().getBufferMemoryRequirements(m_vk_unique_staging_buffer.get()), vk_staging_memory_flags);
-    GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
+    m_vk_unique_staging_memory = AllocateDeviceMemory(vk_device.getBufferMemoryRequirements(m_vk_unique_staging_buffer.get()), vk_staging_memory_flags);
+    vk_device.bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
 void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
 {
     META_FUNCTION_TASK();
     ResourceVK::SetData(sub_resources, sync_cmd_queue);
+
+    m_vk_copy_regions.clear();
+    m_vk_copy_regions.reserve(sub_resources.size());
+
+    const vk::DeviceMemory& vk_device_memory = m_vk_unique_staging_memory.get();
+    for(const SubResource& sub_resource : sub_resources)
+    {
+        ValidateSubResource(sub_resource);
+
+        // TODO: calculate memory offset by sub-resource index
+        const vk::DeviceSize sub_resource_offset = 0U;
+        Data::RawPtr sub_resource_data_ptr = nullptr;
+        const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
+                                                                     reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
+
+        META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
+        META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
+
+        GetNativeDevice().unmapMemory(vk_device_memory);
+
+        m_vk_copy_regions.emplace_back(
+            sub_resource_offset, 0, 0,
+            vk::ImageSubresourceLayers(
+                vk::ImageAspectFlagBits::eColor,
+                sub_resource.GetIndex().GetMipLevel(),
+                sub_resource.GetIndex().GetArrayIndex(),
+                1U),
+                vk::Offset3D(),
+                TypeConverterVK::DimensionsToExtent3D(GetSettings().dimensions)
+        );
+    }
+
+    // Copy buffer data from staging upload resource to the device-local GPU resource
+    const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+    upload_cmd_list.GetNativeCommandBuffer().copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
+                                                               vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
+    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
