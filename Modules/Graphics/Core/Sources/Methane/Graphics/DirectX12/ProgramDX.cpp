@@ -230,7 +230,7 @@ void ProgramDX::InitRootSignature()
     ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
 }
 
-DescriptorHeapDX::Range ProgramDX:: ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
+DescriptorHeapDX::Range ProgramDX::ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
 {
     META_FUNCTION_TASK();
     if (access_type == ArgumentAccessor::Type::Mutable)

@@ -33,6 +33,8 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <sstream>
+
 namespace Methane::Graphics
 {
 
@@ -196,6 +198,11 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         );
     }
 
+#ifdef METHANE_LOGGING_ENABLED
+    std::stringstream log_ss;
+    log_ss << "Program '" << GetName() << "' with descriptor set layouts:" << std::endl;
+#endif
+
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
 
     m_vk_unique_descriptor_set_layouts.clear();
@@ -204,9 +211,27 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         if (layout_info.bindings.empty())
             continue;
 
-        m_vk_unique_descriptor_set_layouts.emplace_back(vk_device.createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)));
+        m_vk_unique_descriptor_set_layouts.emplace_back(
+            vk_device.createDescriptorSetLayoutUnique(
+                vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)
+            ));
+
         layout_info.index = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
+
+#ifdef METHANE_LOGGING_ENABLED
+        log_ss << "  - Descriptor set layout " << layout_info.index << ":" << std::endl;
+        for(const vk::DescriptorSetLayoutBinding& layout_binding : layout_info.bindings)
+        {
+            log_ss << "    - Binding " << layout_binding.binding
+                   << " descriptors count " << layout_binding.descriptorCount
+                   << " of type " << vk::to_string(layout_binding.descriptorType)
+                   << " on stage " << vk::to_string(layout_binding.stageFlags)
+                   << ";" << std::endl;
+        }
+#endif
     }
+
+    META_LOG("{}", log_ss.str());
 
     m_vk_descriptor_set_layouts_opt = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
 }

@@ -132,8 +132,8 @@ TEST_CASE("Keyboard state getters and converters", "[keyboard-state]")
     {
         using namespace magic_enum::bitwise_operators;
         const StateExt keyboard_state{ Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5, Key::KeyPad3, Key::F7 };
-        CHECK(magic_enum::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Control));
-        CHECK(magic_enum::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Shift));
+        CHECK(magic_enum::flags::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Control));
+        CHECK(magic_enum::flags::enum_contains(keyboard_state.GetModifiersMask() & Modifiers::Shift));
         CHECK(keyboard_state[Key::Up] == KeyState::Pressed);
         CHECK(keyboard_state[Key::Down] == KeyState::Released);
         CHECK(keyboard_state[Key::Y] == KeyState::Pressed);

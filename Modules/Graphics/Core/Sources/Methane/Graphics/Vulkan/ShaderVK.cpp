@@ -152,7 +152,16 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     META_FUNCTION_TASK();
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
     const Shader::Type shader_type = GetType();
+    const Shader::Settings& shader_settings = GetSettings();
     ArgumentBindings argument_bindings;
+
+#ifdef METHANE_LOGGING_ENABLED
+    std::stringstream log_ss;
+    log_ss << magic_enum::enum_name(GetType())
+           << " shader '" << shader_settings.entry_function.function_name
+           << "' (" << Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
+           << ") with argument bindings:" << std::endl;
+#endif
 
     const auto add_spirv_resources_to_argument_bindings = [&](const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                               const vk::DescriptorType vk_descriptor_type)
@@ -163,11 +172,12 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
             const Program::Argument shader_argument(shader_type, ShaderBase::GetCachedArgName(spirv_compiler.get_name(resource.id)));
             const auto argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
             const Program::ArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                           ? Program::ArgumentAccessor(shader_argument)
-                                                           : *argument_acc_it;
+                                                         ? Program::ArgumentAccessor(shader_argument)
+                                                         : *argument_acc_it;
 
             const uint32_t binding_point = spirv_compiler.get_decoration(resource.id, spv::DecorationBinding);
             const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
+            const uint32_t array_size = GetArraySize(spirv_type);
 
             argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
                 GetContext(),
@@ -177,12 +187,20 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
                     {
                         argument_acc,
                         resource_type,
-                        GetArraySize(spirv_type)
+                        array_size
                     },
                     vk_descriptor_type,
                     binding_point,
                 }
             ));
+
+#ifdef METHANE_LOGGING_ENABLED
+            log_ss << "  - '" << shader_argument.GetName()
+                   << "' binding point " << binding_point
+                   << " with " << vk::to_string(vk_descriptor_type)
+                   << " descriptor type, array size " << array_size
+                   << ";" << std::endl;
+#endif
         }
     };
 
@@ -196,6 +214,13 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eStorageImage);
     add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
     // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
+
+#ifdef METHANE_LOGGING_ENABLED
+    if (argument_bindings.empty())
+        log_ss << "  - No argument bindings." << std::endl;
+#endif
+
+    META_LOG("{}", log_ss.str());
 
     return argument_bindings;
 }
@@ -242,6 +267,7 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     META_CHECK_ARG_EQUAL(GetType(), Shader::Type::Vertex);
     META_CHECK_ARG_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
 
+    const Shader::Settings& shader_settings = GetSettings();
     const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
     m_vertex_input_binding_descriptions.reserve(input_buffer_layouts.size());
 
@@ -259,6 +285,16 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
     const spirv_cross::ShaderResources shader_resources = spirv_compiler.get_shader_resources();
 
+#ifdef METHANE_LOGGING_ENABLED
+    std::stringstream log_ss;
+    log_ss << magic_enum::enum_name(GetType())
+           << " shader '" << shader_settings.entry_function.function_name
+           << "' (" << Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
+           << ") input layout:" << std::endl;
+    if (shader_resources.stage_inputs.empty())
+        log_ss << " - No stage inputs." << std::endl;
+#endif
+
     m_vertex_input_attribute_descriptions.reserve(shader_resources.stage_inputs.size());
     for(const spirv_cross::Resource& input_resource : shader_resources.stage_inputs)
     {
@@ -266,23 +302,36 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
         const bool has_location = spirv_compiler.has_decoration(input_resource.id, spv::DecorationLocation);
         META_CHECK_ARG_TRUE(has_semantic && has_location);
 
-        const std::string&           semantic_name  = spirv_compiler.get_decoration_string(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
-        const spirv_cross::SPIRType& attribute_type = spirv_compiler.get_type(input_resource.base_type_id);
+        const std::string&           semantic_name    = spirv_compiler.get_decoration_string(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
+        const uint32_t               input_location   = spirv_compiler.get_decoration(input_resource.id, spv::DecorationLocation);
+        const spirv_cross::SPIRType& attribute_type   = spirv_compiler.get_type(input_resource.base_type_id);
+        const vk::Format             attribute_format = GetVertexAttributeFormatFromSpirvType(attribute_type);
 
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, semantic_name);
         META_CHECK_ARG_LESS(buffer_index, m_vertex_input_binding_descriptions.size());
         vk::VertexInputBindingDescription& input_binding_desc = m_vertex_input_binding_descriptions[buffer_index];
 
         m_vertex_input_attribute_descriptions.emplace_back(
-            spirv_compiler.get_decoration(input_resource.id, spv::DecorationLocation),
+            input_location,
             buffer_index,
-            GetVertexAttributeFormatFromSpirvType(attribute_type),
+            attribute_format,
             input_binding_desc.stride
         );
+
+#ifdef METHANE_LOGGING_ENABLED
+        log_ss << "  - Input semantic name '" << semantic_name
+               << "' location << " << input_location
+               << " buffer " << buffer_index
+               << " binding " << input_binding_desc.binding
+               << " with attribute format " << vk::to_string(attribute_format)
+               << ";" << std::endl;
+#endif
 
         // Tight packing of attributes in vertex buffer is assumed
         input_binding_desc.stride += attribute_type.vecsize * 4;
     }
+
+    META_LOG("{}", log_ss.str());
 
     m_vertex_input_initialized = true;
 }

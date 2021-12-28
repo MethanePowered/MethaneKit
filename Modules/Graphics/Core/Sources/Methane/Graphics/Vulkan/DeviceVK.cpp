@@ -54,9 +54,12 @@ static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATUR
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
 
-    // Extension is used to reflect HLSL semantic names from shader input decorations,
-    // and it actually works but is not listed by NVidia or AMD drivers, who knows why?
-    // VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
+    // Google extensions are used to reflect HLSL semantic names from shader input decorations,
+    // and it works fine, but is not listed by Windows NVidia drivers, who knows why?
+#ifdef __linux__
+    VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
+    VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
+#endif
 };
 
 static const std::vector<std::string_view> g_render_device_extensions{

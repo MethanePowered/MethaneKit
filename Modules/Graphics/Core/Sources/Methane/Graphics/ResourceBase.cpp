@@ -121,7 +121,9 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
         return false;
     }
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    META_LOG("{} resource '{}' state changed from {} to {}",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
     if (m_state != State::Common)
     {
@@ -141,7 +143,9 @@ bool ResourceBase::SetState(State state)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    META_LOG("{} resource '{}' state changed from {} to {}",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             magic_enum::enum_name(m_state), magic_enum::enum_name(state));
     m_state = state;
     return true;
 }
