@@ -161,6 +161,8 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
            << " shader '" << shader_settings.entry_function.function_name
            << "' (" << Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
            << ") with argument bindings:" << std::endl;
+#else
+    META_UNUSED(shader_settings);
 #endif
 
     const auto add_spirv_resources_to_argument_bindings = [&](const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
@@ -293,6 +295,8 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
            << ") input layout:" << std::endl;
     if (shader_resources.stage_inputs.empty())
         log_ss << " - No stage inputs." << std::endl;
+#else
+    META_UNUSED(shader_settings);
 #endif
 
     m_vertex_input_attribute_descriptions.reserve(shader_resources.stage_inputs.size());
