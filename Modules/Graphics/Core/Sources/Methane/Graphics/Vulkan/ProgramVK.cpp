@@ -111,7 +111,7 @@ const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::
 
     static const vk::DescriptorSetLayout s_empty_layout;
     const DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
-    return layout_info.index >= 0 ? m_vk_unique_descriptor_set_layouts[layout_info.index].get() : s_empty_layout;
+    return layout_info.index_opt ? m_vk_unique_descriptor_set_layouts[*layout_info.index_opt].get() : s_empty_layout;
 }
 
 const ProgramVK::DescriptorSetLayoutInfo& ProgramVK::GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type)
@@ -190,6 +190,7 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
         layout_info.descriptors_count += vulkan_binding_settings.resource_count;
         layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
+        layout_info.shader_descriptor_sets.emplace_back(vulkan_binding_settings.descriptor_set);
         layout_info.bindings.emplace_back(
             vulkan_binding_settings.binding,
             vulkan_binding_settings.descriptor_type,
@@ -198,12 +199,11 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         );
     }
 
-#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << "Program '" << GetName() << "' with descriptor set layouts:" << std::endl;
-#endif
 
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    bool has_invalid_descriptor_sets = false;
 
     m_vk_unique_descriptor_set_layouts.clear();
     for(DescriptorSetLayoutInfo& layout_info : m_descriptor_set_layout_info_by_access_type)
@@ -216,24 +216,37 @@ void ProgramVK::InitializeDescriptorSetLayouts()
                 vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)
             ));
 
-        layout_info.index = static_cast<int>(m_vk_unique_descriptor_set_layouts.size() - 1);
+        layout_info.index_opt = m_vk_unique_descriptor_set_layouts.size() - 1;
 
-#ifdef METHANE_LOGGING_ENABLED
-        log_ss << "  - Descriptor set layout " << layout_info.index << ":" << std::endl;
+        log_ss << "  - Descriptor set layout " << *layout_info.index_opt << ":" << std::endl;
+        uint32_t layout_binding_index = 0;
+
         for(const vk::DescriptorSetLayoutBinding& layout_binding : layout_info.bindings)
         {
-            log_ss << "    - Binding " << layout_binding.binding
+            log_ss << "    - Binding "      << layout_binding.binding
                    << " descriptors count " << layout_binding.descriptorCount
-                   << " of type " << vk::to_string(layout_binding.descriptorType)
-                   << " on stage " << vk::to_string(layout_binding.stageFlags)
-                   << ";" << std::endl;
+                   << " of type "           << vk::to_string(layout_binding.descriptorType)
+                   << " for argument '"     << layout_info.arguments[layout_binding_index].GetName()
+                   << "' on stage "         << vk::to_string(layout_binding.stageFlags);
+
+            const uint32_t shader_descriptor_set = layout_info.shader_descriptor_sets[layout_binding_index];
+            if (shader_descriptor_set != *layout_info.index_opt)
+            {
+                log_ss << " has INVALID descriptor set " << shader_descriptor_set << " in shader";
+                has_invalid_descriptor_sets = true;
+            }
+
+            log_ss << ";" << std::endl;
+            layout_binding_index++;
         }
-#endif
     }
 
     META_LOG("{}", log_ss.str());
 
     m_vk_descriptor_set_layouts_opt = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
+
+    if (has_invalid_descriptor_sets)
+        throw InvalidBindingsException(*this, log_ss.str());
 }
 
 } // namespace Methane::Graphics

@@ -39,10 +39,10 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-ConstantBuffer<Constants> g_constants : register(b1);
-ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
-Texture2D                 g_texture   : register(t0);
-SamplerState              g_sampler   : register(s0);
+[[vk::binding(0,0)]] ConstantBuffer<Constants> g_constants : register(b1);
+[[vk::binding(0,1)]] ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
+[[vk::binding(1,0)]] Texture2D                 g_texture   : register(t0);
+[[vk::binding(2,0)]] SamplerState              g_sampler   : register(s0);
 
 PSInput CubeVS(VSInput input)
 {

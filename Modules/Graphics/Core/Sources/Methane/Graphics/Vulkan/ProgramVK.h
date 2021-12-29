@@ -41,10 +41,11 @@ class ProgramVK final : public ProgramBase
 public:
     struct DescriptorSetLayoutInfo
     {
-        int32_t                                     index = -1;
+        Opt<uint32_t>                               index_opt;
         uint32_t                                    descriptors_count = 0U;
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
         std::vector<Program::Argument>              arguments; // related arguments for each layout binding
+        std::vector<uint32_t>                       shader_descriptor_sets; // related descriptor sets defined by shader for each argument binding
     };
 
     ProgramVK(const ContextBase& context, const Settings& settings);

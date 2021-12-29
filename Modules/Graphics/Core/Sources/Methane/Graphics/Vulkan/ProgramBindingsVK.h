@@ -44,6 +44,7 @@ public:
         {
             vk::DescriptorType descriptor_type;
             uint32_t           binding;
+            uint32_t           descriptor_set;
         };
 
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);

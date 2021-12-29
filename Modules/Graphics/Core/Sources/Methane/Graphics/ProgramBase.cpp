@@ -104,6 +104,13 @@ Program::Argument::NotFoundException::NotFoundException(const Program& program, 
     META_FUNCTION_TASK();
 }
 
+Program::InvalidBindingsException::InvalidBindingsException(const Program& program, const std::string& description)
+    : logic_error(fmt::format("Invalid program bindings: {}", description))
+    , m_program(program)
+{
+    META_FUNCTION_TASK();
+}
+
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     META_FUNCTION_TASK();
