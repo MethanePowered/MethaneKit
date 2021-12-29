@@ -216,7 +216,7 @@ void ProgramVK::InitializeDescriptorSetLayouts()
                 vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)
             ));
 
-        layout_info.index_opt = m_vk_unique_descriptor_set_layouts.size() - 1;
+        layout_info.index_opt = static_cast<uint32_t>(m_vk_unique_descriptor_set_layouts.size() - 1);
 
         log_ss << "  - Descriptor set layout " << *layout_info.index_opt << ":" << std::endl;
         uint32_t layout_binding_index = 0;
