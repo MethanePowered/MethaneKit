@@ -42,9 +42,9 @@ public:
     public:
         struct SettingsVK : Settings
         {
-            vk::DescriptorType descriptor_type;
-            uint32_t           binding;
-            uint32_t           descriptor_set;
+            vk::DescriptorType      descriptor_type;
+            uint32_t                binding;
+            Shader::ByteCodeOffsets descriptor_set_offsets;
         };
 
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);

@@ -129,17 +129,6 @@ struct Program : virtual Object // NOSONAR
     static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
     using Shaders = Ptrs<Shader>;
 
-    class InvalidBindingsException : public std::logic_error
-    {
-    public:
-        InvalidBindingsException(const Program& program, const std::string& description);
-
-        [[nodiscard]] const Program&  GetProgram() const noexcept  { return m_program; }
-
-    private:
-        const Program& m_program;
-    };
-
     // Program settings
     struct Settings
     {

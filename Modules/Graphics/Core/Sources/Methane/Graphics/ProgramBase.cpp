@@ -39,7 +39,7 @@ static const std::hash<std::string_view> g_argument_name_hash;
 Program::Argument::Argument(Shader::Type shader_type, std::string_view argument_name) noexcept
     : m_shader_type(shader_type)
     , m_name(argument_name)
-    , m_hash(g_argument_name_hash(m_name) ^ (static_cast<size_t>(shader_type) << 1))
+    , m_hash(g_argument_name_hash(m_name) ^ (magic_enum::enum_index(shader_type).value() << 1))
 {
     META_FUNCTION_TASK();
 }
@@ -104,13 +104,6 @@ Program::Argument::NotFoundException::NotFoundException(const Program& program, 
     META_FUNCTION_TASK();
 }
 
-Program::InvalidBindingsException::InvalidBindingsException(const Program& program, const std::string& description)
-    : logic_error(fmt::format("Invalid program bindings: {}", description))
-    , m_program(program)
-{
-    META_FUNCTION_TASK();
-}
-
 ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& shaders)
 {
     META_FUNCTION_TASK();
@@ -118,7 +111,7 @@ ProgramBase::ShadersByType ProgramBase::CreateShadersByType(const Ptrs<Shader>& 
     for (const Ptr<Shader>& shader_ptr : shaders)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "can not use empty shader pointer for program creation");
-        shaders_by_type[static_cast<size_t>(shader_ptr->GetType())] = shader_ptr;
+        shaders_by_type[magic_enum::enum_index(shader_ptr->GetType()).value()] = shader_ptr;
     }
     return shaders_by_type;
 }

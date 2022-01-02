@@ -44,8 +44,8 @@ public:
         Opt<uint32_t>                               index_opt;
         uint32_t                                    descriptors_count = 0U;
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        std::vector<Program::Argument>              arguments; // related arguments for each layout binding
-        std::vector<uint32_t>                       shader_descriptor_sets; // related descriptor sets defined by shader for each argument binding
+        std::vector<Argument>                       arguments;              // related arguments for each layout binding
+        std::vector<Shader::ByteCodeOffsets>        descriptor_set_offsets; // related descriptor set offsets for each binding/argument
     };
 
     ProgramVK(const ContextBase& context, const Settings& settings);
@@ -53,7 +53,7 @@ public:
     // ObjectBase overrides
     void SetName(const std::string& name) override;
 
-    ShaderVK& GetShaderVK(Shader::Type shader_type) noexcept;
+    ShaderVK& GetShaderVK(Shader::Type shader_type) const;
     const IContextVK& GetContextVK() const noexcept;
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
@@ -69,13 +69,14 @@ private:
     using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
 
     void InitializeDescriptorSetLayouts();
+    void UpdatePipelineName();
 
-    DescriptorSetLayoutInfoByAccessType                 m_descriptor_set_layout_info_by_access_type;
-    std::vector<vk::UniqueDescriptorSetLayout>          m_vk_unique_descriptor_set_layouts;
-    std::optional<std::vector<vk::DescriptorSetLayout>> m_vk_descriptor_set_layouts_opt;
-    vk::UniquePipelineLayout                            m_vk_unique_pipeline_layout;
-    std::optional<vk::DescriptorSet>                    m_vk_constant_descriptor_set_opt;
-    std::vector<vk::DescriptorSet>                      m_vk_frame_constant_descriptor_sets;
+    DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
+    std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
+    std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;
+    vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
+    std::optional<vk::DescriptorSet>           m_vk_constant_descriptor_set_opt;
+    std::vector<vk::DescriptorSet>             m_vk_frame_constant_descriptor_sets;
 };
 
 } // namespace Methane::Graphics

@@ -33,6 +33,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
 #include <sstream>
 
 namespace Methane::Graphics
@@ -49,6 +50,7 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
+    InitializeDescriptorSetLayouts();
 }
 
 void ProgramVK::SetName(const std::string& name)
@@ -58,9 +60,20 @@ void ProgramVK::SetName(const std::string& name)
         return;
 
     ProgramBase::SetName(name);
+    UpdatePipelineName();
+}
 
-    const std::string pipeline_name = fmt::format("{} Pipeline Layout", name);
-    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), GetNativePipelineLayout(), pipeline_name.c_str());
+void ProgramVK::UpdatePipelineName()
+{
+    if (!m_vk_unique_pipeline_layout)
+        return;
+
+    const std::string& program_name = GetName();
+    if (program_name.empty())
+        return;
+
+    const std::string pipeline_name = fmt::format("{} Pipeline Layout", program_name);
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline_layout.get(), pipeline_name.c_str());
 }
 
 const IContextVK& ProgramVK::GetContextVK() const noexcept
@@ -69,7 +82,7 @@ const IContextVK& ProgramVK::GetContextVK() const noexcept
     return static_cast<const IContextVK&>(GetContext());
 }
 
-ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) noexcept
+ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderVK&>(GetShaderRef(shader_type));
@@ -97,18 +110,12 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
 const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts()
 {
     META_FUNCTION_TASK();
-    if (!m_vk_descriptor_set_layouts_opt)
-        InitializeDescriptorSetLayouts();
-
-    return *m_vk_descriptor_set_layouts_opt;
+    return m_vk_descriptor_set_layouts;
 }
 
 const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type)
 {
     META_FUNCTION_TASK();
-    if (!m_vk_descriptor_set_layouts_opt)
-        InitializeDescriptorSetLayouts();
-
     static const vk::DescriptorSetLayout s_empty_layout;
     const DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
     return layout_info.index_opt ? m_vk_unique_descriptor_set_layouts[*layout_info.index_opt].get() : s_empty_layout;
@@ -117,9 +124,6 @@ const vk::DescriptorSetLayout& ProgramVK::GetNativeDescriptorSetLayout(Program::
 const ProgramVK::DescriptorSetLayoutInfo& ProgramVK::GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type)
 {
     META_FUNCTION_TASK();
-    if (!m_vk_descriptor_set_layouts_opt)
-        InitializeDescriptorSetLayouts();
-
     return m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
 }
 
@@ -133,6 +137,8 @@ const vk::PipelineLayout& ProgramVK::GetNativePipelineLayout()
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
 
     m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, vk_descriptor_set_layouts));
+    UpdatePipelineName();
+
     return m_vk_unique_pipeline_layout.get();
 }
 
@@ -190,7 +196,7 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
         layout_info.descriptors_count += vulkan_binding_settings.resource_count;
         layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
-        layout_info.shader_descriptor_sets.emplace_back(vulkan_binding_settings.descriptor_set);
+        layout_info.descriptor_set_offsets.emplace_back(vulkan_binding_settings.descriptor_set_offsets);
         layout_info.bindings.emplace_back(
             vulkan_binding_settings.binding,
             vulkan_binding_settings.descriptor_type,
@@ -203,7 +209,6 @@ void ProgramVK::InitializeDescriptorSetLayouts()
     log_ss << "Program '" << GetName() << "' with descriptor set layouts:" << std::endl;
 
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
-    bool has_invalid_descriptor_sets = false;
 
     m_vk_unique_descriptor_set_layouts.clear();
     for(DescriptorSetLayoutInfo& layout_info : m_descriptor_set_layout_info_by_access_type)
@@ -218,6 +223,15 @@ void ProgramVK::InitializeDescriptorSetLayouts()
 
         layout_info.index_opt = static_cast<uint32_t>(m_vk_unique_descriptor_set_layouts.size() - 1);
 
+        // Patch descriptor set decorations in SPIRV shaders bytecode
+        for(const Shader::ByteCodeOffsets& offsets : layout_info.descriptor_set_offsets)
+        {
+            for(const auto& [shader_type, descriptor_set_offset] : offsets)
+            {
+                GetShaderVK(shader_type).GetMutableByteCode().PatchData(descriptor_set_offset, *layout_info.index_opt);
+            }
+        }
+
         log_ss << "  - Descriptor set layout " << *layout_info.index_opt << ":" << std::endl;
         uint32_t layout_binding_index = 0;
 
@@ -228,25 +242,13 @@ void ProgramVK::InitializeDescriptorSetLayouts()
                    << " of type "           << vk::to_string(layout_binding.descriptorType)
                    << " for argument '"     << layout_info.arguments[layout_binding_index].GetName()
                    << "' on stage "         << vk::to_string(layout_binding.stageFlags);
-
-            const uint32_t shader_descriptor_set = layout_info.shader_descriptor_sets[layout_binding_index];
-            if (shader_descriptor_set != *layout_info.index_opt)
-            {
-                log_ss << " has INVALID descriptor set " << shader_descriptor_set << " in shader";
-                has_invalid_descriptor_sets = true;
-            }
-
             log_ss << ";" << std::endl;
             layout_binding_index++;
         }
     }
 
     META_LOG("{}", log_ss.str());
-
-    m_vk_descriptor_set_layouts_opt = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
-
-    if (has_invalid_descriptor_sets)
-        throw InvalidBindingsException(*this, log_ss.str());
+    m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
 }
 
 } // namespace Methane::Graphics

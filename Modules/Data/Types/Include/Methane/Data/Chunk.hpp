@@ -32,13 +32,13 @@ class Chunk
 {
 public:
     Chunk() = default;
-    Chunk(ConstRawPtr in_p_data, Size in_size) noexcept
-        : m_data_ptr(in_p_data)
-        , m_data_size(in_size)
+    Chunk(ConstRawPtr data_ptr, Size size) noexcept
+        : m_data_ptr(data_ptr)
+        , m_data_size(size)
     { }
 
-    explicit Chunk(Bytes&& in_data) noexcept
-        : m_data_storage(std::move(in_data))
+    explicit Chunk(Bytes&& data) noexcept
+        : m_data_storage(std::move(data))
         , m_data_ptr(m_data_storage.empty() ? nullptr : m_data_storage.data())
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }

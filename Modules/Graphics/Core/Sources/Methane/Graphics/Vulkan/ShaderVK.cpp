@@ -140,9 +140,7 @@ Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, con
 
 ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_byte_code_chunk_ptr(std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings)))))
-    , m_vk_unique_module(GetContextVK().GetDeviceVK().GetNativeDevice().createShaderModuleUnique(
-        vk::ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags{}, m_byte_code_chunk_ptr->GetDataSize(), m_byte_code_chunk_ptr->GetDataPtr<uint32_t>())))
+    , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
 {
     META_FUNCTION_TASK();
 }
@@ -178,9 +176,11 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
                                                          : *argument_acc_it;
 
             const uint32_t binding_point = spirv_compiler.get_decoration(resource.id, spv::DecorationBinding);
-            const uint32_t descriptor_set = spirv_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
             const uint32_t array_size = GetArraySize(spirv_type);
+
+            uint32_t descriptor_set_offset = 0;
+            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, descriptor_set_offset));
 
             argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
                 GetContext(),
@@ -194,14 +194,13 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
                     },
                     vk_descriptor_type,
                     binding_point,
-                    descriptor_set
+                    { { shader_type, descriptor_set_offset } }
                 }
             ));
 
 #ifdef METHANE_LOGGING_ENABLED
             log_ss << "  - '" << shader_argument.GetName()
                    << "' binding point " << binding_point
-                   << " in descriptor set " << descriptor_set
                    << " with descriptor type " << vk::to_string(vk_descriptor_type)
                    << ", array size " << array_size
                    << ";" << std::endl;
@@ -230,14 +229,29 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     return argument_bindings;
 }
 
+const vk::ShaderModule& ShaderVK::GetNativeModule() const
+{
+    META_FUNCTION_TASK();
+    if (!m_vk_unique_module)
+    {
+        m_vk_unique_module = GetContextVK().GetDeviceVK().GetNativeDevice().createShaderModuleUnique(
+            vk::ShaderModuleCreateInfo(
+                vk::ShaderModuleCreateFlags{},
+                m_byte_code_chunk.GetDataSize(),
+                m_byte_code_chunk.AsConstChunk().GetDataPtr<uint32_t>())
+        );
+    }
+    return m_vk_unique_module.get();
+}
+
 const spirv_cross::Compiler& ShaderVK::GetNativeCompiler() const
 {
     META_FUNCTION_TASK();
     if (m_spirv_compiler_ptr)
         return *m_spirv_compiler_ptr;
 
-    META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
-    m_spirv_compiler_ptr = std::make_unique<spirv_cross::Compiler>(m_byte_code_chunk_ptr->GetDataPtr<uint32_t>(), m_byte_code_chunk_ptr->GetDataSize<uint32_t>());
+    m_spirv_compiler_ptr = std::make_unique<spirv_cross::Compiler>(m_byte_code_chunk.AsConstChunk().GetDataPtr<uint32_t>(),
+                                                                   m_byte_code_chunk.GetDataSize<uint32_t>());
     return *m_spirv_compiler_ptr;
 }
 
@@ -264,6 +278,14 @@ vk::PipelineVertexInputStateCreateInfo ShaderVK::GetNativeVertexInputStateCreate
         m_vertex_input_binding_descriptions,
         m_vertex_input_attribute_descriptions
     );
+}
+
+Data::MutableChunk& ShaderVK::GetMutableByteCode() noexcept
+{
+    META_FUNCTION_TASK();
+    m_vk_unique_module.reset();
+    m_spirv_compiler_ptr.reset();
+    return m_byte_code_chunk;
 }
 
 void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)

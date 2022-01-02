@@ -54,7 +54,7 @@ public:
     // Program interface
     const Settings&      GetSettings() const final                          { return m_settings; }
     const Shader::Types& GetShaderTypes() const final                       { return m_shader_types; }
-    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const final    { return m_shaders_by_type[static_cast<size_t>(shader_type)]; }
+    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const final    { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
     bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
 
     const ContextBase&   GetContext() const { return m_context; }
