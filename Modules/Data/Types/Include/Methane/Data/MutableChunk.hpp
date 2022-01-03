@@ -35,27 +35,27 @@ class MutableChunk
 public:
     MutableChunk(ConstRawPtr data_ptr, Size size) noexcept
         : m_data(data_ptr, data_ptr + size)
-        , m_chunk(m_data.data(), m_data.size())
+        , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
 
     explicit MutableChunk(Bytes&& data) noexcept
         : m_data(std::move(data))
-        , m_chunk(m_data.data(), m_data.size())
+        , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
 
     explicit MutableChunk(const Chunk& chunk) noexcept
         : m_data(chunk.GetDataPtr(), chunk.GetDataEndPtr())
-        , m_chunk(m_data.data(), m_data.size())
+        , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
 
     explicit MutableChunk(MutableChunk&& other) noexcept
         : m_data(std::move(other.m_data))
-        , m_chunk(m_data.data(), m_data.size())
+        , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
 
     MutableChunk(const MutableChunk& other) noexcept
         : m_data(other.m_data)
-        , m_chunk(m_data.data(), m_data.size())
+        , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
 
     MutableChunk& operator=(const MutableChunk&) noexcept = delete;
@@ -67,12 +67,12 @@ public:
     }
 
     template<typename T = Byte>
-    [[nodiscard]] size_t GetDataSize() const noexcept
+    [[nodiscard]] Size GetDataSize() const noexcept
     {
         if constexpr (sizeof(T) == 1)
-            return m_data.size();
+            return static_cast<Size>(m_data.size());
         else
-            return m_data.size() / sizeof(T);
+            return static_cast<Size>(m_data.size() / sizeof(T));
     }
 
     template<typename T = Byte>

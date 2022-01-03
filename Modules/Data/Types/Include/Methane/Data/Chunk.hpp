@@ -49,28 +49,29 @@ public:
         , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
     { }
 
-    ~Chunk() = default;
+    [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
+    [[nodiscard]] bool IsDataStored() const noexcept  { return !m_data_storage.empty(); }
 
-    [[nodiscard]] ConstRawPtr GetDataPtr() const noexcept    { return m_data_ptr; }
-    [[nodiscard]] ConstRawPtr GetDataEndPtr() const noexcept { return m_data_ptr + m_data_size; }
-    [[nodiscard]] Size        GetDataSize() const noexcept   { return m_data_size; }
-    [[nodiscard]] bool        IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
-    [[nodiscard]] bool        IsDataStored() const noexcept  { return !m_data_storage.empty(); }
-
-    template<typename T>
-    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, Size> GetDataSize() const noexcept
+    template<typename T = Byte>
+    [[nodiscard]] Size GetDataSize() const noexcept
     {
-        return m_data_size / sizeof(T);
+        if constexpr (std::is_same_v<T, Byte>)
+            return m_data_size;
+        else
+            return m_data_size / sizeof(T);
     }
 
-    template<typename T>
-    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, const T*> GetDataPtr() const noexcept
+    template<typename T = Byte>
+    [[nodiscard]] const T* GetDataPtr() const noexcept
     {
-        return reinterpret_cast<const T*>(m_data_ptr); // NOSONAR
+        if constexpr (std::is_same_v<T, Byte>)
+            return m_data_ptr;
+        else
+            return reinterpret_cast<const T*>(m_data_ptr); // NOSONAR
     }
 
-    template<typename T>
-    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, Byte>, const T*> GetDataEndPtr() const noexcept
+    template<typename T = Byte>
+    [[nodiscard]] const T* GetDataEndPtr() const noexcept
     {
         return GetDataPtr<T>() + GetDataSize<T>();
     }
