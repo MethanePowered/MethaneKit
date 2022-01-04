@@ -166,6 +166,9 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     const auto add_spirv_resources_to_argument_bindings = [&](const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                               const vk::DescriptorType vk_descriptor_type)
     {
+        if (spirv_resources.begin() == spirv_resources.end())
+            return;
+
         const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);
         for (const spirv_cross::Resource& resource : spirv_resources)
         {
@@ -174,13 +177,13 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
             const Program::ArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
                                                          ? Program::ArgumentAccessor(shader_argument)
                                                          : *argument_acc_it;
-
-            const uint32_t binding_point = spirv_compiler.get_decoration(resource.id, spv::DecorationBinding);
+            
             const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
             const uint32_t array_size = GetArraySize(spirv_type);
 
-            uint32_t descriptor_set_offset = 0;
-            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, descriptor_set_offset));
+            ProgramBindingsVK::ArgumentBindingVK::ByteCodeMap byte_code_map{ shader_type };
+            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
+            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding,       byte_code_map.binding_offset));
 
             argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
                 GetContext(),
@@ -193,15 +196,13 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
                         array_size
                     },
                     vk_descriptor_type,
-                    binding_point,
-                    { { shader_type, descriptor_set_offset } }
+                    { std::move(byte_code_map) }
                 }
             ));
 
 #ifdef METHANE_LOGGING_ENABLED
             log_ss << "  - '" << shader_argument.GetName()
-                   << "' binding point " << binding_point
-                   << " with descriptor type " << vk::to_string(vk_descriptor_type)
+                   << "' with descriptor type " << vk::to_string(vk_descriptor_type)
                    << ", array size " << array_size
                    << ";" << std::endl;
 #endif
@@ -214,8 +215,8 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,   vk::DescriptorType::eUniformBuffer);
     add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,   vk::DescriptorType::eStorageBuffer);
     add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,    vk::DescriptorType::eStorageImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,    vk::DescriptorType::eSampledImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eStorageImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,    vk::DescriptorType::eCombinedImageSampler);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eSampledImage);
     add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
     // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
 

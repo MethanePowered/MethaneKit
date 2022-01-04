@@ -23,6 +23,9 @@ Vulkan implementation of the program interface.
 
 #pragma once
 
+#include "ShaderVK.h"
+#include "ProgramBindingsVK.h"
+
 #include <Methane/Graphics/ProgramBase.h>
 
 #include <magic_enum.hpp>
@@ -34,18 +37,20 @@ namespace Methane::Graphics
 {
 
 struct IContextVK;
-class ShaderVK;
 
 class ProgramVK final : public ProgramBase
 {
 public:
+    using ByteCodeMap = ProgramBindingsVK::ArgumentBindingVK::ByteCodeMap;
+    using ByteCodeMaps = ProgramBindingsVK::ArgumentBindingVK::ByteCodeMaps;
+
     struct DescriptorSetLayoutInfo
     {
         Opt<uint32_t>                               index_opt;
         uint32_t                                    descriptors_count = 0U;
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        std::vector<Argument>                       arguments;              // related arguments for each layout binding
-        std::vector<Shader::ByteCodeOffsets>        descriptor_set_offsets; // related descriptor set offsets for each binding/argument
+        std::vector<Argument>                       arguments;                    // related arguments for each layout binding
+        std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
     ProgramVK(const ContextBase& context, const Settings& settings);

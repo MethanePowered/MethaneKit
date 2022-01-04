@@ -55,17 +55,20 @@ public:
 
         ArgumentBindingBase(const ContextBase& context, const Settings& settings);
 
+        virtual void MergeSettings(const ArgumentBindingBase& other);
+
         // ArgumentBinding interface
-        const Settings&            GetSettings() const noexcept override            { return m_settings; }
-        const Resource::Locations& GetResourceLocations() const noexcept override   { return m_resource_locations; }
+        const Settings&            GetSettings() const noexcept override         { return m_settings; }
+        const Resource::Locations& GetResourceLocations() const noexcept final   { return m_resource_locations; }
         void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
-        explicit operator std::string() const override;
+        explicit operator std::string() const final;
 
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
 
         bool IsAlreadyApplied(const Program& program,
                               const ProgramBindingsBase& applied_program_bindings,
                               bool check_binding_value_changes = true) const;
+
     protected:
         const ContextBase& GetContext() const noexcept { return m_context; }
 

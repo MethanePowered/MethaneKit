@@ -76,6 +76,16 @@ void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSet(const vk::Descriptor
     m_vk_descriptor_set_ptr = &descriptor_set;
 }
 
+void ProgramBindingsVK::ArgumentBindingVK::MergeSettings(const ArgumentBindingBase& other)
+{
+    META_FUNCTION_TASK();
+    ArgumentBindingBase::MergeSettings(other);
+
+    const SettingsVK& settings_vk = dynamic_cast<const ArgumentBindingVK&>(other).GetSettingsVK();
+    META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
+    m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
+}
+
 void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();

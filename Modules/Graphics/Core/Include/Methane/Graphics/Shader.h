@@ -50,7 +50,6 @@ struct Shader
     };
     
     using Types = std::set<Shader::Type>;
-    using ByteCodeOffsets = std::vector<std::pair<Shader::Type, uint32_t>>;
 
     struct MacroDefinition
     {

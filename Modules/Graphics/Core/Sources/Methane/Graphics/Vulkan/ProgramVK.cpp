@@ -94,8 +94,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> ProgramVK::GetNativeShaderStageCr
     std::vector<vk::PipelineShaderStageCreateInfo> vk_stage_create_infos;
     for(Shader::Type shader_type : GetShaderTypes())
     {
-        const auto& shader = static_cast<const ShaderVK&>(GetShaderRef(shader_type));
-        vk_stage_create_infos.emplace_back(shader.GetNativeStageCreateInfo());
+        vk_stage_create_infos.emplace_back(GetShaderVK(shader_type).GetNativeStageCreateInfo());
     }
     return vk_stage_create_infos;
 }
@@ -196,17 +195,19 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
         layout_info.descriptors_count += vulkan_binding_settings.resource_count;
         layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
-        layout_info.descriptor_set_offsets.emplace_back(vulkan_binding_settings.descriptor_set_offsets);
+        layout_info.byte_code_maps_for_arguments.emplace_back(vulkan_binding_settings.byte_code_maps);
         layout_info.bindings.emplace_back(
-            vulkan_binding_settings.binding,
+            static_cast<uint32_t>(layout_info.bindings.size()),
             vulkan_binding_settings.descriptor_type,
             vulkan_binding_settings.resource_count,
             ShaderVK::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
         );
     }
 
+#ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
     log_ss << "Program '" << GetName() << "' with descriptor set layouts:" << std::endl;
+#endif
 
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
 
@@ -216,38 +217,41 @@ void ProgramVK::InitializeDescriptorSetLayouts()
         if (layout_info.bindings.empty())
             continue;
 
+        layout_info.index_opt = static_cast<uint32_t>(m_vk_unique_descriptor_set_layouts.size());
+
+#ifdef METHANE_LOGGING_ENABLED
+        log_ss << "  - Descriptor set layout " << *layout_info.index_opt << ":" << std::endl;
+#endif
+        
+        for(const vk::DescriptorSetLayoutBinding& layout_binding : layout_info.bindings)
+        {
+            // Patch shaders SPIRV byte code with remapped binding and descriptor set decorations
+            const ByteCodeMaps& byte_code_maps = layout_info.byte_code_maps_for_arguments.at(layout_binding.binding);
+            for(const ByteCodeMap& byte_code_map : byte_code_maps)
+            {
+                Data::MutableChunk& spirv_shader_bytecode = GetShaderVK(byte_code_map.shader_type).GetMutableByteCode();
+                spirv_shader_bytecode.PatchData(byte_code_map.descriptor_set_offset, *layout_info.index_opt);
+                spirv_shader_bytecode.PatchData(byte_code_map.binding_offset, layout_binding.binding);
+            }
+
+#ifdef METHANE_LOGGING_ENABLED
+            log_ss << "    - Binding "      << *layout_info.index_opt << "." << layout_binding.binding
+                   << " of "                << vk::to_string(layout_binding.descriptorType)
+                   << " descriptors count " << layout_binding.descriptorCount
+                   << " for argument '"     << layout_info.arguments.at(layout_binding.binding).GetName()
+                   << "' on stage "         << vk::to_string(layout_binding.stageFlags)
+                   << ";" << std::endl;
+#endif
+        }
+
         m_vk_unique_descriptor_set_layouts.emplace_back(
             vk_device.createDescriptorSetLayoutUnique(
                 vk::DescriptorSetLayoutCreateInfo({}, layout_info.bindings)
             ));
-
-        layout_info.index_opt = static_cast<uint32_t>(m_vk_unique_descriptor_set_layouts.size() - 1);
-
-        // Patch descriptor set decorations in SPIRV shaders bytecode
-        for(const Shader::ByteCodeOffsets& offsets : layout_info.descriptor_set_offsets)
-        {
-            for(const auto& [shader_type, descriptor_set_offset] : offsets)
-            {
-                GetShaderVK(shader_type).GetMutableByteCode().PatchData(descriptor_set_offset, *layout_info.index_opt);
-            }
-        }
-
-        log_ss << "  - Descriptor set layout " << *layout_info.index_opt << ":" << std::endl;
-        uint32_t layout_binding_index = 0;
-
-        for(const vk::DescriptorSetLayoutBinding& layout_binding : layout_info.bindings)
-        {
-            log_ss << "    - Binding "      << layout_binding.binding
-                   << " descriptors count " << layout_binding.descriptorCount
-                   << " of type "           << vk::to_string(layout_binding.descriptorType)
-                   << " for argument '"     << layout_info.arguments[layout_binding_index].GetName()
-                   << "' on stage "         << vk::to_string(layout_binding.stageFlags);
-            log_ss << ";" << std::endl;
-            layout_binding_index++;
-        }
     }
 
     META_LOG("{}", log_ss.str());
+
     m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
 }
 

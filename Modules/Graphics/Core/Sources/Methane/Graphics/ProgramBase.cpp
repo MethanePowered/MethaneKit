@@ -155,7 +155,11 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
-            m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
+            const auto emplace_result = m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
+            if (!emplace_result.second)
+            {
+                emplace_result.first->second->MergeSettings(*argument_binging_ptr);
+            }
             shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }
     }
@@ -172,7 +176,11 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
             const Argument argument{ shader_type, argument_name };
             auto binding_by_argument_it = m_binding_by_argument.find(argument);
             META_CHECK_ARG_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(), "Resource binding was not initialized for for argument");
-            if (!argument_binding_ptr)
+            if (argument_binding_ptr)
+            {
+                argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);
+            }
+            else
             {
                 argument_binding_ptr = binding_by_argument_it->second;
             }

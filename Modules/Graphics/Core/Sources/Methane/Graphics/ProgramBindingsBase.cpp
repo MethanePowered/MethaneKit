@@ -75,6 +75,15 @@ ProgramBindingsBase::ArgumentBindingBase::ArgumentBindingBase(const ContextBase&
     META_FUNCTION_TASK();
 }
 
+void ProgramBindingsBase::ArgumentBindingBase::MergeSettings(const ArgumentBindingBase& other)
+{
+    META_FUNCTION_TASK();
+    const Settings& settings = other.GetSettings();
+    META_CHECK_ARG_EQUAL(settings.argument, m_settings.argument);
+    META_CHECK_ARG_EQUAL(settings.resource_type, m_settings.resource_type);
+    META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
+}
+
 void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();

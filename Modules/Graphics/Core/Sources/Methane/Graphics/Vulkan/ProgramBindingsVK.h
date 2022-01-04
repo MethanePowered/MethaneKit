@@ -28,6 +28,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <vulkan/vulkan.hpp>
+#include <vector>
 
 namespace Methane::Graphics
 {
@@ -40,11 +41,19 @@ public:
     class ArgumentBindingVK final : public ArgumentBindingBase
     {
     public:
+        struct ByteCodeMap
+        {
+            Shader::Type shader_type;
+            uint32_t     descriptor_set_offset;
+            uint32_t     binding_offset;
+        };
+
+        using ByteCodeMaps = std::vector<ByteCodeMap>;
+
         struct SettingsVK : Settings
         {
-            vk::DescriptorType      descriptor_type;
-            uint32_t                binding;
-            Shader::ByteCodeOffsets descriptor_set_offsets;
+            vk::DescriptorType descriptor_type;
+            ByteCodeMaps       byte_code_maps;
         };
 
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
@@ -56,11 +65,15 @@ public:
         void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
         void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
 
+        // ArgumentBindingBase interface
+        void MergeSettings(const ArgumentBindingBase& other) override;
+
         // ArgumentBinding interface
+        const Settings& GetSettings() const noexcept override { return m_settings_vk; }
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
     private:
-        const SettingsVK         m_settings_vk;
+        SettingsVK               m_settings_vk;
         IResourceVK::LocationsVK m_resource_locations_vk;
         const vk::DescriptorSet* m_vk_descriptor_set_ptr = nullptr;
         uint32_t                 m_vk_binding_value      = 0U;
