@@ -86,7 +86,6 @@ protected:
             mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
                                                                     length:sub_resource.GetDataSize()
                                                                    options:MTLResourceStorageModeShared];
-            [mtl_upload_subresource_buffer setPurgeableState:MTLPurgeableStateVolatile];
         }
         else
         {
