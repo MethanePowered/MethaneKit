@@ -28,6 +28,7 @@ Base implementation of the command list interface.
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Checks.hpp>
@@ -47,6 +48,7 @@ class ProgramBindingsBase;
 class CommandListBase
     : public ObjectBase
     , public virtual CommandList // NOSONAR
+    , public Data::Emitter<ICommandListCallback>
 {
     friend class CommandQueueBase;
 

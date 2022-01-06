@@ -30,6 +30,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/TimeRange.hpp>
+#include <Methane/Data/IEmitter.h>
 
 #include <string>
 #include <functional>
@@ -39,7 +40,17 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 
-struct CommandList : virtual Object // NOSONAR
+struct ICommandListCallback
+{
+    virtual void OnCommandListStateChanged(CommandList&) {};
+    virtual void OnCommandListExecutionCompleted(CommandList&) {};
+    
+    virtual ~ICommandListCallback() = default;
+};
+
+struct CommandList
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<ICommandListCallback> // NOSONAR
 {
     enum class Type
     {

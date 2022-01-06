@@ -246,6 +246,8 @@ void CommandListBase::Complete(uint32_t frame_index)
 
     if (m_completed_callback)
         m_completed_callback(*this);
+    
+    Emit(&ICommandListCallback::OnCommandListExecutionCompleted, *this);
 }
 
 void CommandListBase::CompleteInternal(uint32_t frame_index)
@@ -305,6 +307,8 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 
     m_state = state;
     m_state_change_condition_var.notify_one();
+    
+    Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()

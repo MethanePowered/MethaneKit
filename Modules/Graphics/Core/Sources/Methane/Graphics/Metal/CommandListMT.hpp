@@ -169,7 +169,8 @@ public:
         }
     }
 
-    const MTLCommandEncoderId& GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }
+    const MTLCommandEncoderId&  GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }
+    const id<MTLCommandBuffer>& GetNativeCommandBuffer() const noexcept { return m_mtl_cmd_buffer; }
 
     CommandQueueMT& GetCommandQueueMT() noexcept
     {
