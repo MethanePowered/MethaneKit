@@ -387,7 +387,7 @@ Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_phy
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
     Device::Features device_features = Device::Features::BasicRendering;
     if (vk_device_features.samplerAnisotropy)
-        device_features |= Device::Features::AnysotropicFiltering;
+        device_features |= Device::Features::AnisotropicFiltering;
     return device_features;
 }
 
@@ -442,10 +442,14 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
                    [](const std::string_view& extension_name) { return extension_name.data(); });
 
+    // Enable physical device features:
+    vk::PhysicalDeviceFeatures vk_device_features;
+    vk_device_features.samplerAnisotropy = magic_enum::enum_contains(capabilities.features & Features::AnisotropicFiltering);
+
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
     vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR vk_device_timeline_semaphores_info(true);
-    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names);
+    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
     vk_device_info.setPNext(&vk_device_dynamic_state_info);
     vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
 

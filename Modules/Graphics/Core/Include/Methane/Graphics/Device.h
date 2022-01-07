@@ -56,11 +56,10 @@ struct Device
 {
     enum class Features : uint32_t
     {
-        Unknown                 = 0U,
-        BasicRendering          = 1U << 0U,
-        TextureAndSamplerArrays = 1U << 1U,
-        AnysotropicFiltering    = 1U << 2U,
-        All                     = ~0U,
+        Unknown              = 0U,
+        BasicRendering       = 1U << 0U,
+        AnisotropicFiltering = 1U << 2U,
+        All                  = ~0U,
     };
 
     struct Capabilities
