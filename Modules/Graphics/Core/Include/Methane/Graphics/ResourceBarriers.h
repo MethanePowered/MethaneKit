@@ -40,14 +40,14 @@ struct Resource;
 enum class ResourceState
 {
     Common,
-    VertexAndConstantBuffer,
+    VertexBuffer,
+    ConstantBuffer,
     IndexBuffer,
     RenderTarget,
     UnorderedAccess,
     DepthWrite,
     DepthRead,
-    NonPixelShaderResource,
-    PixelShaderResource,
+    ShaderResource,
     StreamOut,
     IndirectArgument,
     CopyDest,

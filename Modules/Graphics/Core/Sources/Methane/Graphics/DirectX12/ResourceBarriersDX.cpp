@@ -30,33 +30,36 @@ DirectX 12 specialization of the resource barriers.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
     {
-    case ResourceState::Common:                    return D3D12_RESOURCE_STATE_COMMON;
-    case ResourceState::VertexAndConstantBuffer:   return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    case ResourceState::IndexBuffer:               return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    case ResourceState::RenderTarget:              return D3D12_RESOURCE_STATE_RENDER_TARGET;
-    case ResourceState::UnorderedAccess:           return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    case ResourceState::DepthWrite:                return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-    case ResourceState::DepthRead:                 return D3D12_RESOURCE_STATE_DEPTH_READ;
-    case ResourceState::NonPixelShaderResource:    return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    case ResourceState::PixelShaderResource:       return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    case ResourceState::StreamOut:                 return D3D12_RESOURCE_STATE_STREAM_OUT;
-    case ResourceState::IndirectArgument:          return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    case ResourceState::CopyDest:                  return D3D12_RESOURCE_STATE_COPY_DEST;
-    case ResourceState::CopySource:                return D3D12_RESOURCE_STATE_COPY_SOURCE;
-    case ResourceState::ResolveDest:               return D3D12_RESOURCE_STATE_RESOLVE_DEST;
-    case ResourceState::ResolveSource:             return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-    case ResourceState::GenericRead:               return D3D12_RESOURCE_STATE_GENERIC_READ;
-    case ResourceState::Present:                   return D3D12_RESOURCE_STATE_PRESENT;
-    case ResourceState::Predication:               return D3D12_RESOURCE_STATE_PREDICATION;
-    default:                               META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
+    case ResourceState::Common:                 return D3D12_RESOURCE_STATE_COMMON;
+    case ResourceState::VertexBuffer:           return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+    case ResourceState::ConstantBuffer:         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+    case ResourceState::IndexBuffer:            return D3D12_RESOURCE_STATE_INDEX_BUFFER;
+    case ResourceState::RenderTarget:           return D3D12_RESOURCE_STATE_RENDER_TARGET;
+    case ResourceState::UnorderedAccess:        return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    case ResourceState::DepthWrite:             return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+    case ResourceState::DepthRead:              return D3D12_RESOURCE_STATE_DEPTH_READ;
+    case ResourceState::ShaderResource:         return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |
+                                                       D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    case ResourceState::StreamOut:              return D3D12_RESOURCE_STATE_STREAM_OUT;
+    case ResourceState::IndirectArgument:       return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+    case ResourceState::CopyDest:               return D3D12_RESOURCE_STATE_COPY_DEST;
+    case ResourceState::CopySource:             return D3D12_RESOURCE_STATE_COPY_SOURCE;
+    case ResourceState::ResolveDest:            return D3D12_RESOURCE_STATE_RESOLVE_DEST;
+    case ResourceState::ResolveSource:          return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
+    case ResourceState::GenericRead:            return D3D12_RESOURCE_STATE_GENERIC_READ;
+    case ResourceState::Present:                return D3D12_RESOURCE_STATE_PRESENT;
+    case ResourceState::Predication:            return D3D12_RESOURCE_STATE_PREDICATION;
+    default: META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
     }
 }
 
+[[nodiscard]]
 static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
@@ -81,15 +84,14 @@ static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier& re
     return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
 }
 
+[[nodiscard]]
 static D3D12_RESOURCE_BARRIER_TYPE GetNativeBarrierType(ResourceBarrier::Type barrier_type)
 {
     META_FUNCTION_TASK();
     switch (barrier_type) // NOSONAR
     {
-    case ResourceBarrier::Type::Transition:
-        return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    default:
-        META_UNEXPECTED_ARG_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
+    case ResourceBarrier::Type::Transition: return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    default: META_UNEXPECTED_ARG_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
     }
 }
 

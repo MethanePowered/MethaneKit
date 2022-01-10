@@ -41,22 +41,6 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-static Resource::State GetBoundResourceState(const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& binding_settings)
-{
-    META_FUNCTION_TASK();
-    if (binding_settings.argument.IsConstant() && binding_settings.resource_type == Resource::Type::Buffer)
-        return Resource::State::VertexAndConstantBuffer;
-
-    const Shader::Type shader_type = binding_settings.argument.GetShaderType();
-    switch(shader_type)
-    {
-    case Shader::Type::All:
-    case Shader::Type::Vertex:  return Resource::State::NonPixelShaderResource;
-    case Shader::Type::Pixel:   return Resource::State::PixelShaderResource;
-    default: META_UNEXPECTED_ARG_RETURN(shader_type, Resource::State::Common);
-    }
-}
-
 DescriptorsCountByAccess::DescriptorsCountByAccess()
 {
     std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
@@ -493,7 +477,9 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
 
         AddResourceState(binding_settings.argument, {
             std::dynamic_pointer_cast<ResourceBase>(resource_location_dx.GetResourcePtr()),
-            GetBoundResourceState(binding_settings)
+            binding_settings.argument.IsConstant() && binding_settings.resource_type == Resource::Type::Buffer
+                ? Resource::State::ConstantBuffer
+                : Resource::State::ShaderResource
         });
     }
 }

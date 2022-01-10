@@ -166,7 +166,7 @@ bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
 
     auto& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
     if (const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && buffer_set_setup_barriers_ptr)
+        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
