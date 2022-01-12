@@ -50,6 +50,7 @@ private:
     // IResourceCallback
     void OnResourceReleased(Resource& resource) override;
 
+    void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
 
     std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;

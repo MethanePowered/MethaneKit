@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2020-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -38,7 +38,66 @@ ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
     : ResourceBarriers(barriers)
 {
     META_FUNCTION_TASK();
+    for(const ResourceBarrier barrier : barriers)
+    {
+        AddNativeResourceBarrier(barrier.GetId(), barrier.GetStateChange());
+    }
 }
 
+ResourceBarriers::AddResult ResourceBarriersVK::AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
+{
+    META_FUNCTION_TASK();
+    const auto lock_guard  = ResourceBarriers::Lock();
+    const AddResult result = ResourceBarriers::AddStateChange(id, state_change);
+
+    switch (result)
+    {
+    case AddResult::Added:    AddNativeResourceBarrier(id, state_change); break;
+    case AddResult::Updated:  UpdateNativeResourceBarrier(id, state_change); break;
+    case AddResult::Existing: break;
+    default: META_UNEXPECTED_ARG_RETURN(result, result);
+    }
+
+    return result;
+}
+
+bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
+{
+    META_FUNCTION_TASK();
+    const auto lock_guard = ResourceBarriers::Lock();
+    if (!ResourceBarriers::Remove(id))
+        return false;
+
+    // TODO: Remove native memory barriers
+
+    id.GetResource().Disconnect(*this);
+    return true;
+}
+
+void ResourceBarriersVK::OnResourceReleased(Resource& resource)
+{
+    META_FUNCTION_TASK();
+    RemoveTransition(resource);
+}
+
+void ResourceBarriersVK::AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(state_change);
+
+    id.GetResource().Connect(*this);
+
+    // TODO: Add native memory barrier
+}
+
+void ResourceBarriersVK::UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(id);
+    META_UNUSED(state_change);
+
+    META_FUNCTION_NOT_IMPLEMENTED();
+    // TODO: Update native memory barrier
+}
 
 } // namespace Methane::Graphics

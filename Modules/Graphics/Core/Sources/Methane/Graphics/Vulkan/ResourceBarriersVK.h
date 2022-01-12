@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,16 +24,37 @@ Vulkan implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/ResourceBarriers.h>
+#include <Methane/Graphics/Resource.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-class ResourceBarriersVK : public ResourceBarriers
+class ResourceBarriersVK
+    : public ResourceBarriers
+    , private Data::Receiver<IResourceCallback>
 {
 public:
     explicit ResourceBarriersVK(const Set& barriers);
+
+    // ResourceBarriers overrides
+    AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change) override;
+    bool Remove(const ResourceBarrier::Id& id) override;
+
+    const std::vector<vk::ImageMemoryBarrier>&  GetNativeImageMemoryBarriers() const noexcept  { return m_vk_image_memory_barriers; }
+    const std::vector<vk::BufferMemoryBarrier>& GetNativeBufferMemoryBarriers() const noexcept { return m_vk_buffer_memory_barriers; }
+
+private:
+    // IResourceCallback
+    void OnResourceReleased(Resource& resource) override;
+
+    void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+
+    std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
+    std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
 };
 
 } // namespace Methane::Graphics
