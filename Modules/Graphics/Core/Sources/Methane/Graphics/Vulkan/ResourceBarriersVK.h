@@ -50,11 +50,16 @@ private:
     // IResourceCallback
     void OnResourceReleased(Resource& resource) override;
 
-    void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
-    void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    void AddResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    void AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
+    void AddTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
 
-    std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
+    void UpdateResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    void UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
+    void UpdateTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
+
     std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
+    std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
 };
 
 } // namespace Methane::Graphics

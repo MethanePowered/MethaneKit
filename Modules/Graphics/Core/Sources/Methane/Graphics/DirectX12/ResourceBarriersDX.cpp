@@ -41,6 +41,7 @@ static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state
     case ResourceState::ConstantBuffer:   return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
     case ResourceState::IndexBuffer:      return D3D12_RESOURCE_STATE_INDEX_BUFFER;
     case ResourceState::RenderTarget:     return D3D12_RESOURCE_STATE_RENDER_TARGET;
+    case ResourceState::InputAttachment:  return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     case ResourceState::UnorderedAccess:  return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     case ResourceState::DepthWrite:       return D3D12_RESOURCE_STATE_DEPTH_WRITE;
     case ResourceState::DepthRead:        return D3D12_RESOURCE_STATE_DEPTH_READ;
@@ -54,7 +55,6 @@ static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state
     case ResourceState::ResolveSource:    return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
     case ResourceState::GenericRead:      return D3D12_RESOURCE_STATE_GENERIC_READ;
     case ResourceState::Present:          return D3D12_RESOURCE_STATE_PRESENT;
-    case ResourceState::Predication:      return D3D12_RESOURCE_STATE_PREDICATION;
     default: META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
     }
 }

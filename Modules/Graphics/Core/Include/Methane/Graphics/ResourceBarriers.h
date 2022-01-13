@@ -44,6 +44,7 @@ enum class ResourceState
     ConstantBuffer,
     IndexBuffer,
     RenderTarget,
+    InputAttachment,
     UnorderedAccess,
     DepthWrite,
     DepthRead,
@@ -56,7 +57,6 @@ enum class ResourceState
     ResolveSource,
     GenericRead,
     Present,
-    Predication,
 };
 
 class ResourceBarrier
