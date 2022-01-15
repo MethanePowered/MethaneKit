@@ -28,6 +28,7 @@ Vulkan base template implementation of the command list interface.
 #include "DeviceVK.h"
 #include "ContextVK.h"
 #include "ProgramBindingsVK.h"
+#include "ResourceBarriersVK.h"
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/CommandListBase.h>
@@ -108,7 +109,15 @@ public:
                  CommandListBase::GetName(),
                  static_cast<std::string>(resource_barriers));
 
-        // TODO: set Vulkan resource barriers
+        const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
+        m_vk_unique_command_buffer.get().pipelineBarrier(
+            vk::PipelineStageFlagBits::eTopOfPipe,
+            vk::PipelineStageFlagBits::eTopOfPipe,
+            vk::DependencyFlags{},
+            {},
+            vulkan_resource_barriers.GetNativeBufferMemoryBarriers(),
+            vulkan_resource_barriers.GetNativeImageMemoryBarriers()
+        );
     }
 
     // CommandList interface

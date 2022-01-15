@@ -124,7 +124,14 @@ bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
     if (!ResourceBarriers::Remove(id))
         return false;
 
-    // TODO: Remove native memory barriers
+    Resource& resource = id.GetResource();
+    const Resource::Type resource_type = resource.GetResourceType();
+    switch (resource_type)
+    {
+    case Resource::Type::Buffer:  RemoveBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource).GetNativeResource()); break;
+    case Resource::Type::Texture: RemoveImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage()); break;
+    default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
+    }
 
     id.GetResource().Disconnect(*this);
     return true;
@@ -146,7 +153,9 @@ void ResourceBarriersVK::AddResourceBarrier(const ResourceBarrier::Id& id, const
     switch (resource_type)
     {
     case Resource::Type::Buffer:  AddBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource).GetNativeResource(), state_change); break;
-    case Resource::Type::Texture: AddTextureMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(), state_change); break;
+    case Resource::Type::Texture: AddImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(),
+                                                        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor), // TODO: get real data from texture
+                                                        state_change); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 }
@@ -163,7 +172,8 @@ void ResourceBarriersVK::AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, con
     );
 }
 
-void ResourceBarriersVK::AddTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change)
+void ResourceBarriersVK::AddImageMemoryBarrier(const vk::Image& vk_image, const vk::ImageSubresourceRange& vk_sub_resource_range,
+                                               const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     m_vk_image_memory_barriers.emplace_back(
@@ -173,7 +183,8 @@ void ResourceBarriersVK::AddTextureMemoryBarrier(const vk::Image& vk_image, cons
         ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()),
         0U,
         0U,
-        vk_image
+        vk_image,
+        vk_sub_resource_range
     );
 }
 
@@ -185,7 +196,7 @@ void ResourceBarriersVK::UpdateResourceBarrier(const ResourceBarrier::Id& id, co
     switch (resource_type)
     {
     case Resource::Type::Buffer:  UpdateBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource).GetNativeResource(), state_change); break;
-    case Resource::Type::Texture: UpdateTextureMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(), state_change); break;
+    case Resource::Type::Texture: UpdateImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(), state_change); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 }
@@ -193,17 +204,45 @@ void ResourceBarriersVK::UpdateResourceBarrier(const ResourceBarrier::Id& id, co
 void ResourceBarriersVK::UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(vk_buffer);
-    META_UNUSED(state_change);
-    META_FUNCTION_NOT_IMPLEMENTED();
+    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_buffer_memory_barriers.begin(), m_vk_buffer_memory_barriers.end(),
+                                                          [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
+                                                          { return vk_buffer_barrier.buffer == vk_buffer; });
+    META_CHECK_ARG_TRUE(vk_buffer_memory_barrier_it != m_vk_buffer_memory_barriers.end());
+    vk_buffer_memory_barrier_it->setSrcAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()));
+    vk_buffer_memory_barrier_it->setDstAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()));
 }
 
-void ResourceBarriersVK::UpdateTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change)
+void ResourceBarriersVK::UpdateImageMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(vk_image);
-    META_UNUSED(state_change);
-    META_FUNCTION_NOT_IMPLEMENTED();
+    const auto vk_image_memory_barrier_it = std::find_if(m_vk_image_memory_barriers.begin(), m_vk_image_memory_barriers.end(),
+                                                         [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
+                                                         { return vk_image_barrier.image == vk_image; });
+    META_CHECK_ARG_TRUE(vk_image_memory_barrier_it != m_vk_image_memory_barriers.end());
+    vk_image_memory_barrier_it->setSrcAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()));
+    vk_image_memory_barrier_it->setDstAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()));
+    vk_image_memory_barrier_it->setOldLayout(ConvertResourceStateToVulkanImageLayout(state_change.GetStateBefore()));
+    vk_image_memory_barrier_it->setNewLayout(ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()));
+}
+
+void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer)
+{
+    META_FUNCTION_TASK();
+    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_buffer_memory_barriers.begin(), m_vk_buffer_memory_barriers.end(),
+                                                          [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
+                                                          { return vk_buffer_barrier.buffer == vk_buffer; });
+    META_CHECK_ARG_TRUE(vk_buffer_memory_barrier_it != m_vk_buffer_memory_barriers.end());
+    m_vk_buffer_memory_barriers.erase(vk_buffer_memory_barrier_it);
+}
+
+void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image)
+{
+    META_FUNCTION_TASK();
+    const auto vk_image_memory_barrier_it = std::find_if(m_vk_image_memory_barriers.begin(), m_vk_image_memory_barriers.end(),
+                                                         [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
+                                                         { return vk_image_barrier.image == vk_image; });
+    META_CHECK_ARG_TRUE(vk_image_memory_barrier_it != m_vk_image_memory_barriers.end());
+    m_vk_image_memory_barriers.erase(vk_image_memory_barrier_it);
 }
 
 } // namespace Methane::Graphics

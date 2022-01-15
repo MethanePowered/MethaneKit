@@ -188,9 +188,22 @@ protected:
     BlitCommandListVK& PrepareResourceUpload(CommandQueue* sync_cmd_queue)
     {
         META_FUNCTION_TASK();
-        META_UNUSED(sync_cmd_queue);
         auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(ResourceBase::GetContext().GetUploadCommandKit().GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
+
+        if (SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
+        {
+            CommandList& sync_cmd_list = sync_cmd_queue
+                                       ? GetContext().GetDefaultCommandKit(*sync_cmd_queue).GetListForEncoding()
+                                       : upload_cmd_list;
+            sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
+        }
+
+        if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
+        {
+            upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
+        }
+
         return upload_cmd_list;
     }
 
@@ -199,6 +212,8 @@ private:
     vk::UniqueDeviceMemory  m_vk_unique_device_memory;
     ResourceStorageType     m_vk_resource;
     ViewStorageType         m_vk_view;
+    Ptr<Resource::Barriers> m_upload_sync_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

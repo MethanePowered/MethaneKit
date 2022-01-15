@@ -52,11 +52,15 @@ private:
 
     void AddResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
-    void AddTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
+    void AddImageMemoryBarrier(const vk::Image& vk_image, const vk::ImageSubresourceRange& vk_sub_resource_range,
+                               const ResourceBarrier::StateChange& state_change);
 
     void UpdateResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
-    void UpdateTextureMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
+    void UpdateImageMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
+
+    void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer);
+    void RemoveImageMemoryBarrier(const vk::Image& vk_image);
 
     std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
     std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
