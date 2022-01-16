@@ -23,6 +23,7 @@ Base implementation of the program bindings interface.
 
 #include "ProgramBindingsBase.h"
 #include "ProgramBase.h"
+#include "ResourceBase.h"
 #include "CoreFormatters.hpp"
 
 #include <Methane/Checks.hpp>
@@ -52,6 +53,13 @@ struct fmt::formatter<Methane::Graphics::Resource::Location>
 
 namespace Methane::Graphics
 {
+
+ProgramBindingsBase::ResourceAndState::ResourceAndState(Ptr<ResourceBase> resource_ptr, Resource::State state)
+    : resource_ptr(std::move(resource_ptr))
+    , state(state)
+{
+    META_FUNCTION_TASK();
+}
 
 ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const Program::Argument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
@@ -181,6 +189,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_frame_index(frame_index.value_or(other_program_bindings.m_frame_index))
+    , m_transition_resource_states_by_access(other_program_bindings.m_transition_resource_states_by_access)
 {
     META_FUNCTION_TASK();
     InitializeArgumentBindings();
@@ -200,10 +209,42 @@ Program& ProgramBindingsBase::GetProgram()
     return *m_program_ptr;
 }
 
-void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&)
+void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding,
+                                                                           const Resource::Locations& old_resource_locations,
+                                                                           const Resource::Locations& new_resource_locations)
 {
     META_FUNCTION_TASK();
-    // Implementation is API specific, not handled by default
+    if (!m_resource_transition_barriers_ptr)
+        return;
+
+    // Find resources that are not used anymore for resource binding
+    std::set<Resource*> processed_resources;
+    for(const Resource::Location& old_resource_location : old_resource_locations)
+    {
+        if (old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
+            processed_resources.count(old_resource_location.GetResourcePtr().get()))
+            continue;
+
+        // Check if resource is still used in new resource locations
+        if (std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
+                         [&old_resource_location](const Resource::Location& new_resource_location)
+                         { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
+                         ) != new_resource_locations.end())
+        {
+            processed_resources.insert(old_resource_location.GetResourcePtr().get());
+            continue;
+        }
+
+        // Remove unused resources from transition barriers applied for program bindings:
+        m_resource_transition_barriers_ptr->RemoveTransition(old_resource_location.GetResource());
+        RemoveTransitionResourceStates(argument_binding, old_resource_location.GetResource());
+
+    }
+
+    for(const Resource::Location& new_resource_location : new_resource_locations)
+    {
+        AddTransitionResourceState(argument_binding, new_resource_location.GetResource());
+    }
 }
 
 void ProgramBindingsBase::InitializeArgumentBindings()
@@ -246,12 +287,14 @@ ProgramBindings::ResourceLocationsByArgument ProgramBindingsBase::ReplaceResourc
     return resource_locations_by_argument;
 }
 
-void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const
+void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
 {
     META_FUNCTION_TASK();
     for (const auto& [program_argument, resource_locations] : resource_locations_by_argument)
     {
-        Get(program_argument).SetResourceLocations(resource_locations);
+        ProgramBindings::ArgumentBinding& argument_binding = Get(program_argument);
+        argument_binding.SetResourceLocations(resource_locations);
+        AddTransitionResourceStates(argument_binding);
     }
 }
 
@@ -309,6 +352,89 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
     }
+}
+
+void ProgramBindingsBase::ClearTransitionResourceStates()
+{
+    META_FUNCTION_TASK();
+    for(ResourceStates& resource_states : m_transition_resource_states_by_access)
+    {
+        resource_states.clear();
+    }
+}
+
+void ProgramBindingsBase::RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource)
+{
+    META_FUNCTION_TASK();
+    if (resource.GetResourceType() == Resource::Type::Sampler)
+        return;
+
+    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
+    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
+    const auto transition_resource_state_it = std::find_if(transition_resource_states.begin(), transition_resource_states.end(),
+                                                           [&resource](const ResourceAndState& resource_state)
+                                                           { return resource_state.resource_ptr.get() == &resource; });
+    META_CHECK_ARG_TRUE(transition_resource_state_it != transition_resource_states.end());
+    transition_resource_states.erase(transition_resource_state_it);
+}
+
+void ProgramBindingsBase::AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource)
+{
+    META_FUNCTION_TASK();
+    if (resource.GetResourceType() == Resource::Type::Sampler)
+        return;
+
+    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
+    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
+    transition_resource_states.emplace_back(
+        std::dynamic_pointer_cast<ResourceBase>(resource.GetPtr()),
+        argument_binding_settings.argument.IsConstant() && argument_binding_settings.resource_type == Resource::Type::Buffer
+            ? Resource::State::ConstantBuffer
+            : Resource::State::ShaderResource
+    );
+}
+
+void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding)
+{
+    META_FUNCTION_TASK();
+    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
+    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
+
+    for(const ResourceLocation& resource_location : argument_binding.GetResourceLocations())
+    {
+        if (!resource_location.GetResourcePtr() ||
+            resource_location.GetResourcePtr()->GetResourceType() == Resource::Type::Sampler)
+            continue;
+
+        transition_resource_states.emplace_back(
+            std::dynamic_pointer_cast<ResourceBase>(resource_location.GetResourcePtr()),
+            argument_binding_settings.argument.IsConstant() && argument_binding_settings.resource_type == Resource::Type::Buffer
+                ? Resource::State::ConstantBuffer
+                : Resource::State::ShaderResource
+        );
+    }
+}
+
+bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const
+{
+    META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+
+    bool resource_states_changed = false;
+    for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
+    {
+        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
+            continue;
+
+        const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];
+        for(const ResourceAndState& resource_state : resource_states)
+        {
+            META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
+            resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
+        }
+    }
+
+    return resource_states_changed;
 }
 
 } // namespace Methane::Graphics

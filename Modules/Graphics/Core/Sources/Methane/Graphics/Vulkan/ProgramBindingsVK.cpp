@@ -236,7 +236,9 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBind
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
+    using namespace magic_enum::bitwise_operators;
 
+    Program::ArgumentAccessor::Type apply_access_mask = Program::ArgumentAccessor::Type::Mutable;
     uint32_t first_descriptor_set_layout_index = 0U;
     if (apply_behavior == ApplyBehavior::ConstantOnce && p_applied_program_bindings)
     {
@@ -245,8 +247,18 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBind
 
         first_descriptor_set_layout_index = static_cast<uint32_t>(m_descriptor_sets.size() - 1);
     }
+    else
+    {
+        apply_access_mask |= Program::ArgumentAccessor::Type::Constant;
+        apply_access_mask |= Program::ArgumentAccessor::Type::FrameConstant;
+    }
 
-    // TODO Set resource transition barriers before applying resource bindings
+    // Set resource transition barriers before applying resource bindings
+    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers))
+    {
+        ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask);
+    }
+
     const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBuffer();
     const vk::PipelineBindPoint vk_pipeline_bind_point = command_list_vk.GetNativePipelineBindPoint();
 

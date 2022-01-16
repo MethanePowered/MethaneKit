@@ -111,10 +111,6 @@ public:
 
     void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
-protected:
-    // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) override;
-
 private:
     struct RootParameterBinding
     {
@@ -124,20 +120,12 @@ private:
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0U;
     };
 
-    struct ResourceState
-    {
-        Ptr<ResourceBase> resource_ptr;
-        Resource::State   state;
-    };
-
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeapDX::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void ReserveDescriptorHeapRanges();
     void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
-    void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
-    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
     void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
@@ -147,11 +135,6 @@ private:
     using RootParameterBindings = std::vector<RootParameterBinding>;
     using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
     RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
-
-    using ResourceStates = std::vector<ResourceState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
-    ResourceStatesByAccess          m_resource_states_by_access;
-    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
 
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeapDX::Reservation>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
     DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;

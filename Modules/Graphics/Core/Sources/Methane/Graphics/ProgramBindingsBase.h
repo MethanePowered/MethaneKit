@@ -38,6 +38,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 class CommandListBase;
+class ResourceBase;
 
 class ProgramBindingsBase
     : public ProgramBindings
@@ -111,15 +112,45 @@ protected:
     void InitializeArgumentBindings();
     ResourceLocationsByArgument ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
                                                          const ResourceLocationsByArgument& replace_resource_locations);
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
+    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
 
+    void ClearTransitionResourceStates();
+    void RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource);
+    void AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource);
+    void AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding);
+
+    template<typename CommandListType>
+    void ApplyResourceTransitionBarriers(CommandListType& command_list, Program::ArgumentAccessor::Type apply_access_mask) const
+    {
+        if (ApplyResourceStates(apply_access_mask) &&
+            m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
+        {
+            command_list.SetResourceBarriers(*m_resource_transition_barriers_ptr);
+        }
+    }
+
 private:
+    struct ResourceAndState
+    {
+        Ptr<ResourceBase> resource_ptr;
+        Resource::State   state;
+
+        ResourceAndState(Ptr<ResourceBase> resource_ptr, Resource::State);
+    };
+
+    using ResourceStates = std::vector<ResourceAndState>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
+
     const Ptr<Program>              m_program_ptr;
     Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
     ArgumentBindings                m_binding_by_argument;
+    ResourceStatesByAccess          m_transition_resource_states_by_access;
+    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

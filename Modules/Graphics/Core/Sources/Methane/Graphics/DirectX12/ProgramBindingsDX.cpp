@@ -269,47 +269,15 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     }
 
     // Set resource transition barriers before applying resource bindings
-    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
-    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers) &&
-        ApplyResourceStates(apply_access_mask) &&
-        m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
+    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers))
     {
-        command_list_dx.SetResourceBarriers(*m_resource_transition_barriers_ptr);
+        ApplyResourceTransitionBarriers(command_list_dx, apply_access_mask);
     }
 
     // Apply root parameter bindings after resource barriers
+    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
     ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, p_applied_program_bindings,
                                magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly));
-}
-
-// ProgramBindings::IArgumentBindingCallback
-void ProgramBindingsDX::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations)
-{
-    META_FUNCTION_TASK();
-    if (!m_resource_transition_barriers_ptr)
-        return;
-
-    // Find resources that are not used anymore for resource binding
-    std::set<Resource*> processed_resources;
-    for(const Resource::Location& old_resource_location : old_resource_locations)
-    {
-        if (old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
-            processed_resources.count(old_resource_location.GetResourcePtr().get()))
-            continue;
-
-        // Check if resource is still used in new resource locations
-        if (std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
-                [&old_resource_location](const Resource::Location& new_resource_location)
-                { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
-            ) != new_resource_locations.end())
-        {
-            processed_resources.insert(old_resource_location.GetResourcePtr().get());
-            continue;
-        }
-
-        // Remove unused resources from transition barriers applied for program bindings:
-        m_resource_transition_barriers_ptr->RemoveTransition(old_resource_location.GetResource());
-    }
 }
 
 template<typename FuncType>
@@ -413,23 +381,12 @@ void ProgramBindingsDX::AddRootParameterBinding(const Program::ArgumentAccessor&
     m_root_parameter_bindings_by_access[argument_accessor.GetAccessorIndex()].emplace_back(root_parameter_binding);
 }
 
-void ProgramBindingsDX::AddResourceState(const Program::ArgumentAccessor& argument_accessor, ResourceState resource_state)
-{
-    META_FUNCTION_TASK();
-    m_resource_states_by_access[argument_accessor.GetAccessorIndex()].emplace_back(resource_state);
-}
-
 void ProgramBindingsDX::UpdateRootParameterBindings()
 {
     META_FUNCTION_TASK();
     for(RootParameterBindings& root_parameter_bindings : m_root_parameter_bindings_by_access)
     {
         root_parameter_bindings.clear();
-    }
-
-    for(ResourceStates& resource_states : m_resource_states_by_access)
-    {
-        resource_states.clear();
     }
 
     ForEachArgumentBinding(std::bind(&ProgramBindingsDX::AddRootParameterBindingsForArgument, this, std::placeholders::_1, std::placeholders::_2));
@@ -470,40 +427,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
                 resource_location_dx.GetNativeGpuAddress()
             });
         }
-
-        // Samplers do not have underlying resource and do not need state changing
-        if (binding_settings.resource_type == Resource::Type::Sampler)
-            continue;
-
-        AddResourceState(binding_settings.argument, {
-            std::dynamic_pointer_cast<ResourceBase>(resource_location_dx.GetResourcePtr()),
-            binding_settings.argument.IsConstant() && binding_settings.resource_type == Resource::Type::Buffer
-                ? Resource::State::ConstantBuffer
-                : Resource::State::ShaderResource
-        });
     }
-}
-
-bool ProgramBindingsDX::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const
-{
-    META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    bool resource_states_changed = false;
-    for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
-    {
-        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
-            continue;
-
-        const ResourceStates& resource_states = m_resource_states_by_access[magic_enum::enum_index(access_type).value()];
-        for(const ResourceState& resource_state : resource_states)
-        {
-            META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
-            resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
-        }
-    }
-
-    return resource_states_changed;
 }
 
 void ProgramBindingsDX::ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
