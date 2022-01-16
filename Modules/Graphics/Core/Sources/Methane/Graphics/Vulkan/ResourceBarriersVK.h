@@ -32,6 +32,9 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+class BufferVK;
+struct ITextureVK;
+
 class ResourceBarriersVK
     : public ResourceBarriers
     , private Data::Receiver<IResourceCallback>
@@ -45,15 +48,17 @@ public:
 
     const std::vector<vk::ImageMemoryBarrier>&  GetNativeImageMemoryBarriers() const noexcept  { return m_vk_image_memory_barriers; }
     const std::vector<vk::BufferMemoryBarrier>& GetNativeBufferMemoryBarriers() const noexcept { return m_vk_buffer_memory_barriers; }
+    const std::vector<vk::MemoryBarrier>&       GetNativeMemoryBarriers() const noexcept       { return m_vk_memory_barriers; }
+    vk::PipelineStageFlags                      GetNativeSrcStageMask() const noexcept         { return m_vk_src_stage_mask; }
+    vk::PipelineStageFlags                      GetNativeDstStageMask() const noexcept         { return m_vk_dst_stage_mask; }
 
 private:
     // IResourceCallback
     void OnResourceReleased(Resource& resource) override;
 
     void AddResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
-    void AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
-    void AddImageMemoryBarrier(const vk::Image& vk_image, const vk::ImageSubresourceRange& vk_sub_resource_range,
-                               const ResourceBarrier::StateChange& state_change);
+    void AddBufferMemoryBarrier(const BufferVK& vk_buffer, const ResourceBarrier::StateChange& state_change);
+    void AddImageMemoryBarrier(const ITextureVK& vk_texture, const ResourceBarrier::StateChange& state_change);
 
     void UpdateResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
@@ -62,8 +67,13 @@ private:
     void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer);
     void RemoveImageMemoryBarrier(const vk::Image& vk_image);
 
+    void UpdateStageMasks();
+
     std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
     std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
+    std::vector<vk::MemoryBarrier>       m_vk_memory_barriers;
+    vk::PipelineStageFlags               m_vk_src_stage_mask {};
+    vk::PipelineStageFlags               m_vk_dst_stage_mask {};
 };
 
 } // namespace Methane::Graphics

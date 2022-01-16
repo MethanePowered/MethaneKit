@@ -40,6 +40,7 @@ struct ITextureVK
     static vk::ImageViewType DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
 
     [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
+    [[nodiscard]] virtual vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept = 0;
 
     virtual ~ITextureVK() = default;
 };
@@ -55,6 +56,7 @@ public:
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
     void ResetNativeImage();
 
@@ -80,6 +82,7 @@ public:
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
 private:
     const RenderContextVK& m_render_context;
@@ -98,6 +101,7 @@ public:
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
 private:
     const RenderContextVK& m_render_context;
@@ -115,6 +119,7 @@ public:
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
 private:
     void GenerateMipLevels();

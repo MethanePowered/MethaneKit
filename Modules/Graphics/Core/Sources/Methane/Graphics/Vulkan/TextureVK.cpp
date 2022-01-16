@@ -137,6 +137,16 @@ void FrameBufferTextureVK::SetData(const SubResources&, CommandQueue*)
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("frame-buffer textures do not support data setup");
 }
 
+vk::ImageSubresourceRange FrameBufferTextureVK::GetNativeSubresourceRange() const noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::ImageSubresourceRange(
+        vk::ImageAspectFlagBits::eColor,
+        0U, 1U,
+        0U, 1U
+    );
+}
+
 void FrameBufferTextureVK::ResetNativeImage()
 {
     META_FUNCTION_TASK();
@@ -158,6 +168,16 @@ void DepthStencilTextureVK::SetData(const SubResources&, CommandQueue*)
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth-stencil textures do not support data setup");
 }
 
+vk::ImageSubresourceRange DepthStencilTextureVK::GetNativeSubresourceRange() const noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::ImageSubresourceRange(
+        vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil,
+        0U, 1U,
+        0U, 1U
+    );
+}
+
 RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings)
     : ResourceVK(render_context, settings, {}) // TODO: initialize native resource
     , m_render_context(render_context)
@@ -168,6 +188,17 @@ RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_conte
 void RenderTargetTextureVK::SetData(const SubResources&, CommandQueue*)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("render-target textures do not support data setup");
+}
+
+vk::ImageSubresourceRange RenderTargetTextureVK::GetNativeSubresourceRange() const noexcept
+{
+    META_FUNCTION_TASK();
+    const SubResource::Count& subresource_count = GetSubresourceCount();
+    return vk::ImageSubresourceRange(
+        vk::ImageAspectFlagBits::eColor, // ?
+        0U, subresource_count.GetMipLevelsCount(),
+        0U, subresource_count.GetArraySize()
+    );
 }
 
 ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings)
@@ -258,6 +289,17 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sy
 void ImageTextureVK::GenerateMipLevels()
 {
     META_FUNCTION_TASK();
+}
+
+vk::ImageSubresourceRange ImageTextureVK::GetNativeSubresourceRange() const noexcept
+{
+    META_FUNCTION_TASK();
+    const SubResource::Count& subresource_count = GetSubresourceCount();
+    return vk::ImageSubresourceRange(
+        vk::ImageAspectFlagBits::eColor,
+        0U, subresource_count.GetMipLevelsCount(),
+        0U, subresource_count.GetArraySize()
+    );
 }
 
 } // namespace Methane::Graphics

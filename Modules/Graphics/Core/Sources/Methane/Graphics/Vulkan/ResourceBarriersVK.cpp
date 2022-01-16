@@ -30,6 +30,7 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+[[nodiscard]]
 static vk::AccessFlags ConvertResourceStateToVulkanAccessFlags(ResourceState resource_state)
 {
     META_FUNCTION_TASK();
@@ -63,6 +64,7 @@ static vk::AccessFlags ConvertResourceStateToVulkanAccessFlags(ResourceState res
     }
 }
 
+[[nodiscard]]
 static vk::ImageLayout ConvertResourceStateToVulkanImageLayout(ResourceState resource_state)
 {
     META_FUNCTION_TASK();
@@ -81,6 +83,47 @@ static vk::ImageLayout ConvertResourceStateToVulkanImageLayout(ResourceState res
     case ResourceState::ResolveSource:   return vk::ImageLayout::eTransferSrcOptimal;
     case ResourceState::Present:         return vk::ImageLayout::ePresentSrcKHR;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
+    }
+}
+
+[[nodiscard]]
+static vk::PipelineStageFlags ConvertResourceStateToVulkanPipelineStageFlags(ResourceState resource_state)
+{
+    META_FUNCTION_TASK();
+    switch (resource_state)
+    {
+    case ResourceState::Common:
+        return vk::PipelineStageFlagBits::eAllCommands;
+    case ResourceState::Present:
+        return vk::PipelineStageFlagBits::eBottomOfPipe;
+    case ResourceState::RenderTarget:
+        return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    case ResourceState::InputAttachment:
+        return vk::PipelineStageFlagBits::eFragmentShader;
+    case ResourceState::IndirectArgument:
+        return vk::PipelineStageFlagBits::eDrawIndirect;
+    case ResourceState::VertexBuffer:
+    case ResourceState::IndexBuffer:
+        return vk::PipelineStageFlagBits::eVertexInput;
+    case ResourceState::ConstantBuffer:
+    case ResourceState::UnorderedAccess:
+    case ResourceState::ShaderResource:
+        return vk::PipelineStageFlagBits::eVertexShader | // All possible shader stages
+               vk::PipelineStageFlagBits::eFragmentShader |
+               vk::PipelineStageFlagBits::eComputeShader;
+    case ResourceState::CopyDest:
+    case ResourceState::CopySource:
+    case ResourceState::ResolveDest:
+    case ResourceState::ResolveSource:
+        return vk::PipelineStageFlagBits::eTransfer;
+    case ResourceState::DepthWrite:
+    case ResourceState::DepthRead:
+        return vk::PipelineStageFlagBits::eEarlyFragmentTests |
+               vk::PipelineStageFlagBits::eLateFragmentTests;
+    case ResourceState::StreamOut:
+        return {};
+    default:
+        META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
     }
 }
 
@@ -133,6 +176,7 @@ bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
+    UpdateStageMasks();
     id.GetResource().Disconnect(*this);
     return true;
 }
@@ -152,15 +196,16 @@ void ResourceBarriersVK::AddResourceBarrier(const ResourceBarrier::Id& id, const
     const Resource::Type resource_type = resource.GetResourceType();
     switch (resource_type)
     {
-    case Resource::Type::Buffer:  AddBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource).GetNativeResource(), state_change); break;
-    case Resource::Type::Texture: AddImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(),
-                                                        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor), // TODO: get real data from texture
-                                                        state_change); break;
+    case Resource::Type::Buffer:  AddBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource), state_change);  break;
+    case Resource::Type::Texture: AddImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource), state_change); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
+
+    m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateBefore());
+    m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateAfter());
 }
 
-void ResourceBarriersVK::AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change)
+void ResourceBarriersVK::AddBufferMemoryBarrier(const BufferVK& buffer, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     m_vk_buffer_memory_barriers.emplace_back(
@@ -168,12 +213,13 @@ void ResourceBarriersVK::AddBufferMemoryBarrier(const vk::Buffer& vk_buffer, con
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
         0U,
         0U,
-        vk_buffer
+        buffer.GetNativeResource(),
+        0U,
+        buffer.GetSettings().size
     );
 }
 
-void ResourceBarriersVK::AddImageMemoryBarrier(const vk::Image& vk_image, const vk::ImageSubresourceRange& vk_sub_resource_range,
-                                               const ResourceBarrier::StateChange& state_change)
+void ResourceBarriersVK::AddImageMemoryBarrier(const ITextureVK& texture, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     m_vk_image_memory_barriers.emplace_back(
@@ -183,8 +229,8 @@ void ResourceBarriersVK::AddImageMemoryBarrier(const vk::Image& vk_image, const 
         ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()),
         0U,
         0U,
-        vk_image,
-        vk_sub_resource_range
+        texture.GetNativeImage(),
+        texture.GetNativeSubresourceRange()
     );
 }
 
@@ -193,12 +239,15 @@ void ResourceBarriersVK::UpdateResourceBarrier(const ResourceBarrier::Id& id, co
     META_FUNCTION_TASK();
     Resource& resource = id.GetResource();
     const Resource::Type resource_type = resource.GetResourceType();
+
     switch (resource_type)
     {
     case Resource::Type::Buffer:  UpdateBufferMemoryBarrier(dynamic_cast<BufferVK&>(resource).GetNativeResource(), state_change); break;
     case Resource::Type::Texture: UpdateImageMemoryBarrier(dynamic_cast<ITextureVK&>(resource).GetNativeImage(), state_change); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
+
+    UpdateStageMasks();
 }
 
 void ResourceBarriersVK::UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change)
@@ -243,6 +292,18 @@ void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image)
                                                          { return vk_image_barrier.image == vk_image; });
     META_CHECK_ARG_TRUE(vk_image_memory_barrier_it != m_vk_image_memory_barriers.end());
     m_vk_image_memory_barriers.erase(vk_image_memory_barrier_it);
+}
+
+void ResourceBarriersVK::UpdateStageMasks()
+{
+    META_FUNCTION_TASK();
+    m_vk_src_stage_mask = {};
+    m_vk_dst_stage_mask = {};
+    for(const auto& [resource_id, state_change] : ResourceBarriers::GetMap())
+    {
+        m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateBefore());
+        m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateAfter());
+    }
 }
 
 } // namespace Methane::Graphics

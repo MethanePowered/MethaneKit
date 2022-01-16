@@ -111,10 +111,10 @@ public:
 
         const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
         m_vk_unique_command_buffer.get().pipelineBarrier(
-            vk::PipelineStageFlagBits::eTopOfPipe,
-            vk::PipelineStageFlagBits::eTopOfPipe,
+            vulkan_resource_barriers.GetNativeSrcStageMask(),
+            vulkan_resource_barriers.GetNativeDstStageMask(),
             vk::DependencyFlags{},
-            {},
+            vulkan_resource_barriers.GetNativeMemoryBarriers(),
             vulkan_resource_barriers.GetNativeBufferMemoryBarriers(),
             vulkan_resource_barriers.GetNativeImageMemoryBarriers()
         );
