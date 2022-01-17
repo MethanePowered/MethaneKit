@@ -40,6 +40,7 @@ class ParallelRenderCommandListVK;
 class RenderCommandListVK final : public CommandListVK<RenderCommandListBase>
 {
 public:
+    RenderCommandListVK(CommandQueueVK& command_queue);
     RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
     explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list);
 

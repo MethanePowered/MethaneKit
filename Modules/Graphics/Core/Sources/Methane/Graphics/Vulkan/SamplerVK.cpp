@@ -97,7 +97,7 @@ Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& se
 
 SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings)
     : ResourceVK(context, settings, {})
-    , m_vk_unique_sampler(GetNativeDevice().createSampler(
+    , m_vk_unique_sampler(GetNativeDevice().createSamplerUnique(
         vk::SamplerCreateInfo(
             vk::SamplerCreateFlags{},
             ConvertMinMagFilterToVulkan(settings.filter.mag),

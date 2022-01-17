@@ -55,7 +55,7 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     // RenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
-    [[nodiscard]] virtual RenderPass& GetRenderPass() const noexcept = 0;
+    [[nodiscard]] virtual RenderPass& GetRenderPass() const = 0;
     virtual void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) = 0;

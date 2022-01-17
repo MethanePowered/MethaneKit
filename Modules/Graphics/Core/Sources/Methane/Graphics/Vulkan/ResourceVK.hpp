@@ -75,6 +75,9 @@ public:
     ~ResourceVK() override
     {
         META_FUNCTION_TASK();
+        m_upload_sync_transition_barriers_ptr.reset();
+        m_upload_begin_transition_barriers_ptr.reset();
+
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
@@ -114,12 +117,12 @@ public:
     }
 
     // IResourceVK overrides
-    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept override
+    const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept final
     {
         return m_vk_unique_device_memory.get();
     }
 
-    const vk::Device& GetNativeDevice() const noexcept override
+    const vk::Device& GetNativeDevice() const noexcept final
     {
         return m_vk_device;
     }

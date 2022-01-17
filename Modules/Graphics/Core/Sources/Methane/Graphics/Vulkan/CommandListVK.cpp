@@ -25,6 +25,7 @@ Vulkan command lists sequence implementation
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
 #include "RenderContextVK.h"
+#include "RenderCommandListVK.h"
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/RenderCommandList.h>
@@ -45,7 +46,10 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Comma
         if (command_list_ref.get().GetType() != CommandList::Type::Render)
             continue;
 
-        const auto& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
+        const auto& render_command_list = dynamic_cast<const RenderCommandListVK&>(command_list_ref.get());
+        if (!render_command_list.HasPass())
+            continue;
+
         for(const Texture::Location& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
         {
             const Texture::Type attach_texture_type = attach_location.GetTexture().GetSettings().type;

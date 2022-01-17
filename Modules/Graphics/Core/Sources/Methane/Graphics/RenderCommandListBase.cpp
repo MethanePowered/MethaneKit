@@ -59,6 +59,13 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     META_FUNCTION_TASK();
 }
 
+RenderPass& RenderCommandListBase::GetRenderPass() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
+    return *m_render_pass_ptr;
+}
+
 void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
