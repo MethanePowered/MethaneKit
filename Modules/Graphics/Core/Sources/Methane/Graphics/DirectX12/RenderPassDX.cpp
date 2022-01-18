@@ -198,7 +198,7 @@ Ptr<RenderPass> RenderPass::Create(Pattern& render_pattern, const Settings& sett
 }
 
 RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings)
-    : RenderPassBase(render_pattern, settings)
+    : RenderPassBase(render_pattern, settings, false)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -225,6 +225,8 @@ bool RenderPassDX::Update(const Settings& settings)
         m_native_descriptor_heaps.clear();
         m_native_rt_cpu_handles.clear();
         m_native_ds_cpu_handle = {};
+        m_begin_transition_barriers_ptr.reset();
+        m_end_transition_barriers_ptr.reset();
     }
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
@@ -348,6 +350,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
     }
 
     RenderPassBase::Begin(command_list);
+    SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
 
     const auto& command_list_dx = static_cast<const RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
@@ -399,6 +402,10 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
         p_dx_command_list_4->EndRenderPass();
     }
 
+    if (GetPatternBase().GetSettings().is_final_pass)
+    {
+        SetAttachmentStates(Resource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
+    }
     RenderPassBase::End(command_list);
 }
 

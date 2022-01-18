@@ -112,6 +112,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
     m_descriptor_var = vk::DescriptorImageInfo(
         vk::Sampler(),
         *GetNativeImageView(),
+        // TODO: add support for image layout, aka resource state of location
         vk::ImageLayout::eUndefined
     );
 }

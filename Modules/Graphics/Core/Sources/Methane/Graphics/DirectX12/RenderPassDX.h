@@ -127,6 +127,10 @@ private:
     mutable std::vector<ID3D12DescriptorHeap*>          m_native_descriptor_heaps;
     mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>    m_native_rt_cpu_handles;
     mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
+
+    // Resource transition barriers
+    Ptr<Resource::Barriers> m_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

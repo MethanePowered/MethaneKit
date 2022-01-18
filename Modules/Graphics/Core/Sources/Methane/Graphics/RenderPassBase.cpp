@@ -255,9 +255,10 @@ bool RenderPass::Settings::operator!=(const Settings& other) const
            std::tie(other.attachments, other.frame_size);
 }
 
-RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings& settings)
+RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings& settings, bool update_attachment_states)
     : m_pattern_base_ptr(std::dynamic_pointer_cast<RenderPatternBase>(render_pattern.GetBasePtr()))
     , m_settings(settings)
+    , m_update_attachment_states(update_attachment_states)
 {
     META_FUNCTION_TASK();
     InitAttachmentStates();
@@ -274,8 +275,6 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
     m_non_frame_buffer_attachment_textures.clear();
     m_color_attachment_textures.clear();
     m_p_depth_attachment_texture = nullptr;
-    m_begin_transition_barriers_ptr.reset();
-    m_end_transition_barriers_ptr.reset();
 
     InitAttachmentStates();
     return true;
@@ -288,23 +287,26 @@ void RenderPassBase::ReleaseAttachmentTextures()
     m_settings.attachments.clear();
 }
 
-void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
+void RenderPassBase::Begin(RenderCommandListBase&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
-    SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
+    if (m_update_attachment_states)
+    {
+        SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite);
+    }
     m_is_begun = true;
 }
 
-void RenderPassBase::End(RenderCommandListBase& render_command_list)
+void RenderPassBase::End(RenderCommandListBase&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
-    if (GetPatternBase().GetSettings().is_final_pass)
+    if (m_update_attachment_states && GetPatternBase().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(Resource::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
+        SetAttachmentStates(Resource::State::Present, { });
     }
     m_is_begun = false;
 }
@@ -312,11 +314,32 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
 void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    Ptr<Resource::Barriers> transition_barriers_ptr;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
         if (color_texture_ref.get().GetState() == Resource::State::Common)
-            color_texture_ref.get().SetState(Resource::State::Present, transition_barriers_ptr);
+            color_texture_ref.get().SetState(Resource::State::Present);
+    }
+}
+
+void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& color_state,
+                                         const std::optional<Resource::State>& depth_state) const
+{
+    META_FUNCTION_TASK();
+    if (color_state)
+    {
+        for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
+        {
+            color_texture_ref.get().SetState(*color_state);
+        }
+    }
+
+    if (depth_state)
+    {
+        if (TextureBase* p_depth_texture = GetDepthAttachmentTexture();
+            p_depth_texture)
+        {
+            p_depth_texture->SetState(*depth_state);
+        }
     }
 }
 

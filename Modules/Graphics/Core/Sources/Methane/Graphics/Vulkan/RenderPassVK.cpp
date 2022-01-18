@@ -77,7 +77,7 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachmen
     }
 }
 
-static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment)
+static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
     return vk::AttachmentDescription(
@@ -88,8 +88,8 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPatt
         GetVulkanAttachmentStoreOp(attachment.store_action),
         vk::AttachmentLoadOp::eDontCare,  // TODO: stencil is not supported yet
         vk::AttachmentStoreOp::eDontCare, // TODO: stencil is not supported yet
-        vk::ImageLayout::eUndefined,      // TODO: add initial resource state in render pattern attachment
-        vk::ImageLayout::ePresentSrcKHR   // TODO: add final resource state in render pattern attachment
+        vk::ImageLayout::eUndefined,
+        is_final_pass ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eUndefined
     );
 }
 
@@ -104,7 +104,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
 
     for(const RenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment, settings.is_final_pass));
         vk_color_attachment_refs.emplace_back(color_attachment.attachment_index, vk::ImageLayout::eColorAttachmentOptimal);
     }
 
@@ -118,14 +118,14 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
 
     if (settings.depth_attachment)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.depth_attachment->attachment_index);
         vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
     if (settings.stencil_attachment)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.stencil_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.stencil_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.stencil_attachment->attachment_index);
         vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eStencilAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
