@@ -116,6 +116,19 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
         vk_color_attachment_refs
     );
 
+    // Add self-dependency to allow resource barriers inside render pass
+    // to transition transferred buffer and image resources to shader read state
+    std::vector<vk::SubpassDependency> vk_dependencies;
+    vk_dependencies.emplace_back(
+        0, 0,
+        vk::PipelineStageFlagBits::eTransfer,
+        vk::PipelineStageFlagBits::eVertexShader | // All Graphics shader stages
+        vk::PipelineStageFlagBits::eFragmentShader,
+        vk::AccessFlagBits::eTransferWrite,
+        vk::AccessFlagBits::eShaderRead,
+        vk::DependencyFlags{}
+    );
+
     if (settings.depth_attachment)
     {
         vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment, settings.is_final_pass));
@@ -135,7 +148,8 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
         vk::RenderPassCreateInfo(
             vk::RenderPassCreateFlags{},
             vk_attachment_descs,
-            vk_subpasses
+            vk_subpasses,
+            vk_dependencies
         )
     );
 }
