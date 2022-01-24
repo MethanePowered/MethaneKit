@@ -45,9 +45,16 @@ struct ICommandListVK
         vk::DebugUtilsLabelEXT m_vk_debug_label;
     };
 
+    enum class CommandBufferType : uint32_t
+    {
+        Primary,             // Primary command buffer with no-render commands, like pipeline barriers, executed before render pass begin
+        SecondaryRenderPass, // Secondary command buffer with render pass only commands, excluding pipeline barriers
+    };
+
     virtual CommandQueueVK&          GetCommandQueueVK() = 0;
     virtual const CommandQueueVK&    GetCommandQueueVK() const = 0;
-    virtual const vk::CommandBuffer& GetNativeCommandBuffer() const = 0;
+    virtual const vk::CommandBuffer& GetNativeCommandBufferDefault() const = 0;
+    virtual const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type = CommandBufferType::Primary) const = 0;
     virtual vk::PipelineBindPoint    GetNativePipelineBindPoint() const = 0;
     virtual void SetResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
 

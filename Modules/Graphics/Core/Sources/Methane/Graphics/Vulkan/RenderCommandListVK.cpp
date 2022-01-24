@@ -82,19 +82,28 @@ Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQu
 }
 
 RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue)
-    : CommandListVK<RenderCommandListBase>(command_queue)
+    : CommandListVK(vk::CommandBufferInheritanceInfo(), command_queue)
 {
     META_FUNCTION_TASK();
 }
 
 RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
-    : CommandListVK<RenderCommandListBase>(command_queue, render_pass)
+    : CommandListVK(
+        vk::CommandBufferInheritanceInfo(
+            render_pass.GetPatternVK().GetNativeRenderPass(), 0U,
+            render_pass.GetNativeFrameBuffer()
+        ),
+        command_queue, render_pass)
 {
     META_FUNCTION_TASK();
 }
 
 RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list)
-    : CommandListVK<RenderCommandListBase>(parallel_render_command_list)
+    : CommandListVK(
+        vk::CommandBufferInheritanceInfo(
+            parallel_render_command_list.GetPassVK().GetPatternVK().GetNativeRenderPass(), 0U,
+            parallel_render_command_list.GetPassVK().GetNativeFrameBuffer()
+        ), parallel_render_command_list)
 {
     META_FUNCTION_TASK();
 }
@@ -102,24 +111,16 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_r
 void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    CommandListVK<RenderCommandListBase>::ResetCommandState();
-    CommandListVK<RenderCommandListBase>::Reset(p_debug_group);
-    if (HasPass())
-    {
-        ResetRenderPass();
-    }
+    CommandListVK::ResetCommandState();
+    CommandListVK::Reset(p_debug_group);
 }
 
 void RenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    CommandListVK<RenderCommandListBase>::ResetCommandState();
-    CommandListVK<RenderCommandListBase>::Reset(p_debug_group);
-    CommandListVK<RenderCommandListBase>::SetRenderState(render_state);
-    if (HasPass())
-    {
-        ResetRenderPass();
-    }
+    CommandListVK::ResetCommandState();
+    CommandListVK::Reset(p_debug_group);
+    CommandListVK::SetRenderState(render_state);
 }
 
 bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
@@ -136,7 +137,7 @@ bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
 
-    GetNativeCommandBuffer().bindVertexBuffers(0U, vk_vertex_buffers.GetNativeBuffers(), vk_vertex_buffers.GetNativeOffsets());
+    GetNativeCommandBufferDefault().bindVertexBuffers(0U, vk_vertex_buffers.GetNativeBuffers(), vk_vertex_buffers.GetNativeOffsets());
     return true;
 }
 
@@ -154,7 +155,7 @@ bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource
     }
 
     const vk::IndexType vk_index_type = GetVulkanIndexTypeByStride(index_buffer.GetSettings().item_stride_size);
-    GetNativeCommandBuffer().bindIndexBuffer(vk_index_buffer.GetNativeResource(), 0U, vk_index_type);
+    GetNativeCommandBufferDefault().bindIndexBuffer(vk_index_buffer.GetNativeResource(), 0U, vk_index_type);
     return true;
 }
 
@@ -172,7 +173,7 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, uint32_t index_count,
     RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
     UpdatePrimitiveTopology(primitive);
-    GetNativeCommandBuffer().drawIndexed(index_count, instance_count, start_index, start_vertex, start_instance);
+    GetNativeCommandBufferDefault().drawIndexed(index_count, instance_count, start_index, start_vertex, start_instance);
 }
 
 void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -182,7 +183,7 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
     RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     UpdatePrimitiveTopology(primitive);
-    GetNativeCommandBuffer().draw(vertex_count, instance_count, start_vertex, start_instance);
+    GetNativeCommandBufferDefault().draw(vertex_count, instance_count, start_vertex, start_instance);
 }
 
 void RenderCommandListVK::Commit()
@@ -190,13 +191,22 @@ void RenderCommandListVK::Commit()
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
 
-    if (auto pass_vk = static_cast<RenderPassVK*>(GetPassPtr());
-        pass_vk && pass_vk->IsBegun())
+    CommitCommandBuffer(CommandBufferType::SecondaryRenderPass);
+
+    auto render_pass_ptr = static_cast<RenderPassVK*>(GetPassPtr());
+    if (render_pass_ptr)
     {
-        pass_vk->End(*this);
+        render_pass_ptr->Begin(*this);
     }
 
-    CommandListVK<RenderCommandListBase>::Commit();
+    GetNativeCommandBuffer(CommandBufferType::Primary).executeCommands(GetNativeCommandBuffer(CommandBufferType::SecondaryRenderPass));
+
+    if (render_pass_ptr)
+    {
+        render_pass_ptr->End(*this);
+    }
+
+    CommandListVK::Commit();
 }
 
 void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
@@ -211,21 +221,6 @@ vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const
     return vk::PipelineBindPoint::eGraphics;
 }
 
-void RenderCommandListVK::ResetRenderPass()
-{
-    META_FUNCTION_TASK();
-    RenderPassVK& pass_vk = GetPassVK();
-
-    if (IsParallel())
-    {
-        // TODO: support parallel render command lists
-    }
-    else if (!pass_vk.IsBegun())
-    {
-        pass_vk.Begin(*this);
-    }
-}
-
 void RenderCommandListVK::UpdatePrimitiveTopology(Primitive primitive)
 {
     META_FUNCTION_TASK();
@@ -234,7 +229,7 @@ void RenderCommandListVK::UpdatePrimitiveTopology(Primitive primitive)
         magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const vk::PrimitiveTopology vk_primitive_topology = GetVulkanPrimitiveTopology(primitive);
-        GetNativeCommandBuffer().setPrimitiveTopologyEXT(vk_primitive_topology);
+        GetNativeCommandBufferDefault().setPrimitiveTopologyEXT(vk_primitive_topology);
         drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
     }
 }

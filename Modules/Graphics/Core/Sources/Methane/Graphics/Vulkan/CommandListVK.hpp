@@ -40,29 +40,57 @@ Vulkan base template implementation of the command list interface.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
+#include <array>
+#include <vector>
+
 namespace Methane::Graphics
 {
 
-template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
-class CommandListVK
+template<class CommandListBaseT, uint32_t command_buffers_count = 1,
+         ICommandListVK::CommandBufferType default_command_buffer_type = ICommandListVK::CommandBufferType::Primary,
+         typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT> && command_buffers_count != 0U>>
+    class CommandListVK
     : public CommandListBaseT
     , public ICommandListVK
 {
 public:
-    template<typename... ConstructArgs>
+    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
+             typename = std::enable_if_t< buffers_count != 1>>
+    CommandListVK(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ConstructArgs&&... construct_args)
+        : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
+        , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
+        , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
+    {
+        META_FUNCTION_TASK();
+        InitializePrimaryCommandBuffer();
+
+        std::vector<vk::UniqueCommandBuffer> secondary_cmd_buffers = m_vk_device.allocateCommandBuffersUnique(
+            vk::CommandBufferAllocateInfo(
+                GetCommandQueueVK().GetNativeCommandPool(),
+                vk::CommandBufferLevel::eSecondary,
+                command_buffers_count - 1
+            ));
+
+        for (uint32_t cmd_buffer_index = 1; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
+        {
+            
+            vk::UniqueCommandBuffer& vk_unique_command_buffer = m_vk_unique_command_buffers[cmd_buffer_index];
+            vk_unique_command_buffer = std::move(secondary_cmd_buffers[cmd_buffer_index - 1]);
+            vk_unique_command_buffer.get().begin(GetCommandBufferBeginInfo(static_cast<CommandBufferType>(cmd_buffer_index)));
+            m_vk_command_buffer_encoding_flags[cmd_buffer_index] = true;
+        }
+
+        CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
+    }
+
+    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
+             typename = std::enable_if_t<buffers_count == 1>>
     explicit CommandListVK(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
-        , m_vk_unique_command_buffer(std::move(m_vk_device.allocateCommandBuffersUnique(
-            vk::CommandBufferAllocateInfo(
-                GetCommandQueueVK().GetNativeCommandPool(),
-                vk::CommandBufferLevel::ePrimary,
-                1U
-            )).back()))
     {
         META_FUNCTION_TASK();
-
-        m_vk_unique_command_buffer.get().begin(vk::CommandBufferBeginInfo());
+        InitializePrimaryCommandBuffer();
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
@@ -73,7 +101,7 @@ public:
         META_FUNCTION_TASK();
         CommandListBase::PushDebugGroup(debug_group);
 
-        m_vk_unique_command_buffer.get().beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
+        GetNativeCommandBufferDefault().beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final
@@ -81,7 +109,7 @@ public:
         META_FUNCTION_TASK();
         CommandListBase::PopDebugGroup();
 
-        m_vk_unique_command_buffer.get().endDebugUtilsLabelEXT();
+        GetNativeCommandBufferDefault().endDebugUtilsLabelEXT();
     }
 
     void Commit() override
@@ -91,7 +119,16 @@ public:
 
         // TODO: insert ending timestamp query
 
-        m_vk_unique_command_buffer.get().end();
+        // End command buffers encoding
+        for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
+        {
+            if (!m_vk_command_buffer_encoding_flags[cmd_buffer_index])
+                continue;
+
+            m_vk_unique_command_buffers[cmd_buffer_index].get().end();
+            m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
+        }
+
         m_is_native_committed = true;
     }
 
@@ -99,18 +136,18 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBaseT::VerifyEncodingState();
-        
+
         const auto lock_guard = resource_barriers.Lock();
         if (resource_barriers.IsEmpty())
             return;
 
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
-                 magic_enum::enum_name(CommandListBase::GetType()),
-                 CommandListBase::GetName(),
-                 static_cast<std::string>(resource_barriers));
+            magic_enum::enum_name(CommandListBase::GetType()),
+            CommandListBase::GetName(),
+            static_cast<std::string>(resource_barriers));
 
         const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
-        m_vk_unique_command_buffer.get().pipelineBarrier(
+        GetNativeCommandBuffer(CommandBufferType::Primary).pipelineBarrier(
             vulkan_resource_barriers.GetNativeSrcStageMask(),
             vulkan_resource_barriers.GetNativeDstStageMask(),
             vk::DependencyFlags{},
@@ -129,7 +166,16 @@ public:
             return;
 
         m_is_native_committed = false;
-        m_vk_unique_command_buffer.get().begin(vk::CommandBufferBeginInfo());
+
+        // Begin command buffers encoding
+        for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
+        {
+            if (m_vk_command_buffer_encoding_flags[cmd_buffer_index])
+                continue;
+
+            m_vk_unique_command_buffers[cmd_buffer_index].get().begin(GetCommandBufferBeginInfo(static_cast<CommandBufferType>(cmd_buffer_index)));
+            m_vk_command_buffer_encoding_flags[cmd_buffer_index] = true;
+        }
 
         // TODO: insert beginning timestamp query
 
@@ -152,13 +198,26 @@ public:
             return;
 
         CommandListBaseT::SetName(name);
-        SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffer.get(), name.c_str());
+
+        for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
+        {
+            const std::string cmd_buffer_name = fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<ICommandListVK::CommandBufferType>(cmd_buffer_index)));
+            SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffers[cmd_buffer_index].get(), cmd_buffer_name.c_str());
+        }
     }
 
     // ICommandListVK interface
-    CommandQueueVK&          GetCommandQueueVK() final            { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
-    const CommandQueueVK&    GetCommandQueueVK() const final      { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
-    const vk::CommandBuffer& GetNativeCommandBuffer() const final { return m_vk_unique_command_buffer.get(); }
+    CommandQueueVK& GetCommandQueueVK() final { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
+    const CommandQueueVK& GetCommandQueueVK() const final { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
+    const vk::CommandBuffer& GetNativeCommandBufferDefault() const final { return GetNativeCommandBuffer(default_command_buffer_type); }
+    const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type) const final
+    {
+        META_FUNCTION_TASK();
+        const size_t cmd_buffer_index = magic_enum::enum_index(cmd_buffer_type).value();
+        META_CHECK_ARG_LESS_DESCR(cmd_buffer_index, command_buffers_count, "Not enough command buffers count for ", magic_enum::enum_name(cmd_buffer_type));
+        return m_vk_unique_command_buffers[cmd_buffer_index].get();
+    }
+    
 
 protected:
     void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
@@ -170,10 +229,54 @@ protected:
     bool IsNativeCommitted() const             { return m_is_native_committed; }
     void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 
+    void CommitCommandBuffer(CommandBufferType cmd_buffer_type)
+    {
+        META_FUNCTION_TASK();
+        const auto cmd_buffer_index = static_cast<uint32_t>(cmd_buffer_type);
+        if (!m_vk_command_buffer_encoding_flags[cmd_buffer_index])
+            return;
+
+        m_vk_unique_command_buffers[cmd_buffer_index].get().end();
+        m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
+    }
+
 private:
-    vk::Device              m_vk_device;
-    vk::UniqueCommandBuffer m_vk_unique_command_buffer;
-    bool                    m_is_native_committed = false;
+    void InitializePrimaryCommandBuffer()
+    {
+        META_FUNCTION_TASK();
+        std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
+
+        m_vk_unique_command_buffers[0] = std::move(m_vk_device.allocateCommandBuffersUnique(
+            vk::CommandBufferAllocateInfo(
+                GetCommandQueueVK().GetNativeCommandPool(),
+                vk::CommandBufferLevel::ePrimary,
+                1
+            )).back());
+
+        m_vk_unique_command_buffers[0].get().begin(vk::CommandBufferBeginInfo());
+        m_vk_command_buffer_encoding_flags[0] = true;
+    }
+
+    vk::CommandBufferBeginInfo GetCommandBufferBeginInfo(CommandBufferType cmd_buffer_type) const
+    {
+        META_FUNCTION_TASK();
+        const bool is_secondary_render_pass_buffer = cmd_buffer_type == CommandBufferType::SecondaryRenderPass;
+        META_CHECK_ARG(m_vk_secondary_render_buffer_inherit_info_opt.has_value(), !is_secondary_render_pass_buffer || m_vk_secondary_render_buffer_inherit_info_opt.has_value());
+        return vk::CommandBufferBeginInfo(
+            is_secondary_render_pass_buffer && m_vk_secondary_render_buffer_inherit_info_opt->renderPass
+                ? vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue | vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+                : vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit),
+            is_secondary_render_pass_buffer ? &*m_vk_secondary_render_buffer_inherit_info_opt : nullptr
+        );
+    }
+
+    vk::Device m_vk_device;
+    bool       m_is_native_committed = false;
+
+    // Unique command buffers and corresponding begin flags are indexed by the value of ICommandListVK::CommandBufferType enum
+    std::array<vk::UniqueCommandBuffer, command_buffers_count> m_vk_unique_command_buffers;
+    std::array<bool, command_buffers_count>                    m_vk_command_buffer_encoding_flags;
+    const std::optional<vk::CommandBufferInheritanceInfo>      m_vk_secondary_render_buffer_inherit_info_opt;
 };
 
 } // namespace Methane::Graphics

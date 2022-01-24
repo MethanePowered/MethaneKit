@@ -205,6 +205,7 @@ void AppBase::Init()
 
     // Create screen render pass pattern
     m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+    m_screen_render_pattern_ptr->SetName("Final Render Pass");
 
     m_view_state_ptr = ViewState::Create({
         { GetFrameViewport(context_settings.frame_size)    },

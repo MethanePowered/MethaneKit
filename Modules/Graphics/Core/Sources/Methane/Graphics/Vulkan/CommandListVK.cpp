@@ -90,11 +90,11 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
 {
     META_FUNCTION_TASK();
     m_vk_command_buffers.reserve(command_list_refs.size());
-    std::transform(command_list_refs.begin(), command_list_refs.end(), std::back_inserter(m_vk_command_buffers),
-                   [](const Ref<CommandList>& command_list_ref)
-                   {
-                       return dynamic_cast<const ICommandListVK&>(command_list_ref.get()).GetNativeCommandBuffer();
-                   });
+    for (const Ref<CommandList>& command_list_ref : command_list_refs)
+    {
+        const auto& vulkan_command_list = dynamic_cast<const ICommandListVK&>(command_list_ref.get());
+        m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
+    }
 }
 
 void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)

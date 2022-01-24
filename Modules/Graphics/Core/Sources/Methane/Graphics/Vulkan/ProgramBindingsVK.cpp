@@ -259,7 +259,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBind
         ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask);
     }
 
-    const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBuffer();
+    const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBufferDefault();
     const vk::PipelineBindPoint vk_pipeline_bind_point = command_list_vk.GetNativePipelineBindPoint();
 
     // Bind descriptor sets to pipeline

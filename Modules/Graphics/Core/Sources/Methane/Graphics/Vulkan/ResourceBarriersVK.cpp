@@ -109,8 +109,7 @@ static vk::PipelineStageFlags ConvertResourceStateToVulkanPipelineStageFlags(Res
     case ResourceState::UnorderedAccess:
     case ResourceState::ShaderResource:
         return vk::PipelineStageFlagBits::eVertexShader | // All possible shader stages
-               vk::PipelineStageFlagBits::eFragmentShader |
-               vk::PipelineStageFlagBits::eComputeShader;
+               vk::PipelineStageFlagBits::eFragmentShader;
     case ResourceState::CopyDest:
     case ResourceState::CopySource:
     case ResourceState::ResolveDest:

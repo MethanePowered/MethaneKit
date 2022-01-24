@@ -52,9 +52,8 @@ public:
     // Object interface
     void SetName(const std::string& label) override;
 
-private:
     CommandQueueVK& GetCommandQueueVK() noexcept;
-    RenderPassVK&   GetPassVK();
+    RenderPassVK& GetPassVK();
 };
 
 } // namespace Methane::Graphics

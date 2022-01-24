@@ -37,7 +37,8 @@ class BufferVK;
 class RenderPassVK;
 class ParallelRenderCommandListVK;
 
-class RenderCommandListVK final : public CommandListVK<RenderCommandListBase>
+class RenderCommandListVK final
+    : public CommandListVK<RenderCommandListBase, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
 {
 public:
     RenderCommandListVK(CommandQueueVK& command_queue);
@@ -64,7 +65,6 @@ public:
     vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 
 private:
-    void ResetRenderPass();
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPassVK& GetPassVK();

@@ -268,7 +268,7 @@ bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBufferDefault();
     vk_command_buffer.setViewport(0U, m_vk_viewports);
     vk_command_buffer.setScissor(0U, m_vk_scissor_rects);
 }
@@ -424,11 +424,11 @@ void RenderStateVK::Reset(const Settings& settings)
     m_vk_unique_pipeline = std::move(pipe.value);
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& command_list, Groups /*state_groups*/)
+void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
+    auto& vulkan_render_command_list = static_cast<RenderCommandListVK&>(render_command_list);
+    vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 
 void RenderStateVK::SetName(const std::string& name)

@@ -116,18 +116,17 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
         vk_color_attachment_refs
     );
 
-    // Add self-dependency to allow resource barriers inside render pass
-    // to transition transferred buffer and image resources to shader read state
     std::vector<vk::SubpassDependency> vk_dependencies;
+#if 0
     vk_dependencies.emplace_back(
         0, 0,
-        vk::PipelineStageFlagBits::eTransfer,
-        vk::PipelineStageFlagBits::eVertexShader | // All Graphics shader stages
-        vk::PipelineStageFlagBits::eFragmentShader,
-        vk::AccessFlagBits::eTransferWrite,
-        vk::AccessFlagBits::eShaderRead,
+        vk::PipelineStageFlagBits{},
+        vk::PipelineStageFlagBits{},
+        vk::AccessFlagBits{},
+        vk::AccessFlagBits{},
         vk::DependencyFlags{}
     );
+#endif
 
     if (settings.depth_attachment)
     {
@@ -282,15 +281,15 @@ void RenderPassVK::Begin(RenderCommandListBase& command_list)
     META_FUNCTION_TASK();
     RenderPassBase::Begin(command_list);
 
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eInline);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
+    vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eSecondaryCommandBuffers);
 }
 
 void RenderPassVK::End(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
 
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_command_buffer.endRenderPass();
 
     RenderPassBase::End(command_list);

@@ -166,7 +166,7 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
 
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
     const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
-    upload_cmd_list.GetNativeCommandBuffer().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
+    upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

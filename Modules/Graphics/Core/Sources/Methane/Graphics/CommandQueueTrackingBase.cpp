@@ -72,9 +72,9 @@ void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const Comm
         std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
 
-    auto& dx_command_lists = static_cast<CommandListSetBase&>(command_lists);
+    auto& command_lists_base = static_cast<CommandListSetBase&>(command_lists);
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
-    m_executing_command_lists.push(dx_command_lists.GetPtr());
+    m_executing_command_lists.push(command_lists_base.GetPtr());
     m_execution_waiting_condition_var.notify_one();
 }
 
