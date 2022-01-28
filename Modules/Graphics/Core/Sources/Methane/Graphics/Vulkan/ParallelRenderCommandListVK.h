@@ -50,7 +50,7 @@ public:
     void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // Object interface
-    void SetName(const std::string& label) override;
+    bool SetName(const std::string& label) override;
 
     CommandQueueVK& GetCommandQueueVK() noexcept;
     RenderPassVK& GetPassVK();

@@ -24,6 +24,7 @@ Vulkan command lists sequence implementation.
 #pragma once
 
 #include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -61,7 +62,9 @@ struct ICommandListVK
     virtual ~ICommandListVK() = default;
 };
 
-class CommandListSetVK final : public CommandListSetBase
+class CommandListSetVK final
+    : public CommandListSetBase
+    , private Data::Receiver<IObjectCallback>
 {
 public:
     explicit CommandListSetVK(const Refs<CommandList>& command_list_refs);
@@ -80,6 +83,10 @@ public:
 private:
     const std::vector<vk::Semaphore>& GetWaitSemaphores();
     const std::vector<vk::PipelineStageFlags>& GetWaitStages();
+    void UpdateNativeDebugName();
+
+    // IObjectCallback interface
+    void OnObjectNameChanged(Object& object, const std::string& old_name) override;
 
     const vk::PipelineStageFlags        m_vk_wait_frame_buffer_rendering_on_stages;
     const vk::Device&                   m_vk_device;

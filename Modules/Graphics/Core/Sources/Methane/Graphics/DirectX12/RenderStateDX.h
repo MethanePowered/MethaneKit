@@ -68,7 +68,7 @@ public:
     void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     void InitializeNativePipelineState();
     wrl::ComPtr<ID3D12PipelineState>& GetNativePipelineState();

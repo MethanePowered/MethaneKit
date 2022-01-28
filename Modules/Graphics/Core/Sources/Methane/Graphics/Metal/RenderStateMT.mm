@@ -390,16 +390,18 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
     }
 }
 
-void RenderStateMT::SetName(const std::string& name)
+bool RenderStateMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::SetName(name);
+    if (!RenderStateBase::SetName(name))
+        return false;
     
     NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
     m_mtl_pipeline_state_desc.label      = ns_name;
     m_mtl_depth_stencil_state_desc.label = ns_name;
     
     ResetNativeState();
+    return true;
 }
     
 void RenderStateMT::InitializeNativeStates()

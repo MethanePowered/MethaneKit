@@ -48,7 +48,7 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 

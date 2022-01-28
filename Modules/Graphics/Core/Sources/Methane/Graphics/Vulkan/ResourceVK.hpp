@@ -35,6 +35,7 @@ Vulkan implementation of the resource interface.
 #include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
+#include <fmt/format.h>
 
 #include <type_traits>
 
@@ -89,18 +90,29 @@ public:
     bool operator=(ResourceVK&&) = delete;
 
     // ObjectBase overide
-    void SetName(const std::string& name) final
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        if (ObjectBase::GetName() == name)
-            return;
+        if (ResourceBaseType::SetName(name))
+            return false;
 
-        ResourceBaseType::SetName(name);
-
-        if (m_vk_resource)
+        const auto& vk_resource = GetNativeResource();
+        if (vk_resource)
         {
-            SetVulkanObjectName(m_vk_device, GetNativeResource(), name.c_str());
+            SetVulkanObjectName(m_vk_device, vk_resource, name.c_str());
         }
+
+        if constexpr (std::is_class_v<NativeViewType>)
+        {
+            const NativeViewType& vk_resource_view = GetNativeView();
+            if (vk_resource_view)
+            {
+                const std::string view_name = fmt::format("{} View", name);
+                SetVulkanObjectName(m_vk_device, vk_resource_view, view_name.c_str());
+            }
+        }
+
+        return true;
     }
 
     // IResource overrides

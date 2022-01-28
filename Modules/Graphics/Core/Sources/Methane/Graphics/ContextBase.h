@@ -82,7 +82,7 @@ public:
     virtual void Release();
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     DeferredAction    GetRequestedAction() const noexcept { return m_requested_action; }
     Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept   { return m_device_ptr; }

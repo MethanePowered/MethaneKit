@@ -67,7 +67,7 @@ public:
         explicit DebugGroupBase(const std::string& name);
 
         // Object overrides
-        void SetName(const std::string&) override;
+        bool SetName(const std::string&) override;
 
         // DebugGroup interface
         DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
@@ -169,9 +169,9 @@ public:
     explicit CommandListSetBase(const Refs<CommandList>& command_list_refs);
 
     // CommandListSet overrides
-    Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
-    CommandList&             operator[](Data::Index index) const override;
+    Data::Size               GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<CommandList>& GetRefs() const noexcept final  { return m_refs; }
+    CommandList&             operator[](Data::Index index) const final;
 
     // CommandListSetBase interface
     virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);

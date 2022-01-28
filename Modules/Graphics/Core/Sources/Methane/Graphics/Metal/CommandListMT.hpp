@@ -150,12 +150,14 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        CommandListBaseT::SetName(name);
+        if (!CommandListBaseT::SetName(name))
+            return false;
+
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
 
         if (m_mtl_cmd_encoder != nil)
@@ -167,6 +169,8 @@ public:
         {
             m_mtl_cmd_buffer.label = m_ns_name;
         }
+
+        return true;
     }
 
     const MTLCommandEncoderId&  GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }

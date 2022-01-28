@@ -41,7 +41,7 @@ public:
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;

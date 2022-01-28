@@ -83,11 +83,14 @@ public:
 
     // Object overrides
 
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        ContextBase::SetName(name);
+        if (!ContextBase::SetName(name))
+            return false;
+
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
+        return true;
     }
 
 protected:

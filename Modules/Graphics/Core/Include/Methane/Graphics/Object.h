@@ -24,6 +24,7 @@ Methane object interface: represents any named object.
 #pragma once
 
 #include <Methane/Memory.hpp>
+#include <Methane/Data/IEmitter.h>
 
 #include <string>
 #include <stdexcept>
@@ -31,7 +32,18 @@ Methane object interface: represents any named object.
 namespace Methane::Graphics
 {
 
+struct Object;
+
+struct IObjectCallback
+{
+    virtual void OnObjectNameChanged(Object&, const std::string& /*old_name*/) {}
+    virtual void OnObjectDestroyed(Object&) {}
+
+    virtual ~IObjectCallback() = default;
+};
+
 struct Object
+    : virtual Data::IEmitter<IObjectCallback> // NOSONAR
 {
     struct Registry
     {
@@ -41,7 +53,8 @@ struct Object
             explicit NameConflictException(const std::string& name);
         };
 
-        virtual void AddGraphicsObject(Object& graphics_object) = 0;
+        virtual void AddGraphicsObject(Object& object) = 0;
+        virtual void RemoveGraphicsObject(Object& object) = 0;
         [[nodiscard]] virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
         [[nodiscard]] virtual bool        HasGraphicsObject(const std::string& object_name) const noexcept = 0;
 
@@ -49,7 +62,7 @@ struct Object
     };
 
     // Object interface
-    virtual void SetName(const std::string& name) = 0;
+    virtual bool SetName(const std::string& name) = 0;
     [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
     [[nodiscard]] virtual Ptr<Object>        GetPtr() = 0;
 

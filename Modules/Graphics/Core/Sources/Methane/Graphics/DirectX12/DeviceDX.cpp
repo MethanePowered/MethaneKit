@@ -74,14 +74,17 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
     META_FUNCTION_TASK();
 }
 
-void DeviceDX::SetName(const std::string& name)
+bool DeviceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    DeviceBase::SetName(name);
+    if (!DeviceBase::SetName(name))
+        return false;
+
     if (m_cp_device)
     {
         m_cp_device->SetName(nowide::widen(name).c_str());
     }
+    return true;
 }
 
 const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const

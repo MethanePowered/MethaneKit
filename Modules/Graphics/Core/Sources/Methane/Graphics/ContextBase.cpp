@@ -75,7 +75,7 @@ void ContextBase::CompleteInitialization()
     m_is_completing_initialization = true;
     META_LOG("Complete initialization of context '{}'", GetName());
 
-    Emit(&IContextCallback::OnContextCompletingInitialization, *this);
+    Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextCompletingInitialization, *this);
     GetDescriptorManager().CompleteInitialization();
     UploadResources();
 
@@ -145,7 +145,7 @@ void ContextBase::Release()
     for (Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
         cmd_kit_ptr.reset();
 
-    Emit(&IContextCallback::OnContextReleased, std::ref(*this));
+    Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 }
 
 void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocation */, bool is_callback_emitted)
@@ -162,7 +162,7 @@ void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocatio
 
     if (is_callback_emitted)
     {
-        Emit(&IContextCallback::OnContextInitialized, *this);
+        Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
     }
 }
 
@@ -219,16 +219,19 @@ DescriptorManager& ContextBase::GetDescriptorManager() const
     return *m_descriptor_manager_ptr;
 }
 
-void ContextBase::SetName(const std::string& name)
+bool ContextBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ObjectBase::SetName(name);
+    if (!ObjectBase::SetName(name))
+        return false;
+
     GetDeviceBase().SetName(fmt::format("{} Device", name));
     for(const Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)
             cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
     }
+    return true;
 }
 
 bool ContextBase::UploadResources()

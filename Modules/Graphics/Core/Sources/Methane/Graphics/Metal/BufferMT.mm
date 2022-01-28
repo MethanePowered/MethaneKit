@@ -81,12 +81,14 @@ BufferMT::BufferMT(const ContextBase& context, const Settings& settings, const D
     META_FUNCTION_TASK();
 }
 
-void BufferMT::SetName(const std::string& name)
+bool BufferMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ResourceMT::SetName(name);
+    if (!ResourceMT::SetName(name))
+        return false;
 
     m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    return true;
 }
 
 void BufferMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)

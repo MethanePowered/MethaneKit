@@ -631,7 +631,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::Context& context)
         return empty_texture_ptr;
 
     // Add font as context callback to remove atlas texture when context is released
-    context.Connect(*this);
+    static_cast<Data::IEmitter<IContextCallback>&>(context).Connect(*this);
 
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
@@ -672,7 +672,7 @@ void Font::RemoveAtlasTexture(gfx::Context& context)
 {
     META_FUNCTION_TASK();
     m_atlas_textures.erase(&context);
-    context.Disconnect(*this);
+    static_cast<Data::IEmitter<IContextCallback>&>(context).Disconnect(*this);
 }
 
 bool Font::UpdateAtlasBitmap(bool deferred_textures_update)
@@ -760,7 +760,7 @@ void Font::ClearAtlasTextures()
         if (!context_ptr)
             continue;
 
-        context_ptr->Disconnect(*this);
+        static_cast<Data::IEmitter<IContextCallback>&>(*context_ptr).Disconnect(*this);
         Emit(&IFontCallback::OnFontAtlasTextureReset, *this, atlas_texture.texture_ptr, nullptr);
     }
     m_atlas_textures.clear();

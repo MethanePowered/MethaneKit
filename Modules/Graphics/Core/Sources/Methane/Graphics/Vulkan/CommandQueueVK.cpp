@@ -30,6 +30,8 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 
+#include <fmt/format.h>
+
 namespace Methane::Graphics
 {
 
@@ -121,21 +123,16 @@ const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted(con
     return m_wait_execution_completed;
 }
 
-void CommandQueueVK::SetName(const std::string& name)
+bool CommandQueueVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
-
-    CommandQueueBase::SetName(name);
+    if (!CommandQueueBase::SetName(name))
+        return false;
 
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
-    const char* name_str = ObjectBase::GetName().c_str();
-
-    SetVulkanObjectName(vk_device, m_vk_queue, name_str);
-
-    const std::string command_pool_name = name + " Command Pool";
-    SetVulkanObjectName(vk_device, m_vk_unique_command_pool.get(), command_pool_name.c_str());
+    SetVulkanObjectName(vk_device, m_vk_queue, name);
+    SetVulkanObjectName(vk_device, m_vk_unique_command_pool.get(), fmt::format("{} Command Pool", name));
+    return true;
 }
 
 const IContextVK& CommandQueueVK::GetContextVK() const noexcept

@@ -170,6 +170,20 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
+// ObjectBase overide
+bool BufferVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (ResourceVK::SetName(name))
+        return false;
+
+    if (m_vk_unique_staging_buffer)
+    {
+        SetVulkanObjectName(GetNativeDevice(), m_vk_unique_staging_buffer.get(), fmt::format("{} Staging Buffer", name));
+    }
+    return true;
+}
+
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();

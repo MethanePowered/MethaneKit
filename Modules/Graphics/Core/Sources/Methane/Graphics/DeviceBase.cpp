@@ -77,13 +77,13 @@ std::string DeviceBase::ToString() const
 void DeviceBase::OnRemovalRequested()
 {
     META_FUNCTION_TASK();
-    Emit(&IDeviceCallback::OnDeviceRemovalRequested, std::ref(*this));
+    Data::Emitter<IDeviceCallback>::Emit(&IDeviceCallback::OnDeviceRemovalRequested, std::ref(*this));
 }
 
 void DeviceBase::OnRemoved()
 {
     META_FUNCTION_TASK();
-    Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
+    Data::Emitter<IDeviceCallback>::Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
 }
 
 System::GraphicsApi System::GetGraphicsApi() noexcept

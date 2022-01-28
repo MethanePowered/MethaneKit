@@ -457,14 +457,14 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
 }
 
-void DeviceVK::SetName(const std::string& name)
+bool DeviceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (DeviceBase::SetName(name))
+        return false;
 
-    DeviceBase::SetName(name);
     SetVulkanObjectName(m_vk_unique_device.get(), m_vk_unique_device.get(), name.c_str());
+    return true;
 }
 
 bool DeviceVK::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const

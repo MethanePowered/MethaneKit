@@ -41,7 +41,7 @@ public:
     explicit CommandKitBase(CommandQueue& cmd_queue);
 
     // Object overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     // CommandKit interface
     [[nodiscard]] const Context&    GetContext() const noexcept override  { return m_context; }

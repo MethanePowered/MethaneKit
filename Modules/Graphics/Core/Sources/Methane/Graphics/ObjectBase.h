@@ -25,6 +25,7 @@ Base implementation of the named object interface.
 
 #include <Methane/Graphics/Object.h>
 #include <Methane/Memory.hpp>
+#include <Methane/Data/Emitter.hpp>
 
 #include <map>
 
@@ -34,31 +35,41 @@ namespace Methane::Graphics
 class ObjectBase
     : public virtual Object // NOSONAR
     , public std::enable_shared_from_this<ObjectBase>
+    , public Data::Emitter<IObjectCallback>
 {
 public:
-    class RegistryBase : public Registry
+    class RegistryBase
+        : public Registry
+        , private Data::Receiver<IObjectCallback>
     {
     public:
         void        AddGraphicsObject(Object& object) override;
+        void        RemoveGraphicsObject(Object& object) override;
         Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept override;
         bool        HasGraphicsObject(const std::string& object_name) const noexcept override;
 
     private:
+        // IObjectCallback callback
+        void OnObjectNameChanged(Object& object, const std::string& old_name) override;
+        void OnObjectDestroyed(Object& object) override;
+
         std::map<std::string, WeakPtr<Object>, std::less<>> m_object_by_name;
     };
 
     ObjectBase() = default;
-    explicit ObjectBase(const std::string& name) : m_name(name) { }
+    explicit ObjectBase(const std::string& name);
+    ~ObjectBase() override;
 
     // Object interface
-    void               SetName(const std::string& name) override { m_name = name; }
-    const std::string& GetName() const noexcept override         { return m_name; }
-    Ptr<Object>        GetPtr() override                         { return std::dynamic_pointer_cast<Object>(shared_from_this()); }
+    bool               SetName(const std::string& name) override;
+    const std::string& GetName() const noexcept override  { return m_name; }
+    Ptr<Object>        GetPtr() override;
 
-    Ptr<ObjectBase>    GetBasePtr()                              { return shared_from_this(); }
+    Ptr<ObjectBase> GetBasePtr() { return shared_from_this(); }
 
     template<typename T>
-    std::enable_if_t<std::is_base_of_v<ObjectBase, T>, Ptr<T>> GetPtr() { return std::static_pointer_cast<T>(GetBasePtr()); }
+    std::enable_if_t<std::is_base_of_v<ObjectBase, T>, Ptr<T>> GetPtr()
+    { return std::static_pointer_cast<T>(GetBasePtr()); }
 
 private:
     std::string m_name;

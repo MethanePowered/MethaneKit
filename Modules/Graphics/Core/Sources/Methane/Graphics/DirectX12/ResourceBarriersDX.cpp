@@ -164,7 +164,7 @@ bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
     m_native_resource_barriers.erase(native_resource_barrier_it);
 
-    id.GetResource().Disconnect(*this);
+    static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Disconnect(*this);
     return true;
 }
 
@@ -177,7 +177,7 @@ void ResourceBarriersDX::OnResourceReleased(Resource& resource)
 void ResourceBarriersDX::AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    id.GetResource().Connect(*this);
+    static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Connect(*this);
     m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));
 }
 

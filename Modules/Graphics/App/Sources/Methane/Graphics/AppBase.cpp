@@ -142,7 +142,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     m_initial_context_settings.frame_size = frame_size;
     m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
     m_context_ptr->SetName("Graphics Context");
-    m_context_ptr->Connect(*this);
+    static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Connect(*this);
 
     // Fill initial screen render-pass pattern settings
     m_screen_pass_pattern_settings.shader_access_mask = m_settings.screen_pass_access;

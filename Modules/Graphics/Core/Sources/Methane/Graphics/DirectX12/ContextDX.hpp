@@ -73,7 +73,7 @@ public:
 
         if (is_callback_emitted)
         {
-            Emit(&IContextCallback::OnContextInitialized, *this);
+            Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
         }
     }
 

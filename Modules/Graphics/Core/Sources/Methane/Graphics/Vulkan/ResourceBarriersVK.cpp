@@ -176,7 +176,7 @@ bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
     }
 
     UpdateStageMasks();
-    id.GetResource().Disconnect(*this);
+    static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Disconnect(*this);
     return true;
 }
 
@@ -190,7 +190,7 @@ void ResourceBarriersVK::AddResourceBarrier(const ResourceBarrier::Id& id, const
 {
     META_FUNCTION_TASK();
     Resource& resource = id.GetResource();
-    resource.Connect(*this);
+    static_cast<Data::IEmitter<IResourceCallback>&>(resource).Connect(*this);
 
     const Resource::Type resource_type = resource.GetResourceType();
     switch (resource_type)

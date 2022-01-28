@@ -77,7 +77,7 @@ public:
     void Release() override;
 
     // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
     const vk::SwapchainKHR& GetNativeSwapchain() const noexcept   { return m_vk_unique_swapchain.get(); }
@@ -98,6 +98,7 @@ private:
     void InitializeNativeSwapchain();
     void ReleaseNativeSwapchainResources();
     void ResetNativeSwapchain();
+    void ResetNativeObjectNames();
 
     const vk::Device m_vk_device;
 #ifdef __APPLE__

@@ -73,14 +73,14 @@ void RenderContextVK::Release()
     ContextVK<RenderContextBase>::Release();
 }
 
-void RenderContextVK::SetName(const std::string& name)
+bool RenderContextVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (ContextVK::SetName(name))
+        return false;
 
-    ContextVK::SetName(name);
-    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), name.c_str());
+    ResetNativeObjectNames();
+    return true;
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
@@ -286,6 +286,7 @@ vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
 void RenderContextVK::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
+
     if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
         !GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
@@ -342,6 +343,8 @@ void RenderContextVK::InitializeNativeSwapchain()
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
 
+    ResetNativeObjectNames();
+
     if (is_swap_chain_change)
     {
         Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
@@ -360,9 +363,31 @@ void RenderContextVK::ReleaseNativeSwapchainResources()
 
 void RenderContextVK::ResetNativeSwapchain()
 {
+    META_FUNCTION_TASK();
     ReleaseNativeSwapchainResources();
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
+}
+
+void RenderContextVK::ResetNativeObjectNames()
+{
+    META_FUNCTION_TASK();
+    const std::string& context_name = GetName();
+    if (context_name.empty())
+        return;
+
+    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.c_str());
+
+    uint32_t frame_index = 0u;
+    for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    {
+        if (!vk_unique_frame_semaphore)
+            continue;
+
+        const std::string frame_semaphore_name = fmt::format("{} Frame {} Image Available", GetName(), frame_index);
+        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(), frame_semaphore_name.c_str());
+        frame_index++;
+    }
 }
 
 } // namespace Methane::Graphics

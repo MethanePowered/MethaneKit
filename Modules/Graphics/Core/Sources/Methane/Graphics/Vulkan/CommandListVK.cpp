@@ -32,6 +32,7 @@ Vulkan command lists sequence implementation
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Instrumentation.h>
 
+#include <sstream>
 #include <algorithm>
 
 namespace Methane::Graphics
@@ -89,12 +90,16 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
     , m_vk_unique_execution_completed_fence(m_vk_device.createFenceUnique(vk::FenceCreateInfo()))
 {
     META_FUNCTION_TASK();
+    
     m_vk_command_buffers.reserve(command_list_refs.size());
     for (const Ref<CommandList>& command_list_ref : command_list_refs)
     {
         const auto& vulkan_command_list = dynamic_cast<const ICommandListVK&>(command_list_ref.get());
         m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
+        static_cast<Data::IEmitter<IObjectCallback>&>(command_list_ref.get()).Connect(*this);
     }
+
+    UpdateNativeDebugName();
 }
 
 void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
@@ -168,6 +173,43 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
     }
     m_vk_wait_stages.back() = m_vk_wait_frame_buffer_rendering_on_stages;
     return m_vk_wait_stages;
+}
+
+void CommandListSetVK::UpdateNativeDebugName()
+{
+    META_FUNCTION_TASK();
+    const Data::Size list_count = GetCount();
+
+    std::stringstream name_ss;
+    name_ss << list_count << " Command List" << (list_count > 1 ? "s: " : ": ");
+
+    
+    for (Data::Index list_index = 0u; list_index < list_count; ++list_index)
+    {
+        CommandList& cmd_list = (*this)[list_index];
+        const std::string& list_name = cmd_list.GetName();
+        if (list_name.empty())
+            name_ss << "[unnamed]";
+        else
+            name_ss << "'" << list_name << "'";
+
+        if (list_index < list_count - 1)
+            name_ss << ", ";
+    }
+
+    const std::string list_set_name = name_ss.str();
+    const std::string execution_completed_name = fmt::format("{} Execution Completed", list_set_name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_semaphore.get(), execution_completed_name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_fence.get(), execution_completed_name);
+}
+
+// IObjectCallback interface
+void CommandListSetVK::OnObjectNameChanged(Object& object, const std::string& old_name)
+{
+    META_FUNCTION_TASK();
+    META_UNUSED(object);
+    META_UNUSED(old_name);
+    UpdateNativeDebugName();
 }
 
 } // namespace Methane::Graphics

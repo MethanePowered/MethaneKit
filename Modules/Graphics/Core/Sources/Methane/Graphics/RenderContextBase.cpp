@@ -214,7 +214,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
 
     if (is_callback_emitted)
     {
-        Emit(&IContextCallback::OnContextInitialized, *this);
+        Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
     }
 }
 

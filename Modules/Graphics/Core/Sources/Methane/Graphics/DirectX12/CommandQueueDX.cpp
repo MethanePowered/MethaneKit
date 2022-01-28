@@ -106,14 +106,15 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
 #endif
 }
 
-void CommandQueueDX::SetName(const std::string& name)
+bool CommandQueueDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (name == GetName())
-        return;
+        return false;
 
     CommandQueueTrackingBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
+    return true;
 }
 
 const IContextDX& CommandQueueDX::GetContextDX() const noexcept

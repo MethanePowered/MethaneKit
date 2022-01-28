@@ -84,14 +84,17 @@ public:
     void ForceReleaseResource() { m_cp_resource.Reset(); }
 
     // Object interface
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        ResourceBase::SetName(name);
+        if (!ResourceBase::SetName(name))
+            return false;
+
         if (m_cp_resource)
         {
             m_cp_resource->SetName(nowide::widen(name).c_str());
         }
+        return true;
     }
 
     // IResource overrides

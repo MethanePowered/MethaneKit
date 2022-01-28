@@ -107,16 +107,15 @@ void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
                   dx_wait_on_command_queue.GetContextDX().GetDeviceDX().GetNativeDevice().Get());
 }
 
-void FenceDX::SetName(const std::string& name)
+bool FenceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
-
-    ObjectBase::SetName(name);
+    if (ObjectBase::SetName(name))
+        return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);
     m_cp_fence->SetName(nowide::widen(name).c_str());
+    return true;
 }
 
 CommandQueueDX& FenceDX::GetCommandQueueDX()

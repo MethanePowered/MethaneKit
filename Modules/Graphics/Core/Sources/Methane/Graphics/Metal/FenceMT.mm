@@ -105,15 +105,14 @@ void FenceMT::WaitOnGpu(CommandQueue& wait_on_command_queue)
     [mtl_command_buffer commit];
 }
 
-void FenceMT::SetName(const std::string& name)
+bool FenceMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
-
-   ObjectBase::SetName(name);
+    if (!ObjectBase::SetName(name))
+        return false;
 
     m_mtl_event.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    return true;
 }
 
 CommandQueueMT& FenceMT::GetCommandQueueMT()

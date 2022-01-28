@@ -93,17 +93,17 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
-    static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(GetNativeSemaphore(), vk::PipelineStageFlagBits::eTopOfPipe);
+    static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(GetNativeSemaphore(), vk::PipelineStageFlagBits::eBottomOfPipe);
 }
 
-void FenceVK::SetName(const std::string& name)
+bool FenceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (ObjectBase::SetName(name))
+        return false;
 
-    ObjectBase::SetName(name);
     SetVulkanObjectName(m_vk_device, m_vk_unique_semaphore.get(), name.c_str());
+    return true;
 }
 
 CommandQueueVK& FenceVK::GetCommandQueueVK()

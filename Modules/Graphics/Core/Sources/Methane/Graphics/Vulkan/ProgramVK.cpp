@@ -53,14 +53,14 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     InitializeDescriptorSetLayouts();
 }
 
-void ProgramVK::SetName(const std::string& name)
+bool ProgramVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (ProgramBase::SetName(name))
+        return false;
 
-    ProgramBase::SetName(name);
     UpdatePipelineName();
+    return true;
 }
 
 void ProgramVK::UpdatePipelineName()

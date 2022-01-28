@@ -128,16 +128,17 @@ SamplerMT::~SamplerMT()
     [m_mtl_sampler_desc release];
 }
 
-void SamplerMT::SetName(const std::string& name)
+bool SamplerMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (!ResourceMT::SetName(name))
+        return false;
+
     META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
-
-    ResourceMT::SetName(name);
-
     m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
 
     ResetSamplerState();
+    return true;
 }
 
 void SamplerMT::ResetSamplerState()

@@ -49,7 +49,7 @@ public:
     CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type);
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     // CommandQueue interface
     [[nodiscard]] const Context& GetContext() const noexcept final;

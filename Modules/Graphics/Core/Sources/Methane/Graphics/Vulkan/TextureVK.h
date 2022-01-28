@@ -66,7 +66,6 @@ private:
 
     const RenderContextVK& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
-    vk::Image              m_vk_image;
 };
 
 class DepthStencilTextureVK final
@@ -116,6 +115,9 @@ public:
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
+
+    // Object overide
+    bool SetName(const std::string& name) override;
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }

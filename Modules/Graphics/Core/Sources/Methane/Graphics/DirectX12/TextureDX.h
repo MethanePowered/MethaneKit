@@ -76,7 +76,7 @@ public:
     TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTokenDX);
 
     // Object overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     // Resource overrides
     void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;

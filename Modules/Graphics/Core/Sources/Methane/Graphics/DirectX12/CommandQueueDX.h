@@ -44,7 +44,7 @@ public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     const IContextDX&       GetContextDX() const noexcept;
     ID3D12CommandQueue&     GetNativeCommandQueue();

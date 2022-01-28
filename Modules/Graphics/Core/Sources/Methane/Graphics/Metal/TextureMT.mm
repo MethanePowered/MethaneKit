@@ -121,11 +121,14 @@ TextureMT::TextureMT(const ContextBase& context, const Settings& settings, const
     META_FUNCTION_TASK();
 }
 
-void TextureMT::SetName(const std::string& name)
+bool TextureMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ResourceMT::SetName(name);
+    if (!ResourceMT::SetName(name))
+        return false;
+
     m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
+    return true;
 }
 
 void TextureMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)

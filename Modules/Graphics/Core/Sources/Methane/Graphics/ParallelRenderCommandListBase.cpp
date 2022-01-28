@@ -185,13 +185,11 @@ void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
     CommandListBase::Complete(frame_index);
 }
 
-void ParallelRenderCommandListBase::SetName(const std::string& name)
+bool ParallelRenderCommandListBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    CommandListBase::SetName(name);
-
-    if (name.empty())
-        return;
+    if (!CommandListBase::SetName(name) || name.empty())
+        return false;
 
     uint32_t render_cmd_list_index = 0;
     for(const Ptr<RenderCommandList>& render_cmd_list_ptr : m_parallel_command_lists)
@@ -200,6 +198,7 @@ void ParallelRenderCommandListBase::SetName(const std::string& name)
         render_cmd_list_ptr->SetName(GetThreadCommandListName(name, render_cmd_list_index));
         render_cmd_list_index++;
     }
+    return true;
 }
 
 RenderPassBase& ParallelRenderCommandListBase::GetPass()

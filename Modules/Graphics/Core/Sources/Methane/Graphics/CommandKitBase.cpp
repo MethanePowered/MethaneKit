@@ -79,10 +79,11 @@ CommandKitBase::CommandKitBase(CommandQueue& cmd_queue)
     META_FUNCTION_TASK();
 }
 
-void CommandKitBase::SetName(const std::string& name)
+bool CommandKitBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ObjectBase::SetName(name);
+    if (!ObjectBase::SetName(name))
+        return false;
 
     if (m_cmd_queue_ptr)
         m_cmd_queue_ptr->SetName(fmt::format("{} Command Queue", GetName()));
@@ -100,6 +101,8 @@ void CommandKitBase::SetName(const std::string& name)
         if (fence_ptr)
             fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     }
+
+    return true;
 }
 
 CommandQueue& CommandKitBase::GetQueue() const
@@ -205,7 +208,7 @@ Fence& CommandKitBase::GetFence(uint32_t fence_id) const
         return *fence_ptr;
 
     fence_ptr = Fence::Create(GetQueue());
-    fence_ptr->SetName(fmt::format("{} Fence", GetName()));
+    fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
 }
 

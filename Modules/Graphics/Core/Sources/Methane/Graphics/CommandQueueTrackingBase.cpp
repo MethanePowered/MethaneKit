@@ -78,14 +78,14 @@ void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const Comm
     m_execution_waiting_condition_var.notify_one();
 }
 
-void CommandQueueTrackingBase::SetName(const std::string& name)
+bool CommandQueueTrackingBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (name == GetName())
-        return;
+    if (!CommandQueueBase::SetName(name))
+        return false;
 
-    CommandQueueBase::SetName(name);
     m_name_changed = true;
+    return true;
 }
 
 void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_index)

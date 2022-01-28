@@ -431,14 +431,14 @@ void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*s
     vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 
-void RenderStateVK::SetName(const std::string& name)
+bool RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (RenderStateBase::SetName(name))
+        return false;
 
-    RenderStateBase::SetName(name);
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
+    return true;
 }
 
 const IContextVK& RenderStateVK::GetContextVK() const noexcept

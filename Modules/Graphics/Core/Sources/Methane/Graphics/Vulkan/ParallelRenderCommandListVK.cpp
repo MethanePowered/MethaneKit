@@ -50,10 +50,10 @@ ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& comma
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandListVK::SetName(const std::string& name)
+bool ParallelRenderCommandListVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ParallelRenderCommandListBase::SetName(name);
+    return ParallelRenderCommandListBase::SetName(name);
 }
 
 void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)

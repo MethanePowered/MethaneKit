@@ -49,7 +49,7 @@ namespace Methane::Graphics
 template<class CommandListBaseT, uint32_t command_buffers_count = 1,
          ICommandListVK::CommandBufferType default_command_buffer_type = ICommandListVK::CommandBufferType::Primary,
          typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT> && command_buffers_count != 0U>>
-    class CommandListVK
+class CommandListVK
     : public CommandListBaseT
     , public ICommandListVK
 {
@@ -191,19 +191,18 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) final
+    bool SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
-        if (ObjectBase::GetName() == name)
-            return;
-
-        CommandListBaseT::SetName(name);
+        if (!CommandListBaseT::SetName(name))
+            return false;
 
         for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
         {
-            const std::string cmd_buffer_name = fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<ICommandListVK::CommandBufferType>(cmd_buffer_index)));
-            SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffers[cmd_buffer_index].get(), cmd_buffer_name.c_str());
+            SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffers[cmd_buffer_index].get(),
+                                fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<ICommandListVK::CommandBufferType>(cmd_buffer_index))));
         }
+        return true;
     }
 
     // ICommandListVK interface

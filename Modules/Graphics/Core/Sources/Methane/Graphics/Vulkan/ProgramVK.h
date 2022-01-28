@@ -56,7 +56,7 @@ public:
     ProgramVK(const ContextBase& context, const Settings& settings);
 
     // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     ShaderVK& GetShaderVK(Shader::Type shader_type) const;
     const IContextVK& GetContextVK() const noexcept;

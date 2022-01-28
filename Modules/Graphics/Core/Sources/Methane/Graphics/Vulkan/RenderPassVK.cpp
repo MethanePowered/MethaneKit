@@ -206,14 +206,14 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
     }
 }
 
-void RenderPatternVK::SetName(const std::string& name)
+bool RenderPatternVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (RenderPatternBase::SetName(name))
+        return false;
 
-    RenderPatternBase::SetName(name);
     SetVulkanObjectName(GetRenderContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
+    return true;
 }
 
 const RenderContextVK& RenderPatternVK::GetRenderContextVK() const noexcept
@@ -240,7 +240,7 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
     , m_vk_pass_begin_info(CreateBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
-    render_pattern.GetRenderContextVK().Data::Emitter<IRenderContextVKCallback>::Connect(*this);
+    static_cast<Data::IEmitter<IRenderContextVKCallback>&>(render_pattern.GetRenderContextVK()).Connect(*this);
 }
 
 vk::RenderPassBeginInfo RenderPassVK::CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
@@ -295,14 +295,14 @@ void RenderPassVK::End(RenderCommandListBase& command_list)
     RenderPassBase::End(command_list);
 }
 
-void RenderPassVK::SetName(const std::string& name)
+bool RenderPassVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (RenderPassBase::SetName(name))
+        return false;
 
-    RenderPassBase::SetName(name);
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());
+    return true;
 }
 
 void RenderPassVK::Reset()

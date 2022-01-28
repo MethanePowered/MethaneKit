@@ -146,13 +146,15 @@ ProgramDX::~ProgramDX()
     }
 }
 
-void ProgramDX::SetName(const std::string& name)
+bool ProgramDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ObjectBase::SetName(name);
+    if (!ObjectBase::SetName(name))
+        return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
     m_cp_root_signature->SetName(nowide::widen(name).c_str());
+    return true;
 }
 
 void ProgramDX::InitRootSignature()

@@ -64,7 +64,7 @@ public:
     void Commit() override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
 

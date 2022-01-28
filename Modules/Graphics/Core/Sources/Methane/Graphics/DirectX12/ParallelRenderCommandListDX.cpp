@@ -102,14 +102,15 @@ void ParallelRenderCommandListDX::SetEndingResourceBarriers(const Resource::Barr
     m_ending_command_list.SetResourceBarriers(resource_barriers);
 }
 
-void ParallelRenderCommandListDX::SetName(const std::string& name)
+bool ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (!ParallelRenderCommandListBase::SetName(name))
+        return false;
 
     m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
     m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
-
-    ParallelRenderCommandListBase::SetName(name);
+    return true;
 }
 
 void ParallelRenderCommandListDX::Commit()

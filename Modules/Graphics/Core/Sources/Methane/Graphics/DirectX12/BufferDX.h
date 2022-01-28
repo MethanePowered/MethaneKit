@@ -68,15 +68,17 @@ public:
     }
 
     // Object overrides
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        ResourceDX::SetName(name);
+        if (!ResourceDX::SetName(name))
+            return false;
 
         if (m_cp_upload_resource)
         {
             m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
         }
+        return true;
     }
 
     // Resource overrides

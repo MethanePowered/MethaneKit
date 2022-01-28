@@ -399,15 +399,17 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Groups state_grou
     }
 }
 
-void RenderStateDX::SetName(const std::string& name)
+bool RenderStateDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::SetName(name);
+    if (!RenderStateBase::SetName(name))
+        return false;
 
     if (m_cp_pipeline_state)
     {
         m_cp_pipeline_state->SetName(nowide::widen(name).c_str());
     }
+    return true;
 }
 
 void RenderStateDX::InitializeNativePipelineState()

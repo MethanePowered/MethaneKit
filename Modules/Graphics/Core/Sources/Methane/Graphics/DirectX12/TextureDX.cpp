@@ -236,13 +236,15 @@ ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& set
     cp_device->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
 }
 
-void ImageTextureDX::SetName(const std::string& name)
+bool ImageTextureDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ResourceDX::SetName(name);
+    if (!ResourceDX::SetName(name))
+        return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
     m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
+    return true;
 }
 
 ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() const

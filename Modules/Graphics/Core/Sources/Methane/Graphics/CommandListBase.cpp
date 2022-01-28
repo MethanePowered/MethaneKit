@@ -44,9 +44,9 @@ CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-void CommandListBase::DebugGroupBase::SetName(const std::string&)
+bool CommandListBase::DebugGroupBase::SetName(const std::string&)
 {
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Debug Group can not be renamed");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
 CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
@@ -247,7 +247,7 @@ void CommandListBase::Complete(uint32_t frame_index)
     if (m_completed_callback)
         m_completed_callback(*this);
     
-    Emit(&ICommandListCallback::OnCommandListExecutionCompleted, *this);
+    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListExecutionCompleted, *this);
 }
 
 void CommandListBase::CompleteInternal(uint32_t frame_index)
@@ -308,7 +308,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     m_state = state;
     m_state_change_condition_var.notify_one();
     
-    Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
+    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()

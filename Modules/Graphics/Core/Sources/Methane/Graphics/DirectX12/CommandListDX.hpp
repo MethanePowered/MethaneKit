@@ -174,9 +174,11 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) final
+    bool SetName(const std::string& name) final
     {
         META_FUNCTION_TASK();
+        if (!CommandListBaseT::SetName(name))
+            return false;
 
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         m_cp_command_list->SetName(nowide::widen(name).c_str());
@@ -184,7 +186,7 @@ public:
         META_CHECK_ARG_NOT_NULL(m_cp_command_allocator);
         m_cp_command_allocator->SetName(nowide::widen(fmt::format("{} allocator", name)).c_str());
 
-        CommandListBaseT::SetName(name);
+        return true;
     }
 
     // ICommandListDX interface
