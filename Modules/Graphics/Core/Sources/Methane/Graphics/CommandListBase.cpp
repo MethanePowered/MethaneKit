@@ -365,6 +365,8 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
                                   std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
                                   "all command lists in set must be created in one command queue");
 
+        static_cast<Data::IEmitter<IObjectCallback>&>(command_list_base).Connect(*this);
+
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
     }
@@ -414,6 +416,38 @@ const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index)
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_base_refs.size());
     return m_base_refs[index].get();
+}
+
+const std::string& CommandListSetBase::GetCombinedName()
+{
+    META_FUNCTION_TASK();
+    if (!m_combined_name.empty())
+        return m_combined_name;
+
+    std::stringstream name_ss;
+    const size_t list_count = m_refs.size();
+    name_ss << list_count << " Command List" << (list_count > 1 ? "s: " : ": ");
+
+    for (size_t list_index = 0u; list_index < list_count; ++list_index)
+    {
+        const std::string& list_name = m_refs[list_index].get().GetName();
+        if (list_name.empty())
+            name_ss << "<unnamed>";
+        else
+            name_ss << "'" << list_name << "'";
+
+        if (list_index < list_count - 1)
+            name_ss << ", ";
+    }
+
+    m_combined_name = name_ss.str();
+    return m_combined_name;
+}
+
+void CommandListSetBase::OnObjectNameChanged(Object&, const std::string&)
+{
+    META_FUNCTION_TASK();
+    m_combined_name.clear();
 }
 
 } // namespace Methane::Graphics

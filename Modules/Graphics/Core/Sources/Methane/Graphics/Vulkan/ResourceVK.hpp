@@ -93,7 +93,7 @@ public:
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        if (ResourceBaseType::SetName(name))
+        if (!ResourceBaseType::SetName(name))
             return false;
 
         const auto& vk_resource = GetNativeResource();

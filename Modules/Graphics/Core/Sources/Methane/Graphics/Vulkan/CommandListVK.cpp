@@ -96,7 +96,6 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
     {
         const auto& vulkan_command_list = dynamic_cast<const ICommandListVK&>(command_list_ref.get());
         m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
-        static_cast<Data::IEmitter<IObjectCallback>&>(command_list_ref.get()).Connect(*this);
     }
 
     UpdateNativeDebugName();
@@ -175,41 +174,19 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
     return m_vk_wait_stages;
 }
 
-void CommandListSetVK::UpdateNativeDebugName()
-{
-    META_FUNCTION_TASK();
-    const Data::Size list_count = GetCount();
-
-    std::stringstream name_ss;
-    name_ss << list_count << " Command List" << (list_count > 1 ? "s: " : ": ");
-
-    
-    for (Data::Index list_index = 0u; list_index < list_count; ++list_index)
-    {
-        CommandList& cmd_list = (*this)[list_index];
-        const std::string& list_name = cmd_list.GetName();
-        if (list_name.empty())
-            name_ss << "[unnamed]";
-        else
-            name_ss << "'" << list_name << "'";
-
-        if (list_index < list_count - 1)
-            name_ss << ", ";
-    }
-
-    const std::string list_set_name = name_ss.str();
-    const std::string execution_completed_name = fmt::format("{} Execution Completed", list_set_name);
-    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_semaphore.get(), execution_completed_name);
-    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_fence.get(), execution_completed_name);
-}
-
-// IObjectCallback interface
 void CommandListSetVK::OnObjectNameChanged(Object& object, const std::string& old_name)
 {
     META_FUNCTION_TASK();
-    META_UNUSED(object);
-    META_UNUSED(old_name);
+    CommandListSetBase::OnObjectNameChanged(object, old_name);
     UpdateNativeDebugName();
+}
+
+void CommandListSetVK::UpdateNativeDebugName()
+{
+    META_FUNCTION_TASK();
+    const std::string execution_completed_name = fmt::format("{} Execution Completed", GetCombinedName());
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_semaphore.get(), execution_completed_name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_fence.get(), execution_completed_name);
 }
 
 } // namespace Methane::Graphics

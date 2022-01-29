@@ -64,7 +64,6 @@ struct ICommandListVK
 
 class CommandListSetVK final
     : public CommandListSetBase
-    , private Data::Receiver<IObjectCallback>
 {
 public:
     explicit CommandListSetVK(const Refs<CommandList>& command_list_refs);
@@ -80,13 +79,14 @@ public:
     CommandQueueVK&       GetCommandQueueVK() noexcept;
     const CommandQueueVK& GetCommandQueueVK() const noexcept;
 
-private:
-    const std::vector<vk::Semaphore>& GetWaitSemaphores();
-    const std::vector<vk::PipelineStageFlags>& GetWaitStages();
-    void UpdateNativeDebugName();
-
+protected:
     // IObjectCallback interface
     void OnObjectNameChanged(Object& object, const std::string& old_name) override;
+
+private:
+    const std::vector<vk::Semaphore>&          GetWaitSemaphores();
+    const std::vector<vk::PipelineStageFlags>& GetWaitStages();
+    void UpdateNativeDebugName();
 
     const vk::PipelineStageFlags        m_vk_wait_frame_buffer_rendering_on_stages;
     const vk::Device&                   m_vk_device;

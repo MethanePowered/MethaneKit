@@ -26,8 +26,10 @@ Vulkan implementation of the resource objects.
 #include "TextureVK.h"
 #include "SamplerVK.h"
 #include "TypesVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Instrumentation.h>
+#include <fmt/format.h>
 
 namespace Methane::Graphics
 {
@@ -65,18 +67,32 @@ const vk::DescriptorImageInfo* IResourceVK::LocationVK::GetNativeDescriptorImage
     return std::get_if<vk::DescriptorImageInfo>(&m_descriptor_var);
 }
 
-const vk::BufferView* IResourceVK::LocationVK::GetNativeBufferView() const noexcept
+const vk::BufferView* IResourceVK::LocationVK::GetNativeBufferViewPtr() const noexcept
 {
     META_FUNCTION_TASK();
     const vk::UniqueBufferView* vk_unique_buffer_view_ptr = std::get_if<vk::UniqueBufferView>(m_view_var_ptr.get());
     return vk_unique_buffer_view_ptr ? &vk_unique_buffer_view_ptr->get() : nullptr;
 }
 
-const vk::ImageView* IResourceVK::LocationVK::GetNativeImageView() const noexcept
+const vk::ImageView* IResourceVK::LocationVK::GetNativeImageViewPtr() const noexcept
 {
     META_FUNCTION_TASK();
     const vk::UniqueImageView* vk_unique_image_view_ptr = std::get_if<vk::UniqueImageView>(m_view_var_ptr.get());
     return vk_unique_image_view_ptr ? &vk_unique_image_view_ptr->get() : nullptr;
+}
+
+const vk::BufferView& IResourceVK::LocationVK::GetNativeBufferView() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_view_var_ptr);
+    return std::get<vk::UniqueBufferView>(*m_view_var_ptr).get();
+}
+
+const vk::ImageView& IResourceVK::LocationVK::GetNativeImageView() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_view_var_ptr);
+    return std::get<vk::UniqueImageView>(*m_view_var_ptr).get();
 }
 
 void IResourceVK::LocationVK::InitBufferLocation()
@@ -94,9 +110,10 @@ void IResourceVK::LocationVK::InitTextureLocation()
     META_FUNCTION_TASK();
     const Texture& texture = dynamic_cast<const Texture&>(GetResource());
     const Texture::Settings& texture_settings = texture.GetSettings();
+    const vk::Device& vk_device = GetResourceVK().GetNativeDevice();
 
     m_view_var_ptr = std::make_shared<ViewVariant>();
-    *m_view_var_ptr = GetResourceVK().GetNativeDevice().createImageViewUnique(
+    *m_view_var_ptr = vk_device.createImageViewUnique(
         vk::ImageViewCreateInfo(
             vk::ImageViewCreateFlags{},
             dynamic_cast<ITextureVK&>(GetResource()).GetNativeImage(),
@@ -109,9 +126,11 @@ void IResourceVK::LocationVK::InitTextureLocation()
                                       GetSubresourceIndex().GetArrayIndex(), 1U)
     ));
 
+    SetVulkanObjectName(vk_device, GetNativeImageView(), fmt::format("{} Location", texture.GetName()));
+
     m_descriptor_var = vk::DescriptorImageInfo(
         vk::Sampler(),
-        *GetNativeImageView(),
+        *GetNativeImageViewPtr(),
         // TODO: add support for image layout, aka resource state of location
         vk::ImageLayout::eUndefined
     );

@@ -163,6 +163,7 @@ private:
 
 class CommandListSetBase
     : public CommandListSet
+    , protected Data::Receiver<IObjectCallback>
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
@@ -180,17 +181,23 @@ public:
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
-    Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
-    const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
-    Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
-    const CommandListBase&       GetCommandListBase(Data::Index index) const;
-    CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
+    [[nodiscard]] const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
+    [[nodiscard]] Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
+    [[nodiscard]] const CommandListBase&       GetCommandListBase(Data::Index index) const;
+    [[nodiscard]] CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const std::string&           GetCombinedName();
+
+protected:
+    // IObjectCallback interface
+    void OnObjectNameChanged(Object&, const std::string&) override;
 
 private:
     Refs<CommandList>     m_refs;
     Refs<CommandListBase> m_base_refs;
     Ptrs<CommandListBase> m_base_ptrs;
+    std::string           m_combined_name;
     Data::Index           m_executing_on_frame_index = 0U;
 
     mutable TracyLockable(std::mutex, m_command_lists_mutex)

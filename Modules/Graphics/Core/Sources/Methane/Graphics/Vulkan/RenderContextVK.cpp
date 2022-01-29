@@ -76,7 +76,7 @@ void RenderContextVK::Release()
 bool RenderContextVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ContextVK::SetName(name))
+    if (!ContextVK::SetName(name))
         return false;
 
     ResetNativeObjectNames();

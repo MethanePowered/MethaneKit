@@ -209,7 +209,7 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
 bool RenderPatternVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (RenderPatternBase::SetName(name))
+    if (!RenderPatternBase::SetName(name))
         return false;
 
     SetVulkanObjectName(GetRenderContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
@@ -298,7 +298,7 @@ void RenderPassVK::End(RenderCommandListBase& command_list)
 bool RenderPassVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (RenderPassBase::SetName(name))
+    if (!RenderPassBase::SetName(name))
         return false;
 
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());

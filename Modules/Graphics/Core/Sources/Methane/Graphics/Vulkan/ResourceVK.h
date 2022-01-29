@@ -48,8 +48,10 @@ public:
         [[nodiscard]] IResourceVK&                    GetResourceVK() const noexcept;
         [[nodiscard]] const vk::DescriptorBufferInfo* GetNativeDescriptorBufferInfo() const noexcept;
         [[nodiscard]] const vk::DescriptorImageInfo*  GetNativeDescriptorImageInfo() const noexcept;
-        [[nodiscard]] const vk::BufferView*           GetNativeBufferView() const noexcept;
-        [[nodiscard]] const vk::ImageView*            GetNativeImageView() const noexcept;
+        [[nodiscard]] const vk::BufferView*           GetNativeBufferViewPtr() const noexcept;
+        [[nodiscard]] const vk::ImageView*            GetNativeImageViewPtr() const noexcept;
+        [[nodiscard]] const vk::BufferView&           GetNativeBufferView() const;
+        [[nodiscard]] const vk::ImageView&            GetNativeImageView() const;
 
     private:
         using DescriptorVariant = std::variant<void*, vk::DescriptorBufferInfo, vk::DescriptorImageInfo>;

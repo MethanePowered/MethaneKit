@@ -291,7 +291,7 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sy
 bool ImageTextureVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ResourceVK::SetName(name))
+    if (!ResourceVK::SetName(name))
         return false;
 
     if (m_vk_unique_staging_buffer)

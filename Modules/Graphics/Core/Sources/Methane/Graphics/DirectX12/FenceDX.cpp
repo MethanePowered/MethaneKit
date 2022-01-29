@@ -110,7 +110,7 @@ void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
 bool FenceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::SetName(name))
+    if (!FenceBase::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);

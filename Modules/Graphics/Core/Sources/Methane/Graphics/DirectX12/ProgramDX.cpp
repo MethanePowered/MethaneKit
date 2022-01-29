@@ -149,7 +149,7 @@ ProgramDX::~ProgramDX()
 bool ProgramDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ObjectBase::SetName(name))
+    if (!ProgramBase::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_root_signature);

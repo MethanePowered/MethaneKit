@@ -460,7 +460,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 bool DeviceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (DeviceBase::SetName(name))
+    if (!DeviceBase::SetName(name))
         return false;
 
     SetVulkanObjectName(m_vk_unique_device.get(), m_vk_unique_device.get(), name.c_str());

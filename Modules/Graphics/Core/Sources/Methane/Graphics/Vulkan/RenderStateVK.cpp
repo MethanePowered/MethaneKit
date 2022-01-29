@@ -434,7 +434,7 @@ void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*s
 bool RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (RenderStateBase::SetName(name))
+    if (!RenderStateBase::SetName(name))
         return false;
 
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());

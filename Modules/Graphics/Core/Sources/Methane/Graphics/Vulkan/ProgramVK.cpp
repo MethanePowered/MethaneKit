@@ -56,7 +56,7 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
 bool ProgramVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ProgramBase::SetName(name))
+    if (!ProgramBase::SetName(name))
         return false;
 
     UpdatePipelineName();

@@ -99,7 +99,7 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 bool FenceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::SetName(name))
+    if (!FenceBase::SetName(name))
         return false;
 
     SetVulkanObjectName(m_vk_device, m_vk_unique_semaphore.get(), name.c_str());
