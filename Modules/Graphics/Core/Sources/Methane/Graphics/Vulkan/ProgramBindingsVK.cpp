@@ -27,6 +27,7 @@ Vulkan implementation of the program interface.
 #include "DeviceVK.h"
 #include "CommandListVK.h"
 #include "DescriptorManagerVK.h"
+#include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CoreFormatters.hpp>
