@@ -100,9 +100,12 @@ struct ProgramBindings
     [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // ProgramBindings interface
-    [[nodiscard]] virtual Program&         GetProgram() const = 0;
-    [[nodiscard]] virtual ArgumentBinding& Get(const Program::Argument& shader_argument) const = 0;
-    [[nodiscard]] virtual explicit operator std::string() const = 0;
+    [[nodiscard]] virtual Program&                  GetProgram() const = 0;
+    [[nodiscard]] virtual ArgumentBinding&          Get(const Program::Argument& shader_argument) const = 0;
+    [[nodiscard]] virtual const Program::Arguments& GetArguments() const noexcept = 0;
+    [[nodiscard]] virtual Data::Index               GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual Data::Index               GetBindingsIndex() const noexcept = 0;
+    [[nodiscard]] virtual explicit operator         std::string() const = 0;
 
     virtual ~ProgramBindings() = default;
 };

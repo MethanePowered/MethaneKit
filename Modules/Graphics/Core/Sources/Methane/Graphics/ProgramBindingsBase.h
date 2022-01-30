@@ -90,13 +90,13 @@ public:
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
-    const Program::Arguments& GetArguments() const noexcept  { return m_arguments; }
-    Data::Index               GetFrameIndex() const noexcept { return m_frame_index; }
-
     // ProgramBindings interface
-    Program&         GetProgram() const override;
-    ArgumentBinding& Get(const Program::Argument& shader_argument) const override;
-    explicit operator std::string() const override;
+    Program&                  GetProgram() const final;
+    const Program::Arguments& GetArguments() const noexcept final     { return m_arguments; }
+    Data::Index               GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index               GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    ArgumentBinding&          Get(const Program::Argument& shader_argument) const final;
+    explicit operator std::string() const final;
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;
@@ -151,6 +151,7 @@ private:
     ArgumentBindings                m_binding_by_argument;
     ResourceStatesByAccess          m_transition_resource_states_by_access;
     mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
+    Data::Index                     m_bindings_index = 0u; // index of the this program bindings between all program bindings of the program
 };
 
 } // namespace Methane::Graphics

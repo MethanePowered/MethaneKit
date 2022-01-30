@@ -60,20 +60,11 @@ bool ProgramVK::SetName(const std::string& name)
         return false;
 
     UpdatePipelineName();
+    UpdateDescriptorSetLayoutNames();
+    UpdateConstantDescriptorSetName();
+    UpdateFrameConstantDescriptorSetNames();
+
     return true;
-}
-
-void ProgramVK::UpdatePipelineName()
-{
-    if (!m_vk_unique_pipeline_layout)
-        return;
-
-    const std::string& program_name = GetName();
-    if (program_name.empty())
-        return;
-
-    const std::string pipeline_name = fmt::format("{} Pipeline Layout", program_name);
-    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline_layout.get(), pipeline_name.c_str());
 }
 
 const IContextVK& ProgramVK::GetContextVK() const noexcept
@@ -151,6 +142,8 @@ const vk::DescriptorSet& ProgramVK::GetConstantDescriptorSet()
     m_vk_constant_descriptor_set_opt = layout
                                      ? GetContextVK().GetDescriptorManagerVK().AllocDescriptorSet(layout)
                                      : vk::DescriptorSet();
+
+    UpdateConstantDescriptorSetName();
     return m_vk_constant_descriptor_set_opt.value();
 }
 
@@ -179,6 +172,7 @@ const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index fr
         frame_descriptor_set = descriptor_manager.AllocDescriptorSet(layout);
     }
 
+    UpdateFrameConstantDescriptorSetNames();
     return m_vk_frame_constant_descriptor_sets.at(frame_index);
 }
 
@@ -253,6 +247,72 @@ void ProgramVK::InitializeDescriptorSetLayouts()
     META_LOG("{}", log_ss.str());
 
     m_vk_descriptor_set_layouts = vk::uniqueToRaw(m_vk_unique_descriptor_set_layouts);
+
+    UpdateDescriptorSetLayoutNames();
+}
+
+void ProgramVK::UpdatePipelineName()
+{
+    if (!m_vk_unique_pipeline_layout)
+        return;
+
+    const std::string& program_name = GetName();
+    if (program_name.empty())
+        return;
+
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline_layout.get(),
+                        fmt::format("{} Pipeline Layout", program_name));
+}
+
+void ProgramVK::UpdateDescriptorSetLayoutNames()
+{
+    META_FUNCTION_TASK();
+    const std::string& program_name = GetName();
+    if (program_name.empty())
+        return;
+
+    size_t layout_index = 0u;
+    for (const vk::DescriptorSetLayout& descriptor_set_layout : m_vk_descriptor_set_layouts)
+    {
+        Program::ArgumentAccessor::Type access_type = magic_enum::enum_value<Program::ArgumentAccessor::Type>(layout_index);
+        SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), descriptor_set_layout,
+                            fmt::format("{} {} Arguments Layout", program_name, magic_enum::enum_name(access_type)));
+        layout_index++;
+    }
+}
+
+void ProgramVK::UpdateConstantDescriptorSetName()
+{
+    META_FUNCTION_TASK();
+    if (!m_vk_constant_descriptor_set_opt ||
+        !m_vk_constant_descriptor_set_opt.value())
+        return;
+
+    const std::string& program_name = GetName();
+    if (program_name.empty())
+        return;
+
+    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_constant_descriptor_set_opt.value(),
+        fmt::format("{} Constant Argument Bindings", program_name));
+}
+
+void ProgramVK::UpdateFrameConstantDescriptorSetNames()
+{
+    META_FUNCTION_TASK();
+    if (m_vk_frame_constant_descriptor_sets.empty())
+        return;
+
+    const std::string& program_name = GetName();
+    if (program_name.empty())
+        return;
+
+    size_t frame_index = 0u;
+    for (const vk::DescriptorSet& vk_frame_const_descriptor_set : m_vk_frame_constant_descriptor_sets)
+    {
+        SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), vk_frame_const_descriptor_set,
+            fmt::format("{} Frame {} Constant Argument Bindings", program_name, frame_index));
+        frame_index++;
+    }
 }
 
 } // namespace Methane::Graphics

@@ -75,6 +75,9 @@ private:
 
     void InitializeDescriptorSetLayouts();
     void UpdatePipelineName();
+    void UpdateDescriptorSetLayoutNames();
+    void UpdateConstantDescriptorSetName();
+    void UpdateFrameConstantDescriptorSetNames();
 
     DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
     std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;

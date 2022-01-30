@@ -26,6 +26,7 @@ Vulkan implementation of the program interface.
 #include "ResourceVK.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include <vector>
@@ -35,10 +36,13 @@ namespace Methane::Graphics
 
 struct ICommandListVK;
 
-class ProgramBindingsVK final : public ProgramBindingsBase
+class ProgramBindingsVK final
+    : public ProgramBindingsBase
+    , private Data::Receiver<IObjectCallback>
 {
 public:
-    class ArgumentBindingVK final : public ArgumentBindingBase
+    class ArgumentBindingVK final
+        : public ArgumentBindingBase
     {
     public:
         struct ByteCodeMap
@@ -91,6 +95,11 @@ public:
     void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
+    // IObjectCallback interface
+    void OnObjectNameChanged(Object&, const std::string&) override; // Program name changed
+
+    void UpdateMutableDescriptorSetName();
+
     std::vector<vk::DescriptorSet> m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
     bool                           m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
 };

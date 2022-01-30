@@ -178,6 +178,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
 ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index)
     : m_program_ptr(program_ptr)
     , m_frame_index(frame_index)
+    , m_bindings_index(static_cast<ProgramBase&>(*m_program_ptr).GetBindingsCountAndIncrement())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO(program_ptr);
@@ -190,6 +191,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_frame_index(frame_index.value_or(other_program_bindings.m_frame_index))
     , m_transition_resource_states_by_access(other_program_bindings.m_transition_resource_states_by_access)
+    , m_bindings_index(static_cast<ProgramBase&>(*m_program_ptr).GetBindingsCountAndIncrement())
 {
     META_FUNCTION_TASK();
     InitializeArgumentBindings();

@@ -52,12 +52,14 @@ public:
     ProgramBase(const ContextBase& context, const Settings& settings);
 
     // Program interface
-    const Settings&      GetSettings() const final                          { return m_settings; }
-    const Shader::Types& GetShaderTypes() const final                       { return m_shader_types; }
-    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const final    { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
-    bool                 HasShader(Shader::Type shader_type) const          { return !!GetShader(shader_type); }
+    const Settings&      GetSettings() const noexcept final              { return m_settings; }
+    const Shader::Types& GetShaderTypes() const noexcept final           { return m_shader_types; }
+    const Ptr<Shader>&   GetShader(Shader::Type shader_type) const final { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
+    bool                 HasShader(Shader::Type shader_type) const       { return !!GetShader(shader_type); }
+    Data::Size           GetBindingsCount() const noexcept final         { return m_bindings_count; }
 
     const ContextBase&   GetContext() const { return m_context; }
+    
 
 protected:
     using ArgumentBindings      = ProgramBindingsBase::ArgumentBindings;
@@ -76,6 +78,8 @@ protected:
     using ShadersByType = std::array<Ptr<Shader>, magic_enum::enum_count<Shader::Type>() - 1>;
     static ShadersByType CreateShadersByType(const Ptrs<Shader>& shaders);
 
+    Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
+
 private:
     const ContextBase&                    m_context;
     const Settings                        m_settings;
@@ -83,6 +87,7 @@ private:
     const Shader::Types                   m_shader_types;
     ProgramBindingsBase::ArgumentBindings m_binding_by_argument;
     FrameArgumentBindings                 m_frame_bindings_by_argument;
+    Data::Size                            m_bindings_count = 0u;
 };
 
 } // namespace Methane::Graphics

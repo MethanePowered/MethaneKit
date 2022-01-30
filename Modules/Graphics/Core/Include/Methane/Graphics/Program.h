@@ -142,9 +142,10 @@ struct Program : virtual Object // NOSONAR
     [[nodiscard]] static Ptr<Program> Create(const Context& context, const Settings& settings);
 
     // Program interface
-    [[nodiscard]] virtual const Settings&      GetSettings() const = 0;
-    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const = 0;
+    [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const noexcept = 0;
     [[nodiscard]] virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
+    [[nodiscard]] virtual Data::Size           GetBindingsCount() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

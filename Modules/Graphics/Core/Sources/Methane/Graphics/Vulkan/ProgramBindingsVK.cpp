@@ -128,6 +128,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
 {
     META_FUNCTION_TASK();
     auto& program = static_cast<ProgramVK&>(GetProgram());
+    program.Connect(*this);
 
     const vk::DescriptorSet& vk_constant_descriptor_set = program.GetConstantDescriptorSet();
     if (vk_constant_descriptor_set)
@@ -179,6 +180,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         }
     }
 
+    UpdateMutableDescriptorSetName();
     SetResourcesForArguments(resource_locations_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
@@ -222,6 +224,7 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
         }
     }
 
+    UpdateMutableDescriptorSetName();
     SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_location_by_argument));
     VerifyAllArgumentsAreBoundToResources();
 }
@@ -269,7 +272,26 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBind
                                          first_descriptor_set_layout_index,
                                          m_descriptor_sets,
                                          {});
+}
 
+void ProgramBindingsVK::OnObjectNameChanged(Object&, const std::string&)
+{
+    META_FUNCTION_TASK();
+    UpdateMutableDescriptorSetName();
+}
+
+void ProgramBindingsVK::UpdateMutableDescriptorSetName()
+{
+    META_FUNCTION_TASK();
+    if (!m_has_mutable_descriptor_set)
+        return;
+
+    const std::string& program_name = GetProgram().GetName();
+    if (program_name.empty())
+        return;
+
+    SetVulkanObjectName(static_cast<ProgramVK&>(GetProgram()).GetContextVK().GetDeviceVK().GetNativeDevice(), m_descriptor_sets.back(),
+                        fmt::format("{} Mutable Argument Bindings {}", program_name, GetBindingsIndex()));
 }
 
 } // namespace Methane::Graphics
