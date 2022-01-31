@@ -37,6 +37,7 @@ namespace Methane::Graphics
 {
 
 class ContextBase;
+class RenderContextBase;
 class DeviceBase;
 
 class CommandQueueBase
@@ -62,10 +63,11 @@ public:
 
 protected:
     void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);
-    uint32_t GetCurrentFrameBufferIndex() const;
+    uint32_t GetCurrentFrameBufferIndex() const noexcept;
 
 private:
     const ContextBase&           m_context;
+    const RenderContextBase*     m_render_context_ptr;
     const Ptr<DeviceBase>        m_device_ptr;
     const CommandList::Type      m_command_lists_type;
     UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;

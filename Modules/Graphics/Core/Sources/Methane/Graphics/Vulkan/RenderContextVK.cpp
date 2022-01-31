@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -133,18 +133,20 @@ void RenderContextVK::Present()
     META_SCOPE_TIMER("RenderContextDX::Present");
     ContextVK<RenderContextBase>::Present();
 
-    const auto& render_command_queue = static_cast<const CommandQueueVK&>(GetRenderCommandKit().GetQueue());
+    auto& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
 
     // Present frame to screen
     const uint32_t image_index = GetFrameBufferIndex();
     const vk::PresentInfoKHR present_info(
-        render_command_queue.GetWaitForExecutionCompleted(image_index).semaphores,
+        render_command_queue.GetWaitForFrameExecutionCompleted(image_index).semaphores,
         GetNativeSwapchain(), image_index
     );
     if (const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
         present_result != vk::Result::eSuccess &&
         present_result != vk::Result::eSuboptimalKHR)
         throw InvalidArgumentException<vk::Result>("RenderContextVK::Present", "present_result", present_result, "failed to present frame image on screen");
+
+    render_command_queue.ResetWaitForFrameExecution(image_index);
 
     ContextVK<RenderContextBase>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();

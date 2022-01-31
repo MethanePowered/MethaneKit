@@ -48,7 +48,7 @@ public:
     ~CommandQueueVK() override;
 
     // CommandQueue interface
-    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(CommandListSet& command_list_set, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
     bool SetName(const std::string& name) override;
@@ -58,7 +58,9 @@ public:
 
     void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
     const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
-    const WaitInfo& GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt = { }) const;
+    const WaitInfo& GetWaitForExecutionCompleted() const;
+    const WaitInfo& GetWaitForFrameExecutionCompleted(Data::Index frame_index) const;
+    void ResetWaitForFrameExecution(Data::Index frame_index);
 
     vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
     const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
@@ -74,7 +76,7 @@ private:
 
     void Reset();
 
-    using Semaphores = std::vector<vk::Semaphore>;
+    using FrameWaitInfos = std::vector<WaitInfo>;
 
     const uint32_t         m_queue_family_index;
     const uint32_t         m_queue_index;
@@ -82,6 +84,7 @@ private:
     vk::UniqueCommandPool  m_vk_unique_command_pool;
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
+    FrameWaitInfos         m_wait_frame_execution_completed;
 };
 
 } // namespace Methane::Graphics

@@ -31,6 +31,7 @@ namespace Methane::Graphics
 
 CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type)
     : m_context(context)
+    , m_render_context_ptr(m_context.GetType() == Context::Type::Render ? dynamic_cast<const RenderContextBase*>(&m_context) : nullptr)
     , m_device_ptr(context.GetDeviceBasePtr())
     , m_command_lists_type(command_lists_type)
 {
@@ -78,12 +79,10 @@ void CommandQueueBase::InitializeTracyGpuContext(const Tracy::GpuContext::Settin
     m_tracy_gpu_context_ptr = std::make_unique<Tracy::GpuContext>(tracy_settings);
 }
 
-uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
+uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const noexcept
 {
     META_FUNCTION_TASK();
-    return m_context.GetType() == Context::Type::Render
-         ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
-         : 0U;
+    return m_render_context_ptr ? m_render_context_ptr->GetFrameBufferIndex() : 0U;
 }
 
 } // namespace Methane::Graphics
