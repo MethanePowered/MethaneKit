@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2021 Evgeny Gorodetskiy
+Copyright 2021-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -55,27 +55,28 @@ public:
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
 
 protected:
-    using ExecutingCommandListSets = std::queue<Ptr<CommandListSetBase>>;
+    using CommandListSetsQueue = std::queue<Ptr<CommandListSetBase>>;
 
-    template<typename MutexType>
-    class ExecutingCommandListSetsGuard
+    template<bool const_access, typename MutexType>
+    class CommandListSetsQueueGuard
     {
     public:
-        ExecutingCommandListSetsGuard(const ExecutingCommandListSets& executing_command_lists, MutexType& mutex)
+        using CommandListSetsQueueType = std::conditional_t<const_access, const CommandListSetsQueue, CommandListSetsQueue>;
+        CommandListSetsQueueGuard(CommandListSetsQueueType& executing_command_lists, MutexType& mutex)
             : m_lock_guard(mutex)
-            , m_executing_command_lists(executing_command_lists)
+            , m_command_lists_queue(executing_command_lists)
         { }
 
-        const ExecutingCommandListSets& GetExecutingCommandLists() const noexcept { return m_executing_command_lists; }
+        CommandListSetsQueueType& GetCommandListsQueue() const noexcept { return m_command_lists_queue; }
 
     private:
-        std::scoped_lock<MutexType>     m_lock_guard;
-        const ExecutingCommandListSets& m_executing_command_lists;
+        std::scoped_lock<MutexType> m_lock_guard;
+        CommandListSetsQueueType&   m_command_lists_queue;
     };
 
     decltype(auto) GetExecutingCommandListsGuard() const
     {
-        return ExecutingCommandListSetsGuard<decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
+        return CommandListSetsQueueGuard<true, decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
     }
 
 private:
@@ -84,7 +85,7 @@ private:
     const Ptr<CommandListSetBase>& GetNextExecutingCommandListSet() const;
     void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
-    ExecutingCommandListSets            m_executing_command_lists;
+    CommandListSetsQueue                m_executing_command_lists;
     mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex)
     TracyLockable(std::mutex,           m_execution_waiting_mutex)
     std::condition_variable_any         m_execution_waiting_condition_var;

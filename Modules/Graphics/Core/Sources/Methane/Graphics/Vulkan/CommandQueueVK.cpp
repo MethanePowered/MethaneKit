@@ -99,8 +99,8 @@ void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::Pipeli
 const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt) const
 {
     META_FUNCTION_TASK();
-    const auto executing_command_lists_guard = GetExecutingCommandListsGuard();
-    ExecutingCommandListSets executing_command_list_sets = executing_command_lists_guard.GetExecutingCommandLists(); // copy the queue for iterating
+    const auto           executing_command_lists_guard = GetExecutingCommandListsGuard();
+    CommandListSetsQueue executing_command_list_sets   = executing_command_lists_guard.GetCommandListsQueue(); // copy the queue for iterating
 
     m_wait_execution_completed.semaphores.clear();
     m_wait_execution_completed.semaphores.reserve(executing_command_list_sets.size());
