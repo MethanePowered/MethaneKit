@@ -35,6 +35,7 @@ Vulkan implementation of the device interface.
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <string_view>
 
 //#define VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
@@ -51,12 +52,15 @@ static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_valida
 static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME;
 
+// Google extensions are used to reflect HLSL semantic names from shader input decorations,
+// and it works fine, but is not listed by Windows NVidia drivers, who knows why?
+#ifdef __linux__
+#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+#endif
+
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-
-    // Google extensions are used to reflect HLSL semantic names from shader input decorations,
-    // and it works fine, but is not listed by Windows NVidia drivers, who knows why?
-#ifdef __linux__
+#ifdef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
     VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
 #endif
@@ -152,7 +156,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     if (callback_data_ptr->messageIdNumber == 767975156) // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
         return VK_FALSE;
 
-#endif
+#ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+    // Filter out validation error appeared due to missing HLSL extension for SPIRV bytecode, which can not be used because of bug in NVidia Windows drivers:
+    // vkCreateShaderModule(): The SPIR-V Extension (SPV_GOOGLE_hlsl_functionality1 | SPV_GOOGLE_user_type) was declared, but none of the requirements were met to use it.
+    if (callback_data_ptr->messageIdNumber == 1028204675 && // VUID-VkShaderModuleCreateInfo-pCode-04147
+        strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_"))
+        return VK_FALSE;
+#endif // VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+
+#endif // !NDEBUG
 
     std::stringstream ss;
     ss << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(message_severity)) << " "
