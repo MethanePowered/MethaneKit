@@ -126,9 +126,10 @@ public:
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
 
 private:    
-    vk::DynamicLoader    m_vk_loader;
-    vk::UniqueInstance   m_vk_unique_instance;
-    vk::UniqueSurfaceKHR m_vk_unique_surface;
+    vk::DynamicLoader                m_vk_loader;
+    vk::UniqueInstance               m_vk_unique_instance;
+    vk::UniqueDebugUtilsMessengerEXT m_vk_unique_debug_utils_messanger;
+    vk::UniqueSurfaceKHR             m_vk_unique_surface;
 };
 
 } // namespace Methane::Graphics

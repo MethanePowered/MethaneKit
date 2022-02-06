@@ -73,10 +73,7 @@ static const std::vector<std::string_view> g_present_device_extensions = {
 static std::vector<char const*> GetEnabledLayers(const std::vector<std::string_view>& layers)
 {
     META_FUNCTION_TASK();
-
-#ifndef NDEBUG
     const std::vector<vk::LayerProperties> layer_properties = vk::enumerateInstanceLayerProperties();
-#endif
 
     std::vector<const char*> enabled_layers;
     enabled_layers.reserve(layers.size() );
@@ -127,8 +124,11 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
             enabled_extensions.push_back(extension.c_str());
         }
     };
+    META_UNUSED(add_enabled_extension);
 
+#ifndef NDEBUG
     add_enabled_extension(g_vk_debug_utils_extension);
+#endif
 
 #if defined(VULKAN_VALIDATION_BEST_PRACTICES_ENABLED) && !defined(NDEBUG)
     add_enabled_extension(g_vk_validation_extension);
@@ -190,7 +190,24 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     }
 
     Platform::PrintToDebugOutput(ss.str());
-    return VK_TRUE;
+    return VK_FALSE;
+}
+
+static vk::DebugUtilsMessengerCreateInfoEXT MakeDebugUtilsMessengerCreateInfoEXT()
+{
+    return vk::DebugUtilsMessengerCreateInfoEXT {
+        vk::DebugUtilsMessengerCreateFlagsEXT{},
+        vk::DebugUtilsMessageSeverityFlagsEXT {
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+        },
+        vk::DebugUtilsMessageTypeFlagsEXT {
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+        },
+        &DebugUtilsMessengerCallback
+    };
 }
 
 #ifdef NDEBUG
@@ -201,32 +218,20 @@ using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::D
 using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::DebugUtilsMessengerCreateInfoEXT>;
 #endif
 
-InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
-                                                    const std::vector<const char*>& layers,
-                                                    const std::vector<const char*>& extensions)
+static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
+                                                           const std::vector<const char*>& layers,
+                                                           const std::vector<const char*>& extensions)
 {
     META_FUNCTION_TASK();
 
 #if defined( NDEBUG )
     return InstanceCreateInfoChain({ {}, &vk_app_info, layers, extensions });
-#else
-    vk::DebugUtilsMessageSeverityFlagsEXT severity_flags(
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-    );
-    vk::DebugUtilsMessageTypeFlagsEXT message_type_flags(
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-    );
-#ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
-    const vk::ValidationFeatureEnableEXT validation_feature_enable = vk::ValidationFeatureEnableEXT::eBestPractices;
-#endif
+#else   
     return InstanceCreateInfoChain(
         { {}, &vk_app_info, layers, extensions },
-        { {}, severity_flags, message_type_flags, &DebugUtilsMessengerCallback }
+        MakeDebugUtilsMessengerCreateInfoEXT()
 #ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
-        , { validation_feature_enable }
+        , { vk::ValidationFeatureEnableEXT::eBestPractices }
 #endif
     );
 #endif
@@ -559,6 +564,9 @@ System& System::Get()
 
 SystemVK::SystemVK()
     : m_vk_unique_instance(CreateVulkanInstance(m_vk_loader, {}, PlatformVK::GetVulkanInstanceRequiredExtensions(), VK_API_VERSION_1_1))
+#ifndef NDEBUG
+    , m_vk_unique_debug_utils_messanger(m_vk_unique_instance.get().createDebugUtilsMessengerEXTUnique(MakeDebugUtilsMessengerCreateInfoEXT()))
+#endif
 {
     META_FUNCTION_TASK();
 }
