@@ -205,6 +205,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     return VK_FALSE;
 }
 
+#ifndef NDEBUG
 static vk::DebugUtilsMessengerCreateInfoEXT MakeDebugUtilsMessengerCreateInfoEXT()
 {
     return vk::DebugUtilsMessengerCreateInfoEXT {
@@ -221,6 +222,7 @@ static vk::DebugUtilsMessengerCreateInfoEXT MakeDebugUtilsMessengerCreateInfoEXT
         &DebugUtilsMessengerCallback
     };
 }
+#endif // !NDEBUG
 
 #ifdef NDEBUG
 using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo>;
@@ -236,7 +238,7 @@ static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::Application
 {
     META_FUNCTION_TASK();
 
-#if defined( NDEBUG )
+#ifdef NDEBUG
     return InstanceCreateInfoChain({ {}, &vk_app_info, layers, extensions });
 #else   
     return InstanceCreateInfoChain(
