@@ -268,7 +268,7 @@ jobs:
     vmImage: 'ubuntu-20.04'
 
   variables:
-    cmake.ConfigurePreset: 'Make-Lin-VK-Default'
+    cmake.ConfigurePreset: 'Make-Lin-VK-Release'
     cmake.BuildPreset: 'Make-Lin-VK-Release'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 

@@ -6,7 +6,7 @@
         "minor": 18,
         "patch": 0
     },
-    
+
     "configurePresets": [
         {
             "name": "Ninja-Default",
@@ -270,7 +270,7 @@
             "displayName": "Default - VS2019 - Windows x64 (DirectX)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
-            "architecture":{
+            "architecture": {
                 "value": "x64",
                 "strategy": "set"
             },
@@ -288,7 +288,7 @@
             "displayName": "Default - VS2019 - Windows x86 (DirectX)",
             "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
-            "architecture":{
+            "architecture": {
                 "value": "Win32",
                 "strategy": "set"
             },
@@ -518,13 +518,28 @@
         },
 
         {
-            "name": "Make-Lin-VK-Default",
-            "displayName": "Default - Unix Makefiles - Linux (Vulkan)",
-            "description": "Default configuration using Unix Makefiles generator for Linux (Vulkan)",
+            "name": "Make-Lin-VK-Release",
+            "displayName": "Release - Unix Makefiles - Linux (Vulkan)",
+            "description": "Release configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
                 "Ninja-Lin-VK-Default"
-            ]
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "Make-Lin-VK-Debug",
+            "displayName": "Debug - Unix Makefiles - Linux (Vulkan)",
+            "description": "Debug configuration using Unix Makefiles generator for Linux (Vulkan)",
+            "generator": "Unix Makefiles",
+            "inherits": [
+                "Ninja-Lin-VK-Default"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
         },
         {
             "name": "Make-Lin-VK-Profile",
@@ -533,7 +548,10 @@
             "generator": "Unix Makefiles",
             "inherits": [
                 "Ninja-Lin-VK-Profile"
-            ]
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
         },
         {
             "name": "Make-Lin-VK-Scan",
@@ -543,7 +561,10 @@
             "inherits": [
                 "Ninja-Scan",
                 "Ninja-Lin-VK-Default"
-            ]
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
         },
 
         {
@@ -936,24 +957,21 @@
             "displayName": "Debug - Unix Makefiles - Linux (Vulkan)",
             "description": "Debug build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Lin-VK-Default",
-            "configuration": "Debug"
+            "configurePreset": "Make-Lin-VK-Debug"
         },
         {
             "name": "Make-Lin-VK-Release",
             "displayName": "Release - Unix Makefiles - Linux (Vulkan)",
             "description": "Release build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Lin-VK-Default",
-            "configuration": "Release"
+            "configurePreset": "Make-Lin-VK-Release"
         },
         {
             "name": "Make-Lin-VK-Profile",
             "displayName": "Profile - Unix Makefiles - Linux (Vulkan)",
             "description": "Profiling build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Lin-VK-Profile",
-            "configuration": "RelWithDebInfo"
+            "configurePreset": "Make-Lin-VK-Profile"
         },
 
         {
@@ -961,8 +979,7 @@
             "displayName": "Scan - Unix Makefiles - Linux (Vulkan)",
             "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
-            "configurePreset": "Make-Lin-VK-Scan",
-            "configuration": "Debug"
+            "configurePreset": "Make-Lin-VK-Scan"
         },
 
         {
