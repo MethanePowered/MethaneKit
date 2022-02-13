@@ -31,7 +31,6 @@ Methane resource barriers for manual or automatic resource state synchronization
 #include <mutex>
 #include <map>
 #include <set>
-#include <bitset>
 
 namespace Methane::Graphics
 {
@@ -69,8 +68,6 @@ public:
         StateTransition,
         OwnerTransition,
     };
-
-    using TypesBitSet = std::bitset<2>;
 
     class Id
     {
