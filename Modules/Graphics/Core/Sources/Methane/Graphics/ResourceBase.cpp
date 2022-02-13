@@ -117,11 +117,11 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state == state)
     {
         if (out_barriers)
-            out_barriers->RemoveTransition(*this);
+            out_barriers->RemoveStateTransition(*this);
         return false;
     }
 
-    META_LOG("{} resource '{}' state changed from {} to {}",
+    META_LOG("{} resource '{}' state changed from {} to {} with barrier update",
              magic_enum::enum_name(GetResourceType()), GetName(),
              magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
@@ -129,7 +129,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     {
         if (!out_barriers)
             out_barriers = Barriers::Create();
-        out_barriers->AddTransition(*this, m_state, state);
+        out_barriers->AddStateTransition(*this, m_state, state);
     }
 
     m_state = state;
@@ -147,6 +147,47 @@ bool ResourceBase::SetState(State state)
              magic_enum::enum_name(GetResourceType()), GetName(),
              magic_enum::enum_name(m_state), magic_enum::enum_name(state));
     m_state = state;
+    return true;
+}
+
+bool ResourceBase::SetOwnerQueue(CommandQueue& owner_queue, Ptr<Barriers>& out_barriers)
+{
+    META_FUNCTION_TASK();
+    if (m_owner_queue_ptr == std::addressof(owner_queue))
+    {
+        if (out_barriers)
+            out_barriers->RemoveOwnerTransition(*this);
+        return false;
+    }
+
+    META_LOG("{} resource '{}' owner queue changed from '{}' to '{}' with barrier update",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             m_owner_queue_ptr ? m_owner_queue_ptr->GetName() : "null",
+             owner_queue.GetName());
+
+    if (m_owner_queue_ptr)
+    {
+        if (!out_barriers)
+            out_barriers = Barriers::Create();
+        out_barriers->AddOwnerTransition(*this, *m_owner_queue_ptr, owner_queue);
+    }
+
+    m_owner_queue_ptr = std::addressof(owner_queue);
+    return true;
+}
+
+bool ResourceBase::SetOwnerQueue(CommandQueue& owner_queue)
+{
+    META_FUNCTION_TASK();
+    if (m_owner_queue_ptr == std::addressof(owner_queue))
+        return false;
+
+    META_LOG("{} resource '{}' owner queue changed from '{}' to '{}'",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             m_owner_queue_ptr ? m_owner_queue_ptr->GetName() : "null",
+             owner_queue.GetName());
+
+    m_owner_queue_ptr = std::addressof(owner_queue);
     return true;
 }
 

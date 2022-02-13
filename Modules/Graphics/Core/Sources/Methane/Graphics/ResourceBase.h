@@ -1,4 +1,3 @@
-
 /******************************************************************************
 
 Copyright 2019-2020 Evgeny Gorodetskiy
@@ -49,16 +48,19 @@ public:
     ResourceBase(ResourceBase&&) = delete;
 
     // Resource interface
-    [[nodiscard]] Type                      GetResourceType() const noexcept final             { return m_type; }
-    [[nodiscard]] State                     GetState() const noexcept final                    { return m_state;  }
-    [[nodiscard]] Usage                     GetUsage() const noexcept final                    { return m_usage_mask; }
+    [[nodiscard]] Type                      GetResourceType() const noexcept final     { return m_type; }
+    [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
+    [[nodiscard]] CommandQueue*             GetOwnerQueue() const noexcept final       { return m_owner_queue_ptr; }
+    [[nodiscard]] Usage                     GetUsage() const noexcept final            { return m_usage_mask; }
     [[nodiscard]] const Context&            GetContext() const noexcept final;
-    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final         { return m_sub_resource_count; }
+    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
                                                     const std::optional<BytesRange>& data_range = {}) override;
     bool SetState(State state, Ptr<Barriers>& out_barriers) final;
     bool SetState(State state) final;
+    bool SetOwnerQueue(CommandQueue& owner_queue) final;
+    bool SetOwnerQueue(CommandQueue& owner_queue, Ptr<Barriers>& out_barriers) final;
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
     [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
@@ -87,6 +89,7 @@ private:
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;
     Ptr<Barriers>      m_setup_transition_barriers_ptr;
+    CommandQueue*      m_owner_queue_ptr = nullptr;
     TracyLockable(std::mutex, m_state_mutex)
 };
 

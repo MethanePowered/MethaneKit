@@ -43,7 +43,7 @@ public:
     explicit ResourceBarriersVK(const Set& barriers);
 
     // ResourceBarriers overrides
-    AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change) override;
+    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
     bool Remove(const ResourceBarrier::Id& id) override;
 
     const std::vector<vk::ImageMemoryBarrier>&  GetNativeImageMemoryBarriers() const noexcept  { return m_vk_image_memory_barriers; }
@@ -56,13 +56,21 @@ private:
     // IResourceCallback
     void OnResourceReleased(Resource& resource) override;
 
-    void AddResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
-    void AddBufferMemoryBarrier(const BufferVK& vk_buffer, const ResourceBarrier::StateChange& state_change);
-    void AddImageMemoryBarrier(const ITextureVK& vk_texture, const ResourceBarrier::StateChange& state_change);
+    void AddResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
+    void AddBufferMemoryBarrier(const BufferVK& buffer, const ResourceBarrier& barrier);
+    void AddBufferMemoryStateChangeBarrier(const BufferVK& buffer, const ResourceBarrier::StateChange& state_change);
+    void AddBufferMemoryOwnerChangeBarrier(const BufferVK& buffer, const ResourceBarrier::OwnerChange& owner_change);
+    void AddImageMemoryBarrier(const ITextureVK& texture, const ResourceBarrier& barrier);
+    void AddImageMemoryStateChangeBarrier(const ITextureVK& texture, const ResourceBarrier::StateChange& state_change);
+    void AddImageMemoryOwnerChangeBarrier(const ITextureVK& texture, const ResourceBarrier::OwnerChange& owner_change);
 
-    void UpdateResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
-    void UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier::StateChange& state_change);
-    void UpdateImageMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier::StateChange& state_change);
+    void UpdateResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
+    void UpdateBufferMemoryBarrier(const vk::Buffer& vk_buffer, const ResourceBarrier& barrier);
+    void UpdateBufferMemoryStateChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const ResourceBarrier::StateChange& state_change);
+    void UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const ResourceBarrier::OwnerChange& owner_change);
+    void UpdateImageMemoryBarrier(const vk::Image& vk_image, const ResourceBarrier& barrier);
+    void UpdateImageMemoryStateChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::StateChange& state_change);
+    void UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::OwnerChange& owner_change);
 
     void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer);
     void RemoveImageMemoryBarrier(const vk::Image& vk_image);

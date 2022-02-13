@@ -115,6 +115,7 @@ protected:
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
+    const Refs<Resource>& GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource);
@@ -122,12 +123,13 @@ protected:
     void AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding);
 
     template<typename CommandListType>
-    void ApplyResourceTransitionBarriers(CommandListType& command_list, Program::ArgumentAccessor::Type apply_access_mask) const
+    void ApplyResourceTransitionBarriers(CommandListType& command_list, Program::ArgumentAccessor::Type apply_access_mask,
+                                         CommandQueue* owner_queue_ptr = nullptr) const
     {
-        if (ApplyResourceStates(apply_access_mask) &&
-            m_resource_transition_barriers_ptr && !m_resource_transition_barriers_ptr->IsEmpty())
+        if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
+            m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
         {
-            command_list.SetResourceBarriers(*m_resource_transition_barriers_ptr);
+            command_list.SetResourceBarriers(*m_resource_state_transition_barriers_ptr);
         }
     }
 
@@ -142,16 +144,19 @@ private:
 
     using ResourceStates = std::vector<ResourceAndState>;
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
 
-    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, CommandQueue* owner_queue_ptr = nullptr) const;
+    void InitResourceRefsByAccess();
 
     const Ptr<Program>              m_program_ptr;
     Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
     ArgumentBindings                m_binding_by_argument;
     ResourceStatesByAccess          m_transition_resource_states_by_access;
-    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
-    Data::Index                     m_bindings_index = 0u; // index of the this program bindings between all program bindings of the program
+    ResourceRefsByAccess            m_resource_refs_by_access;
+    mutable Ptr<Resource::Barriers> m_resource_state_transition_barriers_ptr;
+    Data::Index                     m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
 } // namespace Methane::Graphics

@@ -65,7 +65,7 @@ static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id
     META_FUNCTION_TASK();
     switch (id.GetType()) // NOSONAR
     {
-    case ResourceBarrier::Type::Transition:
+    case ResourceBarrier::Type::StateTransition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
             dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource(),
             GetNativeResourceState(state_change.GetStateBefore()),
@@ -83,7 +83,7 @@ static D3D12_RESOURCE_BARRIER_TYPE GetNativeBarrierType(ResourceBarrier::Type ba
     META_FUNCTION_TASK();
     switch (barrier_type) // NOSONAR
     {
-    case ResourceBarrier::Type::Transition: return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    case ResourceBarrier::Type::StateTransition: return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     default: META_UNEXPECTED_ARG_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
     }
 }
@@ -133,20 +133,22 @@ ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
     }
 }
 
-ResourceBarriers::AddResult ResourceBarriersDX::AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
+ResourceBarriers::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     const auto lock_guard  = ResourceBarriers::Lock();
-    const AddResult result = ResourceBarriers::AddStateChange(id, state_change);
+    const AddResult result = ResourceBarriers::Add(id, barrier);
+
+    if (id.GetType() != ResourceBarrier::Type::StateTransition)
+        return result;
 
     switch (result)
     {
-    case AddResult::Added:    AddNativeResourceBarrier(id, state_change); break;
-    case AddResult::Updated:  UpdateNativeResourceBarrier(id, state_change); break;
+    case AddResult::Added:    AddNativeResourceBarrier(id, barrier.GetStateChange()); break;
+    case AddResult::Updated:  UpdateNativeResourceBarrier(id, barrier.GetStateChange()); break;
     case AddResult::Existing: break;
     default: META_UNEXPECTED_ARG_RETURN(result, result);
     }
-
     return result;
 }
 
@@ -156,6 +158,9 @@ bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
     const auto lock_guard = ResourceBarriers::Lock();
     if (!ResourceBarriers::Remove(id))
         return false;
+
+    if (id.GetType() != ResourceBarrier::Type::StateTransition)
+        return true;
 
     const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
     const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDX&>(id.GetResource()).GetNativeResource();
@@ -171,7 +176,7 @@ bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
 void ResourceBarriersDX::OnResourceReleased(Resource& resource)
 {
     META_FUNCTION_TASK();
-    RemoveTransition(resource);
+    RemoveStateTransition(resource);
 }
 
 void ResourceBarriersDX::AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)

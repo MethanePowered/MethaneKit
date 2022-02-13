@@ -70,6 +70,7 @@ public:
 
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
     [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
+    [[nodiscard]] virtual const Opt<uint32_t>&    GetOwnerQueueFamilyIndex() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

@@ -165,6 +165,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
     META_FUNCTION_TASK();
     SetResourcesForArguments(resource_locations_by_argument);
     VerifyAllArgumentsAreBoundToResources();
+    InitResourceRefsByAccess();
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
@@ -173,6 +174,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     META_FUNCTION_TASK();
     SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_locations_by_argument));
     VerifyAllArgumentsAreBoundToResources();
+    InitResourceRefsByAccess();
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index)
@@ -216,7 +218,7 @@ void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const
                                                                            const Resource::Locations& new_resource_locations)
 {
     META_FUNCTION_TASK();
-    if (!m_resource_transition_barriers_ptr)
+    if (!m_resource_state_transition_barriers_ptr)
         return;
 
     // Find resources that are not used anymore for resource binding
@@ -238,7 +240,7 @@ void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const
         }
 
         // Remove unused resources from transition barriers applied for program bindings:
-        m_resource_transition_barriers_ptr->RemoveTransition(old_resource_location.GetResource());
+        m_resource_state_transition_barriers_ptr->RemoveStateTransition(old_resource_location.GetResource());
         RemoveTransitionResourceStates(argument_binding, old_resource_location.GetResource());
 
     }
@@ -417,7 +419,7 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
     }
 }
 
-bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const
+bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, CommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -432,11 +434,45 @@ bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type ac
         for(const ResourceAndState& resource_state : resource_states)
         {
             META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
-            resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_transition_barriers_ptr);
+            if (owner_queue_ptr)
+                resource_state.resource_ptr->SetOwnerQueue(*owner_queue_ptr, m_resource_state_transition_barriers_ptr);
+
+            resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_state_transition_barriers_ptr);
         }
     }
 
     return resource_states_changed;
+}
+
+void ProgramBindingsBase::InitResourceRefsByAccess()
+{
+    META_FUNCTION_TASK();
+    constexpr size_t access_count = magic_enum::enum_count<Program::ArgumentAccessor::Type>();
+    std::array<std::set<Resource*>, access_count> unique_resources_by_access;
+
+    for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        std::set<Resource*>& unique_resources = unique_resources_by_access[argument_binding_ptr->GetSettings().argument.GetAccessorIndex()];
+        for (const Resource::Location & resource_location : argument_binding_ptr->GetResourceLocations())
+        {
+            unique_resources.emplace(resource_location.GetResourcePtr().get());
+        }
+    }
+
+    for(size_t access_index = 0; access_index < access_count; ++access_index)
+    {
+        std::set<Resource*>& unique_resources = unique_resources_by_access[access_index];
+        Refs<Resource>&      resource_refs    = m_resource_refs_by_access[access_index];
+        std::transform(unique_resources.begin(), unique_resources.end(), std::back_inserter(resource_refs),
+                       [](Resource* resource_ptr) { return Ref<Resource>(*resource_ptr); });
+    }
+}
+
+const Refs<Resource>& ProgramBindingsBase::GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const
+{
+    META_FUNCTION_TASK();
+    return m_resource_refs_by_access[magic_enum::enum_index(access_type).value()];
 }
 
 } // namespace Methane::Graphics

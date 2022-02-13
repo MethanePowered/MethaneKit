@@ -62,8 +62,11 @@ public:
     const WaitInfo& GetWaitForFrameExecutionCompleted(Data::Index frame_index) const;
     void ResetWaitForFrameExecution(Data::Index frame_index);
 
-    vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
-    const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
+    uint32_t GetNativeQueueFamilyIndex() const noexcept { return m_queue_family_index; }
+    uint32_t GetNativeQueueIndex() const noexcept       { return m_queue_index; }
+
+    vk::Queue&       GetNativeQueue()                   { return m_vk_queue; }
+    const vk::Queue& GetNativeQueue() const             { return m_vk_queue; }
 
     vk::CommandPool&       GetNativeCommandPool()       { return m_vk_unique_command_pool.get(); }
     const vk::CommandPool& GetNativeCommandPool() const { return m_vk_unique_command_pool.get(); }

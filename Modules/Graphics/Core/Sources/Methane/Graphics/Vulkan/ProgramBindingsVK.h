@@ -92,7 +92,8 @@ public:
     // ProgramBindingsBase interface
     void CompleteInitialization() override { /* not implemented yet */ }
 
-    void Apply(ICommandListVK& command_list, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+    void Apply(ICommandListVK& command_list, CommandQueue& command_queue,
+               const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
     // IObjectCallback interface
@@ -100,8 +101,9 @@ private:
 
     void UpdateMutableDescriptorSetName();
 
-    std::vector<vk::DescriptorSet> m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
-    bool                           m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
+    mutable Ptr<Resource::Barriers>     m_resource_ownership_transition_barriers_ptr;
+    std::vector<vk::DescriptorSet>      m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
+    bool                                m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
 };
 
 } // namespace Methane::Graphics

@@ -345,14 +345,14 @@ Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(gfx
 #endif
 
     Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = gfx::Resource::Barriers::Create({
-        { gfx::Resource::Barrier::Type::Transition, constants_buffer, prev_state, gfx::Resource::State::ConstantBuffer },
-        { gfx::Resource::Barrier::Type::Transition, GetIndexBuffer(), prev_state, gfx::Resource::State::IndexBuffer  },
+        { constants_buffer, prev_state, gfx::Resource::State::ConstantBuffer },
+        { GetIndexBuffer(), prev_state, gfx::Resource::State::IndexBuffer  },
     });
 
     const gfx::BufferSet& vertex_buffer_set = GetVertexBuffers();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
     {
-        beginning_resource_barriers_ptr->AddTransition(vertex_buffer_set[vertex_buffer_index], prev_state, gfx::Resource::State::VertexBuffer);
+        beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer_set[vertex_buffer_index], prev_state, gfx::Resource::State::VertexBuffer);
     }
 
     if (m_settings.textures_array_enabled)
@@ -360,12 +360,12 @@ Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(gfx
         for(const Ptr<gfx::Texture>& texture_ptr : m_unique_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);
-            beginning_resource_barriers_ptr->AddTransition(*texture_ptr, prev_state, gfx::Resource::State::ShaderResource);
+            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, prev_state, gfx::Resource::State::ShaderResource);
         }
     }
     else
     {
-        beginning_resource_barriers_ptr->AddTransition(GetInstanceTexture(), prev_state, gfx::Resource::State::ShaderResource);
+        beginning_resource_barriers_ptr->AddStateTransition(GetInstanceTexture(), prev_state, gfx::Resource::State::ShaderResource);
     }
 
     return beginning_resource_barriers_ptr;

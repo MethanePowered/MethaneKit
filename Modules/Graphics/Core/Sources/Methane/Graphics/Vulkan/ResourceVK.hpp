@@ -139,6 +139,11 @@ public:
         return m_vk_device;
     }
 
+    const Opt<uint32_t>& GetOwnerQueueFamilyIndex() const noexcept final
+    {
+        return m_owner_queue_family_index_opt;
+    }
+
     const auto& GetNativeResource() const noexcept
     {
         if constexpr (is_unique_resource)
@@ -206,7 +211,8 @@ protected:
         auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(ResourceBase::GetContext().GetUploadCommandKit().GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
-        if (SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
+        if ((SetOwnerQueue(upload_cmd_list.GetCommandQueue(), m_upload_sync_transition_barriers_ptr) ||
+             SetState(State::Common, m_upload_sync_transition_barriers_ptr)) && m_upload_sync_transition_barriers_ptr)
         {
             CommandList& sync_cmd_list = sync_cmd_queue
                                        ? GetContext().GetDefaultCommandKit(*sync_cmd_queue).GetListForEncoding()
@@ -227,6 +233,7 @@ private:
     vk::UniqueDeviceMemory  m_vk_unique_device_memory;
     ResourceStorageType     m_vk_resource;
     ViewStorageType         m_vk_view;
+    Opt<uint32_t>           m_owner_queue_family_index_opt;
     Ptr<Resource::Barriers> m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
 };

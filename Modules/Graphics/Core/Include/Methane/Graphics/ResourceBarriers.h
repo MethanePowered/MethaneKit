@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020-2021 Evgeny Gorodetskiy
+Copyright 2020-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -31,11 +31,13 @@ Methane resource barriers for manual or automatic resource state synchronization
 #include <mutex>
 #include <map>
 #include <set>
+#include <bitset>
 
 namespace Methane::Graphics
 {
 
 struct Resource;
+struct CommandQueue;
 
 enum class ResourceState
 {
@@ -64,16 +66,16 @@ class ResourceBarrier
 public:
     enum class Type
     {
-        Transition,
+        StateTransition,
+        OwnerTransition,
     };
+
+    using TypesBitSet = std::bitset<2>;
 
     class Id
     {
     public:
         Id(Type type, Resource& resource) noexcept;
-        Id(const Id& id) noexcept = default;
-
-        Id& operator=(const Id&) noexcept = default;
 
         [[nodiscard]] bool operator<(const Id& other) const noexcept;
         [[nodiscard]] bool operator==(const Id& other) const noexcept;
@@ -83,7 +85,7 @@ public:
         [[nodiscard]] Resource& GetResource() const noexcept { return m_resource_ref.get(); }
 
     private:
-        Type                m_type;
+        Type          m_type;
         Ref<Resource> m_resource_ref;
     };
 
@@ -91,9 +93,6 @@ public:
     {
     public:
         StateChange(ResourceState before, ResourceState after) noexcept;
-        StateChange(const StateChange& id) noexcept = default;
-
-        StateChange& operator=(const StateChange&) noexcept = default;
 
         [[nodiscard]] bool operator<(const StateChange& other) const noexcept;
         [[nodiscard]] bool operator==(const StateChange& other) const noexcept;
@@ -107,29 +106,64 @@ public:
         ResourceState m_after;
     };
 
-    ResourceBarrier(const Id& id, const StateChange& state_change);
-    ResourceBarrier(Type type, Resource& resource, ResourceState state_before, ResourceState state_after);
+    class OwnerChange
+    {
+    public:
+        OwnerChange(CommandQueue& before, CommandQueue& after) noexcept;
+
+        [[nodiscard]] bool operator<(const OwnerChange& other) const noexcept;
+        [[nodiscard]] bool operator==(const OwnerChange& other) const noexcept;
+        [[nodiscard]] bool operator!=(const OwnerChange& other) const noexcept;
+
+        [[nodiscard]] CommandQueue& GetOwnerBefore() const noexcept { return m_before.get(); }
+        [[nodiscard]] CommandQueue& GetOwnerAfter() const noexcept  { return m_after.get(); }
+
+    private:
+        Ref<CommandQueue> m_before;
+        Ref<CommandQueue> m_after;
+    };
+
+    ResourceBarrier(Resource& resource, const StateChange& state_change);
+    ResourceBarrier(Resource& resource, const OwnerChange& owner_change);
+    ResourceBarrier(Resource& resource, ResourceState state_before, ResourceState state_after);
+    ResourceBarrier(Resource& resource, CommandQueue& owner_before, CommandQueue& owner_after);
     ResourceBarrier(const ResourceBarrier&) = default;
 
     ResourceBarrier& operator=(const ResourceBarrier& barrier) noexcept = default;
     [[nodiscard]] bool operator<(const ResourceBarrier& other) const noexcept;
     [[nodiscard]] bool operator==(const ResourceBarrier& other) const noexcept;
     [[nodiscard]] bool operator!=(const ResourceBarrier& other) const noexcept;
+    [[nodiscard]] bool operator==(const StateChange& other) const;
+    [[nodiscard]] bool operator!=(const StateChange& other) const;
+    [[nodiscard]] bool operator==(const OwnerChange& other) const;
+    [[nodiscard]] bool operator!=(const OwnerChange& other) const;
     [[nodiscard]] explicit operator std::string() const noexcept;
 
-    [[nodiscard]] const Id&          GetId() const noexcept          { return m_id; }
-    [[nodiscard]] const StateChange& GetStateChange() const noexcept { return m_state_change; }
+    [[nodiscard]] const Id&          GetId() const noexcept { return m_id; }
+    [[nodiscard]] const StateChange& GetStateChange() const;
+    [[nodiscard]] const OwnerChange& GetOwnerChange() const;
+
+    void ApplyTransition() const;
 
 private:
-    Id          m_id;
-    StateChange m_state_change;
+    union Change
+    {
+        Change(const StateChange& state) : state(state) {}
+        Change(const OwnerChange& owner) : owner(owner) {}
+
+        StateChange state;
+        OwnerChange owner;
+    };
+
+    Id     m_id;
+    Change m_change;
 };
 
 class ResourceBarriers
 {
 public:
     using Set = std::set<ResourceBarrier>;
-    using Map = std::map<ResourceBarrier::Id, ResourceBarrier::StateChange>;
+    using Map = std::map<ResourceBarrier::Id, ResourceBarrier>;
 
     enum class AddResult
     {
@@ -139,25 +173,28 @@ public:
     };
 
     [[nodiscard]] static Ptr<ResourceBarriers> Create(const Set& barriers = {});
-    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransition(const Refs<Resource>& resources, ResourceState state_before, ResourceState state_after);
+    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransitions(const Refs<Resource>& resources,
+                                                                 const Opt<ResourceBarrier::StateChange>& state_change,
+                                                                 const Opt<ResourceBarrier::OwnerChange>& owner_change);
 
-    [[nodiscard]] bool       IsEmpty() const noexcept { return m_barriers_map.empty(); }
+    [[nodiscard]] bool  IsEmpty() const noexcept { return m_barriers_map.empty(); }
+    [[nodiscard]] Set   GetSet() const noexcept;
     [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
-    [[nodiscard]] Set        GetSet() const noexcept;
+    [[nodiscard]] bool  HasStateTransition(Resource& resource, ResourceState before, ResourceState after);
+    [[nodiscard]] bool  HasOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after);
 
-    [[nodiscard]] bool Has(ResourceBarrier::Type type, Resource& resource, ResourceState before, ResourceState after);
-    [[nodiscard]] bool HasTransition(Resource& resource, ResourceState before, ResourceState after);
+    bool Remove(ResourceBarrier::Type type, Resource& resource);
+    bool RemoveStateTransition(Resource& resource);
+    bool RemoveOwnerTransition(Resource& resource);
 
-    AddResult Add(ResourceBarrier::Type type, Resource& resource, ResourceState before, ResourceState after) { return AddStateChange(ResourceBarrier::Id(type, resource), ResourceBarrier::StateChange(before, after)); }
-    AddResult AddTransition(Resource& resource, ResourceState before, ResourceState after)                   { return AddStateChange(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource), ResourceBarrier::StateChange(before, after)); }
-    bool      Remove(ResourceBarrier::Type type, Resource& resource)                                         { return Remove(ResourceBarrier::Id(type, resource)); }
-    bool      RemoveTransition(Resource& resource)                                                           { return Remove(ResourceBarrier::Id(ResourceBarrier::Type::Transition, resource)); }
+    AddResult AddStateTransition(Resource& resource, ResourceState before, ResourceState after);
+    AddResult AddOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after);
 
-    virtual AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    virtual AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
     virtual bool      Remove(const ResourceBarrier::Id& id);
     virtual ~ResourceBarriers() = default;
 
-    void UpdateResourceStates() const;
+    void ApplyTransitions() const;
     auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
 
     [[nodiscard]] explicit operator std::string() const noexcept;

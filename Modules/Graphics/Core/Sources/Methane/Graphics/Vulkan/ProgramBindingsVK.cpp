@@ -233,10 +233,12 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
-    Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
+    Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetCommandQueue(),
+          command_list.GetProgramBindings().get(), apply_behavior);
 }
 
-void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, CommandQueue& command_queue,
+                              const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
@@ -260,7 +262,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ProgramBind
     // Set resource transition barriers before applying resource bindings
     if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers))
     {
-        ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask);
+        ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask, &command_queue);
     }
 
     const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBufferDefault();

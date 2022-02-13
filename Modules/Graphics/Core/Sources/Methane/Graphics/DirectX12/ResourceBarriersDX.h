@@ -40,7 +40,7 @@ public:
     explicit ResourceBarriersDX(const Set& barriers);
 
     // ResourceBarriers overrides
-    AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change) override;
+    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
     bool Remove(const ResourceBarrier::Id& id) override;
 
     [[nodiscard]] const std::vector <D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const
