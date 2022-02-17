@@ -76,8 +76,8 @@ void ContextBase::CompleteInitialization()
     META_LOG("Complete initialization of context '{}'", GetName());
 
     Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextCompletingInitialization, *this);
-    GetDescriptorManager().CompleteInitialization();
     UploadResources();
+    GetDescriptorManager().CompleteInitialization();
 
     m_requested_action             = DeferredAction::None;
     m_is_completing_initialization = false;

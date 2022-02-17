@@ -76,21 +76,26 @@ public:
         const Settings& GetSettings() const noexcept override { return m_settings_vk; }
         void SetResourceLocations(const Resource::Locations& resource_locations) override;
 
+        void UpdateDescriptorSetsOnGpu();
+
     private:
-        SettingsVK               m_settings_vk;
-        IResourceVK::LocationsVK m_resource_locations_vk;
-        const vk::DescriptorSet* m_vk_descriptor_set_ptr = nullptr;
-        uint32_t                 m_vk_binding_value      = 0U;
+        SettingsVK                          m_settings_vk;
+        IResourceVK::LocationsVK            m_resource_locations_vk;
+        const vk::DescriptorSet*            m_vk_descriptor_set_ptr = nullptr;
+        uint32_t                            m_vk_binding_value      = 0U;
+        std::vector<vk::WriteDescriptorSet> m_vk_write_descriptor_sets;
     };
 
     ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index);
 
+    void Initialize();
+
     // ProgramBindings interface
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
     // ProgramBindingsBase interface
-    void CompleteInitialization() override { /* not implemented yet */ }
+    void CompleteInitialization() override;
 
     void Apply(ICommandListVK& command_list, CommandQueue& command_queue,
                const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
@@ -99,11 +104,13 @@ private:
     // IObjectCallback interface
     void OnObjectNameChanged(Object&, const std::string&) override; // Program name changed
 
+    template<typename FuncType> // function void(const Program::Argument&, ArgumentBindingVK&)
+    void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void UpdateMutableDescriptorSetName();
 
-    mutable Ptr<Resource::Barriers>     m_resource_ownership_transition_barriers_ptr;
-    std::vector<vk::DescriptorSet>      m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
-    bool                                m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
+    mutable Ptr<Resource::Barriers> m_resource_ownership_transition_barriers_ptr;
+    std::vector<vk::DescriptorSet>  m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
+    bool                            m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
 };
 
 } // namespace Methane::Graphics

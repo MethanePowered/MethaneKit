@@ -42,13 +42,17 @@ namespace Methane::Graphics
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
+    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
+    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -100,13 +104,15 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     m_resource_locations_vk.clear();
     m_resource_locations_vk.reserve(resource_locations.size());
 
-    std::vector<vk::WriteDescriptorSet> vk_write_descriptor_sets;
+    m_vk_write_descriptor_sets.clear();
+    m_vk_write_descriptor_sets.reserve(resource_locations.size());
+
     for(const Resource::Location& resource_location : resource_locations)
     {
         m_resource_locations_vk.emplace_back(resource_location);
         const IResourceVK::LocationVK& resource_location_vk = m_resource_locations_vk.back();
 
-        vk_write_descriptor_sets.emplace_back(
+        m_vk_write_descriptor_sets.emplace_back(
             *m_vk_descriptor_set_ptr,
             m_vk_binding_value,
             resource_location.GetSubresourceIndex().GetArrayIndex(),
@@ -118,8 +124,15 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
         );
     }
 
+    // Descriptions are updated on GPU during context initialization complete
+    GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+}
+
+void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()
+{
+    META_FUNCTION_TASK();
     const auto& vulkan_context = dynamic_cast<const IContextVK&>(GetContext());
-    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(vk_write_descriptor_sets, {});
+    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_sets, {});
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
@@ -149,10 +162,9 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     }
 
     // Initialize each argument binding with descriptor set pointer and binding index
-    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    ForEachArgumentBinding([this, &program, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
+                           (const Program::Argument& program_argument, ArgumentBindingVK& argument_binding)
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        auto& argument_binding = static_cast<ArgumentBindingVK&>(*argument_binding_ptr);
         const ArgumentBindingVK::SettingsVK& argument_binding_settings = argument_binding.GetSettingsVK();
         const Program::ArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
 
@@ -162,7 +174,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         const uint32_t layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
 
-        switch(access_type)
+        switch (access_type)
         {
         case Program::ArgumentAccessor::Type::Constant:
             META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
@@ -179,7 +191,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
             argument_binding.SetDescriptorSetBinding(m_descriptor_sets.back(), binding_value);
             break;
         }
-    }
+    });
 
     UpdateMutableDescriptorSetName();
     SetResourcesForArguments(resource_locations_by_argument);
@@ -214,20 +226,36 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
         vk_mutable_descriptor_set = copy_mutable_descriptor_set;
 
         // Update mutable argument bindings with a pointer to the copied descriptor set
-        for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+        ForEachArgumentBinding([&vk_mutable_descriptor_set](const Program::Argument&, ArgumentBindingVK& argument_binding)
         {
-            META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-            auto& argument_binding = static_cast<ArgumentBindingVK&>(*argument_binding_ptr);
             if (argument_binding.GetSettingsVK().argument.GetAccessorType() != Program::ArgumentAccessor::Type::Mutable)
-                continue;
+                return;
 
             argument_binding.SetDescriptorSet(vk_mutable_descriptor_set);
-        }
+        });
     }
 
     UpdateMutableDescriptorSetName();
     SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_location_by_argument));
     VerifyAllArgumentsAreBoundToResources();
+}
+
+void ProgramBindingsVK::Initialize()
+{
+    META_FUNCTION_TASK();
+    const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
+    context.GetDescriptorManagerVK().AddProgramBindings(*this);
+}
+
+void ProgramBindingsVK::CompleteInitialization()
+{
+    META_FUNCTION_TASK();
+    META_LOG("Update descriptor sets on GPU for program bindings '{}'", GetName());
+
+    ForEachArgumentBinding([](const Program::Argument&, ArgumentBindingVK& argument_binding)
+    {
+        argument_binding.UpdateDescriptorSetsOnGpu();
+    });
 }
 
 void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
@@ -281,6 +309,17 @@ void ProgramBindingsVK::OnObjectNameChanged(Object&, const std::string&)
 {
     META_FUNCTION_TASK();
     UpdateMutableDescriptorSetName();
+}
+
+template<typename FuncType> // function void(const Program::Argument&, ArgumentBindingVK&)
+void ProgramBindingsVK::ForEachArgumentBinding(FuncType argument_binding_function) const
+{
+    META_FUNCTION_TASK();
+    for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        argument_binding_function(program_argument, static_cast<ArgumentBindingVK&>(*argument_binding_ptr));
+    }
 }
 
 void ProgramBindingsVK::UpdateMutableDescriptorSetName()

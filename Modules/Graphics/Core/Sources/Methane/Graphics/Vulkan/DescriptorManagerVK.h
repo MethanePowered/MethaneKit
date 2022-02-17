@@ -23,7 +23,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorManager.h>
+#include <Methane/Graphics/DescriptorManagerBase.h>
 
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
@@ -35,9 +35,10 @@ namespace Methane::Graphics
 {
 
 class ContextBase;
+struct ProgramBindings;
 struct IContextVK;
 
-class DescriptorManagerVK final : public DescriptorManager
+class DescriptorManagerVK final : public DescriptorManagerBase
 {
 public:
     using PoolSizeRatioByDescType = std::map<vk::DescriptorType, float>;
@@ -69,7 +70,6 @@ private:
     vk::DescriptorPool AcquireDescriptorPool();
     const IContextVK& GetContextVK() const noexcept;
 
-    ContextBase&                          m_context;
     uint32_t                              m_pool_sets_count;
     PoolSizeRatioByDescType               m_pool_size_ratio_by_desc_type;
     std::vector<vk::UniqueDescriptorPool> m_vk_descriptor_pools;

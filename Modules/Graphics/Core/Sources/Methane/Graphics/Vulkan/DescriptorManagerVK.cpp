@@ -32,7 +32,7 @@ namespace Methane::Graphics
 {
 
 DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_sets_count, const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type)
-    : m_context(context)
+    : DescriptorManagerBase(context)
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
 {
@@ -42,11 +42,15 @@ DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_set
 void DescriptorManagerVK::CompleteInitialization()
 {
     META_FUNCTION_TASK();
+    GetContext().WaitForGpu(Context::WaitFor::RenderComplete);
+    DescriptorManagerBase::CompleteInitialization();
 }
 
 void DescriptorManagerVK::Release()
 {
     META_FUNCTION_TASK();
+    DescriptorManagerBase::Release();
+
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
     for(vk::DescriptorPool& vk_pool : m_vk_used_pools)
     {
@@ -123,7 +127,7 @@ vk::DescriptorPool DescriptorManagerVK::AcquireDescriptorPool()
 const IContextVK& DescriptorManagerVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(m_context);
+    return static_cast<const IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

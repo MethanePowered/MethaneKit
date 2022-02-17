@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DescriptorManager.h
-Resource manager interface.
+Descriptor manager interface.
 
 ******************************************************************************/
 
@@ -25,9 +25,11 @@ Resource manager interface.
 
 namespace Methane::Graphics
 {
+struct ProgramBindings;
 
 struct DescriptorManager
 {
+    virtual void AddProgramBindings(ProgramBindings& program_bindings) = 0;
     virtual void CompleteInitialization() = 0;
     virtual void Release() = 0;
 

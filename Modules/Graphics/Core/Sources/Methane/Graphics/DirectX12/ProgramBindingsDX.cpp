@@ -389,7 +389,10 @@ void ProgramBindingsDX::UpdateRootParameterBindings()
         root_parameter_bindings.clear();
     }
 
-    ForEachArgumentBinding(std::bind(&ProgramBindingsDX::AddRootParameterBindingsForArgument, this, std::placeholders::_1, std::placeholders::_2));
+    ForEachArgumentBinding([this](ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation)
+    {
+        AddRootParameterBindingsForArgument(argument_binding, p_heap_reservation);
+    });
 }
 
 void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation)
@@ -479,10 +482,13 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
 void ProgramBindingsDX::CopyDescriptorsToGpu()
 {
     META_FUNCTION_TASK();
-    META_LOG("Copy descriptors to GPU for program '{}'", GetProgram().GetName());
+    META_LOG("Copy descriptors to GPU for program bindings '{}'", GetName());
 
     const wrl::ComPtr<ID3D12Device>& cp_d3d12_device = static_cast<const ProgramDX&>(GetProgram()).GetContextDX().GetDeviceDX().GetNativeDevice();
-    ForEachArgumentBinding(std::bind(&ProgramBindingsDX::CopyDescriptorsToGpuForArgument, this, cp_d3d12_device, std::placeholders::_1, std::placeholders::_2));
+    ForEachArgumentBinding([this, &cp_d3d12_device](ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation)
+    {
+        CopyDescriptorsToGpuForArgument(cp_d3d12_device, argument_binding, p_heap_reservation);
+    });
 }
 
 void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation) const
@@ -495,8 +501,8 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
 
     const auto&                               dx_descriptor_heap = static_cast<const DescriptorHeapDX&>(p_heap_reservation->heap.get());
     const ArgumentBindingDX::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
-    const DescriptorHeapDX::Type                heap_type          = dx_descriptor_heap.GetSettings().type;
-    const DescriptorHeapDX::Range&              heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
+    const DescriptorHeapDX::Type              heap_type          = dx_descriptor_heap.GetSettings().type;
+    const DescriptorHeapDX::Range&            heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
     const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(p_heap_reservation);

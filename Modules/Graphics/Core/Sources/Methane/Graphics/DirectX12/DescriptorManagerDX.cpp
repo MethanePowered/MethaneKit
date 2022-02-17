@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DescriptorManagerDX.cpp
-Resource manager used as a central place for creating and accessing descriptor heaps
-and deferred releasing of GPU resource.
+Descriptor manager is a central place for creating and accessing descriptor heaps.
 
 ******************************************************************************/
 
@@ -28,7 +27,6 @@ and deferred releasing of GPU resource.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <taskflow/taskflow.hpp>
 #include <magic_enum.hpp>
 
 namespace Methane::Graphics
@@ -44,7 +42,7 @@ inline void AddDescriptorHeap(UniquePtrs<DescriptorHeapDX>& desc_heaps, const Co
 }
 
 DescriptorManagerDX::DescriptorManagerDX(ContextBase& context)
-    : m_context(context)
+    : DescriptorManagerBase(context)
 {
     META_FUNCTION_TASK();
 }
@@ -63,12 +61,12 @@ void DescriptorManagerDX::Initialize(const Settings& settings)
         desc_heaps.clear();
 
         // CPU only accessible descriptor heaps of all types are created for default resource creation
-        AddDescriptorHeap(desc_heaps, m_context, m_deferred_heap_allocation, settings, heap_type, false);
+        AddDescriptorHeap(desc_heaps, GetContext(), m_deferred_heap_allocation, settings, heap_type, false);
 
         // GPU accessible descriptor heaps are created for program resource bindings
         if (DescriptorHeapDX::IsShaderVisibleHeapType(heap_type))
         {
-            AddDescriptorHeap(desc_heaps, m_context, m_deferred_heap_allocation, settings, heap_type, true);
+            AddDescriptorHeap(desc_heaps, GetContext(), m_deferred_heap_allocation, settings, heap_type, true);
         }
     }
 }
@@ -76,12 +74,10 @@ void DescriptorManagerDX::Initialize(const Settings& settings)
 void DescriptorManagerDX::CompleteInitialization()
 {
     META_FUNCTION_TASK();
-    if (!IsDeferredHeapAllocation())
+    if (!m_deferred_heap_allocation)
         return;
 
-    m_context.WaitForGpu(Context::WaitFor::RenderComplete);
-
-    std::scoped_lock lock_guard(m_program_bindings_mutex);
+    GetContext().WaitForGpu(Context::WaitFor::RenderComplete);
 
     for (const UniquePtrs<DescriptorHeapDX>& desc_heaps : m_descriptor_heap_types)
     {
@@ -92,24 +88,7 @@ void DescriptorManagerDX::CompleteInitialization()
         }
     }
 
-    const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
-        { return program_bindings_wptr.expired(); }
-    );
-
-    m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
-
-    tf::Taskflow task_flow;
-    task_flow.for_each(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
-        {
-            META_FUNCTION_TASK();
-            Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
-            META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
-            static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
-        }
-    );
-    m_context.GetParallelExecutor().run(task_flow).get();
+    DescriptorManagerBase::CompleteInitialization();
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_deferred_heap_allocation = true;
@@ -118,6 +97,8 @@ void DescriptorManagerDX::CompleteInitialization()
 void DescriptorManagerDX::Release()
 {
     META_FUNCTION_TASK();
+    DescriptorManagerBase::Release();
+
     for (UniquePtrs<DescriptorHeapDX>& desc_heaps : m_descriptor_heap_types)
     {
         desc_heaps.clear();
@@ -137,25 +118,6 @@ void DescriptorManagerDX::SetDeferredHeapAllocation(bool deferred_heap_allocatio
     });
 }
 
-void DescriptorManagerDX::AddProgramBindings(ProgramBindings& program_bindings)
-{
-    META_FUNCTION_TASK();
-
-    std::scoped_lock lock_guard(m_program_bindings_mutex);
-#ifdef _DEBUG
-    // This may cause performance drop on adding massive amount of program bindings,
-    // so we assume that only different program bindings are added and check it in Debug builds only
-    const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [&program_bindings](const WeakPtr<ProgramBindings>& program_bindings_ptr)
-        { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
-    );
-    META_CHECK_ARG_DESCR("program_bindings", program_bindings_it == m_program_bindings.end(),
-                         "program bindings instance was already added to resource manager");
-#endif
-
-    m_program_bindings.push_back(static_cast<ProgramBindingsBase&>(program_bindings).GetPtr<ProgramBindingsBase>());
-}
-
 uint32_t DescriptorManagerDX::CreateDescriptorHeap(const DescriptorHeapDX::Settings& settings)
 {
     META_FUNCTION_TASK();
@@ -163,7 +125,7 @@ uint32_t DescriptorManagerDX::CreateDescriptorHeap(const DescriptorHeapDX::Setti
                          "can not create 'Undefined' descriptor heap");
 
     UniquePtrs<DescriptorHeapDX>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(settings.type)];
-    desc_heaps.push_back(std::make_unique<DescriptorHeapDX>(m_context, settings));
+    desc_heaps.push_back(std::make_unique<DescriptorHeapDX>(GetContext(), settings));
     return static_cast<uint32_t>(desc_heaps.size() - 1);
 }
 

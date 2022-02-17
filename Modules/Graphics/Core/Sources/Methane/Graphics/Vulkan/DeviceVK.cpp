@@ -169,8 +169,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     std::stringstream ss;
     ss << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(message_severity)) << " "
        << vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(message_types)) << ":" << std::endl;
-    ss << "\t- messageIDName:   " << callback_data_ptr->pMessageIdName << std::endl;
-    ss << "\t- messageIdNumber: "  << callback_data_ptr->messageIdNumber << std::endl;
+    ss << "\t- messageIdName:   " << callback_data_ptr->pMessageIdName << std::endl;
+    ss << "\t- messageIdNumber: " << callback_data_ptr->messageIdNumber << std::endl;
     ss << "\t- message:         " << callback_data_ptr->pMessage << std::endl;
     if (callback_data_ptr->queueLabelCount > 0)
     {

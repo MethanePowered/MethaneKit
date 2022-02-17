@@ -266,6 +266,9 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h
     ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
+    ${SOURCES_DIR}/DescriptorManager.h
+    ${SOURCES_DIR}/DescriptorManagerBase.h
+    ${SOURCES_DIR}/DescriptorManagerBase.cpp
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DescriptorManagerDX.h
-Resource manager used as a central place for creating and accessing descriptor heaps
-and deferred releasing of GPU resource.
+Descriptor manager is a central place for creating and accessing descriptor heaps.
 
 ******************************************************************************/
 
@@ -26,7 +25,7 @@ and deferred releasing of GPU resource.
 
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/DescriptorManager.h>
+#include <Methane/Graphics/DescriptorManagerBase.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Graphics/ProgramBase.h>
 #include <Methane/Instrumentation.h>
@@ -40,7 +39,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 
-class DescriptorManagerDX : public DescriptorManager
+class DescriptorManagerDX : public DescriptorManagerBase
 {
 public:
     using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
@@ -63,12 +62,10 @@ public:
     void SetDeferredHeapAllocation(bool deferred_heap_allocation);
     [[nodiscard]] bool IsDeferredHeapAllocation() const { return m_deferred_heap_allocation; }
 
-    void AddProgramBindings(ProgramBindings& program_bindings);
-
-    [[nodiscard]] uint32_t                     CreateDescriptorHeap(const DescriptorHeapDX::Settings& settings); // returns index of the created descriptor heap
-    [[nodiscard]] DescriptorHeapDX&            GetDescriptorHeap(DescriptorHeapDX::Type type, Data::Index heap_index = 0);
-    [[nodiscard]] DescriptorHeapDX&            GetDefaultShaderVisibleDescriptorHeap(DescriptorHeapDX::Type type) const;
-    [[nodiscard]] DescriptorHeapSizeByType     GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
+    [[nodiscard]] uint32_t                 CreateDescriptorHeap(const DescriptorHeapDX::Settings& settings); // returns index of the created descriptor heap
+    [[nodiscard]] DescriptorHeapDX&        GetDescriptorHeap(DescriptorHeapDX::Type type, Data::Index heap_index = 0);
+    [[nodiscard]] DescriptorHeapDX&        GetDefaultShaderVisibleDescriptorHeap(DescriptorHeapDX::Type type) const;
+    [[nodiscard]] DescriptorHeapSizeByType GetDescriptorHeapSizes(bool get_allocated_size, bool for_shader_visible_heaps) const;
 
 private:
     template<typename FuncType> // function void(DescriptorHeapDX& descriptor_heap)
@@ -77,10 +74,7 @@ private:
     using DescriptorHeapTypes = std::array<UniquePtrs<DescriptorHeapDX>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
 
     bool                      m_deferred_heap_allocation = false;
-    ContextBase&              m_context;
     DescriptorHeapTypes       m_descriptor_heap_types;
-    WeakPtrs<ProgramBindings> m_program_bindings;
-    TracyLockable(std::mutex, m_program_bindings_mutex)
 };
 
 } // namespace Methane::Graphics
