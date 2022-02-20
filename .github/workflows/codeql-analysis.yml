@@ -27,7 +27,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Tracing builds with CodeQL is currently not supported on Windows 11 and Windows Server 2022.
+        os: [ubuntu-latest, macos-latest, windows-2019]
 
     runs-on: ${{ matrix.os }}
 
