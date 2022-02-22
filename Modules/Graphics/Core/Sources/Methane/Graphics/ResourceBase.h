@@ -50,7 +50,7 @@ public:
     // Resource interface
     [[nodiscard]] Type                      GetResourceType() const noexcept final     { return m_type; }
     [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
-    [[nodiscard]] CommandQueue*             GetOwnerQueue() const noexcept final       { return m_owner_queue_ptr; }
+    [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }
     [[nodiscard]] Usage                     GetUsage() const noexcept final            { return m_usage_mask; }
     [[nodiscard]] const Context&            GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
@@ -59,8 +59,8 @@ public:
                                                     const std::optional<BytesRange>& data_range = {}) override;
     bool SetState(State state, Ptr<Barriers>& out_barriers) final;
     bool SetState(State state) final;
-    bool SetOwnerQueue(CommandQueue& owner_queue) final;
-    bool SetOwnerQueue(CommandQueue& owner_queue, Ptr<Barriers>& out_barriers) final;
+    bool SetOwnerQueueFamily(uint32_t family_index) final;
+    bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) final;
     void SetData(const SubResources& sub_resources, CommandQueue*) override;
 
     [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
@@ -89,7 +89,7 @@ private:
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;
     Ptr<Barriers>      m_setup_transition_barriers_ptr;
-    CommandQueue*      m_owner_queue_ptr = nullptr;
+    Opt<uint32_t>      m_owner_queue_family_index_opt;
     TracyLockable(std::mutex, m_state_mutex)
 };
 

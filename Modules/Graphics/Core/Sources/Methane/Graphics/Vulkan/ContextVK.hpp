@@ -50,16 +50,6 @@ public:
         META_FUNCTION_TASK();
     }
 
-    // Context interface
-
-    void WaitForGpu(Context::WaitFor wait_for) override
-    {
-        META_FUNCTION_TASK();
-        ContextBaseT::WaitForGpu(wait_for);
-        // ...
-        ContextBaseT::OnGpuWaitComplete(wait_for);
-    }
-
     // IContextVK interface
 
     const DeviceVK& GetDeviceVK() const noexcept final

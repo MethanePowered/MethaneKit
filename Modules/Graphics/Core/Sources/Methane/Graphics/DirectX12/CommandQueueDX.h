@@ -43,6 +43,9 @@ class CommandQueueDX final : public CommandQueueTrackingBase
 public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
 
+    // CommandQueue interface
+    uint32_t GetFamilyIndex() const noexcept override { return 0U; }
+
     // Object interface
     bool SetName(const std::string& name) override;
 

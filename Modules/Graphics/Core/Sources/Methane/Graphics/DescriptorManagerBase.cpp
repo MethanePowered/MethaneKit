@@ -32,8 +32,9 @@ Base descriptor manager implementation.
 namespace Methane::Graphics
 {
 
-DescriptorManagerBase::DescriptorManagerBase(ContextBase& context)
+DescriptorManagerBase::DescriptorManagerBase(ContextBase& context, bool is_parallel_bindings_processing_enabled)
     : m_context(context)
+    , m_is_parallel_bindings_processing_enabled(is_parallel_bindings_processing_enabled)
 {
     META_FUNCTION_TASK();
 }
@@ -50,17 +51,25 @@ void DescriptorManagerBase::CompleteInitialization()
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
-    tf::Taskflow task_flow;
-    task_flow.for_each(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
-        {
-            META_FUNCTION_TASK();
-            Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
-            META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
-            static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
-        }
-    );
-    m_context.GetParallelExecutor().run(task_flow).get();
+    static const auto binding_initialization_completer = [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
+    {
+        META_FUNCTION_TASK();
+        Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+        META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
+        static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
+    };
+
+    if (m_is_parallel_bindings_processing_enabled)
+    {
+        tf::Taskflow task_flow;
+        task_flow.for_each(m_program_bindings.begin(), m_program_bindings.end(), binding_initialization_completer);
+        m_context.GetParallelExecutor().run(task_flow).get();
+    }
+    else
+    {
+        for (const WeakPtr<ProgramBindings>& program_bindings_wptr : m_program_bindings)
+            binding_initialization_completer(program_bindings_wptr);
+    }
 }
 
 void DescriptorManagerBase::Release()

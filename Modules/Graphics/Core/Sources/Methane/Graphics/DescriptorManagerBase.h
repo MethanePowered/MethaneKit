@@ -39,7 +39,7 @@ class ContextBase;
 class DescriptorManagerBase : public DescriptorManager
 {
 public:
-    explicit DescriptorManagerBase(ContextBase& context);
+    explicit DescriptorManagerBase(ContextBase& context, bool is_parallel_bindings_processing_enabled = true);
 
     // DescriptorManager interface
     void AddProgramBindings(ProgramBindings& program_bindings) final;
@@ -52,6 +52,7 @@ protected:
 
 private:
     ContextBase&              m_context;
+    const bool                m_is_parallel_bindings_processing_enabled;
     WeakPtrs<ProgramBindings> m_program_bindings;
     TracyLockable(std::mutex, m_program_bindings_mutex)
 };

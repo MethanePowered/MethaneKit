@@ -204,15 +204,10 @@ void ResourceBarriersVK::SetResourceBarrier(const ResourceBarrier::Id& id, const
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
-    if (barrier.GetId().GetType() != ResourceBarrier::Type::StateTransition)
-        return;
-
     if (is_new_barrier)
     {
         static_cast<Data::IEmitter<IResourceCallback>&>(resource).Connect(*this);
-        const ResourceBarrier::StateChange& state_change = barrier.GetStateChange();
-        m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateBefore());
-        m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateAfter());
+        UpdateStageMasks(barrier);
     }
     else
     {
@@ -278,8 +273,8 @@ void ResourceBarriersVK::AddBufferMemoryStateChangeBarrier(const BufferVK& buffe
     m_vk_buffer_memory_barriers.emplace_back(
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()),
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
-        0U,
-        0U,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
         buffer.GetNativeResource(),
         0U,
         buffer.GetSettings().size
@@ -289,14 +284,14 @@ void ResourceBarriersVK::AddBufferMemoryStateChangeBarrier(const BufferVK& buffe
 void ResourceBarriersVK::AddBufferMemoryOwnerChangeBarrier(const BufferVK& buffer, const ResourceBarrier::OwnerChange& owner_change)
 {
     META_FUNCTION_TASK();
-    const uint32_t family_index_before = static_cast<CommandQueueVK&>(owner_change.GetOwnerBefore()).GetNativeQueueFamilyIndex();
-    const uint32_t family_index_after = static_cast<CommandQueueVK&>(owner_change.GetOwnerAfter()).GetNativeQueueFamilyIndex();
+    const uint32_t family_index_before = owner_change.GetQueueFamilyBefore();
+    const uint32_t family_index_after = owner_change.GetQueueFamilyAfter();
     if (family_index_before == family_index_after)
         return;
 
     m_vk_buffer_memory_barriers.emplace_back(
-        vk::AccessFlagBits::eNoneKHR,
-        vk::AccessFlagBits::eNoneKHR,
+        vk::AccessFlagBits::eMemoryWrite,
+        vk::AccessFlagBits::eMemoryRead,
         family_index_before,
         family_index_after,
         buffer.GetNativeResource(),
@@ -313,8 +308,8 @@ void ResourceBarriersVK::AddImageMemoryStateChangeBarrier(const ITextureVK& text
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
         ConvertResourceStateToVulkanImageLayout(state_change.GetStateBefore()),
         ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()),
-        0U,
-        0U,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
         texture.GetNativeImage(),
         texture.GetNativeSubresourceRange()
     );
@@ -323,14 +318,14 @@ void ResourceBarriersVK::AddImageMemoryStateChangeBarrier(const ITextureVK& text
 void ResourceBarriersVK::AddImageMemoryOwnerChangeBarrier(const ITextureVK& texture, const ResourceBarrier::OwnerChange& owner_change)
 {
     META_FUNCTION_TASK();
-    const uint32_t family_index_before = static_cast<CommandQueueVK&>(owner_change.GetOwnerBefore()).GetNativeQueueFamilyIndex();
-    const uint32_t family_index_after = static_cast<CommandQueueVK&>(owner_change.GetOwnerAfter()).GetNativeQueueFamilyIndex();
+    const uint32_t family_index_before = owner_change.GetQueueFamilyBefore();
+    const uint32_t family_index_after = owner_change.GetQueueFamilyAfter();
     if (family_index_before == family_index_after)
         return;
 
     m_vk_image_memory_barriers.emplace_back(
-        vk::AccessFlagBits::eNoneKHR,
-        vk::AccessFlagBits::eNoneKHR,
+        vk::AccessFlagBits::eMemoryWrite,
+        vk::AccessFlagBits::eMemoryRead,
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eUndefined,
         family_index_before,
@@ -350,8 +345,10 @@ void ResourceBarriersVK::UpdateBufferMemoryStateChangeBarrier(vk::BufferMemoryBa
 void ResourceBarriersVK::UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const ResourceBarrier::OwnerChange& owner_change)
 {
     META_FUNCTION_TASK();
-    vk_buffer_memory_barrier.setSrcQueueFamilyIndex(static_cast<CommandQueueVK&>(owner_change.GetOwnerBefore()).GetNativeQueueFamilyIndex());
-    vk_buffer_memory_barrier.setDstQueueFamilyIndex(static_cast<CommandQueueVK&>(owner_change.GetOwnerAfter()).GetNativeQueueFamilyIndex());
+    vk_buffer_memory_barrier.setSrcAccessMask(vk_buffer_memory_barrier.srcAccessMask | vk::AccessFlagBits::eMemoryWrite);
+    vk_buffer_memory_barrier.setDstAccessMask(vk_buffer_memory_barrier.dstAccessMask | vk::AccessFlagBits::eMemoryRead);
+    vk_buffer_memory_barrier.setSrcQueueFamilyIndex(owner_change.GetQueueFamilyBefore());
+    vk_buffer_memory_barrier.setDstQueueFamilyIndex(owner_change.GetQueueFamilyAfter());
 }
 
 void ResourceBarriersVK::UpdateImageMemoryStateChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::StateChange& state_change)
@@ -366,8 +363,10 @@ void ResourceBarriersVK::UpdateImageMemoryStateChangeBarrier(vk::ImageMemoryBarr
 void ResourceBarriersVK::UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::OwnerChange& owner_change)
 {
     META_FUNCTION_TASK();
-    vk_image_memory_barrier.setSrcQueueFamilyIndex(static_cast<CommandQueueVK&>(owner_change.GetOwnerBefore()).GetNativeQueueFamilyIndex());
-    vk_image_memory_barrier.setDstQueueFamilyIndex(static_cast<CommandQueueVK&>(owner_change.GetOwnerAfter()).GetNativeQueueFamilyIndex());
+    vk_image_memory_barrier.setSrcAccessMask(vk_image_memory_barrier.srcAccessMask | vk::AccessFlagBits::eMemoryWrite);
+    vk_image_memory_barrier.setDstAccessMask(vk_image_memory_barrier.dstAccessMask | vk::AccessFlagBits::eMemoryRead);
+    vk_image_memory_barrier.setSrcQueueFamilyIndex(owner_change.GetQueueFamilyBefore());
+    vk_image_memory_barrier.setDstQueueFamilyIndex(owner_change.GetQueueFamilyAfter());
 }
 
 void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, ResourceBarrier::Type barrier_type)
@@ -381,8 +380,8 @@ void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, 
 
     if (barrier_type == ResourceBarrier::Type::OwnerTransition)
     {
-        vk_buffer_memory_barrier_it->setSrcQueueFamilyIndex(0U);
-        vk_buffer_memory_barrier_it->setDstQueueFamilyIndex(0U);
+        vk_buffer_memory_barrier_it->setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+        vk_buffer_memory_barrier_it->setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
     }
     else
     {
@@ -401,8 +400,8 @@ void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image, Res
 
     if (barrier_type == ResourceBarrier::Type::OwnerTransition)
     {
-        vk_image_memory_barrier_it->setSrcQueueFamilyIndex(0U);
-        vk_image_memory_barrier_it->setDstQueueFamilyIndex(0U);
+        vk_image_memory_barrier_it->setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+        vk_image_memory_barrier_it->setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
     }
     else
     {
@@ -417,12 +416,22 @@ void ResourceBarriersVK::UpdateStageMasks()
     m_vk_dst_stage_mask = {};
     for(const auto& [barrier_id, barrier] : ResourceBarriers::GetMap())
     {
-        if (barrier.GetId().GetType() != ResourceBarrier::Type::StateTransition)
-            continue;
+        UpdateStageMasks(barrier);
+    }
+}
 
-        const ResourceBarrier::StateChange& state_change = barrier.GetStateChange();
-        m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateBefore());
-        m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(state_change.GetStateAfter());
+void ResourceBarriersVK::UpdateStageMasks(const ResourceBarrier& barrier)
+{
+    switch (barrier.GetId().GetType())
+    {
+    case ResourceBarrier::Type::StateTransition:
+        m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateBefore());
+        m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateAfter());
+        break;
+
+    case ResourceBarrier::Type::OwnerTransition:
+        m_vk_src_stage_mask |= vk::PipelineStageFlagBits::eTransfer;
+        break;
     }
 }
 

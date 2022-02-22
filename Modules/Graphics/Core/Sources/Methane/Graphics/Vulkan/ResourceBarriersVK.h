@@ -74,6 +74,7 @@ private:
     void RemoveImageMemoryBarrier(const vk::Image& vk_image, ResourceBarrier::Type barrier_type);
 
     void UpdateStageMasks();
+    void UpdateStageMasks(const ResourceBarrier& barrier);
 
     std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
     std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;

@@ -435,7 +435,7 @@ bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type ac
         {
             META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
             if (owner_queue_ptr)
-                resource_state.resource_ptr->SetOwnerQueue(*owner_queue_ptr, m_resource_state_transition_barriers_ptr);
+                resource_state.resource_ptr->SetOwnerQueueFamily(owner_queue_ptr->GetFamilyIndex(), m_resource_state_transition_barriers_ptr);
 
             resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_state_transition_barriers_ptr);
         }

@@ -86,9 +86,9 @@ bool ResourceBarrier::StateChange::operator!=(const StateChange& other) const no
     return !operator==(other);
 }
 
-ResourceBarrier::OwnerChange::OwnerChange(CommandQueue& before, CommandQueue& after) noexcept
-    : m_before(before)
-    , m_after(after)
+ResourceBarrier::OwnerChange::OwnerChange(uint32_t queue_family_before, uint32_t queue_family_after) noexcept
+    : m_queue_family_before(queue_family_before)
+    , m_queue_family_after(queue_family_after)
 {
     META_FUNCTION_TASK();
 }
@@ -96,19 +96,15 @@ ResourceBarrier::OwnerChange::OwnerChange(CommandQueue& before, CommandQueue& af
 bool ResourceBarrier::OwnerChange::operator<(const OwnerChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    CommandQueue* before_ptr = std::addressof(m_before.get());
-    CommandQueue* after_ptr  = std::addressof(m_after.get());
-    CommandQueue* other_before_ptr = std::addressof(other.m_before.get());
-    CommandQueue* other_after_ptr  = std::addressof(other.m_after.get());
-    return std::tie(before_ptr, after_ptr) <
-           std::tie(other_before_ptr, other_after_ptr);
+    return std::tie(m_queue_family_before, m_queue_family_after) <
+           std::tie(other.m_queue_family_before, other.m_queue_family_after);
 }
 
 bool ResourceBarrier::OwnerChange::operator==(const OwnerChange& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::addressof(m_before.get()) == std::addressof(other.m_before.get()) &&
-           std::addressof(m_after.get()) == std::addressof(other.m_after.get());
+    return std::tie(m_queue_family_before, m_queue_family_after) ==
+           std::tie(other.m_queue_family_before, other.m_queue_family_after);
 }
 
 bool ResourceBarrier::OwnerChange::operator!=(const OwnerChange& other) const noexcept
@@ -137,8 +133,8 @@ ResourceBarrier::ResourceBarrier(Resource& resource, ResourceState state_before,
     META_FUNCTION_TASK();
 }
 
-ResourceBarrier::ResourceBarrier(Resource& resource, CommandQueue& owner_before, CommandQueue& owner_after)
-    : ResourceBarrier(resource, OwnerChange(owner_before, owner_after))
+ResourceBarrier::ResourceBarrier(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
+    : ResourceBarrier(resource, OwnerChange(queue_family_before, queue_family_after))
 {
     META_FUNCTION_TASK();
 }
@@ -207,10 +203,10 @@ ResourceBarrier::operator std::string() const noexcept
                            magic_enum::enum_name(m_change.state.GetStateAfter()));
 
     case Type::OwnerTransition:
-        return fmt::format("Resource '{}' ownership transition barrier from '{}' to '{}' command queue",
+        return fmt::format("Resource '{}' ownership transition barrier from '{}' to '{}' command queue family",
                            m_id.GetResource().GetName(),
-                           m_change.owner.GetOwnerBefore().GetName(),
-                           m_change.owner.GetOwnerAfter().GetName());
+                           m_change.owner.GetQueueFamilyBefore(),
+                           m_change.owner.GetQueueFamilyAfter());
     }
     return "";
 }
@@ -242,10 +238,13 @@ void ResourceBarrier::ApplyTransition() const
         break;
 
     case Type::OwnerTransition:
-        META_CHECK_ARG_EQUAL_DESCR(m_id.GetResource().GetOwnerQueue(), &m_change.owner.GetOwnerBefore(),
+        META_CHECK_ARG_TRUE_DESCR(m_id.GetResource().GetOwnerQueueFamily().has_value(),
+                                  "can not transition resource '{}' ownership which has no existing owner queue family",
+                                  m_id.GetResource().GetName());
+        META_CHECK_ARG_EQUAL_DESCR(m_id.GetResource().GetOwnerQueueFamily().value(), m_change.owner.GetQueueFamilyBefore(),
                                    "owner of resource '{}' does not match with transition barrier 'before' state",
                                    m_id.GetResource().GetName());
-        m_id.GetResource().SetOwnerQueue(m_change.owner.GetOwnerAfter());
+        m_id.GetResource().SetOwnerQueueFamily(m_change.owner.GetQueueFamilyAfter());
         break;
     }
 }
@@ -294,13 +293,13 @@ bool ResourceBarriers::HasStateTransition(Resource& resource, ResourceState befo
            barrier_it->second == ResourceBarrier(resource, before, after);
 }
 
-bool ResourceBarriers::HasOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after)
+bool ResourceBarriers::HasOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
     const auto barrier_it = m_barriers_map.find(ResourceBarrier::Id(ResourceBarrier::Type::OwnerTransition, resource));
     return barrier_it != m_barriers_map.end() &&
-           barrier_it->second == ResourceBarrier(resource, before, after);
+           barrier_it->second == ResourceBarrier(resource, queue_family_before, queue_family_after);
 }
 
 ResourceBarriers::AddResult ResourceBarriers::AddStateTransition(Resource& resource, ResourceState before, ResourceState after)
@@ -308,9 +307,9 @@ ResourceBarriers::AddResult ResourceBarriers::AddStateTransition(Resource& resou
     return Add(ResourceBarrier::Id(ResourceBarrier::Type::StateTransition, resource), ResourceBarrier(resource, before, after));
 }
 
-ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after)
+ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
 {
-    return Add(ResourceBarrier::Id(ResourceBarrier::Type::OwnerTransition, resource), ResourceBarrier(resource, before, after));
+    return Add(ResourceBarrier::Id(ResourceBarrier::Type::OwnerTransition, resource), ResourceBarrier(resource, queue_family_before, queue_family_after));
 }
 
 bool ResourceBarriers::Remove(ResourceBarrier::Type type, Resource& resource)

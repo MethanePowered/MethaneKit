@@ -112,8 +112,8 @@ struct Resource
     // Resource interface
     virtual bool SetState(State state) = 0;
     virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
-    virtual bool SetOwnerQueue(CommandQueue& owner_queue) = 0;
-    virtual bool SetOwnerQueue(CommandQueue& owner_queue, Ptr<Barriers>& out_barriers) = 0;
+    virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
+    virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) = 0;
     virtual void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue = nullptr) = 0;
     [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
@@ -125,7 +125,7 @@ struct Resource
     [[nodiscard]] virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
     [[nodiscard]] virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
     [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
-    [[nodiscard]] virtual CommandQueue*             GetOwnerQueue() const noexcept = 0;
+    [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

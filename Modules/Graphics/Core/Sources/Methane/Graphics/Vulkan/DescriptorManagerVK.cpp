@@ -32,7 +32,7 @@ namespace Methane::Graphics
 {
 
 DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_sets_count, const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type)
-    : DescriptorManagerBase(context)
+    : DescriptorManagerBase(context, false)
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
 {
@@ -42,6 +42,7 @@ DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_set
 void DescriptorManagerVK::CompleteInitialization()
 {
     META_FUNCTION_TASK();
+    GetContext().WaitForGpu(Context::WaitFor::ResourcesUploaded);
     GetContext().WaitForGpu(Context::WaitFor::RenderComplete);
     DescriptorManagerBase::CompleteInitialization();
 }

@@ -278,16 +278,15 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sy
     const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload();
     upload_cmd_list.GetNativeCommandBufferDefault().copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                                                       vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
-    FinishResourceUpload(sync_cmd_queue);
-
-    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
         GenerateMipLevels();
     }
 
-    SetState(State::Common);
+    FinishResourceUpload(sync_cmd_queue);
+
+    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
 bool ImageTextureVK::SetName(const std::string& name)

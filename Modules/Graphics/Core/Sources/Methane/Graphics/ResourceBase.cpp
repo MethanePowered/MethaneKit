@@ -150,44 +150,44 @@ bool ResourceBase::SetState(State state)
     return true;
 }
 
-bool ResourceBase::SetOwnerQueue(CommandQueue& owner_queue, Ptr<Barriers>& out_barriers)
+bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
-    if (m_owner_queue_ptr == std::addressof(owner_queue))
+    if (m_owner_queue_family_index_opt == family_index)
     {
         if (out_barriers)
             out_barriers->RemoveOwnerTransition(*this);
         return false;
     }
 
-    META_LOG("{} resource '{}' owner queue changed from '{}' to '{}' with barrier update",
+    META_LOG("{} resource '{}' owner queue changed from {} to {} queue family with barrier update",
              magic_enum::enum_name(GetResourceType()), GetName(),
-             m_owner_queue_ptr ? m_owner_queue_ptr->GetName() : "null",
-             owner_queue.GetName());
+             m_owner_queue_family_index_opt ? *m_owner_queue_family_index_opt : "n/a",
+             family_index);
 
-    if (m_owner_queue_ptr)
+    if (m_owner_queue_family_index_opt)
     {
         if (!out_barriers)
             out_barriers = Barriers::Create();
-        out_barriers->AddOwnerTransition(*this, *m_owner_queue_ptr, owner_queue);
+        out_barriers->AddOwnerTransition(*this, *m_owner_queue_family_index_opt, family_index);
     }
 
-    m_owner_queue_ptr = std::addressof(owner_queue);
+    m_owner_queue_family_index_opt = family_index;
     return true;
 }
 
-bool ResourceBase::SetOwnerQueue(CommandQueue& owner_queue)
+bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index)
 {
     META_FUNCTION_TASK();
-    if (m_owner_queue_ptr == std::addressof(owner_queue))
+    if (m_owner_queue_family_index_opt == family_index)
         return false;
 
-    META_LOG("{} resource '{}' owner queue changed from '{}' to '{}'",
+    META_LOG("{} resource '{}' owner queue changed from {} to {} queue family",
              magic_enum::enum_name(GetResourceType()), GetName(),
-             m_owner_queue_ptr ? m_owner_queue_ptr->GetName() : "null",
-             owner_queue.GetName());
+             m_owner_queue_family_index_opt ? *m_owner_queue_family_index_opt : "n/a",
+             family_index);
 
-    m_owner_queue_ptr = std::addressof(owner_queue);
+    m_owner_queue_family_index_opt = family_index;
     return true;
 }
 

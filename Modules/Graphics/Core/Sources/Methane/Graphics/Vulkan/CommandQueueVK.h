@@ -48,6 +48,7 @@ public:
     ~CommandQueueVK() override;
 
     // CommandQueue interface
+    uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
     void Execute(CommandListSet& command_list_set, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface

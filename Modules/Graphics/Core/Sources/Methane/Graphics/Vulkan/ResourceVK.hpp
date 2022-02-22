@@ -212,7 +212,7 @@ protected:
         auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
-        if ((SetOwnerQueue(upload_cmd_kit.GetQueue(), m_upload_begin_transition_barriers_ptr) ||
+        if ((SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr) ||
              SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr)) && m_upload_begin_transition_barriers_ptr)
         {
             upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
@@ -224,7 +224,7 @@ protected:
     void FinishResourceUpload(CommandQueue* sync_cmd_queue)
     {
         CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
-        if ((SetOwnerQueue(sync_cmd_queue ? *sync_cmd_queue : upload_cmd_kit.GetQueue(), m_upload_sync_transition_barriers_ptr) ||
+        if ((SetOwnerQueueFamily(sync_cmd_queue ? sync_cmd_queue->GetFamilyIndex() : upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_sync_transition_barriers_ptr) ||
              SetState(State::ShaderResource, m_upload_sync_transition_barriers_ptr)) &&
             m_upload_sync_transition_barriers_ptr)
         {

@@ -106,24 +106,24 @@ public:
     class OwnerChange
     {
     public:
-        OwnerChange(CommandQueue& before, CommandQueue& after) noexcept;
+        OwnerChange(uint32_t queue_family_before, uint32_t queue_family_after) noexcept;
 
         [[nodiscard]] bool operator<(const OwnerChange& other) const noexcept;
         [[nodiscard]] bool operator==(const OwnerChange& other) const noexcept;
         [[nodiscard]] bool operator!=(const OwnerChange& other) const noexcept;
 
-        [[nodiscard]] CommandQueue& GetOwnerBefore() const noexcept { return m_before.get(); }
-        [[nodiscard]] CommandQueue& GetOwnerAfter() const noexcept  { return m_after.get(); }
+        [[nodiscard]] uint32_t GetQueueFamilyBefore() const noexcept { return m_queue_family_before; }
+        [[nodiscard]] uint32_t GetQueueFamilyAfter() const noexcept  { return m_queue_family_after; }
 
     private:
-        Ref<CommandQueue> m_before;
-        Ref<CommandQueue> m_after;
+        uint32_t m_queue_family_before;
+        uint32_t m_queue_family_after;
     };
 
     ResourceBarrier(Resource& resource, const StateChange& state_change);
     ResourceBarrier(Resource& resource, const OwnerChange& owner_change);
     ResourceBarrier(Resource& resource, ResourceState state_before, ResourceState state_after);
-    ResourceBarrier(Resource& resource, CommandQueue& owner_before, CommandQueue& owner_after);
+    ResourceBarrier(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
     ResourceBarrier(const ResourceBarrier&) = default;
 
     ResourceBarrier& operator=(const ResourceBarrier& barrier) noexcept = default;
@@ -178,14 +178,14 @@ public:
     [[nodiscard]] Set   GetSet() const noexcept;
     [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
     [[nodiscard]] bool  HasStateTransition(Resource& resource, ResourceState before, ResourceState after);
-    [[nodiscard]] bool  HasOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after);
+    [[nodiscard]] bool  HasOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
 
     bool Remove(ResourceBarrier::Type type, Resource& resource);
     bool RemoveStateTransition(Resource& resource);
     bool RemoveOwnerTransition(Resource& resource);
 
     AddResult AddStateTransition(Resource& resource, ResourceState before, ResourceState after);
-    AddResult AddOwnerTransition(Resource& resource, CommandQueue& before, CommandQueue& after);
+    AddResult AddOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
 
     virtual AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
     virtual bool      Remove(const ResourceBarrier::Id& id);
