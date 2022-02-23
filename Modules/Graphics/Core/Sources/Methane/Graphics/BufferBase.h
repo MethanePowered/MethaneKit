@@ -38,7 +38,8 @@ class BufferBase
     , public ResourceBase
 {
 public:
-    BufferBase(const ContextBase& context, const Settings& settings);
+    BufferBase(const ContextBase& context, const Settings& settings,
+               State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // Resource interface
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;

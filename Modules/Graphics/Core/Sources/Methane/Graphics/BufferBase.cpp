@@ -33,8 +33,9 @@ Base implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-BufferBase::BufferBase(const ContextBase& context, const Settings& settings)
-    : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context)
+BufferBase::BufferBase(const ContextBase& context, const Settings& settings,
+                       State initial_state, Opt<State> auto_transition_source_state_opt)
+    : ResourceBase(context, Resource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

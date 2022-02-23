@@ -104,6 +104,18 @@ public:
 
     Program::Arguments GetUnboundArguments() const;
 
+    template<typename CommandListType>
+    void ApplyResourceTransitionBarriers(CommandListType& command_list,
+                                         Program::ArgumentAccessor::Type apply_access_mask = static_cast<Program::ArgumentAccessor::Type>(~0U),
+                                         CommandQueue* owner_queue_ptr = nullptr) const
+    {
+        if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
+            m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
+        {
+            command_list.SetResourceBarriers(*m_resource_state_transition_barriers_ptr);
+        }
+    }
+
 protected:
     // ProgramBindings::IArgumentBindingCallback
     void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
@@ -121,17 +133,6 @@ protected:
     void RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource);
     void AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource);
     void AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding);
-
-    template<typename CommandListType>
-    void ApplyResourceTransitionBarriers(CommandListType& command_list, Program::ArgumentAccessor::Type apply_access_mask,
-                                         CommandQueue* owner_queue_ptr = nullptr) const
-    {
-        if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
-            m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
-        {
-            command_list.SetResourceBarriers(*m_resource_state_transition_barriers_ptr);
-        }
-    }
 
 private:
     struct ResourceAndState

@@ -54,7 +54,7 @@ class ResourceDX // NOSONAR - destructor in use
 public:
     template<typename SettingsType>
     ResourceDX(const ContextBase& context, const SettingsType& settings, const DescriptorByUsage& descriptor_by_usage)
-        : ResourceBaseType(context, settings)
+        : ResourceBaseType(context, settings, State::Common, State::Common)
         , m_descriptor_by_usage(descriptor_by_usage)
     {
         META_FUNCTION_TASK();

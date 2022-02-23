@@ -37,7 +37,8 @@ class SamplerBase
     , public ResourceBase
 {
 public:
-    SamplerBase(const ContextBase& context, const Settings& settings);
+    SamplerBase(const ContextBase& context, const Settings& settings,
+                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // Sampler interface
     const Settings& GetSettings() const override { return m_settings; }

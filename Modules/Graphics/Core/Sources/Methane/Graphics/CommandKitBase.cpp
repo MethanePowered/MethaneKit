@@ -168,7 +168,7 @@ CommandList& CommandKitBase::GetListForEncoding(uint32_t cmd_list_id, std::strin
         }
         else
         {
-            META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, fmt::format("{}"));
+            META_DEBUG_GROUP_CREATE_VAR(s_debug_region_name, std::string(debug_group_name));
             cmd_list.Reset(s_debug_region_name.get());
         }
     }

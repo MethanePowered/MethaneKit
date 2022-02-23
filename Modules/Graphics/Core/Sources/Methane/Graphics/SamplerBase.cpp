@@ -47,8 +47,9 @@ Sampler::LevelOfDetail::LevelOfDetail(float bias, float min, float max)
 {
 }
 
-SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings)
-    : ResourceBase(Type::Sampler, Usage::ShaderRead, context)
+SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings,
+                         State initial_state, Opt<State> auto_transition_source_state_opt)
+    : ResourceBase(context, Type::Sampler, Usage::ShaderRead, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

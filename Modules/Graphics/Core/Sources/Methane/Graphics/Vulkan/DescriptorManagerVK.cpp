@@ -26,6 +26,9 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/CommandList.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
@@ -44,6 +47,18 @@ void DescriptorManagerVK::CompleteInitialization()
     META_FUNCTION_TASK();
     GetContext().WaitForGpu(Context::WaitFor::ResourcesUploaded);
     GetContext().WaitForGpu(Context::WaitFor::RenderComplete);
+
+    // Transition all resources used in program bindings to Shader Resource state prior writing descriptor sets
+    CommandKit&  command_kit  = GetContext().GetDefaultCommandKit(CommandList::Type::Render);
+    CommandList& command_list = command_kit.GetListForEncoding(0U, "Transition shader resource states");
+    ForEachProgramBinding([&command_list](const ProgramBindings& program_bindings)
+    {
+        static_cast<const ProgramBindingsBase&>(program_bindings).ApplyResourceTransitionBarriers(command_list);
+    });
+    command_list.Commit();
+    command_kit.GetQueue().Execute(command_kit.GetListSet());
+    command_kit.GetFence().WaitOnCpu();
+
     DescriptorManagerBase::CompleteInitialization();
 }
 

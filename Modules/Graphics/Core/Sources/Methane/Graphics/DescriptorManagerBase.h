@@ -50,6 +50,18 @@ protected:
     ContextBase& GetContext() { return m_context; }
     const ContextBase& GetContext() const { return m_context; }
 
+    template<typename BindingsFuncType>
+    void ForEachProgramBinding(const BindingsFuncType& bindings_functor)
+    {
+        std::scoped_lock lock_guard(m_program_bindings_mutex);
+        for (const WeakPtr<ProgramBindings>& program_bindings_wptr : m_program_bindings)
+        {
+            const Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+            if (program_bindings_ptr)
+                bindings_functor(*program_bindings_ptr);
+        }
+    }
+
 private:
     ContextBase&              m_context;
     const bool                m_is_parallel_bindings_processing_enabled;

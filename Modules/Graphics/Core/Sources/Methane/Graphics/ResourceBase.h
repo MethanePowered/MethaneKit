@@ -43,7 +43,8 @@ class ResourceBase
     , public Data::Emitter<IResourceCallback>
 {
 public:
-    ResourceBase(Type type, Usage usage_mask, const ContextBase& context);
+    ResourceBase(const ContextBase& context, Type type, Usage usage_mask,
+                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
 
@@ -80,10 +81,11 @@ private:
     using SubResourceSizes = std::vector<Data::Size>;
     void FillSubresourceSizes();
 
+    const ContextBase& m_context;
     const Type         m_type;
     const Usage        m_usage_mask;
-    const ContextBase& m_context;
-    State              m_state = State::Common;
+    State              m_state;
+    const Opt<State>   m_auto_transition_source_state_opt;
     Data::Size         m_initialized_data_size       = 0U;
     bool               m_sub_resource_count_constant = false;
     SubResource::Count m_sub_resource_count;

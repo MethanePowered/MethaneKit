@@ -40,6 +40,7 @@ struct CommandQueue;
 
 enum class ResourceState
 {
+    Undefined,
     Common,
     VertexBuffer,
     ConstantBuffer,

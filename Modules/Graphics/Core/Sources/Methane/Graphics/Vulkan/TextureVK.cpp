@@ -284,8 +284,6 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sy
         GenerateMipLevels();
     }
 
-    FinishResourceUpload(sync_cmd_queue);
-
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

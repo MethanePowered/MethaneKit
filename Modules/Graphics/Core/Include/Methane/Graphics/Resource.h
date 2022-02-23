@@ -95,16 +95,16 @@ struct Resource
         const Resource& m_resource;
     };
 
-    using State         = ResourceState;
+    using State             = ResourceState;
     using DescriptorByUsage = std::map<Usage, Descriptor>;
-    using BytesRange    = Methane::Graphics::BytesRange;
-    using BytesRangeOpt = Methane::Graphics::BytesRangeOpt;
-    using SubResource   = Methane::Graphics::SubResource;
-    using SubResources  = Methane::Graphics::SubResources;
-    using Location      = Methane::Graphics::ResourceLocation;
-    using Locations     = Methane::Graphics::ResourceLocations;
-    using Barrier       = Methane::Graphics::ResourceBarrier;
-    using Barriers      = Methane::Graphics::ResourceBarriers;
+    using BytesRange        = Methane::Graphics::BytesRange;
+    using BytesRangeOpt     = Methane::Graphics::BytesRangeOpt;
+    using SubResource       = Methane::Graphics::SubResource;
+    using SubResources      = Methane::Graphics::SubResources;
+    using Location          = Methane::Graphics::ResourceLocation;
+    using Locations         = Methane::Graphics::ResourceLocations;
+    using Barrier           = Methane::Graphics::ResourceBarrier;
+    using Barriers          = Methane::Graphics::ResourceBarriers;
 
     template<typename TResource>
     static Locations CreateLocations(const Ptrs<TResource>& resources) { return CreateResourceLocations(resources); }

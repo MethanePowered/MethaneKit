@@ -37,6 +37,7 @@ static vk::AccessFlags ConvertResourceStateToVulkanAccessFlags(ResourceState res
     META_FUNCTION_TASK();
     switch (resource_state)
     {
+    case ResourceState::Undefined:        return vk::AccessFlagBits::eNoneKHR;
     case ResourceState::Common:           return vk::AccessFlagBits::eNoneKHR;
     case ResourceState::VertexBuffer:     return vk::AccessFlagBits::eVertexAttributeRead;
     case ResourceState::ConstantBuffer:   return vk::AccessFlagBits::eUniformRead;
@@ -71,6 +72,7 @@ static vk::ImageLayout ConvertResourceStateToVulkanImageLayout(ResourceState res
     META_FUNCTION_TASK();
     switch (resource_state)
     {
+    case ResourceState::Undefined:       return vk::ImageLayout::eUndefined;
     case ResourceState::Common:          return vk::ImageLayout::eGeneral;
     case ResourceState::RenderTarget:    return vk::ImageLayout::eColorAttachmentOptimal;
     case ResourceState::InputAttachment: return vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -93,6 +95,8 @@ static vk::PipelineStageFlags ConvertResourceStateToVulkanPipelineStageFlags(Res
     META_FUNCTION_TASK();
     switch (resource_state)
     {
+    case ResourceState::Undefined:
+        return vk::PipelineStageFlagBits::eTopOfPipe;
     case ResourceState::Common:
         return vk::PipelineStageFlagBits::eAllCommands;
     case ResourceState::Present:

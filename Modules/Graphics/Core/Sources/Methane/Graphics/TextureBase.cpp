@@ -102,8 +102,9 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
     return settings;
 }
 
-TextureBase::TextureBase(const ContextBase& context, const Settings& settings)
-    : ResourceBase(Resource::Type::Texture, settings.usage_mask, context)
+TextureBase::TextureBase(const ContextBase& context, const Settings& settings,
+                         State initial_state, Opt<State> auto_transition_source_state_opt)
+    : ResourceBase(context, Resource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

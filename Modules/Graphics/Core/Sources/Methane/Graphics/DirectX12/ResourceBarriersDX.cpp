@@ -36,6 +36,7 @@ static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state
     META_FUNCTION_TASK();
     switch (resource_state)
     {
+    case ResourceState::Undefined:        return D3D12_RESOURCE_STATE_COMMON;
     case ResourceState::Common:           return D3D12_RESOURCE_STATE_COMMON;
     case ResourceState::VertexBuffer:     return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
     case ResourceState::ConstantBuffer:   return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;

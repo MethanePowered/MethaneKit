@@ -66,7 +66,7 @@ class ResourceVK // NOSONAR - destructor in use
 public:
     template<typename SettingsType, typename T = ResourceStorageType>
     ResourceVK(const ContextBase& context, const SettingsType& settings, T&& vk_resource)
-        : ResourceBaseType(context, settings)
+        : ResourceBaseType(context, settings, State::Undefined)
         , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
         , m_vk_resource(std::forward<T>(vk_resource))
     {
@@ -212,27 +212,15 @@ protected:
         auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
-        if ((SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr) ||
-             SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr)) && m_upload_begin_transition_barriers_ptr)
+        const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
+        const bool state_changed = SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr);
+        if ((owner_changed || state_changed) &&
+            m_upload_begin_transition_barriers_ptr && !m_upload_begin_transition_barriers_ptr->IsEmpty())
         {
             upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
 
         return upload_cmd_list;
-    }
-
-    void FinishResourceUpload(CommandQueue* sync_cmd_queue)
-    {
-        CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
-        if ((SetOwnerQueueFamily(sync_cmd_queue ? sync_cmd_queue->GetFamilyIndex() : upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_sync_transition_barriers_ptr) ||
-             SetState(State::ShaderResource, m_upload_sync_transition_barriers_ptr)) &&
-            m_upload_sync_transition_barriers_ptr)
-        {
-            CommandList& sync_cmd_list = sync_cmd_queue
-                                       ? GetContext().GetDefaultCommandKit(*sync_cmd_queue).GetListForEncoding()
-                                       : upload_cmd_kit.GetListForEncoding();
-            sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
-        }
     }
 
 private:

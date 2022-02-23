@@ -35,7 +35,8 @@ class TextureBase
     , public ResourceBase
 {
 public:
-    TextureBase(const ContextBase& context, const Settings& settings);
+    TextureBase(const ContextBase& context, const Settings& settings,
+                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }

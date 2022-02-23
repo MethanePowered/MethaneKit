@@ -51,10 +51,13 @@ Resource::AllocationError::AllocationError(const Resource& resource, std::string
     META_FUNCTION_TASK();
 }
 
-ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context)
-    : m_type(type)
+ResourceBase::ResourceBase(const ContextBase& context, Type type, Usage usage_mask,
+                           State initial_state, Opt<State> auto_transition_source_state_opt)
+    : m_context(context)
+    , m_type(type)
     , m_usage_mask(usage_mask)
-    , m_context(context)
+    , m_state(initial_state)
+    , m_auto_transition_source_state_opt(auto_transition_source_state_opt)
 {
     META_FUNCTION_TASK();
 }
@@ -118,6 +121,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     {
         if (out_barriers)
             out_barriers->RemoveStateTransition(*this);
+
         return false;
     }
 
@@ -125,10 +129,11 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
              magic_enum::enum_name(GetResourceType()), GetName(),
              magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
-    if (m_state != State::Common)
+    if (m_state != m_auto_transition_source_state_opt)
     {
         if (!out_barriers)
             out_barriers = Barriers::Create();
+
         out_barriers->AddStateTransition(*this, m_state, state);
     }
 
@@ -146,6 +151,7 @@ bool ResourceBase::SetState(State state)
     META_LOG("{} resource '{}' state changed from {} to {}",
              magic_enum::enum_name(GetResourceType()), GetName(),
              magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+
     m_state = state;
     return true;
 }
@@ -169,6 +175,7 @@ bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out
     {
         if (!out_barriers)
             out_barriers = Barriers::Create();
+
         out_barriers->AddOwnerTransition(*this, *m_owner_queue_family_index_opt, family_index);
     }
 
