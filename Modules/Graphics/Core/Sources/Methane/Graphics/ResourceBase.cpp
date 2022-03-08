@@ -168,7 +168,7 @@ bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out
 
     META_LOG("{} resource '{}' owner queue changed from {} to {} queue family with barrier update",
              magic_enum::enum_name(GetResourceType()), GetName(),
-             m_owner_queue_family_index_opt ? *m_owner_queue_family_index_opt : "n/a",
+             m_owner_queue_family_index_opt ? std::to_string(*m_owner_queue_family_index_opt) : "n/a",
              family_index);
 
     if (m_owner_queue_family_index_opt)
@@ -191,7 +191,7 @@ bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index)
 
     META_LOG("{} resource '{}' owner queue changed from {} to {} queue family",
              magic_enum::enum_name(GetResourceType()), GetName(),
-             m_owner_queue_family_index_opt ? *m_owner_queue_family_index_opt : "n/a",
+             m_owner_queue_family_index_opt ? std::to_string(*m_owner_queue_family_index_opt) : "n/a",
              family_index);
 
     m_owner_queue_family_index_opt = family_index;

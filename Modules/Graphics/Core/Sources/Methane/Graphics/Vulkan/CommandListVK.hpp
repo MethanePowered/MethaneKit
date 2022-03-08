@@ -147,8 +147,6 @@ public:
             static_cast<std::string>(resource_barriers));
 
         const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
-        META_CHECK_ARG_TRUE(vulkan_resource_barriers.GetNativeDstStageMask() != vk::PipelineStageFlags{});
-
         GetNativeCommandBuffer(CommandBufferType::Primary).pipelineBarrier(
             vulkan_resource_barriers.GetNativeSrcStageMask(),
             vulkan_resource_barriers.GetNativeDstStageMask(),
