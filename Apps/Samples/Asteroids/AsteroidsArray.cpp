@@ -341,7 +341,7 @@ Ptr<gfx::Resource::Barriers> AsteroidsArray::CreateBeginningResourceBarriers(gfx
 #ifdef _WIN32
     const gfx::Resource::State prev_state = gfx::Resource::State::CopyDest;
 #else
-    const gfx::Resource::State prev_state = gfx::Resource::State::Common;
+    const gfx::Resource::State prev_state = gfx::Resource::State::Undefined;
 #endif
 
     Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = gfx::Resource::Barriers::Create({
