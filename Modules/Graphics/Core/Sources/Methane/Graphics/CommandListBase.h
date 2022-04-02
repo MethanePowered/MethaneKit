@@ -155,10 +155,7 @@ private:
     mutable TracyLockable(std::mutex, m_state_mutex)
     TracyLockable(std::mutex,   m_state_change_mutex)
     std::condition_variable_any m_state_change_condition_var;
-
-    TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_construct_location_ptr;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_reset_location_ptr;
+    TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;
 };
 
 class CommandListSetBase

@@ -378,8 +378,8 @@ void ProgramBindingsBase::RemoveTransitionResourceStates(const ProgramBindings::
     const auto transition_resource_state_it = std::find_if(transition_resource_states.begin(), transition_resource_states.end(),
                                                            [&resource](const ResourceAndState& resource_state)
                                                            { return resource_state.resource_ptr.get() == &resource; });
-    META_CHECK_ARG_TRUE(transition_resource_state_it != transition_resource_states.end());
-    transition_resource_states.erase(transition_resource_state_it);
+    if (transition_resource_state_it != transition_resource_states.end())
+        transition_resource_states.erase(transition_resource_state_it);
 }
 
 void ProgramBindingsBase::AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource)

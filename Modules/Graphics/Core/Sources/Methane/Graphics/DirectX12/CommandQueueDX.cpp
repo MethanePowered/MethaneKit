@@ -95,6 +95,7 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
 {
     META_FUNCTION_TASK();
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+#if METHANE_GPU_INSTRUMENTATION_ENABLED == 1
     TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_timestamp_query_buffer_ptr);
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
@@ -103,6 +104,16 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
             Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
         )
     );
+#else
+    m_tracy_context = TracyD3D12Context(GetContextDX().GetDeviceDX().GetNativeDevice().Get(), m_cp_command_queue.Get());
+#endif
+#endif
+}
+
+CommandQueueDX::~CommandQueueDX()
+{
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    TracyD3D12Destroy(m_tracy_context);
 #endif
 }
 
@@ -114,8 +125,27 @@ bool CommandQueueDX::SetName(const std::string& name)
 
     CommandQueueTrackingBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
+
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    TracyD3D12ContextName(m_tracy_context, GetName().c_str(), static_cast<uint16_t>(name.length()));
+#endif
+
     return true;
 }
+
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+void CommandQueueDX::CompleteExecution(const Opt<Data::Index>& frame_index)
+{
+    META_FUNCTION_TASK();
+    CommandQueueTrackingBase::CompleteExecution(frame_index);
+
+    TracyD3D12Collect(m_tracy_context);
+    if (frame_index)
+    {
+        TracyD3D12NewFrame(m_tracy_context);
+    }
+}
+#endif
 
 const IContextDX& CommandQueueDX::GetContextDX() const noexcept
 {

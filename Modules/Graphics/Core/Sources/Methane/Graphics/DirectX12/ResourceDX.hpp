@@ -119,7 +119,7 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE        GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeCpuDescriptorHandle(desc.index); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(Usage usage) const noexcept final            { return GetNativeGpuDescriptorHandle(GetDescriptorByUsage(usage)); }
     D3D12_GPU_DESCRIPTOR_HANDLE        GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept final { return static_cast<const DescriptorHeapDX&>(desc.heap).GetNativeGpuDescriptorHandle(desc.index); }
-    const DescriptorHeapDX::Types&       GetDescriptorHeapTypes() const noexcept final                             { return m_descriptor_heap_types; }
+    const DescriptorHeapDX::Types&     GetDescriptorHeapTypes() const noexcept final                             { return m_descriptor_heap_types; }
 
 protected:
     const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }

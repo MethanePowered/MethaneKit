@@ -35,6 +35,7 @@ DirectX 12 base template implementation of the command list interface.
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
+#include <Methane/Memory.hpp>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -42,6 +43,10 @@ DirectX 12 base template implementation of the command list interface.
 #include <nowide/convert.hpp>
 #include <fmt/format.h>
 #include <magic_enum.hpp>
+
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+#include <TracyD3D12.hpp>
+#endif
 
 namespace Methane::Graphics
 {
@@ -59,7 +64,6 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
     {
         META_FUNCTION_TASK();
-
         const wrl::ComPtr<ID3D12Device>& cp_device = GetCommandQueueDX().GetContextDX().GetDeviceDX().GetNativeDevice();
         META_CHECK_ARG_NOT_NULL(cp_device);
 
@@ -67,16 +71,16 @@ public:
         ThrowIfFailed(cp_device->CreateCommandList(0, command_list_type, m_cp_command_allocator.Get(), nullptr, IID_PPV_ARGS(&m_cp_command_list)), cp_device.Get());
         m_cp_command_list.As(&m_cp_command_list_4);
 
-
+#if METHANE_GPU_INSTRUMENTATION_ENABLED
         if (TimestampQueryBuffer* p_query_buffer = GetCommandQueueDX().GetTimestampQueryBuffer();
             p_query_buffer)
         {
             m_begin_timestamp_query_ptr = p_query_buffer->CreateTimestampQuery(*this);
             m_end_timestamp_query_ptr   = p_query_buffer->CreateTimestampQuery(*this);
-
-            // Insert beginning GPU timestamp query
-            m_begin_timestamp_query_ptr->InsertTimestamp();
         }
+#endif
+
+        BeginGpuZone();
 
         SetCommandListState(CommandList::State::Encoding);
     }
@@ -86,7 +90,6 @@ public:
     void PushDebugGroup(CommandList::DebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
-
         CommandListBase::PushDebugGroup(debug_group);
         const std::wstring& group_name = static_cast<DebugGroupDX&>(debug_group).GetWideName();
         PIXBeginEvent(m_cp_command_list.Get(), 0, group_name.c_str());
@@ -95,7 +98,6 @@ public:
     void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
-
         CommandListBase::PopDebugGroup();
         PIXEndEvent(m_cp_command_list.Get());
     }
@@ -103,20 +105,9 @@ public:
     void Commit() override
     {
         META_FUNCTION_TASK();
-
         CommandListBaseT::Commit();
 
-        // Insert ending GPU timestamp query
-        // and resolve timestamps of beginning and ending queries
-        if (m_end_timestamp_query_ptr)
-        {
-            m_end_timestamp_query_ptr->InsertTimestamp();
-            m_end_timestamp_query_ptr->ResolveTimestamp();
-        }
-        if (m_begin_timestamp_query_ptr)
-        {
-            m_begin_timestamp_query_ptr->ResolveTimestamp();
-        }
+        EndGpuZone();
 
         m_cp_command_list->Close();
         m_is_native_committed = true;
@@ -152,9 +143,7 @@ public:
         ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
-        // Insert beginning GPU timestamp query
-        if (m_begin_timestamp_query_ptr)
-            m_begin_timestamp_query_ptr->InsertTimestamp();
+        BeginGpuZone();
 
         CommandListBase::Reset(p_debug_group);
     }
@@ -162,6 +151,7 @@ public:
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const final
     {
         META_FUNCTION_TASK();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
         if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
         {
             META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandListBase::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
@@ -169,6 +159,7 @@ public:
                  ? GetNormalTimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
                  : GetNormalTimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
         }
+#endif
         return CommandListBase::GetGpuTimeRange(in_cpu_nanoseconds);
     }
 
@@ -221,18 +212,45 @@ protected:
         return *m_cp_command_list.Get();
     }
 
-    bool                                  HasBeginTimestampQuery() const noexcept { return !!m_begin_timestamp_query_ptr; }
-    TimestampQueryBuffer::TimestampQuery& GetBeginTimestampQuery() const
+    void BeginGpuZone()
     {
-        META_CHECK_ARG_NOT_NULL(m_begin_timestamp_query_ptr);
-        return *m_begin_timestamp_query_ptr;
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        // Insert beginning GPU timestamp query
+        if (m_begin_timestamp_query_ptr)
+            m_begin_timestamp_query_ptr->InsertTimestamp();
+
+#if METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+        static const std::string cl_unnamed = "Unnamed Command List";
+        const std::string& cl_name = GetName();
+        const std::string_view zone_name = cl_name.empty() ? cl_unnamed : cl_name;
+        m_tracy_gpu_scope_opt.emplace(GetCommandQueueDX().GetTracyContext(),
+                                      static_cast<uint32_t>(__LINE__), __FILE__, strlen(__FILE__),
+                                      __FUNCTION__, strlen(__FUNCTION__),
+                                      zone_name.data(), zone_name.length(),
+                                      m_cp_command_list.Get(), true);
+#endif
+#endif
     }
 
-    bool                                  HasEndTimestampQuery() const noexcept   { return !!m_end_timestamp_query_ptr; }
-    TimestampQueryBuffer::TimestampQuery& GetEndTimestampQuery() const
+    void EndGpuZone()
     {
-        META_CHECK_ARG_NOT_NULL(m_end_timestamp_query_ptr);
-        return m_end_timestamp_query_ptr.get();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        // Insert ending GPU timestamp query
+        // and resolve timestamps of beginning and ending queries
+        if (m_end_timestamp_query_ptr)
+        {
+            m_end_timestamp_query_ptr->InsertTimestamp();
+            m_end_timestamp_query_ptr->ResolveTimestamp();
+        }
+        if (m_begin_timestamp_query_ptr)
+        {
+            m_begin_timestamp_query_ptr->ResolveTimestamp();
+        }
+
+#if METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+        m_tracy_gpu_scope_opt.reset();
+#endif
+#endif
     }
 
 private:
@@ -241,8 +259,13 @@ private:
         return Data::TimeRange(std::min(start, end), std::max(start, end));
     }
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;
     Ptr<TimestampQueryBuffer::TimestampQuery> m_end_timestamp_query_ptr;
+#if METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    Opt<tracy::D3D12ZoneScope>                m_tracy_gpu_scope_opt;
+#endif
+#endif
     wrl::ComPtr<ID3D12CommandAllocator>       m_cp_command_allocator;
     wrl::ComPtr<ID3D12GraphicsCommandList>    m_cp_command_list;
     wrl::ComPtr<ID3D12GraphicsCommandList4>   m_cp_command_list_4;    // extended interface for the same command list (may be unavailable on older Windows)

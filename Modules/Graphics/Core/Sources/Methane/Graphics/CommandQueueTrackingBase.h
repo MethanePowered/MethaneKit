@@ -50,7 +50,7 @@ public:
     // Object interface
     bool SetName(const std::string& name) override;
 
-    void CompleteExecution(const Opt<Data::Index>& frame_index = { });
+    virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
 

@@ -72,10 +72,9 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_command_queue_ptr(command_queue.GetPtr<CommandQueueBase>())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
-    , m_tracy_construct_location_ptr(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
     META_FUNCTION_TASK();
-    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
+    TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(m_tracy_gpu_scope);
     META_LOG("{} Command list '{}' was created", magic_enum::enum_name(m_type), GetName());
     META_UNUSED(m_tracy_gpu_scope); // silence unused member warning on MacOS when Tracy GPU profiling
 }
@@ -133,9 +132,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
-    if (!m_tracy_reset_location_ptr)
-        m_tracy_reset_location_ptr.reset(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()));
-    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_reset_location_ptr.get());
+    TRACY_GPU_SCOPE_TRY_BEGIN(m_tracy_gpu_scope, "Render");
 
     if (p_debug_group && debug_group_changed)
     {
