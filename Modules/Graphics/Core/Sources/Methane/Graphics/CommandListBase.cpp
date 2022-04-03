@@ -132,7 +132,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
-    TRACY_GPU_SCOPE_TRY_BEGIN(m_tracy_gpu_scope, "Render");
+    TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(m_tracy_gpu_scope, GetName());
 
     if (p_debug_group && debug_group_changed)
     {

@@ -47,7 +47,7 @@ class GpuScope;
 
 using QueryId   = uint16_t;
 using Timestamp = int64_t;
-using ThreadId  = uint64_t;
+using ThreadId  = uint32_t;
 
 class GpuContext
 {
@@ -216,13 +216,13 @@ public:
     {
     }
 
-    tracy_force_inline void Begin(uint64_t src_location, int call_stack_depth = 0)
+    tracy_force_inline void Begin(uint64_t src_location, bool is_allocated_location = false, int call_stack_depth = 0)
     {
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
-#endif
         if (!m_is_active)
             return;
+#endif
 
         m_state           = State::Begun;
         m_begin_thread_id = tracy::GetThreadHandle();
@@ -233,12 +233,16 @@ public:
         if (call_stack_depth)
         {
             item = tracy::Profiler::QueueSerialCallstack(tracy::Callstack(call_stack_depth));
-            item_type = tracy::QueueType::GpuZoneBeginCallstackSerial;
+            item_type = is_allocated_location
+                      ? tracy::QueueType::GpuZoneBeginAllocSrcLocCallstackSerial
+                      : tracy::QueueType::GpuZoneBeginCallstackSerial;
         }
         else
         {
             item = tracy::Profiler::QueueSerial();
-            item_type = tracy::QueueType::GpuZoneBeginSerial;
+            item_type = is_allocated_location
+                      ? tracy::QueueType::GpuZoneBeginAllocSrcLocSerial
+                      : tracy::QueueType::GpuZoneBeginSerial;
         }
 
         tracy::MemWrite(&item->hdr.type,             item_type);
@@ -248,15 +252,16 @@ public:
         tracy::MemWrite(&item->gpuZoneBegin.queryId, m_begin_query_id);
         tracy::MemWrite(&item->gpuZoneBegin.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
-
-        if (call_stack_depth)
-        {
-            tracy::GetProfiler().SendCallstack(call_stack_depth);
-        }
     }
 
     tracy_force_inline void Begin(int line, std::string_view source_file, std::string_view function, int call_stack_depth = 0)
     {
+#ifdef TRACY_ON_DEMAND
+        m_is_active = tracy::GetProfiler().IsConnected();
+        if (!m_is_active)
+            return;
+#endif
+
         const uint64_t source_location = tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(line),
                                                                               source_file.data(), source_file.length(),
                                                                               function.data(), function.length());
@@ -265,17 +270,27 @@ public:
 
     tracy_force_inline void Begin(std::string_view name, int line, std::string_view source_file, std::string_view function,  int call_stack_depth = 0)
     {
+        META_CHECK_ARG_NOT_EMPTY(name);
+
+#ifdef TRACY_ON_DEMAND
+        m_is_active = tracy::GetProfiler().IsConnected();
+        if (!m_is_active)
+            return;
+#endif
+        
         const uint64_t source_location = tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(line),
                                                                               source_file.data(), source_file.length(),
                                                                               function.data(), function.length(),
                                                                               name.data(), name.length());
-        Begin(source_location, call_stack_depth);
+        Begin(source_location, true, call_stack_depth);
     }
 
     tracy_force_inline void End()
     {
+#ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
+#endif
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
@@ -292,8 +307,10 @@ public:
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
+#ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
+#endif
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
         META_CHECK_ARG_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp,
@@ -323,7 +340,10 @@ private:
     ThreadId    m_begin_thread_id = 0U;
     QueryId     m_begin_query_id  = 0U;
     QueryId     m_end_query_id    = 0U;
-    bool        m_is_active       = true;
+
+#ifdef TRACY_ON_DEMAND
+    bool m_is_active = true;
+#endif
 };
 
 } // namespace Methane::Tracy
