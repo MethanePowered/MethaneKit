@@ -44,10 +44,6 @@ DirectX 12 base template implementation of the command list interface.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
-#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
-#include <TracyD3D12.hpp>
-#endif
-
 namespace Methane::Graphics
 {
 
