@@ -318,10 +318,12 @@ void AsteroidsApp::Init()
         // Resource bindings for Sky-Box rendering
         frame.skybox.program_bindings_per_instance.resize(1);
         frame.skybox.program_bindings_per_instance[0] = m_sky_box_ptr->CreateProgramBindings(frame.skybox.uniforms_buffer_ptr, frame.index);
+        frame.skybox.program_bindings_per_instance[0]->SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
 
         // Resource bindings for Planet rendering
         frame.planet.program_bindings_per_instance.resize(1);
         frame.planet.program_bindings_per_instance[0] = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr, frame.index);
+        frame.planet.program_bindings_per_instance[0]->SetName(IndexedName("Planet Bindings {}", frame.index));
 
         // Resource bindings for Asteroids rendering
         frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr, frame.index);

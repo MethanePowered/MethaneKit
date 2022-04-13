@@ -310,6 +310,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations         },
         { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr     } } },
     }, frame_index);
+    program_bindings_array[0]->SetName(fmt::format("Asteroids[0] Bindings {}", frame_index));
 
     tf::Taskflow task_flow;
     task_flow.for_each_index(1U, m_settings.instance_count, 1U,
@@ -327,6 +328,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
                 );
             }
             program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument, frame_index);
+            program_bindings_array[asteroid_index]->SetName(fmt::format("Asteroids[{}] Bindings {}", asteroid_index, frame_index));
         }
     );
     GetRenderContext().GetParallelExecutor().run(task_flow).get();

@@ -322,7 +322,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr &&
         !frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
     {
-        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
+        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr, m_settings.name);
     }
     if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
     {
@@ -381,7 +381,7 @@ Text::FrameResources::FrameResources(uint32_t frame_index,  const CommonResource
     META_FUNCTION_TASK();
     UpdateMeshBuffers(common_resources.render_context, common_resources.text_mesh, text_name, reservation_multiplier);
     UpdateUniformsBuffer(common_resources.render_context, common_resources.text_mesh, text_name);
-    InitializeProgramBindings(common_resources.render_state, common_resources.const_buffer_ptr, common_resources.atlas_sampler_ptr);
+    InitializeProgramBindings(common_resources.render_state, common_resources.const_buffer_ptr, common_resources.atlas_sampler_ptr, text_name);
 }
 
 void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
@@ -396,7 +396,8 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
     return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
+void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+                                                     const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)
@@ -413,6 +414,7 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
         { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
         { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
+    m_program_bindings_ptr->SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 }
 
 gfx::BufferSet& Text::FrameResources::GetVertexBufferSet() const

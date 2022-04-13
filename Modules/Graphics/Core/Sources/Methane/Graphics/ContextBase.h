@@ -84,11 +84,11 @@ public:
     // Object interface
     bool SetName(const std::string& name) override;
 
-    DeferredAction    GetRequestedAction() const noexcept { return m_requested_action; }
-    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
-    DeviceBase&       GetDeviceBase();
-    const DeviceBase& GetDeviceBase() const;
-    DescriptorManager&  GetDescriptorManager() const;
+    DeferredAction     GetRequestedAction() const noexcept { return m_requested_action; }
+    Ptr<DeviceBase>    GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
+    DeviceBase&        GetDeviceBase();
+    const DeviceBase&  GetDeviceBase() const;
+    DescriptorManager& GetDescriptorManager() const;
 
 protected:
     void PerformRequestedAction();
