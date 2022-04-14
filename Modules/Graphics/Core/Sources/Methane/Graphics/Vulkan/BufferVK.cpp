@@ -69,6 +69,20 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, 
     return vk_usage_flags;
 }
 
+static Resource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_type)
+{
+    META_FUNCTION_TASK();
+    switch(buffer_type)
+    {
+    case Buffer::Type::Data:        return Resource::State::ShaderResource;
+    case Buffer::Type::Index:       return Resource::State::IndexBuffer;
+    case Buffer::Type::Vertex:      return Resource::State::VertexBuffer;
+    case Buffer::Type::Constant:    return Resource::State::ConstantBuffer;
+    case Buffer::Type::ReadBack:    return Resource::State::StreamOut;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Resource::State::Undefined, "Unsupported buffer type");
+    }
+}
+
 Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
@@ -131,7 +145,8 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     META_FUNCTION_TASK();
     ResourceVK::SetData(sub_resources, sync_cmd_queue);
 
-    const bool is_private_storage = GetSettings().storage_mode == Buffer::StorageMode::Private;
+    const Settings& buffer_settings = GetSettings();
+    const bool is_private_storage = buffer_settings.storage_mode == Buffer::StorageMode::Private;
     if (is_private_storage)
     {
         m_vk_copy_regions.clear();
@@ -165,8 +180,10 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
         return;
 
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
-    const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload();
+    BlitCommandListVK& upload_cmd_list = PrepareResourceUpload();
     upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
+    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type));
+
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

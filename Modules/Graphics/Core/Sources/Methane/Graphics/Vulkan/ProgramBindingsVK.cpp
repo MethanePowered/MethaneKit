@@ -125,14 +125,22 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     }
 
     // Descriptions are updated on GPU during context initialization complete
+#ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
     GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+#else
+    UpdateDescriptorSetsOnGpu();
+#endif
 }
 
 void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()
 {
     META_FUNCTION_TASK();
+    if (m_vk_write_descriptor_sets.empty())
+        return;
+
     const auto& vulkan_context = dynamic_cast<const IContextVK&>(GetContext());
     vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_sets, {});
+    m_vk_write_descriptor_sets.clear();
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,

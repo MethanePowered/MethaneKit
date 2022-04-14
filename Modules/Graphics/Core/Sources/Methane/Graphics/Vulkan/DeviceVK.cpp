@@ -567,6 +567,9 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
             ? std::make_shared<QueueFamilyReservationVK>(*vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface))
             : queue_family_reservation_it->second
     );
+
+    META_LOG("Vulkan command queue family [{}] was reserved for allocating {} {} queues.",
+             *vk_queue_family_index, queues_count, magic_enum::enum_name(cmd_list_type));
 }
 
 System& System::Get()

@@ -76,8 +76,8 @@ public:
     ~ResourceVK() override
     {
         META_FUNCTION_TASK();
-        m_upload_sync_transition_barriers_ptr.reset();
         m_upload_begin_transition_barriers_ptr.reset();
+        m_upload_end_transition_barriers_ptr.reset();
 
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
@@ -223,14 +223,26 @@ protected:
         return upload_cmd_list;
     }
 
+    void CompleteResourceUpload(BlitCommandListVK& upload_cmd_list, State final_resource_state)
+    {
+        // TODO: const bool owner_changed = SetOwnerQueueFamily(target_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);
+        const bool owner_changed = false;
+        const bool state_changed = SetState(final_resource_state, m_upload_end_transition_barriers_ptr);
+        if ((owner_changed || state_changed) &&
+            m_upload_end_transition_barriers_ptr && !m_upload_end_transition_barriers_ptr->IsEmpty())
+        {
+            upload_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
+        }
+    }
+
 private:
     vk::Device              m_vk_device;
     vk::UniqueDeviceMemory  m_vk_unique_device_memory;
     ResourceStorageType     m_vk_resource;
     ViewStorageType         m_vk_view;
     Opt<uint32_t>           m_owner_queue_family_index_opt;
-    Ptr<Resource::Barriers> m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

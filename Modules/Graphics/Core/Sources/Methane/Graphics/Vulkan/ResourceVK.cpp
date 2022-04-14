@@ -34,6 +34,21 @@ Vulkan implementation of the resource objects.
 namespace Methane::Graphics
 {
 
+static vk::ImageLayout GetVulkanImageLayoutByUsage(Resource::Usage usage) noexcept
+{
+    META_FUNCTION_TASK();
+
+    using namespace magic_enum::bitwise_operators;
+    if (magic_enum::enum_contains(usage & Resource::Usage::ShaderRead))
+        return vk::ImageLayout::eShaderReadOnlyOptimal;
+
+    if (magic_enum::enum_contains(usage & Resource::Usage::ShaderWrite) ||
+        magic_enum::enum_contains(usage & Resource::Usage::RenderTarget))
+        return vk::ImageLayout::eColorAttachmentOptimal; // TODO: add depth and stencil support
+
+    return vk::ImageLayout::eUndefined;
+}
+
 IResourceVK::LocationVK::LocationVK(const Location& location)
     : Location(location)
     , m_vulkan_resource_ref(dynamic_cast<IResourceVK&>(GetResource()))
@@ -131,8 +146,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
     m_descriptor_var = vk::DescriptorImageInfo(
         vk::Sampler(),
         *GetNativeImageViewPtr(),
-        // TODO: add support for image layout, aka resource state of location
-        vk::ImageLayout::eUndefined
+        GetVulkanImageLayoutByUsage(texture.GetUsage())
     );
 }
 

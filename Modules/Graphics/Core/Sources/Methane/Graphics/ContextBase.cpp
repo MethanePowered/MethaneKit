@@ -114,7 +114,7 @@ void ContextBase::Reset()
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr <DeviceBase> device_ptr = m_device_ptr;
+    Ptr<DeviceBase> device_ptr = m_device_ptr;
     Release();
     Initialize(*device_ptr, true);
 }

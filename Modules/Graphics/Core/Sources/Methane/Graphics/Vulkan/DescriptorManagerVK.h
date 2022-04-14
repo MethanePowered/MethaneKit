@@ -31,6 +31,9 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include <map>
 #include <optional>
 
+// Uncomment to enable deferred program bindings initialization
+#define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION 1
+
 namespace Methane::Graphics
 {
 
@@ -59,7 +62,9 @@ public:
     });
 
     // DescriptorManager overrides
-    void CompleteInitialization() override;
+#ifndef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
+    void CompleteInitialization() override { /* intentionally uninitialized */}
+#endif
     void Release() override;
 
     void SetDescriptorPoolSizeRatio(vk::DescriptorType descriptor_type, float size_ratio);
