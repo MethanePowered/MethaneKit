@@ -56,7 +56,8 @@ class AppBase
     , protected Data::Receiver<IContextCallback> //NOSONAR
 {
 public:
-    explicit AppBase(const AppSettings& settings, Data::Provider& textures_provider);
+    AppBase(const AppSettings& settings, Data::Provider& textures_provider);
+    ~AppBase() override;
 
     AppBase(const AppBase&) = delete;
     AppBase(AppBase&&) = delete;
