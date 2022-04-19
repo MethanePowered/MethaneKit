@@ -32,6 +32,7 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
+class CommandQueueVK;
 class BufferVK;
 struct ITextureVK;
 
