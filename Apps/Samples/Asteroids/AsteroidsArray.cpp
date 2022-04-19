@@ -201,15 +201,16 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     }
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings)
-    : AsteroidsArray(render_pattern, settings, *std::make_shared<ContentState>(render_pattern.GetRenderContext().GetParallelExecutor(), settings))
+AsteroidsArray::AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings)
+    : AsteroidsArray(render_cmd_queue, render_pattern, settings, *std::make_shared<ContentState>(render_pattern.GetRenderContext().GetParallelExecutor(), settings))
 {
     META_FUNCTION_TASK();
 }
 
-AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state)
-    : BaseBuffers(render_pattern.GetRenderContext(), state.uber_mesh, "Asteroids Array")
+AsteroidsArray::AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state)
+    : BaseBuffers(render_cmd_queue, state.uber_mesh, "Asteroids Array")
     , m_settings(settings)
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<gfx::CommandQueue>(render_cmd_queue.GetPtr()))
     , m_content_state_ptr(state.shared_from_this())
     , m_mesh_subset_by_instance_index(m_settings.instance_count, 0U)
     , m_min_mesh_lod_screen_size_log_2(std::log2(m_settings.mesh_lod_min_screen_size))
@@ -263,7 +264,7 @@ AsteroidsArray::AsteroidsArray(gfx::RenderPattern& render_pattern, const Setting
     for(const gfx::Resource::SubResources& texture_subresources : m_content_state_ptr->texture_array_subresources)
     {
         m_unique_textures.emplace_back(gfx::Texture::CreateImage(context, m_settings.texture_dimensions, static_cast<uint32_t>(texture_subresources.size()), gfx::PixelFormat::RGBA8Unorm, true));
-        m_unique_textures.back()->SetData(texture_subresources);
+        m_unique_textures.back()->SetData(texture_subresources, *m_render_cmd_queue_ptr);
         m_unique_textures.back()->SetName(fmt::format("Asteroid Texture {:d}", texture_index));
         texture_index++;
     }
@@ -331,7 +332,7 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
             program_bindings_array[asteroid_index]->SetName(fmt::format("Asteroids[{}] Bindings {}", asteroid_index, frame_index));
         }
     );
-    GetRenderContext().GetParallelExecutor().run(task_flow).get();
+    GetContext().GetParallelExecutor().run(task_flow).get();
 
     return program_bindings_array;
 }
@@ -388,7 +389,7 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
         }
     );
 
-    GetRenderContext().GetParallelExecutor().run(update_task_flow).get();
+    GetContext().GetParallelExecutor().run(update_task_flow).get();
     return true;
 }
 
@@ -402,7 +403,9 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
-    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() {
+        buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
+    });
 
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
@@ -429,7 +432,9 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), GetUniformsBufferSize());
 
     // Upload uniforms buffer data to GPU asynchronously while encoding drawing commands on CPU
-    auto uniforms_update_future = std::async([this, &buffer_bindings]() { buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources()); });
+    auto uniforms_update_future = std::async([this, &buffer_bindings]() {
+        buffer_bindings.uniforms_buffer_ptr->SetData(GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
+    });
 
     parallel_cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     parallel_cmd_list.SetViewState(view_state);

@@ -26,6 +26,7 @@ Base implementation of the Methane user interface application.
 #include "App.h"
 
 #include <Methane/UserInterface/HeadsUpDisplay.h>
+#include <Methane/Checks.hpp>
 
 #include <string_view>
 
@@ -51,7 +52,7 @@ public:
     AppBase& operator=(AppBase&&) = delete;
 
 protected:
-    void InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size);
+    void InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size);
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
     bool UpdateUI() const;
@@ -71,8 +72,8 @@ protected:
     [[nodiscard]] HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_hud_ptr.get(); }
 
     [[nodiscard]] IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
-    [[nodiscard]] const Context&  GetUIContext() const noexcept                { return *m_ui_context_ptr; }
-    [[nodiscard]] Context&        GetUIContext() noexcept                      { return *m_ui_context_ptr; }
+    [[nodiscard]] const Context&  GetUIContext() const                         { META_CHECK_ARG_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
+    [[nodiscard]] Context&        GetUIContext()                               { META_CHECK_ARG_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
 
 private:
     struct TextItem

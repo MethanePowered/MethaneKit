@@ -62,7 +62,7 @@ public:
     bool SetState(State state) final;
     bool SetOwnerQueueFamily(uint32_t family_index) final;
     bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) final;
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+    void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
     [[nodiscard]] static const std::vector<Resource::Usage>& GetPrimaryUsageValues() noexcept;

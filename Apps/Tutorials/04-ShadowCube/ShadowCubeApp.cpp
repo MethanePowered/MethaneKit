@@ -73,6 +73,7 @@ void ShadowCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
+    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
@@ -85,11 +86,11 @@ void ShadowCubeApp::Init()
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
 
-    m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), cube_mesh, "Cube");
-    m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MethaneBubbles.jpg", image_options, "Cube Face Texture"));
+    m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, cube_mesh, "Cube");
+    m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture"));
 
-    m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(GetRenderContext(), floor_mesh, "Floor");
-    m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MarbleWhite.jpg", image_options, "Floor Texture"));
+    m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, floor_mesh, "Floor");
+    m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MarbleWhite.jpg", image_options, "Floor Texture"));
 
     const auto constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
     const auto scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
@@ -98,7 +99,10 @@ void ShadowCubeApp::Init()
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }); // NOSONAR
+    m_const_buffer_ptr->SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
+        render_cmd_queue
+    );
 
     // Create sampler for cube and floor textures sampling
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -385,18 +389,19 @@ bool ShadowCubeApp::Render()
 
     // Upload uniform buffers to GPU
     const ShadowCubeFrame& frame = GetCurrentFrame();
-    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
-    frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.final_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources());
-    frame.final_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources());
+    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
+    frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
+    frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
+    frame.final_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.final_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass);
     RenderScene(m_final_pass, frame.final_pass);
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
     
     return true;

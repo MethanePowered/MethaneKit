@@ -312,7 +312,7 @@ CommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
-    return static_cast<CommandQueueBase&>(*m_command_queue_ptr);
+    return *m_command_queue_ptr;
 }
 
 uint32_t CommandListBase::GetCurrentFrameIndex() const
@@ -336,14 +336,15 @@ void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings
 CommandQueueBase& CommandListBase::GetCommandQueueBase()
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
+    return *m_command_queue_ptr;
 }
 
 const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
-    return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
+    return *m_command_queue_ptr;
 }
 
 CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs)

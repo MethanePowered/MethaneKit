@@ -352,12 +352,12 @@ ImageTextureDX::ResourceAndViewDesc ImageTextureDX::GetResourceAndViewDesc() con
     return { tex_desc, srv_desc };
 }
 
-void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
+void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);
 
-    ResourceDX::SetData(sub_resources, sync_cmd_queue);
+    ResourceDX::SetData(sub_resources, target_cmd_queue);
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
@@ -389,7 +389,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue* sy
     }
 
     // Upload texture subresources data to GPU via intermediate upload resource
-    const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+    const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());

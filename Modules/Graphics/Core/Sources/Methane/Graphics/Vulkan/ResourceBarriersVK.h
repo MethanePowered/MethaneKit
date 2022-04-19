@@ -40,17 +40,22 @@ class ResourceBarriersVK
     , private Data::Receiver<IResourceCallback>
 {
 public:
+    struct NativePipelineBarrier
+    {
+        std::vector<vk::BufferMemoryBarrier> vk_buffer_memory_barriers;
+        std::vector<vk::ImageMemoryBarrier>  vk_image_memory_barriers;
+        std::vector<vk::MemoryBarrier>       vk_memory_barriers;
+        vk::PipelineStageFlags               vk_src_stage_mask {};
+        vk::PipelineStageFlags               vk_dst_stage_mask {};
+    };
+
     explicit ResourceBarriersVK(const Set& barriers);
 
     // ResourceBarriers overrides
     AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
     bool Remove(const ResourceBarrier::Id& id) override;
 
-    const std::vector<vk::ImageMemoryBarrier>&  GetNativeImageMemoryBarriers() const noexcept  { return m_vk_image_memory_barriers; }
-    const std::vector<vk::BufferMemoryBarrier>& GetNativeBufferMemoryBarriers() const noexcept { return m_vk_buffer_memory_barriers; }
-    const std::vector<vk::MemoryBarrier>&       GetNativeMemoryBarriers() const noexcept       { return m_vk_memory_barriers; }
-    vk::PipelineStageFlags                      GetNativeSrcStageMask() const noexcept         { return m_vk_src_stage_mask; }
-    vk::PipelineStageFlags                      GetNativeDstStageMask() const noexcept         { return m_vk_dst_stage_mask; }
+    const NativePipelineBarrier& GetNativePipelineBarrierData(const CommandQueueVK& target_cmd_queue) const;
 
 private:
     // IResourceCallback
@@ -76,11 +81,8 @@ private:
     void UpdateStageMasks();
     void UpdateStageMasks(const ResourceBarrier& barrier);
 
-    std::vector<vk::BufferMemoryBarrier> m_vk_buffer_memory_barriers;
-    std::vector<vk::ImageMemoryBarrier>  m_vk_image_memory_barriers;
-    std::vector<vk::MemoryBarrier>       m_vk_memory_barriers;
-    vk::PipelineStageFlags               m_vk_src_stage_mask {};
-    vk::PipelineStageFlags               m_vk_dst_stage_mask {};
+    NativePipelineBarrier m_vk_default_barrier;
+    mutable std::map<uint32_t, NativePipelineBarrier> m_vk_barrier_by_queue_family;
 };
 
 } // namespace Methane::Graphics

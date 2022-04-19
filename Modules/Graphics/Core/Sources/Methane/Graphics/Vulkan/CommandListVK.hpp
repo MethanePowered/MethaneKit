@@ -147,13 +147,15 @@ public:
             static_cast<std::string>(resource_barriers));
 
         const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
+        const ResourceBarriersVK::NativePipelineBarrier& pipeline_barrier = vulkan_resource_barriers.GetNativePipelineBarrierData(GetCommandQueueVK());
+
         GetNativeCommandBuffer(CommandBufferType::Primary).pipelineBarrier(
-            vulkan_resource_barriers.GetNativeSrcStageMask(),
-            vulkan_resource_barriers.GetNativeDstStageMask(),
+            pipeline_barrier.vk_src_stage_mask,
+            pipeline_barrier.vk_dst_stage_mask,
             vk::DependencyFlags{},
-            vulkan_resource_barriers.GetNativeMemoryBarriers(),
-            vulkan_resource_barriers.GetNativeBufferMemoryBarriers(),
-            vulkan_resource_barriers.GetNativeImageMemoryBarriers()
+            pipeline_barrier.vk_memory_barriers,
+            pipeline_barrier.vk_buffer_memory_barriers,
+            pipeline_barrier.vk_image_memory_barriers
         );
     }
 
@@ -219,13 +221,6 @@ public:
     
 
 protected:
-    void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
-    {
-        // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
-        static_cast<ProgramBindingsVK&>(program_bindings).Apply(*this, CommandListBase::GetCommandQueue(),
-                                                                CommandListBase::GetProgramBindings().get(), apply_behavior);
-    }
-
     bool IsNativeCommitted() const             { return m_is_native_committed; }
     void SetNativeCommitted(bool is_committed) { m_is_native_committed = is_committed; }
 
@@ -238,6 +233,13 @@ protected:
 
         m_vk_unique_command_buffers[cmd_buffer_index].get().end();
         m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
+    }
+
+    void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
+    {
+        // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
+        static_cast<ProgramBindingsVK&>(program_bindings).Apply(*this, CommandListBase::GetCommandQueue(),
+                                                                CommandListBase::GetProgramBindings().get(), apply_behavior);
     }
 
 private:

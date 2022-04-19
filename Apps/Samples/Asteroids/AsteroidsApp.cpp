@@ -221,12 +221,13 @@ void AsteroidsApp::Init()
     UserInterfaceApp::Init();
 
     const gfx::RenderContext& context = GetRenderContext();
+    gfx::CommandQueue& render_cmd_queue = context.GetRenderCommandKit().GetQueue();
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, *m_asteroids_render_pattern_ptr, GetImageLoader(),
         gfx::SkyBox::Settings
         {
             m_view_camera,
@@ -244,7 +245,7 @@ void AsteroidsApp::Init()
         });
 
     // Create planet
-    m_planet_ptr = std::make_shared<Planet>(*m_asteroids_render_pattern_ptr, GetImageLoader(),
+    m_planet_ptr = std::make_shared<Planet>(render_cmd_queue, *m_asteroids_render_pattern_ptr, GetImageLoader(),
         Planet::Settings
         {
             m_view_camera,
@@ -262,8 +263,8 @@ void AsteroidsApp::Init()
 
     // Create asteroids array
     m_asteroids_array_ptr = m_asteroids_array_state_ptr
-                         ? std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
-                         : std::make_unique<AsteroidsArray>(*m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
+                         ? std::make_unique<AsteroidsArray>(render_cmd_queue, *m_asteroids_render_pattern_ptr, m_asteroids_array_settings, *m_asteroids_array_state_ptr)
+                         : std::make_unique<AsteroidsArray>(render_cmd_queue, *m_asteroids_render_pattern_ptr, m_asteroids_array_settings);
 
     const auto       constants_data_size         = static_cast<Data::Size>(sizeof(hlslpp::SceneConstants));
     const auto       scene_uniforms_data_size    = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
@@ -272,7 +273,10 @@ void AsteroidsApp::Init()
     // Create constants buffer for frame rendering
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }); // NOSONAR
+    m_const_buffer_ptr->SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
+        render_cmd_queue
+    );
 
     // ========= Per-Frame Data =========
     for(AsteroidsFrame& frame : GetFrames())
@@ -398,7 +402,8 @@ bool AsteroidsApp::Render()
 
     // Upload uniform buffers to GPU
     AsteroidsFrame& frame = GetCurrentFrame();
-    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
+    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
 
     // Asteroids rendering in parallel or in main thread
     if (m_is_parallel_rendering_enabled)
@@ -420,7 +425,7 @@ bool AsteroidsApp::Render()
     frame.final_cmd_list_ptr->Commit();
 
     // Execute rendering commands and present frame to screen
-    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
     GetRenderContext().Present();
 
     return true;

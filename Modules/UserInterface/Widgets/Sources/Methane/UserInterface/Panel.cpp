@@ -23,6 +23,7 @@ Panel widget with opaque background containing other widgets.
 
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Context.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
@@ -32,7 +33,8 @@ namespace Methane::UserInterface
 
 Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
     : Container(ui_context, ui_rect)
-    , ScreenQuad(ui_context.GetRenderPattern(),
+    , ScreenQuad(ui_context.GetRenderContext().GetRenderCommandKit().GetQueue(),
+                 ui_context.GetRenderPattern(),
         ScreenQuad::Settings
         {
             settings.name,

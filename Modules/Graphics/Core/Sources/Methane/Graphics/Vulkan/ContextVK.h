@@ -24,7 +24,6 @@ Vulkan context accessor interface for template class ContextMT<ContextBaseT>
 #pragma once
 
 #include <Methane/Graphics/CommandList.h>
-#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {

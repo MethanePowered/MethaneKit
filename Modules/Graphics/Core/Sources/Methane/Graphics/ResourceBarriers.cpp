@@ -284,6 +284,14 @@ ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
     return barriers;
 }
 
+const ResourceBarrier* ResourceBarriers::GetBarrier(const ResourceBarrier::Id& id) const noexcept
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_barriers_mutex);
+    const auto barrier_it = m_barriers_map.find(id);
+    return barrier_it == m_barriers_map.end() ? nullptr : &barrier_it->second;
+}
+
 bool ResourceBarriers::HasStateTransition(Resource& resource, ResourceState before, ResourceState after)
 {
     META_FUNCTION_TASK();

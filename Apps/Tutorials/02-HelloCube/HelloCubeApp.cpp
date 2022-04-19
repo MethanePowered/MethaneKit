@@ -175,13 +175,19 @@ public:
         // Create index buffer for cube mesh
         m_index_buffer_ptr = Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetName("Cube Index Buffer");
-        m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }); // NOSONAR
+        m_index_buffer_ptr->SetData(
+            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
+            GetRenderContext().GetRenderCommandKit().GetQueue()
+        );
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
         Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-        vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }); // NOSONAR
+        vertex_buffer_ptr->SetData(
+            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
+            GetRenderContext().GetRenderCommandKit().GetQueue()
+        );
         m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
@@ -255,15 +261,16 @@ public:
             return false;
 
         const HelloCubeFrame& frame = GetCurrentFrame();
+        CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Update uniforms buffer on GPU and apply model-view-projection tranformation in vertex shader on GPU
-        frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources);
+        frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);
 #else
         // Update vertex buffer with vertices in camera's projection view
         (*frame.vertex_buffer_set_ptr)[0].SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            &GetRenderContext().GetRenderCommandKit().GetQueue()
+            render_cmd_queue
         );
 #endif
 
@@ -282,7 +289,7 @@ public:
         frame.render_cmd_list_ptr->Commit();
 
         // Execute command list on render queue and present frame to screen
-        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+        render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
         GetRenderContext().Present();
 
         return true;

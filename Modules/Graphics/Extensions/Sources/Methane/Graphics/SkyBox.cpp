@@ -23,9 +23,14 @@ SkyBox rendering primitive
 
 #include <Methane/Graphics/SkyBox.h>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Camera.h>
+#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/Sampler.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -34,20 +39,22 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader,  const Settings& settings)
-    : SkyBox(render_pattern, image_loader, settings, CubeMesh<Vertex>(Vertex::layout))
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const ImageLoader& image_loader,  const Settings& settings)
+    : SkyBox(render_cmd_queue, render_pattern, image_loader, settings, CubeMesh<Vertex>(Vertex::layout))
 {
     META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
     , m_context(render_pattern.GetRenderContext())
-    , m_mesh_buffers(m_context, mesh, "Sky-Box")
+    , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
 
-    m_mesh_buffers.SetTexture(image_loader.LoadImagesToTextureCube(m_context, m_settings.face_resources, m_settings.image_options, "Sky-Box Texture"));
+    m_mesh_buffers.SetTexture(
+        image_loader.LoadImagesToTextureCube(render_cmd_queue, m_settings.face_resources, m_settings.image_options, "Sky-Box Texture"));
 
     RenderState::Settings state_settings;
     state_settings.program_ptr = Program::Create(m_context,
@@ -126,7 +133,7 @@ void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindin
     
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
-    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
+    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
 
     cmd_list.ResetWithStateOnce(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);

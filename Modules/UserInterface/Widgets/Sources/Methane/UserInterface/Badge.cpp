@@ -78,7 +78,7 @@ Badge::Settings& Badge::Settings::SetTextureMode(TextureMode new_texture_mode) n
 
 Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings)
     : Badge(ui_context,
-            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderContext(),
+            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderCommandQueue(),
                                                                  image_path, gfx::ImageLoader::Options::None,
                                                                  fmt::format("{} Texture", settings.name)),
             settings)
@@ -87,7 +87,7 @@ Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::stri
 
 Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Settings& settings)
     : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeIn<Units::Pixels>(), settings))
-    , ScreenQuad(ui_context.GetRenderPattern(), texture_ptr,
+    , ScreenQuad(ui_context.GetRenderCommandQueue(), ui_context.GetRenderPattern(), texture_ptr,
         ScreenQuad::Settings
         {
             settings.name,

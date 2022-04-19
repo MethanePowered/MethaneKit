@@ -129,6 +129,11 @@ public:
     }
 
     // IResourceVK overrides
+    const IContextVK& GetContextVK() const noexcept final
+    {
+        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
+    }
+
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept final
     {
         return m_vk_unique_device_memory.get();
@@ -162,11 +167,6 @@ public:
     }
 
 protected:
-    const IContextVK& GetContextVK() const noexcept
-    {
-        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
-    }
-
     vk::UniqueDeviceMemory AllocateDeviceMemory(const vk::MemoryRequirements& memory_requirements, vk::MemoryPropertyFlags memory_property_flags)
     {
         META_FUNCTION_TASK();
@@ -223,16 +223,24 @@ protected:
         return upload_cmd_list;
     }
 
-    void CompleteResourceUpload(BlitCommandListVK& upload_cmd_list, State final_resource_state)
+    void CompleteResourceUpload(BlitCommandListVK& upload_cmd_list, State final_resource_state, CommandQueue& target_cmd_queue)
     {
-        // TODO: const bool owner_changed = SetOwnerQueueFamily(target_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);
-        const bool owner_changed = false;
+        META_FUNCTION_TASK();
+        const bool owner_changed = SetOwnerQueueFamily(target_cmd_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);
         const bool state_changed = SetState(final_resource_state, m_upload_end_transition_barriers_ptr);
-        if ((owner_changed || state_changed) &&
-            m_upload_end_transition_barriers_ptr && !m_upload_end_transition_barriers_ptr->IsEmpty())
+        const bool upload_end_barriers_non_empty = m_upload_end_transition_barriers_ptr && !m_upload_end_transition_barriers_ptr->IsEmpty();
+        if ((owner_changed || state_changed) && upload_end_barriers_non_empty)
         {
             upload_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }
+
+        // If owner queue family has changed, resource barriers have to be also repeated on target command queue
+        // TODO: fix me!!!
+        //if (owner_changed && upload_end_barriers_non_empty)
+        //{
+        //    CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding();
+        //    target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
+        //}
     }
 
 private:

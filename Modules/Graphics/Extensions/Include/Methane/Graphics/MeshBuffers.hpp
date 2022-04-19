@@ -28,6 +28,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
@@ -57,8 +58,8 @@ class MeshBuffers
 {
 public:
     template<typename VType>
-    MeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
-        : m_render_context(context)
+    MeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+        : m_context(render_cmd_queue.GetContext())
         , m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
@@ -67,7 +68,7 @@ public:
         META_FUNCTION_TASK();
         SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(context,
+        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
                                                                    static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                                    static_cast<Data::Size>(mesh_data.GetVertexSize()));
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
@@ -76,29 +77,29 @@ public:
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
-        });
+        }, render_cmd_queue);
         m_vertex_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
-        m_index_ptr = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
+        m_index_ptr = Buffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetIndexDataSize())
             }
-        });
+        }, render_cmd_queue);
     }
 
     template<typename VType>
-    MeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
-        : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
+    MeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+        : MeshBuffers(render_cmd_queue, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         META_FUNCTION_TASK();
     }
     
     virtual ~MeshBuffers() = default;
 
-    [[nodiscard]] RenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    [[nodiscard]] const Context& GetContext() const noexcept { return m_context; }
 
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
@@ -188,7 +189,7 @@ public:
                      retain_bindings_once, set_resource_barriers);
             }
         );
-        m_render_context.GetParallelExecutor().run(render_task_flow).get();
+        m_context.GetParallelExecutor().run(render_task_flow).get();
     }
 
     [[nodiscard]] const std::string&  GetMeshName() const      { return m_mesh_name; }
@@ -278,13 +279,13 @@ protected:
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
-    RenderContext&         m_render_context;
-    const std::string      m_mesh_name;
-    const Mesh::Subsets    m_mesh_subsets;
-    Ptr<BufferSet>         m_vertex_ptr;
-    Ptr<Buffer>            m_index_ptr;
-    InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
-    Resource::SubResources m_final_pass_instance_uniforms_subresources;
+    const Context&          m_context;
+    const std::string       m_mesh_name;
+    const Mesh::Subsets     m_mesh_subsets;
+    Ptr<BufferSet>          m_vertex_ptr;
+    Ptr<Buffer>             m_index_ptr;
+    InstanceUniforms        m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
+    Resource::SubResources  m_final_pass_instance_uniforms_subresources;
 };
 
 template<typename UniformsType>
@@ -292,16 +293,16 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
-        : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
+    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
+        : MeshBuffers<UniformsType>(render_cmd_queue, mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(1);
     }
 
     template<typename VType>
-    TexturedMeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
-        : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
+    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+        : MeshBuffers<UniformsType>(render_cmd_queue, uber_mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());

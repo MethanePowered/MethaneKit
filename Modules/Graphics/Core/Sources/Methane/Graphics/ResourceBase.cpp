@@ -62,7 +62,7 @@ ResourceBase::ResourceBase(const ContextBase& context, Type type, Usage usage_ma
     META_FUNCTION_TASK();
 }
 
-void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue*)
+void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");

@@ -67,6 +67,7 @@ public:
 
 class FakeCommandQueue
     : public CommandQueue
+    , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeCommandQueue>
 {
 public:
@@ -78,6 +79,7 @@ public:
     // CommandQueue interface
     [[nodiscard]] const Context&    GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
+    [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // Object interface

@@ -66,17 +66,21 @@ public:
     uint32_t GetNativeQueueFamilyIndex() const noexcept { return m_queue_family_index; }
     uint32_t GetNativeQueueIndex() const noexcept       { return m_queue_index; }
 
-    vk::Queue&       GetNativeQueue()                   { return m_vk_queue; }
-    const vk::Queue& GetNativeQueue() const             { return m_vk_queue; }
+    vk::Queue&       GetNativeQueue() noexcept          { return m_vk_queue; }
+    const vk::Queue& GetNativeQueue() const noexcept    { return m_vk_queue; }
 
-    vk::CommandPool&       GetNativeCommandPool()       { return m_vk_unique_command_pool.get(); }
-    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_unique_command_pool.get(); }
+    vk::CommandPool&       GetNativeCommandPool() noexcept                  { return m_vk_unique_command_pool.get(); }
+    const vk::CommandPool& GetNativeCommandPool() const noexcept            { return m_vk_unique_command_pool.get(); }
+
+    vk::PipelineStageFlags GetNativeSupportedStageFlags() const noexcept    { return m_vk_supported_stage_flags; }
+    vk::AccessFlags        GetNativeSupportedAccessFlags() const noexcept   { return m_vk_supported_access_flags; }
 
 private:
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                   const DeviceVK& device);
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                   const DeviceVK& device, const QueueFamilyReservationVK& family_reservation);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                   const QueueFamilyReservationVK& family_reservation);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                   const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
 
@@ -86,6 +90,8 @@ private:
     const uint32_t         m_queue_index;
     vk::Queue              m_vk_queue;
     vk::UniqueCommandPool  m_vk_unique_command_pool;
+    vk::PipelineStageFlags m_vk_supported_stage_flags;
+    vk::AccessFlags        m_vk_supported_access_flags;
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
     FrameWaitInfos         m_wait_frame_execution_completed;

@@ -32,6 +32,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
@@ -483,7 +484,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
-    }, &render_context.GetRenderCommandKit().GetQueue());
+    }, render_context.GetRenderCommandKit().GetQueue());
 
     // Update index buffer
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -501,7 +502,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
-    }, &render_context.GetRenderCommandKit().GetQueue());
+    }, render_context.GetRenderCommandKit().GetQueue());
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Mesh;
@@ -539,7 +540,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
         {
             { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
         },
-        &render_context.GetRenderCommandKit().GetQueue()
+        render_context.GetRenderCommandKit().GetQueue()
     );
 
     using namespace magic_enum::bitwise_operators;
@@ -648,7 +649,7 @@ void Text::UpdateConstantsBuffer()
         {
             gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size) // NOSONAR
         },
-        &GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
+        GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
     );
 }
 

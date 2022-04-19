@@ -140,10 +140,10 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings)
     GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
+void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources, sync_cmd_queue);
+    ResourceVK::SetData(sub_resources, target_cmd_queue);
 
     const Settings& buffer_settings = GetSettings();
     const bool is_private_storage = buffer_settings.storage_mode == Buffer::StorageMode::Private;
@@ -182,8 +182,8 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
     BlitCommandListVK& upload_cmd_list = PrepareResourceUpload();
     upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
-    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type));
 
+    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

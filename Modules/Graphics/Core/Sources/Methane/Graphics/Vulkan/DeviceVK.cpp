@@ -60,6 +60,7 @@ static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATUR
 
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
 #ifdef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
     VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
@@ -415,6 +416,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  capabilities)
     , m_vk_physical_device(vk_physical_device)
+    , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
 
@@ -423,18 +425,15 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
         !magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
-    const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
-    std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
+    std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
 
     if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
         throw IncompatibleException("Device does not support some of required extensions");
 
-    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count,
-                       vk_queue_family_properties, reserved_queues_count_per_family,
+    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count,
-                       vk_queue_family_properties, reserved_queues_count_per_family);
+    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count, reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;
@@ -468,9 +467,11 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
     vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR vk_device_timeline_semaphores_info(true);
+    vk::PhysicalDeviceSynchronization2FeaturesKHR vk_device_synchronization2_info(true);
     vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
     vk_device_info.setPNext(&vk_device_dynamic_state_info);
     vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
+    vk_device_timeline_semaphores_info.setPNext(&vk_device_synchronization2_info);
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
@@ -538,8 +539,14 @@ Opt<uint32_t> DeviceVK::FindMemoryType(uint32_t type_filter, vk::MemoryPropertyF
     return std::nullopt;
 }
 
+const vk::QueueFamilyProperties& DeviceVK::GetNativeQueueFamilyProperties(uint32_t queue_family_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(queue_family_index, m_vk_queue_family_properties.size(), "invalid queue family index");
+    return m_vk_queue_family_properties[queue_family_index];
+}
+
 void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,
-                                  const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                   std::vector<uint32_t>& reserved_queues_count_per_family,
                                   const vk::SurfaceKHR& vk_surface)
 {
@@ -548,7 +555,7 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
         return;
 
     const vk::QueueFlagBits queue_flags = GetQueueFlagBitsByType(cmd_list_type);
-    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count,
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(m_vk_queue_family_properties, queue_flags, queues_count,
                                                                           reserved_queues_count_per_family, m_vk_physical_device, vk_surface);
     if (!vk_queue_family_index)
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));

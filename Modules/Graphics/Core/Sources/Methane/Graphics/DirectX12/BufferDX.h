@@ -82,10 +82,10 @@ public:
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override
+    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override
     {
         META_FUNCTION_TASK();
-        ResourceDX::SetData(sub_resources, sync_cmd_queue);
+        ResourceDX::SetData(sub_resources, target_cmd_queue);
 
         const CD3DX12_RANGE zero_read_range(0U, 0U);
         const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
@@ -122,7 +122,7 @@ public:
             return;
 
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
-        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }

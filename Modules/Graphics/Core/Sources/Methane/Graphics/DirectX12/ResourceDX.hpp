@@ -224,21 +224,19 @@ protected:
         );
     }
 
-    BlitCommandListDX& PrepareResourceUpload(CommandQueue* sync_cmd_queue)
+    BlitCommandListDX& PrepareResourceUpload(CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         auto& upload_cmd_list = dynamic_cast<BlitCommandListDX&>(GetContext().GetUploadCommandKit().GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         // When upload command list has COPY type, before transitioning resource to CopyDest state prior copying,
-        // first it has to be be transitioned to Common state with synchronization command list of DIRECT type.
+        // first it has to be transitioned to Common state with synchronization command list of DIRECT type.
         // This is required due to DX12 limitation of using only copy-related resource barrier states in command lists of COPY type.
         if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
             SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
         {
-            CommandList& sync_cmd_list = sync_cmd_queue
-                                       ? GetContext().GetDefaultCommandKit(*sync_cmd_queue).GetListForEncoding()
-                                       : upload_cmd_list;
+            CommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding();
             sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
         }
 

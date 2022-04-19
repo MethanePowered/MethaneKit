@@ -114,7 +114,7 @@ struct Resource
     virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) = 0;
-    virtual void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue = nullptr) = 0;
+    virtual void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) = 0;
     [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;

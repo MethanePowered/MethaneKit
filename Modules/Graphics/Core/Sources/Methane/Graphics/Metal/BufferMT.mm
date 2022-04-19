@@ -91,10 +91,10 @@ bool BufferMT::SetName(const std::string& name)
     return true;
 }
 
-void BufferMT::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
+void BufferMT::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceMT::SetData(sub_resources, sync_cmd_queue);
+    ResourceMT::SetData(sub_resources, target_cmd_queue);
 
     switch(GetSettings().storage_mode)
     {

@@ -90,22 +90,23 @@ public:
     [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
     [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
-    const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
-    const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
+    const vk::PhysicalDevice&        GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
+    const vk::Device&                GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
+    const vk::QueueFamilyProperties& GetNativeQueueFamilyProperties(uint32_t queue_family_index) const;
 
 private:
     using QueueFamilyReservationByType = std::map<CommandList::Type, Ptr<QueueFamilyReservationVK>>;
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
-                            const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                             std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
     bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
 
-    vk::PhysicalDevice           m_vk_physical_device;
-    vk::UniqueDevice             m_vk_unique_device;
-    QueueFamilyReservationByType m_queue_family_reservation_by_type;
+    vk::PhysicalDevice                     m_vk_physical_device;
+    std::vector<vk::QueueFamilyProperties> m_vk_queue_family_properties;
+    vk::UniqueDevice                       m_vk_unique_device;
+    QueueFamilyReservationByType           m_queue_family_reservation_by_type;
 };
 
 class SystemVK final : public SystemBase

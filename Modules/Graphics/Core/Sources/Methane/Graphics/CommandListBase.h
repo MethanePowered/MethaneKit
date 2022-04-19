@@ -146,7 +146,7 @@ private:
     void CompleteInternal(uint32_t frame_index);
 
     const Type                  m_type;
-    Ptr<CommandQueue>           m_command_queue_ptr;
+    Ptr<CommandQueueBase>       m_command_queue_ptr;
     CommandState                m_command_state;
     DebugGroupStack             m_open_debug_groups;
     uint32_t                    m_committed_frame_index = 0;

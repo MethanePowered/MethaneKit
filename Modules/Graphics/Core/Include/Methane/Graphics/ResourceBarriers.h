@@ -178,6 +178,7 @@ public:
     [[nodiscard]] bool  IsEmpty() const noexcept { return m_barriers_map.empty(); }
     [[nodiscard]] Set   GetSet() const noexcept;
     [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
+    [[nodiscard]] const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept;
     [[nodiscard]] bool  HasStateTransition(Resource& resource, ResourceState before, ResourceState after);
     [[nodiscard]] bool  HasOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
 

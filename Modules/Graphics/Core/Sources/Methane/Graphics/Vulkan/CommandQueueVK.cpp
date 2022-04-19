@@ -43,6 +43,65 @@ static vk::UniqueCommandPool CreateVulkanCommandPool(const vk::Device& vk_device
     return vk_device.createCommandPoolUnique(vk_command_pool_info);
 }
 
+static vk::PipelineStageFlags GetPipelineStageFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
+{
+    META_FUNCTION_TASK();
+    vk::PipelineStageFlags vk_pipeline_stage_flags = vk::PipelineStageFlagBits::eTopOfPipe |
+                                                     vk::PipelineStageFlagBits::eBottomOfPipe;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eGraphics)
+        vk_pipeline_stage_flags |= vk::PipelineStageFlagBits::eAllGraphics
+                                |  vk::PipelineStageFlagBits::eDrawIndirect
+                                |  vk::PipelineStageFlagBits::eVertexInput
+                                |  vk::PipelineStageFlagBits::eVertexShader
+                                |  vk::PipelineStageFlagBits::eTessellationControlShader
+                                |  vk::PipelineStageFlagBits::eTessellationEvaluationShader
+                                |  vk::PipelineStageFlagBits::eGeometryShader
+                                |  vk::PipelineStageFlagBits::eFragmentShader
+                                |  vk::PipelineStageFlagBits::eEarlyFragmentTests
+                                |  vk::PipelineStageFlagBits::eLateFragmentTests
+                                |  vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eCompute)
+        vk_pipeline_stage_flags |= vk::PipelineStageFlagBits::eComputeShader;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eTransfer)
+        vk_pipeline_stage_flags |= vk::PipelineStageFlagBits::eTransfer;
+
+    return vk_pipeline_stage_flags;
+}
+
+static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
+{
+    META_FUNCTION_TASK();
+    vk::AccessFlags vk_access_flags = vk::AccessFlagBits::eHostRead
+                                    | vk::AccessFlagBits::eHostWrite
+                                    | vk::AccessFlagBits::eMemoryRead
+                                    | vk::AccessFlagBits::eMemoryWrite;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eGraphics)
+        vk_access_flags |= vk::AccessFlagBits::eIndirectCommandRead
+                        |  vk::AccessFlagBits::eIndexRead
+                        |  vk::AccessFlagBits::eVertexAttributeRead
+                        |  vk::AccessFlagBits::eUniformRead
+                        |  vk::AccessFlagBits::eInputAttachmentRead
+                        |  vk::AccessFlagBits::eColorAttachmentRead
+                        |  vk::AccessFlagBits::eColorAttachmentWrite
+                        |  vk::AccessFlagBits::eDepthStencilAttachmentRead
+                        |  vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eCompute ||
+        vk_queue_flags & vk::QueueFlagBits::eGraphics)
+        vk_access_flags |= vk::AccessFlagBits::eShaderRead
+                        |  vk::AccessFlagBits::eShaderWrite;
+
+    if (vk_queue_flags & vk::QueueFlagBits::eTransfer)
+        vk_access_flags |= vk::AccessFlagBits::eTransferRead
+                        |  vk::AccessFlagBits::eTransferWrite;
+
+    return vk_access_flags;
+}
+
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
@@ -55,20 +114,30 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     META_FUNCTION_TASK();
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                               const DeviceVK& device)
-    : CommandQueueVK(context, command_lists_type, device, device.GetQueueFamilyReservation(command_lists_type))
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device)
+    : CommandQueueVK(context, command_lists_type, device,
+                     device.GetQueueFamilyReservation(command_lists_type))
 {
     META_FUNCTION_TASK();
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                               const DeviceVK& device, const QueueFamilyReservationVK& family_reservation)
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                               const QueueFamilyReservationVK& family_reservation)
+    : CommandQueueVK(context, command_lists_type, device, family_reservation,
+                     device.GetNativeQueueFamilyProperties(family_reservation.GetFamilyIndex()))
+{
+    META_FUNCTION_TASK();
+}
+
+CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                               const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties)
     : CommandQueueTrackingBase(context, command_lists_type)
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
     , m_vk_unique_command_pool(CreateVulkanCommandPool(device.GetNativeDevice(), m_queue_family_index))
+    , m_vk_supported_stage_flags(GetPipelineStageFlagsByQueueFlags(family_properties.queueFlags))
+    , m_vk_supported_access_flags(GetAccessFlagsByQueueFlags(family_properties.queueFlags))
 {
     META_FUNCTION_TASK();
     InitializeTracyGpuContext(Tracy::GpuContext::Settings());

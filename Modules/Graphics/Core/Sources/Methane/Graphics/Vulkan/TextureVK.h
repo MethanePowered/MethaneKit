@@ -62,7 +62,7 @@ public:
 
 private:
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+    void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     const RenderContextVK& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
@@ -77,7 +77,7 @@ public:
                           const Opt<DepthStencil>& depth_stencil_opt);
 
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+    void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -96,7 +96,7 @@ public:
     RenderTargetTextureVK(const RenderContextVK& context, const Settings& settings);
 
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+    void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -114,7 +114,7 @@ public:
     ImageTextureVK(const ContextBase& context, const Settings& settings);
 
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue*) override;
+    void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // Object overide
     bool SetName(const std::string& name) override;

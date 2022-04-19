@@ -132,7 +132,7 @@ FrameBufferTextureVK::FrameBufferTextureVK(const RenderContextVK& render_context
     ResetNativeView(CreateNativeImageView(GetSettings(), GetNativeDevice(), GetNativeResource()));
 }
 
-void FrameBufferTextureVK::SetData(const SubResources&, CommandQueue*)
+void FrameBufferTextureVK::SetData(const SubResources&, CommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("frame-buffer textures do not support data setup");
 }
@@ -163,7 +163,7 @@ DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_conte
     META_FUNCTION_TASK();
 }
 
-void DepthStencilTextureVK::SetData(const SubResources&, CommandQueue*)
+void DepthStencilTextureVK::SetData(const SubResources&, CommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth-stencil textures do not support data setup");
 }
@@ -185,7 +185,7 @@ RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_conte
     META_FUNCTION_TASK();
 }
 
-void RenderTargetTextureVK::SetData(const SubResources&, CommandQueue*)
+void RenderTargetTextureVK::SetData(const SubResources&, CommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("render-target textures do not support data setup");
 }
@@ -237,10 +237,10 @@ ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& setti
     vk_device.bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
+void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources, sync_cmd_queue);
+    ResourceVK::SetData(sub_resources, target_cmd_queue);
 
     m_vk_copy_regions.clear();
     m_vk_copy_regions.reserve(sub_resources.size());
@@ -284,8 +284,7 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue* sy
         GenerateMipLevels();
     }
 
-    CompleteResourceUpload(upload_cmd_list, State::ShaderResource);
-
+    CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 

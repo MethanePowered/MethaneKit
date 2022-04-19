@@ -186,7 +186,41 @@ bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
         UpdateStageMasks();
         static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Disconnect(*this);
     }
+
+    m_vk_barrier_by_queue_family.clear();
     return true;
+}
+
+template<typename T>
+void UpdateNativeBarrierAccessFlags(std::vector<T>& vk_native_barriers, vk::AccessFlags vk_supported_access_flags)
+{
+    for(T& vk_native_barrier : vk_native_barriers)
+    {
+        vk_native_barrier.srcAccessMask &= vk_supported_access_flags;
+        vk_native_barrier.dstAccessMask &= vk_supported_access_flags;
+    }
+}
+
+const ResourceBarriersVK::NativePipelineBarrier& ResourceBarriersVK::GetNativePipelineBarrierData(const CommandQueueVK& target_cmd_queue) const
+{
+    META_FUNCTION_TASK();
+    const uint32_t cmd_queue_family_index = target_cmd_queue.GetFamilyIndex();
+
+    auto emplace_result = m_vk_barrier_by_queue_family.try_emplace(cmd_queue_family_index, m_vk_default_barrier);
+    NativePipelineBarrier& native_pipeline_barrier = emplace_result.first->second;
+    if (!emplace_result.second)
+        return native_pipeline_barrier;
+
+    const vk::PipelineStageFlags vk_supported_stage_flags  = target_cmd_queue.GetNativeSupportedStageFlags();
+    native_pipeline_barrier.vk_src_stage_mask &= vk_supported_stage_flags;
+    native_pipeline_barrier.vk_dst_stage_mask &= vk_supported_stage_flags;
+
+    const vk::AccessFlags vk_supported_access_flags = target_cmd_queue.GetNativeSupportedAccessFlags();
+    UpdateNativeBarrierAccessFlags(native_pipeline_barrier.vk_buffer_memory_barriers, vk_supported_access_flags);
+    UpdateNativeBarrierAccessFlags(native_pipeline_barrier.vk_image_memory_barriers, vk_supported_access_flags);
+    UpdateNativeBarrierAccessFlags(native_pipeline_barrier.vk_memory_barriers, vk_supported_access_flags);
+
+    return native_pipeline_barrier;
 }
 
 void ResourceBarriersVK::OnResourceReleased(Resource& resource)
@@ -223,11 +257,12 @@ void ResourceBarriersVK::SetBufferMemoryBarrier(BufferVK& buffer, const Resource
 {
     META_FUNCTION_TASK();
     const vk::Buffer& vk_buffer = buffer.GetNativeResource();
-    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_buffer_memory_barriers.begin(), m_vk_buffer_memory_barriers.end(),
+    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_buffer_memory_barriers.begin(),
+                                                          m_vk_default_barrier.vk_buffer_memory_barriers.end(),
                                                           [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
                                                           { return vk_buffer_barrier.buffer == vk_buffer; });
 
-    if (vk_buffer_memory_barrier_it == m_vk_buffer_memory_barriers.end())
+    if (vk_buffer_memory_barrier_it == m_vk_default_barrier.vk_buffer_memory_barriers.end())
     {
         switch(barrier.GetId().GetType())
         {
@@ -243,17 +278,20 @@ void ResourceBarriersVK::SetBufferMemoryBarrier(BufferVK& buffer, const Resource
         case ResourceBarrier::Type::OwnerTransition: UpdateBufferMemoryOwnerChangeBarrier(*vk_buffer_memory_barrier_it, barrier.GetOwnerChange()); break;
         }
     }
+
+    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::SetImageMemoryBarrier(ITextureVK& texture, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     const vk::Image& vk_image = texture.GetNativeImage();
-    const auto vk_image_memory_barrier_it = std::find_if(m_vk_image_memory_barriers.begin(), m_vk_image_memory_barriers.end(),
+    const auto vk_image_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_image_memory_barriers.begin(),
+                                                         m_vk_default_barrier.vk_image_memory_barriers.end(),
                                                          [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
-                                                             { return vk_image_barrier.image == vk_image; });
+                                                         { return vk_image_barrier.image == vk_image; });
 
-    if (vk_image_memory_barrier_it == m_vk_image_memory_barriers.end())
+    if (vk_image_memory_barrier_it == m_vk_default_barrier.vk_image_memory_barriers.end())
     {
         switch(barrier.GetId().GetType())
         {
@@ -269,12 +307,14 @@ void ResourceBarriersVK::SetImageMemoryBarrier(ITextureVK& texture, const Resour
         case ResourceBarrier::Type::OwnerTransition: UpdateImageMemoryOwnerChangeBarrier(*vk_image_memory_barrier_it, barrier.GetOwnerChange()); break;
         }
     }
+
+    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::AddBufferMemoryStateChangeBarrier(const BufferVK& buffer, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    m_vk_buffer_memory_barriers.emplace_back(
+    m_vk_default_barrier.vk_buffer_memory_barriers.emplace_back(
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()),
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
         VK_QUEUE_FAMILY_IGNORED,
@@ -293,7 +333,7 @@ void ResourceBarriersVK::AddBufferMemoryOwnerChangeBarrier(const BufferVK& buffe
     if (family_index_before == family_index_after)
         return;
 
-    m_vk_buffer_memory_barriers.emplace_back(
+    m_vk_default_barrier.vk_buffer_memory_barriers.emplace_back(
         vk::AccessFlagBits::eMemoryWrite,
         vk::AccessFlagBits::eMemoryRead,
         family_index_before,
@@ -307,7 +347,7 @@ void ResourceBarriersVK::AddBufferMemoryOwnerChangeBarrier(const BufferVK& buffe
 void ResourceBarriersVK::AddImageMemoryStateChangeBarrier(const ITextureVK& texture, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    m_vk_image_memory_barriers.emplace_back(
+    m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()),
         ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
         ConvertResourceStateToVulkanImageLayout(state_change.GetStateBefore()),
@@ -327,7 +367,7 @@ void ResourceBarriersVK::AddImageMemoryOwnerChangeBarrier(const ITextureVK& text
     if (family_index_before == family_index_after)
         return;
 
-    m_vk_image_memory_barriers.emplace_back(
+    m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
         vk::AccessFlagBits::eMemoryWrite,
         vk::AccessFlagBits::eMemoryRead,
         vk::ImageLayout::eUndefined,
@@ -376,10 +416,11 @@ void ResourceBarriersVK::UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarr
 void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, ResourceBarrier::Type barrier_type)
 {
     META_FUNCTION_TASK();
-    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_buffer_memory_barriers.begin(), m_vk_buffer_memory_barriers.end(),
+    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_buffer_memory_barriers.begin(),
+                                                          m_vk_default_barrier.vk_buffer_memory_barriers.end(),
                                                           [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
                                                           { return vk_buffer_barrier.buffer == vk_buffer; });
-    if (vk_buffer_memory_barrier_it == m_vk_buffer_memory_barriers.end())
+    if (vk_buffer_memory_barrier_it == m_vk_default_barrier.vk_buffer_memory_barriers.end())
         return;
 
     if (barrier_type == ResourceBarrier::Type::OwnerTransition)
@@ -389,17 +430,20 @@ void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, 
     }
     else
     {
-        m_vk_buffer_memory_barriers.erase(vk_buffer_memory_barrier_it);
+        m_vk_default_barrier.vk_buffer_memory_barriers.erase(vk_buffer_memory_barrier_it);
     }
+
+    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image, ResourceBarrier::Type barrier_type)
 {
     META_FUNCTION_TASK();
-    const auto vk_image_memory_barrier_it = std::find_if(m_vk_image_memory_barriers.begin(), m_vk_image_memory_barriers.end(),
+    const auto vk_image_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_image_memory_barriers.begin(),
+                                                         m_vk_default_barrier.vk_image_memory_barriers.end(),
                                                          [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
                                                          { return vk_image_barrier.image == vk_image; });
-    if (vk_image_memory_barrier_it == m_vk_image_memory_barriers.end())
+    if (vk_image_memory_barrier_it == m_vk_default_barrier.vk_image_memory_barriers.end())
         return;
 
     if (barrier_type == ResourceBarrier::Type::OwnerTransition)
@@ -409,15 +453,15 @@ void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image, Res
     }
     else
     {
-        m_vk_image_memory_barriers.erase(vk_image_memory_barrier_it);
+        m_vk_default_barrier.vk_image_memory_barriers.erase(vk_image_memory_barrier_it);
     }
 }
 
 void ResourceBarriersVK::UpdateStageMasks()
 {
     META_FUNCTION_TASK();
-    m_vk_src_stage_mask = {};
-    m_vk_dst_stage_mask = {};
+    m_vk_default_barrier.vk_src_stage_mask = {};
+    m_vk_default_barrier.vk_dst_stage_mask = {};
     for(const auto& [barrier_id, barrier] : ResourceBarriers::GetMap())
     {
         UpdateStageMasks(barrier);
@@ -429,12 +473,12 @@ void ResourceBarriersVK::UpdateStageMasks(const ResourceBarrier& barrier)
     switch (barrier.GetId().GetType())
     {
     case ResourceBarrier::Type::StateTransition:
-        m_vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateBefore());
-        m_vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateAfter());
+        m_vk_default_barrier.vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateBefore());
+        m_vk_default_barrier.vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateAfter());
         break;
 
     case ResourceBarrier::Type::OwnerTransition:
-        m_vk_src_stage_mask |= vk::PipelineStageFlagBits::eTransfer;
+        m_vk_default_barrier.vk_src_stage_mask |= vk::PipelineStageFlagBits::eTransfer;
         break;
     }
 }
