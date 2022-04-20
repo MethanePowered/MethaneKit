@@ -236,7 +236,8 @@ protected:
         if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
             SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
         {
-            CommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding();
+            CommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
+                static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PreUploadSync));
             sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
         }
 

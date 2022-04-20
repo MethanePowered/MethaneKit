@@ -47,22 +47,29 @@ public:
     [[nodiscard]] const Context&    GetContext() const noexcept override  { return m_context; }
     [[nodiscard]] CommandList::Type GetListType() const noexcept override { return m_cmd_list_type; }
     [[nodiscard]] CommandQueue&     GetQueue() const override;
-    [[nodiscard]] bool              HasList(uint32_t cmd_list_id) const noexcept override;
-    [[nodiscard]] bool              HasListWithState(CommandList::State cmd_list_state, uint32_t cmd_list_id) const noexcept override;
-    [[nodiscard]] CommandList&      GetList(uint32_t cmd_list_id) const override;
-    [[nodiscard]] CommandList&      GetListForEncoding(uint32_t cmd_list_id, std::string_view debug_group_name) const override;
-    [[nodiscard]] CommandListSet&   GetListSet(const std::vector<uint32_t>& cmd_list_ids) const override;
-    [[nodiscard]] Fence&            GetFence(uint32_t fence_id) const override;
+    [[nodiscard]] bool              HasList(CommandListId cmd_list_id) const noexcept override;
+    [[nodiscard]] bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id) const noexcept override;
+    [[nodiscard]] CommandList&      GetList(CommandListId cmd_list_id) const override;
+    [[nodiscard]] CommandList&      GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const override;
+    [[nodiscard]] CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids) const override;
+    [[nodiscard]] Fence&            GetFence(CommandListId fence_id) const override;
 
 private:
-    using CommandListSetById = std::map<uint32_t, Ptr<CommandListSet>>;
+    using CommandListIndex = uint32_t;
+    using CommandListSetId = uint32_t;
+    using CommandListIndexById = std::map<CommandListId, uint32_t>;
+    using CommandListSetById = std::map<CommandListSetId, Ptr<CommandListSet>>;
 
-    const Context&             m_context;
-    CommandList::Type          m_cmd_list_type;
-    mutable Ptr<CommandQueue>  m_cmd_queue_ptr;
-    mutable Ptrs<CommandList>  m_cmd_list_ptrs;
-    mutable CommandListSetById m_cmd_list_set_by_id;
-    mutable Ptrs<Fence>        m_fence_ptrs;
+    CommandListIndex GetCommandListIndexById(CommandListId cmd_list_id) const noexcept;
+    CommandListSetId GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids) const;
+
+    const Context&               m_context;
+    CommandList::Type            m_cmd_list_type;
+    mutable Ptr<CommandQueue>    m_cmd_queue_ptr;
+    mutable Ptrs<CommandList>    m_cmd_list_ptrs;
+    mutable CommandListIndexById m_cmd_list_index_by_id;
+    mutable CommandListSetById   m_cmd_list_set_by_id;
+    mutable Ptrs<Fence>          m_fence_ptrs;
 };
 
 } // namespace Methane::Graphics

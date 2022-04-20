@@ -38,19 +38,6 @@ namespace Methane::Graphics
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
-static uint32_t GetCommandListSetId(const std::vector<uint32_t>& cmd_list_ids)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");
-    uint32_t set_id = 0;
-    for(uint32_t cmd_list_id : cmd_list_ids)
-    {
-        META_CHECK_ARG_LESS_DESCR(cmd_list_id, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
-        set_id += 1 << cmd_list_id;
-    }
-    return set_id;
-}
-
 Ptr<CommandKit> CommandKit::Create(const Context& context, CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
@@ -88,18 +75,18 @@ bool CommandKitBase::SetName(const std::string& name)
     if (m_cmd_queue_ptr)
         m_cmd_queue_ptr->SetName(fmt::format("{} Command Queue", GetName()));
 
-    for(size_t cmd_list_id = 0; cmd_list_id < m_cmd_list_ptrs.size(); ++cmd_list_id)
+    for(size_t cmd_list_index = 0; cmd_list_index < m_cmd_list_ptrs.size(); ++cmd_list_index)
     {
-        const Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_id];
+        const Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
         if (cmd_list_ptr)
-            cmd_list_ptr->SetName(fmt::format("{} Command List {}", GetName(), cmd_list_id));
+            cmd_list_ptr->SetName(fmt::format("{} Command List {}", GetName(), cmd_list_index));
     }
 
-    for(size_t fence_id = 0; fence_id < m_fence_ptrs.size(); ++fence_id)
+    for(size_t fence_index = 0; fence_index < m_fence_ptrs.size(); ++fence_index)
     {
-        const Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_id];
+        const Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_index];
         if (fence_ptr)
-            fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
+            fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_index));
     }
 
     return true;
@@ -116,26 +103,29 @@ CommandQueue& CommandKitBase::GetQueue() const
     return *m_cmd_queue_ptr;
 }
 
-bool CommandKitBase::HasList(uint32_t cmd_list_id) const noexcept
+bool CommandKitBase::HasList(CommandListId cmd_list_id) const noexcept
 {
     META_FUNCTION_TASK();
-    return cmd_list_id < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_id];
+    const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
+    return cmd_list_index < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_index];
 }
 
-bool CommandKitBase::HasListWithState(CommandList::State cmd_list_state, uint32_t cmd_list_id) const noexcept
+bool CommandKitBase::HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id) const noexcept
 {
     META_FUNCTION_TASK();
-    return cmd_list_id < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_id] && m_cmd_list_ptrs[cmd_list_id]->GetState() == cmd_list_state;
+    const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
+    return cmd_list_index < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_index] && m_cmd_list_ptrs[cmd_list_index]->GetState() == cmd_list_state;
 }
 
-CommandList& CommandKitBase::GetList(uint32_t cmd_list_id = 0U) const
+CommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(cmd_list_id, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
-    if (cmd_list_id >= m_cmd_list_ptrs.size())
-        m_cmd_list_ptrs.resize(cmd_list_id + 1);
+    const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
+    META_CHECK_ARG_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
+    if (cmd_list_index >= m_cmd_list_ptrs.size())
+        m_cmd_list_ptrs.resize(cmd_list_index + 1);
 
-    Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_id];
+    Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
     if (cmd_list_ptr)
         return *cmd_list_ptr;
 
@@ -150,7 +140,7 @@ CommandList& CommandKitBase::GetList(uint32_t cmd_list_id = 0U) const
     return *cmd_list_ptr;
 }
 
-CommandList& CommandKitBase::GetListForEncoding(uint32_t cmd_list_id, std::string_view debug_group_name) const
+CommandList& CommandKitBase::GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
 {
     META_FUNCTION_TASK();
     CommandList& cmd_list = GetList(cmd_list_id);
@@ -176,18 +166,18 @@ CommandList& CommandKitBase::GetListForEncoding(uint32_t cmd_list_id, std::strin
     return cmd_list;
 }
 
-CommandListSet& CommandKitBase::GetListSet(const std::vector<uint32_t>& cmd_list_ids) const
+CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd_list_ids) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(cmd_list_ids);
-    const uint32_t cmd_list_set_id = GetCommandListSetId(cmd_list_ids);
+    const CommandListId cmd_list_set_id = GetCommandListSetId(cmd_list_ids);
 
     Ptr<CommandListSet>& cmd_list_set_ptr = m_cmd_list_set_by_id[cmd_list_set_id];
     if (cmd_list_set_ptr && cmd_list_set_ptr->GetCount() == cmd_list_ids.size())
         return *cmd_list_set_ptr;
 
     Refs<CommandList> command_list_refs;
-    for(uint32_t cmd_list_id : cmd_list_ids)
+    for(CommandListId cmd_list_id : cmd_list_ids)
     {
         command_list_refs.emplace_back(GetList(cmd_list_id));
     }
@@ -196,13 +186,14 @@ CommandListSet& CommandKitBase::GetListSet(const std::vector<uint32_t>& cmd_list
     return *cmd_list_set_ptr;
 }
 
-Fence& CommandKitBase::GetFence(uint32_t fence_id) const
+Fence& CommandKitBase::GetFence(CommandListId fence_id) const
 {
     META_FUNCTION_TASK();
-    if (fence_id >= m_fence_ptrs.size())
-        m_fence_ptrs.resize(fence_id + 1);
+    const uint32_t fence_index = GetCommandListIndexById(fence_id);
+    if (fence_index >= m_fence_ptrs.size())
+        m_fence_ptrs.resize(fence_index + 1);
 
-    Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_id];
+    Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_index];
 
     if (fence_ptr)
         return *fence_ptr;
@@ -210,6 +201,27 @@ Fence& CommandKitBase::GetFence(uint32_t fence_id) const
     fence_ptr = Fence::Create(GetQueue());
     fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
+}
+
+CommandKitBase::CommandListIndex CommandKitBase::GetCommandListIndexById(CommandListId cmd_list_id) const noexcept
+{
+    META_FUNCTION_TASK();
+    const auto emplace_result = m_cmd_list_index_by_id.try_emplace(cmd_list_id, static_cast<CommandListIndex>(m_cmd_list_index_by_id.size()));
+    return emplace_result.first->second;
+}
+
+CommandKitBase::CommandListSetId CommandKitBase::GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");
+    CommandListSetId set_id = 0;
+    for(const uint32_t cmd_list_id : cmd_list_ids)
+    {
+        const uint32_t cmd_list_index = GetCommandListIndexById(cmd_list_id);
+        META_CHECK_ARG_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
+        set_id += 1 << cmd_list_index;
+    }
+    return set_id;
 }
 
 } // namespace Methane::Graphics

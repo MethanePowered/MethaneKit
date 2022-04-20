@@ -235,12 +235,12 @@ protected:
         }
 
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
-        // TODO: fix me!!!
-        //if (owner_changed && upload_end_barriers_non_empty)
-        //{
-        //    CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding();
-        //    target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
-        //}
+        if (owner_changed && upload_end_barriers_non_empty)
+        {
+            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
+                static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync));
+            target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
+        }
     }
 
 private:

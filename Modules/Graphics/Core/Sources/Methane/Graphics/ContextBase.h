@@ -27,6 +27,7 @@ Base implementation of the context interface.
 
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -102,6 +103,8 @@ protected:
 private:
     using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
     using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
+
+    bool ExecuteSyncCommandLists(CommandKit::CommandListPurpose cmd_list_purpose, const CommandKit& upload_cmd_kit);
 
     const Type                       m_type;
     Ptr<DeviceBase>                  m_device_ptr;
