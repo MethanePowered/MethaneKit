@@ -172,15 +172,14 @@ void ShadowCubeApp::Init()
 
     // Create shadow-pass render pattern
     m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
-        { // No color attachments
-        },
+        { }, // No color attachments
         gfx::RenderPattern::DepthAttachment(
             0U, context_settings.depth_stencil_format, 1U,
             gfx::RenderPass::Attachment::LoadAction::Clear,
             gfx::RenderPass::Attachment::StoreAction::Store,
             context_settings.clear_depth_stencil->first
         ),
-        gfx::RenderPass::StencilAttachment(),
+        std::nullopt, // No stencil attachment
         gfx::RenderPass::Access::ShaderResources,
         false // intermediate render pass
     });
