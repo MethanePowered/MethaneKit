@@ -92,11 +92,11 @@ void ProgramBindingsBase::ArgumentBindingBase::MergeSettings(const ArgumentBindi
     META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
 }
 
-void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
     if (m_resource_locations == resource_locations)
-        return;
+        return false;
 
     if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
         throw ConstantModificationException(GetSettings().argument);
@@ -126,6 +126,7 @@ void ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resour
     Data::Emitter<ProgramBindings::IArgumentBindingCallback>::Emit(&ProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceLocationsChanged, std::cref(*this), std::cref(m_resource_locations), std::cref(resource_locations));
 
     m_resource_locations = resource_locations;
+    return true;
 }
 
 ProgramBindingsBase::ArgumentBindingBase::operator std::string() const

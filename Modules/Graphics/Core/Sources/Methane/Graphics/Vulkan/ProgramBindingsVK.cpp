@@ -91,13 +91,11 @@ void ProgramBindingsVK::ArgumentBindingVK::MergeSettings(const ArgumentBindingBa
     m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
 }
 
-void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
-    if (GetResourceLocations() == resource_locations)
-        return;
-
-    ArgumentBindingBase::SetResourceLocations(resource_locations);
+    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+        return false;
 
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
 
@@ -130,6 +128,7 @@ void ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 #else
     UpdateDescriptorSetsOnGpu();
 #endif
+    return true;
 }
 
 void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()

@@ -79,7 +79,7 @@ public:
         ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceLocations(const Resource::Locations& resource_locations) override;
 
         const SettingsDX&               GetSettingsDX() const noexcept            { return m_settings_dx; }
         uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }

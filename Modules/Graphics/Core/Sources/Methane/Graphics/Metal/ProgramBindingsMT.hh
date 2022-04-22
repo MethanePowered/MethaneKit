@@ -44,7 +44,7 @@ public:
         ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceLocations(const Resource::Locations& resource_locations) override;
 
         const SettingsMT&                       GetSettingsMT() const noexcept { return m_settings_mt; }
         const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }

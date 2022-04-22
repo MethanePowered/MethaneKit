@@ -184,10 +184,11 @@ ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& conte
     META_FUNCTION_TASK();
 }
 
-void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
-    ArgumentBindingBase::SetResourceLocations(resource_locations);
+    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+        return false;
 
     m_mtl_sampler_states.clear();
     m_mtl_textures.clear();
@@ -222,6 +223,7 @@ void ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
 
     default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
     }
+    return true;
 }
 
 ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)

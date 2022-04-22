@@ -94,13 +94,11 @@ DescriptorHeapDX::Type ProgramBindingsDX::ArgumentBindingDX::GetDescriptorHeapTy
            : DescriptorHeapDX::Type::ShaderResources;
 }
 
-void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
-    if (GetResourceLocations() == resource_locations)
-        return;
-
-    ArgumentBindingBase::SetResourceLocations(resource_locations);
+    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+        return false;
 
     if (m_settings_dx.type == Type::DescriptorTable)
     {
@@ -149,6 +147,7 @@ void ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     }
 
     GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+    return true;
 }
 
 void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorRange(const DescriptorRange& descriptor_range)

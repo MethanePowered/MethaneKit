@@ -74,7 +74,7 @@ public:
 
         // ArgumentBinding interface
         const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceLocations(const Resource::Locations& resource_locations) override;
 
         void UpdateDescriptorSetsOnGpu();
 

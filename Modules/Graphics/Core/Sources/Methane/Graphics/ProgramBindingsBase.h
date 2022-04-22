@@ -61,7 +61,7 @@ public:
         // ArgumentBinding interface
         const Settings&            GetSettings() const noexcept override         { return m_settings; }
         const Resource::Locations& GetResourceLocations() const noexcept final   { return m_resource_locations; }
-        void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool                       SetResourceLocations(const Resource::Locations& resource_locations) override;
         explicit operator std::string() const final;
 
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
