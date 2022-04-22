@@ -106,12 +106,19 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
     META_FUNCTION_TASK();
     CommandListSetBase::Execute(frame_index, completed_callback);
 
-    const vk::SubmitInfo submit_info(
+    vk::SubmitInfo submit_info(
         GetWaitSemaphores(),
         GetWaitStages(),
         m_vk_command_buffers,
         GetNativeExecutionCompletedSemaphore()
     );
+
+    const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
+    if (!vk_wait_values.empty())
+    {
+        const vk::TimelineSemaphoreSubmitInfo vk_timeline_submit_info(vk_wait_values);
+        submit_info.setPNext(&vk_timeline_submit_info);
+    }
 
     m_vk_device.resetFences(GetNativeExecutionCompletedFence());
     GetCommandQueueVK().GetNativeQueue().submit(submit_info, GetNativeExecutionCompletedFence());
@@ -172,6 +179,19 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
     }
     m_vk_wait_stages.back() = m_vk_wait_frame_buffer_rendering_on_stages;
     return m_vk_wait_stages;
+}
+
+const std::vector<uint64_t>& CommandListSetVK::GetWaitValues()
+{
+    META_FUNCTION_TASK();
+    const CommandQueueVK& command_queue = GetCommandQueueVK();
+    const std::vector<uint64_t>& vk_wait_values = command_queue.GetWaitBeforeExecuting().wait_values;
+    if (!m_vk_wait_frame_buffer_rendering_on_stages || vk_wait_values.empty())
+        return vk_wait_values;
+
+    m_vk_wait_values = vk_wait_values;
+    m_vk_wait_values.resize(vk_wait_values.size() + 1, 0U);
+    return m_vk_wait_values;
 }
 
 void CommandListSetVK::OnObjectNameChanged(Object& object, const std::string& old_name)

@@ -235,13 +235,13 @@ bool ContextBase::SetName(const std::string& name)
     return true;
 }
 
-bool ContextBase::ExecuteSyncCommandLists(CommandKit::CommandListPurpose cmd_list_purpose, const CommandKit& upload_cmd_kit)
+template<CommandKit::CommandListPurpose cmd_list_purpose>
+void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit)
 {
     META_FUNCTION_TASK();
-    const auto cmd_list_id = static_cast<CommandKit::CommandListId>(cmd_list_purpose);
+    constexpr auto cmd_list_id = static_cast<CommandKit::CommandListId>(cmd_list_purpose);
     const std::vector<CommandKit::CommandListId> cmd_list_ids = { cmd_list_id };
     Fence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
-    bool is_cmd_list_execution_started = false;
 
     for (const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
@@ -261,29 +261,19 @@ bool ContextBase::ExecuteSyncCommandLists(CommandKit::CommandListPurpose cmd_lis
         CommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
         Fence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
 
-        switch (cmd_list_purpose)
+        if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PreUploadSync)
         {
-        case CommandKit::CommandListPurpose:: PreUploadSync:
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
             cmd_kit_fence.Signal();
             cmd_kit_fence.WaitOnGpu(upload_cmd_kit.GetQueue());
-            break;
-
-        case CommandKit::CommandListPurpose::PostUploadSync:
-            // FIXME: fence wait leads to unknown error on command queue execution
-            //upload_fence.WaitOnGpu(cmd_queue);
-            cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
-            upload_fence.Signal();
-            break;
-
-        default:
-            META_UNEXPECTED_ARG(cmd_list_purpose);
         }
-
-        is_cmd_list_execution_started = true;
+        if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PostUploadSync)
+        {
+            upload_fence.Signal();
+            upload_fence.WaitOnGpu(cmd_queue);
+            cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
+        }
     }
-
-    return is_cmd_list_execution_started;
 }
 
 bool ContextBase::UploadResources()
@@ -308,14 +298,14 @@ bool ContextBase::UploadResources()
 
     // Execute pre-upload synchronization command lists for all queues except the upload command queue
     // and set upload command queue fence to wait for pre-upload synchronization completion in other command queues
-    ExecuteSyncCommandLists(CommandKit::CommandListPurpose::PreUploadSync, upload_cmd_kit);
+    ExecuteSyncCommandLists<CommandKit::CommandListPurpose::PreUploadSync>(upload_cmd_kit);
 
     // Execute resource upload command lists
     upload_cmd_kit.GetQueue().Execute(upload_cmd_kit.GetListSet());
 
     // Execute post-upload synchronization command lists for all queues except the upload command queue
     // and set post-upload command queue fences to wait for upload command command queue completion
-    ExecuteSyncCommandLists(CommandKit::CommandListPurpose::PostUploadSync, upload_cmd_kit);
+    ExecuteSyncCommandLists<CommandKit::CommandListPurpose::PostUploadSync>(upload_cmd_kit);
 
     return true;
 }

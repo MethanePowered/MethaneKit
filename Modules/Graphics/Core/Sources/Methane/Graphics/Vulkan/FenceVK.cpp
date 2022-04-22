@@ -93,7 +93,9 @@ void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);
-    static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(GetNativeSemaphore(), vk::PipelineStageFlagBits::eBottomOfPipe);
+
+    const uint64_t wait_value = GetValue();
+    static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(GetNativeSemaphore(), vk::PipelineStageFlagBits::eBottomOfPipe, &wait_value);
 }
 
 bool FenceVK::SetName(const std::string& name)

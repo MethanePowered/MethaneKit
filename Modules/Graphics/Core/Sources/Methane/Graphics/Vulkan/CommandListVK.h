@@ -86,6 +86,7 @@ protected:
 private:
     const std::vector<vk::Semaphore>&          GetWaitSemaphores();
     const std::vector<vk::PipelineStageFlags>& GetWaitStages();
+    const std::vector<uint64_t>&               GetWaitValues();
     void UpdateNativeDebugName();
 
     const vk::PipelineStageFlags        m_vk_wait_frame_buffer_rendering_on_stages;
@@ -93,6 +94,7 @@ private:
     std::vector<vk::CommandBuffer>      m_vk_command_buffers;
     std::vector<vk::Semaphore>          m_vk_wait_semaphores;
     std::vector<vk::PipelineStageFlags> m_vk_wait_stages;
+    std::vector<uint64_t>               m_vk_wait_values;
     vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
     vk::UniqueFence                     m_vk_unique_execution_completed_fence;
 };

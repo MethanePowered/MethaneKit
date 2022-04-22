@@ -167,13 +167,23 @@ void CommandQueueVK::Execute(CommandListSet& command_list_set, const CommandList
 
     m_wait_before_executing.semaphores.clear();
     m_wait_before_executing.stages.clear();
-};
+    m_wait_before_executing.wait_values.clear();
+}
 
-void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags)
+void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags, const uint64_t* timeline_wait_value_ptr)
 {
     META_FUNCTION_TASK();
     m_wait_before_executing.semaphores.emplace_back(semaphore);
     m_wait_before_executing.stages.emplace_back(stage_flags);
+
+    if (timeline_wait_value_ptr && m_wait_before_executing.wait_values.empty())
+    {
+        m_wait_before_executing.wait_values.resize(m_wait_before_executing.semaphores.size(), 0U);
+    }
+    if (timeline_wait_value_ptr || !m_wait_before_executing.wait_values.empty())
+    {
+        m_wait_before_executing.wait_values.push_back(timeline_wait_value_ptr ? *timeline_wait_value_ptr : 0U);
+    }
 }
 
 const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForExecutionCompleted() const

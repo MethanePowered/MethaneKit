@@ -42,6 +42,7 @@ public:
     {
         std::vector<vk::Semaphore>          semaphores;
         std::vector<vk::PipelineStageFlags> stages;
+        std::vector<uint64_t>               wait_values;
     };
 
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
@@ -57,7 +58,7 @@ public:
     const IContextVK& GetContextVK() const noexcept;
     DeviceVK& GetDeviceVK() const noexcept;
 
-    void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
+    void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags, const uint64_t* timeline_wait_value_ptr = nullptr);
     const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
     const WaitInfo& GetWaitForExecutionCompleted() const;
     const WaitInfo& GetWaitForFrameExecutionCompleted(Data::Index frame_index) const;
