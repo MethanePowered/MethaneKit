@@ -138,7 +138,6 @@ void ContextBase::Release()
     META_FUNCTION_TASK();
     META_LOG("Context '{}' RELEASE", GetName());
 
-    m_descriptor_manager_ptr.reset();
     m_device_ptr.reset();
 
     m_default_command_kit_ptr_by_queue.clear();
@@ -146,6 +145,8 @@ void ContextBase::Release()
         cmd_kit_ptr.reset();
 
     Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextReleased, std::ref(*this));
+
+    m_descriptor_manager_ptr->Release();
 }
 
 void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocation */, bool is_callback_emitted)
