@@ -116,6 +116,7 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
     const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
     if (!vk_wait_values.empty())
     {
+        META_CHECK_ARG_EQUAL(vk_wait_values.size(), submit_info.waitSemaphoreCount);
         const vk::TimelineSemaphoreSubmitInfo vk_timeline_submit_info(vk_wait_values);
         submit_info.setPNext(&vk_timeline_submit_info);
     }
@@ -155,12 +156,8 @@ const std::vector<vk::Semaphore>& CommandListSetVK::GetWaitSemaphores()
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_semaphores;
 
-    m_vk_wait_semaphores.resize(vk_wait_semaphores.size() + 1);
-    if (!vk_wait_semaphores.empty())
-    {
-        m_vk_wait_semaphores.assign(vk_wait_semaphores.begin(), vk_wait_semaphores.end());
-    }
-    m_vk_wait_semaphores.back() = dynamic_cast<const RenderContextVK&>(command_queue.GetContextVK()).GetNativeFrameImageAvailableSemaphore();
+    m_vk_wait_semaphores = vk_wait_semaphores;
+    m_vk_wait_semaphores.push_back(dynamic_cast<const RenderContextVK&>(command_queue.GetContextVK()).GetNativeFrameImageAvailableSemaphore());
     return m_vk_wait_semaphores;
 }
 
@@ -172,12 +169,8 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_stages;
 
-    m_vk_wait_stages.resize(vk_wait_stages.size() + 1);
-    if (!vk_wait_stages.empty())
-    {
-        m_vk_wait_stages.assign(vk_wait_stages.begin(), vk_wait_stages.end());
-    }
-    m_vk_wait_stages.back() = m_vk_wait_frame_buffer_rendering_on_stages;
+    m_vk_wait_stages = vk_wait_stages;
+    m_vk_wait_stages.push_back(m_vk_wait_frame_buffer_rendering_on_stages);
     return m_vk_wait_stages;
 }
 
@@ -185,12 +178,15 @@ const std::vector<uint64_t>& CommandListSetVK::GetWaitValues()
 {
     META_FUNCTION_TASK();
     const CommandQueueVK& command_queue = GetCommandQueueVK();
-    const std::vector<uint64_t>& vk_wait_values = command_queue.GetWaitBeforeExecuting().wait_values;
+    const CommandQueueVK::WaitInfo& wait_before_exec = command_queue.GetWaitBeforeExecuting();
+    META_CHECK_ARG_EQUAL(wait_before_exec.wait_values.size(), wait_before_exec.semaphores.size());
+
+    const std::vector<uint64_t>& vk_wait_values = wait_before_exec.wait_values;
     if (!m_vk_wait_frame_buffer_rendering_on_stages || vk_wait_values.empty())
         return vk_wait_values;
 
     m_vk_wait_values = vk_wait_values;
-    m_vk_wait_values.resize(vk_wait_values.size() + 1, 0U);
+    m_vk_wait_values.push_back(0U);
     return m_vk_wait_values;
 }
 

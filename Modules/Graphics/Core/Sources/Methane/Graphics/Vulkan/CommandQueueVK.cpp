@@ -176,11 +176,12 @@ void CommandQueueVK::WaitForSemaphore(const vk::Semaphore& semaphore, vk::Pipeli
     m_wait_before_executing.semaphores.emplace_back(semaphore);
     m_wait_before_executing.stages.emplace_back(stage_flags);
 
-    if (timeline_wait_value_ptr && m_wait_before_executing.wait_values.empty())
+    const bool no_timeline_waits = m_wait_before_executing.wait_values.empty();
+    if (timeline_wait_value_ptr && no_timeline_waits)
     {
-        m_wait_before_executing.wait_values.resize(m_wait_before_executing.semaphores.size(), 0U);
+        m_wait_before_executing.wait_values.resize(m_wait_before_executing.semaphores.size() - 1U, 0U);
     }
-    if (timeline_wait_value_ptr || !m_wait_before_executing.wait_values.empty())
+    if (timeline_wait_value_ptr || !no_timeline_waits)
     {
         m_wait_before_executing.wait_values.push_back(timeline_wait_value_ptr ? *timeline_wait_value_ptr : 0U);
     }

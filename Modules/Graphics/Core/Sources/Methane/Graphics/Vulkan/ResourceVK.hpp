@@ -205,7 +205,7 @@ protected:
         m_vk_view = std::forward<T>(vk_view);
     }
 
-    BlitCommandListVK& PrepareResourceUpload()
+    BlitCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
@@ -218,6 +218,14 @@ protected:
             m_upload_begin_transition_barriers_ptr && !m_upload_begin_transition_barriers_ptr->IsEmpty())
         {
             upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
+        }
+
+        // If owner queue family has changed, resource barriers have to be also repeated on target command queue
+        if (owner_changed && m_upload_begin_transition_barriers_ptr)
+        {
+            constexpr auto pre_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PreUploadSync);
+            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
+            target_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
 
         return upload_cmd_list;
@@ -237,8 +245,8 @@ protected:
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
         if (owner_changed && upload_end_barriers_non_empty)
         {
-            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
-                static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync));
+            constexpr auto post_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync);
+            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }
     }
