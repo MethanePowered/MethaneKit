@@ -128,19 +128,19 @@ public:
 
     void SetResourceBarriers(const Resource::Barriers&) override { }
 
-    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override
+    void Execute(const CommandList::CompletedCallback& completed_callback) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        CommandListBaseT::Execute(frame_index, completed_callback);
+        CommandListBaseT::Execute(completed_callback);
 
         if (!m_is_cmd_buffer_enabled || !m_mtl_cmd_buffer)
             return;
 
         [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
             std::scoped_lock lock_guard(m_cmd_buffer_mutex);
-            CommandListBaseT::Complete(frame_index);
+            CommandListBaseT::Complete();
             [m_mtl_cmd_buffer release];
             m_mtl_cmd_buffer  = nil;
         }];
