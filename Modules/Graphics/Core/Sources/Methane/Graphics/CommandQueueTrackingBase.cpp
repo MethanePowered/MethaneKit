@@ -93,7 +93,7 @@ void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_i
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
     while (!m_executing_command_lists.empty() &&
-          (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
+           m_executing_command_lists.front()->GetFrameIndex() == frame_index)
     {
         META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
         m_executing_command_lists.front()->Complete();

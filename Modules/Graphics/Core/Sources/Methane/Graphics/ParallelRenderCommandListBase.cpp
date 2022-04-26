@@ -159,30 +159,30 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
-void ParallelRenderCommandListBase::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandListBase::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
-        thread_render_command_list.Execute(frame_index);
+        thread_render_command_list.Execute();
     }
 
-    CommandListBase::Execute(frame_index, completed_callback);
+    CommandListBase::Execute(completed_callback);
 }
 
-void ParallelRenderCommandListBase::Complete(uint32_t frame_index)
+void ParallelRenderCommandListBase::Complete()
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
-        thread_render_command_list.Complete(frame_index);
+        thread_render_command_list.Complete();
     }
 
-    CommandListBase::Complete(frame_index);
+    CommandListBase::Complete();
 }
 
 bool ParallelRenderCommandListBase::SetName(const std::string& name)

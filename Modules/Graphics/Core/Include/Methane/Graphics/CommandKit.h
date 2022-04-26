@@ -61,7 +61,7 @@ struct CommandKit : virtual Object // NOSONAR
     [[nodiscard]] virtual bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
     [[nodiscard]] virtual CommandList&      GetList(CommandListId cmd_list_id = 0U) const = 0;
     [[nodiscard]] virtual CommandList&      GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
-    [[nodiscard]] virtual CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }) const = 0;
+    [[nodiscard]] virtual CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
     [[nodiscard]] virtual Fence&            GetFence(CommandListId fence_id = 0U) const = 0;
 };
 

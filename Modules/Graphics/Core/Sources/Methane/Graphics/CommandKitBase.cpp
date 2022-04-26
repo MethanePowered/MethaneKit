@@ -166,11 +166,11 @@ CommandList& CommandKitBase::GetListForEncoding(CommandListId cmd_list_id, std::
     return cmd_list;
 }
 
-CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd_list_ids) const
+CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(cmd_list_ids);
-    const CommandListId cmd_list_set_id = GetCommandListSetId(cmd_list_ids);
+    const CommandListSetId cmd_list_set_id = GetCommandListSetId(cmd_list_ids, frame_index_opt);
 
     Ptr<CommandListSet>& cmd_list_set_ptr = m_cmd_list_set_by_id[cmd_list_set_id];
     if (cmd_list_set_ptr && cmd_list_set_ptr->GetCount() == cmd_list_ids.size())
@@ -182,7 +182,7 @@ CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd
         command_list_refs.emplace_back(GetList(cmd_list_id));
     }
 
-    cmd_list_set_ptr = CommandListSet::Create(command_list_refs);
+    cmd_list_set_ptr = CommandListSet::Create(command_list_refs, frame_index_opt);
     return *cmd_list_set_ptr;
 }
 
@@ -210,18 +210,18 @@ CommandKitBase::CommandListIndex CommandKitBase::GetCommandListIndexById(Command
     return emplace_result.first->second;
 }
 
-CommandKitBase::CommandListSetId CommandKitBase::GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids) const
+CommandKitBase::CommandListSetId CommandKitBase::GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");
-    CommandListSetId set_id = 0;
+    uint32_t set_id = 0;
     for(const uint32_t cmd_list_id : cmd_list_ids)
     {
         const uint32_t cmd_list_index = GetCommandListIndexById(cmd_list_id);
         META_CHECK_ARG_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
         set_id += 1 << cmd_list_index;
     }
-    return set_id;
+    return CommandListSetId(frame_index_opt, set_id);
 }
 
 } // namespace Methane::Graphics

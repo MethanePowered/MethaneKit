@@ -209,10 +209,10 @@ void RenderCommandListVK::Commit()
     CommandListVK::Commit();
 }
 
-void RenderCommandListVK::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
+void RenderCommandListVK::Execute(const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::Execute(frame_index, completed_callback);
+    RenderCommandListBase::Execute(completed_callback);
 }
 
 vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const

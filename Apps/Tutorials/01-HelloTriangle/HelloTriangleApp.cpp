@@ -84,7 +84,7 @@ public:
         for (HelloTriangleFrame& frame : GetFrames())
         {
             frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr });
+            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();

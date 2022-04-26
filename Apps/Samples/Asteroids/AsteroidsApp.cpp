@@ -532,7 +532,7 @@ Ptr<gfx::CommandListSet> AsteroidsApp::CreateExecuteCommandListSet(const Asteroi
             ? static_cast<gfx::CommandList&>(*frame.parallel_cmd_list_ptr)
             : static_cast<gfx::CommandList&>(*frame.serial_cmd_list_ptr),
         *frame.final_cmd_list_ptr
-    });
+    }, frame.index);
 }
 
 } // namespace Methane::Samples

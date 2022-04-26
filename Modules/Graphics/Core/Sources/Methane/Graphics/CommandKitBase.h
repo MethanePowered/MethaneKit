@@ -51,17 +51,17 @@ public:
     [[nodiscard]] bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id) const noexcept override;
     [[nodiscard]] CommandList&      GetList(CommandListId cmd_list_id) const override;
     [[nodiscard]] CommandList&      GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const override;
-    [[nodiscard]] CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids) const override;
+    [[nodiscard]] CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
     [[nodiscard]] Fence&            GetFence(CommandListId fence_id) const override;
 
 private:
     using CommandListIndex = uint32_t;
-    using CommandListSetId = uint32_t;
+    using CommandListSetId = std::pair<Opt<Data::Index>, uint32_t>;
     using CommandListIndexById = std::map<CommandListId, uint32_t>;
     using CommandListSetById = std::map<CommandListSetId, Ptr<CommandListSet>>;
 
     CommandListIndex GetCommandListIndexById(CommandListId cmd_list_id) const noexcept;
-    CommandListSetId GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids) const;
+    CommandListSetId GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const;
 
     const Context&               m_context;
     CommandList::Type            m_cmd_list_type;

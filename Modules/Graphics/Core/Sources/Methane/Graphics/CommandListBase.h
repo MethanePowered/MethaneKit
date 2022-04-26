@@ -95,8 +95,8 @@ public:
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
-    virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
-    virtual void Complete(uint32_t frame_index); // Called from command queue thread, which is tracking GPU execution
+    virtual void Execute(const CompletedCallback& completed_callback = {});
+    virtual void Complete(); // Called from command queue thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(DebugGroup& debug_group);
@@ -121,17 +121,14 @@ protected:
     virtual void ResetCommandState();
     virtual void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior);
 
-    CommandState&       GetCommandState()           { return m_command_state; }
-    const CommandState& GetCommandState() const     { return m_command_state; }
+    CommandState&       GetCommandState()               { return m_command_state; }
+    const CommandState& GetCommandState() const         { return m_command_state; }
 
     void        SetCommandListState(State state);
     void        SetCommandListStateNoLock(State state);
-    bool        IsExecutingOnAnyFrame() const               { return m_state == State::Executing; }
-    bool        IsCommitted(uint32_t frame_index) const     { return m_state == State::Committed && m_committed_frame_index == frame_index; }
-    bool        IsCommitted() const                         { return IsCommitted(GetCurrentFrameIndex()); }
-    bool        IsExecuting(uint32_t frame_index) const     { return m_state == State::Executing && m_committed_frame_index == frame_index; }
-    bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
-    uint32_t    GetCurrentFrameIndex() const;
+    bool        IsExecutingOnAnyFrame() const           { return m_state == State::Executing; }
+    bool        IsCommitted() const                     { return m_state == State::Committed; }
+    bool        IsExecuting() const                     { return m_state == State::Executing; }
 
     inline void VerifyEncodingState() const
     {
@@ -143,13 +140,12 @@ protected:
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    void CompleteInternal(uint32_t frame_index);
+    void CompleteInternal();
 
     const Type                  m_type;
     Ptr<CommandQueueBase>       m_command_queue_ptr;
     CommandState                m_command_state;
     DebugGroupStack             m_open_debug_groups;
-    uint32_t                    m_committed_frame_index = 0;
     CompletedCallback           m_completed_callback;
     State                       m_state = State::Pending;
     mutable TracyLockable(std::mutex, m_state_mutex)
@@ -164,26 +160,26 @@ class CommandListSetBase
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs);
+    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // CommandListSet overrides
-    Data::Size               GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<CommandList>& GetRefs() const noexcept final  { return m_refs; }
+    Data::Size               GetCount() const noexcept final        { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<CommandList>& GetRefs() const noexcept final         { return m_refs; }
     CommandList&             operator[](Data::Index index) const final;
+    const Opt<Data::Index>&  GetFrameIndex() const noexcept final   { return m_frame_index_opt; }
 
     // CommandListSetBase interface
-    virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
+    virtual void Execute(const CommandList::CompletedCallback& completed_callback);
     virtual void WaitUntilCompleted() = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
-    [[nodiscard]] Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
-    [[nodiscard]] const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
-    [[nodiscard]] Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
+    [[nodiscard]] Ptr<CommandListSetBase>      GetPtr()                                     { return shared_from_this(); }
+    [[nodiscard]] const Refs<CommandListBase>& GetBaseRefs() const noexcept                 { return m_base_refs; }
     [[nodiscard]] const CommandListBase&       GetCommandListBase(Data::Index index) const;
-    [[nodiscard]] CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
-    [[nodiscard]] const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] CommandQueueBase&            GetCommandQueueBase()                        { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const CommandQueueBase&      GetCommandQueueBase() const                  { return m_base_refs.back().get().GetCommandQueueBase(); }
     [[nodiscard]] const std::string&           GetCombinedName();
 
 protected:
@@ -194,8 +190,8 @@ private:
     Refs<CommandList>     m_refs;
     Refs<CommandListBase> m_base_refs;
     Ptrs<CommandListBase> m_base_ptrs;
+    Opt<Data::Index>      m_frame_index_opt;
     std::string           m_combined_name;
-    Data::Index           m_executing_on_frame_index = 0U;
 
     mutable TracyLockable(std::mutex, m_command_lists_mutex)
     mutable std::atomic<bool> m_is_executing = false;

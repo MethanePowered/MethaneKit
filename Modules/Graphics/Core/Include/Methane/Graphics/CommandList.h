@@ -96,11 +96,12 @@ struct CommandList
 
 struct CommandListSet
 {
-    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs);
+    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     [[nodiscard]] virtual Data::Size               GetCount() const noexcept = 0;
     [[nodiscard]] virtual const Refs<CommandList>& GetRefs() const noexcept = 0;
     [[nodiscard]] virtual CommandList&             operator[](Data::Index index) const = 0;
+    [[nodiscard]] virtual const Opt<Data::Index>&  GetFrameIndex() const noexcept = 0;
 
     virtual ~CommandListSet() = default;
 };

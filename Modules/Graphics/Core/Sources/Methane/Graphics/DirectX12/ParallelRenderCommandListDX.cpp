@@ -125,26 +125,26 @@ void ParallelRenderCommandListDX::Commit()
     m_beginning_command_list.Commit();
 }
 
-void ParallelRenderCommandListDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandListDX::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
-    m_beginning_command_list.Execute(frame_index);
+    m_beginning_command_list.Execute();
     
-    ParallelRenderCommandListBase::Execute(frame_index, completed_callback);
+    ParallelRenderCommandListBase::Execute(completed_callback);
 
-    m_ending_command_list.Execute(frame_index);
+    m_ending_command_list.Execute();
 }
 
-void ParallelRenderCommandListDX::Complete(uint32_t frame_index)
+void ParallelRenderCommandListDX::Complete()
 {
     META_FUNCTION_TASK();
 
-    m_beginning_command_list.Complete(frame_index);
+    m_beginning_command_list.Complete();
 
-    ParallelRenderCommandListBase::Complete(frame_index);
+    ParallelRenderCommandListBase::Complete();
 
-    m_ending_command_list.Complete(frame_index);
+    m_ending_command_list.Complete();
 }
 
 ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const

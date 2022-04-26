@@ -306,7 +306,7 @@ void ShadowCubeApp::Init()
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({
             *frame.shadow_pass.cmd_list_ptr,
             *frame.final_pass.cmd_list_ptr
-        });
+        }, frame.index);
     }
 
     UserInterfaceApp::CompleteInitialization();

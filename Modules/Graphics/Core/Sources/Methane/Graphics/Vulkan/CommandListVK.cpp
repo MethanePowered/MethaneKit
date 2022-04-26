@@ -76,14 +76,14 @@ ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetVK>(command_list_refs);
+    return std::make_shared<CommandListSetVK>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
-    : CommandListSetBase(command_list_refs)
+CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+    : CommandListSetBase(command_list_refs, frame_index_opt)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_unique_execution_completed_semaphore(m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo()))
@@ -101,10 +101,10 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
     UpdateNativeDebugName();
 }
 
-void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::Execute(frame_index, completed_callback);
+    CommandListSetBase::Execute(completed_callback);
 
     vk::SubmitInfo submit_info(
         GetWaitSemaphores(),
