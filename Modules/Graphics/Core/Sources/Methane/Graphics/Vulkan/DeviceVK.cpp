@@ -151,10 +151,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
 
 #ifndef NDEBUG
 
-    if (callback_data_ptr->messageIdNumber == 648835635) // UNASSIGNED-khronos-Validation-debug-build-warning-message
-        return VK_FALSE;
+    // Assert on calling vkBeginCommandBuffer() on active VkCommandBuffer before it has completed. You must check command buffer fence before this call.
+    //assert(callback_data_ptr->messageIdNumber == -2080204129); // VUID-vkBeginCommandBuffer-commandBuffer-00049
 
-    if (callback_data_ptr->messageIdNumber == 767975156) // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+    if (callback_data_ptr->messageIdNumber == 648835635 || // UNASSIGNED-khronos-Validation-debug-build-warning-message
+        callback_data_ptr->messageIdNumber == 767975156 || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+        callback_data_ptr->messageIdNumber == -400166253)  // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         return VK_FALSE;
 
 #ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED

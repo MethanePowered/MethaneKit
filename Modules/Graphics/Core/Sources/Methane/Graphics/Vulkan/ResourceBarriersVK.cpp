@@ -251,6 +251,8 @@ void ResourceBarriersVK::SetResourceBarrier(const ResourceBarrier::Id& id, const
     {
         UpdateStageMasks();
     }
+
+    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::SetBufferMemoryBarrier(BufferVK& buffer, const ResourceBarrier& barrier)
@@ -278,8 +280,6 @@ void ResourceBarriersVK::SetBufferMemoryBarrier(BufferVK& buffer, const Resource
         case ResourceBarrier::Type::OwnerTransition: UpdateBufferMemoryOwnerChangeBarrier(*vk_buffer_memory_barrier_it, barrier.GetOwnerChange()); break;
         }
     }
-
-    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::SetImageMemoryBarrier(ITextureVK& texture, const ResourceBarrier& barrier)
@@ -307,8 +307,6 @@ void ResourceBarriersVK::SetImageMemoryBarrier(ITextureVK& texture, const Resour
         case ResourceBarrier::Type::OwnerTransition: UpdateImageMemoryOwnerChangeBarrier(*vk_image_memory_barrier_it, barrier.GetOwnerChange()); break;
         }
     }
-
-    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::AddBufferMemoryStateChangeBarrier(const BufferVK& buffer, const ResourceBarrier::StateChange& state_change)
@@ -432,8 +430,6 @@ void ResourceBarriersVK::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, 
     {
         m_vk_default_barrier.vk_buffer_memory_barriers.erase(vk_buffer_memory_barrier_it);
     }
-
-    m_vk_barrier_by_queue_family.clear();
 }
 
 void ResourceBarriersVK::RemoveImageMemoryBarrier(const vk::Image& vk_image, ResourceBarrier::Type barrier_type)
