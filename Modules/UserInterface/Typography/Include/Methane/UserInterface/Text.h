@@ -168,10 +168,10 @@ private:
             Mesh     = 1U << 0U,
             Uniforms = 1U << 1U,
             Atlas    = 1U << 2U,
-            All      = ~0U
+            All      = Mesh | Uniforms | Atlas
         };
 
-        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier);
+        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources);
 
         void SetDirty(DirtyFlags dirty_flags) noexcept;
 
@@ -192,7 +192,7 @@ private:
 
     private:
         uint32_t                  m_frame_index;
-        DirtyFlags                m_dirty_mask = DirtyFlags::None;
+        DirtyFlags                m_dirty_mask = DirtyFlags::All;
         Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::Buffer>          m_index_buffer_ptr;
         Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
@@ -227,7 +227,8 @@ private:
     Ptr<gfx::Buffer>            m_const_buffer_ptr;
     Ptr<gfx::Sampler>           m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
-    bool                        m_is_viewport_dirty;
+    bool                        m_is_viewport_dirty = true;
+    bool                        m_is_const_buffer_dirty = true;
 };
 
 } // namespace Methane::Graphics
