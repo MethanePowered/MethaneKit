@@ -56,7 +56,7 @@ public:
 
         // Vulkan descriptor pools have to be released before destroying device
         // to release all descriptor sets using live device instance
-        GetDescriptorManager().Release();
+        ContextBaseT::GetDescriptorManager().Release();
 
         ContextBaseT::Release();
     }
