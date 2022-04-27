@@ -50,6 +50,17 @@ public:
         META_FUNCTION_TASK();
     }
 
+    void Release() override
+    {
+        META_FUNCTION_TASK();
+
+        // Vulkan descriptor pools have to be released before destroying device
+        // to release all descriptor sets using live device instance
+        GetDescriptorManager().Release();
+
+        ContextBaseT::Release();
+    }
+
     // IContextVK interface
 
     const DeviceVK& GetDeviceVK() const noexcept final

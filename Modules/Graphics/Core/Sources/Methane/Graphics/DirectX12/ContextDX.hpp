@@ -93,6 +93,10 @@ public:
 
         ContextBaseT::Release();
 
+        // DirectX descriptor heaps are released after destroying all resources
+        // to check that all descriptor ranges have been properly released by resources
+        GetDescriptorManager().Release();
+
         static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
     }
 
