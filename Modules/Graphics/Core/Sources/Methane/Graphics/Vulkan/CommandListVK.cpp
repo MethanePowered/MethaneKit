@@ -112,13 +112,14 @@ void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_c
         m_vk_command_buffers,
         GetNativeExecutionCompletedSemaphore()
     );
-
+    
+    Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
     const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
     if (!vk_wait_values.empty())
     {
         META_CHECK_ARG_EQUAL(vk_wait_values.size(), submit_info.waitSemaphoreCount);
-        const vk::TimelineSemaphoreSubmitInfo vk_timeline_submit_info(vk_wait_values);
-        submit_info.setPNext(&vk_timeline_submit_info);
+        vk_timeline_submit_info_opt.emplace(vk_wait_values);
+        submit_info.setPNext(&vk_timeline_submit_info_opt.value());
     }
 
     m_vk_device.resetFences(GetNativeExecutionCompletedFence());
