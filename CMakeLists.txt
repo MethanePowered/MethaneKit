@@ -131,8 +131,10 @@ elseif(APPLE)
 else(UNIX)
 
     find_package(X11 REQUIRED)
-    if (NOT X11_xcb_FOUND OR NOT X11_X11_xcb_FOUND)
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libx11-xcb-dev`")
+    if (NOT X11_xcb_FOUND OR
+        NOT X11_X11_xcb_FOUND)
+        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
     endif()
 
 endif()

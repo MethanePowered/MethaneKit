@@ -31,6 +31,14 @@ struct _XDisplay; // X11 display
 using xcb_window_t = uint32_t;
 #endif
 
+struct ScreenRect
+{
+    int32_t x;
+    int32_t y;
+    int32_t width;
+    int32_t height;
+};
+
 namespace Methane::Platform
 {
 
@@ -40,6 +48,7 @@ struct AppEnvironment
     xcb_window_t window;
     _XDisplay* display;
     xcb_screen_t* screen;
+    ScreenRect primary_screen_rect;
 };
 
 } // namespace Methane::Platform

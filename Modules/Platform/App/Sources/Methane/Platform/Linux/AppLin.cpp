@@ -58,6 +58,7 @@ AppLin::AppLin(const AppBase::Settings& settings)
     const xcb_setup_t*    setup = xcb_get_setup(m_env.connection);
     xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
     m_env.screen = screen_iter.data;
+    m_env.primary_screen_rect = Linux::GetPrimaryMonitorRect(m_env.connection, m_env.screen->root);
 }
 
 AppLin::~AppLin()
@@ -159,8 +160,8 @@ bool AppLin::SetFullScreen(bool is_full_screen)
     if (is_full_screen)
     {
         m_windowed_frame_size = GetFrameSize();
-        new_size.SetWidth(m_env.screen->width_in_pixels);
-        new_size.SetHeight(m_env.screen->height_in_pixels);
+        new_size.SetWidth(m_env.primary_screen_rect.width);
+        new_size.SetHeight(m_env.primary_screen_rect.height);
     }
     else
     {
@@ -213,13 +214,18 @@ Data::FrameSize AppLin::InitWindow()
 
     // Calculate frame size relative to screen_id size in case of floating point value
     const uint16_t frame_width  = settings.is_full_screen
-                                  ? m_env.screen->width_in_pixels
-                                  : AppBase::GetScaledSize(settings.size.GetWidth(), m_env.screen->width_in_pixels);
+                                  ? m_env.primary_screen_rect.width
+                                  : AppBase::GetScaledSize(settings.size.GetWidth(), m_env.primary_screen_rect.width);
     const uint16_t frame_height = settings.is_full_screen
-                                  ? m_env.screen->height_in_pixels
-                                  : AppBase::GetScaledSize(settings.size.GetHeight(), m_env.screen->height_in_pixels);
-    const int16_t pos_x = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->width_in_pixels - frame_width) / 2;
-    const int16_t pos_y = settings.is_full_screen ? 0 : static_cast<int16_t>(m_env.screen->height_in_pixels - frame_height) / 2;
+                                  ? m_env.primary_screen_rect.height
+                                  : AppBase::GetScaledSize(settings.size.GetHeight(), m_env.primary_screen_rect.height);
+
+    const int16_t pos_x = settings.is_full_screen
+                        ? m_env.primary_screen_rect.x
+                        : m_env.primary_screen_rect.x + static_cast<int16_t>(m_env.primary_screen_rect.width - frame_width) / 2;
+    const int16_t pos_y = settings.is_full_screen
+                        ? m_env.primary_screen_rect.y
+                        : m_env.primary_screen_rect.y + static_cast<int16_t>(m_env.primary_screen_rect.height - frame_height) / 2;
 
     // Create window and position it in the center of the screen_id
     m_env.window = xcb_generate_id(m_env.connection);

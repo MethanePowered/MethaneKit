@@ -23,6 +23,7 @@ X11/XCB utility functions.
 
 #pragma once
 
+#include <Methane/Platform/Linux/AppEnvironment.h>
 #include <Methane/Platform/Mouse.h>
 #include <Methane/Platform/Keyboard.h>
 
@@ -112,6 +113,7 @@ void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_v
 xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;
 xcb_atom_t GetXcbInternAtom(xcb_connection_t* xcb_connection, std::string_view name) noexcept;
 void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t window, xcb_atom_enum_t property_id, const std::string_view& value);
+ScreenRect GetPrimaryMonitorRect(xcb_connection_t* connection, xcb_window_t root);
 
 template<typename T>
 void SetXcbWindowAtomProperty(xcb_connection_t* connection, xcb_window_t window,
