@@ -156,7 +156,7 @@ void CommandQueueVK::Execute(CommandListSet& command_list_set, const CommandList
     if (GetCommandListType() == CommandList::Type::Render)
     {
         const Opt<Data::Index>& frame_index_opt = command_list_set.GetFrameIndex();
-        const Data::Index wait_info_index = frame_index_opt ? *frame_index_opt + 1U : 0U;
+        const Data::Index wait_info_index = frame_index_opt ? *frame_index_opt : 0U;
         m_wait_frame_execution_completed.resize(wait_info_index + 1U);
         WaitInfo& frame_wait_info = m_wait_frame_execution_completed[wait_info_index];
         CommandListSetVK& vulkan_command_list_set = static_cast<CommandListSetVK&>(command_list_set);
