@@ -77,8 +77,8 @@ private:
         // an additional ending longitude line of vertices is added (with same positions as for the first line),
         // required to complete the texture projection on sphere
 
-        const bool        has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
-        const bool        has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const bool        has_texcoord = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
+        const bool        has_normals  = BaseMeshT::HasVertexField(Mesh::VertexField::Normal);
         const Mesh::Index actual_long_lines_count = GetActualLongLinesCount();
         const Mesh::Index cap_vertex_count = 2 * (has_texcoord ? actual_long_lines_count : 1);
 
@@ -146,7 +146,7 @@ private:
     void GenerateSphereIndices()
     {
         META_FUNCTION_TASK();
-        const bool        has_texcoord            = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+        const bool        has_texcoord            = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
         const Mesh::Index actual_long_lines_count = GetActualLongLinesCount();
         const Mesh::Index sphere_faces_count      = GetSphereFacesCount();
         Data::Index       index_offset            = 0;
