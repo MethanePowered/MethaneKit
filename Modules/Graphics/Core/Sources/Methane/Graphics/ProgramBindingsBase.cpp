@@ -197,7 +197,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     , m_bindings_index(static_cast<ProgramBase&>(*m_program_ptr).GetBindingsCountAndIncrement())
 {
     META_FUNCTION_TASK();
-    InitializeArgumentBindings();
+    InitializeArgumentBindings(&other_program_bindings);
 }
 
 Program& ProgramBindingsBase::GetProgram() const
@@ -252,11 +252,14 @@ void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const
     }
 }
 
-void ProgramBindingsBase::InitializeArgumentBindings()
+void ProgramBindingsBase::InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr)
 {
     META_FUNCTION_TASK();
     const auto& program = static_cast<const ProgramBase&>(GetProgram());
-    for (const auto& [program_argument, argument_binding_ptr] : program.GetArgumentBindings())
+    const ArgumentBindings& argument_bindings = other_program_bindings_ptr
+                                              ? other_program_bindings_ptr->GetArgumentBindings()
+                                              : program.GetArgumentBindings();
+    for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);

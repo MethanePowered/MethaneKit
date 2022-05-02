@@ -94,6 +94,7 @@ struct AttachmentFormats
 
 [[nodiscard]] Data::Size GetPixelSize(PixelFormat pixel_format);
 [[nodiscard]] bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept;
+[[nodiscard]] bool IsDepthFormat(PixelFormat pixel_format) noexcept;
 
 enum class Compare : uint32_t
 {

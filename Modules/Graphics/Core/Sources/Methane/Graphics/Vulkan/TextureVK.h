@@ -36,8 +36,10 @@ class RenderContextVK;
 
 struct ITextureVK
 {
-    static vk::ImageType     DimensionTypeToImageType(Texture::DimensionType dimension_type);
-    static vk::ImageViewType DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
+    [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(Texture::DimensionType dimension_type);
+    [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
+    [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const Texture::Settings& settings);
+    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Texture::Settings& settings);
 
     [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
     [[nodiscard]] virtual vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept = 0;
@@ -69,7 +71,7 @@ private:
 };
 
 class DepthStencilTextureVK final
-    : public ResourceVK<TextureBase, vk::Image, false>
+    : public ResourceVK<TextureBase, vk::Image, true, vk::ImageView>
     , public ITextureVK
 {
 public:

@@ -77,6 +77,21 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachmen
     }
 }
 
+static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Attachment& attachment, bool /*is_final_pass*/)
+{
+    META_FUNCTION_TASK();
+    const RenderPattern::Attachment::Type attachment_type = attachment.GetType();
+    switch(attachment_type)
+    {
+    case RenderPattern::Attachment::Type::Color:   return vk::ImageLayout::eColorAttachmentOptimal;
+    case RenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case RenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    default:
+        META_UNEXPECTED_ARG_DESCR_RETURN(attachment_type, vk::ImageLayout::eUndefined,
+                                         "attachment type is not supported by render pass");
+    }
+}
+
 static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
@@ -86,10 +101,11 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPatt
         GetVulkanSampleCountFlag(attachment.samples_count),
         GetVulkanAttachmentLoadOp(attachment.load_action),
         GetVulkanAttachmentStoreOp(attachment.store_action),
-        vk::AttachmentLoadOp::eDontCare,  // TODO: stencil is not supported yet
-        vk::AttachmentStoreOp::eDontCare, // TODO: stencil is not supported yet
+        // TODO: stencil is not supported yet
+        vk::AttachmentLoadOp::eDontCare,
+        vk::AttachmentStoreOp::eDontCare,
         vk::ImageLayout::eUndefined,
-        is_final_pass ? vk::ImageLayout::ePresentSrcKHR : vk::ImageLayout::eUndefined
+        GetFinalImageLayoutOfAttachment(attachment, is_final_pass)
     );
 }
 
@@ -132,14 +148,14 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     {
         vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.depth_attachment->attachment_index);
-        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthAttachmentOptimal);
+        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
     if (settings.stencil_attachment)
     {
         vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.stencil_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.stencil_attachment->attachment_index);
-        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eStencilAttachmentOptimal);
+        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
 
@@ -160,7 +176,15 @@ static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(vk_attachment_views),
         [](const Texture::Location& texture_location)
         {
-            return dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).GetNativeView();
+            Texture& texture = texture_location.GetTexture();
+            const Texture::Type texture_type = texture.GetSettings().type;
+            switch(texture_type)
+            {
+            case Texture::Type::FrameBuffer:        return dynamic_cast<FrameBufferTextureVK&>(texture).GetNativeView();
+            case Texture::Type::DepthStencilBuffer: return dynamic_cast<DepthStencilTextureVK&>(texture).GetNativeView();
+            default: META_UNEXPECTED_ARG_DESCR(texture_type, "texture type is unsupported for render pass attachment");
+            }
+
         }
     );
 

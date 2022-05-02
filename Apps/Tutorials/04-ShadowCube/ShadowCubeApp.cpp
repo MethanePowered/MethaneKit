@@ -258,7 +258,7 @@ void ShadowCubeApp::Init()
         // Create shadow pass configuration with depth attachment
         frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(*m_shadow_pass_pattern_ptr, {
             { *frame.shadow_pass.rt_texture_ptr },
-            context_settings.frame_size
+            shadow_texture_settings.dimensions
         });
         
         // Create render pass and command list for shadow pass rendering

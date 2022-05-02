@@ -41,6 +41,13 @@ struct RenderPattern : virtual Object // NOSONAR
 {
     struct Attachment
     {
+        enum class Type : uint32_t
+        {
+            Color,
+            Depth,
+            Stencil
+        };
+
         enum class LoadAction : uint32_t
         {
             DontCare = 0U,
@@ -72,6 +79,7 @@ struct RenderPattern : virtual Object // NOSONAR
         [[nodiscard]] bool operator==(const Attachment& other) const;
         [[nodiscard]] bool operator!=(const Attachment& other) const;
         [[nodiscard]] virtual explicit operator std::string() const;
+        [[nodiscard]] virtual Type GetType() const noexcept = 0;
     };
 
     struct ColorAttachment : Attachment
@@ -88,11 +96,13 @@ struct RenderPattern : virtual Object // NOSONAR
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
         [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
         [[nodiscard]] explicit operator std::string() const final;
+
+        [[nodiscard]] Type GetType() const noexcept final { return Type::Color; }
     };
 
     using ColorAttachments = std::vector<ColorAttachment>;
 
-    struct DepthAttachment : Attachment
+    struct DepthAttachment final : Attachment
     {
         Depth clear_value = 1.F;
 
@@ -107,9 +117,11 @@ struct RenderPattern : virtual Object // NOSONAR
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
         [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
         [[nodiscard]] explicit operator std::string() const final;
+
+        [[nodiscard]] Type GetType() const noexcept final { return Type::Depth; }
     };
 
-    struct StencilAttachment : Attachment
+    struct StencilAttachment final : Attachment
     {
         Stencil clear_value = 0U;
 
@@ -124,6 +136,8 @@ struct RenderPattern : virtual Object // NOSONAR
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
         [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
         [[nodiscard]] explicit operator std::string() const final;
+
+        [[nodiscard]] Type GetType() const noexcept final { return Type::Stencil; }
     };
 
     enum class Access : uint32_t

@@ -136,7 +136,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
             TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
             vk::ComponentMapping(),
             // TODO: add support for levels and layers count
-            vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor,
+            vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(texture_settings),
                                       GetSubresourceIndex().GetMipLevel(),   1U,
                                       GetSubresourceIndex().GetArrayIndex(), 1U)
     ));

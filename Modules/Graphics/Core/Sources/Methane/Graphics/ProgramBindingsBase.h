@@ -121,7 +121,7 @@ protected:
     void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
 
     Program& GetProgram();
-    void InitializeArgumentBindings();
+    void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
     ResourceLocationsByArgument ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
                                                          const ResourceLocationsByArgument& replace_resource_locations);
     void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);

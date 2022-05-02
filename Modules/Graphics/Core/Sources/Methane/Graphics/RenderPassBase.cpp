@@ -44,8 +44,8 @@ struct fmt::formatter<Methane::Graphics::RenderPattern::ColorAttachment>
 namespace Methane::Graphics
 {
 
-RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                   LoadAction load_action, StoreAction store_action)
+RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format,
+                                      Data::Size samples_count, LoadAction load_action, StoreAction store_action)
     : attachment_index(attachment_index)
     , format(format)
     , samples_count(samples_count)
@@ -81,7 +81,7 @@ RenderPattern::Attachment::operator std::string() const
 }
 
 RenderPattern::ColorAttachment::ColorAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                             LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
+                                                LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_color(clear_color)
 {
@@ -109,7 +109,7 @@ RenderPattern::ColorAttachment::operator std::string() const
 }
 
 RenderPattern::DepthAttachment::DepthAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                             LoadAction load_action, StoreAction store_action, Depth clear_value)
+                                                LoadAction load_action, StoreAction store_action, Depth clear_value)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {
@@ -137,7 +137,7 @@ RenderPattern::DepthAttachment::operator std::string() const
 }
 
 RenderPattern::StencilAttachment::StencilAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                                 LoadAction load_action, StoreAction store_action, Stencil clear_value)
+                                                    LoadAction load_action, StoreAction store_action, Stencil clear_value)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {

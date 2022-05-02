@@ -34,6 +34,45 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+vk::ImageAspectFlags ITextureVK::GetNativeImageAspectFlags(const Texture::Settings& settings)
+{
+    META_FUNCTION_TASK();
+    switch(settings.type)
+    {
+    case Texture::Type::Texture:
+    case Texture::Type::FrameBuffer:        return vk::ImageAspectFlagBits::eColor;
+    case Texture::Type::DepthStencilBuffer: return IsDepthFormat(settings.pixel_format)
+                                                 ? vk::ImageAspectFlagBits::eDepth
+                                                 : vk::ImageAspectFlagBits::eStencil;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
+    }
+}
+
+vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings& settings)
+{
+    META_FUNCTION_TASK();
+    vk::ImageUsageFlags usage_flags{};
+    switch(settings.type)
+    {
+    case Texture::Type::Texture:
+    case Texture::Type::FrameBuffer:
+        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
+        break;
+
+    case Texture::Type::DepthStencilBuffer:
+        usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+        break;
+
+    default: META_UNEXPECTED_ARG(settings.type);
+    }
+
+    using namespace magic_enum::bitwise_operators;
+    if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::ShaderRead))
+        usage_flags |= vk::ImageUsageFlagBits::eSampled;
+
+    return usage_flags;
+}
+
 static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
 {
     META_FUNCTION_TASK();
@@ -43,7 +82,7 @@ static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settin
         ITextureVK::DimensionTypeToImageViewType(settings.dimension_type),
         TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
         vk::ComponentMapping(),
-        vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+        vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(settings), 0, 1, 0, 1)
     ));
 }
 
@@ -87,10 +126,18 @@ vk::ImageViewType ITextureVK::DimensionTypeToImageViewType(Texture::DimensionTyp
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, const Settings& settings, const DescriptorByUsage&)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderTargetTextureVK>(dynamic_cast<const RenderContextVK&>(context), settings);
+    switch (settings.type)
+    {
+    case Texture::Type::Texture:            return std::make_shared<RenderTargetTextureVK>(dynamic_cast<const RenderContextVK&>(render_context), settings);
+    case Texture::Type::DepthStencilBuffer: return std::make_shared<DepthStencilTextureVK>(dynamic_cast<const RenderContextVK&>(render_context), settings,
+                                                                                           render_context.GetSettings().clear_depth_stencil);
+    case Texture::Type::FrameBuffer: META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
+    default:                         META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
+    }
+
 }
 
 Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage&)
@@ -156,11 +203,34 @@ void FrameBufferTextureVK::ResetNativeImage()
 
 DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings,
                                              const Opt<DepthStencil>& depth_stencil_opt)
-    : ResourceVK(render_context, settings, {}) // TODO: initialize native resource
+    : ResourceVK(render_context, settings,
+                 render_context.GetDeviceVK().GetNativeDevice().createImageUnique(
+                     vk::ImageCreateInfo(
+                         vk::ImageCreateFlags{},
+                         vk::ImageType::e2D,
+                         TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
+                         TypeConverterVK::DimensionsToExtent3D(settings.dimensions),
+                         1U, // mip-levels count
+                         1U, // array length
+                         vk::SampleCountFlagBits::e1,
+                         vk::ImageTiling::eOptimal,
+                         ITextureVK::GetNativeImageUsageFlags(settings),
+                         vk::SharingMode::eExclusive)))
     , m_render_context(render_context)
     , m_depth_stencil_opt(depth_stencil_opt)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL_DESCR(settings.dimension_type, Texture::DimensionType::Tex2D, "depth-stencil texture is supported only with 2D dimensions");
+    META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1U, "depth-stencil texture does not support 3D dimensions");
+    META_CHECK_ARG_FALSE_DESCR(settings.mipmapped, "depth-stencil texture does not support mip-map mode");
+    META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1U, "depth-stencil texture does not support arrays");
+
+    // Allocate resource primary memory
+    const vk::Device& vk_device = GetNativeDevice();
+    AllocateResourceMemory(vk_device.getImageMemoryRequirements(GetNativeResource()), vk::MemoryPropertyFlagBits::eDeviceLocal);
+    vk_device.bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
+
+    ResetNativeView(CreateNativeImageView(GetSettings(), GetNativeDevice(), GetNativeResource()));
 }
 
 void DepthStencilTextureVK::SetData(const SubResources&, CommandQueue&)
@@ -172,7 +242,7 @@ vk::ImageSubresourceRange DepthStencilTextureVK::GetNativeSubresourceRange() con
 {
     META_FUNCTION_TASK();
     return vk::ImageSubresourceRange(
-        vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil,
+        vk::ImageAspectFlagBits::eDepth,
         0U, 1U,
         0U, 1U
     );
