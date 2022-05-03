@@ -77,13 +77,15 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachmen
     }
 }
 
-static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Attachment& attachment, bool /*is_final_pass*/)
+static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
     const RenderPattern::Attachment::Type attachment_type = attachment.GetType();
     switch(attachment_type)
     {
-    case RenderPattern::Attachment::Type::Color:   return vk::ImageLayout::eColorAttachmentOptimal;
+    case RenderPattern::Attachment::Type::Color:   return is_final_pass
+                                                        ? vk::ImageLayout::ePresentSrcKHR
+                                                        : vk::ImageLayout::eColorAttachmentOptimal;
     case RenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     case RenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     default:
