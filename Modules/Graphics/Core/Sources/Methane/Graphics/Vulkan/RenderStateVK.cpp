@@ -269,8 +269,8 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
     const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBufferDefault();
-    vk_command_buffer.setViewport(0U, m_vk_viewports);
-    vk_command_buffer.setScissor(0U, m_vk_scissor_rects);
+    vk_command_buffer.setViewportWithCountEXT(m_vk_viewports);
+    vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }
 
 Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
@@ -384,12 +384,12 @@ void RenderStateVK::Reset(const Settings& settings)
     // Fake viewport state, actual state is set dynamically
     vk::PipelineViewportStateCreateInfo viewport_info(
         vk::PipelineViewportStateCreateFlags{},
-        1, nullptr, 1, nullptr
+        0, nullptr, 0, nullptr
     );
 
     const std::vector<vk::DynamicState> dynamic_states = {
-        vk::DynamicState::eViewport,
-        vk::DynamicState::eScissor,
+        vk::DynamicState::eViewportWithCountEXT,
+        vk::DynamicState::eScissorWithCountEXT,
         vk::DynamicState::ePrimitiveTopologyEXT,
     };
     vk::PipelineDynamicStateCreateInfo dynamic_info(

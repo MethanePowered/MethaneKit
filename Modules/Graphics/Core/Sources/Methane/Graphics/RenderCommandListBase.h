@@ -57,7 +57,7 @@ public:
         Ptr<BufferSetBase>       vertex_buffer_set_ptr;
         Ptr<BufferBase>          index_buffer_ptr;
         std::optional<Primitive> opt_primitive_type;
-        ViewStateBase*           p_view_state        = nullptr;
+        ViewStateBase*           view_state_ptr        = nullptr;
         RenderState::Groups      render_state_groups = RenderState::Groups::None;
         Changes                  changes             = Changes::None;
     };

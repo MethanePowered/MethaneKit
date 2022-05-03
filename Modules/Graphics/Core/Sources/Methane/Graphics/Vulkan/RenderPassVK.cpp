@@ -261,13 +261,12 @@ Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings)
     , m_vk_unique_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
-    , m_vk_pass_begin_info(CreateBeginInfo(GetNativeFrameBuffer()))
+    , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
-    static_cast<Data::IEmitter<IRenderContextVKCallback>&>(render_pattern.GetRenderContextVK()).Connect(*this);
 }
 
-vk::RenderPassBeginInfo RenderPassVK::CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
+vk::RenderPassBeginInfo RenderPassVK::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
 {
     META_FUNCTION_TASK();
     const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
@@ -333,23 +332,13 @@ void RenderPassVK::Reset()
 {
     META_FUNCTION_TASK();
     m_vk_unique_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
-    m_vk_pass_begin_info = CreateBeginInfo(m_vk_unique_frame_buffer.get());
+    m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
 }
 
 const IContextVK& RenderPassVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextVK&>(GetPatternBase().GetRenderContextBase());
-}
-
-void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
-{
-    META_FUNCTION_TASK();
-    for (const Texture::Location& texture_location : GetSettings().attachments)
-    {
-        dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
-    }
-    Reset();
 }
 
 } // namespace Methane::Graphics

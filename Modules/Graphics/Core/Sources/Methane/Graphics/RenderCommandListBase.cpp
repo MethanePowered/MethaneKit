@@ -133,8 +133,8 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    const ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
-    drawing_state.p_view_state = static_cast<ViewStateBase*>(&view_state);
+    const ViewStateBase* p_prev_view_state = drawing_state.view_state_ptr;
+    drawing_state.view_state_ptr = static_cast<ViewStateBase*>(&view_state);
 
     if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
     {
@@ -142,8 +142,8 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
         return;
     }
 
-    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.p_view_state->GetSettings()));
-    drawing_state.p_view_state->Apply(*this);
+    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()));
+    drawing_state.view_state_ptr->Apply(*this);
 }
 
 bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
@@ -274,7 +274,7 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.vertex_buffer_set_ptr.reset();
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.opt_primitive_type.reset();
-    m_drawing_state.p_view_state = nullptr;
+    m_drawing_state.view_state_ptr = nullptr;
     m_drawing_state.render_state_groups = RenderState::Groups::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }

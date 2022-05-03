@@ -325,12 +325,10 @@ void RenderContextVK::InitializeNativeSwapchain()
         )
     );
 
-    const bool is_swap_chain_change = !!m_vk_unique_swapchain;
     m_vk_unique_swapchain = std::move(vk_new_swapchain);
-
-    m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
-    m_vk_frame_format = swap_surface_format.format;
-    m_vk_frame_extent = swap_extent;
+    m_vk_frame_images     = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
+    m_vk_frame_format     = swap_surface_format.format;
+    m_vk_frame_extent     = swap_extent;
 
     // Create frame semaphores in pool
     m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
@@ -346,11 +344,6 @@ void RenderContextVK::InitializeNativeSwapchain()
     m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
 
     ResetNativeObjectNames();
-
-    if (is_swap_chain_change)
-    {
-        Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
-    }
 }
 
 void RenderContextVK::ReleaseNativeSwapchainResources()
