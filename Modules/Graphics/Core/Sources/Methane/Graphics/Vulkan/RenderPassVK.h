@@ -57,6 +57,7 @@ private:
 
 class RenderPassVK final
     : public RenderPassBase
+    , protected Data::Receiver<IRenderContextVKCallback>
 {
 public:
     RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
@@ -78,6 +79,10 @@ public:
     RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
+
+protected:
+    // IRenderContextVKCallback overrides
+    void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
 
 private:
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;

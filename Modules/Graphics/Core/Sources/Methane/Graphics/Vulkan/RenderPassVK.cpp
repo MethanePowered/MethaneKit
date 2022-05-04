@@ -266,6 +266,7 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
+    static_cast<Data::IEmitter<IRenderContextVKCallback>&>(render_pattern.GetRenderContextVK()).Connect(*this);
 }
 
 vk::RenderPassBeginInfo RenderPassVK::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
@@ -287,7 +288,6 @@ bool RenderPassVK::Update(const Settings& settings)
     if (RenderPassBase::Update(settings))
     {
         Reset();
-        Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
     }
     return false;
 }
@@ -335,12 +335,24 @@ void RenderPassVK::Reset()
     META_FUNCTION_TASK();
     m_vk_unique_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
     m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
+    Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
 }
 
 const IContextVK& RenderPassVK::GetContextVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<const IContextVK&>(GetPatternBase().GetRenderContextBase());
+}
+
+void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
+{
+    META_FUNCTION_TASK();
+    for (const Texture::Location& texture_location : GetSettings().attachments)
+    {
+        if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
+            dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
+    }
+    Reset();
 }
 
 } // namespace Methane::Graphics

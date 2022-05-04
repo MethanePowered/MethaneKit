@@ -42,8 +42,18 @@ using AppViewMT = void;
 namespace Methane::Graphics
 {
 
+class RenderContextVK;
+
+struct IRenderContextVKCallback
+{
+    virtual void OnRenderContextVKSwapchainChanged(RenderContextVK& context) = 0;
+
+    virtual ~IRenderContextVKCallback() = default;
+};
+
 class RenderContextVK final
     : public ContextVK<RenderContextBase>
+    , public Data::Emitter<IRenderContextVKCallback>
 {
 public:
     RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
