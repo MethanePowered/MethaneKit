@@ -26,6 +26,7 @@ Vulkan implementation of the render command list interface.
 #include "CommandListVK.hpp"
 
 #include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
 
@@ -39,6 +40,7 @@ class ParallelRenderCommandListVK;
 
 class RenderCommandListVK final
     : public CommandListVK<RenderCommandListBase, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
+    , private Data::Receiver<IRenderPassCallback>
 {
 public:
     RenderCommandListVK(CommandQueueVK& command_queue);
@@ -65,6 +67,9 @@ public:
     vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 
 private:
+    // IRenderPassCallback
+    void OnRenderPassUpdated(const RenderPass& render_pass) override;
+
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPassVK& GetPassVK();

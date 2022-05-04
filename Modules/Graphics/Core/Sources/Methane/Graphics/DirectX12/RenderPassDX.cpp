@@ -239,6 +239,11 @@ bool RenderPassDX::Update(const Settings& settings)
         UpdateNativeClearDesc();
     }
 
+    if (settings_changed)
+    {
+        Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
+    }
+
     return settings_changed;
 }
 

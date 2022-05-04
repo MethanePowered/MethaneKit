@@ -287,6 +287,7 @@ bool RenderPassVK::Update(const Settings& settings)
     if (RenderPassBase::Update(settings))
     {
         Reset();
+        Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
     }
     return false;
 }
@@ -313,7 +314,6 @@ void RenderPassVK::Begin(RenderCommandListBase& command_list)
 void RenderPassVK::End(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-
     const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_command_buffer.endRenderPass();
 

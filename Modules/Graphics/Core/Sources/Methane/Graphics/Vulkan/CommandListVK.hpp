@@ -242,6 +242,12 @@ protected:
                                                                 CommandListBase::GetProgramBindings().get(), apply_behavior);
     }
 
+    void SetSecondaryRenderBufferInheritInfo(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info) noexcept
+    {
+        META_FUNCTION_TASK();
+        m_vk_secondary_render_buffer_inherit_info_opt = secondary_render_buffer_inherit_info;
+    }
+
 private:
     void InitializePrimaryCommandBuffer()
     {
@@ -278,7 +284,7 @@ private:
     // Unique command buffers and corresponding begin flags are indexed by the value of ICommandListVK::CommandBufferType enum
     std::array<vk::UniqueCommandBuffer, command_buffers_count> m_vk_unique_command_buffers;
     std::array<bool, command_buffers_count>                    m_vk_command_buffer_encoding_flags;
-    const std::optional<vk::CommandBufferInheritanceInfo>      m_vk_secondary_render_buffer_inherit_info_opt;
+    std::optional<vk::CommandBufferInheritanceInfo>            m_vk_secondary_render_buffer_inherit_info_opt;
 };
 
 } // namespace Methane::Graphics

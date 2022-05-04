@@ -63,6 +63,16 @@ static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
     }
 }
 
+static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo(const RenderPassVK& render_pass) noexcept
+{
+    META_FUNCTION_TASK();
+    return vk::CommandBufferInheritanceInfo(
+        render_pass.GetPatternVK().GetNativeRenderPass(),
+        0U, // sub-pass
+        render_pass.GetNativeFrameBuffer()
+    );
+}
+
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
@@ -88,24 +98,17 @@ RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue)
 }
 
 RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
-    : CommandListVK(
-        vk::CommandBufferInheritanceInfo(
-            render_pass.GetPatternVK().GetNativeRenderPass(), 0U,
-            render_pass.GetNativeFrameBuffer()
-        ),
-        command_queue, render_pass)
+    : CommandListVK(CreateRenderCommandBufferInheritanceInfo(render_pass), command_queue, render_pass)
 {
     META_FUNCTION_TASK();
+    static_cast<Data::IEmitter<IRenderPassCallback>&>(render_pass).Connect(*this);
 }
 
 RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list)
-    : CommandListVK(
-        vk::CommandBufferInheritanceInfo(
-            parallel_render_command_list.GetPassVK().GetPatternVK().GetNativeRenderPass(), 0U,
-            parallel_render_command_list.GetPassVK().GetNativeFrameBuffer()
-        ), parallel_render_command_list)
+    : CommandListVK(CreateRenderCommandBufferInheritanceInfo(parallel_render_command_list.GetPassVK()), parallel_render_command_list)
 {
     META_FUNCTION_TASK();
+    static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetPassVK()).Connect(*this);
 }
 
 void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
@@ -219,6 +222,12 @@ vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const
 {
     META_FUNCTION_TASK();
     return vk::PipelineBindPoint::eGraphics;
+}
+
+void RenderCommandListVK::OnRenderPassUpdated(const RenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    SetSecondaryRenderBufferInheritInfo(CreateRenderCommandBufferInheritanceInfo(static_cast<const RenderPassVK&>(render_pass)));
 }
 
 void RenderCommandListVK::UpdatePrimitiveTopology(Primitive primitive)

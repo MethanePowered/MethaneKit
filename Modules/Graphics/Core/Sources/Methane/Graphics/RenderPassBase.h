@@ -60,6 +60,7 @@ private:
 class RenderPassBase
     : public RenderPass
     , public ObjectBase
+    , public Data::Emitter<IRenderPassCallback>
 {
 public:
     RenderPassBase(RenderPatternBase& pattern, const Settings& settings,

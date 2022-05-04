@@ -98,6 +98,7 @@ bool RenderPassMT::Update(const Settings& settings)
     META_FUNCTION_TASK();
     const bool settings_changed = RenderPassBase::Update(settings);
     Reset();
+    Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
     return settings_changed;
 }
 

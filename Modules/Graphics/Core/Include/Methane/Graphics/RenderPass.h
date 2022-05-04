@@ -27,6 +27,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #include "Object.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Color.hpp>
 
@@ -174,7 +175,18 @@ struct RenderPattern : virtual Object // NOSONAR
     [[nodiscard]] virtual AttachmentFormats    GetAttachmentFormats() const noexcept = 0;
 };
 
-struct RenderPass : virtual Object // NOSONAR
+struct RenderPass;
+
+struct IRenderPassCallback
+{
+    virtual void OnRenderPassUpdated(const RenderPass& render_pass) = 0;
+
+    virtual ~IRenderPassCallback() = default;
+};
+
+struct RenderPass
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IRenderPassCallback>
 {
     using Pattern           = RenderPattern;
     using Attachment        = RenderPattern::Attachment;
@@ -183,6 +195,7 @@ struct RenderPass : virtual Object // NOSONAR
     using DepthAttachment   = RenderPattern::DepthAttachment;
     using StencilAttachment = RenderPattern::StencilAttachment;
     using Access            = RenderPattern::Access;
+    using ICallback          = IRenderPassCallback;
 
     struct Settings
     {
