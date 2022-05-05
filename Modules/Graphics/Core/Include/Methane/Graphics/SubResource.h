@@ -42,7 +42,8 @@ public:
     class Count
     {
     public:
-        explicit Count(Data::Size array_size = 1U, Data::Size depth = 1U, Data::Size mip_levels_count = 1U);
+        Count() = default;
+        explicit Count(Data::Size depth, Data::Size array_size = 1U, Data::Size mip_levels_count = 1U);
 
         [[nodiscard]] Data::Size GetDepth() const noexcept
         { return m_depth; }
@@ -68,15 +69,16 @@ public:
         [[nodiscard]] explicit operator std::string() const noexcept;
 
     private:
-        Data::Size m_depth;
-        Data::Size m_array_size;
-        Data::Size m_mip_levels_count;
+        Data::Size m_depth            = 1U;
+        Data::Size m_array_size       = 1U;
+        Data::Size m_mip_levels_count = 1U;
     };
 
     class Index
     {
     public:
-        explicit Index(Data::Index depth_slice = 0U, Data::Index array_index = 0U, Data::Index mip_level = 0U) noexcept;
+        Index() = default;
+        explicit Index(Data::Index depth_slice, Data::Index array_index = 0U, Data::Index mip_level = 0U) noexcept;
         Index(Data::Index raw_index, const Count& count);
         explicit Index(const Count& count);
         Index(const Index&) noexcept = default;
@@ -100,9 +102,9 @@ public:
         [[nodiscard]] explicit operator std::string() const noexcept;
 
     private:
-        Data::Index m_depth_slice;
-        Data::Index m_array_index;
-        Data::Index m_mip_level;
+        Data::Index m_depth_slice = 0U;
+        Data::Index m_array_index = 0U;
+        Data::Index m_mip_level   = 0U;
     };
 
     SubResource() = default;
@@ -134,8 +136,11 @@ struct Resource;
 class ResourceLocation
 {
 public:
-    ResourceLocation(Resource& resource, Data::Size offset = 0U) : ResourceLocation(resource, SubResource::Index(), offset) { }
-    ResourceLocation(Resource& resource, const SubResource::Index& subresource_index, Data::Size offset = 0U);
+    ResourceLocation(Resource& resource, Data::Size offset = 0U);
+    ResourceLocation(Resource& resource,
+                     const SubResource::Index& subresource_index,
+                     const SubResource::Count& subresource_count = {},
+                     Data::Size offset = 0U);
 
     [[nodiscard]] bool operator==(const ResourceLocation& other) const noexcept;
     [[nodiscard]] bool operator!=(const ResourceLocation& other) const noexcept;
@@ -144,11 +149,13 @@ public:
     [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
     [[nodiscard]] Resource&                 GetResource() const noexcept         { return *m_resource_ptr; }
     [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
+    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_subresource_count; }
     [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_offset; }
 
 private:
     Ptr<Resource>      m_resource_ptr;
     SubResource::Index m_subresource_index;
+    SubResource::Count m_subresource_count;
     Data::Size         m_offset = 0U;
 };
 

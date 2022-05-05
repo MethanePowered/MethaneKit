@@ -154,7 +154,7 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
 Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
     META_FUNCTION_TASK();
-    return 1U + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
+    return 1U + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(dimensions.GetLongestSide()))));
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept

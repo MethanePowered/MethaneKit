@@ -135,10 +135,9 @@ void IResourceVK::LocationVK::InitTextureLocation()
             ITextureVK::DimensionTypeToImageViewType(texture_settings.dimension_type),
             TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
             vk::ComponentMapping(),
-            // TODO: add support for levels and layers count
             vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(texture_settings),
-                                      GetSubresourceIndex().GetMipLevel(),   1U,
-                                      GetSubresourceIndex().GetArrayIndex(), 1U)
+                                      GetSubresourceIndex().GetMipLevel(),   GetSubresourceCount().GetMipLevelsCount(),
+                                      GetSubresourceIndex().GetArrayIndex(), GetSubresourceCount().GetArraySize())
     ));
 
     SetVulkanObjectName(vk_device, GetNativeImageView(), fmt::format("{} Location", texture.GetName()));

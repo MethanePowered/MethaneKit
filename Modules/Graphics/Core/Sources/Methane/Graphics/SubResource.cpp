@@ -167,9 +167,19 @@ SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-ResourceLocation::ResourceLocation(Resource& resource, const SubResource::Index& subresource_index, Data::Size offset)
+ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset)
+    : ResourceLocation(resource, SubResource::Index(), resource.GetSubresourceCount(), offset)
+{
+    META_FUNCTION_TASK();
+}
+
+ResourceLocation::ResourceLocation(Resource& resource,
+                                   const SubResource::Index& subresource_index,
+                                   const SubResource::Count& subresource_count,
+                                   Data::Size offset)
     : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
     , m_subresource_index(subresource_index)
+    , m_subresource_count(subresource_count)
     , m_offset(offset)
 {
     META_FUNCTION_TASK();
