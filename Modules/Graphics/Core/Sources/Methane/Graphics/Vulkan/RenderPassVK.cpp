@@ -347,11 +347,16 @@ const IContextVK& RenderPassVK::GetContextVK() const noexcept
 void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
 {
     META_FUNCTION_TASK();
-    for (const Texture::Location& texture_location : GetSettings().attachments)
+    const Texture::Locations& attachment_texture_locations = GetSettings().attachments;
+    if (attachment_texture_locations.empty())
+        return;
+
+    for (const Texture::Location& texture_location : attachment_texture_locations)
     {
         if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
             dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
     }
+
     Reset();
 }
 
