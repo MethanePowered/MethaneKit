@@ -48,13 +48,15 @@ vk::ImageAspectFlags ITextureVK::GetNativeImageAspectFlags(const Texture::Settin
     }
 }
 
-vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings& settings)
+vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
-    vk::ImageUsageFlags usage_flags{};
-    switch(settings.type)
+    vk::ImageUsageFlags usage_flags = initial_usage_flags;
+    switch (settings.type)
     {
     case Texture::Type::Texture:
+        break;
+
     case Texture::Type::FrameBuffer:
         usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
@@ -63,7 +65,15 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
         usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
         break;
 
-    default: META_UNEXPECTED_ARG(settings.type);
+    default:
+        META_UNEXPECTED_ARG(settings.type);
+    }
+
+    if (settings.mipmapped)
+    {
+        // Flags required for mip-map generation with BLIT operations
+        usage_flags |= vk::ImageUsageFlagBits::eTransferSrc;
+        usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
     }
 
     using namespace magic_enum::bitwise_operators;
@@ -283,7 +293,7 @@ ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& setti
                          settings.array_length,
                          vk::SampleCountFlagBits::e1,
                          vk::ImageTiling::eOptimal,
-                         vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+                         ITextureVK::GetNativeImageUsageFlags(settings, vk::ImageUsageFlagBits::eTransferDst),
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
@@ -346,12 +356,13 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& ta
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
     BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
-    upload_cmd_list.GetNativeCommandBufferDefault().copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
+    const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
+    vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                                                       vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        GenerateMipLevels();
+        GenerateMipLevels(vk_cmd_buffer);
     }
 
     CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
@@ -371,9 +382,98 @@ bool ImageTextureVK::SetName(const std::string& name)
     return true;
 }
 
-void ImageTextureVK::GenerateMipLevels()
+void ImageTextureVK::GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer)
 {
     META_FUNCTION_TASK();
+    const Texture::Settings& texture_settings = GetSettings();
+    const vk::Format image_format = TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format);
+    const vk::FormatProperties image_format_properties = GetContextVK().GetDeviceVK().GetNativePhysicalDevice().getFormatProperties(image_format);
+    META_CHECK_ARG_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
+                              "texture pixel format does not support linear blitting");
+
+    const SubResource::Count& subresource_count = GetSubresourceCount();
+    const uint32_t mip_levels_count = subresource_count.GetMipLevelsCount();
+    const vk::Image& vk_image = GetNativeImage();
+
+    vk::ImageMemoryBarrier vk_image_barrier;
+    vk_image_barrier.image                           = vk_image;
+    vk_image_barrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+    vk_image_barrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+    vk_image_barrier.subresourceRange.aspectMask     = vk::ImageAspectFlagBits::eColor;
+    vk_image_barrier.subresourceRange.baseArrayLayer = 0U;
+    vk_image_barrier.subresourceRange.layerCount     = 1U;
+    vk_image_barrier.subresourceRange.levelCount     = 1U;
+
+    int32_t prev_mip_width  = static_cast<int32_t>(texture_settings.dimensions.GetWidth());
+    int32_t prev_mip_height = static_cast<int32_t>(texture_settings.dimensions.GetHeight());
+
+    for (uint32_t mip_level_index = 1U; mip_level_index < mip_levels_count; ++mip_level_index)
+    {
+        const int32_t  curr_mip_width       = prev_mip_width  > 1 ? prev_mip_width  / 2 : 1;
+        const int32_t  curr_mip_height      = prev_mip_height > 1 ? prev_mip_height / 2 : 1;
+        const uint32_t prev_mip_level_index = mip_level_index - 1U;
+
+        vk_image_barrier.subresourceRange.baseMipLevel = prev_mip_level_index;
+        vk_image_barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
+        vk_image_barrier.newLayout                     = vk::ImageLayout::eTransferSrcOptimal;
+        vk_image_barrier.srcAccessMask                 = vk::AccessFlagBits::eTransferWrite;
+        vk_image_barrier.dstAccessMask                 = vk::AccessFlagBits::eTransferRead;
+
+        vk_cmd_buffer.pipelineBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::DependencyFlags{},
+            0U, nullptr,
+            0U, nullptr,
+            1U, &vk_image_barrier
+        );
+
+        const vk::ImageBlit vk_image_blit(
+            vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, prev_mip_level_index, 0U, 1U),
+            { vk::Offset3D(), vk::Offset3D(prev_mip_width, prev_mip_height, 1U) },
+            vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, mip_level_index, 0U, 1U),
+            { vk::Offset3D(), vk::Offset3D(curr_mip_width, curr_mip_width, 1U) }
+        );
+
+        vk_cmd_buffer.blitImage(
+            vk_image, vk::ImageLayout::eTransferSrcOptimal,
+            vk_image, vk::ImageLayout::eTransferDstOptimal,
+            1U, &vk_image_blit,
+            vk::Filter::eLinear);
+
+        vk_image_barrier.oldLayout     = vk::ImageLayout::eTransferSrcOptimal;
+        vk_image_barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
+        vk_image_barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
+        vk_image_barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+        vk_cmd_buffer.pipelineBarrier(
+            vk::PipelineStageFlagBits::eTransfer,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::DependencyFlags{},
+            0U, nullptr,
+            0U, nullptr,
+            1U, &vk_image_barrier
+        );
+
+        prev_mip_width  = curr_mip_width;
+        prev_mip_height = curr_mip_height;
+    }
+
+    vk_image_barrier.subresourceRange.baseMipLevel = mip_levels_count - 1U;
+    vk_image_barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
+    vk_image_barrier.newLayout                     = vk::ImageLayout::eShaderReadOnlyOptimal;
+    vk_image_barrier.srcAccessMask                 = vk::AccessFlagBits::eTransferRead;
+    vk_image_barrier.dstAccessMask                 = vk::AccessFlagBits::eShaderRead;
+
+    vk_cmd_buffer.pipelineBarrier(
+        vk::PipelineStageFlagBits::eTransfer,
+        vk::PipelineStageFlagBits::eFragmentShader,
+        vk::DependencyFlags{},
+        0U, nullptr,
+        0U, nullptr,
+        1U, &vk_image_barrier);
+
+    SetState(State::ShaderResource);
 }
 
 vk::ImageSubresourceRange ImageTextureVK::GetNativeSubresourceRange() const noexcept

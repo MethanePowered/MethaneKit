@@ -39,7 +39,8 @@ struct ITextureVK
     [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(Texture::DimensionType dimension_type);
     [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
     [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const Texture::Settings& settings);
-    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Texture::Settings& settings);
+    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Texture::Settings& settings,
+                                                                       vk::ImageUsageFlags initial_usage_flags = {});
 
     [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
     [[nodiscard]] virtual vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept = 0;
@@ -126,7 +127,7 @@ public:
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
 private:
-    void GenerateMipLevels();
+    void GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer);
 
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;
     vk::UniqueDeviceMemory           m_vk_unique_staging_memory;
