@@ -37,12 +37,12 @@ namespace Methane::Graphics
 class QueueFamilyReservationVK // NOSONAR
 {
 public:
-    QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window = false);
+    QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window = false);
     ~QueueFamilyReservationVK();
 
     [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
     [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept      { return m_family_index; }
-    [[nodiscard]] vk::QueueFlagBits         GetQueueFlags() const noexcept       { return m_queue_flags; }
+    [[nodiscard]] vk::QueueFlags            GetQueueFlags() const noexcept       { return m_queue_flags; }
     [[nodiscard]] uint32_t                  GetQueuesCount() const noexcept      { return m_queues_count; }
     [[nodiscard]] bool                      CanPresentToWindow() const noexcept  { return m_can_present_to_window; }
     [[nodiscard]] const std::vector<float>& GetPriorities() const noexcept       { return m_priorities; }
@@ -54,7 +54,7 @@ public:
 
 private:
     uint32_t           m_family_index;
-    vk::QueueFlagBits  m_queue_flags;
+    vk::QueueFlags     m_queue_flags;
     uint32_t           m_queues_count;
     bool               m_can_present_to_window;
     std::vector<float> m_priorities;

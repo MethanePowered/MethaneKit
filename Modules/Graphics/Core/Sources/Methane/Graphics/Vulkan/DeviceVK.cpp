@@ -276,7 +276,7 @@ static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loade
 
 template<bool exact_flags_matching>
 std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
-                                        vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                        vk::QueueFlags queue_flags, uint32_t queues_count,
                                         const std::vector<uint32_t>& reserved_queues_count_per_family,
                                         const vk::PhysicalDevice& vk_physical_device = {},
                                         const vk::SurfaceKHR& vk_present_surface = {})
@@ -293,7 +293,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
         }
         else
         {
-            if (!(vk_family_props.queueFlags & queue_flags))
+            if ((vk_family_props.queueFlags & queue_flags) != queue_flags)
                 continue;
         }
 
@@ -311,7 +311,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
 }
 
 static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
-                                               vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                               vk::QueueFlags queue_flags, uint32_t queues_count,
                                                const std::vector<uint32_t>& reserved_queues_count_per_family,
                                                const vk::PhysicalDevice& vk_physical_device = {},
                                                const vk::SurfaceKHR& vk_present_surface = {})
@@ -337,7 +337,7 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
-static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
+static vk::QueueFlags GetQueueFlagsByType(CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
     switch(cmd_list_type)
@@ -348,7 +348,7 @@ static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
     }
 }
 
-QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
+QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window)
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
     , m_queues_count(queues_count)
@@ -556,12 +556,14 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
     if (!queues_count)
         return;
 
-    const vk::QueueFlagBits queue_flags = GetQueueFlagBitsByType(cmd_list_type);
+    const vk::QueueFlags queue_flags = GetQueueFlagsByType(cmd_list_type);
     const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(m_vk_queue_family_properties, queue_flags, queues_count,
                                                                           reserved_queues_count_per_family, m_vk_physical_device, vk_surface);
     if (!vk_queue_family_index)
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
 
+    META_CHECK_ARG_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
+    META_CHECK_ARG_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
     const auto queue_family_reservation_it = std::find_if(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(),
                                                           [&vk_queue_family_index](const auto& type_and_queue_family_reservation)
                                                           { return type_and_queue_family_reservation.second->GetFamilyIndex() == *vk_queue_family_index; });
