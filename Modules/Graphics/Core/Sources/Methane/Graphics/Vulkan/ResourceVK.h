@@ -74,6 +74,10 @@ public:
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
     [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&    GetOwnerQueueFamilyIndex() const noexcept = 0;
+
+    [[nodiscard]] static vk::AccessFlags        GetNativeAccessFlagsByResourceState(ResourceState resource_state);
+    [[nodiscard]] static vk::ImageLayout        GetNativeImageLayoutByResourceState(ResourceState resource_state);
+    [[nodiscard]] static vk::PipelineStageFlags GetNativePipelineStageFlagsByResourceState(ResourceState resource_state);
 };
 
 } // namespace Methane::Graphics

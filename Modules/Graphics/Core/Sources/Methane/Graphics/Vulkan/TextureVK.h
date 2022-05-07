@@ -127,7 +127,7 @@ public:
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
 private:
-    void GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer);
+    void GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state);
 
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;
     vk::UniqueDeviceMemory           m_vk_unique_staging_memory;

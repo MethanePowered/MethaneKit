@@ -31,106 +31,6 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-[[nodiscard]]
-static vk::AccessFlags ConvertResourceStateToVulkanAccessFlags(ResourceState resource_state)
-{
-    META_FUNCTION_TASK();
-    switch (resource_state)
-    {
-    case ResourceState::Undefined:        return vk::AccessFlagBits::eNoneKHR;
-    case ResourceState::Common:           return vk::AccessFlagBits::eNoneKHR;
-    case ResourceState::VertexBuffer:     return vk::AccessFlagBits::eVertexAttributeRead;
-    case ResourceState::ConstantBuffer:   return vk::AccessFlagBits::eUniformRead;
-    case ResourceState::IndexBuffer:      return vk::AccessFlagBits::eIndexRead;
-    case ResourceState::RenderTarget:     return vk::AccessFlagBits::eColorAttachmentRead |
-                                                 vk::AccessFlagBits::eColorAttachmentWrite;
-    case ResourceState::UnorderedAccess:  return vk::AccessFlagBits::eShaderRead |
-                                                 vk::AccessFlagBits::eShaderWrite;
-    case ResourceState::DepthWrite:       return vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                                                 vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    case ResourceState::DepthRead:        return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    case ResourceState::ShaderResource:   return vk::AccessFlagBits::eShaderRead;
-    case ResourceState::IndirectArgument: return vk::AccessFlagBits::eIndirectCommandRead;
-    case ResourceState::CopyDest:         return vk::AccessFlagBits::eTransferWrite;
-    case ResourceState::CopySource:       return vk::AccessFlagBits::eTransferRead;
-    case ResourceState::ResolveDest:      return vk::AccessFlagBits::eTransferWrite;
-    case ResourceState::ResolveSource:    return vk::AccessFlagBits::eTransferRead;
-    case ResourceState::Present:          return vk::AccessFlagBits::eNoneKHR;
-    case ResourceState::GenericRead:      return vk::AccessFlagBits::eVertexAttributeRead |
-                                                 vk::AccessFlagBits::eUniformRead |
-                                                 vk::AccessFlagBits::eIndexRead |
-                                                 vk::AccessFlagBits::eShaderRead |
-                                                 vk::AccessFlagBits::eIndirectCommandRead |
-                                                 vk::AccessFlagBits::eTransferRead;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::AccessFlagBits::eNoneKHR, "unexpected resource state");
-    }
-}
-
-[[nodiscard]]
-static vk::ImageLayout ConvertResourceStateToVulkanImageLayout(ResourceState resource_state)
-{
-    META_FUNCTION_TASK();
-    switch (resource_state)
-    {
-    case ResourceState::Undefined:       return vk::ImageLayout::eUndefined;
-    case ResourceState::Common:          return vk::ImageLayout::eGeneral;
-    case ResourceState::RenderTarget:    return vk::ImageLayout::eColorAttachmentOptimal;
-    case ResourceState::InputAttachment: return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case ResourceState::UnorderedAccess: return vk::ImageLayout::eGeneral;
-    case ResourceState::DepthWrite:      return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case ResourceState::DepthRead:       return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-    case ResourceState::ShaderResource:  return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case ResourceState::CopyDest:        return vk::ImageLayout::eTransferDstOptimal;
-    case ResourceState::CopySource:      return vk::ImageLayout::eTransferSrcOptimal;
-    case ResourceState::ResolveDest:     return vk::ImageLayout::eTransferDstOptimal;
-    case ResourceState::ResolveSource:   return vk::ImageLayout::eTransferSrcOptimal;
-    case ResourceState::Present:         return vk::ImageLayout::ePresentSrcKHR;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
-    }
-}
-
-[[nodiscard]]
-static vk::PipelineStageFlags ConvertResourceStateToVulkanPipelineStageFlags(ResourceState resource_state)
-{
-    META_FUNCTION_TASK();
-    switch (resource_state)
-    {
-    case ResourceState::Undefined:
-        return vk::PipelineStageFlagBits::eTopOfPipe;
-    case ResourceState::Common:
-        return vk::PipelineStageFlagBits::eAllCommands;
-    case ResourceState::Present:
-        return vk::PipelineStageFlagBits::eBottomOfPipe;
-    case ResourceState::RenderTarget:
-        return vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    case ResourceState::InputAttachment:
-        return vk::PipelineStageFlagBits::eFragmentShader;
-    case ResourceState::IndirectArgument:
-        return vk::PipelineStageFlagBits::eDrawIndirect;
-    case ResourceState::VertexBuffer:
-    case ResourceState::IndexBuffer:
-        return vk::PipelineStageFlagBits::eVertexInput;
-    case ResourceState::ConstantBuffer:
-    case ResourceState::UnorderedAccess:
-    case ResourceState::ShaderResource:
-        return vk::PipelineStageFlagBits::eVertexShader | // All possible shader stages
-               vk::PipelineStageFlagBits::eFragmentShader;
-    case ResourceState::CopyDest:
-    case ResourceState::CopySource:
-    case ResourceState::ResolveDest:
-    case ResourceState::ResolveSource:
-        return vk::PipelineStageFlagBits::eTransfer;
-    case ResourceState::DepthWrite:
-    case ResourceState::DepthRead:
-        return vk::PipelineStageFlagBits::eEarlyFragmentTests |
-               vk::PipelineStageFlagBits::eLateFragmentTests;
-    case ResourceState::StreamOut:
-        return {};
-    default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
-    }
-}
-
 Ptr <ResourceBarriers> ResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
@@ -313,8 +213,8 @@ void ResourceBarriersVK::AddBufferMemoryStateChangeBarrier(const BufferVK& buffe
 {
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_buffer_memory_barriers.emplace_back(
-        ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()),
-        ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
+        IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
+        IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         buffer.GetNativeResource(),
@@ -346,10 +246,10 @@ void ResourceBarriersVK::AddImageMemoryStateChangeBarrier(const ITextureVK& text
 {
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
-        ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()),
-        ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()),
-        ConvertResourceStateToVulkanImageLayout(state_change.GetStateBefore()),
-        ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()),
+        IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
+        IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
+        IResourceVK::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()),
+        IResourceVK::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()),
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         texture.GetNativeImage(),
@@ -380,8 +280,8 @@ void ResourceBarriersVK::AddImageMemoryOwnerChangeBarrier(const ITextureVK& text
 void ResourceBarriersVK::UpdateBufferMemoryStateChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    vk_buffer_memory_barrier.setSrcAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()));
-    vk_buffer_memory_barrier.setDstAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()));
+    vk_buffer_memory_barrier.setSrcAccessMask(IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
+    vk_buffer_memory_barrier.setDstAccessMask(IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
 }
 
 void ResourceBarriersVK::UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const ResourceBarrier::OwnerChange& owner_change)
@@ -396,10 +296,10 @@ void ResourceBarriersVK::UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBa
 void ResourceBarriersVK::UpdateImageMemoryStateChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    vk_image_memory_barrier.setSrcAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateBefore()));
-    vk_image_memory_barrier.setDstAccessMask(ConvertResourceStateToVulkanAccessFlags(state_change.GetStateAfter()));
-    vk_image_memory_barrier.setOldLayout(ConvertResourceStateToVulkanImageLayout(state_change.GetStateBefore()));
-    vk_image_memory_barrier.setNewLayout(ConvertResourceStateToVulkanImageLayout(state_change.GetStateAfter()));
+    vk_image_memory_barrier.setSrcAccessMask(IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
+    vk_image_memory_barrier.setDstAccessMask(IResourceVK::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
+    vk_image_memory_barrier.setOldLayout(IResourceVK::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()));
+    vk_image_memory_barrier.setNewLayout(IResourceVK::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()));
 }
 
 void ResourceBarriersVK::UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const ResourceBarrier::OwnerChange& owner_change)
@@ -469,8 +369,8 @@ void ResourceBarriersVK::UpdateStageMasks(const ResourceBarrier& barrier)
     switch (barrier.GetId().GetType())
     {
     case ResourceBarrier::Type::StateTransition:
-        m_vk_default_barrier.vk_src_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateBefore());
-        m_vk_default_barrier.vk_dst_stage_mask |= ConvertResourceStateToVulkanPipelineStageFlags(barrier.GetStateChange().GetStateAfter());
+        m_vk_default_barrier.vk_src_stage_mask |= IResourceVK::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateBefore());
+        m_vk_default_barrier.vk_dst_stage_mask |= IResourceVK::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateAfter());
         break;
 
     case ResourceBarrier::Type::OwnerTransition:

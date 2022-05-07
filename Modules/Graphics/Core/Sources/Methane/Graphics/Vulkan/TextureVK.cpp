@@ -23,6 +23,7 @@ Vulkan implementation of the texture interface.
 
 #include "TextureVK.h"
 #include "RenderContextVK.h"
+#include "RenderCommandListVK.h"
 #include "DeviceVK.h"
 #include "TypesVK.h"
 
@@ -362,10 +363,13 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& ta
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        GenerateMipLevels(vk_cmd_buffer);
+        CompleteResourceUpload(upload_cmd_list, GetState(), target_cmd_queue); // ownership transition only
+        GenerateMipLevels(target_cmd_queue, State::ShaderResource);
     }
-
-    CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
+    else
+    {
+        CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
+    }
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
@@ -382,17 +386,38 @@ bool ImageTextureVK::SetName(const std::string& name)
     return true;
 }
 
-void ImageTextureVK::GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer)
+void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), CommandList::Type::Render,
+                               "texture target command queue is not suitable for mip-maps generation");
+
     const Texture::Settings& texture_settings = GetSettings();
     const vk::Format image_format = TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format);
     const vk::FormatProperties image_format_properties = GetContextVK().GetDeviceVK().GetNativePhysicalDevice().getFormatProperties(image_format);
     META_CHECK_ARG_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
                               "texture pixel format does not support linear blitting");
 
+    constexpr auto post_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync);
+    CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+    const vk::CommandBuffer& vk_cmd_buffer = dynamic_cast<const RenderCommandListVK&>(target_cmd_list).GetNativeCommandBufferDefault();
+
     const SubResource::Count& subresource_count = GetSubresourceCount();
     const uint32_t mip_levels_count = subresource_count.GetMipLevelsCount();
+    const State source_resource_state = GetState();
+
+    const vk::ImageLayout        vk_old_image_layout = IResourceVK::GetNativeImageLayoutByResourceState(source_resource_state);
+    const vk::AccessFlags        vk_src_access_mask  = IResourceVK::GetNativeAccessFlagsByResourceState(source_resource_state);
+    const vk::PipelineStageFlags vk_src_stage_mask   = IResourceVK::GetNativePipelineStageFlagsByResourceState(source_resource_state);
+
+    const vk::ImageLayout        vk_new_image_layout = IResourceVK::GetNativeImageLayoutByResourceState(target_resource_state);
+    const vk::AccessFlags        vk_dst_access_mask  = IResourceVK::GetNativeAccessFlagsByResourceState(target_resource_state);
+    const vk::PipelineStageFlags vk_dst_stage_mask   = IResourceVK::GetNativePipelineStageFlagsByResourceState(target_resource_state);
+
+    const vk::ImageLayout   vk_blit_old_image_layout = vk::ImageLayout::eTransferSrcOptimal;
+    const vk::ImageLayout   vk_blit_new_image_layout = vk::ImageLayout::eTransferDstOptimal;
+    const vk::AccessFlags   vk_blit_src_access_mask  = vk::AccessFlagBits::eTransferRead;
+
     const vk::Image& vk_image = GetNativeImage();
 
     vk::ImageMemoryBarrier vk_image_barrier;
@@ -414,14 +439,14 @@ void ImageTextureVK::GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer)
         const uint32_t prev_mip_level_index = mip_level_index - 1U;
 
         vk_image_barrier.subresourceRange.baseMipLevel = prev_mip_level_index;
-        vk_image_barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
-        vk_image_barrier.newLayout                     = vk::ImageLayout::eTransferSrcOptimal;
-        vk_image_barrier.srcAccessMask                 = vk::AccessFlagBits::eTransferWrite;
-        vk_image_barrier.dstAccessMask                 = vk::AccessFlagBits::eTransferRead;
+        vk_image_barrier.oldLayout                     = vk_old_image_layout;
+        vk_image_barrier.newLayout                     = vk_blit_old_image_layout;
+        vk_image_barrier.srcAccessMask                 = vk_src_access_mask;
+        vk_image_barrier.dstAccessMask                 = vk_blit_src_access_mask;
 
         vk_cmd_buffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eTransfer,
+            vk_src_stage_mask,
+            vk_src_stage_mask,
             vk::DependencyFlags{},
             0U, nullptr,
             0U, nullptr,
@@ -436,19 +461,20 @@ void ImageTextureVK::GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer)
         );
 
         vk_cmd_buffer.blitImage(
-            vk_image, vk::ImageLayout::eTransferSrcOptimal,
-            vk_image, vk::ImageLayout::eTransferDstOptimal,
+            vk_image, vk_blit_old_image_layout,
+            vk_image, vk_blit_new_image_layout,
             1U, &vk_image_blit,
-            vk::Filter::eLinear);
+            vk::Filter::eLinear
+        );
 
-        vk_image_barrier.oldLayout     = vk::ImageLayout::eTransferSrcOptimal;
-        vk_image_barrier.newLayout     = vk::ImageLayout::eShaderReadOnlyOptimal;
-        vk_image_barrier.srcAccessMask = vk::AccessFlagBits::eTransferRead;
-        vk_image_barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        vk_image_barrier.oldLayout     = vk_blit_old_image_layout;
+        vk_image_barrier.newLayout     = vk_new_image_layout;
+        vk_image_barrier.srcAccessMask = vk_blit_src_access_mask;
+        vk_image_barrier.dstAccessMask = vk_dst_access_mask;
 
         vk_cmd_buffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eFragmentShader,
+            vk_src_stage_mask,
+            vk_dst_stage_mask,
             vk::DependencyFlags{},
             0U, nullptr,
             0U, nullptr,
@@ -460,20 +486,20 @@ void ImageTextureVK::GenerateMipLevels(const vk::CommandBuffer& vk_cmd_buffer)
     }
 
     vk_image_barrier.subresourceRange.baseMipLevel = mip_levels_count - 1U;
-    vk_image_barrier.oldLayout                     = vk::ImageLayout::eTransferDstOptimal;
-    vk_image_barrier.newLayout                     = vk::ImageLayout::eShaderReadOnlyOptimal;
-    vk_image_barrier.srcAccessMask                 = vk::AccessFlagBits::eTransferRead;
-    vk_image_barrier.dstAccessMask                 = vk::AccessFlagBits::eShaderRead;
+    vk_image_barrier.oldLayout                     = vk_blit_new_image_layout;
+    vk_image_barrier.newLayout                     = vk_new_image_layout;
+    vk_image_barrier.srcAccessMask                 = vk_blit_src_access_mask;
+    vk_image_barrier.dstAccessMask                 = vk_dst_access_mask;
 
     vk_cmd_buffer.pipelineBarrier(
-        vk::PipelineStageFlagBits::eTransfer,
-        vk::PipelineStageFlagBits::eFragmentShader,
+        vk_src_stage_mask,
+        vk_dst_stage_mask,
         vk::DependencyFlags{},
         0U, nullptr,
         0U, nullptr,
         1U, &vk_image_barrier);
 
-    SetState(State::ShaderResource);
+    SetState(target_resource_state);
 }
 
 vk::ImageSubresourceRange ImageTextureVK::GetNativeSubresourceRange() const noexcept
