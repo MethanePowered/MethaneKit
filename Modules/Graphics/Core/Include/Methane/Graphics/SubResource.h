@@ -42,7 +42,7 @@ public:
     class Count
     {
     public:
-        Count() = default;
+        Count() noexcept = default;
         explicit Count(Data::Size depth, Data::Size array_size = 1U, Data::Size mip_levels_count = 1U);
 
         [[nodiscard]] Data::Size GetDepth() const noexcept
@@ -77,7 +77,7 @@ public:
     class Index
     {
     public:
-        Index() = default;
+        Index() noexcept { } // = default does not work for Clang here, but works fine for Count(), which is weird.
         explicit Index(Data::Index depth_slice, Data::Index array_index = 0U, Data::Index mip_level = 0U) noexcept;
         Index(Data::Index raw_index, const Count& count);
         explicit Index(const Count& count);
@@ -108,8 +108,8 @@ public:
     };
 
     SubResource() = default;
-    explicit SubResource(Data::Bytes&& data, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
-    SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = Index(), BytesRangeOpt data_range = {}) noexcept;
+    explicit SubResource(Data::Bytes&& data, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
+    SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
     ~SubResource() = default;
 
     [[nodiscard]] const Index& GetIndex() const noexcept
