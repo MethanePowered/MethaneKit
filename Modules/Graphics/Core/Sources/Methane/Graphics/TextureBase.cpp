@@ -31,6 +31,13 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
+Texture::Location::Location(Texture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count)
+    : Resource::Location(texture, subresource_index, subresource_count)
+    , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
+{
+    META_FUNCTION_TASK();
+}
+
 Texture& Texture::Location::GetTexture() const
 {
     META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource location");

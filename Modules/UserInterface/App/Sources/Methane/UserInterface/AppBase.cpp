@@ -454,4 +454,10 @@ Font& AppBase::GetMainFont()
     return *m_main_font_ptr;
 }
 
+const Data::Provider& AppBase::GetFontProvider() const noexcept
+{
+    META_FUNCTION_TASK();
+    return Data::FontProvider::Get();
+}
+
 } // namespace Methane::UserInterface

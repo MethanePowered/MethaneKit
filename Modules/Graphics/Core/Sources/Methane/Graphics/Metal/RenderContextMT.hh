@@ -62,8 +62,13 @@ public:
     void OnGpuExecutionCompleted();
 
 private:
+    void BeginFrameCaptureScope();
+    void EndFrameCaptureScope();
+    void Capture(const id<MTLCaptureScope>& capture_scope);
+
     AppViewMT*           m_app_view;
     id<MTLCaptureScope>  m_frame_capture_scope;
+    bool                 m_frame_capture_scope_begun = false;
     dispatch_semaphore_t m_dispatch_semaphore;
 };
 

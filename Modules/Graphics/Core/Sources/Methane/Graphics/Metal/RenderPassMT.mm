@@ -67,11 +67,19 @@ static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass
 
     META_CHECK_ARG_NOT_NULL(mtl_attachment_desc);
     mtl_attachment_desc.texture       = static_cast<const TextureMT&>(texture_location.GetTexture()).GetNativeTexture();
-    mtl_attachment_desc.slice         = texture_location.GetSubresourceIndex().GetArrayIndex();
     mtl_attachment_desc.level         = texture_location.GetSubresourceIndex().GetMipLevel();
-    mtl_attachment_desc.depthPlane    = texture_location.GetSubresourceIndex().GetDepthSlice();
     mtl_attachment_desc.loadAction    = GetMTLLoadAction(attachment.load_action);
     mtl_attachment_desc.storeAction   = GetMTLStoreAction(attachment.store_action);
+    
+    if (mtl_attachment_desc.texture.textureType == MTLTextureTypeCube)
+    {
+        mtl_attachment_desc.slice      = texture_location.GetSubresourceIndex().GetDepthSlice();
+    }
+    else
+    {
+        mtl_attachment_desc.slice      = texture_location.GetSubresourceIndex().GetArrayIndex();
+        mtl_attachment_desc.depthPlane = texture_location.GetSubresourceIndex().GetDepthSlice();
+    }
 }
 
 Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)

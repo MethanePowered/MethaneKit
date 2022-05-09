@@ -10,16 +10,6 @@ set(SOURCES
     Shaders/CubeMapArrayUniforms.h
 )
 
-set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
-set(TEXTURES
-    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveX.jpg
-    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeX.jpg
-    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveY.jpg
-    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeY.jpg
-    ${TEXTURES_DIR}/SkyBox/Galaxy/PositiveZ.jpg
-    ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeZ.jpg
-)
-
 add_methane_application(${TARGET}
     "${SOURCES}"
     "${RESOURCES_DIR}"
@@ -31,7 +21,7 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 
-add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
+add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Bold.ttf")
 
 add_methane_shaders_source(
     TARGET ${TARGET}

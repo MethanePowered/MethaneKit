@@ -37,6 +37,7 @@ namespace Methane::Graphics
 struct RenderContext;
 struct RenderCommandList;
 struct RenderState;
+struct RenderPattern;
 struct ViewState;
 struct ProgramBindings;
 struct Buffer;
@@ -94,16 +95,16 @@ public:
     template<typename StringType>
     struct Settings // NOSONAR
     {
-        const std::string name;
-        StringType        text;
-        UnitRect          rect;
-        Layout            layout;
-        Color4F           color { 1.F, 1.F, 1.F, 1.F };
-        bool              incremental_update = true;
-        bool              adjust_vertical_content_offset = true;
+        std::string name;
+        StringType  text;
+        UnitRect    rect;
+        Layout      layout;
+        Color4F     color { 1.F, 1.F, 1.F, 1.F };
+        bool        incremental_update = true;
+        bool        adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
-        Data::Size        mesh_buffers_reservation_multiplier = 2U;
+        Data::Size  mesh_buffers_reservation_multiplier = 2U;
 
         Settings& SetName(const std::string& new_name) noexcept { name = new_name; return *this; }
         Settings& SetText(const StringType& new_text) noexcept  { text = new_text; return *this; }
@@ -118,7 +119,10 @@ public:
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
-    Text(Context& ui_context, Font& font, const SettingsUtf8&  settings);
+
+    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 

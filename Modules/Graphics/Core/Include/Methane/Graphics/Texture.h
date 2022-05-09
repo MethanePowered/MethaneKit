@@ -56,10 +56,7 @@ struct Texture : virtual Resource // NOSONAR
     class Location : public Resource::Location
     {
     public:
-        Location(Texture& texture, const SubResource::Index& subresource_index = SubResource::Index())
-            : Resource::Location(texture, subresource_index)
-            , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
-        { }
+        Location(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {});
 
         using Resource::Location::operator==;
 
@@ -67,7 +64,7 @@ struct Texture : virtual Resource // NOSONAR
         [[nodiscard]] Texture&            GetTexture() const;
 
     private:
-        // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too
+        // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too.
         // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
         Ptr<Texture> m_texture_ptr;
     };

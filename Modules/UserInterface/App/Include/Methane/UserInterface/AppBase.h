@@ -62,6 +62,7 @@ protected:
     bool SetHelpText(std::string_view help_str);
     bool SetParametersText(std::string_view parameters_str);
 
+    [[nodiscard]] const Data::Provider& GetFontProvider() const noexcept;
     [[nodiscard]] bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
     [[nodiscard]] bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
     [[nodiscard]] Font& GetMainFont();

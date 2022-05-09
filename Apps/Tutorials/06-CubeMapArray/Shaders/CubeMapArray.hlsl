@@ -43,7 +43,7 @@ PSInput CubeVS(VSInput input)
 {
     PSInput output;
     output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
-    output.uvw      = input.position;
+    output.uvw      = -input.position; // use negative sign to fix texture reflection
     return output;
 }
 

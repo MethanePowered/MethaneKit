@@ -55,7 +55,12 @@ namespace Methane::UserInterface
 {
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
-    : Text(ui_context, font,
+    : Text(ui_context, ui_context.GetRenderPattern(), font, settings)
+{
+}
+
+Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
+    : Text(ui_context, render_pattern, font,
         SettingsUtf32
         {
             settings.name,
@@ -70,6 +75,11 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
 }
 
 Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
+    : Text(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+{
+}
+
+Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_font_ptr(font.shared_from_this())
@@ -79,11 +89,8 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
-    UpdateTextMesh();
 
-    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
-
     static const std::string s_state_name = "Text Render State";
     m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(s_state_name));
     if (!m_render_state_ptr)
@@ -111,11 +118,11 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
-                ui_context.GetRenderPattern().GetAttachmentFormats()
+                render_pattern.GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
-        state_settings.render_pattern_ptr                                   = ui_context.GetRenderPatternPtr();
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -131,6 +138,9 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         gfx_objects_registry.AddGraphicsObject(*m_render_state_ptr);
     }
 
+    UpdateTextMesh();
+
+    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     m_view_state_ptr = gfx::ViewState::Create({
         { gfx::GetFrameViewport(viewport_rect)    },
         { gfx::GetFrameScissorRect(viewport_rect) }
@@ -149,10 +159,6 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         gfx_objects_registry.AddGraphicsObject(*m_atlas_sampler_ptr);
     }
 
-    if (m_text_mesh_ptr)
-    {
-        InitializeFrameResources();
-    }
     Item::SetRect(m_frame_rect);
 }
 

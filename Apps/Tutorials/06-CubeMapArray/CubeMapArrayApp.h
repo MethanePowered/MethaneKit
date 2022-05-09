@@ -69,7 +69,9 @@ protected:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const float           m_cube_scale = 15.F;
+    Ptr<gfx::CommandListSet> RenderFaceTextures(gfx::Texture& texture);
+
+    hlslpp::float4x4      m_model_matrix;
     hlslpp::Uniforms      m_shader_uniforms { };
     gfx::Camera           m_camera;
     Ptr<gfx::RenderState> m_render_state_ptr;
