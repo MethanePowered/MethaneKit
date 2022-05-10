@@ -83,7 +83,6 @@ private:
     gui::Font&               m_font;
     std::vector<Slice>       m_slices;
     Ptr<gfx::CommandListSet> m_slice_cmd_list_set_ptr;
-    bool                     m_is_text_updated = false;
 };
 
 } // namespace Methane::Tutorials

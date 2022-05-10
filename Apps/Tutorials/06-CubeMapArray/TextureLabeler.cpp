@@ -47,6 +47,9 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
     }};
 
     TextureLabeler::SliceDesc slice_desc = s_cube_faces[depth_index % s_cube_faces.size()];
+    if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::Cube)
+        return slice_desc;
+    
     if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::CubeArray)
         slice_desc.label = fmt::format("{}:{}", array_index, slice_desc.label);
     else
