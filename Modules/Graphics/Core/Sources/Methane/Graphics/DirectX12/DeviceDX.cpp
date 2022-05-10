@@ -30,6 +30,9 @@ DirectX 12 implementation of the device interface.
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
+
+// Uncomment to enable debugger breakpoint on DirectX debug warning or error
+//#define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
 #endif
 
 #include <magic_enum.hpp>
@@ -57,6 +60,75 @@ static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
     adapter.GetDesc1(&desc);
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
 }
+
+#ifdef _DEBUG
+
+static bool EnableDebugLayer()
+{
+    META_FUNCTION_TASK();
+    wrl::ComPtr<ID3D12Debug> debug_controller_cptr;
+    if (!SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller_cptr))))
+    {
+        META_LOG("WARNING: Unable to get D3D12 debug interface. " \
+                 "Install 'Graphics Tools' in Windows optional features and try again.");
+        return false;
+    }
+
+    debug_controller_cptr->EnableDebugLayer();
+
+    wrl::ComPtr<IDXGIInfoQueue> dxgi_info_queue_cptr;
+    if (!SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_info_queue_cptr))))
+    {
+        META_LOG("WARNING: Unable to get D3D12 info-queue interface.");
+        return true;
+    }
+
+#ifdef BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
+    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
+#endif
+
+    std::array<DXGI_INFO_QUEUE_MESSAGE_ID, 0> skip_message_ids = {{ }};
+    std::array<DXGI_INFO_QUEUE_MESSAGE_SEVERITY, 1> skip_message_severities = {{
+        DXGI_INFO_QUEUE_MESSAGE_SEVERITY_INFO,
+    }};
+
+    DXGI_INFO_QUEUE_FILTER filter {};
+    filter.DenyList.NumSeverities = static_cast<UINT>(skip_message_severities.size());
+    filter.DenyList.pSeverityList = skip_message_severities.data();
+    filter.DenyList.NumIDs        = static_cast<UINT>(skip_message_ids.size());
+    filter.DenyList.pIDList       = skip_message_ids.data();
+    dxgi_info_queue_cptr->AddStorageFilterEntries(DXGI_DEBUG_ALL, &filter);
+
+    return true;
+}
+
+static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_cptr)
+{
+    META_FUNCTION_TASK();
+    wrl::ComPtr<ID3D12InfoQueue> device_info_queue_cptr;
+    if (!SUCCEEDED(device_cptr->QueryInterface(IID_PPV_ARGS(&device_info_queue_cptr))))
+        return;
+
+#ifdef BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+    device_info_queue_cptr->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+    device_info_queue_cptr->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+#endif
+
+    std::array<D3D12_MESSAGE_ID, 0> skip_message_ids = {{ }};
+    std::array<D3D12_MESSAGE_SEVERITY, 1> skip_message_severities = {{
+        D3D12_MESSAGE_SEVERITY_INFO,
+    }};
+
+    D3D12_INFO_QUEUE_FILTER filter {};
+    filter.DenyList.NumSeverities = static_cast<UINT>(skip_message_severities.size());
+    filter.DenyList.pSeverityList = skip_message_severities.data();
+    filter.DenyList.NumIDs  = static_cast<UINT>(skip_message_ids.size());
+    filter.DenyList.pIDList = skip_message_ids.data();
+    device_info_queue_cptr->AddStorageFilterEntries(&filter);
+}
+
+#endif
 
 Device::Features DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
@@ -113,8 +185,13 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
     else
     {
         assert(0);
-        META_LOG("WARNING: GPU instrumentation results are unreliable until GPU can not be switched to stable power state. Enabled Windows Developer Mode to unlock it");
+        META_LOG("WARNING: GPU instrumentation results may be unreliable because we failed to switch GPU to stable power state." \
+                 "Enable Windows Developer Mode and try again.");
     }
+#endif
+
+#ifdef _DEBUG
+    ConfigureDeviceDebugFeature(m_cp_device);
 #endif
 
     return m_cp_device;
@@ -157,13 +234,8 @@ void SystemDX::Initialize()
     UINT dxgi_factory_flags = 0;
 
 #ifdef _DEBUG
-    // Enable the D3D12 debug layer.
-    wrl::ComPtr<ID3D12Debug> cp_debug_controller;
-    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&cp_debug_controller))))
-    {
-        cp_debug_controller->EnableDebugLayer();
+    if (EnableDebugLayer())
         dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
-    }
 #endif
 
     ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_cp_factory)));
