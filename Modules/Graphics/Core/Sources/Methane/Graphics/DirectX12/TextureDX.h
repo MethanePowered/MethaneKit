@@ -82,8 +82,6 @@ public:
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
 private:
-    using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
-    ResourceAndViewDesc GetResourceAndViewDesc() const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const;
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;

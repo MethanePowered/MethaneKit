@@ -187,7 +187,6 @@ void ResourceBarriersDX::AddNativeResourceBarrier(const ResourceBarrier::Id& id,
     m_native_resource_barriers.emplace_back(GetNativeResourceBarrier(id, state_change));
 }
 
-
 void ResourceBarriersDX::UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();

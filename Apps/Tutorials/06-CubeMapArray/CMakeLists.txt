@@ -7,6 +7,8 @@ include(MethaneResources)
 set(SOURCES
     CubeMapArrayApp.h
     CubeMapArrayApp.cpp
+    TextureLabeler.h
+    TextureLabeler.cpp
     Shaders/CubeMapArrayUniforms.h
 )
 

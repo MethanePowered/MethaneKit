@@ -22,6 +22,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 ******************************************************************************/
 
 #include "CubeMapArrayApp.h"
+#include "TextureLabeler.h"
 
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Graphics/CubeMesh.hpp>
@@ -161,101 +162,15 @@ void CubeMapArrayApp::Init()
         frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
     
-    // Encode face texture rendering commands before resources upload in complete initialization
-    const Ptr<gfx::CommandListSet> face_render_cmd_list_set_ptr = RenderFaceTextures(*m_cube_map_array_texture_ptr);
+    // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
+    TextureLabeler texture_labeler(GetUIContext(), GetFontProvider(), *m_cube_map_array_texture_ptr);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
     
-    // Execute face texture rendering commands when all resources are uploaded and ready for text rendering
-    render_cmd_queue.Execute(*face_render_cmd_list_set_ptr);
+    // Encode and execute texture labels rendering commands when all resources are uploaded and ready on GPU
+    texture_labeler.Render();
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
-}
-
-Ptr<gfx::CommandListSet> CubeMapArrayApp::RenderFaceTextures(gfx::Texture& rt_texture)
-{
-    struct Face
-    {
-        std::u32string label;
-        gfx::Color4F   color;
-        Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    };
-
-    std::array<Face, 6> faces = {{
-        { U"X+", gfx::Color4F(0.84F, 0.19F, 0.17F, 1.F) }, // red       rgb(215 48 44)
-        { U"X-", gfx::Color4F(0.94F, 0.42F, 0.07F, 1.F) }, // orange    rgb(239 106 18)
-        { U"Y+", gfx::Color4F(0.35F, 0.69F, 0.24F, 1.F) }, // green     rgb(89 176 60)
-        { U"Y-", gfx::Color4F(0.12F, 0.62F, 0.47F, 1.F) }, // turquoise rgb(31 158 120)
-        { U"Z+", gfx::Color4F(0.20F, 0.36F, 0.66F, 1.F) }, // blue      rgb(51 93 169)
-        { U"Z-", gfx::Color4F(0.49F, 0.31F, 0.64F, 1.F) }  // purple    rgb(124 80 164)
-    }};
-
-    const gfx::Texture::Settings& rt_texture_settings = rt_texture.GetSettings();
-    gfx::RenderPattern::Settings render_pattern_settings{
-        {
-            gfx::RenderPattern::ColorAttachment(
-                0U, rt_texture_settings.pixel_format, 1U,
-                gfx::RenderPattern::ColorAttachment::LoadAction::Clear,
-                gfx::RenderPattern::ColorAttachment::StoreAction::Store)
-        },
-        std::nullopt, // No depth attachment
-        std::nullopt, // No stencil attachment
-        gfx::RenderPass::Access::ShaderResources,
-        false // intermediate render pass
-    };
-    
-    gui::Font& face_font = gui::Font::Library::Get().GetFont(GetFontProvider(), gui::Font::Settings{
-        { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 164U }, 96U, U"XYZ+-0123456789"
-    });
-
-    gui::Text::SettingsUtf32 face_text_settings
-    {
-        {}, {},
-        gui::UnitRect
-        {
-            gui::Units::Pixels,
-            gfx::Point2I(),
-            rt_texture_settings.dimensions.AsRectSize()
-        },
-        gui::Text::Layout
-        {
-            gui::Text::Wrap::None,
-            gui::Text::HorizontalAlignment::Center,
-            gui::Text::VerticalAlignment::Center,
-        },
-        gfx::Color4F(1.F, 1.F, 1.F, 1.F),
-        false
-    };
-
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    Refs<gfx::CommandList> face_render_cmd_lists;
-
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group_ptr, "Texture Faces Rendering");
-    const gfx::SubResource::Count rt_subresource_count = rt_texture.GetSubresourceCount();
-    for(uint32_t face_index = 0U; face_index < rt_subresource_count.GetDepth(); ++face_index)
-    {
-        Face& face = faces[face_index];
-        render_pattern_settings.color_attachments[0].clear_color = face.color;
-        face_text_settings.name = gui::Font::ConvertUtf32To8(face.label) + " Face Label";
-        face_text_settings.text = face.label;
-
-        const Ptr<gfx::RenderPattern> face_render_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), render_pattern_settings);
-        const Ptr<gfx::RenderPass>    face_render_pass_ptr    = gfx::RenderPass::Create(*face_render_pattern_ptr, {
-            { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(face_index)) },
-            rt_texture_settings.dimensions.AsRectSize()
-        });
-        face.render_cmd_list_ptr = gfx::RenderCommandList::Create(render_cmd_queue, *face_render_pass_ptr);
-        face.render_cmd_list_ptr->SetName(IndexedName("Render Texture Face", face_index));
-
-        gui::Text face_text(GetUIContext(), *face_render_pattern_ptr, face_font, face_text_settings);
-        face_text.Update(rt_texture_settings.dimensions.AsRectSize());
-        face_text.Draw(*face.render_cmd_list_ptr, s_debug_group_ptr.get());
-        face.render_cmd_list_ptr->Commit();
-
-        face_render_cmd_lists.emplace_back(*face.render_cmd_list_ptr);
-    }
-
-    return gfx::CommandListSet::Create(face_render_cmd_lists);
 }
 
 bool CubeMapArrayApp::Animate(double, double delta_seconds)
