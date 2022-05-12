@@ -125,11 +125,11 @@ bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     m_resource_locations_dx.reserve(resource_locations.size());
     for(const Resource::Location& resource_location : resource_locations)
     {
-        m_resource_locations_dx.emplace_back(resource_location);
+        m_resource_locations_dx.emplace_back(resource_location, Resource::Usage::ShaderRead);
         if (!p_dx_descriptor_heap)
             continue;
 
-        const IResourceDX::LocationDX& dx_resource_location = m_resource_locations_dx.back();
+        const ResourceLocationDX& dx_resource_location = m_resource_locations_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
                                    magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
@@ -139,7 +139,7 @@ bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         cp_native_device->CopyDescriptorsSimple(
             1,
             p_dx_descriptor_heap->GetNativeCpuDescriptorHandle(descriptor_index),
-            dx_resource_location.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
+            dx_resource_location.GetNativeCpuDescriptorHandle(),
             native_heap_type
         );
 
@@ -417,7 +417,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
         });
     }
 
-    for (const IResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+    for (const ResourceLocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
     {
         if (binding_settings.type == DXBindingType::ConstantBufferView ||
             binding_settings.type == DXBindingType::ShaderResourceView)
@@ -510,7 +510,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
                               "descriptor range offset is out of reserved descriptor range bounds");
 
     uint32_t resource_index = 0;
-    for (const IResourceDX::LocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+    for (const ResourceLocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
     {
         const DescriptorHeapDX::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
         META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
@@ -526,7 +526,7 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
 
         d3d12_device->CopyDescriptorsSimple(1,
             dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),
-            resource_location_dx.GetResourceDX().GetNativeCpuDescriptorHandle(ResourceBase::Usage::ShaderRead),
+            resource_location_dx.GetNativeCpuDescriptorHandle(),
             native_heap_type
         );
         resource_index++;

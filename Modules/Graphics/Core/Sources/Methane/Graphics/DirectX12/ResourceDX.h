@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -36,43 +36,49 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
+struct IResourceDX;
+
+class ResourceLocationDX final : public ResourceLocation
+{
+public:
+    ResourceLocationDX(const ResourceLocation& location, Resource::Usage usage);
+
+    [[nodiscard]] Resource::Usage             GetUsage() const noexcept            { return m_usage; }
+    [[nodiscard]] IResourceDX&                GetResourceDX() const noexcept       { return m_resource_dx.get(); }
+    [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept;
+    [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle() const noexcept;
+    [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle() const noexcept;
+
+private:
+    const Resource::Usage m_usage;
+    Ref<IResourceDX>      m_resource_dx;
+};
+
+using ResourceLocationsDX = std::vector<ResourceLocationDX>;
+
 struct IResourceDX : virtual Resource // NOSONAR
 {
 public:
-    using Barrier    = Resource::Barrier;
-    using Barriers   = Resource::Barriers;
-    using State      = Resource::State;
-    using BarriersDX = ResourceBarriersDX;
-
-    class LocationDX final : public Location
-    {
-    public:
-        explicit LocationDX(const Location& location)
-            : Location(location)
-            , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
-        { }
-
-        [[nodiscard]] IResourceDX&              GetResourceDX() const noexcept       { return m_resource_dx.get(); }
-        [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
-
-    private:
-        Ref<IResourceDX> m_resource_dx;
-    };
-
-    using LocationsDX = std::vector<LocationDX>;
+    using Barrier     = Resource::Barrier;
+    using Barriers    = Resource::Barriers;
+    using State       = Resource::State;
+    using BarriersDX  = ResourceBarriersDX;
+    using LocationDX  = ResourceLocationDX;
+    using LocationsDX = ResourceLocationsDX;
 
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
-    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange()); }
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)
+    {
+        return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
+    }
 
     [[nodiscard]] virtual ID3D12Resource&                     GetNativeResourceRef() const = 0;
     [[nodiscard]] virtual ID3D12Resource*                     GetNativeResource() const noexcept = 0;
     [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
     [[nodiscard]] virtual D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(Usage usage) const noexcept = 0;
-    [[nodiscard]] virtual D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage usage) const noexcept = 0;
-    [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
     [[nodiscard]] virtual const DescriptorHeapDX::Types&      GetDescriptorHeapTypes() const noexcept = 0;
 
     ~IResourceDX() override = default;

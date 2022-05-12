@@ -84,7 +84,7 @@ public:
         const SettingsDX&               GetSettingsDX() const noexcept            { return m_settings_dx; }
         uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
         const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const IResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        const ResourceLocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
         DescriptorHeapDX::Type          GetDescriptorHeapType() const;
 
         void SetRootParameterIndex(uint32_t root_parameter_index)                 { m_root_parameter_index = root_parameter_index; }
@@ -96,7 +96,7 @@ public:
         uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
         DescriptorRange                    m_descriptor_range;
         const DescriptorHeapDX::Reservation* m_p_descriptor_heap_reservation = nullptr;
-        IResourceDX::LocationsDX           m_resource_locations_dx;
+        ResourceLocationsDX           m_resource_locations_dx;
     };
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);

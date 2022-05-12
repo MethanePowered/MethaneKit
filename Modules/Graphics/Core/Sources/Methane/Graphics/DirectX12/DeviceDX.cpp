@@ -32,7 +32,7 @@ DirectX 12 implementation of the device interface.
 #include <dxgidebug.h>
 
 // Uncomment to enable debugger breakpoint on DirectX debug warning or error
-//#define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+#define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
 #endif
 
 #include <magic_enum.hpp>
