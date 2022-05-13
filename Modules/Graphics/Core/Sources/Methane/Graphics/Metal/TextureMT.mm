@@ -76,44 +76,44 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex /*frame_buffer_index*/, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings, descriptor_by_usage);
+    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
 }
 
-TextureMT::TextureMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT(context, settings, descriptor_by_usage)
+TextureMT::TextureMT(const ContextBase& context, const Settings& settings)
+    : ResourceMT(context, settings)
     , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])

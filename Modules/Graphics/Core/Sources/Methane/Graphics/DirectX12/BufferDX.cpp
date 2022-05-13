@@ -53,25 +53,25 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
 Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, DescriptorByUsage(), stride);
+    return Graphics::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, stride);
 }
 
 Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, DescriptorByUsage(), format);
+    return Graphics::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, format);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile, descriptor_by_usage);
+    return Graphics::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile);
 }
 
 Ptr<Buffer> Buffer::CreateReadBackBuffer(const Context& context, Data::Size size)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateReadBackBuffer<ReadBackBufferDX>(context, size, DescriptorByUsage());
+    return Graphics::CreateReadBackBuffer<ReadBackBufferDX>(context, size);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -85,18 +85,30 @@ template<>
 void VertexBufferDX::InitializeView(Data::Size stride)
 {
     META_FUNCTION_TASK();
-    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = GetDataSize();
-    m_buffer_view.StrideInBytes    = stride;
+    m_buffer_view.BufferLocation = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes    = GetDataSize();
+    m_buffer_view.StrideInBytes  = stride;
+}
+
+template<>
+Opt<Resource::Descriptor> VertexBufferDX::GetNativeViewDescriptor(const LocationDX&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED();
 }
 
 template<>
 void IndexBufferDX::InitializeView(PixelFormat format)
 {
     META_FUNCTION_TASK();
-    m_buffer_view.BufferLocation   = GetNativeGpuAddress();
-    m_buffer_view.SizeInBytes      = GetDataSize();
-    m_buffer_view.Format           = TypeConverterDX::PixelFormatToDxgi(format);
+    m_buffer_view.BufferLocation = GetNativeGpuAddress();
+    m_buffer_view.SizeInBytes    = GetDataSize();
+    m_buffer_view.Format         = TypeConverterDX::PixelFormatToDxgi(format);
+}
+
+template<>
+Opt<Resource::Descriptor> IndexBufferDX::GetNativeViewDescriptor(const LocationDX&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED();
 }
 
 template<>
@@ -106,22 +118,36 @@ void ConstantBufferDX::InitializeView()
     const Data::Size data_size   = GetDataSize();
     m_buffer_view.BufferLocation = GetNativeGpuAddress();
     m_buffer_view.SizeInBytes    = data_size;
+}
+
+template<>
+Opt<Resource::Descriptor> ConstantBufferDX::GetNativeViewDescriptor(const LocationDX& location)
+{
+    META_FUNCTION_TASK();
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
-    const Usage usage_mask = GetUsage();
     using namespace magic_enum::bitwise_operators;
-    if (magic_enum::flags::enum_contains(usage_mask & Usage::ShaderRead) &&
-       !magic_enum::flags::enum_contains(usage_mask & Usage::Addressable))
-    {
-        D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = GetNativeCpuDescriptorHandle(Usage::ShaderRead);
-        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_handle);
-    }
+    const Usage usage_mask = GetUsage();
+    if (!magic_enum::flags::enum_contains(usage_mask & Usage::ShaderRead) ||
+         magic_enum::flags::enum_contains(usage_mask & Usage::Addressable))
+        return std::nullopt;
+
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_descriptor_handle);
+    return descriptor;
 }
 
 template<>
 void ReadBackBufferDX::InitializeView()
 {
     META_FUNCTION_TASK();
+}
+
+template<>
+Opt<Resource::Descriptor> ReadBackBufferDX::GetNativeViewDescriptor(const LocationDX&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED();
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

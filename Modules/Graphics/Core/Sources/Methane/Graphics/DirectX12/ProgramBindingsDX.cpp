@@ -512,11 +512,11 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
     uint32_t resource_index = 0;
     for (const ResourceLocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
     {
-        const DescriptorHeapDX::Types used_heap_types = resource_location_dx.GetResourceDX().GetDescriptorHeapTypes();
-        META_CHECK_ARG_DESCR(heap_type, used_heap_types.find(heap_type) != used_heap_types.end(),
-                             "can not create binding for resource used for {} on descriptor heap of incompatible type '{}'",
-                             magic_enum::enum_name(resource_location_dx.GetResourceDX().GetUsage()),
-                             magic_enum::enum_name(dx_descriptor_heap.GetSettings().type));
+        if (!resource_location_dx.HasDescriptor())
+            continue;
+
+        META_CHECK_ARG_EQUAL_DESCR(heap_type, resource_location_dx.GetDescriptor()->heap.GetSettings().type,
+                                   "can not create binding for resource on descriptor heap of incompatible type");
 
         const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
         META_LOG("  - Resource '{}' binding with {} access has descriptor heap range [{}, {}), CPU descriptor index {}",

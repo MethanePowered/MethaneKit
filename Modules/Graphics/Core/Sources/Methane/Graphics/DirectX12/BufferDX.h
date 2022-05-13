@@ -39,12 +39,12 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-template<typename TViewNative, typename... ExtraViewArgs>
+template<typename TNativeView, typename... ExtraViewArgs>
 class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
-    BufferDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
-        : ResourceDX(context, settings, descriptor_by_usage)
+    BufferDX(const ContextBase& context, const Settings& settings, ExtraViewArgs... view_args)
+        : ResourceDX(context, settings)
     {
         META_FUNCTION_TASK();
         using namespace magic_enum::bitwise_operators;
@@ -57,7 +57,6 @@ public:
         const D3D12_RESOURCE_STATES resource_state = (is_read_back_buffer || is_private_storage) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
         const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
-        InitializeDefaultDescriptors();
         InitializeCommittedResource(resource_desc, heap_type, resource_state);
         InitializeView(view_args...);
 
@@ -163,22 +162,25 @@ public:
         return SubResource(std::move(sub_resource_data), sub_resource_index, data_range);
     }
 
-    const TViewNative& GetNativeView() const { return m_buffer_view; }
+    const TNativeView& GetNativeView() const { return m_buffer_view; }
+
+    // IResourceDX override
+    Opt<Descriptor> GetNativeViewDescriptor(const LocationDX& location) override;
 
 private:
     void InitializeView(ExtraViewArgs...);
 
-    // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
-    TViewNative                 m_buffer_view;
+    // In case of resource placed in descriptor heap, m_buffer_view field holds view descriptor instead of a view
+    TNativeView                 m_buffer_view;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 
-struct ReadBackBufferView { };
+struct ReadBackBufferViewDesc { };
 
 using VertexBufferDX   = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
 using IndexBufferDX    = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
-using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
+using ReadBackBufferDX = BufferDX<ReadBackBufferViewDesc>;
 
 class BufferSetDX final : public BufferSetBase
 {

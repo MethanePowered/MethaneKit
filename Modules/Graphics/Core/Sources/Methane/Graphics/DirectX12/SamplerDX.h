@@ -40,9 +40,10 @@ class ContextBase;
 class SamplerDX final : public ResourceDX<SamplerBase>
 {
 public:
-    SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    SamplerDX(const ContextBase& context, const Settings& settings);
 
-    // NOTE: SamplerBase descriptor is stored in heap
+    // IResourceDX override
+    Opt<Descriptor> GetNativeViewDescriptor(const LocationDX& location) override;
 };
 
 } // namespace Methane::Graphics

@@ -89,7 +89,7 @@ static bool IsAnisotropicFilteringSupported(const Context& context) noexcept
     return magic_enum::flags::enum_contains(context.GetDevice().GetCapabilities().features & Device::Features::AnisotropicFiltering);
 }
 
-Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage&)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<SamplerVK>(dynamic_cast<const ContextBase&>(context), settings);

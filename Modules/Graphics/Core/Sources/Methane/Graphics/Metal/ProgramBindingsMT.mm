@@ -201,14 +201,14 @@ bool ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
         m_mtl_sampler_states.reserve(resource_locations.size());
         std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
                        [](const Resource::Location& resource_location)
-                           { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
+                       { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
         break;
 
     case Resource::Type::Texture:
         m_mtl_textures.reserve(resource_locations.size());
         std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_textures),
                        [](const Resource::Location& resource_location)
-                           { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
+                       { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
         break;
 
     case Resource::Type::Buffer:

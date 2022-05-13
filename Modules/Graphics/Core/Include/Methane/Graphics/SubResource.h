@@ -136,6 +136,18 @@ struct Resource;
 class ResourceLocation
 {
 public:
+    struct Settings
+    {
+        SubResource::Index subresource_index;
+        SubResource::Count subresource_count;
+        Data::Size         offset = 0U;
+
+        [[nodiscard]] bool operator<(const Settings& other) const noexcept;
+        [[nodiscard]] bool operator==(const Settings& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Settings& other) const noexcept;
+    };
+
+    ResourceLocation(Resource& resource, const Settings& settings);
     ResourceLocation(Resource& resource, Data::Size offset = 0U);
     ResourceLocation(Resource& resource,
                      const SubResource::Index& subresource_index,
@@ -148,15 +160,14 @@ public:
 
     [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
     [[nodiscard]] Resource&                 GetResource() const noexcept         { return *m_resource_ptr; }
-    [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_subresource_index; }
-    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_subresource_count; }
-    [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_offset; }
+    [[nodiscard]] const Settings&           GetSettings() const noexcept         { return m_settings; }
+    [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_settings.subresource_index; }
+    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_settings.subresource_count; }
+    [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_settings.offset; }
 
 private:
-    Ptr<Resource>      m_resource_ptr;
-    SubResource::Index m_subresource_index;
-    SubResource::Count m_subresource_count;
-    Data::Size         m_offset = 0U;
+    Ptr<Resource> m_resource_ptr;
+    Settings      m_settings;
 };
 
 using ResourceLocations = std::vector<ResourceLocation>;

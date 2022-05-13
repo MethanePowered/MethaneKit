@@ -126,7 +126,7 @@ public:
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index, frame_restore_info.descriptor_by_usage);
+            frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index);
             frame.screen_texture_ptr->SetName(frame_restore_info.name);
             frame.screen_pass_ptr->Update({
                 GetScreenPassAttachments(*frame.screen_texture_ptr),

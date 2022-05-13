@@ -167,6 +167,34 @@ SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
+bool ResourceLocation::Settings::operator<(const Settings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(subresource_count, subresource_index, offset) <
+           std::tie(other.subresource_count, other.subresource_index, other.offset);
+}
+
+bool ResourceLocation::Settings::operator==(const Settings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(subresource_count, subresource_index, offset) ==
+           std::tie(other.subresource_count, other.subresource_index, other.offset);
+}
+
+bool ResourceLocation::Settings::operator!=(const Settings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(subresource_count, subresource_index, offset) !=
+           std::tie(other.subresource_count, other.subresource_index, other.offset);
+}
+
+ResourceLocation::ResourceLocation(Resource& resource, const Settings& settings)
+    : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
+    , m_settings(settings)
+{
+    META_FUNCTION_TASK();
+}
+
 ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset)
     : ResourceLocation(resource, SubResource::Index(), resource.GetSubresourceCount(), offset)
 {
@@ -177,10 +205,11 @@ ResourceLocation::ResourceLocation(Resource& resource,
                                    const SubResource::Index& subresource_index,
                                    const SubResource::Count& subresource_count,
                                    Data::Size offset)
-    : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
-    , m_subresource_index(subresource_index)
-    , m_subresource_count(subresource_count)
-    , m_offset(offset)
+    : ResourceLocation(resource, Settings{
+        subresource_index,
+        subresource_count,
+        offset
+    })
 {
     META_FUNCTION_TASK();
 }
@@ -188,15 +217,15 @@ ResourceLocation::ResourceLocation(Resource& resource,
 bool ResourceLocation::operator==(const ResourceLocation& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(m_resource_ptr, m_subresource_index, m_offset) ==
-           std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
+    return std::tie(m_resource_ptr, m_settings) ==
+           std::tie(other.m_resource_ptr, other.m_settings);
 }
 
 bool ResourceLocation::operator!=(const ResourceLocation& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(m_resource_ptr, m_subresource_index, m_offset) !=
-           std::tie(other.m_resource_ptr, other.m_subresource_index, other.m_offset);
+    return std::tie(m_resource_ptr, m_settings) !=
+           std::tie(other.m_resource_ptr, other.m_settings);
 }
 
 ResourceLocation::operator std::string() const
@@ -205,9 +234,12 @@ ResourceLocation::operator std::string() const
     if (!m_resource_ptr)
         return "Null resource location";
 
-    return fmt::format("{} '{}' subresource {} with offset {}",
+    return fmt::format("{} '{}' subresources from {} count {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
-                       m_resource_ptr->GetName(), m_subresource_index, m_offset);
+                       m_resource_ptr->GetName(),
+                       m_settings.subresource_index,
+                       m_settings.subresource_count,
+                       m_settings.offset);
 }
 
 } // namespace Methane::Graphics

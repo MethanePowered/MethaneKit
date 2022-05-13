@@ -137,7 +137,7 @@ vk::ImageViewType ITextureVK::DimensionTypeToImageViewType(Texture::DimensionTyp
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, const Settings& settings, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     switch (settings.type)
@@ -151,7 +151,7 @@ Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, co
 
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
@@ -159,7 +159,7 @@ Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBuffe
     return std::make_shared<FrameBufferTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, frame_buffer_index);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContext::Settings& context_settings = context.GetSettings();
@@ -167,14 +167,14 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context, con
     return std::make_shared<DepthStencilTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureVK>(dynamic_cast<const RenderContextVK&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, const DescriptorByUsage&)
+Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);

@@ -104,7 +104,7 @@ public:
 
         if constexpr (std::is_class_v<NativeViewType>)
         {
-            const NativeViewType& vk_resource_view = GetNativeView();
+            const NativeViewType& vk_resource_view = GetNativeViewDesc();
             if (vk_resource_view)
             {
                 const std::string view_name = fmt::format("{} View", name);
@@ -113,19 +113,6 @@ public:
         }
 
         return true;
-    }
-
-    // IResource overrides
-    const Resource::DescriptorByUsage& GetDescriptorByUsage() const noexcept final
-    {
-        META_FUNCTION_TASK();
-        static const Resource::DescriptorByUsage descriptor_by_usage;
-        return descriptor_by_usage;
-    }
-
-    const Resource::Descriptor& GetDescriptor(Resource::Usage) const final
-    {
-        META_FUNCTION_NOT_IMPLEMENTED();
     }
 
     // IResourceVK overrides
@@ -158,7 +145,7 @@ public:
     }
 
     template<typename T = NativeViewType>
-    std::enable_if_t<std::is_class_v<T>, const T&> GetNativeView() const noexcept
+    std::enable_if_t<std::is_class_v<T>, const T&> GetNativeViewDesc() const noexcept
     {
         if constexpr (is_unique_view)
             return m_vk_view.get();

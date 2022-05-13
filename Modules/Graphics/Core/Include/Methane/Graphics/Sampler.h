@@ -115,7 +115,7 @@ struct Sampler : virtual Resource // NOSONAR
     };
 
     // Create Sampler instance
-    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings);
 
     // Sampler interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

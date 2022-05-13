@@ -35,7 +35,7 @@ namespace Methane::Graphics
 class BufferMT final : public ResourceMT<BufferBase>
 {
 public:
-    BufferMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferMT(const ContextBase& context, const Settings& settings);
 
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;

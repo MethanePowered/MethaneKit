@@ -80,12 +80,10 @@ public:
 protected:
     struct ResourceRestoreInfo // NOSONAR - noexcept move constructor should be auto-generated
     {
-        Resource::DescriptorByUsage descriptor_by_usage;
-        std::string                 name;
+        std::string name;
 
         explicit ResourceRestoreInfo(const Resource& resource)
-            : descriptor_by_usage(resource.GetDescriptorByUsage())
-            , name(resource.GetName())
+            : name(resource.GetName())
         { }
     };
 

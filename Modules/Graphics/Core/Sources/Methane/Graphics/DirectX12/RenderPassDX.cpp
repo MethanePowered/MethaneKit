@@ -481,10 +481,8 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const ColorAttachment& color_attach : GetPatternBase().GetSettings().color_attachments)
     {
-        const auto& rt_texture = static_cast<const ResourceDX<TextureBase>&>(GetAttachmentTextureLocation(color_attach).GetTexture());
-        m_native_rt_cpu_handles.push_back(rt_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget));
+        m_native_rt_cpu_handles.push_back(GetAttachmentTextureLocationDX(color_attach).GetNativeCpuDescriptorHandle());
     }
-
     return m_native_rt_cpu_handles;
 }
 
@@ -498,8 +496,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     if (!settings.depth_attachment)
         return nullptr;
 
-    const auto& depth_texture = static_cast<const ResourceDX<TextureBase>&>(GetAttachmentTextureLocation(*settings.depth_attachment).GetTexture());
-    m_native_ds_cpu_handle = depth_texture.GetNativeCpuDescriptorHandle(ResourceBase::Usage::RenderTarget);
+    m_native_ds_cpu_handle = GetAttachmentTextureLocationDX(*settings.depth_attachment).GetNativeCpuDescriptorHandle();
     return &m_native_ds_cpu_handle;
 }
 

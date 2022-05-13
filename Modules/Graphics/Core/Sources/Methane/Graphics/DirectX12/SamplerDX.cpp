@@ -204,17 +204,24 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     }
 }
 
-Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceDX(context, settings, descriptor_by_usage)
+SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings)
+    : ResourceDX(context, settings)
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
+}
+
+Opt<Resource::Descriptor> SamplerDX::GetNativeViewDescriptor(const LocationDX& location)
+{
+    META_FUNCTION_TASK();
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Settings& settings = GetSettings();
 
     D3D12_SAMPLER_DESC dx_sampler_desc{};
     dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
@@ -228,7 +235,8 @@ SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const
     dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToD3D(settings.compare_function);
     ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, cpu_descriptor_handle);
+    return descriptor;
 }
 
 } // namespace Methane::Graphics

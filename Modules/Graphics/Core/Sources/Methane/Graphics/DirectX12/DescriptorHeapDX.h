@@ -80,7 +80,6 @@ public:
         bool       shader_visible;
     };
 
-    using Types    = std::set<Type>;
     using Range    = Methane::Data::Range<Data::Index>;
 
     struct Reservation

@@ -52,14 +52,14 @@ public:
             All           = ~0U
         };
 
-        Ptrs<TextureBase>        render_pass_attachments_ptr;
-        Ptr<RenderStateBase>     render_state_ptr;
-        Ptr<BufferSetBase>       vertex_buffer_set_ptr;
-        Ptr<BufferBase>          index_buffer_ptr;
-        std::optional<Primitive> opt_primitive_type;
-        ViewStateBase*           view_state_ptr        = nullptr;
-        RenderState::Groups      render_state_groups = RenderState::Groups::None;
-        Changes                  changes             = Changes::None;
+        Ptrs<TextureBase>    render_pass_attachments_ptr;
+        Ptr<RenderStateBase> render_state_ptr;
+        Ptr<BufferSetBase>   vertex_buffer_set_ptr;
+        Ptr<BufferBase>      index_buffer_ptr;
+        Opt<Primitive>       primitive_type_opt;
+        ViewStateBase*       view_state_ptr      = nullptr;
+        RenderState::Groups  render_state_groups = RenderState::Groups::None;
+        Changes              changes             = Changes::None;
     };
 
     static Ptr<RenderCommandList> CreateForSynchronization(CommandQueue& cmd_queue);
@@ -71,8 +71,8 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    bool IsValidationEnabled() const noexcept final                      { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) final          { m_is_validation_enabled = is_validation_enabled; }
+    bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
     RenderPass& GetRenderPass() const final;
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;

@@ -61,10 +61,10 @@ Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, P
     return Graphics::CreateIndexBuffer<BufferMT>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile, descriptor_by_usage);
+    return Graphics::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -73,8 +73,8 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferMT::BufferMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceMT(context, settings, descriptor_by_usage)
+BufferMT::BufferMT(const ContextBase& context, const Settings& settings)
+    : ResourceMT(context, settings)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
 {

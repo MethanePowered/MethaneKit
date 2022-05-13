@@ -386,7 +386,7 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
     if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext(), depth_restore_info_opt->descriptor_by_usage);
+    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext());
     m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }
 

@@ -122,8 +122,6 @@ struct Resource
     [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
     [[nodiscard]] virtual State                     GetState() const noexcept = 0;
     [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
-    [[nodiscard]] virtual const DescriptorByUsage&  GetDescriptorByUsage() const noexcept = 0;
-    [[nodiscard]] virtual const Descriptor&         GetDescriptor(Usage usage) const = 0;
     [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
 };

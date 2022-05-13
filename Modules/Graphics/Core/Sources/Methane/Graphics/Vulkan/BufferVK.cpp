@@ -95,7 +95,7 @@ Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, P
     return Graphics::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile, const DescriptorByUsage&)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
