@@ -216,11 +216,11 @@ SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-Opt<Resource::Descriptor> SamplerDX::GetNativeViewDescriptor(const LocationDX& location)
+Opt<Resource::Descriptor> SamplerDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     const Settings& settings = GetSettings();
 
     D3D12_SAMPLER_DESC dx_sampler_desc{};

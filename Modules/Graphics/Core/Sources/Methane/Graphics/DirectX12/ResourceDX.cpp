@@ -61,40 +61,11 @@ DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(Resource& resou
     }
 }
 
-ResourceLocationDX::Id::Id(Resource::Usage usage, const ResourceLocation::Settings& settings)
-    : usage(usage)
-    , settings_ref(settings)
-{
-    META_FUNCTION_TASK();
-}
-
-bool ResourceLocationDX::Id::operator<(const Id& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(usage, settings_ref.get()) <
-           std::tie(other.usage, other.settings_ref.get());
-}
-
-bool ResourceLocationDX::Id::operator==(const Id& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(usage, settings_ref.get()) ==
-           std::tie(other.usage, other.settings_ref.get());
-}
-
-bool ResourceLocationDX::Id::operator!=(const Id& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(usage, settings_ref.get()) !=
-           std::tie(other.usage, other.settings_ref.get());
-}
-
 ResourceLocationDX::ResourceLocationDX(const ResourceLocation& location, Resource::Usage usage)
     : ResourceLocation(location)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
-    , m_context_dx(dynamic_cast<const IContextDX&>(GetResource().GetContext()))
-    , m_descriptor_opt(m_resource_dx.GetNativeViewDescriptor(*this))
+    , m_descriptor_opt(m_resource_dx.InitialializeNativeViewDescriptor(m_id))
 {
     META_FUNCTION_TASK();
 }

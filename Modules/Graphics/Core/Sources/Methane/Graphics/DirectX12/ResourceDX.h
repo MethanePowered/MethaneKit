@@ -42,25 +42,12 @@ struct IResourceDX;
 class ResourceLocationDX final : public ResourceLocation
 {
 public:
-    struct Id
-    {
-        Resource::Usage     usage;
-        Ref<const Settings> settings_ref;
-
-        Id(Resource::Usage usage, const ResourceLocation::Settings& settings);
-
-        [[nodiscard]] bool operator<(const Id& other) const noexcept;
-        [[nodiscard]] bool operator==(const Id& other) const noexcept;
-        [[nodiscard]] bool operator!=(const Id& other) const noexcept;
-    };
-
     ResourceLocationDX(const ResourceLocation& location, Resource::Usage usage);
     ~ResourceLocationDX();
 
     [[nodiscard]] const Id&                        GetId() const noexcept                { return m_id; }
     [[nodiscard]] Resource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
     [[nodiscard]] IResourceDX&                     GetResourceDX() const noexcept        { return m_resource_dx; }
-    [[nodiscard]] const IContextDX&                GetContextDX() const noexcept         { return m_context_dx; }
     [[nodiscard]] bool                             HasDescriptor() const noexcept        { return m_descriptor_opt.has_value(); }
     [[nodiscard]] const Opt<Resource::Descriptor>& GetDescriptor() const noexcept        { return m_descriptor_opt; }
     [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS        GetNativeGpuAddress() const noexcept;
@@ -70,7 +57,6 @@ public:
 private:
     Id                         m_id;
     IResourceDX&               m_resource_dx;
-    const IContextDX&          m_context_dx;
     Opt<Resource::Descriptor>  m_descriptor_opt;
 };
 
@@ -98,7 +84,8 @@ public:
     [[nodiscard]] virtual ID3D12Resource*                     GetNativeResource() const noexcept = 0;
     [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
-    [[nodiscard]] virtual Opt<Descriptor>                     GetNativeViewDescriptor(const LocationDX& location) = 0;
+
+    virtual Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) = 0;
 
     ~IResourceDX() override = default;
 };

@@ -91,7 +91,7 @@ void VertexBufferDX::InitializeView(Data::Size stride)
 }
 
 template<>
-Opt<Resource::Descriptor> VertexBufferDX::GetNativeViewDescriptor(const LocationDX&)
+Opt<Resource::Descriptor> VertexBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -106,7 +106,7 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 }
 
 template<>
-Opt<Resource::Descriptor> IndexBufferDX::GetNativeViewDescriptor(const LocationDX&)
+Opt<Resource::Descriptor> IndexBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -121,7 +121,7 @@ void ConstantBufferDX::InitializeView()
 }
 
 template<>
-Opt<Resource::Descriptor> ConstantBufferDX::GetNativeViewDescriptor(const LocationDX& location)
+Opt<Resource::Descriptor> ConstantBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
 
@@ -132,8 +132,8 @@ Opt<Resource::Descriptor> ConstantBufferDX::GetNativeViewDescriptor(const Locati
          magic_enum::flags::enum_contains(usage_mask & Usage::Addressable))
         return std::nullopt;
 
-    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_descriptor_handle);
     return descriptor;
 }
@@ -145,7 +145,7 @@ void ReadBackBufferDX::InitializeView()
 }
 
 template<>
-Opt<Resource::Descriptor> ReadBackBufferDX::GetNativeViewDescriptor(const LocationDX&)
+Opt<Resource::Descriptor> ReadBackBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }

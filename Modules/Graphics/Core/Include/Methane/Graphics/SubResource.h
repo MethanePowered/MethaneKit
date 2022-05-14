@@ -133,6 +133,18 @@ using SubResources = std::vector<SubResource>;
 
 struct Resource;
 
+enum class ResourceUsage : uint32_t
+{
+    None         = 0U,
+    // Primary usages
+    ShaderRead   = 1U << 0U,
+    ShaderWrite  = 1U << 1U,
+    RenderTarget = 1U << 2U,
+    // Secondary usages
+    ReadBack     = 1U << 3U,
+    Addressable  = 1U << 4U,
+};
+
 class ResourceLocation
 {
 public:
@@ -145,6 +157,16 @@ public:
         [[nodiscard]] bool operator<(const Settings& other) const noexcept;
         [[nodiscard]] bool operator==(const Settings& other) const noexcept;
         [[nodiscard]] bool operator!=(const Settings& other) const noexcept;
+    };
+
+    struct Id : Settings
+    {
+        ResourceUsage usage;
+        Id(ResourceUsage usage, const Settings& settings);
+
+        [[nodiscard]] bool operator<(const Id& other) const noexcept;
+        [[nodiscard]] bool operator==(const Id& other) const noexcept;
+        [[nodiscard]] bool operator!=(const Id& other) const noexcept;
     };
 
     ResourceLocation(Resource& resource, const Settings& settings);

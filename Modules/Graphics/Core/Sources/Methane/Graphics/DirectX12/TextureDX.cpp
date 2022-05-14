@@ -137,10 +137,10 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Texture::Settings& s
 }
 
 [[nodiscard]]
-static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeResourceViewDesc(const Texture::Settings& settings, const ResourceLocationDX& location)
+static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeResourceViewDesc(const Texture::Settings& settings, const ResourceLocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    const Resource::SubResource::Count& sub_resource_count = location.GetSubresourceCount();
+    const Resource::SubResource::Count& sub_resource_count = location_id.subresource_count;
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     switch (settings.dimension_type)
@@ -250,7 +250,7 @@ void RenderTargetTextureDX::Initialize()
 }
 
 template<>
-Opt<Resource::Descriptor> RenderTargetTextureDX::GetNativeViewDescriptor(const LocationDX&)
+Opt<Resource::Descriptor> RenderTargetTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_TASK();
     return std::nullopt;
@@ -265,11 +265,11 @@ void FrameBufferTextureDX::Initialize(FrameBufferIndex frame_buffer_index)
 }
 
 template<>
-Opt<Resource::Descriptor> FrameBufferTextureDX::GetNativeViewDescriptor(const LocationDX& location)
+Opt<Resource::Descriptor> FrameBufferTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, cpu_descriptor_handle);
     return descriptor;
 }
@@ -337,20 +337,19 @@ void DepthStencilTextureDX::CreateDepthStencilView(const D3D12_CPU_DESCRIPTOR_HA
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateDepthStencilView(GetNativeResource(), &dsv_desc, cpu_descriptor_handle);
 }
 
-Opt<Resource::Descriptor> DepthStencilTextureDX::GetNativeViewDescriptor(const LocationDX& location)
+Opt<Resource::Descriptor> DepthStencilTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
 
-    const Usage location_usage = location.GetUsage();
-    switch(location_usage)
+    switch(location_id.usage)
     {
     case Resource::Usage::ShaderRead:   CreateShaderResourceView(cpu_descriptor_handle); break;
     case Resource::Usage::RenderTarget: CreateDepthStencilView(cpu_descriptor_handle); break;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(location.GetUsage(), descriptor,
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(location_id.usage, descriptor,
                                               "unsupported usage '{}' for Depth-Stencil buffer",
-                                              magic_enum::enum_name(location_usage));
+                                              magic_enum::enum_name(location_id.usage));
     }
 
     return descriptor;
@@ -370,12 +369,12 @@ ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& set
     m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
-Opt<Resource::Descriptor> ImageTextureDX::GetNativeViewDescriptor(const LocationDX& location)
+Opt<Resource::Descriptor> ImageTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = CreateNativeResourceViewDesc(GetSettings(), location);
-    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location.GetId());
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
+    const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = CreateNativeResourceViewDesc(GetSettings(), location_id);
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, cpu_descriptor_handle);
     return descriptor;
 }

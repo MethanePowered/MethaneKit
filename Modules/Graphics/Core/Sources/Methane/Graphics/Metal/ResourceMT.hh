@@ -53,6 +53,14 @@ public:
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
+    const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept final
+    {
+        static const DescriptorByLocationId s_dummy_descriptor_by_location_id;
+        return s_dummy_descriptor_by_location_id;
+    }
+
+    void RestoreDescriptorLocations(const DescriptorByLocationId&) final { /* intentionally uninitialized */ }
+
 protected:
     const IContextMT& GetContextMT() const noexcept
     {

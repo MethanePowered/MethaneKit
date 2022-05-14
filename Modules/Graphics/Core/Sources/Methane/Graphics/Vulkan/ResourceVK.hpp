@@ -115,6 +115,14 @@ public:
         return true;
     }
 
+    const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept final
+    {
+        static const DescriptorByLocationId s_dummy_descriptor_by_location_id;
+        return s_dummy_descriptor_by_location_id;
+    }
+
+    void RestoreDescriptorLocations(const DescriptorByLocationId&) final { /* intentionally uninitialized */ }
+
     // IResourceVK overrides
     const IContextVK& GetContextVK() const noexcept final
     {

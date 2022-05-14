@@ -188,6 +188,31 @@ bool ResourceLocation::Settings::operator!=(const Settings& other) const noexcep
            std::tie(other.subresource_count, other.subresource_index, other.offset);
 }
 
+ResourceLocation::Id::Id(ResourceUsage usage, const ResourceLocation::Settings& settings)
+    : Settings(settings)
+    , usage(usage)
+{
+    META_FUNCTION_TASK();
+}
+
+bool ResourceLocation::Id::operator<(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return usage < other.usage || ResourceLocation::Settings::operator<(other);
+}
+
+bool ResourceLocation::Id::operator==(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return usage == other.usage && ResourceLocation::Settings::operator==(other);
+}
+
+bool ResourceLocation::Id::operator!=(const Id& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return usage != other.usage && ResourceLocation::Settings::operator!=(other);
+}
+
 ResourceLocation::ResourceLocation(Resource& resource, const Settings& settings)
     : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
     , m_settings(settings)

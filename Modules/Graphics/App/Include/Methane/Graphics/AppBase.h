@@ -78,12 +78,14 @@ public:
     void SetShowHudInWindowTitle(bool show_hud_in_window_title);
 
 protected:
-    struct ResourceRestoreInfo // NOSONAR - noexcept move constructor should be auto-generated
+    struct ResourceRestoreInfo
     {
+        Resource::DescriptorByLocationId descriptor_by_location_id;
         std::string name;
 
         explicit ResourceRestoreInfo(const Resource& resource)
-            : name(resource.GetName())
+            : descriptor_by_location_id(resource.GetDescriptorByLocationId())
+            , name(resource.GetName())
         { }
     };
 

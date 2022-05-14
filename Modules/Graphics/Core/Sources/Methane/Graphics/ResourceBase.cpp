@@ -272,20 +272,4 @@ void ResourceBase::FillSubresourceSizes()
     }
 }
 
-const std::vector<Resource::Usage>& ResourceBase::GetPrimaryUsageValues() noexcept
-{
-    META_FUNCTION_TASK();
-    static std::vector<Resource::Usage> s_primary_usages;
-    if (!s_primary_usages.empty())
-        return s_primary_usages;
-
-    for (Usage usage : magic_enum::enum_values<Usage>())
-    {
-        using namespace magic_enum::bitwise_operators;
-        if (!magic_enum::flags::enum_contains(usage & s_secondary_usage_mask) && usage != Usage::None)
-            s_primary_usages.push_back(usage);
-    }
-    return s_primary_usages;
-}
-
 } // namespace Methane::Graphics

@@ -165,7 +165,7 @@ public:
     const TNativeView& GetNativeView() const { return m_buffer_view; }
 
     // IResourceDX override
-    Opt<Descriptor> GetNativeViewDescriptor(const LocationDX& location) override;
+    Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
 
 private:
     void InitializeView(ExtraViewArgs...);

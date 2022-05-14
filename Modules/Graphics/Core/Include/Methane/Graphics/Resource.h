@@ -52,29 +52,14 @@ struct Resource
     : virtual Object // NOSONAR
     , virtual Data::IEmitter<IResourceCallback> // NOSONAR
 {
+    using Usage = ResourceUsage;
+
     enum class Type
     {
         Buffer,
         Texture,
         Sampler,
     };
-
-    enum class Usage : uint32_t
-    {
-        None         = 0U,
-        // Primary usages
-        ShaderRead   = 1U << 0U,
-        ShaderWrite  = 1U << 1U,
-        RenderTarget = 1U << 2U,
-        // Secondary usages
-        ReadBack     = 1U << 3U,
-        Addressable  = 1U << 4U,
-    };
-
-    static constexpr Usage s_secondary_usage_mask = static_cast<Usage>(
-        static_cast<uint32_t>(Usage::Addressable) |
-        static_cast<uint32_t>(Usage::ReadBack)
-    );
 
     struct Descriptor
     {
@@ -83,6 +68,8 @@ struct Resource
 
         Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index);
     };
+
+    using DescriptorByLocationId = std::map<ResourceLocation::Id, Descriptor>;
 
     class AllocationError : public std::runtime_error
     {
@@ -114,15 +101,18 @@ struct Resource
     virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) = 0;
     virtual void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) = 0;
-    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
-    [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
-    [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
-    [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
-    [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
-    [[nodiscard]] virtual State                     GetState() const noexcept = 0;
-    [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
-    [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
-    [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
+    virtual void RestoreDescriptorLocations(const DescriptorByLocationId& descriptor_by_location_id) = 0;
+
+    [[nodiscard]] virtual SubResource                   GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
+    [[nodiscard]] virtual Data::Size                    GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
+    [[nodiscard]] virtual Data::Size                    GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
+    [[nodiscard]] virtual const SubResource::Count&     GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual Type                          GetResourceType() const noexcept = 0;
+    [[nodiscard]] virtual State                         GetState() const noexcept = 0;
+    [[nodiscard]] virtual Usage                         GetUsage() const noexcept = 0;
+    [[nodiscard]] virtual const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept = 0;
+    [[nodiscard]] virtual const Context&                GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const Opt<uint32_t>&          GetOwnerQueueFamily() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

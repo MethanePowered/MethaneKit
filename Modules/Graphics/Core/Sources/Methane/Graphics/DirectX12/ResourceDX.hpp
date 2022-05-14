@@ -90,6 +90,20 @@ public:
         return true;
     }
 
+    const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept final { return m_descriptor_by_location_id; }
+
+    void RestoreDescriptorLocations(const DescriptorByLocationId& descriptor_by_location_id) final
+    {
+        META_FUNCTION_TASK();
+        META_CHECK_ARG_TRUE_DESCR(m_descriptor_by_location_id.empty(), "can not restore on resource with non-empty descriptor by location");
+        m_descriptor_by_location_id = descriptor_by_location_id;
+        for (const auto& [location_id, descriptor] : m_descriptor_by_location_id)
+        {
+            descriptor.heap.ReplaceResource(*this, descriptor.index);
+            InitialializeNativeViewDescriptor(location_id);
+        }
+    }
+
     // IResourceDX overrides
     ID3D12Resource&                    GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
     ID3D12Resource*                    GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
@@ -167,7 +181,21 @@ protected:
     const Resource::Descriptor& GetDescriptorByLocationId(const ResourceLocationDX::Id& location_id)
     {
         META_FUNCTION_TASK();
+        const auto it = m_descriptor_by_location_id.find(location_id);
+        if (it != m_descriptor_by_location_id.end())
+            return it->second;
+
         return m_descriptor_by_location_id.try_emplace(location_id, CreateResourceDescriptor(location_id.usage)).first->second;
+    }
+
+    static D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(const Descriptor& descriptor)
+    {
+        return descriptor.heap.GetNativeCpuDescriptorHandle(descriptor.index);
+    }
+
+    static D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle(const Descriptor& descriptor)
+    {
+        return descriptor.heap.GetNativeGpuDescriptorHandle(descriptor.index);
     }
 
 private:
@@ -179,8 +207,6 @@ private:
         DescriptorHeapDX& heap = descriptor_manager.GetDescriptorHeap(heap_type);
         return Resource::Descriptor(heap, heap.AddResource(dynamic_cast<ResourceBase&>(*this)));
     }
-
-    using DescriptorByLocationId = std::map<ResourceLocationDX::Id, Descriptor>;
 
     DescriptorByLocationId      m_descriptor_by_location_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
