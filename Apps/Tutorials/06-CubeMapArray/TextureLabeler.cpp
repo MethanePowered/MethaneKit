@@ -81,7 +81,8 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         },
         std::nullopt, // No depth attachment
         std::nullopt, // No stencil attachment
-        gfx::RenderPass::Access::ShaderResources,
+        gfx::RenderPass::Access::ShaderResources |
+        gfx::RenderPass::Access::Samplers,
         false // intermediate render pass
     };
 

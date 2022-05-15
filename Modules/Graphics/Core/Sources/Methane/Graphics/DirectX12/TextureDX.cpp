@@ -137,55 +137,62 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Texture::Settings& s
 }
 
 [[nodiscard]]
-static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeResourceViewDesc(const Texture::Settings& settings, const ResourceLocationDX::Id& location_id)
+static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const Texture::Settings& settings, const ResourceLocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
+    const Resource::SubResource::Index& sub_resource_index = location_id.subresource_index;
     const Resource::SubResource::Count& sub_resource_count = location_id.subresource_count;
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     switch (settings.dimension_type)
     {
     case Texture::DimensionType::Tex1D:
-        srv_desc.Texture1D.MipLevels = sub_resource_count.GetMipLevelsCount();
-        [[fallthrough]];
+        srv_desc.Texture1D.MostDetailedMip      = sub_resource_index.GetMipLevel();
+        srv_desc.Texture1D.MipLevels            = sub_resource_count.GetMipLevelsCount();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE1D;
+        break;
 
     case Texture::DimensionType::Tex1DArray:
-        srv_desc.Texture1DArray.MipLevels   = sub_resource_count.GetMipLevelsCount();
-        srv_desc.Texture1DArray.ArraySize   = sub_resource_count.GetArraySize();
-        srv_desc.ViewDimension              = settings.dimension_type == Texture::DimensionType::Tex1D
-                                              ? D3D12_SRV_DIMENSION_TEXTURE1D
-                                              : D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+        srv_desc.Texture1DArray.MostDetailedMip = sub_resource_index.GetMipLevel();
+        srv_desc.Texture1DArray.MipLevels       = sub_resource_count.GetMipLevelsCount();
+        srv_desc.Texture1DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
+        srv_desc.Texture1DArray.ArraySize       = sub_resource_count.GetArraySize();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
     case Texture::DimensionType::Tex2DMultisample:
     case Texture::DimensionType::Tex2D:
-        srv_desc.Texture2D.MipLevels = sub_resource_count.GetMipLevelsCount();
-        [[fallthrough]];
+        srv_desc.Texture2D.MostDetailedMip      = sub_resource_index.GetMipLevel();
+        srv_desc.Texture2D.MipLevels            = sub_resource_count.GetMipLevelsCount();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE2D;
+        break;
 
     case Texture::DimensionType::Tex2DArray:
-        srv_desc.Texture2DArray.MipLevels = sub_resource_count.GetMipLevelsCount();
-        srv_desc.Texture2DArray.ArraySize = sub_resource_count.GetArraySize();
-        srv_desc.ViewDimension            = settings.dimension_type == Texture::DimensionType::Tex2D
-                                            ? D3D12_SRV_DIMENSION_TEXTURE2D
-                                            : D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+        srv_desc.Texture2DArray.MostDetailedMip = sub_resource_index.GetMipLevel();
+        srv_desc.Texture2DArray.MipLevels       = sub_resource_count.GetMipLevelsCount();
+        srv_desc.Texture2DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
+        srv_desc.Texture2DArray.ArraySize       = sub_resource_count.GetArraySize();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
     case Texture::DimensionType::Tex3D:
-        srv_desc.Texture3D.MipLevels = sub_resource_count.GetMipLevelsCount();
-        srv_desc.ViewDimension       = D3D12_SRV_DIMENSION_TEXTURE3D;
+        srv_desc.Texture3D.MostDetailedMip      = sub_resource_index.GetMipLevel();
+        srv_desc.Texture3D.MipLevels            = sub_resource_count.GetMipLevelsCount();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
     case Texture::DimensionType::Cube:
-        srv_desc.TextureCube.MipLevels = sub_resource_count.GetMipLevelsCount();
-        [[fallthrough]];
+        srv_desc.TextureCube.MostDetailedMip    = sub_resource_index.GetMipLevel();
+        srv_desc.TextureCube.MipLevels          = sub_resource_count.GetMipLevelsCount();
+        srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        break;
 
     case Texture::DimensionType::CubeArray:
-        srv_desc.TextureCubeArray.First2DArrayFace = 0;
+        srv_desc.TextureCubeArray.First2DArrayFace = sub_resource_index.GetArrayIndex() * 6U;
         srv_desc.TextureCubeArray.NumCubes         = sub_resource_count.GetArraySize();
+        srv_desc.TextureCubeArray.MostDetailedMip  = sub_resource_index.GetMipLevel();
         srv_desc.TextureCubeArray.MipLevels        = sub_resource_count.GetMipLevelsCount();
-        srv_desc.ViewDimension                     = settings.dimension_type == Texture::DimensionType::Cube
-                                                     ? D3D12_SRV_DIMENSION_TEXTURECUBE
-                                                     : D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+        srv_desc.ViewDimension                     = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
         break;
 
     default:
@@ -195,6 +202,59 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeResourceViewDesc(const Textur
     srv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format);
     srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     return srv_desc;
+}
+
+[[nodiscard]]
+static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Texture::Settings& settings,
+                                                                      const ResourceLocationDX::Id& location_id)
+{
+    META_FUNCTION_TASK();
+    const Resource::SubResource::Index& sub_resource_index = location_id.subresource_index;
+    const Resource::SubResource::Count& sub_resource_count = location_id.subresource_count;
+
+    D3D12_RENDER_TARGET_VIEW_DESC rtv_desc{};
+    switch (settings.dimension_type)
+    {
+    case Texture::DimensionType::Tex1D:
+        rtv_desc.Texture1D.MipSlice             = sub_resource_index.GetMipLevel();
+        rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE1D;
+        break;
+
+    case Texture::DimensionType::Tex1DArray:
+        rtv_desc.Texture1DArray.MipSlice        = sub_resource_index.GetMipLevel();
+        rtv_desc.Texture1DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
+        rtv_desc.Texture1DArray.ArraySize       = sub_resource_count.GetArraySize();
+        rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE1DARRAY;
+        break;
+
+    case Texture::DimensionType::Tex2DMultisample:
+    case Texture::DimensionType::Tex2D:
+        rtv_desc.Texture2D.MipSlice             = sub_resource_index.GetMipLevel();
+        rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE2D;
+        break;
+
+    case Texture::DimensionType::Cube:
+    case Texture::DimensionType::CubeArray:
+    case Texture::DimensionType::Tex2DArray:
+        rtv_desc.Texture2DArray.MipSlice        = sub_resource_index.GetMipLevel();
+        rtv_desc.Texture2DArray.FirstArraySlice = settings.dimension_type == Texture::DimensionType::Tex2DArray
+                                                ? sub_resource_index.GetArrayIndex()
+                                                : sub_resource_index.GetDepthSlice();
+        rtv_desc.Texture2DArray.ArraySize       = sub_resource_count.GetArraySize();
+        rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+        break;
+
+    case Texture::DimensionType::Tex3D:
+        rtv_desc.Texture3D.MipSlice             = sub_resource_index.GetMipLevel();
+        rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE3D;
+        break;
+
+    default:
+        META_UNEXPECTED_ARG(settings.dimension_type);
+    }
+
+    rtv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format);
+    return rtv_desc;
 }
 
 Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, const Settings& settings)
@@ -250,10 +310,25 @@ void RenderTargetTextureDX::Initialize()
 }
 
 template<>
-Opt<Resource::Descriptor> RenderTargetTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id&)
+Opt<Resource::Descriptor> RenderTargetTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
-    return std::nullopt;
+    const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
+    switch(location_id.usage)
+    {
+    case ResourceUsage::ShaderRead:
+    {
+        const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = CreateNativeShaderResourceViewDesc(GetSettings(), location_id);
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(descriptor));
+    } break;
+
+    case ResourceUsage::RenderTarget:
+    {
+        const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = CreateNativeRenderTargetViewDesc(GetSettings(), location_id);
+        GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), &rtv_desc, GetNativeCpuDescriptorHandle(descriptor));
+    } break;
+    }
+    return descriptor;
 }
 
 template<>
@@ -269,8 +344,7 @@ Opt<Resource::Descriptor> FrameBufferTextureDX::InitializeNativeViewDescriptor(c
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, cpu_descriptor_handle);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, GetNativeCpuDescriptorHandle(descriptor));
     return descriptor;
 }
 
@@ -315,13 +389,13 @@ void DepthStencilTextureDX::CreateShaderResourceView(const D3D12_CPU_DESCRIPTOR_
     META_FUNCTION_TASK();
     const Texture::Settings& settings = GetSettings();
 
-    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
-    srv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
-    srv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
-    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srv_desc.Texture2D.MipLevels     = 1;
+    D3D12_SHADER_RESOURCE_VIEW_DESC rtv_desc{};
+    rtv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
+    rtv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
+    rtv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    rtv_desc.Texture2D.MipLevels     = 1;
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, cpu_descriptor_handle);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &rtv_desc, cpu_descriptor_handle);
 }
 
 void DepthStencilTextureDX::CreateDepthStencilView(const D3D12_CPU_DESCRIPTOR_HANDLE& cpu_descriptor_handle) const
@@ -341,12 +415,11 @@ Opt<Resource::Descriptor> DepthStencilTextureDX::InitializeNativeViewDescriptor(
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
-    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
 
     switch(location_id.usage)
     {
-    case Resource::Usage::ShaderRead:   CreateShaderResourceView(cpu_descriptor_handle); break;
-    case Resource::Usage::RenderTarget: CreateDepthStencilView(cpu_descriptor_handle); break;
+    case Resource::Usage::ShaderRead:   CreateShaderResourceView(GetNativeCpuDescriptorHandle(descriptor)); break;
+    case Resource::Usage::RenderTarget: CreateDepthStencilView(GetNativeCpuDescriptorHandle(descriptor)); break;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(location_id.usage, descriptor,
                                               "unsupported usage '{}' for Depth-Stencil buffer",
                                               magic_enum::enum_name(location_id.usage));
@@ -374,8 +447,8 @@ Opt<Resource::Descriptor> ImageTextureDX::InitializeNativeViewDescriptor(const L
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
     const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
-    const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = CreateNativeResourceViewDesc(GetSettings(), location_id);
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, cpu_descriptor_handle);
+    const D3D12_SHADER_RESOURCE_VIEW_DESC rtv_desc = CreateNativeShaderResourceViewDesc(GetSettings(), location_id);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &rtv_desc, cpu_descriptor_handle);
     return descriptor;
 }
 

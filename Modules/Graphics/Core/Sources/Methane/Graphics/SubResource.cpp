@@ -170,22 +170,22 @@ SubResource::Index::operator std::string() const noexcept
 bool ResourceLocation::Settings::operator<(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_count, subresource_index, offset) <
-           std::tie(other.subresource_count, other.subresource_index, other.offset);
+    return std::tie(subresource_index, subresource_count, offset) <
+           std::tie(other.subresource_index, other.subresource_count, other.offset);
 }
 
 bool ResourceLocation::Settings::operator==(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_count, subresource_index, offset) ==
-           std::tie(other.subresource_count, other.subresource_index, other.offset);
+    return std::tie(subresource_index, subresource_count, offset) ==
+           std::tie(other.subresource_index, other.subresource_count, other.offset);
 }
 
 bool ResourceLocation::Settings::operator!=(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_count, subresource_index, offset) !=
-           std::tie(other.subresource_count, other.subresource_index, other.offset);
+    return std::tie(subresource_index, subresource_count, offset) !=
+           std::tie(other.subresource_index, other.subresource_count, other.offset);
 }
 
 ResourceLocation::Id::Id(ResourceUsage usage, const ResourceLocation::Settings& settings)
@@ -198,7 +198,10 @@ ResourceLocation::Id::Id(ResourceUsage usage, const ResourceLocation::Settings& 
 bool ResourceLocation::Id::operator<(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return usage < other.usage || ResourceLocation::Settings::operator<(other);
+    if (usage != other.usage)
+        return usage < other.usage;
+
+    return ResourceLocation::Settings::operator<(other);
 }
 
 bool ResourceLocation::Id::operator==(const Id& other) const noexcept
