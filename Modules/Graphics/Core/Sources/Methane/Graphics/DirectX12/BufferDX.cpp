@@ -91,7 +91,7 @@ void VertexBufferDX::InitializeView(Data::Size stride)
 }
 
 template<>
-Opt<Resource::Descriptor> VertexBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
+Opt<Resource::Descriptor> VertexBufferDX::InitializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -106,7 +106,7 @@ void IndexBufferDX::InitializeView(PixelFormat format)
 }
 
 template<>
-Opt<Resource::Descriptor> IndexBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
+Opt<Resource::Descriptor> IndexBufferDX::InitializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -121,7 +121,7 @@ void ConstantBufferDX::InitializeView()
 }
 
 template<>
-Opt<Resource::Descriptor> ConstantBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
+Opt<Resource::Descriptor> ConstantBufferDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
 
@@ -145,7 +145,7 @@ void ReadBackBufferDX::InitializeView()
 }
 
 template<>
-Opt<Resource::Descriptor> ReadBackBufferDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
+Opt<Resource::Descriptor> ReadBackBufferDX::InitializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }

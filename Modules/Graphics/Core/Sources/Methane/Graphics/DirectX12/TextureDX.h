@@ -63,7 +63,7 @@ public:
     }
 
     // IResourceDX override
-    Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
+    Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
 
 private:
     void Initialize(ExtraArgs...);
@@ -84,7 +84,7 @@ public:
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
     // IResourceDX override
-    Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
+    Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
 
 private:
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const;
@@ -105,7 +105,7 @@ public:
     }
 
     // IResourceDX override
-    Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
+    Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
 
 private:
     void CreateShaderResourceView(const D3D12_CPU_DESCRIPTOR_HANDLE& cpu_descriptor_handle) const;

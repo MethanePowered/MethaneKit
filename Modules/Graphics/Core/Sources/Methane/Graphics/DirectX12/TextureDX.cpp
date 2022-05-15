@@ -250,7 +250,7 @@ void RenderTargetTextureDX::Initialize()
 }
 
 template<>
-Opt<Resource::Descriptor> RenderTargetTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id&)
+Opt<Resource::Descriptor> RenderTargetTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id&)
 {
     META_FUNCTION_TASK();
     return std::nullopt;
@@ -265,7 +265,7 @@ void FrameBufferTextureDX::Initialize(FrameBufferIndex frame_buffer_index)
 }
 
 template<>
-Opt<Resource::Descriptor> FrameBufferTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
+Opt<Resource::Descriptor> FrameBufferTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
@@ -337,7 +337,7 @@ void DepthStencilTextureDX::CreateDepthStencilView(const D3D12_CPU_DESCRIPTOR_HA
     GetContextDX().GetDeviceDX().GetNativeDevice()->CreateDepthStencilView(GetNativeResource(), &dsv_desc, cpu_descriptor_handle);
 }
 
-Opt<Resource::Descriptor> DepthStencilTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
+Opt<Resource::Descriptor> DepthStencilTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
@@ -369,7 +369,7 @@ ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& set
     m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
-Opt<Resource::Descriptor> ImageTextureDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
+Opt<Resource::Descriptor> ImageTextureDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);

@@ -85,7 +85,7 @@ public:
     [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
 
-    virtual Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) = 0;
+    virtual Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) = 0;
 
     ~IResourceDX() override = default;
 };

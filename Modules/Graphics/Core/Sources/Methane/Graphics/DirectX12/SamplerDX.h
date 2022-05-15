@@ -43,7 +43,7 @@ public:
     SamplerDX(const ContextBase& context, const Settings& settings);
 
     // IResourceDX override
-    Opt<Descriptor> InitialializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
+    Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) override;
 };
 
 } // namespace Methane::Graphics

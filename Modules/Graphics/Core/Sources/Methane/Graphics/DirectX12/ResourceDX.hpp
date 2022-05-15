@@ -100,7 +100,7 @@ public:
         for (const auto& [location_id, descriptor] : m_descriptor_by_location_id)
         {
             descriptor.heap.ReplaceResource(*this, descriptor.index);
-            InitialializeNativeViewDescriptor(location_id);
+            InitializeNativeViewDescriptor(location_id);
         }
     }
 

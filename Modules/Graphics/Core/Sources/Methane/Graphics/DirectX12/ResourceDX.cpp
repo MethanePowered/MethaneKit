@@ -65,7 +65,7 @@ ResourceLocationDX::ResourceLocationDX(const ResourceLocation& location, Resourc
     : ResourceLocation(location)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
-    , m_descriptor_opt(m_resource_dx.InitialializeNativeViewDescriptor(m_id))
+    , m_descriptor_opt(m_resource_dx.InitializeNativeViewDescriptor(m_id))
 {
     META_FUNCTION_TASK();
 }

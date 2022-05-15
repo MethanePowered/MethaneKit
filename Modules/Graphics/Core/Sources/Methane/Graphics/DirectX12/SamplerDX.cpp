@@ -216,7 +216,7 @@ SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-Opt<Resource::Descriptor> SamplerDX::InitialializeNativeViewDescriptor(const LocationDX::Id& location_id)
+Opt<Resource::Descriptor> SamplerDX::InitializeNativeViewDescriptor(const LocationDX::Id& location_id)
 {
     META_FUNCTION_TASK();
     const Resource::Descriptor& descriptor = GetDescriptorByLocationId(location_id);
