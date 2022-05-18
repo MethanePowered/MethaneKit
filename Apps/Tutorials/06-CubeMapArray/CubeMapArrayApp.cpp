@@ -70,26 +70,8 @@ void CubeMapArrayApp::Init()
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
-    // Create vertex buffer for cube mesh with counter-clockwise vertex order for non-reflected cube-texture visualization
-    const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
-    const Data::Size vertex_data_size  = cube_mesh.GetVertexDataSize();
-    const Data::Size vertex_size       = cube_mesh.GetVertexSize();
-    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-    vertex_buffer_ptr->SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } }, // NOSONAR
-        render_cmd_queue
-    );
-    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
-    // Create index buffer for cube mesh
-    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetName("Cube Index Buffer");
-    m_index_buffer_ptr->SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } }, // NOSONAR
-        render_cmd_queue
-    );
+    // Create cube mesh
+    gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
@@ -126,13 +108,17 @@ void CubeMapArrayApp::Init()
     m_render_state_ptr->GetSettings().program_ptr->SetName("Textured Phong Lighting");
     m_render_state_ptr->SetName("Final FB Render Pipeline State");
 
-    // Load cube-map texture image from file
-    using namespace magic_enum::bitwise_operators;
-    m_cube_map_array_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), gfx::Texture::Settings::Cube(
-        640U, 1U, gfx::PixelFormat::RGBA8Unorm, false, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
-    m_cube_map_array_texture_ptr->SetName("Labeled Cube Map");
+    // Create cube mesh buffer resources
+    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
 
-        // Create sampler for image texture
+    // Create cube-map render target texture
+    using namespace magic_enum::bitwise_operators;
+    m_cube_buffers_ptr->SetTexture(
+        gfx::Texture::CreateRenderTarget(GetRenderContext(),
+            gfx::Texture::Settings::Cube(640U, 1U, gfx::PixelFormat::RGBA8Unorm, false,
+                                         gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead)));
+
+    // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
         gfx::Sampler::Settings
         {
@@ -142,7 +128,7 @@ void CubeMapArrayApp::Init()
     );
 
     // Create frame buffer resources
-    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
+    const auto uniforms_data_size = m_cube_buffers_ptr->GetUniformsBufferSize();
     for(CubeMapArrayFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
@@ -151,9 +137,9 @@ void CubeMapArrayApp::Init()
 
         // Configure program resource bindings
         frame.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr    } } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { *m_cube_map_array_texture_ptr } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr        } } },
+            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr       } } },
+            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { m_cube_buffers_ptr->GetTexture() } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr           } } },
         }, frame.index);
         frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
         
@@ -164,7 +150,7 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler texture_labeler(GetUIContext(), GetFontProvider(), *m_cube_map_array_texture_ptr);
+    TextureLabeler texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture());
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -196,7 +182,9 @@ bool CubeMapArrayApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    m_shader_uniforms.mvp_matrix = hlslpp::transpose(hlslpp::mul(m_model_matrix, m_camera.GetViewProjMatrix()));
+    m_cube_buffers_ptr->SetFinalPassUniforms(hlslpp::Uniforms{
+        hlslpp::transpose(hlslpp::mul(m_model_matrix, m_camera.GetViewProjMatrix()))
+    });
     return true;
 }
 
@@ -208,16 +196,13 @@ bool CubeMapArrayApp::Render()
     // Update uniforms buffer related to current frame
     const CubeMapArrayFrame& frame = GetCurrentFrame();
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);
+    frame.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
-    // Issue commands for cube rendering
+    // Render cube
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
-    frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
-    frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+    m_cube_buffers_ptr->Draw(*frame.render_cmd_list_ptr, *frame.program_bindings_ptr);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 
@@ -232,10 +217,8 @@ bool CubeMapArrayApp::Render()
 
 void CubeMapArrayApp::OnContextReleased(gfx::Context& context)
 {
+    m_cube_buffers_ptr.reset();
     m_texture_sampler_ptr.reset();
-    m_cube_map_array_texture_ptr.reset();
-    m_index_buffer_ptr.reset();
-    m_vertex_buffer_set_ptr.reset();
     m_render_state_ptr.reset();
 
     UserInterfaceApp::OnContextReleased(context);

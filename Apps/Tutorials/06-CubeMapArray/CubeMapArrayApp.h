@@ -71,18 +71,13 @@ private:
 
     Ptr<gfx::CommandListSet> RenderFaceTextures(gfx::Texture& texture);
 
-    hlslpp::float4x4      m_model_matrix;
-    hlslpp::Uniforms      m_shader_uniforms { };
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::BufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>      m_index_buffer_ptr;
-    Ptr<gfx::Texture>     m_cube_map_array_texture_ptr;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
 
-    const gfx::Resource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
-    };
+    hlslpp::float4x4         m_model_matrix;
+    gfx::Camera              m_camera;
+    Ptr<gfx::RenderState>    m_render_state_ptr;
+    Ptr<gfx::Sampler>        m_texture_sampler_ptr;
+    Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
 };
 
 } // namespace Methane::Tutorials
