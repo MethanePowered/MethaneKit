@@ -232,6 +232,7 @@ vk::PipelineStageFlags IResourceVK::GetNativePipelineStageFlagsByResourceState(R
     case ResourceState::VertexBuffer:
     case ResourceState::IndexBuffer:
         return vk::PipelineStageFlagBits::eVertexInput;
+    case ResourceState::GenericRead:
     case ResourceState::ConstantBuffer:
     case ResourceState::UnorderedAccess:
     case ResourceState::ShaderResource:

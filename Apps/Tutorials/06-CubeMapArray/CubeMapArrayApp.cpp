@@ -130,6 +130,7 @@ void CubeMapArrayApp::Init()
     using namespace magic_enum::bitwise_operators;
     m_cube_map_array_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), gfx::Texture::Settings::Cube(
         640U, 1U, gfx::PixelFormat::RGBA8Unorm, false, gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
+    m_cube_map_array_texture_ptr->SetName("Labeled Cube Map");
 
         // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),

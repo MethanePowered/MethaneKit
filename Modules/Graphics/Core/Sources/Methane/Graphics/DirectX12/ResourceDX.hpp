@@ -135,11 +135,13 @@ protected:
     }
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
-                                     D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
+                                     Resource::State resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
-        m_cp_resource = CreateCommittedResource(resource_desc, heap_type, resource_state, p_clear_value);
+        const D3D12_RESOURCE_STATES d3d_resource_state = ResourceBarriersDX::GetNativeResourceState(resource_state);
+        m_cp_resource = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, p_clear_value);
+        SetState(resource_state);
     }
 
     void InitializeFrameBufferResource(uint32_t frame_buffer_index)

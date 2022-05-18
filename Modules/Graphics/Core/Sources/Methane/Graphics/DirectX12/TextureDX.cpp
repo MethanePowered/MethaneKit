@@ -306,7 +306,7 @@ void RenderTargetTextureDX::Initialize()
     D3D12_RESOURCE_DESC tex_desc = CreateNativeResourceDesc(GetSettings(), GetSubresourceCount());
     tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_GENERIC_READ);
+    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Resource::State::RenderTarget);
 }
 
 template<>
@@ -376,11 +376,11 @@ DepthStencilTextureDX::TextureDX(const ContextBase& render_context, const Settin
         // Performance tip: Tell the runtime at resource creation the desired clear value
         const DXGI_FORMAT view_write_format = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewWrite);
         CD3DX12_CLEAR_VALUE clear_value(view_write_format, clear_depth_stencil->first, clear_depth_stencil->second);
-        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clear_value);
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Resource::State::DepthWrite, &clear_value);
     }
     else
     {
-        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Resource::State::DepthWrite);
     }
 }
 
@@ -436,7 +436,7 @@ ImageTextureDX::TextureDX(const ContextBase& render_context, const Settings& set
 
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);
-    InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COPY_DEST);
+    InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, Resource::State::CopyDest);
 
     const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
     m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);

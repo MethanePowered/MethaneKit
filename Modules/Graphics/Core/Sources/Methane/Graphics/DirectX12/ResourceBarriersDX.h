@@ -37,6 +37,9 @@ class ResourceBarriersDX final
     , private Data::Receiver<IResourceCallback>
 {
 public:
+    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+
     explicit ResourceBarriersDX(const Set& barriers);
 
     // ResourceBarriers overrides

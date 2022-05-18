@@ -314,10 +314,12 @@ void RenderPassBase::End(RenderCommandListBase&)
 void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
+    const bool is_final_pass = GetPatternBase().GetSettings().is_final_pass;
+    const Resource::State color_attachment_state = is_final_pass ? Resource::State::Present : Resource::State::RenderTarget;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
         if (color_texture_ref.get().GetState() == Resource::State::Common)
-            color_texture_ref.get().SetState(Resource::State::Present);
+            color_texture_ref.get().SetState(color_attachment_state);
     }
 }
 

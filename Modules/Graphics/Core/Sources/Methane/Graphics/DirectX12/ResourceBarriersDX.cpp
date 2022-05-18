@@ -30,8 +30,7 @@ DirectX 12 specialization of the resource barriers.
 namespace Methane::Graphics
 {
 
-[[nodiscard]]
-static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state)
+D3D12_RESOURCE_STATES ResourceBarriersDX::GetNativeResourceState(ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
@@ -60,8 +59,7 @@ static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state
     }
 }
 
-[[nodiscard]]
-static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
+D3D12_RESOURCE_BARRIER ResourceBarriersDX::GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     switch (id.GetType()) // NOSONAR

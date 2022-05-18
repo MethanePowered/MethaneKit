@@ -54,7 +54,7 @@ public:
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-        const D3D12_RESOURCE_STATES resource_state = (is_read_back_buffer || is_private_storage) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
+        const Resource::State       resource_state = is_read_back_buffer || is_private_storage ? ResourceState::CopyDest : ResourceState::GenericRead;
         const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
         InitializeCommittedResource(resource_desc, heap_type, resource_state);
