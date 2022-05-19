@@ -41,6 +41,7 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
+
 add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(

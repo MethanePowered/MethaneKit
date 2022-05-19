@@ -51,9 +51,9 @@ struct AsteroidsFrame final : gfx::AppFrame
     Ptr<gfx::RenderCommandList>         final_cmd_list_ptr;
     Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
     Ptr<gfx::Buffer>                    scene_uniforms_buffer_ptr;
-    gfx::MeshBufferBindings             skybox;
+    gfx::MeshBufferBindings             sky_box;
     gfx::MeshBufferBindings             planet;
-    gfx::MeshBufferBindings             asteroids;
+    gfx::InstancedMeshBufferBindings    asteroids;
 
     using gfx::AppFrame::AppFrame;
 

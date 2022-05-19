@@ -35,18 +35,11 @@ Renders text labels to the faces of cube-map texture array
 namespace Methane::Tutorials
 {
 
-static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size depth_index, const gfx::Texture::Settings& rt_texture_settings)
+static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size depth_index,
+                                              const TextureLabeler::CubeSliceDescs& cube_slice_descs,
+                                              const gfx::Texture::Settings& rt_texture_settings)
 {
-    static const std::array<TextureLabeler::SliceDesc, 6> s_cube_faces = {{
-        { "X+", gfx::Color4F(0.84F, 0.19F, 0.17F, 1.F) }, // red       rgb(215 48 44)
-        { "X-", gfx::Color4F(0.94F, 0.42F, 0.07F, 1.F) }, // orange    rgb(239 106 18)
-        { "Y+", gfx::Color4F(0.35F, 0.69F, 0.24F, 1.F) }, // green     rgb(89 176 60)
-        { "Y-", gfx::Color4F(0.12F, 0.62F, 0.47F, 1.F) }, // turquoise rgb(31 158 120)
-        { "Z+", gfx::Color4F(0.20F, 0.36F, 0.66F, 1.F) }, // blue      rgb(51 93 169)
-        { "Z-", gfx::Color4F(0.49F, 0.31F, 0.64F, 1.F) }  // purple    rgb(124 80 164)
-    }};
-
-    TextureLabeler::SliceDesc slice_desc = s_cube_faces[depth_index % s_cube_faces.size()];
+    TextureLabeler::SliceDesc slice_desc = cube_slice_descs[depth_index % cube_slice_descs.size()];
     if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::Cube)
         return slice_desc;
     
@@ -58,7 +51,9 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, uint32_t font_size_pt)
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture,
+                               uint32_t font_size_pt, const gfx::Color4F& text_color,
+                               const CubeSliceDescs& cube_slice_descs)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
@@ -101,7 +96,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             gui::Text::HorizontalAlignment::Center,
             gui::Text::VerticalAlignment::Center,
         },
-        gfx::Color4F(1.F, 1.F, 1.F, 1.F),
+        text_color,
         false
     };
 
@@ -111,7 +106,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     {
         for(Data::Size depth_index = 0U; depth_index < sub_res_count.GetDepth(); ++depth_index)
         {
-            m_slices.emplace_back(GetSliceDesc(array_index, depth_index, rt_texture_settings));
+            m_slices.emplace_back(GetSliceDesc(array_index, depth_index, cube_slice_descs, rt_texture_settings));
             TextureLabeler::Slice& slice = m_slices.back();
 
             render_pattern_settings.color_attachments[0].clear_color = slice.color;

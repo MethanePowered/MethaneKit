@@ -225,22 +225,28 @@ void AsteroidsApp::Init()
     const gfx::RenderContext::Settings& context_settings = context.GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
+    // Load cube-map texture images for Sky-box
+    const Ptr<gfx::Texture> sky_box_texture_ptr = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue,
+        gfx::ImageLoader::CubeFaceResources
+        {
+            "SkyBox/Galaxy/PositiveX.jpg",
+            "SkyBox/Galaxy/NegativeX.jpg",
+            "SkyBox/Galaxy/PositiveY.jpg",
+            "SkyBox/Galaxy/NegativeY.jpg",
+            "SkyBox/Galaxy/PositiveZ.jpg",
+            "SkyBox/Galaxy/NegativeZ.jpg"
+        },
+        gfx::ImageLoader::Options::Mipmapped,
+        "Sky-Box Texture"
+    );
+
     // Create sky-box
     using namespace magic_enum::bitwise_operators;
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, *m_asteroids_render_pattern_ptr, GetImageLoader(),
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, *m_asteroids_render_pattern_ptr, *sky_box_texture_ptr,
         gfx::SkyBox::Settings
         {
             m_view_camera,
-            {
-                "SkyBox/Galaxy/PositiveX.jpg",
-                "SkyBox/Galaxy/NegativeX.jpg",
-                "SkyBox/Galaxy/PositiveY.jpg",
-                "SkyBox/Galaxy/NegativeY.jpg",
-                "SkyBox/Galaxy/PositiveZ.jpg",
-                "SkyBox/Galaxy/NegativeZ.jpg"
-            },
             m_scene_scale * 100.F,
-            gfx::ImageLoader::Options::Mipmapped,
             gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
         });
 
@@ -308,8 +314,8 @@ void AsteroidsApp::Init()
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.skybox.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::Uniforms), false, true);
-        frame.skybox.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+        frame.sky_box.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(gfx::SkyBox::Uniforms), false, true);
+        frame.sky_box.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Create uniforms buffer for Planet rendering
         frame.planet.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(context, sizeof(hlslpp::PlanetUniforms), false, true);
@@ -320,14 +326,12 @@ void AsteroidsApp::Init()
         frame.asteroids.uniforms_buffer_ptr->SetName(IndexedName("Asteroids Array Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.skybox.program_bindings_per_instance.resize(1);
-        frame.skybox.program_bindings_per_instance[0] = m_sky_box_ptr->CreateProgramBindings(frame.skybox.uniforms_buffer_ptr, frame.index);
-        frame.skybox.program_bindings_per_instance[0]->SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
+        frame.sky_box.program_bindings_ptr = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer_ptr, frame.index);
+        frame.sky_box.program_bindings_ptr->SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
 
         // Resource bindings for Planet rendering
-        frame.planet.program_bindings_per_instance.resize(1);
-        frame.planet.program_bindings_per_instance[0] = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr, frame.index);
-        frame.planet.program_bindings_per_instance[0]->SetName(IndexedName("Planet Bindings {}", frame.index));
+        frame.planet.program_bindings_ptr = m_planet_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.planet.uniforms_buffer_ptr, frame.index);
+        frame.planet.program_bindings_ptr->SetName(IndexedName("Planet Bindings {}", frame.index));
 
         // Resource bindings for Asteroids rendering
         frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr, frame.index);
@@ -419,7 +423,7 @@ bool AsteroidsApp::Render()
     
     // Draw planet and sky-box after asteroids to minimize pixel overdraw
     m_planet_ptr->Draw(*frame.final_cmd_list_ptr, frame.planet, GetViewState());
-    m_sky_box_ptr->Draw(*frame.final_cmd_list_ptr, frame.skybox, GetViewState());
+    m_sky_box_ptr->Draw(*frame.final_cmd_list_ptr, frame.sky_box, GetViewState());
 
     RenderOverlay(*frame.final_cmd_list_ptr);
     frame.final_cmd_list_ptr->Commit();

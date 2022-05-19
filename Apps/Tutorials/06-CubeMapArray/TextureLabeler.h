@@ -26,6 +26,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/Color.hpp>
 
 #include <string>
+#include <array>
 
 namespace Methane::Graphics
 {
@@ -63,7 +64,18 @@ public:
         gfx::Color4F color;
     };
 
-    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, uint32_t font_size_pt);
+    using CubeSliceDescs = std::array<TextureLabeler::SliceDesc, 6>;
+
+    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture,
+                   uint32_t font_size_pt, const gfx::Color4F& text_color = { 1.F, 1.F, 1.F, 1.F },
+                   const CubeSliceDescs& cube_slice_descs = {{
+        { "X+", gfx::Color4F(0.84F, 0.19F, 0.17F, 1.F) }, // red       rgb(215 48 44)
+        { "X-", gfx::Color4F(0.94F, 0.42F, 0.07F, 1.F) }, // orange    rgb(239 106 18)
+        { "Y+", gfx::Color4F(0.35F, 0.69F, 0.24F, 1.F) }, // green     rgb(89 176 60)
+        { "Y-", gfx::Color4F(0.12F, 0.62F, 0.47F, 1.F) }, // turquoise rgb(31 158 120)
+        { "Z+", gfx::Color4F(0.20F, 0.36F, 0.66F, 1.F) }, // blue      rgb(51 93 169)
+        { "Z-", gfx::Color4F(0.49F, 0.31F, 0.64F, 1.F) }  // purple    rgb(124 80 164)
+    }});
 
     void Render();
 

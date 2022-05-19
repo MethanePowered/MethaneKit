@@ -40,10 +40,10 @@ namespace gfx = Methane::Graphics;
 
 struct CubeMapArrayFrame final : Graphics::AppFrame
 {
-    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
-    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
-    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
+    gfx::MeshBufferBindings      cube;
+    gfx::MeshBufferBindings      sky_box;
+    Ptr<gfx::RenderCommandList>  render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>     execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -69,8 +69,6 @@ protected:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    Ptr<gfx::CommandListSet> RenderFaceTextures(gfx::Texture& texture);
-
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
 
     const float              m_model_scale;
@@ -79,6 +77,7 @@ private:
     Ptr<gfx::RenderState>    m_render_state_ptr;
     Ptr<gfx::Sampler>        m_texture_sampler_ptr;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
+    Ptr<gfx::SkyBox>         m_sky_box_ptr;
 };
 
 } // namespace Methane::Tutorials

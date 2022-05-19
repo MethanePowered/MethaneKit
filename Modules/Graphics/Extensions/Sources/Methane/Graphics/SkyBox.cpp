@@ -39,22 +39,21 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const ImageLoader& image_loader,  const Settings& settings)
-    : SkyBox(render_cmd_queue, render_pattern, image_loader, settings, CubeMesh<Vertex>(Vertex::layout))
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture, const Settings& settings)
+    : SkyBox(render_cmd_queue, render_pattern, cube_map_texture, settings, CubeMesh<Vertex>(Vertex::layout))
 {
-    META_FUNCTION_TASK();
 }
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh)
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture,
+               const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
     , m_context(render_pattern.GetRenderContext())
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
-
-    m_mesh_buffers.SetTexture(
-        image_loader.LoadImagesToTextureCube(render_cmd_queue, m_settings.face_resources, m_settings.image_options, "Sky-Box Texture"));
+    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Texture::DimensionType::Cube);
+    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Texture>(cube_map_texture.GetPtr()));
 
     RenderState::Settings state_settings;
     state_settings.program_ptr = Program::Create(m_context,
@@ -104,6 +103,7 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, co
 Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(uniforms_buffer_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
@@ -126,21 +126,19 @@ void SkyBox::Update()
     });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state)
+void SkyBox::Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
-    
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
+
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
 
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
     cmd_list.ResetWithStateOnce(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
-    
-    META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);
-    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_ptr);
 }
 
 } // namespace Methane::Graphics

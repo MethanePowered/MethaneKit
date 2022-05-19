@@ -393,7 +393,9 @@ bool AsteroidsArray::Update(double elapsed_seconds, double /*delta_seconds*/)
     return true;
 }
 
-void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list,
+                          const gfx::InstancedMeshBufferBindings& buffer_bindings,
+                          gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::Draw");
@@ -422,7 +424,9 @@ void AsteroidsArray::Draw(gfx::RenderCommandList &cmd_list, const gfx::MeshBuffe
     uniforms_update_future.wait();
 }
 
-void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
+void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list,
+                                  const gfx::InstancedMeshBufferBindings& buffer_bindings,
+                                  gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::DrawParallel");

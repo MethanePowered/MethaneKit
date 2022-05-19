@@ -120,8 +120,8 @@ public:
     Ptr<gfx::Resource::Barriers> CreateBeginningResourceBarriers(gfx::Buffer& constants_buffer);
 
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
-    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void Draw(gfx::RenderCommandList& cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
     [[nodiscard]] bool IsMeshLodColoringEnabled() const             { return m_mesh_lod_coloring_enabled; }
     void SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }

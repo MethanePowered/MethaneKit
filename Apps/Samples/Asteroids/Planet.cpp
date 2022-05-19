@@ -128,18 +128,16 @@ bool Planet::Update(double elapsed_seconds, double)
 void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
-
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(hlslpp::PlanetUniforms));
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);
+
     buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
 
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet Rendering");
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
-    
-    META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);
-    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_ptr);
 }
 
 } // namespace Methane::Graphics

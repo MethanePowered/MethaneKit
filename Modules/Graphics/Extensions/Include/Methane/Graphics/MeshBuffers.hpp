@@ -46,8 +46,14 @@ Mesh buffers with texture extension structure.
 
 namespace Methane::Graphics
 {
-    
+
 struct MeshBufferBindings
+{
+    Ptr<Buffer>          uniforms_buffer_ptr;
+    Ptr<ProgramBindings> program_bindings_ptr;
+};
+    
+struct InstancedMeshBufferBindings
 {
     Ptr<Buffer>           uniforms_buffer_ptr;
     Ptrs<ProgramBindings> program_bindings_per_instance;
