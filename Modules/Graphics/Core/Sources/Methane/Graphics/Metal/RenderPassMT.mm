@@ -60,20 +60,23 @@ static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass
 {
     META_FUNCTION_TASK();
     const Texture::Location& texture_location = render_pass.GetAttachmentTextureLocation(attachment);
+    const SubResource::Index& sub_resource_index = texture_location.GetSubresourceIndex();
+    
     if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
     {
         static_cast<TextureMT&>(texture_location.GetTexture()).UpdateFrameBuffer();
     }
-
+    
     META_CHECK_ARG_NOT_NULL(mtl_attachment_desc);
     mtl_attachment_desc.texture       = static_cast<const TextureMT&>(texture_location.GetTexture()).GetNativeTexture();
-    mtl_attachment_desc.level         = texture_location.GetSubresourceIndex().GetMipLevel();
+    mtl_attachment_desc.level         = sub_resource_index.GetMipLevel();
     mtl_attachment_desc.loadAction    = GetMTLLoadAction(attachment.load_action);
     mtl_attachment_desc.storeAction   = GetMTLStoreAction(attachment.store_action);
     
-    if (mtl_attachment_desc.texture.textureType == MTLTextureTypeCube)
+    if (mtl_attachment_desc.texture.textureType == MTLTextureTypeCube ||
+        mtl_attachment_desc.texture.textureType == MTLTextureTypeCubeArray)
     {
-        mtl_attachment_desc.slice      = texture_location.GetSubresourceIndex().GetDepthSlice();
+        mtl_attachment_desc.slice = sub_resource_index.GetArrayIndex() * 6U + sub_resource_index.GetDepthSlice();
     }
     else
     {

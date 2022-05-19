@@ -270,7 +270,9 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
         mtl_tex_desc.textureType        = GetNativeTextureType(settings.dimension_type);
         mtl_tex_desc.width              = settings.dimensions.GetWidth();
         mtl_tex_desc.height             = settings.dimensions.GetHeight();
-        mtl_tex_desc.depth              = settings.dimensions.GetDepth();
+        mtl_tex_desc.depth              = settings.dimension_type == Texture::DimensionType::Tex3D
+                                        ? settings.dimensions.GetDepth()
+                                        : 1U;
         mtl_tex_desc.arrayLength        = settings.array_length;
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;

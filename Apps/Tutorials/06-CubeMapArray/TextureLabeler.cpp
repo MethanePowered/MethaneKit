@@ -51,18 +51,18 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
         return slice_desc;
     
     if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::CubeArray)
-        slice_desc.label = fmt::format("{}:{}", array_index, slice_desc.label);
+        slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
     else
-        slice_desc.label = fmt::format("{}:{}", array_index, depth_index);
+        slice_desc.label = fmt::format("{}{}", array_index, depth_index);
 
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture)
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, uint32_t font_size_pt)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
-        { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 164U }, 96U, U"XYZ+-:0123456789"
+        { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {
     const gfx::Texture::Settings& rt_texture_settings = m_rt_texture.GetSettings();

@@ -73,6 +73,7 @@ private:
 
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
 
+    const float              m_model_scale;
     hlslpp::float4x4         m_model_matrix;
     gfx::Camera              m_camera;
     Ptr<gfx::RenderState>    m_render_state_ptr;

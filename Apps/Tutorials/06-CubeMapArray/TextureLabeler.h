@@ -63,7 +63,7 @@ public:
         gfx::Color4F color;
     };
 
-    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture);
+    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, uint32_t font_size_pt);
 
     void Render();
 
