@@ -45,6 +45,8 @@ struct CubeVertex
     };
 };
 
+constexpr uint32_t g_cube_texture_size = 320U;
+
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Cube Map Array",
@@ -112,10 +114,9 @@ void CubeMapArrayApp::Init()
 
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
-    constexpr uint32_t cube_texture_size = 128U;
     m_cube_buffers_ptr->SetTexture(
         gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Cube(cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
+            gfx::Texture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
                                          gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead)));
 
     // Create sampler for image texture
@@ -150,7 +151,7 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), cube_texture_size / 4U);
+    TextureLabeler texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), g_cube_texture_size / 4U);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -162,10 +163,10 @@ void CubeMapArrayApp::Init()
 
 bool CubeMapArrayApp::Animate(double, double delta_seconds)
 {
-    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 8.0));
     m_model_matrix = hlslpp::mul(m_model_matrix,
-                                 hlslpp::mul(hlslpp::float4x4::rotation_z(delta_seconds * gfx::ConstFloat::Pi / 4.F),
-                                             hlslpp::float4x4::rotation_y(delta_seconds * gfx::ConstFloat::Pi / 2.F)));
+                                 hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 2.0)),
+                                             hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 4.0))));
     return true;
 }
 
