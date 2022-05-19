@@ -188,7 +188,7 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
         break;
 
     case Texture::DimensionType::CubeArray:
-        srv_desc.TextureCubeArray.First2DArrayFace = sub_resource_index.GetArrayIndex() * 6U;
+        srv_desc.TextureCubeArray.First2DArrayFace = sub_resource_index.GetArrayIndex() * 6U + sub_resource_index.GetDepthSlice();
         srv_desc.TextureCubeArray.NumCubes         = sub_resource_count.GetArraySize();
         srv_desc.TextureCubeArray.MostDetailedMip  = sub_resource_index.GetMipLevel();
         srv_desc.TextureCubeArray.MipLevels        = sub_resource_count.GetMipLevelsCount();
@@ -239,7 +239,7 @@ static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Text
         rtv_desc.Texture2DArray.MipSlice        = sub_resource_index.GetMipLevel();
         rtv_desc.Texture2DArray.FirstArraySlice = settings.dimension_type == Texture::DimensionType::Tex2DArray
                                                 ? sub_resource_index.GetArrayIndex()
-                                                : sub_resource_index.GetDepthSlice();
+                                                : (sub_resource_index.GetArrayIndex() * 6U + sub_resource_index.GetDepthSlice());
         rtv_desc.Texture2DArray.ArraySize       = sub_resource_count.GetArraySize();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
         break;
