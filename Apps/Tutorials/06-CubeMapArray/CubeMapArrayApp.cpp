@@ -46,17 +46,27 @@ struct CubeVertex
 };
 
 constexpr uint32_t g_cube_texture_size = 320U;
-constexpr uint32_t g_sky_box_texture_size = 640U;
 
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Cube Map Array",
-                                        Samples::g_default_app_options_color_with_depth_and_anim), {},
-                                        "Methane tutorial of cube-map array texturing")
+        []() {
+            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Cube Map Array", Samples::g_default_app_options_color_with_depth_and_anim);
+            settings.render_context
+                .SetClearDepthStencil(gfx::DepthStencil(0.F, {})) // Clear depth with 0.F to support reversed depth rendering
+                .SetClearColor({}); // Disable color clearing, use sky-box instead
+            return settings;
+        }(),
+        { HeadsUpDisplayMode::WindowTitle },
+        "Methane tutorial of cube-map array texturing")
     , m_model_scale(6.F)
     , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(m_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi)))
 {
+    // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
+    // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
+    // which is used for "from near to far" drawing order for reducing pixels overdraw
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
+    m_camera.SetParameters({ 600.F /* near = max depth */, 0.01F /*far = min depth*/, 90.F /* FOV */ });
+
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&CubeMapArrayApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -108,6 +118,7 @@ void CubeMapArrayApp::Init()
     render_state_settings.program_ptr->SetName("Render Pipeline State");
     render_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
     render_state_settings.depth.enabled = true;
+    render_state_settings.depth.compare = gfx::Compare::GreaterEqual; // Reversed depth rendering
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
@@ -151,7 +162,7 @@ void CubeMapArrayApp::Init()
         {
             m_camera,
             m_model_scale * 100.F,
-            gfx::SkyBox::Options::DepthEnabled
+            gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
         });
 
     // Create frame buffer resources
@@ -252,14 +263,14 @@ bool CubeMapArrayApp::Render()
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
-    // Render sky-box
-    m_sky_box_ptr->Draw(*frame.render_cmd_list_ptr, frame.sky_box, GetViewState());
-
-    // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
+    // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
     frame.render_cmd_list_ptr->SetViewState(GetViewState());
     m_cube_buffers_ptr->Draw(*frame.render_cmd_list_ptr, *frame.cube.program_bindings_ptr, 0U, CUBE_MAP_ARRAY_SIZE);
+
+    // 2) Render sky-box after cubes to minimize overdraw
+    m_sky_box_ptr->Draw(*frame.render_cmd_list_ptr, frame.sky_box, GetViewState());
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 
