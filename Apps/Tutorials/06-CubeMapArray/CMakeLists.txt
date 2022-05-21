@@ -23,7 +23,17 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 
-add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${RESOURCES_DIR}/Fonts/RobotoMono/RobotoMono-Bold.ttf")
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
+set(TEXTURES
+    ${TEXTURES_DIR}/SkyBox/Clouds/PositiveX.jpg
+    ${TEXTURES_DIR}/SkyBox/Clouds/NegativeX.jpg
+    ${TEXTURES_DIR}/SkyBox/Clouds/PositiveY.jpg
+    ${TEXTURES_DIR}/SkyBox/Clouds/NegativeY.jpg
+    ${TEXTURES_DIR}/SkyBox/Clouds/PositiveZ.jpg
+    ${TEXTURES_DIR}/SkyBox/Clouds/NegativeZ.jpg
+)
+
+add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(
     TARGET ${TARGET}

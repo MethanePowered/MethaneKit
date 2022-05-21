@@ -56,7 +56,7 @@ CubeMapArrayApp::CubeMapArrayApp()
     , m_model_scale(6.F)
     , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(m_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi)))
 {
-    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
+    m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&CubeMapArrayApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -120,11 +120,6 @@ void CubeMapArrayApp::Init()
             gfx::Texture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
                                          gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead)));
 
-    // Load cube-map texture images for Sky-box
-    const Ptr<gfx::Texture> sky_box_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
-        gfx::Texture::Settings::Cube(g_sky_box_texture_size, 1U, gfx::PixelFormat::RGBA8Unorm, false,
-            gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
-
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
         gfx::Sampler::Settings
@@ -132,6 +127,21 @@ void CubeMapArrayApp::Init()
             gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
             gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
         }
+    );
+
+    // Load cube-map texture images for Sky-box
+    const Ptr<gfx::Texture> sky_box_texture_ptr = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue,
+        gfx::ImageLoader::CubeFaceResources
+        {
+            "SkyBox/Clouds/PositiveX.jpg",
+            "SkyBox/Clouds/NegativeX.jpg",
+            "SkyBox/Clouds/PositiveY.jpg",
+            "SkyBox/Clouds/NegativeY.jpg",
+            "SkyBox/Clouds/PositiveZ.jpg",
+            "SkyBox/Clouds/NegativeZ.jpg"
+        },
+        gfx::ImageLoader::Options::Mipmapped,
+        "Sky-Box Texture"
     );
 
     // Create sky-box
@@ -176,23 +186,12 @@ void CubeMapArrayApp::Init()
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
     TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), g_cube_texture_size / 4U);
-    TextureLabeler sky_box_texture_labeler(GetUIContext(), GetFontProvider(), *sky_box_texture_ptr, g_sky_box_texture_size,
-                                           gfx::Color4F(0.06F, 0.37F, 0.69F, 1.F),
-        {{
-            { "Sky X+", gfx::Color4F(0.00F, 0.20F, 0.40F, 1.F) }, // rgb(0 51 102)
-            { "Sky X-", gfx::Color4F(0.00F, 0.20F, 0.40F, 1.F) }, // rgb(0 51 102)
-            { "Sky Y+", gfx::Color4F(0.00F, 0.13F, 0.27F, 1.F) }, // rgb(0 34 68)
-            { "Sky Y-", gfx::Color4F(0.00F, 0.13F, 0.27F, 1.F) }, // rgb(0 34 68)
-            { "Sky Z+", gfx::Color4F(0.00F, 0.28F, 0.56F, 1.F) }, // rgb(0 71 142)
-            { "Sky Z-", gfx::Color4F(0.00F, 0.28F, 0.56F, 1.F) }, // rgb(0 71 142)
-        }});
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
     
     // Encode and execute texture labels rendering commands when all resources are uploaded and ready on GPU
     cube_texture_labeler.Render();
-    sky_box_texture_labeler.Render();
 
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
