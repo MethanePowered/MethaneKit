@@ -44,10 +44,8 @@ NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 AppMac::AppMac(const AppBase::Settings& settings)
     : AppBase(settings)
     , m_ns_app([NSApplication sharedApplication])
-    , m_ns_app_delegate([[AppDelegate alloc] initWithApp:this andSettings: &settings])
 {
     META_FUNCTION_TASK();
-    [m_ns_app setDelegate: m_ns_app_delegate];
 }
 
 AppMac::~AppMac()
@@ -75,6 +73,8 @@ int AppMac::Run(const RunArgs& args)
     if (base_return_code)
         return base_return_code;
 
+    m_ns_app_delegate = [[AppDelegate alloc] initWithApp:this andSettings: &GetPlatformAppSettings()];
+    [m_ns_app setDelegate: m_ns_app_delegate];
     [m_ns_app_delegate run];
     [m_ns_app run];
     return 0;
