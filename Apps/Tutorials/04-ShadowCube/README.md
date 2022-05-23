@@ -4,18 +4,18 @@
 | -------------------- | ------------- |
 | ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) |
 
-This tutorial demonstrates rendering rendering shadow of the textured cube on the floor plane in two render passes:
+This tutorial demonstrates rendering shadow of the textured cube on the floor plane in two render passes using Methane Kit:
 - [ShadowCubeApp.h](ShadowCubeApp.h)
 - [ShadowCubeApp.cpp](ShadowCubeApp.cpp)
 - [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h)
 - [Shaders/ShadowCube.hlsl](Shaders/ShadowCube.hlsl)
 
 Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
-- Rendering with multiple render passes
-- Using texture as render target in one pass and as an input program binding in another pass
-- Compiling and loading shaders code with macro-definitions to render state programs
-- Using graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code
-- Simple shadows rendering technique implementation. 
+- Rendering with multiple render passes;
+- Using texture as render target in one pass and as an input program binding in another pass;
+- Compiling and loading shaders code with macro-definitions to render state programs;
+- Using graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code;
+- Simple shadows rendering technique implementation.
   See detailed [technique description here](http://www.opengl-tutorial.org/ru/intermediate-tutorials/tutorial-16-shadow-mapping/)
 
 ## Application and Frame Class Definitions

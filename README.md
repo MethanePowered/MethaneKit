@@ -64,13 +64,14 @@ which make modern graphics programming easy and convenient in a platform and API
 Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation
 and continue with others.
 
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
-| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| 1. [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in 100 lines of code. |
-| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube) | ![Hello Cube on Windows](Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg) | Colored cube rendering in 200 lines of code with vertex and index buffers. |
-| 3. [Textured Cube](/Apps/Tutorials/03-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/03-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers, textures and samplers usage with Phong shading.<br/>* _Vulkan is not supported yet._ |
-| 4. [Shadow Cube](/Apps/Tutorials/04-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/04-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes.<br/>* _Vulkan is not supported yet._ |
-| 5. [Typography](/Apps/Tutorials/05-Typography) | ![Typography on Windows](Apps/Tutorials/05-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI.<br/>* _Vulkan is not supported yet._ |
+| <pre><b>Name / Link</b></pre>                         | <pre><b>Screenshot</b></pre>                                                                             | <pre><b>Description</b>                                         </pre>                            |
+|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| 1. [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in 100 lines of code.                                                  |
+| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube)         | ![Hello Cube on Windows](/Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg)             | Colored cube rendering in 200 lines of code with vertex and index buffers.                        |
+| 3. [Textured Cube](/Apps/Tutorials/03-TexturedCube)   | ![Textured Cube on Windows](/Apps/Tutorials/03-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg)    | Textured cube introduces buffers, textures and samplers usage with Phong shading.                 |
+| 4. [Shadow Cube](/Apps/Tutorials/04-ShadowCube)       | ![Shadow Cube on Windows](/Apps/Tutorials/04-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg)          | Shadow cube introduces multi-pass rendering with render passes.                                   |
+| 5. [Typography](/Apps/Tutorials/05-Typography)        | ![Typography on Windows](/Apps/Tutorials/05-Typography/Screenshots/TypographyWinDirectX12.jpg)           | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
+| 6. [Cube-Map Array](/Apps/Tutorials/06-CubeMapArray)  | ![Cube-Map Array on Windows](/Apps/Tutorials/06-CubeMapArray/Screenshots/CubeMapArrayWinDirectX12.jpg)             | Cube-map array texturing is demonstrated in this tutorial.                                        |
 
 ### Samples
 
