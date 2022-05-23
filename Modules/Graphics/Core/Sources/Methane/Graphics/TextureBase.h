@@ -42,12 +42,13 @@ public:
     const Settings& GetSettings() const override { return m_settings; }
     Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
+    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
+
 protected:
     // ResourceBase overrides
     Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const override;
 
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
-    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
 
 private:
     const Settings m_settings;

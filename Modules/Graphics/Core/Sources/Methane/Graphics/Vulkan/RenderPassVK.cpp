@@ -184,6 +184,7 @@ static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device
             {
             case Texture::Type::FrameBuffer:        return dynamic_cast<FrameBufferTextureVK&>(texture).GetNativeViewDesc();
             case Texture::Type::DepthStencilBuffer: return dynamic_cast<DepthStencilTextureVK&>(texture).GetNativeViewDesc();
+            case Texture::Type::Texture:            return dynamic_cast<RenderTargetTextureVK&>(texture).GetNativeViewDesc();
             default: META_UNEXPECTED_ARG_DESCR(texture_type, "texture type is unsupported for render pass attachment");
             }
 

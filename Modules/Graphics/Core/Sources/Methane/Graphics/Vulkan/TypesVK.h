@@ -37,6 +37,7 @@ public:
     static vk::Format PixelFormatToVulkan(PixelFormat pixel_format);
     static vk::CompareOp CompareFunctionToVulkan(Compare compare_func);
     static vk::Extent3D DimensionsToExtent3D(const Dimensions& dimensions);
+    static vk::Extent3D FrameSizeToExtent3D(const FrameSize& frame_size);
 
 private:
     TypeConverterVK() = default;

@@ -82,7 +82,6 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Texture::Settings& s
             static_cast<UINT16>(sub_resource_count.GetArraySize()),
             static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
         );
-
         break;
 
     case Texture::DimensionType::Tex2DMultisample:

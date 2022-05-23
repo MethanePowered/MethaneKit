@@ -55,7 +55,10 @@ public:
         { return m_mip_levels_count; }
 
         [[nodiscard]] Data::Size GetRawCount() const noexcept
-        { return m_depth * m_array_size * m_mip_levels_count; }
+        { return m_array_size * m_depth * m_mip_levels_count; }
+
+        [[nodiscard]] Data::Index GetBaseLayerCount() const noexcept
+        { return m_array_size * m_depth; }
 
         void operator+=(const Index& other) noexcept;
         [[nodiscard]] bool operator==(const Count& other) const noexcept;
@@ -90,7 +93,10 @@ public:
         [[nodiscard]] Data::Index GetMipLevel() const noexcept   { return m_mip_level; }
 
         [[nodiscard]] Data::Index GetRawIndex(const Count& count) const noexcept
-        { return (m_array_index * count.GetDepth() + m_depth_slice) * count.GetMipLevelsCount() + m_mip_level; }
+        { return GetBaseLayerIndex(count) * count.GetMipLevelsCount() + m_mip_level; }
+
+        [[nodiscard]] Data::Index GetBaseLayerIndex(const Count& count) const noexcept
+        { return (m_array_index * count.GetDepth() + m_depth_slice); }
 
         [[nodiscard]] bool operator==(const Index& other) const noexcept;
         [[nodiscard]] bool operator!=(const Index& other) const noexcept { return !operator==(other); }

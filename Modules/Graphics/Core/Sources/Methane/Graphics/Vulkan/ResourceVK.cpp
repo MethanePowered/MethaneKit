@@ -125,6 +125,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
     META_FUNCTION_TASK();
     const Texture& texture = dynamic_cast<const Texture&>(GetResource());
     const Texture::Settings& texture_settings = texture.GetSettings();
+    const SubResource::Count& texture_subresource_count = texture.GetSubresourceCount();
     const vk::Device& vk_device = GetResourceVK().GetNativeDevice();
 
     m_view_var_ptr = std::make_shared<ViewVariant>();
@@ -136,8 +137,10 @@ void IResourceVK::LocationVK::InitTextureLocation()
             TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
             vk::ComponentMapping(),
             vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(texture_settings),
-                                      GetSubresourceIndex().GetMipLevel(),   GetSubresourceCount().GetMipLevelsCount(),
-                                      GetSubresourceIndex().GetArrayIndex(), GetSubresourceCount().GetArraySize())
+                                      GetSubresourceIndex().GetMipLevel(),
+                                      GetSubresourceCount().GetMipLevelsCount(),
+                                      GetSubresourceIndex().GetBaseLayerIndex(texture_subresource_count),
+                                      GetSubresourceCount().GetBaseLayerCount())
     ));
 
     SetVulkanObjectName(vk_device, GetNativeImageView(), fmt::format("{} Location", texture.GetName()));

@@ -84,6 +84,48 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
     return usage_flags;
 }
 
+static vk::ImageCreateFlags GetNativeImageCreateFlags(const Texture::Settings& settings)
+{
+    META_FUNCTION_TASK();
+    vk::ImageCreateFlags image_create_flags{};
+    switch (settings.dimension_type)
+    {
+    case Texture::DimensionType::Cube:
+    case Texture::DimensionType::CubeArray:
+        image_create_flags |= vk::ImageCreateFlagBits::eCubeCompatible;
+        break;
+
+    case Texture::DimensionType::Tex3D:
+        image_create_flags |= vk::ImageCreateFlagBits::e2DArrayCompatible;
+        break;
+
+    default:
+        break;
+    }
+    return image_create_flags;
+}
+
+static vk::UniqueImage CreateNativeImage(const IContextVK& context, const Texture::Settings& settings, vk::ImageUsageFlags initial_usage_flags = {})
+{
+    META_FUNCTION_TASK();
+    return context.GetDeviceVK().GetNativeDevice().createImageUnique(
+        vk::ImageCreateInfo(
+            GetNativeImageCreateFlags(settings),
+            ITextureVK::DimensionTypeToImageType(settings.dimension_type),
+            TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
+            settings.dimension_type == Texture::DimensionType::Tex3D
+                ? TypeConverterVK::DimensionsToExtent3D(settings.dimensions)
+                : TypeConverterVK::FrameSizeToExtent3D(settings.dimensions.AsRectSize()),
+            settings.mipmapped
+                ? TextureBase::GetRequiredMipLevelsCount(settings.dimensions)
+                : 1U,
+            settings.array_length * settings.dimensions.GetDepth(),
+            vk::SampleCountFlagBits::e1,
+            vk::ImageTiling::eOptimal,
+            ITextureVK::GetNativeImageUsageFlags(settings, initial_usage_flags),
+            vk::SharingMode::eExclusive));
+}
+
 static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
 {
     META_FUNCTION_TASK();
@@ -109,10 +151,10 @@ vk::ImageType ITextureVK::DimensionTypeToImageType(Texture::DimensionType dimens
     case Texture::DimensionType::Tex2D:
     case Texture::DimensionType::Tex2DArray:
     case Texture::DimensionType::Tex2DMultisample:
-        return vk::ImageType::e2D;
-
     case Texture::DimensionType::Cube:
     case Texture::DimensionType::CubeArray:
+        return vk::ImageType::e2D;
+
     case Texture::DimensionType::Tex3D:
         return vk::ImageType::e3D;
 
@@ -214,19 +256,7 @@ void FrameBufferTextureVK::ResetNativeImage()
 
 DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings,
                                              const Opt<DepthStencil>& depth_stencil_opt)
-    : ResourceVK(render_context, settings,
-                 render_context.GetDeviceVK().GetNativeDevice().createImageUnique(
-                     vk::ImageCreateInfo(
-                         vk::ImageCreateFlags{},
-                         vk::ImageType::e2D,
-                         TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
-                         TypeConverterVK::DimensionsToExtent3D(settings.dimensions),
-                         1U, // mip-levels count
-                         1U, // array length
-                         vk::SampleCountFlagBits::e1,
-                         vk::ImageTiling::eOptimal,
-                         ITextureVK::GetNativeImageUsageFlags(settings),
-                         vk::SharingMode::eExclusive)))
+    : ResourceVK(render_context, settings, CreateNativeImage(render_context, settings))
     , m_render_context(render_context)
     , m_depth_stencil_opt(depth_stencil_opt)
 {
@@ -260,10 +290,16 @@ vk::ImageSubresourceRange DepthStencilTextureVK::GetNativeSubresourceRange() con
 }
 
 RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings)
-    : ResourceVK(render_context, settings, {}) // TODO: initialize native resource
+    : ResourceVK(render_context, settings, CreateNativeImage(render_context, settings))
     , m_render_context(render_context)
 {
     META_FUNCTION_TASK();
+    // Allocate resource primary memory
+    const vk::Device& vk_device = GetNativeDevice();
+    AllocateResourceMemory(vk_device.getImageMemoryRequirements(GetNativeResource()), vk::MemoryPropertyFlagBits::eDeviceLocal);
+    vk_device.bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
+
+    ResetNativeView(CreateNativeImageView(GetSettings(), GetNativeDevice(), GetNativeResource()));
 }
 
 void RenderTargetTextureVK::SetData(const SubResources&, CommandQueue&)
@@ -276,26 +312,14 @@ vk::ImageSubresourceRange RenderTargetTextureVK::GetNativeSubresourceRange() con
     META_FUNCTION_TASK();
     const SubResource::Count& subresource_count = GetSubresourceCount();
     return vk::ImageSubresourceRange(
-        vk::ImageAspectFlagBits::eColor, // ?
+        vk::ImageAspectFlagBits::eColor,
         0U, subresource_count.GetMipLevelsCount(),
-        0U, subresource_count.GetArraySize()
+        0U, subresource_count.GetBaseLayerCount()
     );
 }
 
 ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings)
-    : ResourceVK(context, settings,
-                 dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice().createImageUnique(
-                     vk::ImageCreateInfo(
-                         vk::ImageCreateFlags{},
-                         ITextureVK::DimensionTypeToImageType(settings.dimension_type),
-                         TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
-                         TypeConverterVK::DimensionsToExtent3D(settings.dimensions),
-                         settings.mipmapped ? GetRequiredMipLevelsCount(settings.dimensions) : 1U,
-                         settings.array_length,
-                         vk::SampleCountFlagBits::e1,
-                         vk::ImageTiling::eOptimal,
-                         ITextureVK::GetNativeImageUsageFlags(settings, vk::ImageUsageFlagBits::eTransferDst),
-                         vk::SharingMode::eExclusive)))
+    : ResourceVK(context, settings, CreateNativeImage(dynamic_cast<const IContextVK&>(context), settings, vk::ImageUsageFlagBits::eTransferDst))
 {
     META_FUNCTION_TASK();
 
@@ -326,13 +350,13 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& ta
     m_vk_copy_regions.clear();
     m_vk_copy_regions.reserve(sub_resources.size());
 
+    const SubResource::Count& subresource_count = GetSubresourceCount();
     const vk::DeviceMemory& vk_device_memory = m_vk_unique_staging_memory.get();
+    vk::DeviceSize sub_resource_offset = 0U;
+
     for(const SubResource& sub_resource : sub_resources)
     {
         ValidateSubResource(sub_resource);
-
-        // TODO: calculate memory offset by sub-resource index
-        const vk::DeviceSize sub_resource_offset = 0U;
         Data::RawPtr sub_resource_data_ptr = nullptr;
         const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
                                                                      reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
@@ -348,18 +372,21 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& ta
             vk::ImageSubresourceLayers(
                 vk::ImageAspectFlagBits::eColor,
                 sub_resource.GetIndex().GetMipLevel(),
-                sub_resource.GetIndex().GetArrayIndex(),
-                1U),
-                vk::Offset3D(),
-                TypeConverterVK::DimensionsToExtent3D(GetSettings().dimensions)
+                sub_resource.GetIndex().GetBaseLayerIndex(subresource_count),
+                1U
+            ),
+            vk::Offset3D(),
+            TypeConverterVK::FrameSizeToExtent3D(GetSettings().dimensions.AsRectSize())
         );
+
+        sub_resource_offset += sub_resource.GetDataSize();
     }
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
     BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
     vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
-                                                                      vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
+                                    vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
@@ -420,57 +447,78 @@ void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State tar
 
     const vk::Image& vk_image = GetNativeImage();
 
-    vk::ImageMemoryBarrier vk_image_barrier;
-    vk_image_barrier.image                           = vk_image;
-    vk_image_barrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-    vk_image_barrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
-    vk_image_barrier.subresourceRange.aspectMask     = vk::ImageAspectFlagBits::eColor;
-    vk_image_barrier.subresourceRange.baseArrayLayer = 0U;
-    vk_image_barrier.subresourceRange.layerCount     = 1U;
-    vk_image_barrier.subresourceRange.levelCount     = 1U;
-
-    int32_t prev_mip_width  = static_cast<int32_t>(texture_settings.dimensions.GetWidth());
-    int32_t prev_mip_height = static_cast<int32_t>(texture_settings.dimensions.GetHeight());
-
-    for (uint32_t mip_level_index = 1U; mip_level_index < mip_levels_count; ++mip_level_index)
+    for(uint32_t base_layer_index = 0U; base_layer_index < subresource_count.GetBaseLayerCount(); ++base_layer_index)
     {
-        const int32_t  curr_mip_width       = prev_mip_width  > 1 ? prev_mip_width  / 2 : 1;
-        const int32_t  curr_mip_height      = prev_mip_height > 1 ? prev_mip_height / 2 : 1;
-        const uint32_t prev_mip_level_index = mip_level_index - 1U;
+        vk::ImageMemoryBarrier vk_image_barrier;
+        vk_image_barrier.image                           = vk_image;
+        vk_image_barrier.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+        vk_image_barrier.dstQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
+        vk_image_barrier.subresourceRange.aspectMask     = vk::ImageAspectFlagBits::eColor;
+        vk_image_barrier.subresourceRange.baseArrayLayer = base_layer_index;
+        vk_image_barrier.subresourceRange.layerCount     = 1U;
+        vk_image_barrier.subresourceRange.levelCount     = 1U;
 
-        vk_image_barrier.subresourceRange.baseMipLevel = prev_mip_level_index;
-        vk_image_barrier.oldLayout                     = vk_old_image_layout;
-        vk_image_barrier.newLayout                     = vk_blit_old_image_layout;
-        vk_image_barrier.srcAccessMask                 = vk_src_access_mask;
-        vk_image_barrier.dstAccessMask                 = vk_blit_src_access_mask;
+        int32_t prev_mip_width  = static_cast<int32_t>(texture_settings.dimensions.GetWidth());
+        int32_t prev_mip_height = static_cast<int32_t>(texture_settings.dimensions.GetHeight());
 
-        vk_cmd_buffer.pipelineBarrier(
-            vk_src_stage_mask,
-            vk_src_stage_mask,
-            vk::DependencyFlags{},
-            0U, nullptr,
-            0U, nullptr,
-            1U, &vk_image_barrier
-        );
+        for (uint32_t mip_level_index = 1U; mip_level_index < mip_levels_count; ++mip_level_index)
+        {
+            const int32_t  curr_mip_width       = prev_mip_width > 1 ? prev_mip_width / 2 : 1;
+            const int32_t  curr_mip_height      = prev_mip_height > 1 ? prev_mip_height / 2 : 1;
+            const uint32_t prev_mip_level_index = mip_level_index - 1U;
 
-        const vk::ImageBlit vk_image_blit(
-            vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, prev_mip_level_index, 0U, 1U),
-            { vk::Offset3D(), vk::Offset3D(prev_mip_width, prev_mip_height, 1U) },
-            vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, mip_level_index, 0U, 1U),
-            { vk::Offset3D(), vk::Offset3D(curr_mip_width, curr_mip_width, 1U) }
-        );
+            vk_image_barrier.subresourceRange.baseMipLevel = prev_mip_level_index;
+            vk_image_barrier.oldLayout                     = vk_old_image_layout;
+            vk_image_barrier.newLayout                     = vk_blit_old_image_layout;
+            vk_image_barrier.srcAccessMask                 = vk_src_access_mask;
+            vk_image_barrier.dstAccessMask                 = vk_blit_src_access_mask;
 
-        vk_cmd_buffer.blitImage(
-            vk_image, vk_blit_old_image_layout,
-            vk_image, vk_blit_new_image_layout,
-            1U, &vk_image_blit,
-            vk::Filter::eLinear
-        );
+            vk_cmd_buffer.pipelineBarrier(
+                vk_src_stage_mask,
+                vk_src_stage_mask,
+                vk::DependencyFlags{},
+                0U, nullptr,
+                0U, nullptr,
+                1U, &vk_image_barrier
+            );
 
-        vk_image_barrier.oldLayout     = vk_blit_old_image_layout;
-        vk_image_barrier.newLayout     = vk_new_image_layout;
-        vk_image_barrier.srcAccessMask = vk_blit_src_access_mask;
-        vk_image_barrier.dstAccessMask = vk_dst_access_mask;
+            const vk::ImageBlit vk_image_blit(
+                vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, prev_mip_level_index, base_layer_index, 1U),
+                { vk::Offset3D(), vk::Offset3D(prev_mip_width, prev_mip_height, 1U) },
+                vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, mip_level_index, base_layer_index, 1U),
+                { vk::Offset3D(), vk::Offset3D(curr_mip_width, curr_mip_width, 1U) }
+            );
+
+            vk_cmd_buffer.blitImage(
+                vk_image, vk_blit_old_image_layout,
+                vk_image, vk_blit_new_image_layout,
+                1U, &vk_image_blit,
+                vk::Filter::eLinear
+            );
+
+            vk_image_barrier.oldLayout     = vk_blit_old_image_layout;
+            vk_image_barrier.newLayout     = vk_new_image_layout;
+            vk_image_barrier.srcAccessMask = vk_blit_src_access_mask;
+            vk_image_barrier.dstAccessMask = vk_dst_access_mask;
+
+            vk_cmd_buffer.pipelineBarrier(
+                vk_src_stage_mask,
+                vk_dst_stage_mask,
+                vk::DependencyFlags{},
+                0U, nullptr,
+                0U, nullptr,
+                1U, &vk_image_barrier
+            );
+
+            prev_mip_width  = curr_mip_width;
+            prev_mip_height = curr_mip_height;
+        }
+
+        vk_image_barrier.subresourceRange.baseMipLevel = mip_levels_count - 1U;
+        vk_image_barrier.oldLayout                     = vk_blit_new_image_layout;
+        vk_image_barrier.newLayout                     = vk_new_image_layout;
+        vk_image_barrier.srcAccessMask                 = vk_blit_src_access_mask;
+        vk_image_barrier.dstAccessMask                 = vk_dst_access_mask;
 
         vk_cmd_buffer.pipelineBarrier(
             vk_src_stage_mask,
@@ -478,26 +526,8 @@ void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State tar
             vk::DependencyFlags{},
             0U, nullptr,
             0U, nullptr,
-            1U, &vk_image_barrier
-        );
-
-        prev_mip_width  = curr_mip_width;
-        prev_mip_height = curr_mip_height;
+            1U, &vk_image_barrier);
     }
-
-    vk_image_barrier.subresourceRange.baseMipLevel = mip_levels_count - 1U;
-    vk_image_barrier.oldLayout                     = vk_blit_new_image_layout;
-    vk_image_barrier.newLayout                     = vk_new_image_layout;
-    vk_image_barrier.srcAccessMask                 = vk_blit_src_access_mask;
-    vk_image_barrier.dstAccessMask                 = vk_dst_access_mask;
-
-    vk_cmd_buffer.pipelineBarrier(
-        vk_src_stage_mask,
-        vk_dst_stage_mask,
-        vk::DependencyFlags{},
-        0U, nullptr,
-        0U, nullptr,
-        1U, &vk_image_barrier);
 
     SetState(target_resource_state);
 }
@@ -509,7 +539,7 @@ vk::ImageSubresourceRange ImageTextureVK::GetNativeSubresourceRange() const noex
     return vk::ImageSubresourceRange(
         vk::ImageAspectFlagBits::eColor,
         0U, subresource_count.GetMipLevelsCount(),
-        0U, subresource_count.GetArraySize()
+        0U, subresource_count.GetBaseLayerCount()
     );
 }
 

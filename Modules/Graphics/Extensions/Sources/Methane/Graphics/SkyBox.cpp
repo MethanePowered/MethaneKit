@@ -104,12 +104,13 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(uniforms_buffer_ptr);
+    META_CHECK_ARG_NOT_NULL(m_texture_sampler_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr            } } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { { *m_mesh_buffers.GetTexturePtr() } } },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr          } } },
+        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
+        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { {  m_mesh_buffers.GetTexture() } } },
+        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },
     }, frame_index);
 }
 

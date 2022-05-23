@@ -92,7 +92,7 @@ private:
 };
 
 class RenderTargetTextureVK final
-    : public ResourceVK<TextureBase, vk::Image, true>
+    : public ResourceVK<TextureBase, vk::Image, true, vk::ImageView>
     , public ITextureVK
 {
 public:
