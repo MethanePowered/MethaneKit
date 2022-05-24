@@ -39,30 +39,39 @@ struct IResourceVK;
 class ResourceLocationVK final : public ResourceLocation
 {
 public:
+    template<typename DescType, typename ViewType>
+    struct ViewDescriptor
+    {
+        DescType vk_desc;
+        ViewType vk_view;
+    };
+
+    using BufferViewDescriptor  = ViewDescriptor<vk::DescriptorBufferInfo, vk::UniqueBufferView>;
+    using ImageViewDescriptor   = ViewDescriptor<vk::DescriptorImageInfo, vk::UniqueImageView>;
+    using ViewDescriptorVariant = std::variant<BufferViewDescriptor, ImageViewDescriptor>;
+
     explicit ResourceLocationVK(const ResourceLocation& location, Resource::Usage usage);
 
-    [[nodiscard]] const Id&                       GetId() const noexcept                { return m_id; }
-    [[nodiscard]] Resource::Usage                 GetUsage() const noexcept             { return m_id.usage; }
-    [[nodiscard]] IResourceVK&                    GetResourceVK() const noexcept;
-    [[nodiscard]] const vk::DescriptorBufferInfo* GetNativeDescriptorBufferInfo() const noexcept;
-    [[nodiscard]] const vk::DescriptorImageInfo*  GetNativeDescriptorImageInfo() const noexcept;
-    [[nodiscard]] const vk::BufferView*           GetNativeBufferViewPtr() const noexcept;
-    [[nodiscard]] const vk::ImageView*            GetNativeImageViewPtr() const noexcept;
+    [[nodiscard]] const Id&       GetId() const noexcept    { return m_id; }
+    [[nodiscard]] Resource::Usage GetUsage() const noexcept { return m_id.usage; }
+    [[nodiscard]] IResourceVK&    GetResourceVK() const;
+
+    [[nodiscard]] const BufferViewDescriptor*  GetBufferViewDescriptorPtr() const;
+    [[nodiscard]] const BufferViewDescriptor&  GetBufferViewDescriptor() const;
+    [[nodiscard]] const ImageViewDescriptor*   GetImageViewDescriptorPtr() const;
+    [[nodiscard]] const ImageViewDescriptor&   GetImageViewDescriptor() const;
+
+    [[nodiscard]] const vk::DescriptorBufferInfo* GetNativeDescriptorBufferInfoPtr() const;
+    [[nodiscard]] const vk::DescriptorImageInfo*  GetNativeDescriptorImageInfoPtr() const;
+    [[nodiscard]] const vk::BufferView*           GetNativeBufferViewPtr() const;
+    [[nodiscard]] const vk::ImageView*            GetNativeImageViewPtr() const;
     [[nodiscard]] const vk::BufferView&           GetNativeBufferView() const;
     [[nodiscard]] const vk::ImageView&            GetNativeImageView() const;
 
 private:
-    using DescriptorVariant = std::variant<void*, vk::DescriptorBufferInfo, vk::DescriptorImageInfo>;
-    using ViewVariant = std::variant<void*, vk::UniqueImageView, vk::UniqueBufferView>;
-
-    void InitBufferLocation();
-    void InitTextureLocation();
-    void InitSamplerLocation();
-
-    Id                m_id;
-    Ref<IResourceVK>  m_vulkan_resource_ref;
-    DescriptorVariant m_descriptor_var;
-    Ptr<ViewVariant>  m_view_var_ptr;
+    Id                         m_id;
+    Ref<IResourceVK>           m_vulkan_resource_ref;
+    Ptr<ViewDescriptorVariant> m_view_desc_var_ptr;
 };
 
 using ResourceLocationsVK = std::vector<ResourceLocationVK>;
@@ -80,6 +89,8 @@ public:
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
     [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&    GetOwnerQueueFamilyIndex() const noexcept = 0;
+
+    virtual const Ptr<ResourceLocationVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const Location::Id& location_id) = 0;
 
     [[nodiscard]] static vk::AccessFlags        GetNativeAccessFlagsByResourceState(ResourceState resource_state);
     [[nodiscard]] static vk::ImageLayout        GetNativeImageLayoutByResourceState(ResourceState resource_state);

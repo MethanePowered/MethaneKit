@@ -48,8 +48,7 @@ constexpr bool is_defined_v = false;
 template<typename T>
 constexpr bool is_defined_v<T, std::void_t<decltype(sizeof(T))>> = true;
 
-template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource, typename NativeViewType = void*,
-         bool is_unique_view = std::is_class_v<NativeViewType>,
+template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource,
          typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
 class ResourceVK // NOSONAR - destructor in use
     : public ResourceBaseType
@@ -58,10 +57,6 @@ class ResourceVK // NOSONAR - destructor in use
     using ResourceStorageType = std::conditional_t<is_unique_resource,
                                                    vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>,
                                                    NativeResourceType>;
-
-    using ViewStorageType = std::conditional_t<is_unique_view,
-                                               vk::UniqueHandle<NativeViewType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>,
-                                               NativeViewType>;
 
 public:
     template<typename SettingsType, typename T = ResourceStorageType>
@@ -89,7 +84,7 @@ public:
     bool operator=(const ResourceVK&) = delete;
     bool operator=(ResourceVK&&) = delete;
 
-    // ObjectBase overide
+    // ObjectBase override
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
@@ -102,13 +97,22 @@ public:
             SetVulkanObjectName(m_vk_device, vk_resource, name.c_str());
         }
 
-        if constexpr (std::is_class_v<NativeViewType>)
+        for(const auto& [location_id, view_desc_ptr] : m_view_descriptor_by_location_id)
         {
-            const NativeViewType& vk_resource_view = GetNativeViewDesc();
-            if (vk_resource_view)
+            META_CHECK_ARG_NOT_NULL(view_desc_ptr);
+            const std::string view_name = fmt::format("{} View for usage {}", name, magic_enum::enum_name(location_id.usage));
+
+            const auto* image_view_desc_ptr = std::get_if<ResourceLocationVK::ImageViewDescriptor>(view_desc_ptr.get());
+            if (image_view_desc_ptr)
             {
-                const std::string view_name = fmt::format("{} View", name);
-                SetVulkanObjectName(m_vk_device, vk_resource_view, view_name.c_str());
+                SetVulkanObjectName(m_vk_device, image_view_desc_ptr->vk_view.get(), view_name.c_str());
+                continue;
+            }
+
+            const auto* buffer_view_desc_ptr = std::get_if<ResourceLocationVK::BufferViewDescriptor>(view_desc_ptr.get());
+            if (buffer_view_desc_ptr)
+            {
+                SetVulkanObjectName(m_vk_device, buffer_view_desc_ptr->vk_view.get(), view_name.c_str());
             }
         }
 
@@ -144,21 +148,22 @@ public:
         return m_owner_queue_family_index_opt;
     }
 
+    const Ptr<ResourceLocationVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const Location::Id& location_id) final
+    {
+        META_FUNCTION_TASK();
+        const auto it = m_view_descriptor_by_location_id.find(location_id);
+        if (it != m_view_descriptor_by_location_id.end())
+            return it->second;
+
+        return m_view_descriptor_by_location_id.try_emplace(location_id, CreateNativeViewDescriptor(location_id)).first->second;
+    }
+
     const auto& GetNativeResource() const noexcept
     {
         if constexpr (is_unique_resource)
             return m_vk_resource.get();
         else
             return m_vk_resource;
-    }
-
-    template<typename T = NativeViewType>
-    std::enable_if_t<std::is_class_v<T>, const T&> GetNativeViewDesc() const noexcept
-    {
-        if constexpr (is_unique_view)
-            return m_vk_view.get();
-        else
-            return m_vk_view;
     }
 
 protected:
@@ -191,13 +196,6 @@ protected:
     {
         META_FUNCTION_TASK();
         m_vk_resource = std::forward<T>(vk_resource);
-    }
-
-    template<typename T = ViewStorageType, typename V = NativeViewType, typename = std::enable_if_t<std::is_class_v<V>>>
-    void ResetNativeView(T&& vk_view)
-    {
-        META_FUNCTION_TASK();
-        m_vk_view = std::forward<T>(vk_view);
     }
 
     BlitCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
@@ -246,14 +244,20 @@ protected:
         }
     }
 
+    void ResetNativeViewDescriptors() { m_view_descriptor_by_location_id.clear(); }
+
+    virtual Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) = 0;
+
 private:
-    vk::Device              m_vk_device;
-    vk::UniqueDeviceMemory  m_vk_unique_device_memory;
-    ResourceStorageType     m_vk_resource;
-    ViewStorageType         m_vk_view;
-    Opt<uint32_t>           m_owner_queue_family_index_opt;
-    Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<Resource::Barriers> m_upload_end_transition_barriers_ptr;
+    using ViewDescriptorByLocationId = std::map<ResourceLocation::Id, Ptr<ResourceLocationVK::ViewDescriptorVariant>>;
+
+    vk::Device                 m_vk_device;
+    vk::UniqueDeviceMemory     m_vk_unique_device_memory;
+    ResourceStorageType        m_vk_resource;
+    ViewDescriptorByLocationId m_view_descriptor_by_location_id;
+    Opt<uint32_t>              m_owner_queue_family_index_opt;
+    Ptr<Resource::Barriers>    m_upload_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers>    m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

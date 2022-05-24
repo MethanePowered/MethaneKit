@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -186,7 +186,6 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_c
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
 }
 
-// ObjectBase overide
 bool BufferVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
@@ -198,6 +197,19 @@ bool BufferVK::SetName(const std::string& name)
         SetVulkanObjectName(GetNativeDevice(), m_vk_unique_staging_buffer.get(), fmt::format("{} Staging Buffer", name));
     }
     return true;
+}
+
+Ptr<ResourceLocationVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescriptor(const ResourceLocation::Id& location_id)
+{
+    META_FUNCTION_TASK();
+    ResourceLocationVK::BufferViewDescriptor buffer_view_desc;
+    buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
+        GetNativeResource(),
+        static_cast<vk::DeviceSize>(location_id.offset),
+        static_cast<vk::DeviceSize>(GetSubResourceDataSize(location_id.subresource_index) - location_id.offset)
+    );
+
+    return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(buffer_view_desc));
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

@@ -116,8 +116,8 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
             resource_location.GetSubresourceIndex().GetArrayIndex(),
             1U,
             m_settings_vk.descriptor_type,
-            resource_location_vk.GetNativeDescriptorImageInfo(),
-            resource_location_vk.GetNativeDescriptorBufferInfo(),
+            resource_location_vk.GetNativeDescriptorImageInfoPtr(),
+            resource_location_vk.GetNativeDescriptorBufferInfoPtr(),
             resource_location_vk.GetNativeBufferViewPtr()
         );
     }

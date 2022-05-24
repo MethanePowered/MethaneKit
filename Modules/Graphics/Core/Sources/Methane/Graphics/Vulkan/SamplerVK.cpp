@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -119,6 +119,14 @@ SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings)
         )))
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<ResourceLocationVK::ViewDescriptorVariant> SamplerVK::CreateNativeViewDescriptor(const ResourceLocation::Id&)
+{
+    META_FUNCTION_TASK();
+    ResourceLocationVK::ImageViewDescriptor image_view_desc;
+    image_view_desc.vk_desc = vk::DescriptorImageInfo(GetNativeSampler());
+    return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(image_view_desc));
 }
 
 } // namespace Methane::Graphics

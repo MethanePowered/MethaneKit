@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ struct ITextureVK
 };
 
 class FrameBufferTextureVK final
-    : public ResourceVK<TextureBase, vk::Image, false, vk::ImageView>
+    : public ResourceVK<TextureBase, vk::Image, false>
     , public ITextureVK
 {
 public:
@@ -63,6 +63,10 @@ public:
 
     void ResetNativeImage();
 
+protected:
+    // ResourceVK override
+    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+
 private:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
@@ -72,7 +76,7 @@ private:
 };
 
 class DepthStencilTextureVK final
-    : public ResourceVK<TextureBase, vk::Image, true, vk::ImageView>
+    : public ResourceVK<TextureBase, vk::Image, true>
     , public ITextureVK
 {
 public:
@@ -86,13 +90,17 @@ public:
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
+protected:
+    // ResourceVK override
+    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+
 private:
     const RenderContextVK& m_render_context;
     Opt<DepthStencil>      m_depth_stencil_opt;
 };
 
 class RenderTargetTextureVK final
-    : public ResourceVK<TextureBase, vk::Image, true, vk::ImageView>
+    : public ResourceVK<TextureBase, vk::Image, true>
     , public ITextureVK
 {
 public:
@@ -104,6 +112,10 @@ public:
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
+
+protected:
+    // ResourceVK override
+    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
 
 private:
     const RenderContextVK& m_render_context;
@@ -122,9 +134,13 @@ public:
     // Object overide
     bool SetName(const std::string& name) override;
 
-    // ITextureVK interface
+    // ITextureVK overrides
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
+
+protected:
+    // ResourceVK override
+    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
 
 private:
     void GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state);
