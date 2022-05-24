@@ -195,7 +195,7 @@ struct RenderPass
     using DepthAttachment   = RenderPattern::DepthAttachment;
     using StencilAttachment = RenderPattern::StencilAttachment;
     using Access            = RenderPattern::Access;
-    using ICallback          = IRenderPassCallback;
+    using ICallback         = IRenderPassCallback;
 
     struct Settings
     {

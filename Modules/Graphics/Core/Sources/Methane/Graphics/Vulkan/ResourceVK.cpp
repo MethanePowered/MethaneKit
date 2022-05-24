@@ -49,8 +49,9 @@ static vk::ImageLayout GetVulkanImageLayoutByUsage(Resource::Usage usage) noexce
     return vk::ImageLayout::eUndefined;
 }
 
-IResourceVK::LocationVK::LocationVK(const Location& location)
-    : Location(location)
+ResourceLocationVK::ResourceLocationVK(const ResourceLocation& location, Resource::Usage usage)
+    : ResourceLocation(location)
+    , m_id(usage, GetSettings())
     , m_vulkan_resource_ref(dynamic_cast<IResourceVK&>(GetResource()))
 {
     META_FUNCTION_TASK();
@@ -64,53 +65,53 @@ IResourceVK::LocationVK::LocationVK(const Location& location)
     }
 }
 
-IResourceVK& IResourceVK::LocationVK::GetResourceVK() const noexcept
+IResourceVK& ResourceLocationVK::GetResourceVK() const noexcept
 {
     META_FUNCTION_TASK();
     return m_vulkan_resource_ref.get();
 }
 
-const vk::DescriptorBufferInfo* IResourceVK::LocationVK::GetNativeDescriptorBufferInfo() const noexcept
+const vk::DescriptorBufferInfo* ResourceLocationVK::GetNativeDescriptorBufferInfo() const noexcept
 {
     META_FUNCTION_TASK();
     return std::get_if<vk::DescriptorBufferInfo>(&m_descriptor_var);
 }
 
-const vk::DescriptorImageInfo* IResourceVK::LocationVK::GetNativeDescriptorImageInfo() const noexcept
+const vk::DescriptorImageInfo* ResourceLocationVK::GetNativeDescriptorImageInfo() const noexcept
 {
     META_FUNCTION_TASK();
     return std::get_if<vk::DescriptorImageInfo>(&m_descriptor_var);
 }
 
-const vk::BufferView* IResourceVK::LocationVK::GetNativeBufferViewPtr() const noexcept
+const vk::BufferView* ResourceLocationVK::GetNativeBufferViewPtr() const noexcept
 {
     META_FUNCTION_TASK();
     const vk::UniqueBufferView* vk_unique_buffer_view_ptr = std::get_if<vk::UniqueBufferView>(m_view_var_ptr.get());
     return vk_unique_buffer_view_ptr ? &vk_unique_buffer_view_ptr->get() : nullptr;
 }
 
-const vk::ImageView* IResourceVK::LocationVK::GetNativeImageViewPtr() const noexcept
+const vk::ImageView* ResourceLocationVK::GetNativeImageViewPtr() const noexcept
 {
     META_FUNCTION_TASK();
     const vk::UniqueImageView* vk_unique_image_view_ptr = std::get_if<vk::UniqueImageView>(m_view_var_ptr.get());
     return vk_unique_image_view_ptr ? &vk_unique_image_view_ptr->get() : nullptr;
 }
 
-const vk::BufferView& IResourceVK::LocationVK::GetNativeBufferView() const
+const vk::BufferView& ResourceLocationVK::GetNativeBufferView() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_var_ptr);
     return std::get<vk::UniqueBufferView>(*m_view_var_ptr).get();
 }
 
-const vk::ImageView& IResourceVK::LocationVK::GetNativeImageView() const
+const vk::ImageView& ResourceLocationVK::GetNativeImageView() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_var_ptr);
     return std::get<vk::UniqueImageView>(*m_view_var_ptr).get();
 }
 
-void IResourceVK::LocationVK::InitBufferLocation()
+void ResourceLocationVK::InitBufferLocation()
 {
     META_FUNCTION_TASK();
     m_descriptor_var = vk::DescriptorBufferInfo(
@@ -120,7 +121,7 @@ void IResourceVK::LocationVK::InitBufferLocation()
     );
 }
 
-void IResourceVK::LocationVK::InitTextureLocation()
+void ResourceLocationVK::InitTextureLocation()
 {
     META_FUNCTION_TASK();
     const Texture& texture = dynamic_cast<const Texture&>(GetResource());
@@ -152,7 +153,7 @@ void IResourceVK::LocationVK::InitTextureLocation()
     );
 }
 
-void IResourceVK::LocationVK::InitSamplerLocation()
+void ResourceLocationVK::InitSamplerLocation()
 {
     META_FUNCTION_TASK();
     const SamplerVK& sampler = dynamic_cast<const SamplerVK&>(GetResource());

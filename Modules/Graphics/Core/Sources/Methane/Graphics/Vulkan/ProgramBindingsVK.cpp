@@ -107,8 +107,8 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 
     for(const Resource::Location& resource_location : resource_locations)
     {
-        m_resource_locations_vk.emplace_back(resource_location);
-        const IResourceVK::LocationVK& resource_location_vk = m_resource_locations_vk.back();
+        m_resource_locations_vk.emplace_back(resource_location, Resource::Usage::ShaderRead);
+        const ResourceLocationVK& resource_location_vk = m_resource_locations_vk.back();
 
         m_vk_write_descriptor_sets.emplace_back(
             *m_vk_descriptor_set_ptr,

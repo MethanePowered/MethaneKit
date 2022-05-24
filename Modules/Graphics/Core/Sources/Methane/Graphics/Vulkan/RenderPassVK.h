@@ -84,9 +84,13 @@ protected:
     // IRenderContextVKCallback overrides
     void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
 
+    const ResourceLocationVK& GetAttachmentTextureLocationVK(const Attachment& attachment) const;
+
 private:
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
+    vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 
+    ResourceLocationsVK     m_vk_attachments;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };

@@ -171,38 +171,6 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     );
 }
 
-static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const RenderPass::Settings& settings)
-{
-    META_FUNCTION_TASK();
-    std::vector<vk::ImageView> vk_attachment_views;
-    std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(vk_attachment_views),
-        [](const Texture::Location& texture_location)
-        {
-            Texture& texture = texture_location.GetTexture();
-            const Texture::Type texture_type = texture.GetSettings().type;
-            switch(texture_type)
-            {
-            case Texture::Type::FrameBuffer:        return dynamic_cast<FrameBufferTextureVK&>(texture).GetNativeViewDesc();
-            case Texture::Type::DepthStencilBuffer: return dynamic_cast<DepthStencilTextureVK&>(texture).GetNativeViewDesc();
-            case Texture::Type::Texture:            return dynamic_cast<RenderTargetTextureVK&>(texture).GetNativeViewDesc();
-            default: META_UNEXPECTED_ARG_DESCR(texture_type, "texture type is unsupported for render pass attachment");
-            }
-
-        }
-    );
-
-    return vk_device.createFramebufferUnique(
-        vk::FramebufferCreateInfo(
-            vk::FramebufferCreateFlags{},
-            vk_render_pass,
-            vk_attachment_views,
-            settings.frame_size.GetWidth(),
-            settings.frame_size.GetHeight(),
-            1U
-        )
-    );
-}
-
 Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
@@ -263,34 +231,21 @@ Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings)
-    , m_vk_unique_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
+    , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
     static_cast<Data::IEmitter<IRenderContextVKCallback>&>(render_pattern.GetRenderContextVK()).Connect(*this);
 }
 
-vk::RenderPassBeginInfo RenderPassVK::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
-{
-    META_FUNCTION_TASK();
-    const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
-    const FrameSize& frame_size = GetSettings().frame_size;
-    return vk::RenderPassBeginInfo(
-        GetPatternVK().GetNativeRenderPass(),
-        vk_frame_buffer,
-        vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(frame_size.GetWidth(), frame_size.GetHeight())),
-        attachment_clear_values
-    );
-}
-
 bool RenderPassVK::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (RenderPassBase::Update(settings))
-    {
-        Reset();
-    }
-    return false;
+    if (!RenderPassBase::Update(settings))
+        return false;
+
+    Reset();
+    return true;
 }
 
 void RenderPassVK::ReleaseAttachmentTextures()
@@ -334,8 +289,10 @@ bool RenderPassVK::SetName(const std::string& name)
 void RenderPassVK::Reset()
 {
     META_FUNCTION_TASK();
-    m_vk_unique_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
+    m_vk_attachments.clear();
+    m_vk_unique_frame_buffer = CreateNativeFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
     m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
+
     Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
 }
 
@@ -359,6 +316,54 @@ void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
     }
 
     Reset();
+}
+
+const ResourceLocationVK& RenderPassVK::GetAttachmentTextureLocationVK(const Attachment& attachment) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_vk_attachments.size(),
+                              "attachment index is out of bounds of render pass VK attachments array");
+    return m_vk_attachments[attachment.attachment_index];
+}
+
+vk::RenderPassBeginInfo RenderPassVK::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
+{
+    META_FUNCTION_TASK();
+    const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
+    const FrameSize& frame_size = GetSettings().frame_size;
+    return vk::RenderPassBeginInfo(
+        GetPatternVK().GetNativeRenderPass(),
+        vk_frame_buffer,
+        vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(frame_size.GetWidth(), frame_size.GetHeight())),
+        attachment_clear_values
+    );
+}
+
+vk::UniqueFramebuffer RenderPassVK::CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (m_vk_attachments.empty())
+    {
+        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
+                       [](const Texture::Location& texture_location)
+                       { return ResourceLocationVK(texture_location, Resource::Usage::RenderTarget); });
+    }
+
+    std::vector<vk::ImageView> vk_attachment_views;
+    std::transform(m_vk_attachments.begin(), m_vk_attachments.end(), std::back_inserter(vk_attachment_views),
+                   [](const ResourceLocationVK& resource_location)
+                   { return resource_location.GetNativeImageView(); });
+
+    return vk_device.createFramebufferUnique(
+        vk::FramebufferCreateInfo(
+            vk::FramebufferCreateFlags{},
+            vk_render_pass,
+            vk_attachment_views,
+            settings.frame_size.GetWidth(),
+            settings.frame_size.GetHeight(),
+            1U
+        )
+    );
 }
 
 } // namespace Methane::Graphics
