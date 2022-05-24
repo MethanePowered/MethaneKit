@@ -142,7 +142,7 @@ For detailed features description and development plans please refer to [Modules
   - GCC 9 or later
   - LCov, X11 & XCB libraries
   ```console
-  sudo apt-get update && sudo apt-get install lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+  sudo apt-get update && sudo apt-get install cmake g++ lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
   ```
 
 ### Fetch Sources
