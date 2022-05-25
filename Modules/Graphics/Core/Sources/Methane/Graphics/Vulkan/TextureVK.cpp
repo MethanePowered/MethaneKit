@@ -52,26 +52,28 @@ vk::ImageAspectFlags ITextureVK::GetNativeImageAspectFlags(const Texture::Settin
 vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
     
+    vk::ImageUsageFlags usage_flags = initial_usage_flags;
     switch (settings.type)
     {
     case Texture::Type::FrameBuffer:
-        return vk::ImageUsageFlagBits::eColorAttachment;
+        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
     case Texture::Type::DepthStencilBuffer:
-        return vk::ImageUsageFlagBits::eDepthStencilAttachment;
+        usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
         break;
 
     case Texture::Type::Texture:
-        // Texture usage flags setup is made below this switch
+        if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::RenderTarget))
+            usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
     default:
         META_UNEXPECTED_ARG(settings.type);
     }
-
-    vk::ImageUsageFlags usage_flags = initial_usage_flags;
+    
     if (settings.mipmapped)
     {
         // Flags required for mip-map generation with BLIT operations
@@ -79,12 +81,8 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
         usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
     }
 
-    using namespace magic_enum::bitwise_operators;
     if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::ShaderRead))
         usage_flags |= vk::ImageUsageFlagBits::eSampled;
-
-    if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::RenderTarget))
-        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
 
     return usage_flags;
 }
