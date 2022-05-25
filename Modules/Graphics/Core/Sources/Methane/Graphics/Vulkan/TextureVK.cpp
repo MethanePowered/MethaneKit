@@ -126,19 +126,6 @@ static vk::UniqueImage CreateNativeImage(const IContextVK& context, const Textur
             vk::SharingMode::eExclusive));
 }
 
-static vk::UniqueImageView CreateNativeImageView(const Texture::Settings& settings, const vk::Device& vk_device, const vk::Image& vk_image)
-{
-    META_FUNCTION_TASK();
-    return vk_device.createImageViewUnique(vk::ImageViewCreateInfo(
-        vk::ImageViewCreateFlags(),
-        vk_image,
-        ITextureVK::DimensionTypeToImageViewType(settings.dimension_type),
-        TypeConverterVK::PixelFormatToVulkan(settings.pixel_format),
-        vk::ComponentMapping(),
-        vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(settings), 0, 1, 0, 1)
-    ));
-}
-
 static vk::ImageLayout GetVulkanImageLayoutByUsage(Texture::Type texture_type, Resource::Usage usage) noexcept
 {
     META_FUNCTION_TASK();
