@@ -104,7 +104,7 @@ private:
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
     FrameWaitInfos         m_wait_frame_execution_completed;
-    TracyLockable(mutable std::mutex, m_wait_frame_execution_completed_mutex)
+    mutable TracyLockable(std::mutex, m_wait_frame_execution_completed_mutex)
 };
 
 } // namespace Methane::Graphics
