@@ -52,24 +52,26 @@ vk::ImageAspectFlags ITextureVK::GetNativeImageAspectFlags(const Texture::Settin
 vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
-    vk::ImageUsageFlags usage_flags = initial_usage_flags;
+    
     switch (settings.type)
     {
-    case Texture::Type::Texture:
-        break;
-
     case Texture::Type::FrameBuffer:
-        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
+        return vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
     case Texture::Type::DepthStencilBuffer:
-        usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+        return vk::ImageUsageFlagBits::eDepthStencilAttachment;
+        break;
+
+    case Texture::Type::Texture:
+        // Texture usage flags setup is made below this switch
         break;
 
     default:
         META_UNEXPECTED_ARG(settings.type);
     }
 
+    vk::ImageUsageFlags usage_flags = initial_usage_flags;
     if (settings.mipmapped)
     {
         // Flags required for mip-map generation with BLIT operations
@@ -80,6 +82,9 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
     using namespace magic_enum::bitwise_operators;
     if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::ShaderRead))
         usage_flags |= vk::ImageUsageFlagBits::eSampled;
+
+    if (magic_enum::enum_contains(settings.usage_mask & Resource::Usage::RenderTarget))
+        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
 
     return usage_flags;
 }
@@ -162,7 +167,7 @@ static Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeImageViewDescr
         vk::ImageViewCreateInfo(
             vk::ImageViewCreateFlags{},
             vk_image,
-            ITextureVK::DimensionTypeToImageViewType(texture_settings.dimension_type),
+            ITextureVK::DimensionTypeToImageViewType(location_id.texture_dimension_type_opt.value_or(texture_settings.dimension_type)),
             TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
             vk::ComponentMapping(),
             vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(texture_settings),

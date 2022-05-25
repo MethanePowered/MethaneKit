@@ -25,6 +25,7 @@ Methane sub-resource used for resource data transfers.
 
 #include <Methane/Graphics/SubResource.h>
 #include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/Texture.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -242,6 +243,20 @@ ResourceLocation::ResourceLocation(Resource& resource,
     META_FUNCTION_TASK();
 }
 
+ResourceLocation::ResourceLocation(Resource& resource,
+                                   const SubResource::Index& subresource_index,
+                                   const SubResource::Count& subresource_count,
+                                   Opt<TextureDimensionType> texture_dimension_type_opt)
+    : ResourceLocation(resource, Settings{
+        subresource_index,
+        subresource_count,
+        0U, // offset
+        texture_dimension_type_opt
+    })
+{
+    META_FUNCTION_TASK();
+}
+
 bool ResourceLocation::operator==(const ResourceLocation& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -268,6 +283,14 @@ ResourceLocation::operator std::string() const
                        m_settings.subresource_index,
                        m_settings.subresource_count,
                        m_settings.offset);
+}
+
+TextureDimensionType ResourceLocation::GetTextureDimensionType() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_resource_ptr);
+    META_CHECK_ARG_EQUAL(m_resource_ptr->GetResourceType(), Resource::Type::Texture);
+    return m_settings.texture_dimension_type_opt.value_or(dynamic_cast<Texture&>(*m_resource_ptr).GetSettings().dimension_type);
 }
 
 } // namespace Methane::Graphics

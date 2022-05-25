@@ -34,6 +34,8 @@ namespace Methane::Graphics
 
 struct Texture : virtual Resource // NOSONAR
 {
+    using DimensionType = TextureDimensionType;
+
     enum class Type : uint32_t
     {
         Texture = 0,
@@ -41,24 +43,15 @@ struct Texture : virtual Resource // NOSONAR
         DepthStencilBuffer,
     };
 
-    enum class DimensionType : uint32_t
-    {
-        Tex1D = 0,
-        Tex1DArray,
-        Tex2D,
-        Tex2DArray,
-        Tex2DMultisample,
-        Cube,
-        CubeArray,
-        Tex3D,
-    };
-
     class Location : public Resource::Location
     {
     public:
-        Location(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {});
+        Location(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {},
+                 Opt<TextureDimensionType> texture_dimension_type_opt = {});
 
         using Resource::Location::operator==;
+        using Resource::Location::operator!=;
+        using Resource::Location::operator std::string;
 
         [[nodiscard]] const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
         [[nodiscard]] Texture&            GetTexture() const;

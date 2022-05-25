@@ -151,14 +151,27 @@ enum class ResourceUsage : uint32_t
     Addressable  = 1U << 4U,
 };
 
+enum class TextureDimensionType : uint32_t
+{
+    Tex1D = 0,
+    Tex1DArray,
+    Tex2D,
+    Tex2DArray,
+    Tex2DMultisample,
+    Cube,
+    CubeArray,
+    Tex3D,
+};
+
 class ResourceLocation
 {
 public:
     struct Settings
     {
-        SubResource::Index subresource_index;
-        SubResource::Count subresource_count;
-        Data::Size         offset = 0U;
+        SubResource::Index        subresource_index;
+        SubResource::Count        subresource_count;
+        Data::Size                offset = 0U;
+        Opt<TextureDimensionType> texture_dimension_type_opt;
 
         [[nodiscard]] bool operator<(const Settings& other) const noexcept;
         [[nodiscard]] bool operator==(const Settings& other) const noexcept;
@@ -181,6 +194,10 @@ public:
                      const SubResource::Index& subresource_index,
                      const SubResource::Count& subresource_count = {},
                      Data::Size offset = 0U);
+    ResourceLocation(Resource& resource,
+                     const SubResource::Index& subresource_index,
+                     const SubResource::Count& subresource_count = {},
+                     Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
 
     [[nodiscard]] bool operator==(const ResourceLocation& other) const noexcept;
     [[nodiscard]] bool operator!=(const ResourceLocation& other) const noexcept;
@@ -192,6 +209,7 @@ public:
     [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_settings.subresource_index; }
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_settings.subresource_count; }
     [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_settings.offset; }
+    [[nodiscard]] TextureDimensionType      GetTextureDimensionType() const;
 
 private:
     Ptr<Resource> m_resource_ptr;

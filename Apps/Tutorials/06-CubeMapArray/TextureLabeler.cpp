@@ -112,7 +112,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             render_pattern_settings.color_attachments[0].clear_color = slice.color;
             slice.render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), render_pattern_settings);
             slice.render_pass_ptr    = gfx::RenderPass::Create(*slice.render_pattern_ptr, {
-                { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(depth_index, array_index)) },
+                { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
 

@@ -31,8 +31,8 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Texture::Location::Location(Texture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count)
-    : Resource::Location(texture, subresource_index, subresource_count)
+Texture::Location::Location(Texture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count, Opt<TextureDimensionType> texture_dimension_type_opt)
+    : Resource::Location(texture, subresource_index, subresource_count, texture_dimension_type_opt)
     , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
 {
     META_FUNCTION_TASK();

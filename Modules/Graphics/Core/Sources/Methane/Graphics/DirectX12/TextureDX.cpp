@@ -388,13 +388,13 @@ void DepthStencilTextureDX::CreateShaderResourceView(const D3D12_CPU_DESCRIPTOR_
     META_FUNCTION_TASK();
     const Texture::Settings& settings = GetSettings();
 
-    D3D12_SHADER_RESOURCE_VIEW_DESC rtv_desc{};
-    rtv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
-    rtv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
-    rtv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    rtv_desc.Texture2D.MipLevels     = 1;
+    D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
+    srv_desc.Format                  = TypeConverterDX::PixelFormatToDxgi(settings.pixel_format, TypeConverterDX::ResourceFormatType::ViewRead);
+    srv_desc.ViewDimension           = GetSrvDimension(settings.dimensions);
+    srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srv_desc.Texture2D.MipLevels     = 1;
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &rtv_desc, cpu_descriptor_handle);
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, cpu_descriptor_handle);
 }
 
 void DepthStencilTextureDX::CreateDepthStencilView(const D3D12_CPU_DESCRIPTOR_HANDLE& cpu_descriptor_handle) const
