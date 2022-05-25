@@ -59,6 +59,7 @@ struct Device
         Unknown              = 0U,
         BasicRendering       = 1U << 0U,
         AnisotropicFiltering = 1U << 2U,
+        ImageCubeArray       = 1U << 3U,
         All                  = ~0U,
     };
 

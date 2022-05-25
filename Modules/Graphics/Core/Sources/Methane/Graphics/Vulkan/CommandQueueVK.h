@@ -25,7 +25,10 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/CommandQueueTrackingBase.h>
 
+#include <Tracy.hpp>
 #include <vulkan/vulkan.hpp>
+
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -76,6 +79,10 @@ public:
     vk::PipelineStageFlags GetNativeSupportedStageFlags() const noexcept    { return m_vk_supported_stage_flags; }
     vk::AccessFlags        GetNativeSupportedAccessFlags() const noexcept   { return m_vk_supported_access_flags; }
 
+protected:
+    // CommandQueueTrackingBase override
+    void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set) override;
+
 private:
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device);
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
@@ -84,6 +91,7 @@ private:
                    const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
+    void AddWaitForFrameExecution(CommandListSet& command_list_set);
 
     using FrameWaitInfos = std::vector<WaitInfo>;
 
@@ -96,6 +104,7 @@ private:
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
     FrameWaitInfos         m_wait_frame_execution_completed;
+    TracyLockable(mutable std::mutex, m_wait_frame_execution_completed_mutex)
 };
 
 } // namespace Methane::Graphics

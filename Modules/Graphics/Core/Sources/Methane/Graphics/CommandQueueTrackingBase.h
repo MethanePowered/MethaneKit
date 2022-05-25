@@ -79,11 +79,12 @@ protected:
         return CommandListSetsQueueGuard<true, decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
     }
 
+    virtual void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
+
 private:
     void WaitForExecution() noexcept;
 
     const Ptr<CommandListSetBase>& GetNextExecutingCommandListSet() const;
-    void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
     CommandListSetsQueue                m_executing_command_lists;
     mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex)

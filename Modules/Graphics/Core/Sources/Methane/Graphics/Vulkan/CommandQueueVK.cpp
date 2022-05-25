@@ -153,17 +153,7 @@ void CommandQueueVK::Execute(CommandListSet& command_list_set, const CommandList
 {
     META_FUNCTION_TASK();
 
-    if (GetCommandListType() == CommandList::Type::Render)
-    {
-        const Opt<Data::Index>& frame_index_opt = command_list_set.GetFrameIndex();
-        const Data::Index wait_info_index = frame_index_opt ? *frame_index_opt : 0U;
-        m_wait_frame_execution_completed.resize(wait_info_index + 1U);
-        WaitInfo& frame_wait_info = m_wait_frame_execution_completed[wait_info_index];
-        CommandListSetVK& vulkan_command_list_set = static_cast<CommandListSetVK&>(command_list_set);
-        frame_wait_info.semaphores.emplace_back(vulkan_command_list_set.GetNativeExecutionCompletedSemaphore());
-        frame_wait_info.stages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
-    }
-
+    AddWaitForFrameExecution(command_list_set);
     CommandQueueTrackingBase::Execute(command_list_set, completed_callback);
 
     m_wait_before_executing.semaphores.clear();
@@ -213,6 +203,8 @@ const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForFrameExecutionComplete
 {
     META_FUNCTION_TASK();
     static const CommandQueueVK::WaitInfo s_empty_wait_info;
+
+    std::scoped_lock lock_guard(m_wait_frame_execution_completed_mutex);
     return frame_index < m_wait_frame_execution_completed.size()
          ? m_wait_frame_execution_completed[frame_index]
          : s_empty_wait_info;
@@ -221,6 +213,7 @@ const CommandQueueVK::WaitInfo& CommandQueueVK::GetWaitForFrameExecutionComplete
 void CommandQueueVK::ResetWaitForFrameExecution(Data::Index frame_index)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_wait_frame_execution_completed_mutex);
     if (frame_index >= m_wait_frame_execution_completed.size())
         return;
 
@@ -229,10 +222,34 @@ void CommandQueueVK::ResetWaitForFrameExecution(Data::Index frame_index)
     wait_info.stages.clear();
 }
 
+void CommandQueueVK::AddWaitForFrameExecution(CommandListSet& command_list_set)
+{
+    META_FUNCTION_TASK();
+    if (GetCommandListType() != CommandList::Type::Render)
+        return;
+
+    auto& vulkan_command_list_set = static_cast<CommandListSetVK&>(command_list_set);
+    const Data::Index wait_info_index = command_list_set.GetFrameIndex().value_or(0U);
+
+    std::scoped_lock lock_guard(m_wait_frame_execution_completed_mutex);
+
+    m_wait_frame_execution_completed.resize(wait_info_index + 1U);
+    WaitInfo& frame_wait_info = m_wait_frame_execution_completed[wait_info_index];
+    frame_wait_info.semaphores.emplace_back(vulkan_command_list_set.GetNativeExecutionCompletedSemaphore());
+    frame_wait_info.stages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
+}
+
+void CommandQueueVK::CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set)
+{
+    META_FUNCTION_TASK();
+    ResetWaitForFrameExecution(executing_command_list_set.GetFrameIndex().value_or(0U));
+    CommandQueueTrackingBase::CompleteCommandListSetExecution(executing_command_list_set);
+}
+
 bool CommandQueueVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!CommandQueueBase::SetName(name))
+    if (!CommandQueueTrackingBase::SetName(name))
         return false;
 
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();

@@ -197,7 +197,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         for (uint32_t i = 0; i < callback_data_ptr->objectCount; i++)
         {
             ss << "\t\t- Object " << i << ":" << std::endl;
-            ss << "\t\t\t- objectType:   " << vk::to_string( static_cast<vk::ObjectType>( callback_data_ptr->pObjects[i].objectType ) ) << std::endl;
+            ss << "\t\t\t- objectType:   " << vk::to_string( static_cast<vk::ObjectType>(callback_data_ptr->pObjects[i].objectType)) << std::endl;
             ss << "\t\t\t- objectHandle: " << callback_data_ptr->pObjects[i].objectHandle << std::endl;
             if (callback_data_ptr->pObjects[i].pObjectName)
                 ss << "\t\t\t- objectName:   " << callback_data_ptr->pObjects[i].pObjectName << std::endl;
@@ -410,6 +410,8 @@ Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_phy
     Device::Features device_features = Device::Features::BasicRendering;
     if (vk_device_features.samplerAnisotropy)
         device_features |= Device::Features::AnisotropicFiltering;
+    if (vk_device_features.imageCubeArray)
+        device_features |= Device::Features::ImageCubeArray;
     return device_features;
 }
 
@@ -465,6 +467,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     // Enable physical device features:
     vk::PhysicalDeviceFeatures vk_device_features;
     vk_device_features.samplerAnisotropy = magic_enum::enum_contains(capabilities.features & Features::AnisotropicFiltering);
+    vk_device_features.imageCubeArray    = magic_enum::enum_contains(capabilities.features & Features::ImageCubeArray);
 
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
