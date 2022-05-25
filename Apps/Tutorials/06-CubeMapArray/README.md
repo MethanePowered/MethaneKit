@@ -1,8 +1,8 @@
 # Cube Map Array Tutorial
 
-| Windows (DirectX 12)                                                 | MacOS (Metal) |
-|----------------------------------------------------------------------| ------------- |
-| ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) |
+| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                                  |
+| -------------------- | ------------- |-----------------------------------------------------------------|
+| ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) |
 
 This tutorial demonstrates cube-map array texturing with Methane Kit:
   - [CubeMapArrayApp.h](CubeMapArrayApp.h)
