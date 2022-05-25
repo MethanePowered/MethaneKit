@@ -27,6 +27,7 @@ Base implementation of the program bindings interface.
 #include "CoreFormatters.hpp"
 
 #include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/Texture.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
@@ -54,6 +55,31 @@ struct fmt::formatter<Methane::Graphics::Resource::Location>
 
 namespace Methane::Graphics
 {
+
+static Resource::State GetBoundResourceTargetState(Resource& resource, Resource::Type resource_type, bool is_constant_binding)
+{
+    META_FUNCTION_TASK();
+    switch (resource_type)
+    {
+    case Resource::Type::Buffer:
+        // FIXME: state transition DX upload heap resources should be reworked properly and made friendly with Vulkan
+        // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
+        if (dynamic_cast<Buffer&>(resource).GetSettings().storage_mode != Buffer::StorageMode::Private)
+            return resource.GetState();
+        else if (is_constant_binding)
+            return Resource::State::ConstantBuffer;
+        break;
+
+    case Resource::Type::Texture:
+        if (dynamic_cast<Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
+            return Resource::State::DepthRead;
+        break;
+
+    default:
+        break;
+    }
+    return Resource::State::ShaderResource;
+}
 
 ProgramBindingsBase::ResourceAndState::ResourceAndState(Ptr<ResourceBase> resource_ptr, Resource::State state)
     : resource_ptr(std::move(resource_ptr))
@@ -394,13 +420,9 @@ void ProgramBindingsBase::AddTransitionResourceState(const ProgramBindings::Argu
         return;
 
     const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
+    const Resource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
-    transition_resource_states.emplace_back(
-        std::dynamic_pointer_cast<ResourceBase>(resource.GetPtr()),
-        argument_binding_settings.argument.IsConstant() && argument_binding_settings.resource_type == Resource::Type::Buffer
-            ? Resource::State::ConstantBuffer
-            : Resource::State::ShaderResource
-    );
+    transition_resource_states.emplace_back(std::dynamic_pointer_cast<ResourceBase>(resource.GetPtr()), target_resource_state);
 }
 
 void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding)
@@ -408,8 +430,6 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
     META_FUNCTION_TASK();
     const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
-    const bool is_buffer_binding = argument_binding_settings.resource_type == Resource::Type::Buffer;
-    const bool is_constant_buffer_binding = is_buffer_binding && argument_binding_settings.argument.IsConstant();
 
     for(const ResourceLocation& resource_location : argument_binding.GetResourceLocations())
     {
@@ -420,16 +440,7 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
         if (resource.GetResourceType() == Resource::Type::Sampler)
             continue;
 
-        Resource::State target_resource_state = Resource::State::ShaderResource;
-        if (is_buffer_binding)
-        {
-            // FIXME: state transition DX upload heap resources should be reworked properly and made friendly with Vulkan
-            // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
-            if (dynamic_cast<Buffer&>(resource).GetSettings().storage_mode != Buffer::StorageMode::Private)
-                target_resource_state = resource.GetState();
-            else if (is_constant_buffer_binding)
-                target_resource_state = Resource::State::ConstantBuffer;
-        }
+        const Resource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
         transition_resource_states.emplace_back(std::dynamic_pointer_cast<ResourceBase>(resource_location.GetResourcePtr()), target_resource_state);
     }
 }
