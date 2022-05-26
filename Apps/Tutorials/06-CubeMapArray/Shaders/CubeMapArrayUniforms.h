@@ -14,7 +14,7 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 
 #define CUBE_MAP_ARRAY_SIZE 8
 
-struct META_UNIFORM_ALIGN Uniforms
+struct Uniforms
 {
     float4x4 mvp_matrix_per_instance[CUBE_MAP_ARRAY_SIZE];
 };
