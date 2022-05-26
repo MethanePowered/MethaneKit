@@ -159,6 +159,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         callback_data_ptr->messageIdNumber == -400166253)  // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         return VK_FALSE;
 
+    if (callback_data_ptr->messageIdNumber == 0 &&
+        strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file"))
+        return VK_FALSE;
+
 #ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     // Filter out validation error appeared due to missing HLSL extension for SPIRV bytecode, which can not be used because of bug in NVidia Windows drivers:
     // vkCreateShaderModule(): The SPIR-V Extension (SPV_GOOGLE_hlsl_functionality1 | SPV_GOOGLE_user_type) was declared, but none of the requirements were met to use it.
