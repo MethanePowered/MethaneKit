@@ -21,12 +21,14 @@ Renders text labels to the faces of cube-map texture array
 
 ******************************************************************************/
 
-#include "TextureLabeler.h"
-
+#include <Methane/Samples/TextureLabeler.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/CommandQueue.h>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/Text.h>
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>

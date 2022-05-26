@@ -22,8 +22,8 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 ******************************************************************************/
 
 #include "CubeMapArrayApp.h"
-#include "TextureLabeler.h"
 
+#include <Methane/Samples/TextureLabeler.h>
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>

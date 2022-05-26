@@ -7,8 +7,6 @@
 This tutorial demonstrates cube-map array texturing with Methane Kit:
   - [CubeMapArrayApp.h](CubeMapArrayApp.h)
   - [CubeMapArrayApp.cpp](CubeMapArrayApp.cpp)
-  - [TextureLabeler.h](CubeMapArrayApp.h)
-  - [TextureLabeler.cpp](CubeMapArrayApp.cpp)
   - [Shaders/CubeMapArray.hlsl](Shaders/CubeMapArray.hlsl)
   - [Shaders/CubeMapArrayUniforms.h](Shaders/CubeMapArrayUniforms.h)
 
