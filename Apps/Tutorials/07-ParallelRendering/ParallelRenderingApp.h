@@ -40,9 +40,9 @@ namespace gfx = Methane::Graphics;
 
 struct ParallelRenderingFrame final : Graphics::AppFrame
 {
-    gfx::MeshBufferBindings      cube;
-    Ptr<gfx::RenderCommandList>  render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>     execute_cmd_list_set_ptr;
+    gfx::InstancedMeshBufferBindings    cubes_array;
+    Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -68,14 +68,15 @@ protected:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
+    using MeshBuffers = gfx::MeshBuffers<hlslpp::Uniforms>;
 
-    const float              m_model_scale;
-    hlslpp::float4x4         m_model_matrix;
-    gfx::Camera              m_camera;
-    Ptr<gfx::RenderState>    m_render_state_ptr;
-    Ptr<gfx::Sampler>        m_texture_sampler_ptr;
-    Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
+    const float           m_model_scale;
+    hlslpp::float4x4      m_model_matrix;
+    gfx::Camera           m_camera;
+    Ptr<gfx::RenderState> m_render_state_ptr;
+    Ptr<gfx::Texture>     m_texture_array_ptr;
+    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
+    Ptr<MeshBuffers>      m_cube_buffers_ptr;
 };
 
 } // namespace Methane::Tutorials

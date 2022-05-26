@@ -228,6 +228,16 @@ public:
     }
 
     [[nodiscard]]
+    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
+    {
+        META_FUNCTION_TASK();
+        return static_cast<Data::Size>(
+            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
+                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
+        );
+    }
+
+    [[nodiscard]]
     const Resource::SubResources& GetFinalPassUniformsSubresources() const { return m_final_pass_instance_uniforms_subresources; }
 
 protected:
@@ -270,16 +280,6 @@ protected:
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
-    }
-
-    [[nodiscard]]
-    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
-    {
-        META_FUNCTION_TASK();
-        return static_cast<Data::Size>(
-            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
-                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
-        );
     }
 
 private:

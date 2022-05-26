@@ -334,7 +334,10 @@ void AsteroidsApp::Init()
         frame.planet.program_bindings_ptr->SetName(IndexedName("Planet Bindings {}", frame.index));
 
         // Resource bindings for Asteroids rendering
-        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr, frame.scene_uniforms_buffer_ptr, frame.asteroids.uniforms_buffer_ptr, frame.index);
+        frame.asteroids.program_bindings_per_instance = m_asteroids_array_ptr->CreateProgramBindings(m_const_buffer_ptr,
+                                                                                                     frame.scene_uniforms_buffer_ptr,
+                                                                                                     frame.asteroids.uniforms_buffer_ptr,
+                                                                                                     frame.index);
     }
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU (automatic state propagation from Common state works),

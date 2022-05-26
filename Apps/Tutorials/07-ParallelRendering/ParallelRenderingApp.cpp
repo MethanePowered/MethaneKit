@@ -39,20 +39,24 @@ namespace gui = Methane::UserInterface;
 struct CubeVertex
 {
     gfx::Mesh::Position position;
+    gfx::Mesh::TexCoord texcoord;
 
     inline static const gfx::Mesh::VertexLayout layout{
         gfx::Mesh::VertexField::Position,
+        gfx::Mesh::VertexField::TexCoord,
     };
 };
 
-constexpr uint32_t g_cube_texture_size = 320U;
+static const gfx::Dimensions g_texture_size{ 320U, 320U };
+static const uint32_t        g_thread_count = std::thread::hardware_concurrency();
+static const uint32_t        g_cubes_count  = static_cast<uint32_t>(std::pow(8U, 3U));
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
         Samples::GetGraphicsAppSettings("Methane Cube Map Array", Samples::g_default_app_options_color_with_depth_and_anim),
         { HeadsUpDisplayMode::WindowTitle },
         "Methane tutorial of cube-map array texturing")
-    , m_model_scale(6.F)
+    , m_model_scale(1.6F)
     , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(m_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi)))
 {
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
@@ -96,10 +100,9 @@ void ParallelRenderingApp::Init()
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
+                { { gfx::Shader::Type::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -110,14 +113,19 @@ void ParallelRenderingApp::Init()
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
-    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
+    const gfx::Mesh::Subsets mesh_subsets(g_cubes_count,
+                                          gfx::Mesh::Subset(gfx::Mesh::Type::Box,
+                                                            gfx::Mesh::Subset::Slice(0U, cube_mesh.GetVertexCount()),
+                                                            gfx::Mesh::Subset::Slice(0U, cube_mesh.GetIndexCount()),
+                                                            false));
+    m_cube_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
 
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
-    m_cube_buffers_ptr->SetTexture(
-        gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
-                                         gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead)));
+    m_texture_array_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
+            gfx::Texture::Settings::Image(g_texture_size, g_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+                                         gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
+    m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -132,26 +140,36 @@ void ParallelRenderingApp::Init()
     const auto uniforms_data_size = m_cube_buffers_ptr->GetUniformsBufferSize();
     for(ParallelRenderingFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for frame rendering
-        frame.cube.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
-        frame.cube.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+        // Create buffer for uniforms array related to all cube instances
+        frame.cubes_array.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, true, true);
+        frame.cubes_array.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.cube.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cube.uniforms_buffer_ptr       } } },
-            { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture() } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr           } } },
+        frame.cubes_array.program_bindings_per_instance.resize(g_cubes_count);
+        frame.cubes_array.program_bindings_per_instance[0] = gfx::ProgramBindings::Create(render_state_settings.program_ptr, {
+            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_buffers_ptr->GetUniformsBufferOffset(0U) } } },
+            { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { *m_texture_array_ptr    } } },
+            { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },
         }, frame.index);
-        frame.cube.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
+        frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
-        // Create command list for rendering
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-        frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
-        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+        for(uint32_t i = 1U; i < g_cubes_count; ++i)
+        {
+            frame.cubes_array.program_bindings_per_instance[i] = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
+                { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_buffers_ptr->GetUniformsBufferOffset(i) } } }
+            }, frame.index);
+            frame.cubes_array.program_bindings_per_instance[i]->SetName(fmt::format("Cube {} Bindings {}", i, frame.index));
+        }
+
+        // Create parallel command list for rendering to the screen pass
+        frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(g_thread_count);
+        frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
+        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), g_cube_texture_size / 4U);
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), *m_texture_array_ptr, g_texture_size.GetWidth() / 4U);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -186,23 +204,24 @@ bool ParallelRenderingApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    static const size_t s_cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(float(CUBE_MAP_ARRAY_SIZE))));
+    static const size_t s_cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(float(g_cubes_count))));
     static const size_t s_cbrt_count_sqr  = s_cbrt_count * s_cbrt_count;
     static const float  s_cbrt_count_half = static_cast<float>(s_cbrt_count - 1) / 2.f;
     const float ts = m_model_scale * 1.7F;
 
     // Update MVP-matrices for all cube instances so that they are positioned in a cube grid
-    hlslpp::Uniforms uniforms{};
-    for(size_t i = 0; i < CUBE_MAP_ARRAY_SIZE; ++i)
+    for(uint32_t i = 0; i < g_cubes_count; ++i)
     {
+        hlslpp::Uniforms uniforms{};
         const float tx = static_cast<float>(i % s_cbrt_count) - s_cbrt_count_half;
         const float ty = static_cast<float>(i % s_cbrt_count_sqr / s_cbrt_count) - s_cbrt_count_half;
         const float tz = static_cast<float>(i / s_cbrt_count_sqr) - s_cbrt_count_half;
         const hlslpp::float4x4 translation_matrix = hlslpp::float4x4::translation(tx * ts, ty * ts, tz * ts);
-        uniforms.mvp_matrix_per_instance[i] = hlslpp::transpose(hlslpp::mul(hlslpp::mul(m_model_matrix, translation_matrix), m_camera.GetViewProjMatrix()));
+        uniforms.mvp_matrix = hlslpp::transpose(hlslpp::mul(hlslpp::mul(m_model_matrix, translation_matrix), m_camera.GetViewProjMatrix()));
+        uniforms.texture_index = i % g_thread_count;
+        m_cube_buffers_ptr->SetFinalPassUniforms(std::move(uniforms), i);
     }
 
-    m_cube_buffers_ptr->SetFinalPassUniforms(std::move(uniforms));
     return true;
 }
 
@@ -214,17 +233,17 @@ bool ParallelRenderingApp::Render()
     // Update uniforms buffer related to current frame
     const ParallelRenderingFrame& frame = GetCurrentFrame();
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.cubes_array.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-    frame.render_cmd_list_ptr->SetViewState(GetViewState());
-    m_cube_buffers_ptr->Draw(*frame.render_cmd_list_ptr, *frame.cube.program_bindings_ptr, 0U, CUBE_MAP_ARRAY_SIZE);
+    frame.parallel_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
+    frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
+    m_cube_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
 
-    RenderOverlay(*frame.render_cmd_list_ptr);
+    RenderOverlay(*frame.parallel_render_cmd_list_ptr->GetParallelCommandLists().back());
 
-    frame.render_cmd_list_ptr->Commit();
+    frame.parallel_render_cmd_list_ptr->Commit();
 
     // Execute command list on render queue and present frame to screen
     render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
