@@ -26,6 +26,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/UserInterface/Text.h>
@@ -39,27 +40,43 @@ namespace Methane::Tutorials
 
 static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size depth_index,
                                               const TextureLabeler::CubeSliceDescs& cube_slice_descs,
-                                              const gfx::Texture::Settings& rt_texture_settings)
+                                              const gfx::Texture::Settings& rt_texture_settings,
+                                              const gfx::SubResource::Count& sub_res_count)
 {
     TextureLabeler::SliceDesc slice_desc = cube_slice_descs[depth_index % cube_slice_descs.size()];
     if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::Cube)
         return slice_desc;
-    
-    if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::CubeArray)
-        slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
-    else
-        slice_desc.label = fmt::format("{}{}", array_index, depth_index);
 
+    if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::CubeArray)
+    {
+        slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
+        return slice_desc;
+    }
+
+    if (sub_res_count.GetArraySize() > 1 && sub_res_count.GetDepth() > 1)
+    {
+        slice_desc.label = fmt::format("{}:{}", array_index, depth_index);
+        return slice_desc;
+    }
+
+    if (sub_res_count.GetArraySize() > 1)
+    {
+        const Data::Index desc_index = array_index % cube_slice_descs.size();
+        slice_desc = cube_slice_descs[desc_index];
+        slice_desc.label = fmt::format("{}", array_index);
+    }
+    else
+    {
+        slice_desc.label = fmt::format("{}", depth_index);
+    }
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture,
-                               uint32_t font_size_pt, const gfx::Color4F& text_color,
-                               const CubeSliceDescs& cube_slice_descs)
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
-        { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", font_size_pt }, 96U, U"XYZ+-:0123456789"
+        { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", settings.font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {
     const gfx::Texture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
@@ -70,6 +87,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
 
     gfx::RenderPattern::Settings render_pattern_settings
     {
+        gfx::RenderPattern::ColorAttachments
         {
             gfx::RenderPattern::ColorAttachment(
                 0U, rt_texture_settings.pixel_format, 1U,
@@ -98,7 +116,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             gui::Text::HorizontalAlignment::Center,
             gui::Text::VerticalAlignment::Center,
         },
-        text_color,
+        settings.text_color,
         false
     };
 
@@ -108,10 +126,10 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     {
         for(Data::Size depth_index = 0U; depth_index < sub_res_count.GetDepth(); ++depth_index)
         {
-            m_slices.emplace_back(GetSliceDesc(array_index, depth_index, cube_slice_descs, rt_texture_settings));
+            m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            render_pattern_settings.color_attachments[0].clear_color = slice.color;
+            render_pattern_settings.color_attachments[0].clear_color = settings.border_width_px ? settings.border_color : slice.color;
             slice.render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), render_pattern_settings);
             slice.render_pass_ptr    = gfx::RenderPass::Create(*slice.render_pattern_ptr, {
                 { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
@@ -126,6 +144,21 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
 
             slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, *slice.render_pattern_ptr, m_font, slice_text_settings);
             slice.label_text_ptr->Update(rt_texture_settings.dimensions.AsRectSize());
+
+            if (settings.border_width_px)
+            {
+                slice.screen_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), *slice.render_pattern_ptr,
+                    gfx::ScreenQuad::Settings
+                    {
+                        fmt::format("Texture '{}' Slice Quad {}:{}", rt_texture_name, array_index, depth_index),
+                        gfx::FrameRect(settings.border_width_px, settings.border_width_px,
+                                       rt_texture_settings.dimensions.GetWidth()  - 2 * settings.border_width_px,
+                                       rt_texture_settings.dimensions.GetHeight() - 2 * settings.border_width_px),
+                        false,
+                        slice.color,
+                        gfx::ScreenQuad::TextureMode::Disabled
+                    });
+            }
         }
     }
 
@@ -139,6 +172,8 @@ void TextureLabeler::Render()
     {
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);
+        if (slice.screen_quad_ptr)
+            slice.screen_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
         slice.render_cmd_list_ptr->Commit();
     }

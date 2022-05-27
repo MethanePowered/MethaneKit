@@ -66,17 +66,27 @@ protected:
     void OnContextReleased(gfx::Context& context) override;
 
 private:
-    bool Animate(double elapsed_seconds, double delta_seconds);
+    struct CubeParameters
+    {
+        hlslpp::float4x4 model_matrix;
+        double           rotation_speed_y = 0.25f;
+        double           rotation_speed_z = 0.5f;
+        uint32_t         thread_index = 0;
+    };
 
+    using CubeArrayParameters = std::vector<CubeParameters>;
     using MeshBuffers = gfx::MeshBuffers<hlslpp::Uniforms>;
 
-    const float           m_model_scale;
-    hlslpp::float4x4      m_model_matrix;
+    CubeArrayParameters InitializeCubeArrayParameters(uint32_t cubes_count, float base_cube_scale);
+    bool Animate(double elapsed_seconds, double delta_seconds);
+
     gfx::Camera           m_camera;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::Texture>     m_texture_array_ptr;
     Ptr<gfx::Sampler>     m_texture_sampler_ptr;
-    Ptr<MeshBuffers>      m_cube_buffers_ptr;
+    Ptr<MeshBuffers>      m_cube_array_buffers_ptr;
+    CubeArrayParameters   m_cube_array_parameters;
+
 };
 
 } // namespace Methane::Tutorials

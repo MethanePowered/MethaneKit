@@ -195,7 +195,7 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), g_cube_texture_size / 4U);
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), { g_cube_texture_size / 4U, 10U });
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -208,7 +208,7 @@ void CubeMapArrayApp::Init()
 
 bool CubeMapArrayApp::Animate(double, double delta_seconds)
 {
-    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 8.0));
+    m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 16.0));
     m_model_matrix = hlslpp::mul(m_model_matrix,
                                  hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 2.0)),
                                              hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 4.0))));
