@@ -37,6 +37,8 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 namespace Methane::Tutorials
 {
 
+#define EXPLICIT_PARALLEL_RENDERING_ENABLED
+
 namespace gui = Methane::UserInterface;
 
 struct CubeVertex
@@ -49,7 +51,6 @@ struct CubeVertex
         gfx::Mesh::VertexField::TexCoord,
     };
 };
-
 
 static const gfx::Dimensions g_texture_size{ 320U, 320U };
 static const float           g_scene_scale  = 22.F;
@@ -307,7 +308,37 @@ bool ParallelRenderingApp::Render()
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
     frame.parallel_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
     frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
+
+#ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
+    const Ptrs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
+    const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
+
+    tf::Taskflow render_task_flow;
+    render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
+        [this, &frame, &render_cmd_lists, instance_count_per_command_list](const size_t cmd_list_index)
+        {
+            const Ptr<gfx::RenderCommandList>& render_cmd_list_ptr = render_cmd_lists[cmd_list_index];
+            META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
+
+            render_cmd_list_ptr->SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers());
+            render_cmd_list_ptr->SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer());
+
+            const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
+            const uint32_t end_instance_index   = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
+            for (uint32_t instance_index = begin_instance_index; instance_index < end_instance_index; ++instance_index)
+            {
+                const Ptr<gfx::ProgramBindings>& program_bindings_ptr = frame.cubes_array.program_bindings_per_instance[instance_index];
+                META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
+
+                render_cmd_list_ptr->SetProgramBindings(*program_bindings_ptr);
+                render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+            }
+        }
+    );
+    GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
+#else
     m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
+#endif
 
     RenderOverlay(*frame.parallel_render_cmd_list_ptr->GetParallelCommandLists().back());
 

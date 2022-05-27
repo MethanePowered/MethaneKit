@@ -238,21 +238,8 @@ public:
     }
 
     [[nodiscard]]
-    const Resource::SubResources& GetFinalPassUniformsSubresources() const { return m_final_pass_instance_uniforms_subresources; }
-
-protected:
-    // Allows to override instance to mesh subset mapping, which is 1:1 by default
-    void SetInstanceCount(Data::Size instance_count)
-    {
-        META_FUNCTION_TASK();
-        m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
-            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
-        };
-    }
-
-    [[nodiscard]]
-    virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
+    const Resource::SubResources& GetFinalPassUniformsSubresources() const
+    { return m_final_pass_instance_uniforms_subresources; }
 
     [[nodiscard]]
     const BufferSet& GetVertexBuffers() const
@@ -281,6 +268,20 @@ protected:
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
     }
+
+protected:
+    // Allows to override instance to mesh subset mapping, which is 1:1 by default
+    void SetInstanceCount(Data::Size instance_count)
+    {
+        META_FUNCTION_TASK();
+        m_final_pass_instance_uniforms.resize(instance_count);
+        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
+            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
+        };
+    }
+
+    [[nodiscard]]
+    virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
