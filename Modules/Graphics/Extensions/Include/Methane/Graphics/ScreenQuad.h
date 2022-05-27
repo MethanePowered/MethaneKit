@@ -67,6 +67,7 @@ public:
 
     ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings);
     ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings);
+    virtual ~ScreenQuad() = default;
 
     void SetBlendColor(const Color4F& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);

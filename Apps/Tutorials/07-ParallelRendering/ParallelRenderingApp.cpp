@@ -184,7 +184,7 @@ void ParallelRenderingApp::Init()
     cube_texture_labeler.Render();
 
     // Initialize cube parameters
-    m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, 21.F);
+    m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
 
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
