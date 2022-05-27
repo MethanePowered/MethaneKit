@@ -315,7 +315,7 @@ bool ParallelRenderingApp::Render()
 
     tf::Taskflow render_task_flow;
     render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
-        [this, &frame, &render_cmd_lists, instance_count_per_command_list](const size_t cmd_list_index)
+        [this, &frame, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
         {
             const Ptr<gfx::RenderCommandList>& render_cmd_list_ptr = render_cmd_lists[cmd_list_index];
             META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
