@@ -86,7 +86,7 @@ public:
     void PushDebugGroup(CommandList::DebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
-        CommandListBase::PushDebugGroup(debug_group);
+        CommandListBaseT::PushDebugGroup(debug_group);
         const std::wstring& group_name = static_cast<DebugGroupDX&>(debug_group).GetWideName();
         PIXBeginEvent(m_cp_command_list.Get(), 0, group_name.c_str());
     }
@@ -94,7 +94,7 @@ public:
     void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
-        CommandListBase::PopDebugGroup();
+        CommandListBaseT::PopDebugGroup();
         PIXEndEvent(m_cp_command_list.Get());
     }
 
@@ -121,8 +121,9 @@ public:
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
-        const std::vector<D3D12_RESOURCE_BARRIER>& dx_resource_barriers = static_cast<const IResourceDX::BarriersDX&>(resource_barriers).GetNativeResourceBarriers();
-        m_cp_command_list->ResourceBarrier(static_cast<UINT>(dx_resource_barriers.size()), dx_resource_barriers.data());
+        const auto& dx_resource_barriers = static_cast<const IResourceDX::BarriersDX&>(resource_barriers);
+        const std::vector<D3D12_RESOURCE_BARRIER>& d3d12_resource_barriers = dx_resource_barriers.GetNativeResourceBarriers();
+        m_cp_command_list->ResourceBarrier(static_cast<UINT>(d3d12_resource_barriers.size()), d3d12_resource_barriers.data());
     }
 
     // CommandList interface

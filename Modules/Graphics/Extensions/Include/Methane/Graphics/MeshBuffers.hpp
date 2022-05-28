@@ -107,6 +107,28 @@ public:
 
     [[nodiscard]] const Context& GetContext() const noexcept { return m_context; }
 
+    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    {
+        META_FUNCTION_TASK();
+        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = Resource::Barriers::Create({
+            { GetIndexBuffer(), GetIndexBuffer().GetState(), Resource::State::IndexBuffer },
+        });
+
+        if (constants_buffer_ptr)
+        {
+            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), Resource::State::ConstantBuffer);
+        }
+
+        const BufferSet& vertex_buffer_set = GetVertexBuffers();
+        for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
+        {
+            Buffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
+            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), Resource::State::VertexBuffer);
+        }
+
+        return beginning_resource_barriers_ptr;
+    }
+
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
@@ -313,6 +335,18 @@ public:
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
+    }
+
+    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    {
+        META_FUNCTION_TASK();
+        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
+        for (const Ptr<Texture>& texture_ptr : m_subset_textures)
+        {
+            META_CHECK_ARG_NOT_NULL(texture_ptr);
+            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), Resource::State::ShaderResource);
+        }
+        return beginning_resource_barriers_ptr;
     }
 
     [[nodiscard]]

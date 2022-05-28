@@ -187,6 +187,10 @@ void ParallelRenderingApp::Init()
     // Initialize cube parameters
     m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
 
+    const Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = m_cube_array_buffers_ptr->CreateBeginningResourceBarriers();
+    GetCurrentFrame().parallel_render_cmd_list_ptr->SetBeginningResourceBarriers(*beginning_resource_barriers_ptr);
+    beginning_resource_barriers_ptr->ApplyTransitions();
+
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
@@ -330,7 +334,7 @@ bool ParallelRenderingApp::Render()
                 const Ptr<gfx::ProgramBindings>& program_bindings_ptr = frame.cubes_array.program_bindings_per_instance[instance_index];
                 META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
 
-                render_cmd_list_ptr->SetProgramBindings(*program_bindings_ptr);
+                render_cmd_list_ptr->SetProgramBindings(*program_bindings_ptr, gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
                 render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
             }
         }

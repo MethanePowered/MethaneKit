@@ -35,6 +35,7 @@ struct RenderPass;
 struct RenderCommandList;
 struct CommandListSet;
 struct Texture;
+class  ResourceBarriers;
 class  ScreenQuad;
 }
 
@@ -109,11 +110,13 @@ private:
         Ptr<gfx::ScreenQuad>        screen_quad_ptr;
     };
 
-    gui::Context&            m_gui_context;
-    gfx::Texture&            m_rt_texture;
-    gui::Font&               m_font;
-    std::vector<Slice>       m_slices;
-    Ptr<gfx::CommandListSet> m_slice_cmd_list_set_ptr;
+    gui::Context&               m_gui_context;
+    gfx::Texture&               m_rt_texture;
+    gui::Font&                  m_font;
+    std::vector<Slice>          m_slices;
+    Ptr<gfx::RenderCommandList> m_ending_cmd_list_ptr;
+    Ptr<gfx::ResourceBarriers>  m_ending_resource_barriers_ptr;
+    Ptr<gfx::CommandListSet>    m_slice_cmd_list_set_ptr;
 };
 
 } // namespace Methane::Tutorials

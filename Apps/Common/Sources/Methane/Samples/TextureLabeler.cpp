@@ -162,6 +162,12 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         }
     }
 
+    m_ending_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_slices.back().render_pass_ptr);
+    m_ending_resource_barriers_ptr = gfx::Resource::Barriers::Create({
+        { m_rt_texture, gfx::Resource::State::RenderTarget, gfx::Resource::State::Common }
+    });
+
+    slice_render_cmd_list_refs.emplace_back(*m_ending_cmd_list_ptr);
     m_slice_cmd_list_set_ptr = gfx::CommandListSet::Create(slice_render_cmd_list_refs);
 }
 
@@ -177,6 +183,10 @@ void TextureLabeler::Render()
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
         slice.render_cmd_list_ptr->Commit();
     }
+
+    m_ending_resource_barriers_ptr->ApplyTransitions();
+    m_ending_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
+    m_ending_cmd_list_ptr->Commit();
 
     m_gui_context.GetRenderCommandQueue().Execute(*m_slice_cmd_list_set_ptr);
 }

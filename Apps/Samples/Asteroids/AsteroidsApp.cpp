@@ -342,7 +342,7 @@ void AsteroidsApp::Init()
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU (automatic state propagation from Common state works),
     // which is required for correct automatic resource barriers to be set after asteroids drawing, on planet drawing
-    m_asteroids_array_ptr->CreateBeginningResourceBarriers(*m_const_buffer_ptr)->ApplyTransitions();
+    m_asteroids_array_ptr->CreateBeginningResourceBarriers(m_const_buffer_ptr.get())->ApplyTransitions();
 
     CompleteInitialization();
     META_LOG(GetParametersString());
