@@ -50,15 +50,16 @@ jobs:
         submodules: 'recursive'
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
 
-    - run: |
+    - name: Build Project
+      run: |
        mkdir -p Build/Output && cd Build/Output
        cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE=Debug -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
        cmake --build .
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
