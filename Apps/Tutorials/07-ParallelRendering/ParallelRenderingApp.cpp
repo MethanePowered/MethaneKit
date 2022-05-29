@@ -187,10 +187,6 @@ void ParallelRenderingApp::Init()
     // Initialize cube parameters
     m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
 
-    const Ptr<gfx::Resource::Barriers> beginning_resource_barriers_ptr = m_cube_array_buffers_ptr->CreateBeginningResourceBarriers();
-    GetCurrentFrame().parallel_render_cmd_list_ptr->SetBeginningResourceBarriers(*beginning_resource_barriers_ptr);
-    beginning_resource_barriers_ptr->ApplyTransitions();
-
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 

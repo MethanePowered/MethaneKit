@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: MethaneKit/Apps/Tutorials/07-ParallelRendering/Shaders/ParallelRendering.hlsl
-Shaders for parallel rendering tutorial
+Shaders for cube rendering with sampling from Texture2DArray in parallel rendering tutorial
 
 ******************************************************************************/
 

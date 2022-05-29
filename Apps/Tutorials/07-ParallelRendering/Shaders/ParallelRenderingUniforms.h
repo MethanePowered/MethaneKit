@@ -9,8 +9,8 @@ FILE: MethaneKit/Apps/Tutorials/07-ParallelRendering/Shaders/ParallelRenderingUn
 Shader uniform structures shared between HLSL and C++ code via HLSL++
 
 ******************************************************************************/
-#ifndef CUBE_MAP_ARRAY_UNIFORMS_H
-#define CUBE_MAP_ARRAY_UNIFORMS_H
+#ifndef PARALLEL_RENDERING_UNIFORMS_H
+#define PARALLEL_RENDERING_UNIFORMS_H
 
 #ifdef __cplusplus
 using uint = uint32_t;
@@ -26,4 +26,4 @@ struct META_UNIFORM_ALIGN Uniforms
     int      texture_index;
 };
 
-#endif // CUBE_MAP_ARRAY_UNIFORMS_H
+#endif // PARALLEL_RENDERING_UNIFORMS_H
