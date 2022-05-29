@@ -48,6 +48,10 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
+                "METHANE_SHADERS_VALIDATION_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
                 "METHANE_OPEN_IMAGE_IO_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"

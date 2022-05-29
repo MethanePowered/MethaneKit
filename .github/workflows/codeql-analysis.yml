@@ -54,10 +54,12 @@ jobs:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
 
+    # Shaders validation is disabled in CodeQL analysis build because it fails on Windows 2022 builders (reason unknown)
+    # and is not required since there's no need to run DirectX apps
     - name: Build Project
       run: |
        mkdir -p Build/Output && cd Build/Output
-       cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE=Debug -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
+       cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE="Debug" -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
        cmake --build .
 
     - name: Perform CodeQL Analysis

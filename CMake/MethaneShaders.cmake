@@ -191,6 +191,10 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES O
 
     set(EXTRA_COMPILE_FLAGS -Wno-ignored-attributes)
 
+    if (NOT METHANE_SHADERS_VALIDATION_ENABLED)
+        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Vd)
+    endif()
+
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Od)
     else()
