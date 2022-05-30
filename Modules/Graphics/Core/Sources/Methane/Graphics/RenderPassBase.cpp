@@ -318,7 +318,8 @@ void RenderPassBase::InitAttachmentStates() const
     const Resource::State color_attachment_state = is_final_pass ? Resource::State::Present : Resource::State::RenderTarget;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Resource::State::Common)
+        if (color_texture_ref.get().GetState() == Resource::State::Common ||
+            color_texture_ref.get().GetState() == Resource::State::Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }

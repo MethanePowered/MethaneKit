@@ -253,8 +253,8 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
 
         if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
              magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
-            metal_command_list.GetProgramBindings() &&
-            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindings(),
+            metal_command_list.GetProgramBindingsPtr() &&
+            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(),
                                                     magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
 

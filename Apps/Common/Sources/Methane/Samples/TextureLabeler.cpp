@@ -185,6 +185,7 @@ void TextureLabeler::Render()
     }
 
     m_ending_resource_barriers_ptr->ApplyTransitions();
+    m_ending_cmd_list_ptr->Reset(s_debug_group_ptr.get());
     m_ending_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
     m_ending_cmd_list_ptr->Commit();
 
