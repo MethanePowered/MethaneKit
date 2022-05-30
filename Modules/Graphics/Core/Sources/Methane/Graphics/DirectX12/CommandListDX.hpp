@@ -191,7 +191,7 @@ protected:
     void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) final
     {
         // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
-        static_cast<ProgramBindingsDX&>(program_bindings).Apply(*this, CommandListBase::GetProgramBindings().get(), apply_behavior);
+        static_cast<ProgramBindingsDX&>(program_bindings).Apply(*this, CommandListBase::GetProgramBindingsPtr(), apply_behavior);
     }
 
     bool IsNativeCommitted() const             { return m_is_native_committed; }

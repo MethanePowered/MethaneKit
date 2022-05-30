@@ -187,6 +187,9 @@ void ParallelRenderingApp::Init()
     // Initialize cube parameters
     m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
 
+    // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
+    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();
+
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
@@ -313,6 +316,7 @@ bool ParallelRenderingApp::Render()
     const Ptrs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
     const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
 
+    // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
     tf::Taskflow render_task_flow;
     render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
         [this, &frame, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
@@ -320,8 +324,9 @@ bool ParallelRenderingApp::Render()
             const Ptr<gfx::RenderCommandList>& render_cmd_list_ptr = render_cmd_lists[cmd_list_index];
             META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
 
-            render_cmd_list_ptr->SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers());
-            render_cmd_list_ptr->SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer());
+            // Resource barriers are not set for vertex and index buffers, since it works with automatic state propagation from Common state
+            render_cmd_list_ptr->SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers(), false);
+            render_cmd_list_ptr->SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer(), false);
 
             const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
             const uint32_t end_instance_index   = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
@@ -330,13 +335,23 @@ bool ParallelRenderingApp::Render()
                 const Ptr<gfx::ProgramBindings>& program_bindings_ptr = frame.cubes_array.program_bindings_per_instance[instance_index];
                 META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
 
-                render_cmd_list_ptr->SetProgramBindings(*program_bindings_ptr, gfx::ProgramBindings::ApplyBehavior::ConstantOnce);
+                // Constant argument bindings are applied once per command list, mutables are applied always
+                // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
+                using namespace magic_enum::bitwise_operators;
+                gfx::ProgramBindings::ApplyBehavior bindings_apply_behavior = gfx::ProgramBindings::ApplyBehavior::ConstantOnce;
+                if (instance_index == begin_instance_index)
+                    bindings_apply_behavior |= gfx::ProgramBindings::ApplyBehavior::RetainResources;
+
+                render_cmd_list_ptr->SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
                 render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
             }
         }
     );
+
+    // Execute rendering in multiple threads
     GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
 #else
+    // The same parallel rendering is done inside of MeshBuffers::DrawParallel helper function
     m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
 #endif
 
@@ -354,6 +369,7 @@ bool ParallelRenderingApp::Render()
 void ParallelRenderingApp::OnContextReleased(gfx::Context& context)
 {
     m_cube_array_buffers_ptr.reset();
+    m_texture_array_ptr.reset();
     m_texture_sampler_ptr.reset();
     m_render_state_ptr.reset();
 

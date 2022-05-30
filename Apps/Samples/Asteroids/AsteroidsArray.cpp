@@ -409,7 +409,7 @@ void AsteroidsArray::DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_l
     META_CHECK_ARG_EQUAL(buffer_bindings.program_bindings_per_instance.size(), m_settings.instance_count);
     BaseBuffers::DrawParallel(
         parallel_cmd_list, buffer_bindings.program_bindings_per_instance,
-        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, // Constant bindings are applied once mutable always, resource barriers are not set to reduce overhead
+        gfx::ProgramBindings::ApplyBehavior::ConstantOnce, // Constant bindings are applied once, mutable always, resource barriers are not set to reduce overhead
         true,   // Bound resources are not retained by command lists to reduce overhead from the huge amount of bindings
         false   // Do not set resource barriers for Vertex and Index buffers since their state does not change and to reduce runtime overhead
     );

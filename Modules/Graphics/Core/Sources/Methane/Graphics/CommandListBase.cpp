@@ -155,9 +155,7 @@ void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    if (m_command_state.program_bindings_ptr.get() == std::addressof(program_bindings))
+    if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
         return;
 
     META_LOG("{} Command list '{}' SET PROGRAM BINDINGS for program '{}':\n{}",
@@ -166,12 +164,20 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 
     auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     ApplyProgramBindings(program_bindings_base, apply_behavior);
-    if (!magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
-        return;
 
-    Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
-    m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
-    RetainResource(program_bindings_object_ptr);
+    using namespace magic_enum::bitwise_operators;
+    if (magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::ConstantOnce) ||
+        magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::ChangesOnly))
+    {
+        META_SCOPE_TASK("AcquireProgramBindingsPtr");
+        m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
+    }
+
+    if (magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
+    {
+        META_SCOPE_TASK("RetainResource");
+        RetainResource(program_bindings_base.GetBasePtr());
+    }
 }
 
 void CommandListBase::Commit()
@@ -308,7 +314,7 @@ CommandQueue& CommandListBase::GetCommandQueue()
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_command_state.program_bindings_ptr.reset();
+    m_command_state.program_bindings_ptr = nullptr;
     m_command_state.retained_resources.clear();
 }
 

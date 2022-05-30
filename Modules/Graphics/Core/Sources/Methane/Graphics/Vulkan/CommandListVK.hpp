@@ -239,7 +239,7 @@ protected:
     {
         // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
         static_cast<ProgramBindingsVK&>(program_bindings).Apply(*this, CommandListBase::GetCommandQueue(),
-                                                                CommandListBase::GetProgramBindings().get(), apply_behavior);
+                                                                CommandListBase::GetProgramBindingsPtr(), apply_behavior);
     }
 
     void SetSecondaryRenderBufferInheritInfo(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info) noexcept

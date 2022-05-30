@@ -81,22 +81,22 @@ public:
         // ArgumentBinding interface
         bool SetResourceLocations(const Resource::Locations& resource_locations) override;
 
-        const SettingsDX&               GetSettingsDX() const noexcept            { return m_settings_dx; }
-        uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
-        const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const ResourceLocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
-        DescriptorHeapDX::Type          GetDescriptorHeapType() const;
+        const SettingsDX&          GetSettingsDX() const noexcept          { return m_settings_dx; }
+        uint32_t                   GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }
+        const DescriptorRange&     GetDescriptorRange() const noexcept     { return m_descriptor_range; }
+        const ResourceLocationsDX& GetResourceLocationsDX() const noexcept { return m_resource_locations_dx; }
+        DescriptorHeapDX::Type     GetDescriptorHeapType() const;
 
-        void SetRootParameterIndex(uint32_t root_parameter_index)                 { m_root_parameter_index = root_parameter_index; }
+        void SetRootParameterIndex(uint32_t root_parameter_index)          { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
         void SetDescriptorHeapReservation(const DescriptorHeapDX::Reservation* p_reservation);
 
     private:
-        const SettingsDX                   m_settings_dx;
-        uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
-        DescriptorRange                    m_descriptor_range;
+        const SettingsDX                     m_settings_dx;
+        uint32_t                             m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
+        DescriptorRange                      m_descriptor_range;
         const DescriptorHeapDX::Reservation* m_p_descriptor_heap_reservation = nullptr;
-        ResourceLocationsDX           m_resource_locations_dx;
+        ResourceLocationsDX                  m_resource_locations_dx;
     };
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
@@ -109,7 +109,7 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
-    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const;
 
 private:
     struct RootParameterBinding
@@ -127,10 +127,11 @@ private:
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
     void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                    const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
+                                    const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
-    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation) const;
+    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding,
+                                         const DescriptorHeapDX::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
     using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;

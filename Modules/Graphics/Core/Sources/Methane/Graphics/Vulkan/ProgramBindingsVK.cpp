@@ -269,7 +269,7 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
 {
     META_FUNCTION_TASK();
     Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetCommandQueue(),
-          command_list.GetProgramBindings().get(), apply_behavior);
+          command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
 void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, CommandQueue& command_queue,

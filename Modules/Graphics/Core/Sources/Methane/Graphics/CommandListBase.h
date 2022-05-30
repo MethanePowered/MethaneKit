@@ -55,8 +55,10 @@ class CommandListBase
 public:
     struct CommandState final
     {
-        Ptr<ProgramBindingsBase> program_bindings_ptr;
-        Ptrs<ObjectBase>         retained_resources;
+        // Raw pointer is used for program bindings instead of smart pointer for performance reasons
+        // to get rid of shared_from_this() overhead required to acquire smart pointer from reference
+        const ProgramBindingsBase* program_bindings_ptr;
+        Ptrs<ObjectBase>           retained_resources;
     };
 
     class DebugGroupBase
@@ -104,8 +106,8 @@ public:
 
     CommandQueueBase&               GetCommandQueueBase();
     const CommandQueueBase&         GetCommandQueueBase() const;
-    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
-    Ptr<CommandListBase>            GetCommandListPtr()                  { return GetPtr<CommandListBase>(); }
+    const ProgramBindingsBase*      GetProgramBindingsPtr() const noexcept  { return GetCommandState().program_bindings_ptr; }
+    Ptr<CommandListBase>            GetCommandListPtr()                     { return GetPtr<CommandListBase>(); }
 
     inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
     inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }

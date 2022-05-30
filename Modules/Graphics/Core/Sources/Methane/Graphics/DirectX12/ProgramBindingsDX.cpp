@@ -252,16 +252,16 @@ void ProgramBindingsDX::CompleteInitialization()
 
 void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
 {
-    Apply(dynamic_cast<ICommandListDX&>(command_list), command_list.GetProgramBindings().get(), apply_behavior);
+    Apply(dynamic_cast<ICommandListDX&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
     Program::ArgumentAccessor::Type apply_access_mask = Program::ArgumentAccessor::Type::Mutable;
-    if (apply_behavior != ApplyBehavior::ConstantOnce || !p_applied_program_bindings)
+    if (!magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
     {
         apply_access_mask |= Program::ArgumentAccessor::Type::Constant;
         apply_access_mask |= Program::ArgumentAccessor::Type::FrameConstant;
@@ -275,7 +275,7 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
 
     // Apply root parameter bindings after resource barriers
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
-    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, p_applied_program_bindings,
+    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr,
                                magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly));
 }
 
@@ -433,21 +433,20 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
 }
 
 void ProgramBindingsDX::ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                                   const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const
+                                                   const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-
     for(Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
     {
         if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
             continue;
 
+        const bool do_program_bindings_comparing = access_type == Program::ArgumentAccessor::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
         const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
         for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
         {
-            if (access_type == Program::ArgumentAccessor::Type::Mutable && apply_changes_only &&
-                p_applied_program_bindings && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *p_applied_program_bindings))
+            if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
                 continue;
 
             ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
