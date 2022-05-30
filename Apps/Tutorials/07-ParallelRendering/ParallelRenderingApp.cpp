@@ -176,7 +176,7 @@ void ParallelRenderingApp::Init()
     TextureLabeler::Settings texture_labeler_settings;
     texture_labeler_settings.font_size_pt = g_texture_size.GetWidth() / 4U;
     texture_labeler_settings.border_width_px = 10U;
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), *m_texture_array_ptr, texture_labeler_settings);
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), *m_texture_array_ptr, gfx::ResourceState::Common, texture_labeler_settings);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -188,7 +188,7 @@ void ParallelRenderingApp::Init()
     m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
-    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();
+    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();   
 
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }

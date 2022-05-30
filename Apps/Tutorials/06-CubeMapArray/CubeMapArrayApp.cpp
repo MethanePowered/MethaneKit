@@ -195,7 +195,8 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), { g_cube_texture_size / 4U, 10U });
+    // FIXME: texture state transition from RenderTarget to Common does not work in this sample, while it works fine in ParallelRendering.
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), gfx::ResourceState::Undefined, { g_cube_texture_size / 4U, 10U });
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();

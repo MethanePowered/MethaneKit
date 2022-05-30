@@ -24,6 +24,7 @@ Renders text labels to the faces of cube-map texture array
 #pragma once
 
 #include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/ResourceBarriers.h>
 
 #include <string>
 #include <array>
@@ -94,7 +95,8 @@ public:
         }};
     };
 
-    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, const Settings& settings);
+    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
+                   gfx::Texture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings);
 
     void Render();
 
@@ -114,7 +116,6 @@ private:
     gfx::Texture&               m_rt_texture;
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
-    Ptr<gfx::RenderCommandList> m_ending_cmd_list_ptr;
     Ptr<gfx::ResourceBarriers>  m_ending_resource_barriers_ptr;
     Ptr<gfx::CommandListSet>    m_slice_cmd_list_set_ptr;
 };

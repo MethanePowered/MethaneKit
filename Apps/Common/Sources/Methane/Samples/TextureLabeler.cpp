@@ -72,7 +72,8 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider, gfx::Texture& rt_texture, const Settings& settings)
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
+                               gfx::Texture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
@@ -162,32 +163,33 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         }
     }
 
-    m_ending_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_slices.back().render_pass_ptr);
-    m_ending_resource_barriers_ptr = gfx::Resource::Barriers::Create({
-        { m_rt_texture, gfx::Resource::State::RenderTarget, gfx::Resource::State::Common }
-    });
+    if (rt_texture_final_state != gfx::Resource::State::Undefined)
+        m_ending_resource_barriers_ptr = gfx::Resource::Barriers::Create({
+            { m_rt_texture, gfx::Resource::State::RenderTarget, rt_texture_final_state }
+        });
 
-    slice_render_cmd_list_refs.emplace_back(*m_ending_cmd_list_ptr);
     m_slice_cmd_list_set_ptr = gfx::CommandListSet::Create(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()
 {
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group_ptr, "Texture Faces Rendering");
-    for(const Slice& slice : m_slices)
+    for(size_t slice_index = 0U; slice_index < m_slices.size(); ++slice_index)
     {
+        const Slice& slice = m_slices[slice_index];
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);
+
         if (slice.screen_quad_ptr)
             slice.screen_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
+
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
+
+        if (m_ending_resource_barriers_ptr &&slice_index == m_slices.size() - 1)
+            slice.render_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
+
         slice.render_cmd_list_ptr->Commit();
     }
-
-    m_ending_resource_barriers_ptr->ApplyTransitions();
-    m_ending_cmd_list_ptr->Reset(s_debug_group_ptr.get());
-    m_ending_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
-    m_ending_cmd_list_ptr->Commit();
 
     m_gui_context.GetRenderCommandQueue().Execute(*m_slice_cmd_list_set_ptr);
 }
