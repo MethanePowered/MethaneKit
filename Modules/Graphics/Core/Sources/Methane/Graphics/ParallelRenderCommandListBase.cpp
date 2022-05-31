@@ -56,7 +56,7 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
 {
     META_FUNCTION_TASK();
     m_is_validation_enabled = is_validation_enabled;
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
+    for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetValidationEnabled(m_is_validation_enabled);
@@ -69,7 +69,7 @@ void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
     ResetImpl(p_debug_group, [this, p_debug_group](const Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
-        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        const Ptr<RenderCommandListBase>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
@@ -81,7 +81,7 @@ void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, De
     ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
-        const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
+        const Ptr<RenderCommandListBase>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
     });
@@ -117,7 +117,7 @@ void ParallelRenderCommandListBase::Commit()
     META_FUNCTION_TASK();
     tf::Taskflow commit_task_flow;
     commit_task_flow.for_each(m_parallel_command_lists.begin(), m_parallel_command_lists.end(),
-        [](const Ptr<RenderCommandList>& render_command_list_ptr)
+        [](const Ptr<RenderCommandListBase>& render_command_list_ptr)
         {
             META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
             render_command_list_ptr->Commit();
@@ -130,7 +130,7 @@ void ParallelRenderCommandListBase::Commit()
 void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
+    for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetViewState(view_state);
@@ -195,7 +195,7 @@ bool ParallelRenderCommandListBase::SetName(const std::string& name)
         return false;
 
     uint32_t render_cmd_list_index = 0;
-    for(const Ptr<RenderCommandList>& render_cmd_list_ptr : m_parallel_command_lists)
+    for(const Ptr<RenderCommandListBase>& render_cmd_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
         render_cmd_list_ptr->SetName(GetThreadCommandListName(name, render_cmd_list_index));
