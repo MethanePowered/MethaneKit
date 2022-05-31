@@ -59,8 +59,8 @@ public:
     CommandListVK(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
-        , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
+        , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
     {
         META_FUNCTION_TASK();
         InitializePrimaryCommandBuffer();
