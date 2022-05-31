@@ -35,14 +35,6 @@ Vulkan implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-static vk::UniqueCommandPool CreateVulkanCommandPool(const vk::Device& vk_device, uint32_t queue_family_index)
-{
-    META_FUNCTION_TASK();
-    vk::CommandPoolCreateInfo vk_command_pool_info(vk::CommandPoolCreateFlags(), queue_family_index);
-    vk_command_pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-    return vk_device.createCommandPoolUnique(vk_command_pool_info);
-}
-
 static vk::PipelineStageFlags GetPipelineStageFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 {
     META_FUNCTION_TASK();
@@ -135,7 +127,6 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
-    , m_vk_unique_command_pool(CreateVulkanCommandPool(device.GetNativeDevice(), m_queue_family_index))
     , m_vk_supported_stage_flags(GetPipelineStageFlagsByQueueFlags(family_properties.queueFlags))
     , m_vk_supported_access_flags(GetAccessFlagsByQueueFlags(family_properties.queueFlags))
 {
@@ -254,7 +245,6 @@ bool CommandQueueVK::SetName(const std::string& name)
 
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
     SetVulkanObjectName(vk_device, m_vk_queue, name);
-    SetVulkanObjectName(vk_device, m_vk_unique_command_pool.get(), fmt::format("{} Command Pool", name));
     return true;
 }
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ Vulkan implementation of the parallel render command list interface.
 ******************************************************************************/
 
 #pragma once
+
+#include "CommandListVK.hpp"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
 
@@ -54,6 +56,18 @@ public:
 
     CommandQueueVK& GetCommandQueueVK() noexcept;
     RenderPassVK& GetPassVK();
+
+private:
+    class PrimaryCommandListVK : public CommandListVK<CommandListBase, 1U, ICommandListVK::CommandBufferType::Primary>
+    {
+    public:
+        using CommandListVK::CommandListVK;
+
+        // ICommandListVK interface
+        vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
+    };
+
+    PrimaryCommandListVK m_primary_cmd_list;
 };
 
 } // namespace Methane::Graphics

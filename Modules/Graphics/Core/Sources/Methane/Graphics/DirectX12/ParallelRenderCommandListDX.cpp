@@ -54,10 +54,10 @@ Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& c
     return std::make_shared<ParallelRenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : ParallelRenderCommandListBase(cmd_buffer, render_pass)
-    , m_beginning_command_list(cmd_buffer, render_pass)
-    , m_ending_command_list(cmd_buffer, render_pass)
+ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass)
+    : ParallelRenderCommandListBase(cmd_queue, render_pass)
+    , m_beginning_command_list(cmd_queue, render_pass)
+    , m_ending_command_list(cmd_queue, render_pass)
 {
     META_FUNCTION_TASK();
 
@@ -116,7 +116,6 @@ bool ParallelRenderCommandListDX::SetName(const std::string& name)
 void ParallelRenderCommandListDX::Commit()
 {
     META_FUNCTION_TASK();
-
     ParallelRenderCommandListBase::Commit();
 
     // Render pass was begun in "beginning" command list,
@@ -128,7 +127,6 @@ void ParallelRenderCommandListDX::Commit()
 void ParallelRenderCommandListDX::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
     m_beginning_command_list.Execute();
     
     ParallelRenderCommandListBase::Execute(completed_callback);
@@ -139,7 +137,6 @@ void ParallelRenderCommandListDX::Execute(const CommandList::CompletedCallback& 
 void ParallelRenderCommandListDX::Complete()
 {
     META_FUNCTION_TASK();
-
     m_beginning_command_list.Complete();
 
     ParallelRenderCommandListBase::Complete();
@@ -150,7 +147,6 @@ void ParallelRenderCommandListDX::Complete()
 ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const
 {
     META_FUNCTION_TASK();
-
     D3D12CommandLists dx_command_lists;
     const Ptrs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending

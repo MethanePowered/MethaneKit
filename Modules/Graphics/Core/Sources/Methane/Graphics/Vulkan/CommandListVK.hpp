@@ -46,7 +46,7 @@ Vulkan base template implementation of the command list interface.
 namespace Methane::Graphics
 {
 
-template<class CommandListBaseT, uint32_t command_buffers_count = 1,
+template<class CommandListBaseT, uint32_t command_buffers_count = 1U,
          ICommandListVK::CommandBufferType default_command_buffer_type = ICommandListVK::CommandBufferType::Primary,
          typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT> && command_buffers_count != 0U>>
 class CommandListVK
@@ -60,13 +60,14 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
+        , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
     {
         META_FUNCTION_TASK();
         InitializePrimaryCommandBuffer();
 
         std::vector<vk::UniqueCommandBuffer> secondary_cmd_buffers = m_vk_device.allocateCommandBuffersUnique(
             vk::CommandBufferAllocateInfo(
-                GetCommandQueueVK().GetNativeCommandPool(),
+                m_vk_unique_command_pool.get(),
                 vk::CommandBufferLevel::eSecondary,
                 command_buffers_count - 1
             ));
@@ -88,6 +89,7 @@ public:
     explicit CommandListVK(ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
+        , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
     {
         META_FUNCTION_TASK();
         InitializePrimaryCommandBuffer();
@@ -199,6 +201,7 @@ public:
         if (!CommandListBaseT::SetName(name))
             return false;
 
+        SetVulkanObjectName(m_vk_device, m_vk_unique_command_pool.get(), fmt::format("{} Command Pool", name));
         for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
         {
             SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffers[cmd_buffer_index].get(),
@@ -249,6 +252,14 @@ protected:
     }
 
 private:
+    vk::UniqueCommandPool CreateVulkanCommandPool(uint32_t queue_family_index)
+    {
+        META_FUNCTION_TASK();
+        vk::CommandPoolCreateInfo vk_command_pool_info(vk::CommandPoolCreateFlags(), queue_family_index);
+        vk_command_pool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+        return m_vk_device.createCommandPoolUnique(vk_command_pool_info);
+    }
+
     void InitializePrimaryCommandBuffer()
     {
         META_FUNCTION_TASK();
@@ -256,7 +267,7 @@ private:
 
         m_vk_unique_command_buffers[0] = std::move(m_vk_device.allocateCommandBuffersUnique(
             vk::CommandBufferAllocateInfo(
-                GetCommandQueueVK().GetNativeCommandPool(),
+                m_vk_unique_command_pool.get(),
                 vk::CommandBufferLevel::ePrimary,
                 1
             )).back());
@@ -278,8 +289,9 @@ private:
         );
     }
 
-    vk::Device m_vk_device;
-    bool       m_is_native_committed = false;
+    vk::Device            m_vk_device;
+    vk::UniqueCommandPool m_vk_unique_command_pool;
+    bool                  m_is_native_committed = false;
 
     // Unique command buffers and corresponding begin flags are indexed by the value of ICommandListVK::CommandBufferType enum
     std::array<vk::UniqueCommandBuffer, command_buffers_count> m_vk_unique_command_buffers;

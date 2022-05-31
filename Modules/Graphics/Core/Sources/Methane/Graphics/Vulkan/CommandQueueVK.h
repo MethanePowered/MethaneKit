@@ -73,9 +73,6 @@ public:
     vk::Queue&       GetNativeQueue() noexcept          { return m_vk_queue; }
     const vk::Queue& GetNativeQueue() const noexcept    { return m_vk_queue; }
 
-    vk::CommandPool&       GetNativeCommandPool() noexcept                  { return m_vk_unique_command_pool.get(); }
-    const vk::CommandPool& GetNativeCommandPool() const noexcept            { return m_vk_unique_command_pool.get(); }
-
     vk::PipelineStageFlags GetNativeSupportedStageFlags() const noexcept    { return m_vk_supported_stage_flags; }
     vk::AccessFlags        GetNativeSupportedAccessFlags() const noexcept   { return m_vk_supported_access_flags; }
 
@@ -98,7 +95,6 @@ private:
     const uint32_t         m_queue_family_index;
     const uint32_t         m_queue_index;
     vk::Queue              m_vk_queue;
-    vk::UniqueCommandPool  m_vk_unique_command_pool;
     vk::PipelineStageFlags m_vk_supported_stage_flags;
     vk::AccessFlags        m_vk_supported_access_flags;
     WaitInfo               m_wait_before_executing;

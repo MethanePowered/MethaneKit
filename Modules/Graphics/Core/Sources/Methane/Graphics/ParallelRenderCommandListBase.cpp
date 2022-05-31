@@ -143,15 +143,20 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
     const auto initial_count = static_cast<uint32_t>(m_parallel_command_lists.size());
     if (count < initial_count)
     {
-        m_parallel_command_lists.resize(count);
+        m_parallel_command_lists.erase(m_parallel_command_lists.begin() + count);
+        m_parallel_command_lists_refs.erase(m_parallel_command_lists_refs.begin() + count);
         return;
     }
 
     const std::string& name = GetName();
     m_parallel_command_lists.reserve(count);
+    m_parallel_command_lists_refs.reserve(count);
+
     for(uint32_t cmd_list_index = initial_count; cmd_list_index < count; ++cmd_list_index)
     {
-        m_parallel_command_lists.emplace_back(RenderCommandList::Create(*this));
+        m_parallel_command_lists.emplace_back(std::static_pointer_cast<RenderCommandListBase>(RenderCommandList::Create(*this)));
+        m_parallel_command_lists.back()->SetValidationEnabled(m_is_validation_enabled);
+        m_parallel_command_lists_refs.emplace_back(*m_parallel_command_lists.back());
         if (!name.empty())
         {
             m_parallel_command_lists.back()->SetName(GetThreadCommandListName(name, cmd_list_index));
@@ -162,11 +167,10 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
 void ParallelRenderCommandListBase::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
+    for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
-        thread_render_command_list.Execute();
+        render_command_list_ptr->Execute();
     }
 
     CommandListBase::Execute(completed_callback);
@@ -175,11 +179,10 @@ void ParallelRenderCommandListBase::Execute(const CommandList::CompletedCallback
 void ParallelRenderCommandListBase::Complete()
 {
     META_FUNCTION_TASK();
-    for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
+    for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)
     {
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        auto& thread_render_command_list = static_cast<RenderCommandListBase&>(*render_command_list_ptr);
-        thread_render_command_list.Complete();
+        render_command_list_ptr->Complete();
     }
 
     CommandListBase::Complete();
@@ -205,7 +208,7 @@ RenderPassBase& ParallelRenderCommandListBase::GetPass()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
-    return static_cast<RenderPassBase&>(*m_render_pass_ptr);
+    return *m_render_pass_ptr;
 }
 
 } // namespace Methane::Graphics

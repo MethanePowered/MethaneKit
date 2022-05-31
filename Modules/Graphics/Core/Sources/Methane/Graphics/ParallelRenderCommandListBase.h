@@ -51,7 +51,7 @@ public:
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetViewState(ViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const Ptrs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists; }
+    const Refs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
 
     // CommandListBase interface
     void SetResourceBarriers(const Resource::Barriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
@@ -72,9 +72,10 @@ private:
     template<typename ResetCommandListFn>
     void ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn);
 
-    const Ptr<RenderPass>   m_render_pass_ptr;
-    Ptrs<RenderCommandList> m_parallel_command_lists;
-    bool                    m_is_validation_enabled = true;
+    const Ptr<RenderPassBase>   m_render_pass_ptr;
+    Ptrs<RenderCommandListBase> m_parallel_command_lists;
+    Refs<RenderCommandList>     m_parallel_command_lists_refs;
+    bool                        m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics

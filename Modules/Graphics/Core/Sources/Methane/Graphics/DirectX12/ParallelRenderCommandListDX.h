@@ -36,7 +36,7 @@ class CommandQueueDX;
 class ParallelRenderCommandListDX final : public ParallelRenderCommandListBase
 {
 public:
-    ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
+    ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;

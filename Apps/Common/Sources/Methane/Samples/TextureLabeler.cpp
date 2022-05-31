@@ -185,7 +185,7 @@ void TextureLabeler::Render()
 
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
 
-        if (m_ending_resource_barriers_ptr &&slice_index == m_slices.size() - 1)
+        if (m_ending_resource_barriers_ptr && slice_index == m_slices.size() - 1)
             slice.render_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
 
         slice.render_cmd_list_ptr->Commit();

@@ -196,7 +196,7 @@ public:
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
-        const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const Refs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
@@ -204,13 +204,12 @@ public:
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
-                const Ptr<RenderCommandList>& render_command_list_ptr = render_cmd_lists[cmd_list_index];
+                RenderCommandList& render_cmd_list  = render_cmd_lists[cmd_list_index].get();
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
 
-                META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-                Draw(*render_command_list_ptr,
+                Draw(render_cmd_list,
                      instance_program_bindings.begin() + begin_instance_index,
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index,
