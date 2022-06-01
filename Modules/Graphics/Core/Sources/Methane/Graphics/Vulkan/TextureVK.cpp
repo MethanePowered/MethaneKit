@@ -217,9 +217,9 @@ vk::ImageViewType ITextureVK::DimensionTypeToImageViewType(Texture::DimensionTyp
     {
     case Texture::DimensionType::Tex1D:              return vk::ImageViewType::e1D;
     case Texture::DimensionType::Tex1DArray:         return vk::ImageViewType::e1DArray;
-    case Texture::DimensionType::Tex2D:              return vk::ImageViewType::e2D;
-    case Texture::DimensionType::Tex2DArray:
+    case Texture::DimensionType::Tex2D:
     case Texture::DimensionType::Tex2DMultisample:   return vk::ImageViewType::e2D;
+    case Texture::DimensionType::Tex2DArray:         return vk::ImageViewType::e2DArray;
     case Texture::DimensionType::Cube:               return vk::ImageViewType::eCube;
     case Texture::DimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
     case Texture::DimensionType::Tex3D:              return vk::ImageViewType::e3D;
