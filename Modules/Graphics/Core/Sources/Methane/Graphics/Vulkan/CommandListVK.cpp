@@ -26,6 +26,7 @@ Vulkan command lists sequence implementation
 #include "ContextVK.h"
 #include "RenderContextVK.h"
 #include "RenderCommandListVK.h"
+#include "ParallelRenderCommandListVK.h"
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/RenderCommandList.h>
@@ -90,11 +91,15 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, O
     , m_vk_unique_execution_completed_fence(m_vk_device.createFenceUnique(vk::FenceCreateInfo()))
 {
     META_FUNCTION_TASK();
+    const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
     
     m_vk_command_buffers.reserve(command_list_refs.size());
-    for (const Ref<CommandList>& command_list_ref : command_list_refs)
+    for (const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
     {
-        const auto& vulkan_command_list = dynamic_cast<const ICommandListVK&>(command_list_ref.get());
+        const CommandListBase& command_list = command_list_ref.get();
+        const auto& vulkan_command_list = command_list.GetType() == CommandList::Type::ParallelRender
+                                        ? static_cast<const ParallelRenderCommandListVK&>(command_list).GetPrimaryCommandListVK()
+                                        : dynamic_cast<const ICommandListVK&>(command_list_ref.get());
         m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
     }
 

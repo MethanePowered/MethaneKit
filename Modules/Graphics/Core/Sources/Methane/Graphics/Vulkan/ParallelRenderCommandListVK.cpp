@@ -24,6 +24,7 @@ Vulkan implementation of the render command list interface.
 #include "ParallelRenderCommandListVK.h"
 #include "RenderPassVK.h"
 #include "CommandQueueVK.h"
+#include "RenderCommandListVK.h"
 #include "ContextVK.h"
 
 #include <Methane/Instrumentation.h>
@@ -40,7 +41,7 @@ Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& c
 
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
-    , m_primary_cmd_list(command_queue, CommandList::Type::ParallelRender)
+    , m_primary_cmd_list(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass))
 {
     META_FUNCTION_TASK();
 }
@@ -79,6 +80,36 @@ void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
+
+    m_primary_cmd_list.Commit();
+
+    const vk::CommandBuffer&       vk_primary_cmd_buffer = m_primary_cmd_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
+    std::vector<vk::CommandBuffer> vk_secondary_cmd_buffers;
+    std::vector<vk::CommandBuffer> vk_render_pass_cmd_buffers;
+
+    const Refs<RenderCommandList>& parallel_cmd_list_refs = GetParallelCommandLists();
+    vk_secondary_cmd_buffers.reserve(parallel_cmd_list_refs.size());
+    vk_render_pass_cmd_buffers.reserve(parallel_cmd_list_refs.size());
+
+    for(const Ref<RenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
+    {
+        auto& parallel_cmd_list_vk = static_cast<RenderCommandListVK&>(parallel_cmd_list_ref.get());
+        vk_secondary_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary));
+        vk_render_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::SecondaryRenderPass));
+        parallel_cmd_list_vk.Commit();
+    }
+
+    vk_primary_cmd_buffer.begin(vk::CommandBufferBeginInfo());
+    vk_primary_cmd_buffer.executeCommands(vk_secondary_cmd_buffers);
+
+    RenderPassVK& render_pass = GetPassVK();
+    render_pass.Begin(m_primary_cmd_list);
+
+    vk_primary_cmd_buffer.executeCommands(vk_render_pass_cmd_buffers);
+
+    render_pass.End(m_primary_cmd_list);
+    vk_primary_cmd_buffer.end();
+
     ParallelRenderCommandListBase::Commit();
 }
 
@@ -94,15 +125,10 @@ CommandQueueVK& ParallelRenderCommandListVK::GetCommandQueueVK() noexcept
     return static_cast<class CommandQueueVK&>(GetCommandQueue());
 }
 
-RenderPassVK& ParallelRenderCommandListVK::GetPassVK()
+RenderPassVK& ParallelRenderCommandListVK::GetPassVK() noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<class RenderPassVK&>(GetPass());
-}
-
-vk::PipelineBindPoint ParallelRenderCommandListVK::PrimaryCommandListVK::GetNativePipelineBindPoint() const
-{
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Resources binding is not supported for primary command list of parallel render command list");
 }
 
 } // namespace Methane::Graphics

@@ -43,15 +43,12 @@ class RenderCommandListVK final
     , private Data::Receiver<IRenderPassCallback>
 {
 public:
-    RenderCommandListVK(CommandQueueVK& command_queue);
+    explicit RenderCommandListVK(CommandQueueVK& command_queue);
     RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
     explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list);
 
     // CommandList interface
     void Commit() override;
-
-    // CommandListBase interface
-    void Execute(const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
@@ -73,6 +70,8 @@ private:
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPassVK& GetPassVK();
+
+    const bool m_is_parallel = false;
 };
 
 } // namespace Methane::Graphics

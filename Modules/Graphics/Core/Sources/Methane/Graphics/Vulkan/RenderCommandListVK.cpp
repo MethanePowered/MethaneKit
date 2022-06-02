@@ -106,6 +106,7 @@ RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue, RenderPa
 
 RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list)
     : CommandListVK(CreateRenderCommandBufferInheritanceInfo(parallel_render_command_list.GetPassVK()), parallel_render_command_list)
+    , m_is_parallel(true)
 {
     META_FUNCTION_TASK();
     static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetPassVK()).Connect(*this);
@@ -194,28 +195,21 @@ void RenderCommandListVK::Commit()
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
 
-    CommitCommandBuffer(CommandBufferType::SecondaryRenderPass);
-
-    auto render_pass_ptr = static_cast<RenderPassVK*>(GetPassPtr());
-    if (render_pass_ptr)
+    if (!m_is_parallel)
     {
-        render_pass_ptr->Begin(*this);
-    }
+        CommitCommandBuffer(CommandBufferType::SecondaryRenderPass);
 
-    GetNativeCommandBuffer(CommandBufferType::Primary).executeCommands(GetNativeCommandBuffer(CommandBufferType::SecondaryRenderPass));
+        auto render_pass_ptr = static_cast<RenderPassVK*>(GetPassPtr());
+        if (render_pass_ptr)
+            render_pass_ptr->Begin(*this);
 
-    if (render_pass_ptr)
-    {
-        render_pass_ptr->End(*this);
+        GetNativeCommandBuffer(CommandBufferType::Primary).executeCommands(GetNativeCommandBuffer(CommandBufferType::SecondaryRenderPass));
+
+        if (render_pass_ptr)
+            render_pass_ptr->End(*this);
     }
 
     CommandListVK::Commit();
-}
-
-void RenderCommandListVK::Execute(const CompletedCallback& completed_callback)
-{
-    META_FUNCTION_TASK();
-    RenderCommandListBase::Execute(completed_callback);
 }
 
 vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const

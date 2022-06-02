@@ -23,7 +23,7 @@ Vulkan implementation of the parallel render command list interface.
 
 #pragma once
 
-#include "CommandListVK.hpp"
+#include "RenderCommandListVK.h"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
 
@@ -54,20 +54,12 @@ public:
     // Object interface
     bool SetName(const std::string& label) override;
 
+    const ICommandListVK& GetPrimaryCommandListVK() const noexcept { return m_primary_cmd_list; }
     CommandQueueVK& GetCommandQueueVK() noexcept;
-    RenderPassVK& GetPassVK();
+    RenderPassVK& GetPassVK() noexcept;
 
 private:
-    class PrimaryCommandListVK : public CommandListVK<CommandListBase, 1U, ICommandListVK::CommandBufferType::Primary>
-    {
-    public:
-        using CommandListVK::CommandListVK;
-
-        // ICommandListVK interface
-        vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
-    };
-
-    PrimaryCommandListVK m_primary_cmd_list;
+    RenderCommandListVK m_primary_cmd_list;
 };
 
 } // namespace Methane::Graphics
