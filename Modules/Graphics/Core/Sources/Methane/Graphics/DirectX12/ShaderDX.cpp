@@ -54,6 +54,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
+    case D3D_SIT_STRUCTURED:
     case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
     case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;

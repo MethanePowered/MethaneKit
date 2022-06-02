@@ -74,7 +74,7 @@ CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, 
     const Resource::Usage  usage_mask = Resource::Usage::ShaderRead
                                       | (addressable ? Resource::Usage::Addressable : Resource::Usage::None);
     const Buffer::Settings settings{
-        Buffer::Type::Constant,
+        addressable ? Buffer::Type::Data : Buffer::Type::Constant,
         usage_mask,
         Buffer::GetAlignedBufferSize(size),
         0U,

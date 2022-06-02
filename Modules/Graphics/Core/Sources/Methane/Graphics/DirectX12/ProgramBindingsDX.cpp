@@ -469,7 +469,7 @@ void ProgramBindingsDX::ApplyRootParameterBinding(const RootParameterBinding& ro
         break;
 
     case ArgumentBindingDX::Type::ShaderResourceView:
-        d3d12_command_list.SetComputeRootShaderResourceView(root_parameter_binding.root_parameter_index, root_parameter_binding.gpu_virtual_address);
+        d3d12_command_list.SetGraphicsRootShaderResourceView(root_parameter_binding.root_parameter_index, root_parameter_binding.gpu_virtual_address);
         break;
 
     default:
