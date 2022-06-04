@@ -50,6 +50,7 @@ public:
 
     // CommandListBase interface
     void Execute(const CompletedCallback& completed_callback = {}) override;
+    void Complete() override;
 
     // Object interface
     bool SetName(const std::string& label) override;

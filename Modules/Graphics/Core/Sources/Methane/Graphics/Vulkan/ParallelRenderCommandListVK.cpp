@@ -55,12 +55,14 @@ bool ParallelRenderCommandListVK::SetName(const std::string& name)
 void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+    m_primary_cmd_list.Reset(p_debug_group);
     ParallelRenderCommandListBase::Reset(p_debug_group);
 }
 
 void ParallelRenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
+    m_primary_cmd_list.Reset(p_debug_group);
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
@@ -83,6 +85,8 @@ void ParallelRenderCommandListVK::Commit()
 
     m_primary_cmd_list.Commit();
 
+    ParallelRenderCommandListBase::Commit();
+
     const vk::CommandBuffer&       vk_primary_cmd_buffer = m_primary_cmd_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     std::vector<vk::CommandBuffer> vk_secondary_cmd_buffers;
     std::vector<vk::CommandBuffer> vk_render_pass_cmd_buffers;
@@ -96,7 +100,6 @@ void ParallelRenderCommandListVK::Commit()
         auto& parallel_cmd_list_vk = static_cast<RenderCommandListVK&>(parallel_cmd_list_ref.get());
         vk_secondary_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary));
         vk_render_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::SecondaryRenderPass));
-        parallel_cmd_list_vk.Commit();
     }
 
     vk_primary_cmd_buffer.begin(vk::CommandBufferBeginInfo());
@@ -109,14 +112,20 @@ void ParallelRenderCommandListVK::Commit()
 
     render_pass.End(m_primary_cmd_list);
     vk_primary_cmd_buffer.end();
-
-    ParallelRenderCommandListBase::Commit();
 }
 
 void ParallelRenderCommandListVK::Execute(const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
+    m_primary_cmd_list.Execute();
     ParallelRenderCommandListBase::Execute(completed_callback);
+}
+
+void ParallelRenderCommandListVK::Complete()
+{
+    META_FUNCTION_TASK();
+    m_primary_cmd_list.Complete();
+    ParallelRenderCommandListBase::Complete();
 }
 
 CommandQueueVK& ParallelRenderCommandListVK::GetCommandQueueVK() noexcept
