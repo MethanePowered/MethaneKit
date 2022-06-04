@@ -107,9 +107,9 @@ void CubeMapArrayApp::Init()
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::Shader::Type::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::Shader::Type::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
