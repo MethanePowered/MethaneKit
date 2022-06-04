@@ -34,11 +34,11 @@ struct Buffer : virtual Resource // NOSONAR
 {
     enum class Type
     {
-        Data = 0,
+        Constant = 0,
+        Storage,
         Index,
         Vertex,
-        Constant,
-        ReadBack,
+        ReadBack
     };
 
     enum class StorageMode

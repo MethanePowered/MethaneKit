@@ -239,6 +239,12 @@ public:
     }
 
     [[nodiscard]]
+    static constexpr Data::Size GetAlignedUniformSize() noexcept
+    {
+        return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
+    }
+
+    [[nodiscard]]
     Data::Size GetUniformsBufferSize() const
     {
         META_FUNCTION_TASK();

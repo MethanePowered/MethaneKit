@@ -171,6 +171,7 @@ public:
         SubResource::Index        subresource_index;
         SubResource::Count        subresource_count;
         Data::Size                offset = 0U;
+        Data::Size                size   = 0U;
         Opt<TextureDimensionType> texture_dimension_type_opt;
 
         [[nodiscard]] bool operator<(const Settings& other) const noexcept;
@@ -189,11 +190,12 @@ public:
     };
 
     ResourceLocation(Resource& resource, const Settings& settings);
-    ResourceLocation(Resource& resource, Data::Size offset = 0U);
+    ResourceLocation(Resource& resource, Data::Size offset = 0U, Data::Size size = 0U);
     ResourceLocation(Resource& resource,
                      const SubResource::Index& subresource_index,
                      const SubResource::Count& subresource_count = {},
-                     Data::Size offset = 0U);
+                     Data::Size offset = 0U,
+                     Data::Size size   = 0U);
     ResourceLocation(Resource& resource,
                      const SubResource::Index& subresource_index,
                      const SubResource::Count& subresource_count = {},

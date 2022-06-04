@@ -171,22 +171,23 @@ SubResource::Index::operator std::string() const noexcept
 bool ResourceLocation::Settings::operator<(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset) <
-           std::tie(other.subresource_index, other.subresource_count, other.offset);
+    // Do not include 'offset' in the less comparison, because native views are created without offset which is applied dynamically
+    return std::tie(subresource_index, subresource_count, /*offset,*/ size) <
+           std::tie(other.subresource_index, other.subresource_count, /*other.offset,*/ other.size);
 }
 
 bool ResourceLocation::Settings::operator==(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset) ==
-           std::tie(other.subresource_index, other.subresource_count, other.offset);
+    return std::tie(subresource_index, subresource_count, offset, size) ==
+           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
 bool ResourceLocation::Settings::operator!=(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset) !=
-           std::tie(other.subresource_index, other.subresource_count, other.offset);
+    return std::tie(subresource_index, subresource_count, offset, size) !=
+           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
 ResourceLocation::Id::Id(ResourceUsage usage, const ResourceLocation::Settings& settings)
@@ -224,8 +225,8 @@ ResourceLocation::ResourceLocation(Resource& resource, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset)
-    : ResourceLocation(resource, SubResource::Index(), resource.GetSubresourceCount(), offset)
+ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset, Data::Size size)
+    : ResourceLocation(resource, SubResource::Index(), resource.GetSubresourceCount(), offset, size)
 {
     META_FUNCTION_TASK();
 }
@@ -233,11 +234,13 @@ ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset)
 ResourceLocation::ResourceLocation(Resource& resource,
                                    const SubResource::Index& subresource_index,
                                    const SubResource::Count& subresource_count,
-                                   Data::Size offset)
+                                   Data::Size offset,
+                                   Data::Size size)
     : ResourceLocation(resource, Settings{
         subresource_index,
         subresource_count,
-        offset
+        offset,
+        size
     })
 {
     META_FUNCTION_TASK();
@@ -251,6 +254,7 @@ ResourceLocation::ResourceLocation(Resource& resource,
         subresource_index,
         subresource_count,
         0U, // offset
+        0U, // size
         texture_dimension_type_opt
     })
 {

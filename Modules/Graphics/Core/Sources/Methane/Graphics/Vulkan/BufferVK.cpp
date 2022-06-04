@@ -55,7 +55,7 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, 
     vk::BufferUsageFlags vk_usage_flags;
     switch(buffer_type)
     {
-    case Buffer::Type::Data:     vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
+    case Buffer::Type::Storage:  vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
     case Buffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
     case Buffer::Type::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
     case Buffer::Type::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
@@ -74,10 +74,10 @@ static Resource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_ty
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case Buffer::Type::Data:        return Resource::State::ShaderResource;
+    case Buffer::Type::Storage:     return Resource::State::ShaderResource;
+    case Buffer::Type::Constant:    return Resource::State::ConstantBuffer;
     case Buffer::Type::Index:       return Resource::State::IndexBuffer;
     case Buffer::Type::Vertex:      return Resource::State::VertexBuffer;
-    case Buffer::Type::Constant:    return Resource::State::ConstantBuffer;
     case Buffer::Type::ReadBack:    return Resource::State::StreamOut;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Resource::State::Undefined, "Unsupported buffer type");
     }
@@ -206,7 +206,7 @@ Ptr<ResourceLocationVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescrip
     buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
         GetNativeResource(),
         static_cast<vk::DeviceSize>(location_id.offset),
-        static_cast<vk::DeviceSize>(GetSubResourceDataSize(location_id.subresource_index) - location_id.offset)
+        location_id.size ? location_id.size : GetSubResourceDataSize(location_id.subresource_index)
     );
 
     return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(buffer_view_desc));

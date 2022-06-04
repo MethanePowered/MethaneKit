@@ -35,6 +35,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -211,6 +212,8 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     : ProgramBindingsBase(other_program_bindings, frame_index)
     , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
     , m_has_mutable_descriptor_set(other_program_bindings.m_has_mutable_descriptor_set)
+    , m_dynamic_offsets(other_program_bindings.m_dynamic_offsets)
+    , m_dynamic_offset_index_by_set_index(other_program_bindings.m_dynamic_offset_index_by_set_index)
 {
     META_FUNCTION_TASK();
 
@@ -245,6 +248,46 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     UpdateMutableDescriptorSetName();
     SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_location_by_argument));
     VerifyAllArgumentsAreBoundToResources();
+}
+
+void ProgramBindingsVK::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
+{
+    META_FUNCTION_TASK();
+    ProgramBindingsBase::SetResourcesForArguments(resource_locations_by_argument);
+
+    auto& program = static_cast<ProgramVK&>(GetProgram());
+    const Program::ArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
+    std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
+    dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
+
+    ForEachArgumentBinding([this, &program, &program_argument_accessors, &dynamic_offsets_by_set_index]
+                           (const Program::Argument& program_argument, ArgumentBindingVK& argument_binding)
+        {
+            const auto program_accessor_it = Program::FindArgumentAccessor(program_argument_accessors, program_argument);
+            META_CHECK_ARG(program_argument, program_accessor_it != program_argument_accessors.end());
+            const Program::ArgumentAccessor& program_argument_accessor = *program_accessor_it;
+            if (!program_argument_accessor.IsAddressable())
+                return;
+
+            const ProgramVK::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());
+            META_CHECK_ARG_TRUE(layout_info.index_opt.has_value());
+            META_CHECK_ARG_LESS(*layout_info.index_opt, dynamic_offsets_by_set_index.size());
+            std::vector<uint32_t>& dynamic_offsets = dynamic_offsets_by_set_index[*layout_info.index_opt];
+            dynamic_offsets.clear();
+
+            const ResourceLocations& resource_locations = argument_binding.GetResourceLocations();
+            std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(dynamic_offsets),
+                           [](const Resource::Location& resource_location)
+                           { return resource_location.GetOffset(); });
+        });
+
+    m_dynamic_offsets.clear();
+    m_dynamic_offset_index_by_set_index.clear();
+    for (const std::vector<uint32_t>& dynamic_offsets : dynamic_offsets_by_set_index)
+    {
+        m_dynamic_offset_index_by_set_index.emplace_back(static_cast<uint32_t>(m_dynamic_offsets.size()));
+        m_dynamic_offsets.insert(m_dynamic_offsets.end(), dynamic_offsets.begin(), dynamic_offsets.end());
+    }
 }
 
 void ProgramBindingsVK::Initialize()
@@ -302,14 +345,17 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, CommandQueue& com
 
     const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBufferDefault();
     const vk::PipelineBindPoint vk_pipeline_bind_point = command_list_vk.GetNativePipelineBindPoint();
+    const uint32_t first_dynamic_offset_index = m_dynamic_offset_index_by_set_index[first_descriptor_set_layout_index];
 
     // Bind descriptor sets to pipeline
     auto& program = static_cast<ProgramVK&>(GetProgram());
     vk_command_buffer.bindDescriptorSets(vk_pipeline_bind_point,
                                          program.GetNativePipelineLayout(),
                                          first_descriptor_set_layout_index,
-                                         m_descriptor_sets,
-                                         {});
+                                         static_cast<uint32_t>(m_descriptor_sets.size() - first_descriptor_set_layout_index),
+                                         m_descriptor_sets.data() + first_descriptor_set_layout_index,
+                                         static_cast<uint32_t>(m_dynamic_offsets.size() - first_dynamic_offset_index),
+                                         m_dynamic_offsets.data() + first_dynamic_offset_index);
 }
 
 void ProgramBindingsVK::OnObjectNameChanged(Object&, const std::string&)

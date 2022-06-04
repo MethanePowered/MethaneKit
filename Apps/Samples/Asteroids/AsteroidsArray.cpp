@@ -299,13 +299,14 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
     if (m_settings.instance_count == 0)
         return program_bindings_array;
 
+    const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
     const gfx::Resource::Locations face_texture_locations = m_settings.textures_array_enabled
                                                           ? gfx::Resource::CreateLocations(m_unique_textures)
                                                           : gfx::Resource::Locations{ { GetInstanceTexture() } };
     
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { *asteroids_uniforms_buffer_ptr, GetUniformsBufferOffset(0) } } },
+        { { gfx::Shader::Type::All,    "g_mesh_uniforms"  }, { { *asteroids_uniforms_buffer_ptr, GetUniformsBufferOffset(0), uniform_data_size } } },
         { { gfx::Shader::Type::All,    "g_scene_uniforms" }, { { *scene_uniforms_buffer_ptr } } },
         { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { *constants_buffer_ptr      } } },
         { { gfx::Shader::Type::Pixel,  "g_face_textures"  },     face_texture_locations         },
@@ -315,12 +316,12 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
 
     tf::Taskflow task_flow;
     task_flow.for_each_index(1U, m_settings.instance_count, 1U,
-        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, frame_index](const uint32_t asteroid_index)
+        [this, &program_bindings_array, &asteroids_uniforms_buffer_ptr, uniform_data_size, frame_index](const uint32_t asteroid_index)
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             META_CHECK_ARG_EQUAL(asteroid_uniform_offset % 256, 0);
             gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
-                { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { *asteroids_uniforms_buffer_ptr, asteroid_uniform_offset } } },
+                { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { *asteroids_uniforms_buffer_ptr, asteroid_uniform_offset, uniform_data_size } } },
             };
             if (!m_settings.textures_array_enabled)
             {

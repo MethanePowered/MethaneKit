@@ -145,6 +145,21 @@ ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const S
     META_FUNCTION_TASK();
 }
 
+static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const Program::ArgumentAccessor& argument_accessor)
+{
+    META_FUNCTION_TASK();
+    if (!argument_accessor.IsAddressable())
+        return vk_shader_descriptor_type;
+
+    switch(vk_shader_descriptor_type)
+    {
+    case vk::DescriptorType::eUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
+    case vk::DescriptorType::eStorageBuffer: return vk::DescriptorType::eStorageBufferDynamic;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(vk_shader_descriptor_type, vk_shader_descriptor_type,
+                                              "addressable arguments support only Uniform or Storage buffers");
+    }
+}
+
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
@@ -195,7 +210,7 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
                         resource_type,
                         array_size
                     },
-                    vk_descriptor_type,
+                    UpdateDescriptorType(vk_descriptor_type, argument_acc),
                     { std::move(byte_code_map) }
                 }
             ));

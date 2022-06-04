@@ -59,9 +59,9 @@ static const uint32_t        g_cubes_count  = static_cast<uint32_t>(std::pow(8U,
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Cube Map Array", Samples::g_default_app_options_color_with_depth_and_anim),
+        Samples::GetGraphicsAppSettings("Methane Parallel Rendering", Samples::g_default_app_options_color_with_depth_and_anim),
         { HeadsUpDisplayMode::WindowTitle },
-        "Methane tutorial of cube-map array texturing")
+        "Methane tutorial of parallel rendering")
 {
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
 
@@ -141,7 +141,8 @@ void ParallelRenderingApp::Init()
     );
 
     // Create frame buffer resources
-    const auto uniforms_data_size = m_cube_array_buffers_ptr->GetUniformsBufferSize();
+    const Data::Size uniforms_data_size = m_cube_array_buffers_ptr->GetUniformsBufferSize();
+    const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
@@ -151,7 +152,7 @@ void ParallelRenderingApp::Init()
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(g_cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = gfx::ProgramBindings::Create(render_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U) } } },
+            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
             { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
             { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },
         }, frame.index);
@@ -160,7 +161,7 @@ void ParallelRenderingApp::Init()
         for(uint32_t i = 1U; i < g_cubes_count; ++i)
         {
             frame.cubes_array.program_bindings_per_instance[i] = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
-                { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(i) } } }
+                { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(i), uniform_data_size } } }
             }, frame.index);
             frame.cubes_array.program_bindings_per_instance[i]->SetName(fmt::format("Cube {} Bindings {}", i, frame.index));
         }
