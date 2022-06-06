@@ -67,7 +67,7 @@ public:
         gfx::Color4F color;
     };
 
-    using CubeSliceDescs = std::vector<TextureLabeler::SliceDesc>; // 6 cube faces + extra colors
+    using CubeSliceDescs = std::vector<SliceDesc>; // 6 cube faces + extra colors
 
     struct Settings
     {
@@ -103,7 +103,9 @@ public:
 private:
     struct Slice : SliceDesc
     {
-        Slice(const SliceDesc& slice_desc) : SliceDesc(slice_desc) {}
+        Slice(const SliceDesc& slice_desc)
+            : SliceDesc(slice_desc)
+        {}
 
         Ptr<gfx::RenderPattern>     render_pattern_ptr;
         Ptr<gfx::RenderPass>        render_pass_ptr;
@@ -117,7 +119,10 @@ private:
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
     Ptr<gfx::ResourceBarriers>  m_ending_resource_barriers_ptr;
-    Ptr<gfx::CommandListSet>    m_slice_cmd_list_set_ptr;
+    Ptr<gfx::RenderPattern>     m_ending_render_pattern_ptr;
+    Ptr<gfx::RenderPass>        m_ending_render_pass_ptr;
+    Ptr<gfx::RenderCommandList> m_ending_render_cmd_list_ptr;
+    Ptr<gfx::CommandListSet>    m_render_cmd_list_set_ptr;
 };
 
 } // namespace Methane::Tutorials

@@ -164,17 +164,26 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     }
 
     if (rt_texture_final_state != gfx::Resource::State::Undefined)
+    {
+        m_ending_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), {
+            gfx::RenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::RenderPass::Access::ShaderResources, false
+        });
+        m_ending_render_pass_ptr = gfx::RenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
+        m_ending_render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
+        m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
         m_ending_resource_barriers_ptr = gfx::Resource::Barriers::Create({
             { m_rt_texture, gfx::Resource::State::RenderTarget, rt_texture_final_state }
         });
+        slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);
+    }
 
-    m_slice_cmd_list_set_ptr = gfx::CommandListSet::Create(slice_render_cmd_list_refs);
+    m_render_cmd_list_set_ptr = gfx::CommandListSet::Create(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()
 {
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group_ptr, "Texture Faces Rendering");
-    for(size_t slice_index = 0U; slice_index < m_slices.size(); ++slice_index)
+    for (size_t slice_index = 0U; slice_index < m_slices.size(); ++slice_index)
     {
         const Slice& slice = m_slices[slice_index];
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
@@ -184,14 +193,17 @@ void TextureLabeler::Render()
             slice.screen_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
 
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
-
-        if (m_ending_resource_barriers_ptr && slice_index == m_slices.size() - 1)
-            slice.render_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
-
         slice.render_cmd_list_ptr->Commit();
     }
 
-    m_gui_context.GetRenderCommandQueue().Execute(*m_slice_cmd_list_set_ptr);
+    if (m_ending_resource_barriers_ptr)
+    {
+        m_ending_render_cmd_list_ptr->Reset();
+        m_ending_render_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
+        m_ending_render_cmd_list_ptr->Commit();
+    }
+
+    m_gui_context.GetRenderCommandQueue().Execute(*m_render_cmd_list_set_ptr);
 }
 
 } // namespace Methane::Tutorials
