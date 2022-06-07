@@ -547,7 +547,7 @@ void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State tar
                 vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, prev_mip_level_index, base_layer_index, 1U),
                 { vk::Offset3D(), vk::Offset3D(prev_mip_width, prev_mip_height, 1U) },
                 vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, mip_level_index, base_layer_index, 1U),
-                { vk::Offset3D(), vk::Offset3D(curr_mip_width, curr_mip_width, 1U) }
+                { vk::Offset3D(), vk::Offset3D(curr_mip_width, curr_mip_height, 1U) }
             );
 
             vk_cmd_buffer.blitImage(
