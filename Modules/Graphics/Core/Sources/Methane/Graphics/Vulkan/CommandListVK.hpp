@@ -48,7 +48,7 @@ namespace Methane::Graphics
 
 class ParallelRenderCommandListVK;
 
-template<class CommandListBaseT, uint32_t command_buffers_count = 1U,
+template<class CommandListBaseT, vk::PipelineBindPoint pipeline_bind_point, uint32_t command_buffers_count = 1U,
          ICommandListVK::CommandBufferType default_command_buffer_type = ICommandListVK::CommandBufferType::Primary,
          typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT> && command_buffers_count != 0U>>
 class CommandListVK
@@ -91,8 +91,8 @@ public:
     }
 
     template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
-             typename = std::enable_if_t<buffers_count == 1>>
-    explicit CommandListVK(ConstructArgs&&... construct_args)
+        typename = std::enable_if_t<buffers_count == 1>>
+    CommandListVK(const vk::CommandBufferLevel& vk_buffer_level, const vk::CommandBufferBeginInfo& vk_begin_info, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
@@ -101,7 +101,7 @@ public:
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
-        InitializePrimaryCommandBuffer();
+        InitializePrimaryCommandBuffer(vk_buffer_level, vk_begin_info);
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -214,7 +214,11 @@ public:
         SetVulkanObjectName(m_vk_device, m_vk_unique_command_pool.get(), fmt::format("{} Command Pool", name));
         for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
         {
-            SetVulkanObjectName(m_vk_device, m_vk_unique_command_buffers[cmd_buffer_index].get(),
+            const vk::UniqueCommandBuffer& vk_unique_command_buffer = m_vk_unique_command_buffers[cmd_buffer_index];
+            if (!vk_unique_command_buffer)
+                continue;
+
+            SetVulkanObjectName(m_vk_device, vk_unique_command_buffer.get(),
                                 fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<ICommandListVK::CommandBufferType>(cmd_buffer_index))));
         }
         return true;
@@ -223,12 +227,13 @@ public:
     // ICommandListVK interface
     CommandQueueVK&          GetCommandQueueVK() final                   { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
     const CommandQueueVK&    GetCommandQueueVK() const final             { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
+    vk::PipelineBindPoint    GetNativePipelineBindPoint() const final    { return pipeline_bind_point; }
     const vk::CommandBuffer& GetNativeCommandBufferDefault() const final { return GetNativeCommandBuffer(default_command_buffer_type); }
     const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type) const final
     {
         META_FUNCTION_TASK();
         const size_t cmd_buffer_index = magic_enum::enum_index(cmd_buffer_type).value();
-        META_CHECK_ARG_LESS_DESCR(cmd_buffer_index, command_buffers_count, "Not enough command buffers count for ", magic_enum::enum_name(cmd_buffer_type));
+        META_CHECK_ARG_LESS_DESCR(cmd_buffer_index, command_buffers_count, "Not enough command buffers count for {}", magic_enum::enum_name(cmd_buffer_type));
         return m_vk_unique_command_buffers[cmd_buffer_index].get();
     }
     
@@ -270,18 +275,15 @@ private:
         return m_vk_device.createCommandPoolUnique(vk_command_pool_info);
     }
 
-    void InitializePrimaryCommandBuffer()
+    void InitializePrimaryCommandBuffer(const vk::CommandBufferLevel& vk_buffer_level = vk::CommandBufferLevel::ePrimary, const vk::CommandBufferBeginInfo& vk_begin_info = {})
     {
         META_FUNCTION_TASK();
         m_vk_command_buffer_primary_flags[0] = true;
         m_vk_unique_command_buffers[0] = std::move(m_vk_device.allocateCommandBuffersUnique(
-            vk::CommandBufferAllocateInfo(
-                m_vk_unique_command_pool.get(),
-                vk::CommandBufferLevel::ePrimary,
-                1
-            )).back());
+            vk::CommandBufferAllocateInfo(m_vk_unique_command_pool.get(), vk_buffer_level, 1U)
+        ).back());
 
-        m_vk_unique_command_buffers[0].get().begin(vk::CommandBufferBeginInfo());
+        m_vk_unique_command_buffers[0].get().begin(vk_begin_info);
         m_vk_command_buffer_encoding_flags[0] = true;
     }
 

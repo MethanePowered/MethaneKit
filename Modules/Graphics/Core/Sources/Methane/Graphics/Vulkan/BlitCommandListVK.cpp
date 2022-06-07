@@ -37,14 +37,9 @@ Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 }
 
 BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
-    : CommandListVK<CommandListBase>(command_queue, CommandList::Type::Blit)
+    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandList::Type::Blit)
 {
     META_FUNCTION_TASK();
-}
-
-vk::PipelineBindPoint BlitCommandListVK::GetNativePipelineBindPoint() const
-{
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Resources binding is not supported for BLIT command lists");
 }
 
 } // namespace Methane::Graphics

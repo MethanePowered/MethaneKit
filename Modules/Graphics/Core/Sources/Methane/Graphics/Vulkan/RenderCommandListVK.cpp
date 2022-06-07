@@ -212,12 +212,6 @@ void RenderCommandListVK::Commit()
     CommandListVK::Commit();
 }
 
-vk::PipelineBindPoint RenderCommandListVK::GetNativePipelineBindPoint() const
-{
-    META_FUNCTION_TASK();
-    return vk::PipelineBindPoint::eGraphics;
-}
-
 void RenderCommandListVK::OnRenderPassUpdated(const RenderPass& render_pass)
 {
     META_FUNCTION_TASK();

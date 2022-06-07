@@ -29,6 +29,8 @@ Base implementation of the parallel render command list interface.
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 
 #include <optional>
+#include <string>
+#include <string_view>
 
 namespace Methane::Graphics
 {
@@ -67,6 +69,11 @@ public:
     bool SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();
+
+protected:
+    static std::string GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix);
+    static std::string GetTrailingCommandListDebugName(std::string_view base_name, bool is_beginning);
+    static std::string GetThreadCommandListName(std::string_view base_name, Data::Index index);
 
 private:
     template<typename ResetCommandListFn>

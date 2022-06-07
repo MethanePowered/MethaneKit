@@ -40,11 +40,6 @@ Base implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-inline std::string GetThreadCommandListName(std::string_view name, Data::Index index)
-{
-    return fmt::format("{} - Thread {}", name, index);
-}
-
 ParallelRenderCommandListBase::ParallelRenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass)
     : CommandListBase(command_queue, Type::ParallelRender)
     , m_render_pass_ptr(render_pass.GetPtr<RenderPassBase>())
@@ -209,6 +204,21 @@ RenderPassBase& ParallelRenderCommandListBase::GetPass()
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
     return *m_render_pass_ptr;
+}
+
+std::string ParallelRenderCommandListBase::GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix)
+{
+    return base_name.empty() ? std::string() : fmt::format("{} {}", base_name, suffix);
+}
+
+std::string ParallelRenderCommandListBase::GetTrailingCommandListDebugName(std::string_view base_name, bool is_beginning)
+{
+    return GetParallelCommandListDebugName(base_name, is_beginning ? "[Beginning]" : "[Ending]");
+}
+
+std::string ParallelRenderCommandListBase::GetThreadCommandListName(std::string_view base_name, Data::Index index)
+{
+    return GetParallelCommandListDebugName(base_name, fmt::format("- Thread {}", index));
 }
 
 } // namespace Methane::Graphics

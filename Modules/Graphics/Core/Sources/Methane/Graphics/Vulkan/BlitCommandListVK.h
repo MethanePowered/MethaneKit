@@ -36,14 +36,11 @@ namespace Methane::Graphics
 class CommandQueueVK;
 
 class BlitCommandListVK final
-    : public CommandListVK<CommandListBase>
+    : public CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>
     , public BlitCommandList
 {
 public:
     explicit BlitCommandListVK(CommandQueueVK& command_queue);
-
-    // ICommandListVK interface
-    vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 };
 
 } // namespace Methane::Graphics

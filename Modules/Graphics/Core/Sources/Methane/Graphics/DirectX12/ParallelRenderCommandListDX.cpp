@@ -38,16 +38,6 @@ DirectX 12 implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-static std::string GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix)
-{
-    return base_name.empty() ? std::string() : fmt::format("{} {}", base_name, suffix);
-}
-
-static std::string GetTrailingCommandListDebugName(std::string_view base_name, bool is_beginning)
-{
-    return GetParallelCommandListDebugName(base_name, is_beginning ? "[Beginning]" : "[Ending]");
-}
-
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();

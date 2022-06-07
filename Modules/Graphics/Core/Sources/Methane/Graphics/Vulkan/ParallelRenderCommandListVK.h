@@ -37,13 +37,13 @@ class RenderPassVK;
 class ParallelRenderCommandListVK final : public ParallelRenderCommandListBase
 {
 public:
-    ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
 
     // ParallelRenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void SetBeginningResourceBarriers(const Resource::Barriers&) override;
-    void SetEndingResourceBarriers(const Resource::Barriers&) override;
+    void SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers) override;
+    void SetEndingResourceBarriers(const Resource::Barriers& resource_barriers) override;
 
     // CommandList interface
     void Commit() override;
@@ -55,12 +55,15 @@ public:
     // Object interface
     bool SetName(const std::string& label) override;
 
-    const ICommandListVK& GetPrimaryCommandListVK() const noexcept { return m_primary_cmd_list; }
+    const ICommandListVK& GetPrimaryCommandListVK() const noexcept { return m_beginning_command_list; }
     CommandQueueVK& GetCommandQueueVK() noexcept;
     RenderPassVK& GetPassVK() noexcept;
 
 private:
-    RenderCommandListVK m_primary_cmd_list;
+    using SyncCommandListVK = CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>;
+
+    RenderCommandListVK m_beginning_command_list;
+    SyncCommandListVK   m_ending_command_list;
 };
 
 } // namespace Methane::Graphics

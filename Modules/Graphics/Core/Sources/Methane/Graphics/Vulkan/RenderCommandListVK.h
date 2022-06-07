@@ -39,7 +39,7 @@ class RenderPassVK;
 class ParallelRenderCommandListVK;
 
 class RenderCommandListVK final
-    : public CommandListVK<RenderCommandListBase, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
+    : public CommandListVK<RenderCommandListBase, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
     , private Data::Receiver<IRenderPassCallback>
 {
 public:
@@ -59,9 +59,6 @@ public:
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
-
-    // ICommandListVK interface
-    vk::PipelineBindPoint GetNativePipelineBindPoint() const override;
 
 private:
     // IRenderPassCallback
