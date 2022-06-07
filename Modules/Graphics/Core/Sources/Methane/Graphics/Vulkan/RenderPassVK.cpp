@@ -97,6 +97,9 @@ static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Atta
 static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
+    const vk::ImageLayout initial_image_layout = attachment.load_action == RenderPattern::Attachment::LoadAction::Load
+                                               ? vk::ImageLayout::eGeneral
+                                               : vk::ImageLayout::eUndefined;
     return vk::AttachmentDescription(
         vk::AttachmentDescriptionFlags{},
         TypeConverterVK::PixelFormatToVulkan(attachment.format),
@@ -106,7 +109,7 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPatt
         // TODO: stencil is not supported yet
         vk::AttachmentLoadOp::eDontCare,
         vk::AttachmentStoreOp::eDontCare,
-        vk::ImageLayout::eUndefined,
+        initial_image_layout,
         GetFinalImageLayoutOfAttachment(attachment, is_final_pass)
     );
 }
