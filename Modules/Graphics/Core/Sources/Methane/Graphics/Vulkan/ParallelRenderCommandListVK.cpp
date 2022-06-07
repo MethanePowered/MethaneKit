@@ -42,8 +42,9 @@ Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& c
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
     , m_beginning_command_list(command_queue, render_pass)
+    , m_vk_ending_inheritance_info(render_pass.GetPatternVK().GetNativeRenderPass(), 0U, render_pass.GetNativeFrameBuffer())
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
-                            vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, nullptr),
+                            vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, &m_vk_ending_inheritance_info),
                             static_cast<CommandQueueVK&>(command_queue), CommandList::Type::Render)
 {
     META_FUNCTION_TASK();
@@ -99,6 +100,26 @@ void ParallelRenderCommandListVK::SetEndingResourceBarriers(const Resource::Barr
     m_ending_command_list.SetResourceBarriers(resource_barriers);
 }
 
+void ParallelRenderCommandListVK::SetParallelCommandListsCount(uint32_t count)
+{
+    META_FUNCTION_TASK();
+    ParallelRenderCommandListBase::SetParallelCommandListsCount(count);
+
+    m_vk_parallel_sync_cmd_buffers.clear();
+    m_vk_parallel_pass_cmd_buffers.clear();
+
+    const Refs<RenderCommandList>& parallel_cmd_list_refs = GetParallelCommandLists();
+    m_vk_parallel_sync_cmd_buffers.reserve(parallel_cmd_list_refs.size());
+    m_vk_parallel_pass_cmd_buffers.reserve(parallel_cmd_list_refs.size());
+
+    for(const Ref<RenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
+    {
+        auto& parallel_cmd_list_vk = static_cast<RenderCommandListVK&>(parallel_cmd_list_ref.get());
+        m_vk_parallel_sync_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary));
+        m_vk_parallel_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::SecondaryRenderPass));
+    }
+}
+
 void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
@@ -108,28 +129,14 @@ void ParallelRenderCommandListVK::Commit()
 
     ParallelRenderCommandListBase::Commit();
 
-    const vk::CommandBuffer&       vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
-    std::vector<vk::CommandBuffer> vk_parallel_sync_cmd_buffers;
-    std::vector<vk::CommandBuffer> vk_parallel_pass_cmd_buffers;
-
-    const Refs<RenderCommandList>& parallel_cmd_list_refs = GetParallelCommandLists();
-    vk_parallel_sync_cmd_buffers.reserve(parallel_cmd_list_refs.size());
-    vk_parallel_pass_cmd_buffers.reserve(parallel_cmd_list_refs.size());
-
-    for(const Ref<RenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
-    {
-        auto& parallel_cmd_list_vk = static_cast<RenderCommandListVK&>(parallel_cmd_list_ref.get());
-        vk_parallel_sync_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary));
-        vk_parallel_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::SecondaryRenderPass));
-    }
-
+    const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_beginning_primary_cmd_buffer.begin(vk::CommandBufferBeginInfo());
-    vk_beginning_primary_cmd_buffer.executeCommands(vk_parallel_sync_cmd_buffers);
+    vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_sync_cmd_buffers);
 
     RenderPassVK& render_pass = GetPassVK();
     render_pass.Begin(m_beginning_command_list);
 
-    vk_beginning_primary_cmd_buffer.executeCommands(vk_parallel_pass_cmd_buffers);
+    vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_pass_cmd_buffers);
 
     render_pass.End(m_beginning_command_list);
 

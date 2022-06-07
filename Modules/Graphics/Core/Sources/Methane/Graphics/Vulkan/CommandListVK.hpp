@@ -62,13 +62,13 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
-        , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
         InitializePrimaryCommandBuffer();
+        SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
         InitializeSecondaryCommandBuffers(1U);
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
@@ -78,13 +78,13 @@ public:
         : CommandListBaseT(parallel_render_command_list)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
-        , m_vk_secondary_render_buffer_inherit_info_opt(secondary_render_buffer_inherit_info)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
         // Do not use primary command buffers in case of command list created as a part of ParallelRenderCommandListVK
+        SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
         InitializeSecondaryCommandBuffers(0U);
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
@@ -96,12 +96,13 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
+        , m_vk_command_buffer_begin_infos({ vk_begin_info })
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
-        InitializePrimaryCommandBuffer(vk_buffer_level, vk_begin_info);
+        InitializePrimaryCommandBuffer(vk_buffer_level);
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -264,6 +265,14 @@ protected:
     {
         META_FUNCTION_TASK();
         m_vk_secondary_render_buffer_inherit_info_opt = secondary_render_buffer_inherit_info;
+        const size_t secondary_render_pass_index = magic_enum::enum_index(CommandBufferType::SecondaryRenderPass).value();
+        const bool is_secondary_command_buffer = !m_vk_command_buffer_primary_flags[secondary_render_pass_index];
+        m_vk_command_buffer_begin_infos[secondary_render_pass_index] = vk::CommandBufferBeginInfo(
+            is_secondary_command_buffer && secondary_render_buffer_inherit_info.renderPass
+            ? vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue | vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+            : vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit),
+            &m_vk_secondary_render_buffer_inherit_info_opt.value()
+        );
     }
 
 private:
@@ -275,7 +284,7 @@ private:
         return m_vk_device.createCommandPoolUnique(vk_command_pool_info);
     }
 
-    void InitializePrimaryCommandBuffer(const vk::CommandBufferLevel& vk_buffer_level = vk::CommandBufferLevel::ePrimary, const vk::CommandBufferBeginInfo& vk_begin_info = {})
+    void InitializePrimaryCommandBuffer(const vk::CommandBufferLevel& vk_buffer_level = vk::CommandBufferLevel::ePrimary)
     {
         META_FUNCTION_TASK();
         m_vk_command_buffer_primary_flags[0] = true;
@@ -283,7 +292,7 @@ private:
             vk::CommandBufferAllocateInfo(m_vk_unique_command_pool.get(), vk_buffer_level, 1U)
         ).back());
 
-        m_vk_unique_command_buffers[0].get().begin(vk_begin_info);
+        m_vk_unique_command_buffers[0].get().begin(m_vk_command_buffer_begin_infos[0]);
         m_vk_command_buffer_encoding_flags[0] = true;
     }
 
@@ -301,23 +310,23 @@ private:
         {
             vk::UniqueCommandBuffer& vk_unique_command_buffer = m_vk_unique_command_buffers[cmd_buffer_index];
             vk_unique_command_buffer = std::move(secondary_cmd_buffers[cmd_buffer_index - offset_primary_count]);
-            vk_unique_command_buffer.get().begin(GetCommandBufferBeginInfo(static_cast<CommandBufferType>(cmd_buffer_index)));
+
+            const vk::CommandBufferBeginInfo& secondary_begin_info = GetCommandBufferBeginInfo(static_cast<CommandBufferType>(cmd_buffer_index));
+            if (!secondary_begin_info.pInheritanceInfo)
+            {
+                static const vk::CommandBufferInheritanceInfo s_default_secondary_inheritance_info;
+                m_vk_command_buffer_begin_infos[cmd_buffer_index].pInheritanceInfo = &s_default_secondary_inheritance_info;
+            }
+
+            vk_unique_command_buffer.get().begin(secondary_begin_info);
             m_vk_command_buffer_encoding_flags[cmd_buffer_index] = true;
         }
     }
 
-    vk::CommandBufferBeginInfo GetCommandBufferBeginInfo(CommandBufferType cmd_buffer_type) const
+    const vk::CommandBufferBeginInfo& GetCommandBufferBeginInfo(CommandBufferType cmd_buffer_type) const
     {
         META_FUNCTION_TASK();
-        const bool is_secondary_command_buffer     = !m_vk_command_buffer_primary_flags[static_cast<uint32_t>(cmd_buffer_type)];
-        const bool is_secondary_render_pass_buffer = cmd_buffer_type == CommandBufferType::SecondaryRenderPass;
-        META_CHECK_ARG(m_vk_secondary_render_buffer_inherit_info_opt.has_value(), !is_secondary_render_pass_buffer || m_vk_secondary_render_buffer_inherit_info_opt.has_value());
-        return vk::CommandBufferBeginInfo(
-            is_secondary_render_pass_buffer && m_vk_secondary_render_buffer_inherit_info_opt->renderPass
-                ? vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue | vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-                : vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit),
-            is_secondary_command_buffer ? &*m_vk_secondary_render_buffer_inherit_info_opt : nullptr
-        );
+        return m_vk_command_buffer_begin_infos[magic_enum::enum_index(cmd_buffer_type).value()];       
     }
 
     vk::Device            m_vk_device;
@@ -325,10 +334,11 @@ private:
     bool                  m_is_native_committed = false;
 
     // Unique command buffers and corresponding begin flags are indexed by the value of ICommandListVK::CommandBufferType enum
-    std::array<vk::UniqueCommandBuffer, command_buffers_count> m_vk_unique_command_buffers;
-    std::array<bool, command_buffers_count>                    m_vk_command_buffer_primary_flags;
-    std::array<bool, command_buffers_count>                    m_vk_command_buffer_encoding_flags;
-    std::optional<vk::CommandBufferInheritanceInfo>            m_vk_secondary_render_buffer_inherit_info_opt;
+    std::array<vk::UniqueCommandBuffer, command_buffers_count>    m_vk_unique_command_buffers;
+    std::array<bool, command_buffers_count>                       m_vk_command_buffer_primary_flags;
+    std::array<bool, command_buffers_count>                       m_vk_command_buffer_encoding_flags;
+    std::array<vk::CommandBufferBeginInfo, command_buffers_count> m_vk_command_buffer_begin_infos;
+    std::optional<vk::CommandBufferInheritanceInfo>               m_vk_secondary_render_buffer_inherit_info_opt;
 };
 
 } // namespace Methane::Graphics

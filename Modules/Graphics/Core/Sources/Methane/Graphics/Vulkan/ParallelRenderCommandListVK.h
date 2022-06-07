@@ -44,6 +44,7 @@ public:
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers) override;
     void SetEndingResourceBarriers(const Resource::Barriers& resource_barriers) override;
+    void SetParallelCommandListsCount(uint32_t count) override;
 
     // CommandList interface
     void Commit() override;
@@ -62,8 +63,11 @@ public:
 private:
     using SyncCommandListVK = CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>;
 
-    RenderCommandListVK m_beginning_command_list;
-    SyncCommandListVK   m_ending_command_list;
+    RenderCommandListVK              m_beginning_command_list;
+    vk::CommandBufferInheritanceInfo m_vk_ending_inheritance_info;
+    SyncCommandListVK                m_ending_command_list;
+    std::vector<vk::CommandBuffer> m_vk_parallel_sync_cmd_buffers;
+    std::vector<vk::CommandBuffer> m_vk_parallel_pass_cmd_buffers;
 };
 
 } // namespace Methane::Graphics
