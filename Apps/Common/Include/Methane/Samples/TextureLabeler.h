@@ -107,17 +107,17 @@ private:
             : SliceDesc(slice_desc)
         {}
 
-        Ptr<gfx::RenderPattern>     render_pattern_ptr;
         Ptr<gfx::RenderPass>        render_pass_ptr;
         Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
         Ptr<gui::Text>              label_text_ptr;
-        Ptr<gfx::ScreenQuad>        screen_quad_ptr;
+        Ptr<gfx::ScreenQuad>        bg_quad_ptr;
     };
 
     gui::Context&               m_gui_context;
     gfx::Texture&               m_rt_texture;
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
+    Ptr<gfx::RenderPattern>     m_texture_face_render_pattern_ptr;
     Ptr<gfx::ResourceBarriers>  m_ending_resource_barriers_ptr;
     Ptr<gfx::RenderPattern>     m_ending_render_pattern_ptr;
     Ptr<gfx::RenderPass>        m_ending_render_pass_ptr;

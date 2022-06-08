@@ -67,7 +67,11 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
             Font::ConvertUtf8To32(settings.text),
             settings.rect,
             settings.layout,
-            settings.color
+            settings.color,
+            settings.incremental_update,
+            settings.adjust_vertical_content_offset,
+            settings.mesh_buffers_reservation_multiplier,
+            settings.state_name
         }
     )
 {
@@ -85,15 +89,21 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     , m_font_ptr(font.shared_from_this())
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
+
     m_font_ptr->Connect(*this);
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
 
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
-    static const std::string s_state_name = "Text Render State";
-    m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(s_state_name));
-    if (!m_render_state_ptr)
+    m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
+    if (m_render_state_ptr)
+    {
+        META_CHECK_ARG_EQUAL_DESCR(m_render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+                                   "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name, m_settings.state_name);
+    }
+    else
     {
         gfx::RenderState::Settings state_settings;
         state_settings.program_ptr = gfx::Program::Create(GetUIContext().GetRenderContext(),
@@ -133,7 +143,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
         m_render_state_ptr = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
-        m_render_state_ptr->SetName(s_state_name);
+        m_render_state_ptr->SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(*m_render_state_ptr);
     }

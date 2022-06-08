@@ -86,25 +86,31 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     using namespace magic_enum::bitwise_operators;
     META_CHECK_ARG_TRUE(magic_enum::enum_contains(rt_texture_settings.usage_mask & gfx::Texture::Usage::RenderTarget));
 
-    gfx::RenderPattern::Settings render_pattern_settings
-    {
-        gfx::RenderPattern::ColorAttachments
+    m_texture_face_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(),
+        gfx::RenderPattern::Settings
         {
-            gfx::RenderPattern::ColorAttachment(
-                0U, rt_texture_settings.pixel_format, 1U,
-                gfx::RenderPattern::ColorAttachment::LoadAction::Clear,
-                gfx::RenderPattern::ColorAttachment::StoreAction::Store)
-        },
-        std::nullopt, // No depth attachment
-        std::nullopt, // No stencil attachment
-        gfx::RenderPass::Access::ShaderResources |
-        gfx::RenderPass::Access::Samplers,
-        false // intermediate render pass
-    };
+            gfx::RenderPattern::ColorAttachments
+            {
+                gfx::RenderPattern::ColorAttachment(
+                    0U, rt_texture_settings.pixel_format, 1U,
+                    gfx::RenderPattern::ColorAttachment::LoadAction::Clear,
+                    gfx::RenderPattern::ColorAttachment::StoreAction::Store,
+                    settings.border_color)
+            },
+            std::nullopt, // No depth attachment
+            std::nullopt, // No stencil attachment
+            gfx::RenderPass::Access::ShaderResources |
+            gfx::RenderPass::Access::Samplers,
+            false // intermediate render pass
+        });
+
+    const std::string& rt_texture_name = m_rt_texture.GetName();
+    m_texture_face_render_pattern_ptr->SetName(fmt::format("Texture '{}' Face Render Pattern", rt_texture_name));
 
     gui::Text::SettingsUtf32 slice_text_settings
     {
-        {}, {},
+        "",
+        {},
         gui::UnitRect
         {
             gui::Units::Pixels,
@@ -118,10 +124,10 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             gui::Text::VerticalAlignment::Center,
         },
         settings.text_color,
-        false
+        false,
     };
+    slice_text_settings.SetStateName(fmt::format("Texture '{}' Face Label Text", rt_texture_name));
 
-    const std::string& rt_texture_name = m_rt_texture.GetName();
     Refs<gfx::CommandList> slice_render_cmd_list_refs;
     for(Data::Size array_index = 0U; array_index < sub_res_count.GetArraySize(); ++array_index)
     {
@@ -130,36 +136,33 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            render_pattern_settings.color_attachments[0].clear_color = settings.border_width_px ? settings.border_color : slice.color;
-            slice.render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), render_pattern_settings);
-            slice.render_pass_ptr    = gfx::RenderPass::Create(*slice.render_pattern_ptr, {
+            slice.render_pass_ptr = gfx::RenderPass::Create(*m_texture_face_render_pattern_ptr, {
                 { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
+            slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
 
-            slice_text_settings.name = slice.label + " Slice Label";
-            slice_text_settings.text = gui::Font::ConvertUtf8To32(slice.label);
             slice.render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
             slice.render_cmd_list_ptr->SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
             slice_render_cmd_list_refs.emplace_back(*slice.render_cmd_list_ptr);
 
-            slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, *slice.render_pattern_ptr, m_font, slice_text_settings);
+            slice_text_settings.name = fmt::format("Texture '{}' Slice {}:{} Label Text", rt_texture_name, array_index, depth_index);
+            slice_text_settings.text = gui::Font::ConvertUtf8To32(slice.label);
+
+            slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, *m_texture_face_render_pattern_ptr, m_font, slice_text_settings);
             slice.label_text_ptr->Update(rt_texture_settings.dimensions.AsRectSize());
 
-            if (settings.border_width_px)
-            {
-                slice.screen_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), *slice.render_pattern_ptr,
-                    gfx::ScreenQuad::Settings
-                    {
-                        fmt::format("Texture '{}' Slice Quad {}:{}", rt_texture_name, array_index, depth_index),
-                        gfx::FrameRect(settings.border_width_px, settings.border_width_px,
-                                       rt_texture_settings.dimensions.GetWidth()  - 2 * settings.border_width_px,
-                                       rt_texture_settings.dimensions.GetHeight() - 2 * settings.border_width_px),
-                        false,
-                        slice.color,
-                        gfx::ScreenQuad::TextureMode::Disabled
-                    });
-            }
+            slice.bg_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), *m_texture_face_render_pattern_ptr,
+                gfx::ScreenQuad::Settings
+                {
+                    fmt::format("Texture '{}' Slice BG Quad {}:{}", rt_texture_name, array_index, depth_index),
+                    gfx::FrameRect(settings.border_width_px, settings.border_width_px,
+                                   rt_texture_settings.dimensions.GetWidth()  - 2 * settings.border_width_px,
+                                   rt_texture_settings.dimensions.GetHeight() - 2 * settings.border_width_px),
+                    false,
+                    slice.color,
+                    gfx::ScreenQuad::TextureMode::Disabled
+                });
         }
     }
 
@@ -186,12 +189,11 @@ void TextureLabeler::Render()
     for (size_t slice_index = 0U; slice_index < m_slices.size(); ++slice_index)
     {
         const Slice& slice = m_slices[slice_index];
+        META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);
 
-        if (slice.screen_quad_ptr)
-            slice.screen_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
-
+        slice.bg_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
         slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
         slice.render_cmd_list_ptr->Commit();
     }
