@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: TypographyAppController.h
-Typography application controller.
+FILE: ParallelRenderingAppController.h
+Parallel Rendering application controller.
 
 ******************************************************************************/
 
@@ -29,26 +29,24 @@ Typography application controller.
 namespace Methane::Tutorials
 {
 
-class TypographyApp;
+class ParallelRenderingApp;
 
-enum class TypographyAppAction
+enum class ParallelRenderingAppAction
 {
     None,
-    SwitchTextWrapMode,
-    SwitchTextHorizontalAlignment,
-    SwitchTextVerticalAlignment,
-    SwitchIncrementalTextUpdate,
-    SwitchTypingDirection,
-    SpeedupTyping,
-    SlowdownTyping
+    SwitchParallelRendering,
+    IncreaseCubesGridSize,
+    DecreaseCubesGridSize,
+    IncreaseRenderThreadsCount,
+    DecreaseRenderThreadsCount,
 };
 
-class TypographyAppController final
+class ParallelRenderingAppController final
     : public Platform::Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<TypographyAppAction>
+    , public Platform::Keyboard::ActionControllerBase<ParallelRenderingAppAction>
 {
 public:
-    TypographyAppController(TypographyApp& asteroids_app, const ActionByKeyboardState& action_by_keyboard_state);
+    ParallelRenderingAppController(ParallelRenderingApp& app, const ActionByKeyboardState& action_by_keyboard_state);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
@@ -56,12 +54,12 @@ public:
     
 protected:
     // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
-    void        OnKeyboardStateAction(TypographyAppAction action) override;
-    std::string GetKeyboardActionName(TypographyAppAction action) const override;
+    void        OnKeyboardKeyAction(ParallelRenderingAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    void        OnKeyboardStateAction(ParallelRenderingAppAction action) override;
+    std::string GetKeyboardActionName(ParallelRenderingAppAction action) const override;
 
 private:
-    TypographyApp& m_typography_app;
+    ParallelRenderingApp& m_app;
 };
 
 } // namespace Methane::Tutorials

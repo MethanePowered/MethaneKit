@@ -114,4 +114,4 @@ Platform::Input::IHelpProvider::HelpLines TypographyAppController::GetHelp() con
     return GetKeyboardHelp();
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Tutorials

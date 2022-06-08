@@ -42,6 +42,7 @@ struct ParallelRenderingFrame final : Graphics::AppFrame
 {
     gfx::InstancedMeshBufferBindings    cubes_array;
     Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
+    Ptr<gfx::RenderCommandList>         serial_render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
@@ -52,6 +53,18 @@ using UserInterfaceApp = UserInterface::App<ParallelRenderingFrame>;
 class ParallelRenderingApp final : public UserInterfaceApp // NOSONAR
 {
 public:
+    struct Settings
+    {
+        uint32_t cubes_grid_size            = 12U; // total_cubes_count = pow(cubes_grid_size, 3)
+        uint32_t render_thread_count        = std::thread::hardware_concurrency();
+        bool     parallel_rendering_enabled = true;
+
+        bool operator==(const Settings& other) const noexcept;
+
+        uint32_t GetTotalCubesCount() const noexcept;
+        uint32_t GetRenderThreadCount() const noexcept;
+    };
+
     ParallelRenderingApp();
     ~ParallelRenderingApp() override;
 
@@ -60,6 +73,12 @@ public:
     bool Resize(const gfx::FrameSize& frame_size, bool is_minimized) override;
     bool Update() override;
     bool Render() override;
+
+    // UserInterface::App overrides
+    std::string GetParametersString() override;
+
+    const Settings& GetSettings() const noexcept { return m_settings; }
+    void SetSettings(const Settings& settings);
 
 protected:
     // IContextCallback override
@@ -77,9 +96,12 @@ private:
     using CubeArrayParameters = std::vector<CubeParameters>;
     using MeshBuffers = gfx::MeshBuffers<hlslpp::Uniforms>;
 
-    CubeArrayParameters InitializeCubeArrayParameters(uint32_t cubes_count, float base_cube_scale);
+    CubeArrayParameters InitializeCubeArrayParameters();
     bool Animate(double elapsed_seconds, double delta_seconds);
+    void RenderCubesRange(gfx::RenderCommandList& remder_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
+                          uint32_t begin_instance_index, const uint32_t end_instance_index);
 
+    Settings              m_settings;
     gfx::Camera           m_camera;
     Ptr<gfx::RenderState> m_render_state_ptr;
     Ptr<gfx::Texture>     m_texture_array_ptr;

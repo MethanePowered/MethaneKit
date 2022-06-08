@@ -7,6 +7,8 @@ include(MethaneResources)
 set(SOURCES
     ParallelRenderingApp.h
     ParallelRenderingApp.cpp
+    ParallelRenderingAppController.h
+    ParallelRenderingAppController.cpp
     Shaders/ParallelRenderingUniforms.h
 )
 

@@ -22,6 +22,7 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 ******************************************************************************/
 
 #include "ParallelRenderingApp.h"
+#include "ParallelRenderingAppController.h"
 
 #include <Methane/Samples/TextureLabeler.h>
 #include <Methane/Samples/AppSettings.hpp>
@@ -54,8 +55,32 @@ struct CubeVertex
 
 static const gfx::Dimensions g_texture_size{ 320U, 320U };
 static const float           g_scene_scale  = 22.F;
-static const uint32_t        g_thread_count = std::thread::hardware_concurrency();
-static const uint32_t        g_cubes_count  = static_cast<uint32_t>(std::pow(8U, 3U));
+
+namespace pal = Methane::Platform;
+static const std::map<pal::Keyboard::State, ParallelRenderingAppAction> g_parallel_rendering_action_by_keyboard_state{
+    { { pal::Keyboard::Key::P            }, ParallelRenderingAppAction::SwitchParallelRendering },
+    { { pal::Keyboard::Key::Equal        }, ParallelRenderingAppAction::IncreaseCubesGridSize },
+    { { pal::Keyboard::Key::Minus        }, ParallelRenderingAppAction::DecreaseCubesGridSize },
+    { { pal::Keyboard::Key::RightBracket }, ParallelRenderingAppAction::IncreaseRenderThreadsCount },
+    { { pal::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
+};
+
+bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
+{
+    return std::tie(cubes_grid_size, render_thread_count, parallel_rendering_enabled) ==
+           std::tie(other.cubes_grid_size, other.render_thread_count, other.parallel_rendering_enabled);
+}
+
+uint32_t ParallelRenderingApp::Settings::GetTotalCubesCount() const noexcept
+{
+    return static_cast<uint32_t>(std::pow(cubes_grid_size, 3U));
+}
+
+uint32_t ParallelRenderingApp::Settings::GetRenderThreadCount() const noexcept
+{
+    return parallel_rendering_enabled ? render_thread_count : 1U;
+}
+
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
@@ -65,8 +90,20 @@ ParallelRenderingApp::ParallelRenderingApp()
 {
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
 
+    AddInputControllers({
+        std::make_shared<ParallelRenderingAppController>(*this, g_parallel_rendering_action_by_keyboard_state)
+    });
+
+    const std::string options_group = "Parallel Rendering Options";
+    add_option_group(options_group);
+    add_option("-p,--parallel-render", m_settings.parallel_rendering_enabled, "enable parallel rendering")->group(options_group);
+    add_option("-g,--cubes-grid-size", m_settings.cubes_grid_size,            "cubes grid size")->group(options_group);
+    add_option("-t,--threads-count",   m_settings.render_thread_count,        "render threads count")->group(options_group);
+
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ParallelRenderingApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+
+    ShowParameters();
 }
 
 ParallelRenderingApp::~ParallelRenderingApp()
@@ -117,7 +154,8 @@ void ParallelRenderingApp::Init()
     m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
-    const gfx::Mesh::Subsets mesh_subsets(g_cubes_count,
+    const uint32_t cubes_count = m_settings.GetTotalCubesCount();
+    const gfx::Mesh::Subsets mesh_subsets(cubes_count,
                                           gfx::Mesh::Subset(gfx::Mesh::Type::Box,
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetVertexCount()),
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetIndexCount()),
@@ -127,7 +165,7 @@ void ParallelRenderingApp::Init()
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
     m_texture_array_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Image(g_texture_size, g_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+            gfx::Texture::Settings::Image(g_texture_size, m_settings.GetRenderThreadCount(), gfx::PixelFormat::RGBA8Unorm, false,
                                           gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
     m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
@@ -150,7 +188,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_array.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.cubes_array.program_bindings_per_instance.resize(g_cubes_count);
+        frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = gfx::ProgramBindings::Create(render_state_settings.program_ptr, {
             { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
             { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
@@ -158,7 +196,7 @@ void ParallelRenderingApp::Init()
         }, frame.index);
         frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
-        for(uint32_t i = 1U; i < g_cubes_count; ++i)
+        for(uint32_t i = 1U; i < cubes_count; ++i)
         {
             frame.cubes_array.program_bindings_per_instance[i] = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
                 { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(i), uniform_data_size } } }
@@ -166,11 +204,21 @@ void ParallelRenderingApp::Init()
             frame.cubes_array.program_bindings_per_instance[i]->SetName(fmt::format("Cube {} Bindings {}", i, frame.index));
         }
 
-        // Create parallel command list for rendering to the screen pass
-        frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-        frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(g_thread_count);
-        frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
-        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
+        if (m_settings.parallel_rendering_enabled)
+        {
+            // Create parallel command list for rendering to the screen pass
+            frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(m_settings.GetRenderThreadCount());
+            frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
+            frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
+        }
+        else
+        {
+            // Create serial command list for rendering to the screen pass
+            frame.serial_render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.serial_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
+            frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.serial_render_cmd_list_ptr }, frame.index);
+        }
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
@@ -186,7 +234,7 @@ void ParallelRenderingApp::Init()
     cube_texture_labeler.Render();
 
     // Initialize cube parameters
-    m_cube_array_parameters = InitializeCubeArrayParameters(g_cubes_count, g_scene_scale);
+    m_cube_array_parameters = InitializeCubeArrayParameters();
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
     m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();   
@@ -194,20 +242,21 @@ void ParallelRenderingApp::Init()
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
-ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters(uint32_t cubes_count, float scene_scale)
+ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters()
 {
-    const size_t cbrt_count        = static_cast<size_t>(std::floor(std::cbrt(float(cubes_count))));
-    const size_t cbrt_count_sqr  = cbrt_count * cbrt_count;
-    const float  cbrt_count_half = static_cast<float>(cbrt_count - 1) / 2.F;
+    const uint32_t cubes_count     = m_settings.GetTotalCubesCount();
+    const size_t   cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(static_cast<float>(cubes_count))));
+    const size_t   cbrt_count_sqr  = cbrt_count * cbrt_count;
+    const float    cbrt_count_half = static_cast<float>(cbrt_count - 1) / 2.F;
 
-    const float ts = scene_scale / cbrt_count;
+    const float ts = g_scene_scale / cbrt_count;
     const float median_cube_scale = ts / 2.F;
     const float cube_scale_delta = median_cube_scale / 3.F;
 
     std::mt19937 rng(1234U);
     std::uniform_real_distribution<float>   cube_scale_distribution(median_cube_scale - cube_scale_delta, median_cube_scale + cube_scale_delta);
     std::uniform_real_distribution<double>  rotation_speed_distribution(-0.8F, 0.8F);
-    std::uniform_int_distribution<uint32_t> thread_index_distribution(0U, g_thread_count);
+    std::uniform_int_distribution<uint32_t> thread_index_distribution(0U, m_settings.GetRenderThreadCount());
 
     CubeArrayParameters cube_array_parameters(cubes_count);
 
@@ -240,7 +289,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
               { return left.thread_index < right.thread_index; });
 
     // Fixup even distribution of cubes between threads
-    const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / g_thread_count));
+    const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.GetRenderThreadCount()));
     for (uint32_t cube_index = 0U; cube_index < cubes_count; ++cube_index)
     {
         cube_array_parameters[cube_index].thread_index = cube_index / cubes_count_per_thread;
@@ -309,61 +358,105 @@ bool ParallelRenderingApp::Render()
     frame.cubes_array.uniforms_buffer_ptr->SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-    frame.parallel_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-    frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
+    if (m_settings.parallel_rendering_enabled)
+    {
+        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Parallel Cubes Rendering");
+        frame.parallel_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
+        frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
-    const Refs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
-    const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
+        const Refs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
+        const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
 
-    // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
-    tf::Taskflow render_task_flow;
-    render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
-        [this, &frame, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
-        {
-            gfx::RenderCommandList& render_cmd_list = render_cmd_lists[cmd_list_index].get();
-
-            // Resource barriers are not set for vertex and index buffers, since it works with automatic state propagation from Common state
-            render_cmd_list.SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers(), false);
-            render_cmd_list.SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer(), false);
-
-            const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
-            const uint32_t end_instance_index   = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
-            for (uint32_t instance_index = begin_instance_index; instance_index < end_instance_index; ++instance_index)
+        // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
+        tf::Taskflow render_task_flow;
+        render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
+            [this, &frame, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
             {
-                const Ptr<gfx::ProgramBindings>& program_bindings_ptr = frame.cubes_array.program_bindings_per_instance[instance_index];
-                META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
-
-                // Constant argument bindings are applied once per command list, mutables are applied always
-                // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
-                using namespace magic_enum::bitwise_operators;
-                gfx::ProgramBindings::ApplyBehavior bindings_apply_behavior = gfx::ProgramBindings::ApplyBehavior::ConstantOnce;
-                if (instance_index == begin_instance_index)
-                    bindings_apply_behavior |= gfx::ProgramBindings::ApplyBehavior::RetainResources;
-
-                render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
-                render_cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+                const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
+                const uint32_t end_instance_index = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
+                RenderCubesRange(render_cmd_lists[cmd_list_index].get(), frame.cubes_array.program_bindings_per_instance, begin_instance_index, end_instance_index);
             }
-        }
-    );
+        );
 
-    // Execute rendering in multiple threads
-    GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
+        // Execute rendering in multiple threads
+        GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
 #else
-    // The same parallel rendering is done inside of MeshBuffers::DrawParallel helper function
-    m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
+        // The same parallel rendering is done inside of MeshBuffers::DrawParallel helper function
+        m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
 #endif
 
-    RenderOverlay(frame.parallel_render_cmd_list_ptr->GetParallelCommandLists().back().get());
+        RenderOverlay(frame.parallel_render_cmd_list_ptr->GetParallelCommandLists().back().get());
+        frame.parallel_render_cmd_list_ptr->Commit();
+    }
+    else
+    {
+        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Serial Cubes Rendering");
+        frame.serial_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
+        frame.serial_render_cmd_list_ptr->SetViewState(GetViewState());
 
-    // Commit and execute command list on render queue
-    frame.parallel_render_cmd_list_ptr->Commit();
+#ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
+        RenderCubesRange(*frame.serial_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
+#else
+        m_cube_array_buffers_ptr->Draw(*frame.serial_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
+#endif
+
+        RenderOverlay(*frame.serial_render_cmd_list_ptr);
+        frame.serial_render_cmd_list_ptr->Commit();
+    }
+
+    // Execute command lists on render queue and present frame to screen
     render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
-
-    // Present frame to screen
     GetRenderContext().Present();
     return true;
+}
+
+void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
+                                            uint32_t begin_instance_index, const uint32_t end_instance_index)
+{
+    // Resource barriers are not set for vertex and index buffers, since it works with automatic state propagation from Common state
+    render_cmd_list.SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers(), false);
+    render_cmd_list.SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer(), false);
+
+    for (uint32_t instance_index = begin_instance_index; instance_index < end_instance_index; ++instance_index)
+    {
+        const Ptr<gfx::ProgramBindings>& program_bindings_ptr = program_bindings_per_instance[instance_index];
+        META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
+
+        // Constant argument bindings are applied once per command list, mutables are applied always
+        // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
+        using namespace magic_enum::bitwise_operators;
+        gfx::ProgramBindings::ApplyBehavior bindings_apply_behavior = gfx::ProgramBindings::ApplyBehavior::ConstantOnce;
+        if (instance_index == begin_instance_index)
+            bindings_apply_behavior |= gfx::ProgramBindings::ApplyBehavior::RetainResources;
+
+        render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
+        render_cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+    }
+}
+
+std::string ParallelRenderingApp::GetParametersString()
+{
+    std::stringstream ss;
+    ss << "Parallel Rendering parameters:"
+        << std::endl << "  - parallel rendering:   " << (m_settings.parallel_rendering_enabled ? "ON" : "OFF")
+        << std::endl << "  - render threads count: " << m_settings.GetRenderThreadCount()
+        << std::endl << "  - cubes grid size:      " << m_settings.cubes_grid_size
+        << std::endl << "  - total cubes count:    " << m_settings.GetTotalCubesCount()
+        << std::endl << "  - texture array size:   " << g_texture_size.GetWidth() <<
+                                               " x " << g_texture_size.GetHeight() <<
+                                                " [" << m_settings.GetRenderThreadCount() << "]";
+
+    return ss.str();
+}
+
+void ParallelRenderingApp::SetSettings(const Settings& settings)
+{
+    if (m_settings == settings)
+        return;
+
+    m_settings = settings;
+    GetRenderContext().Reset();
 }
 
 void ParallelRenderingApp::OnContextReleased(gfx::Context& context)
