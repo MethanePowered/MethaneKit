@@ -169,7 +169,7 @@ Ptr<Texture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, c
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    Ptr<Texture> texture_ptr = Texture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
@@ -219,7 +219,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue
     // Load face images to cube texture
     using namespace magic_enum::bitwise_operators;
     const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    Ptr<Texture> texture_ptr = Texture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources, target_cmd_queue);
 

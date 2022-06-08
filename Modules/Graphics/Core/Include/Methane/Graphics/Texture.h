@@ -74,8 +74,8 @@ struct Texture : virtual Resource // NOSONAR
         uint32_t       array_length   = 1U;
         bool           mipmapped      = false;
 
-        [[nodiscard]] static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
-        [[nodiscard]] static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage);
         [[nodiscard]] static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
         [[nodiscard]] static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
     };
@@ -86,8 +86,8 @@ struct Texture : virtual Resource // NOSONAR
     [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings);
     [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index);
     [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context);
-    [[nodiscard]] static Ptr<Texture> CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped);
-    [[nodiscard]] static Ptr<Texture> CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped);
+    [[nodiscard]] static Ptr<Texture> CreateImage(const Context& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
+    [[nodiscard]] static Ptr<Texture> CreateCube(const Context& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
 
     // Texture interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

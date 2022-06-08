@@ -44,36 +44,36 @@ Texture& Texture::Location::GetTexture() const
     return *m_texture_ptr;
 }
 
-Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
+Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
 {
     META_FUNCTION_TASK();
 
     Settings settings;
     if (dimensions.GetHeight() == 1)
-        settings.dimension_type = array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray;
+        settings.dimension_type = array_length_opt ? DimensionType::Tex1DArray : DimensionType::Tex1D;
     else if (dimensions.GetDepth() == 1)
-        settings.dimension_type = array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray;
+        settings.dimension_type = array_length_opt ? DimensionType::Tex2DArray : DimensionType::Tex2D;
     else
         settings.dimension_type = DimensionType::Tex3D;
-    settings.type           = Type::Texture;
-    settings.dimensions     = dimensions;
-    settings.array_length   = array_length;
-    settings.pixel_format   = pixel_format;
-    settings.usage_mask     = usage;
-    settings.mipmapped      = mipmapped;
+    settings.type         = Type::Texture;
+    settings.dimensions   = dimensions;
+    settings.array_length = array_length_opt.value_or(1U);
+    settings.pixel_format = pixel_format;
+    settings.usage_mask   = usage;
+    settings.mipmapped    = mipmapped;
 
     return settings;
 }
 
-Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage)
+Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage)
 {
     META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
-    settings.dimension_type = array_length == 1 ? DimensionType::Cube : DimensionType::CubeArray;
+    settings.dimension_type = array_length_opt ? DimensionType::CubeArray : DimensionType::Cube;
     settings.dimensions     = Dimensions(dimension_size, dimension_size, 6U);
-    settings.array_length   = array_length;
+    settings.array_length   = array_length_opt.value_or(1U);
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;

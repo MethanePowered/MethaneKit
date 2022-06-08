@@ -284,17 +284,17 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& render_conte
     return std::make_shared<DepthStencilTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& render_context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateImage(const Context& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length, pixel_format, mipmapped, Usage::ShaderRead);
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, ImageTokenDX());
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& render_context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateCube(const Context& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length, pixel_format, mipmapped, Usage::ShaderRead);
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, ImageTokenDX());
 }
 

@@ -653,7 +653,7 @@ gfx::Texture& Font::GetAtlasTexture(gfx::RenderContext& context)
 Font::AtlasTexture Font::CreateAtlasTexture(const gfx::RenderContext& render_context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
-    const Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), 1, gfx::PixelFormat::R8Unorm, false);
+    const Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), std::nullopt, gfx::PixelFormat::R8Unorm, false);
     atlas_texture_ptr->SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {
