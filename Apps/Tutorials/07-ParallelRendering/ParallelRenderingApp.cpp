@@ -188,6 +188,7 @@ void ParallelRenderingApp::Init()
     // Create frame buffer resources
     const Data::Size uniforms_data_size = m_cube_array_buffers_ptr->GetUniformsBufferSize();
     const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
+    tf::Taskflow program_bindings_task_flow;
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
@@ -203,13 +204,18 @@ void ParallelRenderingApp::Init()
         }, frame.index);
         frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
-        for(uint32_t i = 1U; i < cubes_count; ++i)
-        {
-            frame.cubes_array.program_bindings_per_instance[i] = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
-                { { gfx::Shader::Type::All, "g_uniforms" }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(i), uniform_data_size } } }
-            }, frame.index);
-            frame.cubes_array.program_bindings_per_instance[i]->SetName(fmt::format("Cube {} Bindings {}", i, frame.index));
-        }
+        program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
+            [this, &frame, uniform_data_size](const uint32_t cube_index)
+            {
+                Ptr<gfx::ProgramBindings> cube_program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
+                        {
+                          { gfx::Shader::Type::All, "g_uniforms" },
+                          { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
+                        }
+                    }, frame.index);
+                cube_program_bindings_ptr->SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
+                frame.cubes_array.program_bindings_per_instance[cube_index] = cube_program_bindings_ptr;
+            });
 
         if (m_settings.parallel_rendering_enabled)
         {
@@ -227,6 +233,9 @@ void ParallelRenderingApp::Init()
             frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.serial_render_cmd_list_ptr }, frame.index);
         }
     }
+    
+    // Execute parallel program bindings copy initialization for all cubes
+    GetRenderContext().GetParallelExecutor().run(program_bindings_task_flow).get();
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
     TextureLabeler::Settings texture_labeler_settings;
@@ -269,40 +278,49 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
     CubeArrayParameters cube_array_parameters(cubes_count);
 
     // Position all cubes in a cube grid and assign to random threads
-    for (uint32_t cube_index = 0U; cube_index < cubes_count; ++cube_index)
-    {
-        const float tx = static_cast<float>(cube_index % cbrt_count) - cbrt_count_half;
-        const float ty = static_cast<float>(cube_index % cbrt_count_sqr / cbrt_count) - cbrt_count_half;
-        const float tz = static_cast<float>(cube_index / cbrt_count_sqr) - cbrt_count_half;
-        const float cs = cube_scale_distribution(rng);
+    tf::Taskflow task_flow;
+    tf::Task init_task = task_flow.for_each_index(0U, cubes_count, 1U,
+        [&rng, &cube_array_parameters, &cube_scale_distribution, &rotation_speed_distribution, &thread_index_distribution,
+         ts, cbrt_count, cbrt_count_sqr, cbrt_count_half](const uint32_t cube_index)
+        {
+            const float tx = static_cast<float>(cube_index % cbrt_count) - cbrt_count_half;
+            const float ty = static_cast<float>(cube_index % cbrt_count_sqr / cbrt_count) - cbrt_count_half;
+            const float tz = static_cast<float>(cube_index / cbrt_count_sqr) - cbrt_count_half;
+            const float cs = cube_scale_distribution(rng);
 
-        const hlslpp::float4x4 scale_matrix       = hlslpp::float4x4::scale(cs);
-        const hlslpp::float4x4 translation_matrix = hlslpp::float4x4::translation(tx * ts, ty * ts, tz * ts);
+            const hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(cs);
+            const hlslpp::float4x4 translation_matrix = hlslpp::float4x4::translation(tx * ts, ty * ts, tz * ts);
 
-        CubeParameters& cube_params = cube_array_parameters[cube_index];
-        cube_params.model_matrix = hlslpp::mul(scale_matrix, translation_matrix);
-        cube_params.rotation_speed_y = rotation_speed_distribution(rng);
-        cube_params.rotation_speed_z = rotation_speed_distribution(rng);
+            CubeParameters& cube_params = cube_array_parameters[cube_index];
+            cube_params.model_matrix = hlslpp::mul(scale_matrix, translation_matrix);
+            cube_params.rotation_speed_y = rotation_speed_distribution(rng);
+            cube_params.rotation_speed_z = rotation_speed_distribution(rng);
 
-        // Distribute cubes randomly between threads
-        cube_params.thread_index = thread_index_distribution(rng);
-    };
+            // Distribute cubes randomly between threads
+            cube_params.thread_index = thread_index_distribution(rng);
+        });
 
     // Sort cubes parameters by thread index
     // to make sure that actual cubes distrubution by render threads will match thread_index in parameters
     // NOTE-1: thread index is displayed on cube faces as text label using an element of Texture 2D Array.
     // NOTE-2: Sorting also improves rendering performance because it ensures using one texture for all cubes per thread.
-    std::sort(cube_array_parameters.begin(), cube_array_parameters.end(),
-              [](const CubeParameters& left, const CubeParameters& right)
-              { return left.thread_index < right.thread_index; });
+    tf::Task sort_task = task_flow.sort(cube_array_parameters.begin(), cube_array_parameters.end(),
+                   [](const CubeParameters& left, const CubeParameters& right)
+                   { return left.thread_index < right.thread_index; });
 
     // Fixup even distribution of cubes between threads
     const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.GetRenderThreadCount()));
-    for (uint32_t cube_index = 0U; cube_index < cubes_count; ++cube_index)
-    {
-        cube_array_parameters[cube_index].thread_index = cube_index / cubes_count_per_thread;
-    }
+    tf::Task even_task = task_flow.for_each_index(0U, cubes_count, 1U,
+        [&cube_array_parameters, cubes_count_per_thread](const uint32_t cube_index)
+        {
+            cube_array_parameters[cube_index].thread_index = cube_index / cubes_count_per_thread;
+        });
 
+    init_task.precede(sort_task);
+    sort_task.precede(even_task);
+
+    // Execute parallel initialization of cube array parameters
+    GetRenderContext().GetParallelExecutor().run(task_flow).get();
     return cube_array_parameters;
 }
 

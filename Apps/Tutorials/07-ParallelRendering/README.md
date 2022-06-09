@@ -22,8 +22,8 @@ Tutorial demonstrates the following techniques:
     all cube instance parameters at once and binding array elements in that buffer to the particular
     cube instance draws with byte offset in buffer memory.
   - Binding faces of the texture 2D array to the cube instances to display rendering thread number as text on cube faces.
-  - Randomly distributing cubes between render threads and rendering them either serially in main thread
-    using single `RenderCommandList` or in parallel using `ParallelRenderCommandList` all to the screen render pass.
+  - Using [TaskFlow](https://github.com/taskflow/taskflow) library for task-based parallelism and parallel for loops.
+  - Randomly distributing cubes between render threads and rendering them in parallel using `ParallelRenderCommandList` all to the screen render pass.
   - Use Methane instrumentation to profile application execution on CPU and GPU 
     using [Tracy](https://github.com/wolfpld/tracy) or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
 
