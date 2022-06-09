@@ -24,6 +24,8 @@ Tutorial demonstrates the following techniques:
   - Binding faces of the texture 2D array to the cube instances to display rendering thread number as text on cube faces.
   - Randomly distributing cubes between render threads and rendering them either serially in main thread
     using single `RenderCommandList` or in parallel using `ParallelRenderCommandList` all to the screen render pass.
+  - Use Methane instrumentation to profile application execution on CPU and GPU 
+    using [Tracy](https://github.com/wolfpld/tracy) or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
 
 ## Application Controller
 

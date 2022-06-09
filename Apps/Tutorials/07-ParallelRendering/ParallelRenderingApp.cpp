@@ -28,6 +28,7 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <Methane/Samples/AppSettings.hpp>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
+#include <Methane/Instrumentation.h>
 
 #include <taskflow/taskflow.hpp>
 #include <magic_enum.hpp>
@@ -67,17 +68,20 @@ static const std::map<pal::Keyboard::State, ParallelRenderingAppAction> g_parall
 
 bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
 {
+    META_FUNCTION_TASK();
     return std::tie(cubes_grid_size, render_thread_count, parallel_rendering_enabled) ==
            std::tie(other.cubes_grid_size, other.render_thread_count, other.parallel_rendering_enabled);
 }
 
 uint32_t ParallelRenderingApp::Settings::GetTotalCubesCount() const noexcept
 {
+    META_FUNCTION_TASK();
     return static_cast<uint32_t>(std::pow(cubes_grid_size, 3U));
 }
 
 uint32_t ParallelRenderingApp::Settings::GetRenderThreadCount() const noexcept
 {
+    META_FUNCTION_TASK();
     return parallel_rendering_enabled ? render_thread_count : 1U;
 }
 
@@ -88,6 +92,7 @@ ParallelRenderingApp::ParallelRenderingApp()
         { HeadsUpDisplayMode::WindowTitle },
         "Methane tutorial of parallel rendering")
 {
+    META_FUNCTION_TASK();
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
 
     AddInputControllers({
@@ -108,12 +113,14 @@ ParallelRenderingApp::ParallelRenderingApp()
 
 ParallelRenderingApp::~ParallelRenderingApp()
 {
+    META_FUNCTION_TASK();
     // Wait for GPU rendering is completed to release resources
     WaitForRenderComplete();
 }
 
 void ParallelRenderingApp::Init()
 {
+    META_FUNCTION_TASK();
     UserInterfaceApp::Init();
 
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
@@ -244,6 +251,7 @@ void ParallelRenderingApp::Init()
 
 ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters()
 {
+    META_FUNCTION_TASK();
     const uint32_t cubes_count     = m_settings.GetTotalCubesCount();
     const size_t   cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(static_cast<float>(cubes_count))));
     const size_t   cbrt_count_sqr  = cbrt_count * cbrt_count;
@@ -300,6 +308,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
 
 bool ParallelRenderingApp::Animate(double, double delta_seconds)
 {
+    META_FUNCTION_TASK();
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 16.0));
 
     const double delta_angle_rad = delta_seconds * gfx::ConstDouble::Pi;
@@ -318,6 +327,7 @@ bool ParallelRenderingApp::Animate(double, double delta_seconds)
 
 bool ParallelRenderingApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 {
+    META_FUNCTION_TASK();
     // Resize screen color and depth textures
     if (!UserInterfaceApp::Resize(frame_size, is_minimized))
         return false;
@@ -328,6 +338,7 @@ bool ParallelRenderingApp::Resize(const gfx::FrameSize& frame_size, bool is_mini
 
 bool ParallelRenderingApp::Update()
 {
+    META_FUNCTION_TASK();
     if (!UserInterfaceApp::Update())
         return false;
 
@@ -349,6 +360,7 @@ bool ParallelRenderingApp::Update()
 
 bool ParallelRenderingApp::Render()
 {
+    META_FUNCTION_TASK();
     if (!UserInterfaceApp::Render())
         return false;
 
@@ -414,6 +426,7 @@ bool ParallelRenderingApp::Render()
 void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
                                             uint32_t begin_instance_index, const uint32_t end_instance_index)
 {
+    META_FUNCTION_TASK();
     // Resource barriers are not set for vertex and index buffers, since it works with automatic state propagation from Common state
     render_cmd_list.SetVertexBuffers(m_cube_array_buffers_ptr->GetVertexBuffers(), false);
     render_cmd_list.SetIndexBuffer(m_cube_array_buffers_ptr->GetIndexBuffer(), false);
@@ -437,7 +450,9 @@ void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_l
 
 std::string ParallelRenderingApp::GetParametersString()
 {
+    META_FUNCTION_TASK();
     std::stringstream ss;
+
     ss << "Parallel Rendering parameters:"
         << std::endl << "  - parallel rendering:   " << (m_settings.parallel_rendering_enabled ? "ON" : "OFF")
         << std::endl << "  - render threads count: " << m_settings.GetRenderThreadCount()
@@ -452,6 +467,7 @@ std::string ParallelRenderingApp::GetParametersString()
 
 void ParallelRenderingApp::SetSettings(const Settings& settings)
 {
+    META_FUNCTION_TASK();
     if (m_settings == settings)
         return;
 
@@ -461,6 +477,7 @@ void ParallelRenderingApp::SetSettings(const Settings& settings)
 
 void ParallelRenderingApp::OnContextReleased(gfx::Context& context)
 {
+    META_FUNCTION_TASK();
     m_cube_array_buffers_ptr.reset();
     m_texture_array_ptr.reset();
     m_texture_sampler_ptr.reset();

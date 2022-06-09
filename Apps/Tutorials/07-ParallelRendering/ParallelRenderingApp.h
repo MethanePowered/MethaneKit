@@ -108,7 +108,6 @@ private:
     Ptr<gfx::Sampler>     m_texture_sampler_ptr;
     Ptr<MeshBuffers>      m_cube_array_buffers_ptr;
     CubeArrayParameters   m_cube_array_parameters;
-
 };
 
 } // namespace Methane::Tutorials
