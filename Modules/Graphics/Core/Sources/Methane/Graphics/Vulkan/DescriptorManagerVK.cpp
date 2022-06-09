@@ -47,6 +47,7 @@ void DescriptorManagerVK::Release()
     META_FUNCTION_TASK();
     DescriptorManagerBase::Release();
 
+    std::scoped_lock lock_guard(m_descriptor_pool_mutex);
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
     for(vk::DescriptorPool& vk_pool : m_vk_used_pools)
     {
@@ -66,6 +67,7 @@ void DescriptorManagerVK::SetDescriptorPoolSizeRatio(vk::DescriptorType descript
 vk::DescriptorSet DescriptorManagerVK::AllocDescriptorSet(vk::DescriptorSetLayout layout)
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_descriptor_pool_mutex);
     if (!m_vk_current_pool)
         m_vk_current_pool = AcquireDescriptorPool();
 

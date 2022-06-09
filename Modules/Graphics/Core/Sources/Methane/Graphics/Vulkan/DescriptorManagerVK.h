@@ -25,11 +25,13 @@ Vulkan descriptor manager with descriptor sets allocator.
 
 #include <Methane/Graphics/DescriptorManagerBase.h>
 
+#include <Tracy.hpp>
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <map>
 #include <optional>
+#include <mutex>
 
 // Uncomment to enable deferred program bindings initialization
 #define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION 1
@@ -81,6 +83,7 @@ private:
     std::vector<vk::DescriptorPool>       m_vk_used_pools;
     std::vector<vk::DescriptorPool>       m_vk_free_pools;
     vk::DescriptorPool                    m_vk_current_pool;
+    TracyLockable(std::mutex,             m_descriptor_pool_mutex)
 };
 
 } // namespace Methane::Graphics
