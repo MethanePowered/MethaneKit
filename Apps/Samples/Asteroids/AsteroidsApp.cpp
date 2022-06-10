@@ -210,6 +210,7 @@ void AsteroidsApp::Init()
     asteroids_render_pattern_settings.color_attachments[0].load_action = gfx::RenderPass::Attachment::LoadAction::DontCare;
     asteroids_render_pattern_settings.depth_attachment->load_action    = gfx::RenderPass::Attachment::LoadAction::Clear;
     asteroids_render_pattern_settings.depth_attachment->store_action   = gfx::RenderPass::Attachment::StoreAction::Store;
+    asteroids_render_pattern_settings.is_final_pass = false;
     m_asteroids_render_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), asteroids_render_pattern_settings);
 
     // Modify settings of the final screen render-pass pattern so that color and depth attachments are reused from initial asteroids render pass
