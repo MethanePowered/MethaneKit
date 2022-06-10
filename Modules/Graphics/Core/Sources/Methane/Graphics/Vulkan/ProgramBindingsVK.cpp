@@ -106,6 +106,7 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     m_vk_write_descriptor_sets.clear();
     m_vk_write_descriptor_sets.reserve(resource_locations.size());
 
+    uint32_t resource_index = 0;
     for(const Resource::Location& resource_location : resource_locations)
     {
         m_resource_locations_vk.emplace_back(resource_location, Resource::Usage::ShaderRead);
@@ -114,13 +115,15 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
         m_vk_write_descriptor_sets.emplace_back(
             *m_vk_descriptor_set_ptr,
             m_vk_binding_value,
-            resource_location.GetSubresourceIndex().GetArrayIndex(),
+            resource_index,
             1U,
             m_settings_vk.descriptor_type,
             resource_location_vk.GetNativeDescriptorImageInfoPtr(),
             resource_location_vk.GetNativeDescriptorBufferInfoPtr(),
             resource_location_vk.GetNativeBufferViewPtr()
         );
+
+        resource_index++;
     }
 
     // Descriptions are updated on GPU during context initialization complete
