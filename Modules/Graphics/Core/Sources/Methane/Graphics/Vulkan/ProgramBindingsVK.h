@@ -63,8 +63,7 @@ public:
         ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
         ArgumentBindingVK(const ArgumentBindingVK& other) = default;
 
-        const SettingsVK& GetSettingsVK() const noexcept                        { return m_settings_vk; }
-        const IResourceVK::LocationsVK& GetResourceLocationsVK() const noexcept { return m_resource_locations_vk; }
+        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
 
         void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
         void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
@@ -79,11 +78,13 @@ public:
         void UpdateDescriptorSetsOnGpu();
 
     private:
-        SettingsVK                          m_settings_vk;
-        IResourceVK::LocationsVK            m_resource_locations_vk;
-        const vk::DescriptorSet*            m_vk_descriptor_set_ptr = nullptr;
-        uint32_t                            m_vk_binding_value      = 0U;
-        std::vector<vk::WriteDescriptorSet> m_vk_write_descriptor_sets;
+        SettingsVK                            m_settings_vk;
+        const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;
+        uint32_t                              m_vk_binding_value      = 0U;
+        vk::WriteDescriptorSet                m_vk_write_descriptor_set;
+        std::vector<vk::DescriptorImageInfo>  m_vk_descriptor_images;
+        std::vector<vk::DescriptorBufferInfo> m_vk_descriptor_buffers;
+        std::vector<vk::BufferView>           m_vk_buffer_views;
     };
 
     ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);

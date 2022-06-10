@@ -92,6 +92,20 @@ void ProgramBindingsVK::ArgumentBindingVK::MergeSettings(const ArgumentBindingBa
     m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
 }
 
+template<typename VkDescriptorType>
+bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_descriptors_count, const VkDescriptorType* descriptor_ptr)
+{
+    META_FUNCTION_TASK();
+    if (!descriptor_ptr)
+        return false;
+
+    if (descriptors.empty())
+        descriptors.reserve(total_descriptors_count);
+
+    descriptors.push_back(*descriptor_ptr);
+    return true;
+}
+
 bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
 {
     META_FUNCTION_TASK();
@@ -100,31 +114,33 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
 
-    m_resource_locations_vk.clear();
-    m_resource_locations_vk.reserve(resource_locations.size());
+    m_vk_descriptor_images.clear();
+    m_vk_descriptor_buffers.clear();
+    m_vk_buffer_views.clear();
 
-    m_vk_write_descriptor_sets.clear();
-    m_vk_write_descriptor_sets.reserve(resource_locations.size());
-
-    uint32_t resource_index = 0;
+    const size_t total_resources_count = resource_locations.size();
     for(const Resource::Location& resource_location : resource_locations)
     {
-        m_resource_locations_vk.emplace_back(resource_location, Resource::Usage::ShaderRead);
-        const ResourceLocationVK& resource_location_vk = m_resource_locations_vk.back();
+        const IResourceVK::LocationVK resource_location_vk(resource_location, Resource::Usage::ShaderRead);
 
-        m_vk_write_descriptor_sets.emplace_back(
-            *m_vk_descriptor_set_ptr,
-            m_vk_binding_value,
-            resource_index,
-            1U,
-            m_settings_vk.descriptor_type,
-            resource_location_vk.GetNativeDescriptorImageInfoPtr(),
-            resource_location_vk.GetNativeDescriptorBufferInfoPtr(),
-            resource_location_vk.GetNativeBufferViewPtr()
-        );
+        if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_location_vk.GetNativeDescriptorImageInfoPtr()))
+            continue;
 
-        resource_index++;
+        if (AddDescriptor(m_vk_descriptor_buffers, total_resources_count, resource_location_vk.GetNativeDescriptorBufferInfoPtr()))
+            continue;
+
+        AddDescriptor(m_vk_buffer_views, total_resources_count, resource_location_vk.GetNativeBufferViewPtr());
     }
+
+    m_vk_write_descriptor_set = vk::WriteDescriptorSet(
+        *m_vk_descriptor_set_ptr,
+        m_vk_binding_value,
+        0U,
+        m_settings_vk.descriptor_type,
+        m_vk_descriptor_images,
+        m_vk_descriptor_buffers,
+        m_vk_buffer_views
+    );
 
     // Descriptions are updated on GPU during context initialization complete
 #ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
@@ -138,12 +154,15 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
 void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()
 {
     META_FUNCTION_TASK();
-    if (m_vk_write_descriptor_sets.empty())
+    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
         return;
 
     const auto& vulkan_context = dynamic_cast<const IContextVK&>(GetContext());
-    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_sets, {});
-    m_vk_write_descriptor_sets.clear();
+    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
+
+    m_vk_descriptor_images.clear();
+    m_vk_descriptor_buffers.clear();
+    m_vk_buffer_views.clear();
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
