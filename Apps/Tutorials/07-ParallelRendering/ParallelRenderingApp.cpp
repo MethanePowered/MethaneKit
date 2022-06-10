@@ -79,7 +79,7 @@ uint32_t ParallelRenderingApp::Settings::GetTotalCubesCount() const noexcept
     return static_cast<uint32_t>(std::pow(cubes_grid_size, 3U));
 }
 
-uint32_t ParallelRenderingApp::Settings::GetRenderThreadCount() const noexcept
+uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noexcept
 {
     META_FUNCTION_TASK();
     return parallel_rendering_enabled ? render_thread_count : 1U;
@@ -172,7 +172,7 @@ void ParallelRenderingApp::Init()
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
     m_texture_array_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Image(g_texture_size, m_settings.GetRenderThreadCount(), gfx::PixelFormat::RGBA8Unorm, false,
+            gfx::Texture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
                                           gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
     m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
@@ -221,7 +221,7 @@ void ParallelRenderingApp::Init()
         {
             // Create parallel command list for rendering to the screen pass
             frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(m_settings.GetRenderThreadCount());
+            frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
             frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
             frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
         }
@@ -273,7 +273,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
     std::mt19937 rng(1234U);
     std::uniform_real_distribution<float>   cube_scale_distribution(median_cube_scale - cube_scale_delta, median_cube_scale + cube_scale_delta);
     std::uniform_real_distribution<double>  rotation_speed_distribution(-0.8F, 0.8F);
-    std::uniform_int_distribution<uint32_t> thread_index_distribution(0U, m_settings.GetRenderThreadCount());
+    std::uniform_int_distribution<uint32_t> thread_index_distribution(0U, m_settings.render_thread_count);
 
     CubeArrayParameters cube_array_parameters(cubes_count);
 
@@ -309,7 +309,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
                    { return left.thread_index < right.thread_index; });
 
     // Fixup even distribution of cubes between threads
-    const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.GetRenderThreadCount()));
+    const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.render_thread_count));
     tf::Task even_task = task_flow.for_each_index(0U, cubes_count, 1U,
         [&cube_array_parameters, cubes_count_per_thread](const uint32_t cube_index)
         {
@@ -473,12 +473,12 @@ std::string ParallelRenderingApp::GetParametersString()
 
     ss << "Parallel Rendering parameters:"
         << std::endl << "  - parallel rendering:   " << (m_settings.parallel_rendering_enabled ? "ON" : "OFF")
-        << std::endl << "  - render threads count: " << m_settings.GetRenderThreadCount()
+        << std::endl << "  - render threads count: " << m_settings.GetActiveRenderThreadCount()
         << std::endl << "  - cubes grid size:      " << m_settings.cubes_grid_size
         << std::endl << "  - total cubes count:    " << m_settings.GetTotalCubesCount()
         << std::endl << "  - texture array size:   " << g_texture_size.GetWidth() <<
                                                " x " << g_texture_size.GetHeight() <<
-                                                " [" << m_settings.GetRenderThreadCount() << "]";
+                                                " [" << m_settings.render_thread_count << "]";
 
     return ss.str();
 }

@@ -62,7 +62,7 @@ public:
         bool operator==(const Settings& other) const noexcept;
 
         uint32_t GetTotalCubesCount() const noexcept;
-        uint32_t GetRenderThreadCount() const noexcept;
+        uint32_t GetActiveRenderThreadCount() const noexcept;
     };
 
     ParallelRenderingApp();
