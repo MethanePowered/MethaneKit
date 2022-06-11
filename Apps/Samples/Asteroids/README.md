@@ -1,8 +1,8 @@
 # Asteroids Sample
 
-| Windows (DirectX 12) | MacOS (Metal) |
-| -------------------- | ------------- |
-| ![Asteroids on Windows](Screenshots/AsteroidsWinDirectX12.jpg) | ![Asteroids on MacOS](Screenshots/AsteroidsMacMetal.jpg) |
+| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                            |
+| -------------------- | ------------- |-----------------------------------------------------------|
+| ![Asteroids on Windows](Screenshots/AsteroidsWinDirectX12.jpg) | ![Asteroids on MacOS](Screenshots/AsteroidsMacMetal.jpg) | ![Asteroids on Linux](Screenshots/AsteroidsLinVulkan.jpg) | 
 
 Asteroids sample demonstrates multi-threaded rendering of large number of heterogenous asteroid meshes with [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h).
 Thousands of unique asteroid instances (1000-50000) are drawn with individual Draw-calls in parallel with a random combination of:
