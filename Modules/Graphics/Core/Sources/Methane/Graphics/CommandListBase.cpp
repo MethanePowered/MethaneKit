@@ -193,8 +193,8 @@ void CommandListBase::Commit()
     META_LOG("{} Command list '{}' COMMIT", magic_enum::enum_name(m_type), GetName());
 
     SetCommandListStateNoLock(State::Committed);
-
-    if (!m_open_debug_groups.empty())
+    
+    while (!m_open_debug_groups.empty())
     {
         PopDebugGroup();
     }
