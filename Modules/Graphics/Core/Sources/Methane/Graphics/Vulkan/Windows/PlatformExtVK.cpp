@@ -16,14 +16,15 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Linux/PlatformVK.h
-Vulkan platform dependent functions for Linux.
+FILE: Methane/Graphics/Vulkan/Windows/PlatformExtVK.cpp
+Vulkan platform dependent functions for Windows.
 
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/PlatformVK.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
+
+#include <Windows.h>
 
 namespace Methane::Graphics
 {
@@ -32,16 +33,15 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
 {
     META_FUNCTION_TASK();
     static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({
-        VK_KHR_XCB_SURFACE_EXTENSION_NAME
+        VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     });
     return s_instance_extensions;
 }
 
-vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& env)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(env.connection);
-    return instance.createXcbSurfaceKHRUnique(vk::XcbSurfaceCreateInfoKHR({}, env.connection, env.window));
+    return vk_instance.createWin32SurfaceKHRUnique(vk::Win32SurfaceCreateInfoKHR(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), app_env.window_handle));
 }
 
 } // namespace Methane::Graphics

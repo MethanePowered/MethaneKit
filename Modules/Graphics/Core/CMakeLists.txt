@@ -150,7 +150,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     set(GRAPHICS_API_SOURCES
         ${SOURCES_GRAPHICS_DIR}/PlatformVK.h
         ${SOURCES_GRAPHICS_DIR}/PlatformVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.${CPP_EXT}
+        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.${CPP_EXT}
         ${SOURCES_GRAPHICS_DIR}/UtilsVK.hpp
         ${SOURCES_GRAPHICS_DIR}/TypesVK.h
         ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
@@ -209,7 +209,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
             ${VULKAN_TO_METAL_SOURCES}
         )
         set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
-            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.mm
+            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.mm
         )
     endif()
 

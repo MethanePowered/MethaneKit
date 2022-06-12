@@ -16,15 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Windows/PlatformVK.h
-Vulkan platform dependent functions for Windows.
+FILE: Methane/Graphics/Vulkan/MacOS/PlatformExtVK.mm
+Vulkan platform dependent functions for MacOS.
 
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/PlatformVK.h>
-#include <Methane/Instrumentation.h>
 
-#include <Windows.h>
+#include <Methane/Platform/MacOS/AppViewMT.hh>
+#include <Methane/Graphics/Metal/RenderContextAppViewMT.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
@@ -33,15 +35,33 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
 {
     META_FUNCTION_TASK();
     static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+        VK_EXT_METAL_SURFACE_EXTENSION_NAME
     });
     return s_instance_extensions;
 }
 
-vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& app_env)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    return vk_instance.createWin32SurfaceKHRUnique(vk::Win32SurfaceCreateInfoKHR(vk::Win32SurfaceCreateFlagsKHR(), GetModuleHandle(NULL), app_env.window_handle));
+    AppViewMT* metal_view = nil;
+    if (!env.ns_app_delegate.isViewLoaded)
+    {
+        // Create temporary application view for Window if it was not created yet
+        metal_view = CreateTemporaryAppView(env);
+        env.ns_app_delegate.view = metal_view;
+    }
+    else
+    {
+        metal_view = static_cast<AppViewMT*>(env.ns_app_delegate.view);
+    }
+
+    CAMetalLayer* metal_layer = metal_view.metalLayer;
+    return vk_instance.createMetalSurfaceEXTUnique(
+        vk::MetalSurfaceCreateInfoEXT(
+            vk::MetalSurfaceCreateFlagsEXT{},
+            metal_layer
+        )
+    );
 }
 
 } // namespace Methane::Graphics

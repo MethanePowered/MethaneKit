@@ -16,15 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/MacOS/PlatformVK.h
-Vulkan platform dependent functions for MacOS.
+FILE: Methane/Graphics/Vulkan/Linux/PlatformExtVK.cpp
+Vulkan platform dependent functions for Linux.
 
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/PlatformVK.h>
-
-#include <Methane/Platform/MacOS/AppViewMT.hh>
-#include <Methane/Graphics/Metal/RenderContextAppViewMT.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -35,33 +32,16 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
 {
     META_FUNCTION_TASK();
     static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({
-        VK_EXT_METAL_SURFACE_EXTENSION_NAME
+        VK_KHR_XCB_SURFACE_EXTENSION_NAME
     });
     return s_instance_extensions;
 }
 
-vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Platform::AppEnvironment& env)
+vk::UniqueSurfaceKHR PlatformVK::CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    AppViewMT* metal_view = nil;
-    if (!env.ns_app_delegate.isViewLoaded)
-    {
-        // Create temporary application view for Window if it was not created yet
-        metal_view = CreateTemporaryAppView(env);
-        env.ns_app_delegate.view = metal_view;
-    }
-    else
-    {
-        metal_view = static_cast<AppViewMT*>(env.ns_app_delegate.view);
-    }
-
-    CAMetalLayer* metal_layer = metal_view.metalLayer;
-    return vk_instance.createMetalSurfaceEXTUnique(
-        vk::MetalSurfaceCreateInfoEXT(
-            vk::MetalSurfaceCreateFlagsEXT{},
-            metal_layer
-        )
-    );
+    META_CHECK_ARG_NOT_NULL(env.connection);
+    return instance.createXcbSurfaceKHRUnique(vk::XcbSurfaceCreateInfoKHR({}, env.connection, env.window));
 }
 
 } // namespace Methane::Graphics
