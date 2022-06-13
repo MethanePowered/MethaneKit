@@ -127,7 +127,7 @@ void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_c
         submit_info.setPNext(&vk_timeline_submit_info_opt.value());
     }
 
-    std::lock_guard<std::mutex> fence_guard(m_vk_unique_execution_completed_fence_mutex);
+    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
     m_vk_device.resetFences(GetNativeExecutionCompletedFence());
     GetCommandQueueVK().GetNativeQueue().submit(submit_info, GetNativeExecutionCompletedFence());
 }
@@ -135,7 +135,7 @@ void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_c
 void CommandListSetVK::WaitUntilCompleted()
 {
     META_FUNCTION_TASK();
-    std::lock_guard<std::mutex> fence_guard(m_vk_unique_execution_completed_fence_mutex);
+    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
     const vk::Result execution_completed_fence_wait_result = m_vk_device.waitForFences(
         GetNativeExecutionCompletedFence(),
         true, std::numeric_limits<uint64_t>::max()

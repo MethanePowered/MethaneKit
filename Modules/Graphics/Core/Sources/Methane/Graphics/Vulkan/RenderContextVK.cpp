@@ -333,7 +333,7 @@ void RenderContextVK::InitializeNativeSwapchain()
 
 
     if (m_vk_frame_images.size() != GetSettings().frame_buffers_count)
-        InvalidateFrameBuffersCount(m_vk_frame_images.size());
+        InvalidateFrameBuffersCount(static_cast<uint32_t>(m_vk_frame_images.size()));
 
     // Create frame semaphores in pool
     const uint32_t frame_buffers_count = GetSettings().frame_buffers_count;
