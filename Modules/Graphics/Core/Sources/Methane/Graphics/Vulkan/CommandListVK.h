@@ -26,7 +26,9 @@ Vulkan command lists sequence implementation.
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Data/Receiver.hpp>
 
+#include <Tracy.hpp>
 #include <vulkan/vulkan.hpp>
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -97,6 +99,7 @@ private:
     std::vector<uint64_t>               m_vk_wait_values;
     vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
     vk::UniqueFence                     m_vk_unique_execution_completed_fence;
+    TracyLockable(std::mutex,           m_vk_unique_execution_completed_fence_mutex)
 };
 
 } // namespace Methane::Graphics
