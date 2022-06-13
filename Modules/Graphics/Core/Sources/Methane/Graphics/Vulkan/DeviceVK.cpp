@@ -159,8 +159,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         callback_data_ptr->messageIdNumber == -400166253)  // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         return VK_FALSE;
 
-    if (callback_data_ptr->messageIdNumber == 0 &&
-        strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file"))
+    if (callback_data_ptr->messageIdNumber == 0 && (
+        strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file") ||
+        strstr(callback_data_ptr->pMessage, "terminator_CreateInstance: Failed to CreateInstance in ICD")))
         return VK_FALSE;
 
 #ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
@@ -259,9 +260,9 @@ static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::Application
 }
 
 static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
-                                         const std::vector<std::string_view>& layers = {},
-                                         const std::vector<std::string_view>& extensions = {},
-                                         uint32_t vk_api_version = VK_API_VERSION_1_1)
+                                               const std::vector<std::string_view>& layers = {},
+                                               const std::vector<std::string_view>& extensions = {},
+                                               uint32_t vk_api_version = VK_API_VERSION_1_1)
 {
     META_FUNCTION_TASK();
 

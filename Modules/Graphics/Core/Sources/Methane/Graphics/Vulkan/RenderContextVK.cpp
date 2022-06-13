@@ -331,8 +331,13 @@ void RenderContextVK::InitializeNativeSwapchain()
     m_vk_frame_format     = swap_surface_format.format;
     m_vk_frame_extent     = swap_extent;
 
+
+    if (m_vk_frame_images.size() != GetSettings().frame_buffers_count)
+        InvalidateFrameBuffersCount(m_vk_frame_images.size());
+
     // Create frame semaphores in pool
-    m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
+    const uint32_t frame_buffers_count = GetSettings().frame_buffers_count;
+    m_vk_frame_semaphores_pool.resize(frame_buffers_count);
     for(vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
     {
         if (vk_unique_frame_semaphore)
@@ -342,7 +347,7 @@ void RenderContextVK::InitializeNativeSwapchain()
     }
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
-    m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
+    m_vk_frame_image_available_semaphores.resize(frame_buffers_count);
 
     ResetNativeObjectNames();
 

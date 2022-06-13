@@ -263,6 +263,13 @@ void RenderContextBase::UpdateFrameBufferIndex()
     m_frame_index++;
     m_is_frame_buffer_in_use = true;
 }
+
+void RenderContextBase::InvalidateFrameBuffersCount(uint32_t frame_buffers_count)
+{
+    META_FUNCTION_TASK();
+    // We just change count in settings assuming that this method is called only inside RenderContextXX::Initialize()s function
+    m_settings.frame_buffers_count = frame_buffers_count;
+}
     
 uint32_t RenderContextBase::GetNextFrameBufferIndex()
 {

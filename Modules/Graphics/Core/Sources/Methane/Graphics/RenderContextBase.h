@@ -66,6 +66,10 @@ protected:
     void OnCpuPresentComplete(bool signal_frame_fence = true);
     void UpdateFrameBufferIndex();
 
+    // Rarely actual frame buffers count in swap-chain may be different from the requested,
+    // so it may be changed from RenderContextXX::Initialize() method
+    void InvalidateFrameBuffersCount(uint32_t frame_buffers_count);
+
     Fence& GetCurrentFrameFence() const;
     Fence& GetRenderFence() const;
 
