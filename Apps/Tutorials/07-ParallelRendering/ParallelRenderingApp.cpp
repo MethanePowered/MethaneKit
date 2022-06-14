@@ -222,6 +222,7 @@ void ParallelRenderingApp::Init()
             // Create parallel command list for rendering to the screen pass
             frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
+            frame.parallel_render_cmd_list_ptr->SetValidationEnabled(false);
             frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
             frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
         }
@@ -230,6 +231,7 @@ void ParallelRenderingApp::Init()
             // Create serial command list for rendering to the screen pass
             frame.serial_render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.serial_render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
+            frame.serial_render_cmd_list_ptr->SetValidationEnabled(false);
             frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.serial_render_cmd_list_ptr }, frame.index);
         }
     }
