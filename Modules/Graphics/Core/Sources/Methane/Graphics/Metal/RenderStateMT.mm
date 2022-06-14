@@ -71,13 +71,13 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
     using ColorChannels = RenderState::Blending::ColorChannels;
 
     MTLColorWriteMask mtl_color_write_mask = 0U;
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Red))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
         mtl_color_write_mask |= MTLColorWriteMaskRed;
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Green))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Green))
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Blue))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Blue))
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Alpha))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Alpha))
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
     return mtl_color_write_mask;
 };
@@ -364,23 +364,23 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
     RenderCommandListMT& metal_command_list = static_cast<RenderCommandListMT&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
-    if (magic_enum::flags::enum_contains(state_groups & Groups::Program)    ||
-        magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer) ||
-        magic_enum::flags::enum_contains(state_groups & Groups::Blending))
+    if (static_cast<bool>(state_groups & Groups::Program)    ||
+        static_cast<bool>(state_groups & Groups::Rasterizer) ||
+        static_cast<bool>(state_groups & Groups::Blending))
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (magic_enum::flags::enum_contains(state_groups & Groups::DepthStencil))
+    if (static_cast<bool>(state_groups & Groups::DepthStencil))
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
-    if (magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer))
+    if (static_cast<bool>(state_groups & Groups::Rasterizer))
     {
         [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
+    if (static_cast<bool>(state_groups & Groups::BlendingColor))
     {
         const Settings& settings = GetSettings();
         [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRed()

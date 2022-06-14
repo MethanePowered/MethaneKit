@@ -361,11 +361,11 @@ DepthStencilTextureDX::TextureDX(const ContextBase& render_context, const Settin
     );
 
     using namespace magic_enum::bitwise_operators;
-    if (magic_enum::flags::enum_contains(settings.usage_mask & Usage::RenderTarget))
+    if (static_cast<bool>(settings.usage_mask & Usage::RenderTarget))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
-    if (!magic_enum::flags::enum_contains(settings.usage_mask & (Usage::ShaderRead | Usage::ShaderWrite)))
+    if (!static_cast<bool>(settings.usage_mask & (Usage::ShaderRead | Usage::ShaderWrite)))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }

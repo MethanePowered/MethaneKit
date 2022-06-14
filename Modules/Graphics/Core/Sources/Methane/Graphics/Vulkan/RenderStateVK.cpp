@@ -164,16 +164,16 @@ vk::ColorComponentFlags BlendingColorChannelsToVulkan(RenderState::Blending::Col
     using ColorChannels = RenderState::Blending::ColorChannels;
 
     vk::ColorComponentFlags color_component_flags{};
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Red))
+    if (static_cast<bool>(color_channels & ColorChannels::Red))
         color_component_flags |= vk::ColorComponentFlagBits::eR;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Green))
+    if (static_cast<bool>(color_channels & ColorChannels::Green))
         color_component_flags |= vk::ColorComponentFlagBits::eG;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Blue))
+    if (static_cast<bool>(color_channels & ColorChannels::Blue))
         color_component_flags |= vk::ColorComponentFlagBits::eB;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Alpha))
+    if (static_cast<bool>(color_channels & ColorChannels::Alpha))
         color_component_flags |= vk::ColorComponentFlagBits::eA;
 
     return color_component_flags;

@@ -84,9 +84,9 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
     state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr());
-    state_settings.depth.enabled        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthEnabled);
+    state_settings.depth.enabled        = static_cast<bool>(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
-    state_settings.depth.compare        = magic_enum::flags::enum_contains(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
+    state_settings.depth.compare        = static_cast<bool>(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_render_state_ptr = RenderState::Create(m_context, state_settings);

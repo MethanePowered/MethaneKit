@@ -91,12 +91,12 @@ static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.
     using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
     using ColorOpt        = std::optional<Graphics::Color4F>;
 
-    const bool depth_enabled       = magic_enum::flags::enum_contains(app_options & AppOptions::DepthBuffer);
-    const bool clear_depth_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::ClearDepth);
-    const bool clear_color_enabled = magic_enum::flags::enum_contains(app_options & AppOptions::ClearColor);
-    const bool animations_enabled  = magic_enum::flags::enum_contains(app_options & AppOptions::Animations);
-    const bool fullscreen_enabled  = magic_enum::flags::enum_contains(app_options & AppOptions::Fullscreen);
-    const bool vsync_enabled       = magic_enum::flags::enum_contains(app_options & AppOptions::VSync);
+    const bool depth_enabled       = static_cast<bool>(app_options & AppOptions::DepthBuffer);
+    const bool clear_depth_enabled = static_cast<bool>(app_options & AppOptions::ClearDepth);
+    const bool clear_color_enabled = static_cast<bool>(app_options & AppOptions::ClearColor);
+    const bool animations_enabled  = static_cast<bool>(app_options & AppOptions::Animations);
+    const bool fullscreen_enabled  = static_cast<bool>(app_options & AppOptions::Fullscreen);
+    const bool vsync_enabled       = static_cast<bool>(app_options & AppOptions::VSync);
 
     return Graphics::AppSettings
     {                                                           // =========================

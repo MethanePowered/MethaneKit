@@ -85,7 +85,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     const gfx::SubResource::Count& sub_res_count      = m_rt_texture.GetSubresourceCount();
 
     using namespace magic_enum::bitwise_operators;
-    META_CHECK_ARG_TRUE(magic_enum::enum_contains(rt_texture_settings.usage_mask & gfx::Texture::Usage::RenderTarget));
+    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & gfx::Texture::Usage::RenderTarget));
 
     m_texture_face_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(),
         gfx::RenderPattern::Settings

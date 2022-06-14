@@ -144,7 +144,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::SetResourceViews(const Resource::
 
         const Resource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(resource_usage_mask, magic_enum::flags::enum_contains(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
@@ -453,7 +453,7 @@ bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type ac
     bool resource_states_changed = false;
     for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
     {
-        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
+        if (!static_cast<bool>(access_types_mask & access_type))
             continue;
 
         const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];

@@ -431,7 +431,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 
     using namespace magic_enum::bitwise_operators;
     if (const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
-        !magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
+        !static_cast<bool>(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
@@ -460,7 +460,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-    if (magic_enum::flags::enum_contains(capabilities.features & Device::Features::BasicRendering))
+    if (static_cast<bool>(capabilities.features & Device::Features::BasicRendering))
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
@@ -471,8 +471,8 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 
     // Enable physical device features:
     vk::PhysicalDeviceFeatures vk_device_features;
-    vk_device_features.samplerAnisotropy = magic_enum::enum_contains(capabilities.features & Features::AnisotropicFiltering);
-    vk_device_features.imageCubeArray    = magic_enum::enum_contains(capabilities.features & Features::ImageCubeArray);
+    vk_device_features.samplerAnisotropy = static_cast<bool>(capabilities.features & Features::AnisotropicFiltering);
+    vk_device_features.imageCubeArray    = static_cast<bool>(capabilities.features & Features::ImageCubeArray);
 
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);

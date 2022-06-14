@@ -413,7 +413,7 @@ void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
 bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
 {
     using namespace magic_enum::bitwise_operators;
-    return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
+    return static_cast<bool>(m_dirty_mask & dirty_flags);
 }
 
 void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,

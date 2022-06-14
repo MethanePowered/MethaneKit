@@ -50,7 +50,7 @@ public:
         using namespace magic_enum::bitwise_operators;
 
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
-        const bool is_read_back_buffer = magic_enum::flags::enum_contains(settings.usage_mask & Usage::ReadBack);
+        const bool is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
@@ -135,7 +135,7 @@ public:
         META_FUNCTION_TASK();
 
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(GetUsage(), magic_enum::flags::enum_contains(GetUsage() & Usage::ReadBack),
+        META_CHECK_ARG_DESCR(GetUsage(), static_cast<bool>(GetUsage() & Usage::ReadBack),
                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);

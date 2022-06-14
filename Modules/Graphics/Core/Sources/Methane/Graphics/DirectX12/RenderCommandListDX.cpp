@@ -206,7 +206,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, uint32_t index_count,
 
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+    if (static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
@@ -225,7 +225,7 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     if (DrawingState& drawing_state = GetDrawingState();
-        magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+        static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);

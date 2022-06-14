@@ -261,14 +261,14 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     using namespace magic_enum::bitwise_operators;
 
     Program::ArgumentAccessor::Type apply_access_mask = Program::ArgumentAccessor::Type::Mutable;
-    if (!magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
+    if (!static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
     {
         apply_access_mask |= Program::ArgumentAccessor::Type::Constant;
         apply_access_mask |= Program::ArgumentAccessor::Type::FrameConstant;
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers))
+    if (static_cast<bool>(apply_behavior & ApplyBehavior::StateBarriers))
     {
         ApplyResourceTransitionBarriers(command_list_dx, apply_access_mask);
     }
@@ -276,7 +276,7 @@ void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBind
     // Apply root parameter bindings after resource barriers
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
     ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr,
-                               magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly));
+                               static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly));
 }
 
 template<typename FuncType>
@@ -353,7 +353,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
         META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
         META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
-        for (Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
+        for (Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
         {
             const uint32_t accessor_descr_count = descriptors_count[access_type];
             if (!accessor_descr_count)
@@ -437,9 +437,9 @@ void ProgramBindingsDX::ApplyRootParameterBindings(Program::ArgumentAccessor::Ty
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    for(Program::ArgumentAccessor::Type access_type : magic_enum::flags::enum_values<Program::ArgumentAccessor::Type>())
+    for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
     {
-        if (!magic_enum::flags::enum_contains(access_types_mask & access_type))
+        if (!static_cast<bool>(access_types_mask & access_type))
             continue;
 
         const bool do_program_bindings_comparing = access_type == Program::ArgumentAccessor::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;

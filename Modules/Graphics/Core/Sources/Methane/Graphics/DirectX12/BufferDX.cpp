@@ -128,8 +128,8 @@ Opt<Resource::Descriptor> ConstantBufferDX::InitializeNativeViewDescriptor(const
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
     using namespace magic_enum::bitwise_operators;
     const Usage usage_mask = GetUsage();
-    if (!magic_enum::flags::enum_contains(usage_mask & Usage::ShaderRead) ||
-         magic_enum::flags::enum_contains(usage_mask & Usage::Addressable))
+    if (!static_cast<bool>(usage_mask & Usage::ShaderRead) ||
+         static_cast<bool>(usage_mask & Usage::Addressable))
         return std::nullopt;
 
     const Resource::Descriptor& descriptor = GetDescriptorByViewId(view_id);

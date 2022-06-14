@@ -248,27 +248,27 @@ RenderState::Groups RenderState::Settings::Compare(const Settings& left, const S
     
     Groups changed_state_groups = Groups::None;
     
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::Program) &&
+    if (static_cast<bool>(compare_groups & Groups::Program) &&
         left.program_ptr.get() != right.program_ptr.get())
     {
         changed_state_groups |= Groups::Program;
     }
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::Rasterizer) &&
+    if (static_cast<bool>(compare_groups & Groups::Rasterizer) &&
         left.rasterizer != right.rasterizer)
     {
         changed_state_groups |= Groups::Rasterizer;
     }
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::Blending) &&
+    if (static_cast<bool>(compare_groups & Groups::Blending) &&
         left.blending != right.blending)
     {
         changed_state_groups |= Groups::Blending;
     }
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::BlendingColor) &&
+    if (static_cast<bool>(compare_groups & Groups::BlendingColor) &&
         left.blending_color != right.blending_color)
     {
         changed_state_groups |= Groups::BlendingColor;
     }
-    if (magic_enum::flags::enum_contains(compare_groups & Groups::DepthStencil) &&
+    if (static_cast<bool>(compare_groups & Groups::DepthStencil) &&
         (left.depth != right.depth || left.stencil != right.stencil))
     {
         changed_state_groups |= Groups::DepthStencil;

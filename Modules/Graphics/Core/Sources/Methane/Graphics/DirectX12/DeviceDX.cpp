@@ -366,7 +366,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     Device::Features device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
 
     using namespace magic_enum::bitwise_operators;
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
+    if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
         return;
 
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));

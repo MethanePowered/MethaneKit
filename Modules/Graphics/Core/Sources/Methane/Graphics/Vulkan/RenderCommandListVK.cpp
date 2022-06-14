@@ -223,7 +223,7 @@ void RenderCommandListVK::UpdatePrimitiveTopology(Primitive primitive)
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     if (DrawingState& drawing_state = GetDrawingState();
-        magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+        static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const vk::PrimitiveTopology vk_primitive_topology = GetVulkanPrimitiveTopology(primitive);
         GetNativeCommandBufferDefault().setPrimitiveTopologyEXT(vk_primitive_topology);

@@ -223,13 +223,13 @@ MTLTextureUsage TextureMT::GetNativeTextureUsage()
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
-    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderRead))
+    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::ShaderWrite))
+    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (magic_enum::flags::enum_contains(settings.usage_mask & TextureBase::Usage::RenderTarget))
+    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;

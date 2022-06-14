@@ -204,7 +204,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
                    { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
-    if (magic_enum::flags::enum_contains(render_pattern.GetRenderContext().GetSettings().options_mask & Context::Options::EmulatedRenderPassOnWindows))
+    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & Context::Options::EmulatedRenderPassOnWindows))
     {
         m_is_native_render_pass_available = false;
     }
@@ -349,7 +349,7 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
     static constexpr auto s_access_values = magic_enum::enum_values<Access>();
     for (Access access : s_access_values)
     {
-        if (!magic_enum::flags::enum_contains(settings.shader_access_mask & access))
+        if (!static_cast<bool>(settings.shader_access_mask & access))
             continue;
 
         const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByAccess(access);

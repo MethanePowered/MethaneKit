@@ -251,11 +251,11 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
         const Program::Argument& program_argument = binding_by_argument.first;
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
-        if ((magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ConstantOnce) ||
-             magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)) &&
+        if ((static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) ||
+             static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly)) &&
             metal_command_list.GetProgramBindingsPtr() &&
             metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(),
-                                                    magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::ChangesOnly)))
+                                                    static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly)))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetSettingsMT().argument_index;

@@ -151,9 +151,9 @@ public:
 
         [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
         [[nodiscard]] bool                  IsLineBreak() const noexcept    { using namespace magic_enum::bitwise_operators;
-                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::LineBreak); }
+                                                                              return static_cast<bool>(m_type_mask & Type::LineBreak); }
         [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { using namespace magic_enum::bitwise_operators;
-                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::Whitespace); }
+                                                                              return static_cast<bool>(m_type_mask & Type::Whitespace); }
         [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         [[nodiscard]] const gfx::Point2I&   GetOffset() const noexcept      { return m_offset; }
         [[nodiscard]] const gfx::Point2I&   GetAdvance() const noexcept     { return m_advance; }

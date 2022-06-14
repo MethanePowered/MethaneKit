@@ -360,7 +360,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, CommandQueue& com
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (magic_enum::flags::enum_contains(apply_behavior & ApplyBehavior::StateBarriers))
+    if (static_cast<bool>(apply_behavior & ApplyBehavior::StateBarriers))
     {
         ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask, &command_queue);
     }
