@@ -64,6 +64,10 @@ public:
         {
             m_cp_upload_resource = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
         }
+
+        // Resources on D3D12_HEAP_TYPE_UPLOAD heaps requires D3D12_RESOURCE_STATE_GENERIC_READ or D3D12_RESOURCE_STATE_RESOLVE_SOURCE, which can not be changed.
+        // SetState(state, barriers) behavior is prevent updating resource barriers while setting a given state
+        SetStateChangeUpdatesBarriers(is_private_storage);
     }
 
     // Object overrides

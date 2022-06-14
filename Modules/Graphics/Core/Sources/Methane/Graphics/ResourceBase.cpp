@@ -116,6 +116,9 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
 bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
+    if (!m_is_state_change_updates_barriers)
+        ResourceBase::SetState(state);
+
     std::scoped_lock lock_guard(m_state_mutex);
     if (m_state == state)
     {
