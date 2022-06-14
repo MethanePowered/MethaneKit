@@ -363,8 +363,8 @@ bool AsteroidsApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
         META_CHECK_ARG_NOT_NULL(frame.asteroids_pass_ptr);
         gfx::RenderPass::Settings asteroids_pass_settings{
             {
-                gfx::Texture::Location(*frame.screen_texture_ptr),
-                gfx::Texture::Location(GetDepthTexture())
+                gfx::Texture::View(*frame.screen_texture_ptr),
+                gfx::Texture::View(GetDepthTexture())
             },
             frame_size
         };

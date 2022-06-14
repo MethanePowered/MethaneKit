@@ -138,7 +138,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass_ptr = gfx::RenderPass::Create(*m_texture_face_render_pattern_ptr, {
-                { gfx::Texture::Location(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
+                { gfx::Texture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
