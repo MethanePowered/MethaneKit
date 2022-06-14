@@ -199,8 +199,8 @@ struct RenderPass
 
     struct Settings
     {
-        Texture::Locations attachments;
-        FrameSize          frame_size;
+        Texture::Views attachments;
+        FrameSize      frame_size;
 
         [[nodiscard]] bool operator==(const Settings& other) const;
         [[nodiscard]] bool operator!=(const Settings& other) const;

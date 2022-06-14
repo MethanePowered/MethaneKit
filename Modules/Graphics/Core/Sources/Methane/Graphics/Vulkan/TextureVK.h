@@ -65,7 +65,7 @@ public:
 
 protected:
     // ResourceVK override
-    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
     // Resource interface
@@ -92,7 +92,7 @@ public:
 
 protected:
     // ResourceVK override
-    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
     const RenderContextVK& m_render_context;
@@ -115,7 +115,7 @@ public:
 
 protected:
     // ResourceVK override
-    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
     const RenderContextVK& m_render_context;
@@ -140,7 +140,7 @@ public:
 
 protected:
     // ResourceVK override
-    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
     void GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state);

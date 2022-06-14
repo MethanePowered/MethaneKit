@@ -121,12 +121,12 @@ SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> SamplerVK::CreateNativeViewDescriptor(const ResourceLocation::Id&)
+Ptr<ResourceViewVK::ViewDescriptorVariant> SamplerVK::CreateNativeViewDescriptor(const ResourceView::Id&)
 {
     META_FUNCTION_TASK();
-    ResourceLocationVK::ImageViewDescriptor image_view_desc;
+    ResourceViewVK::ImageViewDescriptor image_view_desc;
     image_view_desc.vk_desc = vk::DescriptorImageInfo(GetNativeSampler());
-    return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(image_view_desc));
+    return std::make_shared<ResourceViewVK::ViewDescriptorVariant>(std::move(image_view_desc));
 }
 
 } // namespace Methane::Graphics

@@ -40,18 +40,18 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(program_ptr, resource_locations_by_argument, frame_index);
+    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(program_ptr, resource_views_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_location_by_argument, frame_index);
+    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_view_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -106,10 +106,10 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsVK::ArgumentBindingVK::SetResourceViews(const Resource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+    if (!ArgumentBindingBase::SetResourceViews(resource_views))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
@@ -118,18 +118,18 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceLocations(const Resource::
     m_vk_descriptor_buffers.clear();
     m_vk_buffer_views.clear();
 
-    const size_t total_resources_count = resource_locations.size();
-    for(const Resource::Location& resource_location : resource_locations)
+    const size_t total_resources_count = resource_views.size();
+    for(const Resource::View& resource_view : resource_views)
     {
-        const IResourceVK::LocationVK resource_location_vk(resource_location, Resource::Usage::ShaderRead);
+        const IResourceVK::ViewVK resource_view_vk(resource_view, Resource::Usage::ShaderRead);
 
-        if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_location_vk.GetNativeDescriptorImageInfoPtr()))
+        if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;
 
-        if (AddDescriptor(m_vk_descriptor_buffers, total_resources_count, resource_location_vk.GetNativeDescriptorBufferInfoPtr()))
+        if (AddDescriptor(m_vk_descriptor_buffers, total_resources_count, resource_view_vk.GetNativeDescriptorBufferInfoPtr()))
             continue;
 
-        AddDescriptor(m_vk_buffer_views, total_resources_count, resource_location_vk.GetNativeBufferViewPtr());
+        AddDescriptor(m_vk_buffer_views, total_resources_count, resource_view_vk.GetNativeBufferViewPtr());
     }
 
     m_vk_write_descriptor_set = vk::WriteDescriptorSet(
@@ -166,7 +166,7 @@ void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
-                                     const ResourceLocationsByArgument& resource_locations_by_argument,
+                                     const ResourceViewsByArgument& resource_views_by_argument,
                                      Data::Index frame_index)
     : ProgramBindingsBase(program_ptr, frame_index)
 {
@@ -224,12 +224,12 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     });
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(resource_locations_by_argument);
+    SetResourcesForArguments(resource_views_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
 
 ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings,
-                                     const ResourceLocationsByArgument& replace_resource_location_by_argument,
+                                     const ResourceViewsByArgument& replace_resource_view_by_argument,
                                      const Opt<Data::Index>& frame_index)
     : ProgramBindingsBase(other_program_bindings, frame_index)
     , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
@@ -268,14 +268,14 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     }
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_location_by_argument));
+    SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
     VerifyAllArgumentsAreBoundToResources();
 }
 
-void ProgramBindingsVK::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
+void ProgramBindingsVK::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)
 {
     META_FUNCTION_TASK();
-    ProgramBindingsBase::SetResourcesForArguments(resource_locations_by_argument);
+    ProgramBindingsBase::SetResourcesForArguments(resource_views_by_argument);
 
     auto& program = static_cast<ProgramVK&>(GetProgram());
     const Program::ArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
@@ -297,10 +297,10 @@ void ProgramBindingsVK::SetResourcesForArguments(const ResourceLocationsByArgume
             std::vector<uint32_t>& dynamic_offsets = dynamic_offsets_by_set_index[*layout_info.index_opt];
             dynamic_offsets.clear();
 
-            const ResourceLocations& resource_locations = argument_binding.GetResourceLocations();
-            std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(dynamic_offsets),
-                           [](const Resource::Location& resource_location)
-                           { return resource_location.GetOffset(); });
+            const ResourceViews& resource_views = argument_binding.GetResourceViews();
+            std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
+                           [](const Resource::View& resource_view)
+                           { return resource_view.GetOffset(); });
         });
 
     m_dynamic_offsets.clear();

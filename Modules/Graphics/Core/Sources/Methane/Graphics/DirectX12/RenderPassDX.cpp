@@ -40,7 +40,7 @@ DirectX 12 implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment, const ResourceLocationDX& dx_texture_location)
+RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment, const ResourceViewDX& dx_texture_location)
     : descriptor(dx_texture_location.GetNativeCpuDescriptorHandle())
 {
     META_FUNCTION_TASK();
@@ -53,7 +53,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment& attachment, const Resourc
     }
 }
 
-RenderPassDX::AccessDesc::AccessDesc(const Attachment* attachment_ptr, const ResourceLocationDX* dx_texture_location_ptr)
+RenderPassDX::AccessDesc::AccessDesc(const Attachment* attachment_ptr, const ResourceViewDX* dx_texture_location_ptr)
     : descriptor(dx_texture_location_ptr
                ? dx_texture_location_ptr->GetNativeCpuDescriptorHandle()
                : D3D12_CPU_DESCRIPTOR_HANDLE())
@@ -77,12 +77,12 @@ RenderPassDX::AccessDesc::AccessDesc(const Attachment* attachment_ptr, const Res
 }
 
 RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, const RenderPassDX& render_pass)
-    : AccessDesc(color_attachment, render_pass.GetAttachmentTextureLocationDX(color_attachment))
+    : AccessDesc(color_attachment, render_pass.GetAttachmentTextureViewDX(color_attachment))
 {
     META_FUNCTION_TASK();
 }
 
-RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, const ResourceLocationDX& texture_location)
+RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, const ResourceViewDX& texture_location)
     : AccessDesc(static_cast<const Attachment&>(color_attachment), texture_location)
 {
     META_FUNCTION_TASK();
@@ -98,7 +98,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, co
 
 RenderPassDX::AccessDesc::AccessDesc(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt, const RenderPassDX& render_pass)
     : AccessDesc(depth_attachment_opt ? &*depth_attachment_opt : nullptr,
-                 depth_attachment_opt ? &render_pass.GetAttachmentTextureLocationDX(*depth_attachment_opt) : nullptr)
+                 depth_attachment_opt ? &render_pass.GetAttachmentTextureViewDX(*depth_attachment_opt) : nullptr)
 {
     META_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment_opt, stencil_attachment_opt);
@@ -106,7 +106,7 @@ RenderPassDX::AccessDesc::AccessDesc(const Opt<DepthAttachment>& depth_attachmen
 
 RenderPassDX::AccessDesc::AccessDesc(const Opt<StencilAttachment>& stencil_attachment_opt, const Opt<DepthAttachment>& depth_attachment_opt, const RenderPassDX& render_pass)
     : AccessDesc(stencil_attachment_opt ? &*stencil_attachment_opt : nullptr,
-                 stencil_attachment_opt ? &render_pass.GetAttachmentTextureLocationDX(*stencil_attachment_opt) : nullptr)
+                 stencil_attachment_opt ? &render_pass.GetAttachmentTextureViewDX(*stencil_attachment_opt) : nullptr)
 {
     META_FUNCTION_TASK();
     InitDepthStencilClearValue(depth_attachment_opt, stencil_attachment_opt);
@@ -145,14 +145,14 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPassDX::AccessDesc::GetEndingAccessTy
 }
 
 RenderPassDX::RTClearInfo::RTClearInfo(const ColorAttachment& color_attach, const RenderPassDX& render_pass)
-    : cpu_handle(render_pass.GetAttachmentTextureLocationDX(color_attach).GetNativeCpuDescriptorHandle())
+    : cpu_handle(render_pass.GetAttachmentTextureViewDX(color_attach).GetNativeCpuDescriptorHandle())
     , clear_color(color_attach.clear_color.AsArray())
 {
     META_FUNCTION_TASK();
 }
 
 RenderPassDX::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassDX& render_pass)
-    : cpu_handle(depth_attach_opt ? render_pass.GetAttachmentTextureLocationDX(*depth_attach_opt).GetNativeCpuDescriptorHandle() : D3D12_CPU_DESCRIPTOR_HANDLE())
+    : cpu_handle(depth_attach_opt ? render_pass.GetAttachmentTextureViewDX(*depth_attach_opt).GetNativeCpuDescriptorHandle() : D3D12_CPU_DESCRIPTOR_HANDLE())
     , depth_cleared(depth_attach_opt && depth_attach_opt->load_action == RenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach_opt ? depth_attach_opt->clear_value : 1.F)
     , stencil_cleared(stencil_attach_opt && stencil_attach_opt->load_action == RenderPass::Attachment::LoadAction::Clear)
@@ -200,8 +200,8 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
 {
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                   [](const Texture::Location& texture_location)
-                   { return ResourceLocationDX(texture_location, Resource::Usage::RenderTarget); });
+                   [](const Texture::View& texture_location)
+                   { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
     if (magic_enum::flags::enum_contains(render_pattern.GetRenderContext().GetSettings().options_mask & Context::Options::EmulatedRenderPassOnWindows))
@@ -231,8 +231,8 @@ bool RenderPassDX::Update(const Settings& settings)
         m_end_transition_barriers_ptr.reset();
 
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                       [](const Texture::Location& texture_location)
-                       { return ResourceLocationDX(texture_location, Resource::Usage::RenderTarget); });
+                       [](const Texture::View& texture_location)
+                       { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
     }
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
@@ -260,7 +260,7 @@ void RenderPassDX::ReleaseAttachmentTextures()
     m_dx_attachments.clear();
 }
 
-const ResourceLocationDX& RenderPassDX::GetAttachmentTextureLocationDX(const Attachment& attachment) const
+const ResourceViewDX& RenderPassDX::GetAttachmentTextureViewDX(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_dx_attachments.size(),
@@ -288,7 +288,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
     {
         if (update_descriptors_only)
         {
-            m_render_target_descs[color_attachment_index].cpuDescriptor = GetAttachmentTextureLocationDX(color_attachment).GetNativeCpuDescriptorHandle();
+            m_render_target_descs[color_attachment_index].cpuDescriptor = GetAttachmentTextureViewDX(color_attachment).GetNativeCpuDescriptorHandle();
             color_attachment_index++;
         }
         else
@@ -304,7 +304,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
     {
         if (update_descriptors_only && m_depth_stencil_desc)
         {
-            m_depth_stencil_desc->cpuDescriptor = GetAttachmentTextureLocationDX(*pattern_settings.depth_attachment).GetNativeCpuDescriptorHandle();
+            m_depth_stencil_desc->cpuDescriptor = GetAttachmentTextureViewDX(*pattern_settings.depth_attachment).GetNativeCpuDescriptorHandle();
         }
         else
         {
@@ -481,7 +481,7 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPassDX::GetNativeRenderTar
 
     for (const ColorAttachment& color_attach : GetPatternBase().GetSettings().color_attachments)
     {
-        m_native_rt_cpu_handles.push_back(GetAttachmentTextureLocationDX(color_attach).GetNativeCpuDescriptorHandle());
+        m_native_rt_cpu_handles.push_back(GetAttachmentTextureViewDX(color_attach).GetNativeCpuDescriptorHandle());
     }
     return m_native_rt_cpu_handles;
 }
@@ -496,7 +496,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPassDX::GetNativeDepthStencilCPUHandle(
     if (!settings.depth_attachment)
         return nullptr;
 
-    m_native_ds_cpu_handle = GetAttachmentTextureLocationDX(*settings.depth_attachment).GetNativeCpuDescriptorHandle();
+    m_native_ds_cpu_handle = GetAttachmentTextureViewDX(*settings.depth_attachment).GetNativeCpuDescriptorHandle();
     return &m_native_ds_cpu_handle;
 }
 

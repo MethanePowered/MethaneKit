@@ -43,7 +43,7 @@ public:
 
 protected:
     // ResourceVK override
-    Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) override;
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
     
 private:
     vk::UniqueSampler m_vk_unique_sampler;

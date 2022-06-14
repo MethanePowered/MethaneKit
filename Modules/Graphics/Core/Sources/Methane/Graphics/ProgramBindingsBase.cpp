@@ -46,10 +46,10 @@ struct fmt::formatter<Methane::Graphics::Program::ArgumentAccessor>
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::Resource::Location>
+struct fmt::formatter<Methane::Graphics::Resource::View>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Resource::Location& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] auto format(const Methane::Graphics::Resource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -119,47 +119,47 @@ void ProgramBindingsBase::ArgumentBindingBase::MergeSettings(const ArgumentBindi
     META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
 }
 
-bool ProgramBindingsBase::ArgumentBindingBase::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsBase::ArgumentBindingBase::SetResourceViews(const Resource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (m_resource_locations == resource_locations)
+    if (m_resource_views == resource_views)
         return false;
 
-    if (m_settings.argument.IsConstant() && !m_resource_locations.empty())
+    if (m_settings.argument.IsConstant() && !m_resource_views.empty())
         throw ConstantModificationException(GetSettings().argument);
 
-    META_CHECK_ARG_NOT_EMPTY_DESCR(resource_locations, "can not set empty resources for resource binding");
+    META_CHECK_ARG_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
 
     const bool        is_addressable_binding = m_settings.argument.IsAddressable();
     const Resource::Type bound_resource_type = m_settings.resource_type;
     META_UNUSED(is_addressable_binding);
     META_UNUSED(bound_resource_type);
 
-    for (const Resource::Location& resource_location : resource_locations)
+    for (const Resource::View& resource_view : resource_views)
     {
-        META_CHECK_ARG_NAME_DESCR("resource_location", resource_location.GetResource().GetResourceType() == bound_resource_type,
+        META_CHECK_ARG_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
-                                  magic_enum::enum_name(resource_location.GetResource().GetResourceType()),
+                                  magic_enum::enum_name(resource_view.GetResource().GetResourceType()),
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
-        const Resource::Usage resource_usage_mask = resource_location.GetResource().GetUsage();
+        const Resource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
         META_CHECK_ARG_DESCR(resource_usage_mask, magic_enum::flags::enum_contains(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
-        META_CHECK_ARG_NAME_DESCR("resource_location", is_addressable_binding || !resource_location.GetOffset(),
-                                  "can not set resource location with non-zero offset to non-addressable resource binding");
+        META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
+                                  "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
-    Data::Emitter<ProgramBindings::IArgumentBindingCallback>::Emit(&ProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceLocationsChanged, std::cref(*this), std::cref(m_resource_locations), std::cref(resource_locations));
+    Data::Emitter<ProgramBindings::IArgumentBindingCallback>::Emit(&ProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
 
-    m_resource_locations = resource_locations;
+    m_resource_views = resource_views;
     return true;
 }
 
 ProgramBindingsBase::ArgumentBindingBase::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_locations, ", "));
+    return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
 }
 
 bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program,
@@ -181,26 +181,26 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
     if (const ProgramBindings::ArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
-        previous_argument_argument_binding.GetResourceLocations() == m_resource_locations)
+        previous_argument_argument_binding.GetResourceViews() == m_resource_views)
         return true;
 
     return false;
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : ProgramBindingsBase(program_ptr, frame_index)
 {
     META_FUNCTION_TASK();
-    SetResourcesForArguments(resource_locations_by_argument);
+    SetResourcesForArguments(resource_views_by_argument);
     VerifyAllArgumentsAreBoundToResources();
     InitResourceRefsByAccess();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
     : ProgramBindingsBase(other_program_bindings, frame_index)
 {
     META_FUNCTION_TASK();
-    SetResourcesForArguments(ReplaceResourceLocations(other_program_bindings.GetArgumentBindings(), replace_resource_locations_by_argument));
+    SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_views_by_argument));
     VerifyAllArgumentsAreBoundToResources();
     InitResourceRefsByAccess();
 }
@@ -241,9 +241,9 @@ Program& ProgramBindingsBase::GetProgram()
     return *m_program_ptr;
 }
 
-void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding,
-                                                                           const Resource::Locations& old_resource_locations,
-                                                                           const Resource::Locations& new_resource_locations)
+void ProgramBindingsBase::OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding& argument_binding,
+                                                                       const Resource::Views& old_resource_views,
+                                                                       const Resource::Views& new_resource_views)
 {
     META_FUNCTION_TASK();
     if (!m_resource_state_transition_barriers_ptr)
@@ -251,31 +251,31 @@ void ProgramBindingsBase::OnProgramArgumentBindingResourceLocationsChanged(const
 
     // Find resources that are not used anymore for resource binding
     std::set<Resource*> processed_resources;
-    for(const Resource::Location& old_resource_location : old_resource_locations)
+    for(const Resource::View& old_resource_view : old_resource_views)
     {
-        if (old_resource_location.GetResource().GetResourceType() == Resource::Type::Sampler ||
-            processed_resources.count(old_resource_location.GetResourcePtr().get()))
+        if (old_resource_view.GetResource().GetResourceType() == Resource::Type::Sampler ||
+            processed_resources.count(old_resource_view.GetResourcePtr().get()))
             continue;
 
         // Check if resource is still used in new resource locations
-        if (std::find_if(new_resource_locations.begin(), new_resource_locations.end(),
-                         [&old_resource_location](const Resource::Location& new_resource_location)
-                         { return new_resource_location.GetResourcePtr() == old_resource_location.GetResourcePtr(); }
-                         ) != new_resource_locations.end())
+        if (std::find_if(new_resource_views.begin(), new_resource_views.end(),
+                         [&old_resource_view](const Resource::View& new_resource_view)
+                         { return new_resource_view.GetResourcePtr() == old_resource_view.GetResourcePtr(); }
+                         ) != new_resource_views.end())
         {
-            processed_resources.insert(old_resource_location.GetResourcePtr().get());
+            processed_resources.insert(old_resource_view.GetResourcePtr().get());
             continue;
         }
 
         // Remove unused resources from transition barriers applied for program bindings:
-        m_resource_state_transition_barriers_ptr->RemoveStateTransition(old_resource_location.GetResource());
-        RemoveTransitionResourceStates(argument_binding, old_resource_location.GetResource());
+        m_resource_state_transition_barriers_ptr->RemoveStateTransition(old_resource_view.GetResource());
+        RemoveTransitionResourceStates(argument_binding, old_resource_view.GetResource());
 
     }
 
-    for(const Resource::Location& new_resource_location : new_resource_locations)
+    for(const Resource::View& new_resource_view : new_resource_views)
     {
-        AddTransitionResourceState(argument_binding, new_resource_location.GetResource());
+        AddTransitionResourceState(argument_binding, new_resource_view.GetResource());
     }
 }
 
@@ -301,11 +301,11 @@ void ProgramBindingsBase::InitializeArgumentBindings(const ProgramBindingsBase* 
     }
 }
 
-ProgramBindings::ResourceLocationsByArgument ProgramBindingsBase::ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
-                                                                                           const ResourceLocationsByArgument& replace_resource_locations)
+ProgramBindings::ResourceViewsByArgument ProgramBindingsBase::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+                                                                                   const ResourceViewsByArgument& replace_resource_views)
 {
     META_FUNCTION_TASK();
-    ResourceLocationsByArgument resource_locations_by_argument = replace_resource_locations;
+    ResourceViewsByArgument resource_views_by_argument = replace_resource_views;
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -314,21 +314,21 @@ ProgramBindings::ResourceLocationsByArgument ProgramBindingsBase::ReplaceResourc
         // constant resource bindings are reusing single binding-object for the whole program,
         // so there's no need in setting its value, since it was already set by the original resource binding
         if (argument_binding_ptr->GetSettings().argument.IsConstant() ||
-            resource_locations_by_argument.count(program_argument))
+            resource_views_by_argument.count(program_argument))
             continue;
 
-        resource_locations_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceLocations());
+        resource_views_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceViews());
     }
-    return resource_locations_by_argument;
+    return resource_views_by_argument;
 }
 
-void ProgramBindingsBase::SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument)
+void ProgramBindingsBase::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)
 {
     META_FUNCTION_TASK();
-    for (const auto& [program_argument, resource_locations] : resource_locations_by_argument)
+    for (const auto& [program_argument, resource_views] : resource_views_by_argument)
     {
         ProgramBindings::ArgumentBinding& argument_binding = Get(program_argument);
-        argument_binding.SetResourceLocations(resource_locations);
+        argument_binding.SetResourceViews(resource_views);
         AddTransitionResourceStates(argument_binding);
     }
 }
@@ -370,7 +370,7 @@ Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
 
-        if (argument_binding_ptr->GetResourceLocations().empty())
+        if (argument_binding_ptr->GetResourceViews().empty())
         {
             unbound_arguments.insert(program_argument);
         }
@@ -431,17 +431,17 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
     const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
 
-    for(const ResourceLocation& resource_location : argument_binding.GetResourceLocations())
+    for(const ResourceView& resource_view : argument_binding.GetResourceViews())
     {
-        if (!resource_location.GetResourcePtr())
+        if (!resource_view.GetResourcePtr())
             continue;
 
-        Resource& resource = resource_location.GetResource();
+        Resource& resource = resource_view.GetResource();
         if (resource.GetResourceType() == Resource::Type::Sampler)
             continue;
 
         const Resource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
-        transition_resource_states.emplace_back(std::dynamic_pointer_cast<ResourceBase>(resource_location.GetResourcePtr()), target_resource_state);
+        transition_resource_states.emplace_back(std::dynamic_pointer_cast<ResourceBase>(resource_view.GetResourcePtr()), target_resource_state);
     }
 }
 
@@ -480,9 +480,9 @@ void ProgramBindingsBase::InitResourceRefsByAccess()
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
         std::set<Resource*>& unique_resources = unique_resources_by_access[argument_binding_ptr->GetSettings().argument.GetAccessorIndex()];
-        for (const Resource::Location & resource_location : argument_binding_ptr->GetResourceLocations())
+        for (const Resource::View & resource_view : argument_binding_ptr->GetResourceViews())
         {
-            unique_resources.emplace(resource_location.GetResourcePtr().get());
+            unique_resources.emplace(resource_view.GetResourcePtr().get());
         }
     }
 

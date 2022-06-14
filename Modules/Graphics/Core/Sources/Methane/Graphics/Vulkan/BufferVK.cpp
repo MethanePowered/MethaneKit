@@ -199,17 +199,17 @@ bool BufferVK::SetName(const std::string& name)
     return true;
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescriptor(const ResourceLocation::Id& location_id)
+Ptr<ResourceViewVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
-    ResourceLocationVK::BufferViewDescriptor buffer_view_desc;
+    ResourceViewVK::BufferViewDescriptor buffer_view_desc;
     buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
         GetNativeResource(),
-        static_cast<vk::DeviceSize>(location_id.offset),
-        location_id.size ? location_id.size : GetSubResourceDataSize(location_id.subresource_index)
+        static_cast<vk::DeviceSize>(view_id.offset),
+        view_id.size ? view_id.size : GetSubResourceDataSize(view_id.subresource_index)
     );
 
-    return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(buffer_view_desc));
+    return std::make_shared<ResourceViewVK::ViewDescriptorVariant>(std::move(buffer_view_desc));
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

@@ -76,7 +76,7 @@ ProgramBindingsDX::ArgumentBindingDX::ArgumentBindingDX(const ArgumentBindingDX&
     , m_root_parameter_index(other.m_root_parameter_index)
     , m_descriptor_range(other.m_descriptor_range)
     , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
-    , m_resource_locations_dx(other.m_resource_locations_dx)
+    , m_resource_views_dx(other.m_resource_views_dx)
 {
     META_FUNCTION_TASK();
     if (m_p_descriptor_heap_reservation)
@@ -94,15 +94,15 @@ DescriptorHeapDX::Type ProgramBindingsDX::ArgumentBindingDX::GetDescriptorHeapTy
            : DescriptorHeapDX::Type::ShaderResources;
 }
 
-bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsDX::ArgumentBindingDX::SetResourceViews(const Resource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+    if (!ArgumentBindingBase::SetResourceViews(resource_views))
         return false;
 
     if (m_settings_dx.type == Type::DescriptorTable)
     {
-        META_CHECK_ARG_LESS_DESCR(resource_locations.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
+        META_CHECK_ARG_LESS_DESCR(resource_views.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
     }
 
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
@@ -121,15 +121,15 @@ bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
     META_CHECK_ARG_NOT_NULL(cp_native_device);
 
     uint32_t resource_index = 0;
-    m_resource_locations_dx.clear();
-    m_resource_locations_dx.reserve(resource_locations.size());
-    for(const Resource::Location& resource_location : resource_locations)
+    m_resource_views_dx.clear();
+    m_resource_views_dx.reserve(resource_views.size());
+    for(const Resource::View& resource_view : resource_views)
     {
-        m_resource_locations_dx.emplace_back(resource_location, Resource::Usage::ShaderRead);
+        m_resource_views_dx.emplace_back(resource_view, Resource::Usage::ShaderRead);
         if (!p_dx_descriptor_heap)
             continue;
 
-        const ResourceLocationDX& dx_resource_location = m_resource_locations_dx.back();
+        const ResourceViewDX& dx_resource_view = m_resource_views_dx.back();
         META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
                                    magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
@@ -139,7 +139,7 @@ bool ProgramBindingsDX::ArgumentBindingDX::SetResourceLocations(const Resource::
         cp_native_device->CopyDescriptorsSimple(
             1,
             p_dx_descriptor_heap->GetNativeCpuDescriptorHandle(descriptor_index),
-            dx_resource_location.GetNativeCpuDescriptorHandle(),
+            dx_resource_view.GetNativeCpuDescriptorHandle(),
             native_heap_type
         );
 
@@ -175,31 +175,31 @@ void ProgramBindingsDX::ArgumentBindingDX::SetDescriptorHeapReservation(const De
     m_p_descriptor_heap_reservation = p_reservation;
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    const auto dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(program_ptr, resource_locations_by_argument, frame_index);
+    const auto dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(program_ptr, resource_views_by_argument, frame_index);
     dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return dx_program_bindings_ptr;
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    const auto dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(static_cast<const ProgramBindingsDX&>(other_program_bindings), replace_resource_locations_by_argument, frame_index);
+    const auto dx_program_bindings_ptr = std::make_shared<ProgramBindingsDX>(static_cast<const ProgramBindingsDX&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
     dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return dx_program_bindings_ptr;
 }
 
-ProgramBindingsDX::ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
-    : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
+ProgramBindingsDX::ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
     ReserveDescriptorHeapRanges();
 }
 
-ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument, frame_index)
+ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_views_by_argument, frame_index)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
@@ -417,7 +417,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
         });
     }
 
-    for (const ResourceLocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+    for (const ResourceViewDX& resource_view_dx : argument_binding.GetResourceViewsDX())
     {
         if (binding_settings.type == DXBindingType::ConstantBufferView ||
             binding_settings.type == DXBindingType::ShaderResourceView)
@@ -426,7 +426,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
                 argument_binding,
                 argument_binding.GetRootParameterIndex(),
                 D3D12_GPU_DESCRIPTOR_HANDLE{},
-                resource_location_dx.GetNativeGpuAddress()
+                resource_view_dx.GetNativeGpuAddress()
             });
         }
     }
@@ -509,23 +509,23 @@ void ProgramBindingsDX::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12
                               "descriptor range offset is out of reserved descriptor range bounds");
 
     uint32_t resource_index = 0;
-    for (const ResourceLocationDX& resource_location_dx : argument_binding.GetResourceLocationsDX())
+    for (const ResourceViewDX& resource_view_dx : argument_binding.GetResourceViewsDX())
     {
-        if (!resource_location_dx.HasDescriptor())
+        if (!resource_view_dx.HasDescriptor())
             continue;
 
-        META_CHECK_ARG_EQUAL_DESCR(heap_type, resource_location_dx.GetDescriptor()->heap.GetSettings().type,
+        META_CHECK_ARG_EQUAL_DESCR(heap_type, resource_view_dx.GetDescriptor()->heap.GetSettings().type,
                                    "can not create binding for resource on descriptor heap of incompatible type");
 
         const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
         META_LOG("  - Resource '{}' binding with {} access has descriptor heap range [{}, {}), CPU descriptor index {}",
-                 resource_location_dx.GetResourceDX().GetName(),
+                 resource_view_dx.GetResourceDX().GetName(),
                  magic_enum::enum_name(argument_binding.GetSettings().argument.GetAccessorType()),
                  descriptor_range.offset, descriptor_range.offset + descriptor_range.count, descriptor_index);
 
         d3d12_device->CopyDescriptorsSimple(1,
             dx_descriptor_heap.GetNativeCpuDescriptorHandle(descriptor_index),
-            resource_location_dx.GetNativeCpuDescriptorHandle(),
+            resource_view_dx.GetNativeCpuDescriptorHandle(),
             native_heap_type
         );
         resource_index++;

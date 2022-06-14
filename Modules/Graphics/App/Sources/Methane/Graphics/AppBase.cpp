@@ -346,11 +346,11 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Texture::Locations AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
+Texture::Views AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    Texture::Locations attachments{
-        Texture::Location(frame_buffer_texture)
+    Texture::Views attachments{
+        Texture::View(frame_buffer_texture)
     };
 
     if (m_depth_texture_ptr)
@@ -387,7 +387,7 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
         return;
 
     m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext());
-    m_depth_texture_ptr->RestoreDescriptorLocations(depth_restore_info_opt->descriptor_by_location_id);
+    m_depth_texture_ptr->RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
     m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }
 

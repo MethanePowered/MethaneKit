@@ -25,7 +25,7 @@ which make modern graphics programming easy and convenient in a platform and API
 ### Graphics Resources
 
 - [Resource](Include/Methane/Graphics/Resource.h)
-  - [SubResource](Include/Methane/Graphics/SubResource.h)
+  - [ResourceView, SubResource](Include/Methane/Graphics/ResourceView.h)
   - [ResourceBarriers](Include/Methane/Graphics/ResourceBarriers.h)
 - [Buffer, BufferSet](Include/Methane/Graphics/Buffer.h)
 - [Texture](Include/Methane/Graphics/Texture.h)

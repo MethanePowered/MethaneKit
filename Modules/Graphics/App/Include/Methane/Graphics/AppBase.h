@@ -80,16 +80,16 @@ public:
 protected:
     struct ResourceRestoreInfo
     {
-        Resource::DescriptorByLocationId descriptor_by_location_id;
+        Resource::DescriptorByViewId descriptor_by_view_id;
         std::string name;
 
         explicit ResourceRestoreInfo(const Resource& resource)
-            : descriptor_by_location_id(resource.GetDescriptorByLocationId())
+            : descriptor_by_view_id(resource.GetDescriptorByViewId())
             , name(resource.GetName())
         { }
     };
 
-    Texture::Locations GetScreenPassAttachments(Texture& frame_buffer_texture) const;
+    Texture::Views GetScreenPassAttachments(Texture& frame_buffer_texture) const;
     Ptr<RenderPass> CreateScreenRenderPass(Texture& frame_buffer_texture) const;
     Opt<ResourceRestoreInfo> ReleaseDepthTexture();
     void RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt);

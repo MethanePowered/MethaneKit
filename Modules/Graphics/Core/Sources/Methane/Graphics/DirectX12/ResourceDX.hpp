@@ -61,7 +61,7 @@ public:
 
     ~ResourceDX() override
     {
-        for (const auto& [location_id, descriptor] : m_descriptor_by_location_id)
+        for (const auto& [view_id, descriptor] : m_descriptor_by_view_id)
         {
             descriptor.heap.RemoveResource(descriptor.index);
         }
@@ -90,17 +90,17 @@ public:
         return true;
     }
 
-    const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept final { return m_descriptor_by_location_id; }
+    const DescriptorByViewId& GetDescriptorByViewId() const noexcept final { return m_descriptor_by_view_id; }
 
-    void RestoreDescriptorLocations(const DescriptorByLocationId& descriptor_by_location_id) final
+    void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE_DESCR(m_descriptor_by_location_id.empty(), "can not restore on resource with non-empty descriptor by location");
-        m_descriptor_by_location_id = descriptor_by_location_id;
-        for (const auto& [location_id, descriptor] : m_descriptor_by_location_id)
+        META_CHECK_ARG_TRUE_DESCR(m_descriptor_by_view_id.empty(), "can not restore on resource with non-empty descriptor by view_id");
+        m_descriptor_by_view_id = descriptor_by_view_id;
+        for (const auto& [view_id, descriptor] : m_descriptor_by_view_id)
         {
             descriptor.heap.ReplaceResource(*this, descriptor.index);
-            InitializeNativeViewDescriptor(location_id);
+            InitializeNativeViewDescriptor(view_id);
         }
     }
 
@@ -180,14 +180,14 @@ protected:
     }
 
 protected:
-    const Resource::Descriptor& GetDescriptorByLocationId(const ResourceLocationDX::Id& location_id)
+    const Resource::Descriptor& GetDescriptorByViewId(const ResourceViewDX::Id& view_id)
     {
         META_FUNCTION_TASK();
-        const auto it = m_descriptor_by_location_id.find(location_id);
-        if (it != m_descriptor_by_location_id.end())
+        const auto it = m_descriptor_by_view_id.find(view_id);
+        if (it != m_descriptor_by_view_id.end())
             return it->second;
 
-        return m_descriptor_by_location_id.try_emplace(location_id, CreateResourceDescriptor(location_id.usage)).first->second;
+        return m_descriptor_by_view_id.try_emplace(view_id, CreateResourceDescriptor(view_id.usage)).first->second;
     }
 
     static D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(const Descriptor& descriptor)
@@ -210,7 +210,7 @@ private:
         return Resource::Descriptor(heap, heap.AddResource(dynamic_cast<ResourceBase&>(*this)));
     }
 
-    DescriptorByLocationId      m_descriptor_by_location_id;
+    DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Resource::Barriers>     m_upload_sync_transition_barriers_ptr;
     Ptr<Resource::Barriers>     m_upload_begin_transition_barriers_ptr;

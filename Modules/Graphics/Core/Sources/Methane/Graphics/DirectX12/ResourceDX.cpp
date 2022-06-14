@@ -61,8 +61,8 @@ DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(Resource& resou
     }
 }
 
-ResourceLocationDX::ResourceLocationDX(const ResourceLocation& location, Resource::Usage usage)
-    : ResourceLocation(location)
+ResourceViewDX::ResourceViewDX(const ResourceView& view_id, Resource::Usage usage)
+    : ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
     , m_descriptor_opt(m_resource_dx.InitializeNativeViewDescriptor(m_id))
@@ -70,25 +70,25 @@ ResourceLocationDX::ResourceLocationDX(const ResourceLocation& location, Resourc
     META_FUNCTION_TASK();
 }
 
-ResourceLocationDX::~ResourceLocationDX()
+ResourceViewDX::~ResourceViewDX()
 {
     META_FUNCTION_TASK();
 }
 
-[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS ResourceLocationDX::GetNativeGpuAddress() const noexcept
+[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS ResourceViewDX::GetNativeGpuAddress() const noexcept
 {
     META_FUNCTION_TASK();
     return m_resource_dx.GetNativeGpuAddress() + GetOffset();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE ResourceLocationDX::GetNativeCpuDescriptorHandle() const noexcept
+D3D12_CPU_DESCRIPTOR_HANDLE ResourceViewDX::GetNativeCpuDescriptorHandle() const noexcept
 {
     META_FUNCTION_TASK();
     return m_descriptor_opt ? m_descriptor_opt->heap.GetNativeCpuDescriptorHandle(m_descriptor_opt->index)
                             : D3D12_CPU_DESCRIPTOR_HANDLE{ 0U };
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE ResourceLocationDX::GetNativeGpuDescriptorHandle() const noexcept
+D3D12_GPU_DESCRIPTOR_HANDLE ResourceViewDX::GetNativeGpuDescriptorHandle() const noexcept
 {
     META_FUNCTION_TASK();
     return m_descriptor_opt ? m_descriptor_opt->heap.GetNativeGpuDescriptorHandle(m_descriptor_opt->index)

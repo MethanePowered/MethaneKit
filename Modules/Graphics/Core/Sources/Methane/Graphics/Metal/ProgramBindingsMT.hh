@@ -44,7 +44,7 @@ public:
         ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
 
         // ArgumentBinding interface
-        bool SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceViews(const Resource::Views& resource_views) override;
 
         const SettingsMT&                       GetSettingsMT() const noexcept { return m_settings_mt; }
         const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
@@ -60,8 +60,8 @@ public:
         std::vector<NSUInteger>          m_mtl_buffer_offsets;
     };
     
-    ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
-    ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     // ProgramBindings interface
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;

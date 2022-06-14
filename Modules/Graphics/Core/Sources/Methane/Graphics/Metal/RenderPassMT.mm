@@ -59,7 +59,7 @@ static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_ac
 static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass, const RenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
 {
     META_FUNCTION_TASK();
-    const Texture::Location& texture_location = render_pass.GetAttachmentTextureLocation(attachment);
+    const Texture::View& texture_location = render_pass.GetAttachmentTextureView(attachment);
     const SubResource::Index& sub_resource_index = texture_location.GetSubresourceIndex();
     
     if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)

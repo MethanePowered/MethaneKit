@@ -311,11 +311,11 @@ const IContextVK& RenderPassVK::GetContextVK() const noexcept
 void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
 {
     META_FUNCTION_TASK();
-    const Texture::Locations& attachment_texture_locations = GetSettings().attachments;
+    const Texture::Views& attachment_texture_locations = GetSettings().attachments;
     if (attachment_texture_locations.empty())
         return;
 
-    for (const Texture::Location& texture_location : attachment_texture_locations)
+    for (const Texture::View& texture_location : attachment_texture_locations)
     {
         if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
             dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
@@ -324,7 +324,7 @@ void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
     Reset();
 }
 
-const ResourceLocationVK& RenderPassVK::GetAttachmentTextureLocationVK(const Attachment& attachment) const
+const ResourceViewVK& RenderPassVK::GetAttachmentTextureViewVK(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_vk_attachments.size(),
@@ -351,14 +351,14 @@ vk::UniqueFramebuffer RenderPassVK::CreateNativeFrameBuffer(const vk::Device& vk
     if (m_vk_attachments.empty())
     {
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
-                       [](const Texture::Location& texture_location)
-                       { return ResourceLocationVK(texture_location, Resource::Usage::RenderTarget); });
+                       [](const Texture::View& texture_location)
+                       { return ResourceViewVK(texture_location, Resource::Usage::RenderTarget); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;
     std::transform(m_vk_attachments.begin(), m_vk_attachments.end(), std::back_inserter(vk_attachment_views),
-                   [](const ResourceLocationVK& resource_location)
-                   { return resource_location.GetNativeImageView(); });
+                   [](const ResourceViewVK& resource_view)
+                   { return resource_view.GetNativeImageView(); });
 
     return vk_device.createFramebufferUnique(
         vk::FramebufferCreateInfo(

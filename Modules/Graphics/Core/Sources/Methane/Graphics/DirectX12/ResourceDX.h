@@ -39,11 +39,11 @@ namespace wrl = Microsoft::WRL;
 
 struct IResourceDX;
 
-class ResourceLocationDX final : public ResourceLocation
+class ResourceViewDX final : public ResourceView
 {
 public:
-    ResourceLocationDX(const ResourceLocation& location, Resource::Usage usage);
-    ~ResourceLocationDX();
+    ResourceViewDX(const ResourceView& view_id, Resource::Usage usage);
+    ~ResourceViewDX();
 
     [[nodiscard]] const Id&                        GetId() const noexcept                { return m_id; }
     [[nodiscard]] Resource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
@@ -60,7 +60,7 @@ private:
     Opt<Resource::Descriptor>  m_descriptor_opt;
 };
 
-using ResourceLocationsDX = std::vector<ResourceLocationDX>;
+using ResourceViewsDX = std::vector<ResourceViewDX>;
 
 struct IResourceDX : virtual Resource // NOSONAR
 {
@@ -69,8 +69,8 @@ public:
     using Barriers    = Resource::Barriers;
     using State       = Resource::State;
     using BarriersDX  = ResourceBarriersDX;
-    using LocationDX  = ResourceLocationDX;
-    using LocationsDX = ResourceLocationsDX;
+    using ViewDX      = ResourceViewDX;
+    using ViewsDX     = ResourceViewsDX;
 
     [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(Resource& resource, Resource::Usage resource_usage);
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
@@ -85,7 +85,7 @@ public:
     [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
 
-    virtual Opt<Descriptor> InitializeNativeViewDescriptor(const LocationDX::Id& location_id) = 0;
+    virtual Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) = 0;
 
     ~IResourceDX() override = default;
 };

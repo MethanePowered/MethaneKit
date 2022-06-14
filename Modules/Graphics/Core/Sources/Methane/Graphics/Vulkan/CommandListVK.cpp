@@ -52,7 +52,7 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Comma
         if (!render_command_list.HasPass())
             continue;
 
-        for(const Texture::Location& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
+        for(const Texture::View& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
         {
             const Texture::Type attach_texture_type = attach_location.GetTexture().GetSettings().type;
             if (attach_texture_type == Texture::Type::FrameBuffer)

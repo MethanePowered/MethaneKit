@@ -151,40 +151,40 @@ static vk::ImageLayout GetVulkanImageLayoutByUsage(Texture::Type texture_type, R
     return vk::ImageLayout::eUndefined;
 }
 
-static Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeImageViewDescriptor(const ResourceLocation::Id& location_id,
-                                                                                      const Texture::Settings& texture_settings,
-                                                                                      const SubResource::Count& texture_subresource_count,
-                                                                                      const std::string& texture_name,
-                                                                                      const vk::Device& vk_device,
-                                                                                      const vk::Image& vk_image)
+static Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeImageViewDescriptor(const ResourceView::Id& view_id,
+                                                                                  const Texture::Settings& texture_settings,
+                                                                                  const SubResource::Count& texture_subresource_count,
+                                                                                  const std::string& texture_name,
+                                                                                  const vk::Device& vk_device,
+                                                                                  const vk::Image& vk_image)
 {
     META_FUNCTION_TASK();
-    ResourceLocationVK::ImageViewDescriptor image_view_desc;
+    ResourceViewVK::ImageViewDescriptor image_view_desc;
 
     image_view_desc.vk_view = vk_device.createImageViewUnique(
         vk::ImageViewCreateInfo(
             vk::ImageViewCreateFlags{},
             vk_image,
-            ITextureVK::DimensionTypeToImageViewType(location_id.texture_dimension_type_opt.value_or(texture_settings.dimension_type)),
+            ITextureVK::DimensionTypeToImageViewType(view_id.texture_dimension_type_opt.value_or(texture_settings.dimension_type)),
             TypeConverterVK::PixelFormatToVulkan(texture_settings.pixel_format),
             vk::ComponentMapping(),
             vk::ImageSubresourceRange(ITextureVK::GetNativeImageAspectFlags(texture_settings),
-                                      location_id.subresource_index.GetMipLevel(),
-                                      location_id.subresource_count.GetMipLevelsCount(),
-                                      location_id.subresource_index.GetBaseLayerIndex(texture_subresource_count),
-                                      location_id.subresource_count.GetBaseLayerCount())
+                                      view_id.subresource_index.GetMipLevel(),
+                                      view_id.subresource_count.GetMipLevelsCount(),
+                                      view_id.subresource_index.GetBaseLayerIndex(texture_subresource_count),
+                                      view_id.subresource_count.GetBaseLayerCount())
         ));
 
-    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, magic_enum::enum_name(location_id.usage));
+    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, magic_enum::enum_name(view_id.usage));
     SetVulkanObjectName(vk_device, image_view_desc.vk_view.get(), view_name.c_str());
 
     image_view_desc.vk_desc = vk::DescriptorImageInfo(
         vk::Sampler(),
         *image_view_desc.vk_view,
-        GetVulkanImageLayoutByUsage(texture_settings.type, location_id.usage)
+        GetVulkanImageLayoutByUsage(texture_settings.type, view_id.usage)
     );
 
-    return std::make_shared<ResourceLocationVK::ViewDescriptorVariant>(std::move(image_view_desc));
+    return std::make_shared<ResourceViewVK::ViewDescriptorVariant>(std::move(image_view_desc));
 }
 
 vk::ImageType ITextureVK::DimensionTypeToImageType(Texture::DimensionType dimension_type)
@@ -294,10 +294,10 @@ vk::ImageSubresourceRange FrameBufferTextureVK::GetNativeSubresourceRange() cons
     );
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> FrameBufferTextureVK::CreateNativeViewDescriptor(const Location::Id& location_id)
+Ptr<ResourceViewVK::ViewDescriptorVariant> FrameBufferTextureVK::CreateNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    return CreateNativeImageViewDescriptor(location_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
+    return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
 }
 
 void FrameBufferTextureVK::ResetNativeImage()
@@ -340,10 +340,10 @@ vk::ImageSubresourceRange DepthStencilTextureVK::GetNativeSubresourceRange() con
     );
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> DepthStencilTextureVK::CreateNativeViewDescriptor(const Location::Id& location_id)
+Ptr<ResourceViewVK::ViewDescriptorVariant> DepthStencilTextureVK::CreateNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    return CreateNativeImageViewDescriptor(location_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
+    return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
 }
 
 RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings)
@@ -373,10 +373,10 @@ vk::ImageSubresourceRange RenderTargetTextureVK::GetNativeSubresourceRange() con
     );
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> RenderTargetTextureVK::CreateNativeViewDescriptor(const Location::Id& location_id)
+Ptr<ResourceViewVK::ViewDescriptorVariant> RenderTargetTextureVK::CreateNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    return CreateNativeImageViewDescriptor(location_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
+    return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
 }
 
 ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings)
@@ -604,10 +604,10 @@ vk::ImageSubresourceRange ImageTextureVK::GetNativeSubresourceRange() const noex
     );
 }
 
-Ptr<ResourceLocationVK::ViewDescriptorVariant> ImageTextureVK::CreateNativeViewDescriptor(const Location::Id& location_id)
+Ptr<ResourceViewVK::ViewDescriptorVariant> ImageTextureVK::CreateNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    return CreateNativeImageViewDescriptor(location_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
+    return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
 }
 
 } // namespace Methane::Graphics

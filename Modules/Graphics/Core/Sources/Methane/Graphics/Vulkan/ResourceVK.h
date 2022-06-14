@@ -36,7 +36,7 @@ namespace Methane::Graphics
 struct IContextVK;
 struct IResourceVK;
 
-class ResourceLocationVK final : public ResourceLocation
+class ResourceViewVK final : public ResourceView
 {
 public:
     template<typename DescType, typename ViewType>
@@ -50,7 +50,7 @@ public:
     using ImageViewDescriptor   = ViewDescriptor<vk::DescriptorImageInfo, vk::UniqueImageView>;
     using ViewDescriptorVariant = std::variant<BufferViewDescriptor, ImageViewDescriptor>;
 
-    explicit ResourceLocationVK(const ResourceLocation& location, Resource::Usage usage);
+    explicit ResourceViewVK(const ResourceView& view_id, Resource::Usage usage);
 
     [[nodiscard]] const Id&       GetId() const noexcept    { return m_id; }
     [[nodiscard]] Resource::Usage GetUsage() const noexcept { return m_id.usage; }
@@ -74,23 +74,23 @@ private:
     Ptr<ViewDescriptorVariant> m_view_desc_var_ptr;
 };
 
-using ResourceLocationsVK = std::vector<ResourceLocationVK>;
+using ResourceViewsVK = std::vector<ResourceViewVK>;
 
 struct IResourceVK : virtual Resource // NOSONAR
 {
 public:
-    using Barrier     = Resource::Barrier;
-    using Barriers    = Resource::Barriers;
-    using State       = Resource::State;
-    using LocationVK  = ResourceLocationVK;
-    using LocationsVK = ResourceLocationsVK;
+    using Barrier  = Resource::Barrier;
+    using Barriers = Resource::Barriers;
+    using State    = Resource::State;
+    using ViewVK   = ResourceViewVK;
+    using ViewsVK  = ResourceViewsVK;
 
     [[nodiscard]] virtual const IContextVK&       GetContextVK() const noexcept = 0;
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
     [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&    GetOwnerQueueFamilyIndex() const noexcept = 0;
 
-    virtual const Ptr<ResourceLocationVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const Location::Id& location_id) = 0;
+    virtual const Ptr<ResourceViewVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const View::Id& view_id) = 0;
 
     [[nodiscard]] static vk::AccessFlags        GetNativeAccessFlagsByResourceState(ResourceState resource_state);
     [[nodiscard]] static vk::ImageLayout        GetNativeImageLayoutByResourceState(ResourceState resource_state);

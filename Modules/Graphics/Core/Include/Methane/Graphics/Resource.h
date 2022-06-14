@@ -24,7 +24,7 @@ Methane resource interface: base class of all GPU resources.
 #pragma once
 
 #include "Object.h"
-#include "SubResource.h"
+#include "ResourceView.h"
 #include "ResourceBarriers.h"
 
 #include <Methane/Memory.hpp>
@@ -69,7 +69,7 @@ struct Resource
         Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index);
     };
 
-    using DescriptorByLocationId = std::map<ResourceLocation::Id, Descriptor>;
+    using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
 
     class AllocationError : public std::runtime_error
     {
@@ -87,13 +87,13 @@ struct Resource
     using BytesRangeOpt = Methane::Graphics::BytesRangeOpt;
     using SubResource   = Methane::Graphics::SubResource;
     using SubResources  = Methane::Graphics::SubResources;
-    using Location      = Methane::Graphics::ResourceLocation;
-    using Locations     = Methane::Graphics::ResourceLocations;
+    using View          = Methane::Graphics::ResourceView;
+    using Views         = Methane::Graphics::ResourceViews;
     using Barrier       = Methane::Graphics::ResourceBarrier;
     using Barriers      = Methane::Graphics::ResourceBarriers;
 
     template<typename TResource>
-    static Locations CreateLocations(const Ptrs<TResource>& resources) { return CreateResourceLocations(resources); }
+    static Views CreateViews(const Ptrs<TResource>& resources) { return CreateResourceViews(resources); }
 
     // Resource interface
     virtual bool SetState(State state) = 0;
@@ -101,18 +101,18 @@ struct Resource
     virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) = 0;
     virtual void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) = 0;
-    virtual void RestoreDescriptorLocations(const DescriptorByLocationId& descriptor_by_location_id) = 0;
+    virtual void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) = 0;
 
-    [[nodiscard]] virtual SubResource                   GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
-    [[nodiscard]] virtual Data::Size                    GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
-    [[nodiscard]] virtual Data::Size                    GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
-    [[nodiscard]] virtual const SubResource::Count&     GetSubresourceCount() const noexcept = 0;
-    [[nodiscard]] virtual Type                          GetResourceType() const noexcept = 0;
-    [[nodiscard]] virtual State                         GetState() const noexcept = 0;
-    [[nodiscard]] virtual Usage                         GetUsage() const noexcept = 0;
-    [[nodiscard]] virtual const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept = 0;
-    [[nodiscard]] virtual const Context&                GetContext() const noexcept = 0;
-    [[nodiscard]] virtual const Opt<uint32_t>&          GetOwnerQueueFamily() const noexcept = 0;
+    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
+    [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
+    [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
+    [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
+    [[nodiscard]] virtual State                     GetState() const noexcept = 0;
+    [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
+    [[nodiscard]] virtual const DescriptorByViewId& GetDescriptorByViewId() const noexcept = 0;
+    [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

@@ -23,7 +23,7 @@ Methane sub-resource used for resource data transfers.
 
 #include "CoreFormatters.hpp"
 
-#include <Methane/Graphics/SubResource.h>
+#include <Methane/Graphics/ResourceView.h>
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Instrumentation.h>
@@ -168,7 +168,7 @@ SubResource::Index::operator std::string() const noexcept
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-bool ResourceLocation::Settings::operator<(const Settings& other) const noexcept
+bool ResourceView::Settings::operator<(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
     // Do not include 'offset' in the less comparison, because native views are created without offset which is applied dynamically
@@ -176,67 +176,67 @@ bool ResourceLocation::Settings::operator<(const Settings& other) const noexcept
            std::tie(other.subresource_index, other.subresource_count, /*other.offset,*/ other.size);
 }
 
-bool ResourceLocation::Settings::operator==(const Settings& other) const noexcept
+bool ResourceView::Settings::operator==(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(subresource_index, subresource_count, offset, size) ==
            std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
-bool ResourceLocation::Settings::operator!=(const Settings& other) const noexcept
+bool ResourceView::Settings::operator!=(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(subresource_index, subresource_count, offset, size) !=
            std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
-ResourceLocation::Id::Id(ResourceUsage usage, const ResourceLocation::Settings& settings)
+ResourceView::Id::Id(ResourceUsage usage, const ResourceView::Settings& settings)
     : Settings(settings)
     , usage(usage)
 {
     META_FUNCTION_TASK();
 }
 
-bool ResourceLocation::Id::operator<(const Id& other) const noexcept
+bool ResourceView::Id::operator<(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
     if (usage != other.usage)
         return usage < other.usage;
 
-    return ResourceLocation::Settings::operator<(other);
+    return ResourceView::Settings::operator<(other);
 }
 
-bool ResourceLocation::Id::operator==(const Id& other) const noexcept
+bool ResourceView::Id::operator==(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return usage == other.usage && ResourceLocation::Settings::operator==(other);
+    return usage == other.usage && ResourceView::Settings::operator==(other);
 }
 
-bool ResourceLocation::Id::operator!=(const Id& other) const noexcept
+bool ResourceView::Id::operator!=(const Id& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return usage != other.usage && ResourceLocation::Settings::operator!=(other);
+    return usage != other.usage && ResourceView::Settings::operator!=(other);
 }
 
-ResourceLocation::ResourceLocation(Resource& resource, const Settings& settings)
+ResourceView::ResourceView(Resource& resource, const Settings& settings)
     : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
 }
 
-ResourceLocation::ResourceLocation(Resource& resource, Data::Size offset, Data::Size size)
-    : ResourceLocation(resource, SubResource::Index(), resource.GetSubresourceCount(), offset, size)
+ResourceView::ResourceView(Resource& resource, Data::Size offset, Data::Size size)
+    : ResourceView(resource, SubResource::Index(), resource.GetSubresourceCount(), offset, size)
 {
     META_FUNCTION_TASK();
 }
 
-ResourceLocation::ResourceLocation(Resource& resource,
-                                   const SubResource::Index& subresource_index,
-                                   const SubResource::Count& subresource_count,
-                                   Data::Size offset,
-                                   Data::Size size)
-    : ResourceLocation(resource, Settings{
+ResourceView::ResourceView(Resource& resource,
+                           const SubResource::Index& subresource_index,
+                           const SubResource::Count& subresource_count,
+                           Data::Size offset,
+                           Data::Size size)
+    : ResourceView(resource, Settings{
         subresource_index,
         subresource_count,
         offset,
@@ -246,11 +246,11 @@ ResourceLocation::ResourceLocation(Resource& resource,
     META_FUNCTION_TASK();
 }
 
-ResourceLocation::ResourceLocation(Resource& resource,
-                                   const SubResource::Index& subresource_index,
-                                   const SubResource::Count& subresource_count,
-                                   Opt<TextureDimensionType> texture_dimension_type_opt)
-    : ResourceLocation(resource, Settings{
+ResourceView::ResourceView(Resource& resource,
+                           const SubResource::Index& subresource_index,
+                           const SubResource::Count& subresource_count,
+                           Opt<TextureDimensionType> texture_dimension_type_opt)
+    : ResourceView(resource, Settings{
         subresource_index,
         subresource_count,
         0U, // offset
@@ -261,25 +261,25 @@ ResourceLocation::ResourceLocation(Resource& resource,
     META_FUNCTION_TASK();
 }
 
-bool ResourceLocation::operator==(const ResourceLocation& other) const noexcept
+bool ResourceView::operator==(const ResourceView& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_resource_ptr, m_settings) ==
            std::tie(other.m_resource_ptr, other.m_settings);
 }
 
-bool ResourceLocation::operator!=(const ResourceLocation& other) const noexcept
+bool ResourceView::operator!=(const ResourceView& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_resource_ptr, m_settings) !=
            std::tie(other.m_resource_ptr, other.m_settings);
 }
 
-ResourceLocation::operator std::string() const
+ResourceView::operator std::string() const
 {
     META_FUNCTION_TASK();
     if (!m_resource_ptr)
-        return "Null resource location";
+        return "Null resource view_id";
 
     return fmt::format("{} '{}' subresources from {} count {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
@@ -289,7 +289,7 @@ ResourceLocation::operator std::string() const
                        m_settings.offset);
 }
 
-TextureDimensionType ResourceLocation::GetTextureDimensionType() const
+TextureDimensionType ResourceView::GetTextureDimensionType() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_resource_ptr);

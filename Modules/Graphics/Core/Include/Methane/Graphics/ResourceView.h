@@ -163,7 +163,7 @@ enum class TextureDimensionType : uint32_t
     Tex3D,
 };
 
-class ResourceLocation
+class ResourceView
 {
 public:
     struct Settings
@@ -189,20 +189,20 @@ public:
         [[nodiscard]] bool operator!=(const Id& other) const noexcept;
     };
 
-    ResourceLocation(Resource& resource, const Settings& settings);
-    ResourceLocation(Resource& resource, Data::Size offset = 0U, Data::Size size = 0U);
-    ResourceLocation(Resource& resource,
-                     const SubResource::Index& subresource_index,
-                     const SubResource::Count& subresource_count = {},
-                     Data::Size offset = 0U,
-                     Data::Size size   = 0U);
-    ResourceLocation(Resource& resource,
-                     const SubResource::Index& subresource_index,
-                     const SubResource::Count& subresource_count = {},
-                     Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
+    ResourceView(Resource& resource, const Settings& settings);
+    ResourceView(Resource& resource, Data::Size offset = 0U, Data::Size size = 0U);
+    ResourceView(Resource& resource,
+                 const SubResource::Index& subresource_index,
+                 const SubResource::Count& subresource_count = {},
+                 Data::Size offset = 0U,
+                 Data::Size size   = 0U);
+    ResourceView(Resource& resource,
+                 const SubResource::Index& subresource_index,
+                 const SubResource::Count& subresource_count = {},
+                 Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
 
-    [[nodiscard]] bool operator==(const ResourceLocation& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceLocation& other) const noexcept;
+    [[nodiscard]] bool operator==(const ResourceView& other) const noexcept;
+    [[nodiscard]] bool operator!=(const ResourceView& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 
     [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
@@ -218,15 +218,15 @@ private:
     Settings      m_settings;
 };
 
-using ResourceLocations = std::vector<ResourceLocation>;
+using ResourceViews = std::vector<ResourceView>;
 
 template<typename TResource>
-static ResourceLocations CreateResourceLocations(const Ptrs<TResource>& resources)
+static ResourceViews CreateResourceViews(const Ptrs<TResource>& resources)
 {
-    ResourceLocations resource_locations;
-    std::transform(resources.begin(), resources.end(), std::back_inserter(resource_locations),
-                   [](const Ptr<TResource>& resource_ptr) { META_CHECK_ARG_NOT_NULL(resource_ptr); return ResourceLocation(*resource_ptr); });
-    return resource_locations;
+    ResourceViews resource_views;
+    std::transform(resources.begin(), resources.end(), std::back_inserter(resource_views),
+                   [](const Ptr<TResource>& resource_ptr) { META_CHECK_ARG_NOT_NULL(resource_ptr); return ResourceView(*resource_ptr); });
+    return resource_views;
 }
 
 } // namespace Methane::Graphics

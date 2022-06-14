@@ -478,7 +478,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
     return true;
 }
 
@@ -551,7 +551,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { *m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(

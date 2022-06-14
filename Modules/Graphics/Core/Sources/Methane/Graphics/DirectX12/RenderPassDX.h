@@ -71,10 +71,10 @@ private:
         D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
         D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
-        AccessDesc(const Attachment& attachment, const ResourceLocationDX& dx_texture_location);
-        AccessDesc(const Attachment* attachment_ptr, const ResourceLocationDX* dx_texture_location_ptr);
+        AccessDesc(const Attachment& attachment, const ResourceViewDX& dx_texture_location);
+        AccessDesc(const Attachment* attachment_ptr, const ResourceViewDX* dx_texture_location_ptr);
         AccessDesc(const ColorAttachment& color_attachment, const RenderPassDX& render_pass);
-        AccessDesc(const ColorAttachment& color_attachment, const ResourceLocationDX& dx_texture_location);
+        AccessDesc(const ColorAttachment& color_attachment, const ResourceViewDX& dx_texture_location);
         AccessDesc(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt, const RenderPassDX& render_pass);
         AccessDesc(const Opt<StencilAttachment>& stencil_attachment_opt, const Opt<DepthAttachment>& depth_attachment_opt, const RenderPassDX& render_pass);
 
@@ -105,7 +105,7 @@ private:
         DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassDX& render_pass);
     };
 
-    const ResourceLocationDX& GetAttachmentTextureLocationDX(const Attachment& attachment) const;
+    const ResourceViewDX& GetAttachmentTextureViewDX(const Attachment& attachment) const;
 
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
@@ -117,7 +117,7 @@ private:
     void OnDescriptorHeapAllocated(DescriptorHeapDX& descriptor_heap) override;
 
     // D3D12 Render-Pass description
-    ResourceLocationsDX                                 m_dx_attachments;
+    ResourceViewsDX                                     m_dx_attachments;
     std::optional<bool>                                 m_is_native_render_pass_available;
     std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;
     std::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> m_depth_stencil_desc;

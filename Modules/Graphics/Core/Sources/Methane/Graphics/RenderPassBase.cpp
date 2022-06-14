@@ -377,7 +377,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& c
     }
 }
 
-const Texture::Location& RenderPassBase::GetAttachmentTextureLocation(const Attachment& attachment) const
+const Texture::View& RenderPassBase::GetAttachmentTextureView(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
@@ -395,7 +395,7 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(color_attachments.size());
     for (const ColorAttachment& color_attach : color_attachments)
     {
-        m_color_attachment_textures.push_back(static_cast<TextureBase&>(GetAttachmentTextureLocation(color_attach).GetTexture()));
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(GetAttachmentTextureView(color_attach).GetTexture()));
     }
     return m_color_attachment_textures;
 }
@@ -410,7 +410,7 @@ TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
     if (!depth_attachment_opt)
         return nullptr;
 
-    m_p_depth_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*depth_attachment_opt).GetTexturePtr().get());
+    m_p_depth_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureView(*depth_attachment_opt).GetTexturePtr().get());
     return m_p_depth_attachment_texture;
 }
 
@@ -424,7 +424,7 @@ TextureBase* RenderPassBase::GetStencilAttachmentTexture() const
     if (!stencil_attachment_opt)
         return nullptr;
 
-    m_p_stencil_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*stencil_attachment_opt).GetTexturePtr().get());
+    m_p_stencil_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureView(*stencil_attachment_opt).GetTexturePtr().get());
     return m_p_stencil_attachment_texture;
 }
 

@@ -97,19 +97,19 @@ public:
             SetVulkanObjectName(m_vk_device, vk_resource, name.c_str());
         }
 
-        for(const auto& [location_id, view_desc_ptr] : m_view_descriptor_by_location_id)
+        for(const auto& [view_id, view_desc_ptr] : m_view_descriptor_by_view_id)
         {
             META_CHECK_ARG_NOT_NULL(view_desc_ptr);
-            const std::string view_name = fmt::format("{} View for usage {}", name, magic_enum::enum_name(location_id.usage));
+            const std::string view_name = fmt::format("{} View for usage {}", name, magic_enum::enum_name(view_id.usage));
 
-            const auto* image_view_desc_ptr = std::get_if<ResourceLocationVK::ImageViewDescriptor>(view_desc_ptr.get());
+            const auto* image_view_desc_ptr = std::get_if<ResourceViewVK::ImageViewDescriptor>(view_desc_ptr.get());
             if (image_view_desc_ptr)
             {
                 SetVulkanObjectName(m_vk_device, image_view_desc_ptr->vk_view.get(), view_name.c_str());
                 continue;
             }
 
-            const auto* buffer_view_desc_ptr = std::get_if<ResourceLocationVK::BufferViewDescriptor>(view_desc_ptr.get());
+            const auto* buffer_view_desc_ptr = std::get_if<ResourceViewVK::BufferViewDescriptor>(view_desc_ptr.get());
             if (buffer_view_desc_ptr)
             {
                 SetVulkanObjectName(m_vk_device, buffer_view_desc_ptr->vk_view.get(), view_name.c_str());
@@ -119,13 +119,13 @@ public:
         return true;
     }
 
-    const DescriptorByLocationId& GetDescriptorByLocationId() const noexcept final
+    const DescriptorByViewId& GetDescriptorByViewId() const noexcept final
     {
-        static const DescriptorByLocationId s_dummy_descriptor_by_location_id;
-        return s_dummy_descriptor_by_location_id;
+        static const DescriptorByViewId s_dummy_descriptor_by_view_id;
+        return s_dummy_descriptor_by_view_id;
     }
 
-    void RestoreDescriptorLocations(const DescriptorByLocationId&) final { /* intentionally uninitialized */ }
+    void RestoreDescriptorViews(const DescriptorByViewId&) final { /* intentionally uninitialized */ }
 
     // IResourceVK overrides
     const IContextVK& GetContextVK() const noexcept final
@@ -148,14 +148,14 @@ public:
         return m_owner_queue_family_index_opt;
     }
 
-    const Ptr<ResourceLocationVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const Location::Id& location_id) final
+    const Ptr<ResourceViewVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const View::Id& view_id) final
     {
         META_FUNCTION_TASK();
-        const auto it = m_view_descriptor_by_location_id.find(location_id);
-        if (it != m_view_descriptor_by_location_id.end())
+        const auto it = m_view_descriptor_by_view_id.find(view_id);
+        if (it != m_view_descriptor_by_view_id.end())
             return it->second;
 
-        return m_view_descriptor_by_location_id.try_emplace(location_id, CreateNativeViewDescriptor(location_id)).first->second;
+        return m_view_descriptor_by_view_id.try_emplace(view_id, CreateNativeViewDescriptor(view_id)).first->second;
     }
 
     const auto& GetNativeResource() const noexcept
@@ -244,20 +244,20 @@ protected:
         }
     }
 
-    void ResetNativeViewDescriptors() { m_view_descriptor_by_location_id.clear(); }
+    void ResetNativeViewDescriptors() { m_view_descriptor_by_view_id.clear(); }
 
-    virtual Ptr<ResourceLocationVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const Location::Id& location_id) = 0;
+    virtual Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) = 0;
 
 private:
-    using ViewDescriptorByLocationId = std::map<ResourceLocation::Id, Ptr<ResourceLocationVK::ViewDescriptorVariant>>;
+    using ViewDescriptorByViewId = std::map<ResourceView::Id, Ptr<ResourceViewVK::ViewDescriptorVariant>>;
 
-    vk::Device                 m_vk_device;
-    vk::UniqueDeviceMemory     m_vk_unique_device_memory;
-    ResourceStorageType        m_vk_resource;
-    ViewDescriptorByLocationId m_view_descriptor_by_location_id;
-    Opt<uint32_t>              m_owner_queue_family_index_opt;
-    Ptr<Resource::Barriers>    m_upload_begin_transition_barriers_ptr;
-    Ptr<Resource::Barriers>    m_upload_end_transition_barriers_ptr;
+    vk::Device              m_vk_device;
+    vk::UniqueDeviceMemory  m_vk_unique_device_memory;
+    ResourceStorageType     m_vk_resource;
+    ViewDescriptorByViewId  m_view_descriptor_by_view_id;
+    Opt<uint32_t>           m_owner_queue_family_index_opt;
+    Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

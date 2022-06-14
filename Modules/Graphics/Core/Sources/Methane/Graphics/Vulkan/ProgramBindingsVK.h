@@ -73,7 +73,7 @@ public:
 
         // ArgumentBinding interface
         const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-        bool SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceViews(const Resource::Views& resource_views) override;
 
         void UpdateDescriptorSetsOnGpu();
 
@@ -87,8 +87,8 @@ public:
         std::vector<vk::BufferView>           m_vk_buffer_views;
     };
 
-    ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
-    ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     void Initialize();
 
@@ -102,7 +102,7 @@ public:
                const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 protected:
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
+    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
 private:
     // IObjectCallback interface
@@ -115,7 +115,7 @@ private:
     mutable Ptr<Resource::Barriers> m_resource_ownership_transition_barriers_ptr;
     std::vector<vk::DescriptorSet>  m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
     bool                            m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
-    std::vector<uint32_t>           m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceLocation::Settings::offset
+    std::vector<uint32_t>           m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset
     std::vector<uint32_t>           m_dynamic_offset_index_by_set_index; // beginning index in dynamic buffer offsets corresponding to the particular descriptor set or access type
 
 };

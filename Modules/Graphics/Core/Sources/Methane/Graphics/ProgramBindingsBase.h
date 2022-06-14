@@ -59,9 +59,9 @@ public:
         virtual void MergeSettings(const ArgumentBindingBase& other);
 
         // ArgumentBinding interface
-        const Settings&            GetSettings() const noexcept override         { return m_settings; }
-        const Resource::Locations& GetResourceLocations() const noexcept final   { return m_resource_locations; }
-        bool                       SetResourceLocations(const Resource::Locations& resource_locations) override;
+        const Settings&        GetSettings() const noexcept override     { return m_settings; }
+        const Resource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
+        bool                   SetResourceViews(const Resource::Views& resource_views) override;
         explicit operator std::string() const final;
 
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
@@ -74,15 +74,15 @@ public:
         const ContextBase& GetContext() const noexcept { return m_context; }
 
     private:
-        const ContextBase&  m_context;
-        const Settings      m_settings;
-        Resource::Locations m_resource_locations;
+        const ContextBase& m_context;
+        const Settings     m_settings;
+        Resource::Views    m_resource_views;
     };
 
     using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ArgumentBindingBase>, Program::Argument::Hash>;
 
-    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index);
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
@@ -118,13 +118,13 @@ public:
 
 protected:
     // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
 
     Program& GetProgram();
     void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
-    ResourceLocationsByArgument ReplaceResourceLocations(const ArgumentBindings& argument_bindings,
-                                                         const ResourceLocationsByArgument& replace_resource_locations);
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument);
+    ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+                                                 const ResourceViewsByArgument& replace_resource_views);
+    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Resource>& GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const;

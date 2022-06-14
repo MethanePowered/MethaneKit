@@ -34,8 +34,8 @@ Vulkan implementation of the resource objects.
 namespace Methane::Graphics
 {
 
-ResourceLocationVK::ResourceLocationVK(const ResourceLocation& location, Resource::Usage usage)
-    : ResourceLocation(location)
+ResourceViewVK::ResourceViewVK(const ResourceView& view_id, Resource::Usage usage)
+    : ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_vulkan_resource_ref(dynamic_cast<IResourceVK&>(GetResource()))
     , m_view_desc_var_ptr(m_vulkan_resource_ref.get().InitializeNativeViewDescriptor(m_id))
@@ -43,69 +43,69 @@ ResourceLocationVK::ResourceLocationVK(const ResourceLocation& location, Resourc
     META_FUNCTION_TASK();
 }
 
-IResourceVK& ResourceLocationVK::GetResourceVK() const
+IResourceVK& ResourceViewVK::GetResourceVK() const
 {
     META_FUNCTION_TASK();
     return m_vulkan_resource_ref.get();
 }
 
-const ResourceLocationVK::BufferViewDescriptor* ResourceLocationVK::GetBufferViewDescriptorPtr() const
+const ResourceViewVK::BufferViewDescriptor* ResourceViewVK::GetBufferViewDescriptorPtr() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
     return std::get_if<BufferViewDescriptor>(m_view_desc_var_ptr.get());
 }
 
-const ResourceLocationVK::BufferViewDescriptor& ResourceLocationVK::GetBufferViewDescriptor() const
+const ResourceViewVK::BufferViewDescriptor& ResourceViewVK::GetBufferViewDescriptor() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
     return std::get<BufferViewDescriptor>(*m_view_desc_var_ptr);
 }
 
-const ResourceLocationVK::ImageViewDescriptor* ResourceLocationVK::GetImageViewDescriptorPtr() const
+const ResourceViewVK::ImageViewDescriptor* ResourceViewVK::GetImageViewDescriptorPtr() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
     return std::get_if<ImageViewDescriptor>(m_view_desc_var_ptr.get());
 }
 
-const ResourceLocationVK::ImageViewDescriptor& ResourceLocationVK::GetImageViewDescriptor() const
+const ResourceViewVK::ImageViewDescriptor& ResourceViewVK::GetImageViewDescriptor() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
     return std::get<ImageViewDescriptor>(*m_view_desc_var_ptr);
 }
 
-const vk::DescriptorBufferInfo* ResourceLocationVK::GetNativeDescriptorBufferInfoPtr() const
+const vk::DescriptorBufferInfo* ResourceViewVK::GetNativeDescriptorBufferInfoPtr() const
 {
     META_FUNCTION_TASK();
     const BufferViewDescriptor* buffer_view_desc_ptr = GetBufferViewDescriptorPtr();
     return buffer_view_desc_ptr ? &buffer_view_desc_ptr->vk_desc : nullptr;
 }
 
-const vk::DescriptorImageInfo* ResourceLocationVK::GetNativeDescriptorImageInfoPtr() const
+const vk::DescriptorImageInfo* ResourceViewVK::GetNativeDescriptorImageInfoPtr() const
 {
     META_FUNCTION_TASK();
     const ImageViewDescriptor* image_view_desc_ptr = GetImageViewDescriptorPtr();
     return image_view_desc_ptr ? &image_view_desc_ptr->vk_desc : nullptr;
 }
 
-const vk::BufferView* ResourceLocationVK::GetNativeBufferViewPtr() const
+const vk::BufferView* ResourceViewVK::GetNativeBufferViewPtr() const
 {
     META_FUNCTION_TASK();
     const BufferViewDescriptor* buffer_view_desc_ptr = GetBufferViewDescriptorPtr();
     return buffer_view_desc_ptr ? &buffer_view_desc_ptr->vk_view.get() : nullptr;
 }
 
-const vk::ImageView* ResourceLocationVK::GetNativeImageViewPtr() const
+const vk::ImageView* ResourceViewVK::GetNativeImageViewPtr() const
 {
     META_FUNCTION_TASK();
     const ImageViewDescriptor* image_view_desc_ptr = GetImageViewDescriptorPtr();
     return image_view_desc_ptr ? &image_view_desc_ptr->vk_view.get() : nullptr;
 }
 
-const vk::BufferView& ResourceLocationVK::GetNativeBufferView() const
+const vk::BufferView& ResourceViewVK::GetNativeBufferView() const
 {
     META_FUNCTION_TASK();
     const BufferViewDescriptor& buffer_view_desc = GetBufferViewDescriptor();
@@ -113,7 +113,7 @@ const vk::BufferView& ResourceLocationVK::GetNativeBufferView() const
     return buffer_view_desc.vk_view.get();
 }
 
-const vk::ImageView& ResourceLocationVK::GetNativeImageView() const
+const vk::ImageView& ResourceViewVK::GetNativeImageView() const
 {
     META_FUNCTION_TASK();
     const ImageViewDescriptor& image_view_desc = GetImageViewDescriptor();

@@ -43,26 +43,26 @@ struct Texture : virtual Resource // NOSONAR
         DepthStencilBuffer,
     };
 
-    class Location : public Resource::Location
+    class View : public Resource::View
     {
     public:
-        Location(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {},
-                 Opt<TextureDimensionType> texture_dimension_type_opt = {});
+        View(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {},
+             Opt<TextureDimensionType> texture_dimension_type_opt = {});
 
-        using Resource::Location::operator==;
-        using Resource::Location::operator!=;
-        using Resource::Location::operator std::string;
+        using Resource::View::operator==;
+        using Resource::View::operator!=;
+        using Resource::View::operator std::string;
 
         [[nodiscard]] const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
         [[nodiscard]] Texture&            GetTexture() const;
 
     private:
-        // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too.
+        // Resource::View stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::View too.
         // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
         Ptr<Texture> m_texture_ptr;
     };
 
-    using Locations = std::vector<Location>;
+    using Views = std::vector<View>;
 
     struct Settings
     {

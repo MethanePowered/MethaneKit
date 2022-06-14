@@ -159,16 +159,16 @@ static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& pro
     }
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_locations_by_argument, frame_index);
+    return std::make_shared<ProgramBindingsMT>(program_ptr, resource_views_by_argument, frame_index);
 }
 
-Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_locations_by_argument, frame_index);
+    return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
 }
 
 Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
@@ -184,10 +184,10 @@ ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& conte
     META_FUNCTION_TASK();
 }
 
-bool ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::Locations& resource_locations)
+bool ProgramBindingsMT::ArgumentBindingMT::SetResourceViews(const Resource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ArgumentBindingBase::SetResourceLocations(resource_locations))
+    if (!ArgumentBindingBase::SetResourceViews(resource_views))
         return false;
 
     m_mtl_sampler_states.clear();
@@ -198,26 +198,26 @@ bool ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     switch(m_settings_mt.resource_type)
     {
     case Resource::Type::Sampler:
-        m_mtl_sampler_states.reserve(resource_locations.size());
-        std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const SamplerMT&>(resource_location.GetResource()).GetNativeSamplerState(); });
+        m_mtl_sampler_states.reserve(resource_views.size());
+        std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_sampler_states),
+                       [](const Resource::View& resource_view)
+                       { return dynamic_cast<const SamplerMT&>(resource_view.GetResource()).GetNativeSamplerState(); });
         break;
 
     case Resource::Type::Texture:
-        m_mtl_textures.reserve(resource_locations.size());
-        std::transform(resource_locations.begin(), resource_locations.end(), std::back_inserter(m_mtl_textures),
-                       [](const Resource::Location& resource_location)
-                       { return dynamic_cast<const TextureMT&>(resource_location.GetResource()).GetNativeTexture(); });
+        m_mtl_textures.reserve(resource_views.size());
+        std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_textures),
+                       [](const Resource::View& resource_view)
+                       { return dynamic_cast<const TextureMT&>(resource_view.GetResource()).GetNativeTexture(); });
         break;
 
     case Resource::Type::Buffer:
-        m_mtl_buffers.reserve(resource_locations.size());
-        m_mtl_buffer_offsets.reserve(resource_locations.size());
-        for (const Resource::Location& resource_location : resource_locations)
+        m_mtl_buffers.reserve(resource_views.size());
+        m_mtl_buffer_offsets.reserve(resource_views.size());
+        for (const Resource::View& resource_view : resource_views)
         {
-            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_location.GetResource()).GetNativeBuffer());
-            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_location.GetOffset()));
+            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_view.GetResource()).GetNativeBuffer());
+            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_view.GetOffset()));
         }
         break;
 
@@ -226,14 +226,14 @@ bool ProgramBindingsMT::ArgumentBindingMT::SetResourceLocations(const Resource::
     return true;
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index)
-    : ProgramBindingsBase(program_ptr, resource_locations_by_argument, frame_index)
+ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+    : ProgramBindingsBase(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_locations_by_argument, frame_index)
+ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+    : ProgramBindingsBase(other_program_bindings, replace_resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }

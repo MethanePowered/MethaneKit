@@ -300,9 +300,9 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         return program_bindings_array;
 
     const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
-    const gfx::Resource::Locations face_texture_locations = m_settings.textures_array_enabled
-                                                          ? gfx::Resource::CreateLocations(m_unique_textures)
-                                                          : gfx::Resource::Locations{ { GetInstanceTexture() } };
+    const gfx::Resource::Views face_texture_locations = m_settings.textures_array_enabled
+                                                          ? gfx::Resource::CreateViews(m_unique_textures)
+                                                          : gfx::Resource::Views{ { GetInstanceTexture() } };
     
     program_bindings_array.resize(m_settings.instance_count);
     program_bindings_array[0] = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
@@ -320,16 +320,16 @@ Ptrs<gfx::ProgramBindings> AsteroidsArray::CreateProgramBindings(const Ptr<gfx::
         {
             const Data::Size asteroid_uniform_offset = GetUniformsBufferOffset(asteroid_index);
             META_CHECK_ARG_EQUAL(asteroid_uniform_offset % 256, 0);
-            gfx::ProgramBindings::ResourceLocationsByArgument set_resource_location_by_argument{
+            gfx::ProgramBindings::ResourceViewsByArgument set_resource_view_by_argument{
                 { { gfx::Shader::Type::All, "g_mesh_uniforms" }, { { *asteroids_uniforms_buffer_ptr, asteroid_uniform_offset, uniform_data_size } } },
             };
             if (!m_settings.textures_array_enabled)
             {
-                set_resource_location_by_argument.insert(
+                set_resource_view_by_argument.insert(
                     { { gfx::Shader::Type::Pixel, "g_face_textures" }, { { GetInstanceTexture(asteroid_index) } } }
                 );
             }
-            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_location_by_argument, frame_index);
+            program_bindings_array[asteroid_index] = gfx::ProgramBindings::CreateCopy(*program_bindings_array[0], set_resource_view_by_argument, frame_index);
             program_bindings_array[asteroid_index]->SetName(fmt::format("Asteroids[{}] Bindings {}", asteroid_index, frame_index));
         }
     );
