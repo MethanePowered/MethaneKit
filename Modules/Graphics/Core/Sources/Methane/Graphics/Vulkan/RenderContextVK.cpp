@@ -242,8 +242,8 @@ vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::
 {
     META_FUNCTION_TASK();
     const std::vector<vk::PresentModeKHR> required_present_modes = GetSettings().vsync_enabled
-        ? std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eFifo }
-        : std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eImmediate };
+        ? std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eFifoRelaxed, vk::PresentModeKHR::eFifo }
+        : std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eMailbox,     vk::PresentModeKHR::eImmediate };
 
     std::optional<vk::PresentModeKHR> present_mode_opt;
     for (vk::PresentModeKHR required_present_mode : required_present_modes)
@@ -306,7 +306,7 @@ void RenderContextVK::InitializeNativeSwapchain()
         image_count = swap_chain_support.capabilities.maxImageCount;
     }
 
-    vk::UniqueSwapchainKHR vk_new_swapchain = m_vk_device.createSwapchainKHRUnique(
+    m_vk_unique_swapchain = m_vk_device.createSwapchainKHRUnique(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
             GetNativeSurface(),
@@ -320,17 +320,12 @@ void RenderContextVK::InitializeNativeSwapchain()
             swap_chain_support.capabilities.currentTransform,
             vk::CompositeAlphaFlagBitsKHR::eOpaque,
             swap_present_mode,
-            true,
-            m_vk_unique_swapchain.get()
+            true
         )
     );
-
-    const bool is_swap_chain_change = !!m_vk_unique_swapchain;
-    m_vk_unique_swapchain = std::move(vk_new_swapchain);
-    m_vk_frame_images     = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
-    m_vk_frame_format     = swap_surface_format.format;
-    m_vk_frame_extent     = swap_extent;
-
+    m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
+    m_vk_frame_format = swap_surface_format.format;
+    m_vk_frame_extent = swap_extent;
 
     if (m_vk_frame_images.size() != GetSettings().frame_buffers_count)
         InvalidateFrameBuffersCount(static_cast<uint32_t>(m_vk_frame_images.size()));
@@ -351,10 +346,7 @@ void RenderContextVK::InitializeNativeSwapchain()
 
     ResetNativeObjectNames();
 
-    if (is_swap_chain_change)
-    {
-        Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
-    }
+    Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
 }
 
 void RenderContextVK::ReleaseNativeSwapchainResources()
@@ -365,6 +357,7 @@ void RenderContextVK::ReleaseNativeSwapchainResources()
     m_vk_frame_semaphores_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
+    m_vk_unique_swapchain.reset();
 }
 
 void RenderContextVK::ResetNativeSwapchain()
