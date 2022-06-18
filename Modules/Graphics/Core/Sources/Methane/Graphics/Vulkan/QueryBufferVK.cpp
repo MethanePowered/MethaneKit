@@ -100,8 +100,8 @@ static Frequency GetGpuFrequency()
 static GpuTimeCalibration GetGpuTimeCalibration()
 {
     META_FUNCTION_TASK();
-    UINT64 gpu_timestamp = 0U;
-    UINT64 cpu_timestamp = 0U;
+    uint64_t gpu_timestamp = 0U;
+    uint64_t cpu_timestamp = 0U;
     return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
 }
 
