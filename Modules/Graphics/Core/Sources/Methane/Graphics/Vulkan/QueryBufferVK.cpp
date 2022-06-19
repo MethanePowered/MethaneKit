@@ -33,8 +33,6 @@ Vulkan GPU query results buffer.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace wrl = Microsoft::WRL;
-
 namespace Methane::Graphics
 {
 
