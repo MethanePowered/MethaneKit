@@ -38,10 +38,12 @@ Base implementation of the command list interface.
 namespace Methane::Graphics
 {
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
 static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
 {
     return Data::TimeRange(std::min(start, end), std::max(start, end));
 }
+#endif
 
 CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     : ObjectBase(name)

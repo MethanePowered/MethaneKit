@@ -35,7 +35,7 @@ GPU data query buffer base implementation.
 namespace Methane::Graphics
 {
 
-QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
+Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
     : m_buffer_ptr(buffer.GetPtr())
     , m_command_list(command_list)
     , m_index(index)
@@ -44,13 +44,13 @@ QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Da
     META_FUNCTION_TASK();
 }
 
-QueryBuffer::Query::~Query()
+Query::~Query()
 {
     META_FUNCTION_TASK();
     m_buffer_ptr->ReleaseQuery(*this);
 }
 
-void QueryBuffer::Query::Begin()
+void Query::Begin()
 {
     META_FUNCTION_TASK();
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
@@ -59,7 +59,7 @@ void QueryBuffer::Query::Begin()
     m_state = State::Begun;
 }
 
-void QueryBuffer::Query::End()
+void Query::End()
 {
     META_FUNCTION_TASK();
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
@@ -69,7 +69,7 @@ void QueryBuffer::Query::End()
     m_state = State::Ended;
 }
 
-void QueryBuffer::Query::ResolveData()
+void Query::ResolveData()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");

@@ -28,6 +28,8 @@ namespace Methane::Graphics
 
 Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame)
 {
+    META_UNUSED(command_queue);
+    META_UNUSED(max_timestamps_per_frame);
     return {};
 }
 

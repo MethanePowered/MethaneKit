@@ -78,8 +78,6 @@ private:
 class QueryBuffer : public std::enable_shared_from_this<QueryBuffer>
 {
 public:
-    using Query = Methane::Graphics::Query;
-
     enum class Type
     {
         Timestamp,
