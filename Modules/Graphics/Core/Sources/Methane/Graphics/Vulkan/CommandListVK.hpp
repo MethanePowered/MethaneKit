@@ -70,8 +70,8 @@ public:
         InitializePrimaryCommandBuffer();
         SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
         InitializeSecondaryCommandBuffers(1U);
-        InitializeTimestampQueries();
 
+        CommandListBaseT::InitializeTimestampQueries();
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
@@ -87,8 +87,8 @@ public:
         // Do not use primary command buffers in case of command list created as a part of ParallelRenderCommandListVK
         SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
         InitializeSecondaryCommandBuffers(0U);
-        InitializeTimestampQueries();
 
+        CommandListBaseT::InitializeTimestampQueries();
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
