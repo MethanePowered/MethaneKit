@@ -33,32 +33,34 @@ namespace Methane::Graphics
 
 struct IContextVK;
 class  CommandQueueVK;
+class  QueryBufferVK;
+class  TimestampQueryBufferVK;
+
+class QueryVK : public Query
+{
+public:
+    QueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+    // Query overrides
+    void Begin() override;
+    void End() override;
+    void ResolveData() override;
+    Resource::SubResource GetData() override;
+
+protected:
+    [[nodiscard]] QueryBufferVK& GetQueryBufferVK() noexcept;
+
+private:
+};
 
 class QueryBufferVK : public QueryBuffer
 {
 public:
-    class QueryVK : public Query
-    {
-    public:
-        QueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-
-        // Query overrides
-        void Begin() override;
-        void End() override;
-        void ResolveData() override;
-        Resource::SubResource GetData() override;
-
-    protected:
-        [[nodiscard]] QueryBufferVK& GetQueryBufferVK() noexcept  { return static_cast<QueryBufferVK&>(GetQueryBuffer()); }
-
-    private:
-    };
-
     QueryBufferVK(CommandQueueVK& command_queue, Type type,
                   Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
 
     CommandQueueVK&   GetCommandQueueVK() noexcept;
-    const IContextVK& GetContextDX() const noexcept { return m_context_vk; }
+    const IContextVK& GetContextVK() const noexcept { return m_context_vk; }
 
 private:
     const IContextVK& m_context_vk;
@@ -67,40 +69,32 @@ private:
 
 using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
 
+class TimestampQueryVK final
+    : public QueryVK
+      , public TimestampQuery
+{
+public:
+    TimestampQueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+    // TimestampQuery overrides
+    void InsertTimestamp() override;
+    void ResolveTimestamp() override;
+    Timestamp GetGpuTimestamp() override;
+    Timestamp GetCpuNanoseconds() override;
+
+private:
+    [[nodiscard]] TimestampQueryBufferVK& GetTimestampQueryBufferVK() noexcept;
+};
+
 class TimestampQueryBufferVK final
     : public QueryBufferVK
     , public TimestampQueryBuffer
 {
 public:
-    class TimestampQueryVK final
-        : public QueryVK
-        , public TimestampQuery
-    {
-    public:
-        TimestampQueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-
-        // TimestampQuery overrides
-        void InsertTimestamp() override;
-        void ResolveTimestamp() override;
-        Timestamp GetGpuTimestamp() override;
-        Timestamp GetCpuNanoseconds() override;
-
-    private:
-        [[nodiscard]] TimestampQueryBufferVK& GetTimestampQueryBufferVK() noexcept { return static_cast<TimestampQueryBufferVK&>(GetQueryBuffer()); }
-    };
-
     TimestampQueryBufferVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-
-    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
-    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
-    TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
-
-private:
-    const Frequency          m_gpu_frequency;
-    const GpuTimeCalibration m_gpu_time_calibration;
 };
 
 } // namespace Methane::Graphics
