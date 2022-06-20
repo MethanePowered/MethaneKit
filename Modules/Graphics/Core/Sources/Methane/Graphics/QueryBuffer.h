@@ -33,51 +33,56 @@ namespace Methane::Graphics
 
 class CommandQueueBase;
 class CommandListBase;
+class QueryBuffer;
 struct Context;
+
+using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
+
+class Query
+{
+public:
+    using Index = Data::Index;
+    using Range = Data::Range<Data::Index>;
+
+    enum class State
+    {
+        Resolved = 0,
+        Begun,
+        Ended,
+    };
+
+    Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    Query(const Query&) = delete;
+    Query(Query&&) = delete;
+    virtual ~Query();
+
+    virtual void Begin();
+    virtual void End();
+    virtual void ResolveData();
+    virtual Resource::SubResource GetData() = 0;
+
+    [[nodiscard]] Index            GetIndex() const noexcept       { return m_index; }
+    [[nodiscard]] const Range&     GetDataRange() const noexcept   { return m_data_range; }
+    [[nodiscard]] State            GetState() const noexcept       { return m_state; }
+    [[nodiscard]] QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
+    [[nodiscard]] CommandListBase& GetCommandList() const noexcept { return m_command_list; }
+
+private:
+    Ptr<QueryBuffer> m_buffer_ptr;
+    CommandListBase& m_command_list;
+    const Index      m_index;
+    const Range      m_data_range;
+    State            m_state = State::Resolved;
+};
 
 class QueryBuffer : public std::enable_shared_from_this<QueryBuffer>
 {
 public:
+    using Query = Methane::Graphics::Query;
+
     enum class Type
     {
         Timestamp,
-    };
-
-    class Query
-    {
-    public:
-        using Index = Data::Index;
-        using Range = Data::Range<Data::Index>;
-
-        enum class State
-        {
-            Resolved = 0,
-            Begun,
-            Ended,
-        };
-
-        Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-        Query(const Query&) = delete;
-        Query(Query&&) = delete;
-        virtual ~Query();
-
-        virtual void Begin();
-        virtual void End();
-        virtual void ResolveData();
-        virtual Resource::SubResource GetData() = 0;
-
-        [[nodiscard]] Index            GetIndex() const noexcept       { return m_index; }
-        [[nodiscard]] const Range&     GetDataRange() const noexcept   { return m_data_range; }
-        [[nodiscard]] State            GetState() const noexcept       { return m_state; }
-        [[nodiscard]] QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
-        [[nodiscard]] CommandListBase& GetCommandList() const noexcept { return m_command_list; }
-
-    private:
-        Ptr<QueryBuffer> m_buffer_ptr;
-        CommandListBase& m_command_list;
-        const Index      m_index;
-        const Range      m_data_range;
-        State            m_state = State::Resolved;
     };
 
     virtual ~QueryBuffer() = default;
@@ -119,24 +124,39 @@ private:
     const Context&    m_context;
 };
 
-struct TimestampQueryBuffer
+struct TimestampQuery
 {
-    struct TimestampQuery
-    {
-        virtual void InsertTimestamp() = 0;
-        virtual void ResolveTimestamp() = 0;
+    virtual void InsertTimestamp() = 0;
+    virtual void ResolveTimestamp() = 0;
 
-        [[nodiscard]] virtual Timestamp GetGpuTimestamp() = 0;
-        [[nodiscard]] virtual Timestamp GetCpuNanoseconds() = 0;
+    [[nodiscard]] virtual Timestamp GetGpuTimestamp() = 0;
+    [[nodiscard]] virtual Timestamp GetCpuNanoseconds() = 0;
 
-        virtual ~TimestampQuery() = default;
-    };
+    virtual ~TimestampQuery() = default;
+};
+
+class TimestampQueryBuffer
+{
+public:
+    using TimestampQuery = Methane::Graphics::TimestampQuery;
 
     [[nodiscard]] static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
     [[nodiscard]] virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
 
     virtual ~TimestampQueryBuffer() = default;
+
+    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
+    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
+    TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
+
+protected:
+    void SetGpuFrequency(Frequency gpu_frequency);
+    void SetCpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration);
+
+private:
+    Frequency          m_gpu_frequency = 0U;
+    GpuTimeCalibration m_gpu_time_calibration{};
 };
 
 } // namespace Methane::Graphics

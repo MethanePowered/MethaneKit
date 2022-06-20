@@ -309,6 +309,11 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
             !vk_physical_device.getSurfaceSupportKHR(static_cast<uint32_t>(family_index), vk_present_surface))
             continue;
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        if (!vk_family_props.timestampValidBits)
+            continue;
+#endif
+
         return static_cast<uint32_t>(family_index);
     }
 
@@ -475,13 +480,15 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     vk_device_features.imageCubeArray    = static_cast<bool>(capabilities.features & Features::ImageCubeArray);
 
     // Add descriptions of enabled device features:
-    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
-    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR vk_device_timeline_semaphores_info(true);
-    vk::PhysicalDeviceSynchronization2FeaturesKHR vk_device_synchronization2_info(true);
+    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
+    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR    vk_device_timeline_semaphores_feature(true);
+    vk::PhysicalDeviceSynchronization2FeaturesKHR     vk_device_synchronization_2_feature(true);
+    vk::PhysicalDeviceHostQueryResetFeatures          vk_device_host_query_reset_feature(true);
     vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
-    vk_device_info.setPNext(&vk_device_dynamic_state_info);
-    vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
-    vk_device_timeline_semaphores_info.setPNext(&vk_device_synchronization2_info);
+    vk_device_info.setPNext(&vk_device_dynamic_state_feature);
+    vk_device_dynamic_state_feature.setPNext(&vk_device_timeline_semaphores_feature);
+    vk_device_timeline_semaphores_feature.setPNext(&vk_device_synchronization_2_feature);
+    vk_device_synchronization_2_feature.setPNext(&vk_device_host_query_reset_feature);
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());

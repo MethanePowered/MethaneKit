@@ -38,6 +38,11 @@ Base implementation of the command list interface.
 namespace Methane::Graphics
 {
 
+static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
+{
+    return Data::TimeRange(std::min(start, end), std::max(start, end));
+}
+
 CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     : ObjectBase(name)
 {
@@ -302,6 +307,64 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     m_state_change_condition_var.notify_one();
     
     Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
+}
+
+void CommandListBase::InitializeTimestampQueries()
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    TimestampQueryBuffer* query_buffer_ptr = GetCommandQueueBase().GetTimestampQueryBuffer();
+    if (!query_buffer_ptr)
+        return;
+
+    m_begin_timestamp_query_ptr = query_buffer_ptr->CreateTimestampQuery(*this);
+    m_end_timestamp_query_ptr   = query_buffer_ptr->CreateTimestampQuery(*this);
+#endif
+}
+
+void CommandListBase::BeginGpuZone()
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    // Insert beginning GPU timestamp query
+    if (m_begin_timestamp_query_ptr)
+        m_begin_timestamp_query_ptr->InsertTimestamp();
+#endif
+}
+
+void CommandListBase::EndGpuZone()
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    // Insert ending GPU timestamp query
+    // and resolve timestamps of beginning and ending queries
+    if (m_end_timestamp_query_ptr)
+    {
+        m_end_timestamp_query_ptr->InsertTimestamp();
+        m_end_timestamp_query_ptr->ResolveTimestamp();
+    }
+    if (m_begin_timestamp_query_ptr)
+    {
+        m_begin_timestamp_query_ptr->ResolveTimestamp();
+    }
+#endif
+}
+
+Data::TimeRange CommandListBase::GetGpuTimeRange(bool in_cpu_nanoseconds) const
+{
+    META_FUNCTION_TASK();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
+    {
+        META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandListBase::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
+        return in_cpu_nanoseconds
+             ? GetNormalTimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
+             : GetNormalTimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
+    }
+#else
+    META_UNUSED(in_cpu_nanoseconds);
+#endif
+    return { 0U, 0U };
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()

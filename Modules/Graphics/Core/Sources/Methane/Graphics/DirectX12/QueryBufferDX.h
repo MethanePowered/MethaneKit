@@ -79,8 +79,6 @@ private:
     ID3D12QueryHeap&  m_native_query_heap;
 };
 
-using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
-
 class TimestampQueryBufferDX final
     : public QueryBufferDX
     , public TimestampQueryBuffer
@@ -107,14 +105,6 @@ public:
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-
-    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
-    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
-    TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
-
-private:
-    const Frequency          m_gpu_frequency;
-    const GpuTimeCalibration m_gpu_time_calibration;
 };
 
 } // namespace Methane::Graphics

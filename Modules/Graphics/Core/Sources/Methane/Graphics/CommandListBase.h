@@ -24,6 +24,7 @@ Base implementation of the command list interface.
 #pragma once
 
 #include "ObjectBase.h"
+#include "QueryBuffer.h"
 
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
@@ -93,7 +94,7 @@ public:
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
-    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
     CommandQueue& GetCommandQueue() override;
 
     // CommandListBase interface
@@ -132,6 +133,10 @@ protected:
     bool        IsCommitted() const                     { return m_state == State::Committed; }
     bool        IsExecuting() const                     { return m_state == State::Executing; }
 
+    void InitializeTimestampQueries();
+    void BeginGpuZone();
+    void EndGpuZone();
+
     inline void VerifyEncodingState() const
     {
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
@@ -154,6 +159,11 @@ private:
     TracyLockable(std::mutex,   m_state_change_mutex)
     std::condition_variable_any m_state_change_condition_var;
     TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;
+
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_end_timestamp_query_ptr;
+#endif
 };
 
 class CommandListSetBase

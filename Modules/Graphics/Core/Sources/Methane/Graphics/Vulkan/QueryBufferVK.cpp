@@ -36,6 +36,18 @@ Vulkan GPU query results buffer.
 namespace Methane::Graphics
 {
 
+static vk::QueryType GetQueryTypeVk(QueryBuffer::Type query_buffer_type)
+{
+    META_FUNCTION_TASK();
+    switch(query_buffer_type)
+    {
+    case QueryBuffer::Type::Timestamp: return vk::QueryType::eTimestamp;
+    // vk::QueryType::eOcclusion
+    // vk::QueryType::ePipelineStatistics
+    default: META_UNEXPECTED_ARG_RETURN(query_buffer_type, vk::QueryType::eTimestamp);
+    }
+}
+
 QueryBufferVK::QueryVK::QueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
     : QueryBuffer::Query(buffer, command_list, index, data_range)
 {
@@ -78,6 +90,7 @@ Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command
 QueryBufferVK::QueryBufferVK(CommandQueueVK& command_queue, Type type, Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
     : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, buffer_size, query_size)
     , m_context_vk(dynamic_cast<const IContextVK&>(GetContext()))
+    , m_vk_query_pool(command_queue.GetDeviceVK().GetNativeDevice().createQueryPool(vk::QueryPoolCreateInfo({}, GetQueryTypeVk(type), max_query_count)))
 {
     META_FUNCTION_TASK();
 }

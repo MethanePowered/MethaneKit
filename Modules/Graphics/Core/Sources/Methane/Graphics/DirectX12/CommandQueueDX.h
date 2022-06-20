@@ -23,8 +23,6 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma once
 
-#include "QueryBufferDX.h"
-
 #include <Methane/Graphics/CommandQueueTrackingBase.h>
 
 #pragma warning(push)
@@ -60,14 +58,12 @@ public:
     void CompleteExecution(const Opt<Data::Index>& frame_index = { }) override;
 #endif
 
-    const IContextDX&       GetContextDX() const noexcept;
-    ID3D12CommandQueue&     GetNativeCommandQueue();
-    TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
-    const TracyD3D12Ctx     GetTracyContext() const noexcept   { return m_tracy_context; }
+    const IContextDX&   GetContextDX() const noexcept;
+    ID3D12CommandQueue& GetNativeCommandQueue();
+    const TracyD3D12Ctx GetTracyContext() const noexcept { return m_tracy_context; }
 
 private:
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
-    Ptr<TimestampQueryBuffer>       m_timestamp_query_buffer_ptr;
     TracyD3D12Ctx                   m_tracy_context;
 };
 

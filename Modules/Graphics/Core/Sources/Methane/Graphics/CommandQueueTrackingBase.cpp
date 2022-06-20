@@ -22,8 +22,11 @@ Base implementation of the command queue with execution tracking.
 ******************************************************************************/
 
 #include "CommandQueueTrackingBase.h"
+#include "QueryBuffer.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Device.h>
+#include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -34,6 +37,19 @@ Base implementation of the command queue with execution tracking.
 
 namespace Methane::Graphics
 {
+
+static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(System::GraphicsApi graphics_api)
+{
+    META_FUNCTION_TASK();
+    switch(graphics_api)
+    {
+    case System::GraphicsApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
+    case System::GraphicsApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
+    case System::GraphicsApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
+    case System::GraphicsApi::Metal:        return Tracy::GpuContext::Type::Metal;
+    default: META_UNEXPECTED_ARG_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
+    }
+};
 
 CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueBase(context, command_lists_type)
@@ -60,6 +76,23 @@ CommandQueueTrackingBase::~CommandQueueTrackingBase()
     m_execution_waiting_thread.join();
 }
 
+void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
+{
+    META_FUNCTION_TASK();
+    constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
+    m_timestamp_query_buffer_ptr = TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame);
+    if (!m_timestamp_query_buffer_ptr)
+        return;
+
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            ConvertSystemGraphicsApiToTracyGpuContextType(System::GetGraphicsApi()),
+            m_timestamp_query_buffer_ptr->GetGpuCalibrationTimestamp(),
+            Data::ConvertFrequencyToTickPeriod(m_timestamp_query_buffer_ptr->GetGpuFrequency())
+        )
+    );
+}
+
 void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
@@ -69,7 +102,8 @@ void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const Comm
     {
         m_execution_waiting_thread.join();
         META_CHECK_ARG_NOT_NULL_DESCR(m_execution_waiting_exception_ptr, "Command queue '{}' execution waiting thread has unexpectedly finished", GetName());
-        std::rethrow_exception(m_execution_waiting_exception_ptr);
+        if (m_execution_waiting_exception_ptr)
+            std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
 
     auto& command_lists_base = static_cast<CommandListSetBase&>(command_lists);

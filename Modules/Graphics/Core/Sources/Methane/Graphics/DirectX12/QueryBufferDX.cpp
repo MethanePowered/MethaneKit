@@ -170,10 +170,10 @@ TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, ui
     : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U,
                     GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
-    , m_gpu_frequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
-    , m_gpu_time_calibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()))
 {
     META_FUNCTION_TASK();
+    SetGpuFrequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
+    SetCpuTimeCalibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
 }
 
 Ptr<TimestampQueryBuffer::TimestampQuery> TimestampQueryBufferDX::CreateTimestampQuery(CommandListBase& command_list)

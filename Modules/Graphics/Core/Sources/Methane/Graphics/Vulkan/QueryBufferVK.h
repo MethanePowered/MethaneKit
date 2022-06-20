@@ -62,6 +62,7 @@ public:
 
 private:
     const IContextVK& m_context_vk;
+    vk::QueryPool     m_vk_query_pool;
 };
 
 using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;

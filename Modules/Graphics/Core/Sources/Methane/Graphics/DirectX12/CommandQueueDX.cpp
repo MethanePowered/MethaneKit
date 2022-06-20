@@ -27,7 +27,6 @@ DirectX 12 implementation of the command queue interface.
 #include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
-#include "QueryBufferDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
@@ -41,8 +40,6 @@ DirectX 12 implementation of the command queue interface.
 
 namespace Methane::Graphics
 {
-
-constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
 
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
@@ -89,22 +86,11 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueTrackingBase(context, command_lists_type)
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    , m_timestamp_query_buffer_ptr(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
-#endif
 {
     META_FUNCTION_TASK();
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-#if METHANE_GPU_INSTRUMENTATION_ENABLED == 1
-    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_timestamp_query_buffer_ptr);
-    InitializeTracyGpuContext(
-        Tracy::GpuContext::Settings(
-            Tracy::GpuContext::Type::DirectX12,
-            timestamp_query_buffer_dx.GetGpuCalibrationTimestamp(),
-            Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
-        )
-    );
-#else
+    InitializeTimestampQueryBuffer();
+#if METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     m_tracy_context = TracyD3D12Context(GetContextDX().GetDeviceDX().GetNativeDevice().Get(), m_cp_command_queue.Get());
 #endif
 #endif

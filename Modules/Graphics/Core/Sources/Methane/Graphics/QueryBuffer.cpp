@@ -108,4 +108,16 @@ QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
     return { index_range.GetStart(), data_range };
 }
 
+void TimestampQueryBuffer::SetGpuFrequency(Frequency gpu_frequency)
+{
+    META_FUNCTION_TASK();
+    m_gpu_frequency = gpu_frequency;
+}
+
+void TimestampQueryBuffer::SetCpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration)
+{
+    META_FUNCTION_TASK();
+    m_gpu_time_calibration = gpu_time_calibration;
+}
+
 } // namespace Methane::Graphics

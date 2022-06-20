@@ -37,6 +37,8 @@ Base implementation of the command queue with execution tracking.
 namespace Methane::Graphics
 {
 
+class TimestampQueryBuffer;
+
 class CommandQueueTrackingBase // NOSONAR - destructor is required
     : public CommandQueueBase
 {
@@ -53,6 +55,7 @@ public:
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
+    TimestampQueryBuffer*   GetTimestampQueryBuffer() const noexcept final { return m_timestamp_query_buffer_ptr.get(); }
 
 protected:
     using CommandListSetsQueue = std::queue<Ptr<CommandListSetBase>>;
@@ -81,6 +84,8 @@ protected:
 
     virtual void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
+    void InitializeTimestampQueryBuffer();
+
 private:
     void WaitForExecution() noexcept;
 
@@ -94,6 +99,7 @@ private:
     std::thread                         m_execution_waiting_thread;
     std::exception_ptr                  m_execution_waiting_exception_ptr;
     std::atomic<bool>                   m_name_changed{ true };
+    Ptr<TimestampQueryBuffer>           m_timestamp_query_buffer_ptr;
 };
 
 } // namespace Methane::Graphics

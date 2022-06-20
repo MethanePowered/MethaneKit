@@ -131,7 +131,9 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     , m_vk_supported_access_flags(GetAccessFlagsByQueueFlags(family_properties.queueFlags))
 {
     META_FUNCTION_TASK();
-    InitializeTracyGpuContext(Tracy::GpuContext::Settings());
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    InitializeTimestampQueryBuffer();
+#endif
 }
 
 CommandQueueVK::~CommandQueueVK()
