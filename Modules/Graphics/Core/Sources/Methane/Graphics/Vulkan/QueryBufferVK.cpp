@@ -33,6 +33,8 @@ Vulkan GPU query results buffer.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <chrono>
+
 namespace Methane::Graphics
 {
 
@@ -46,13 +48,6 @@ static vk::QueryType GetQueryTypeVk(QueryBuffer::Type query_buffer_type)
     // vk::QueryType::ePipelineStatistics
     default: META_UNEXPECTED_ARG_RETURN(query_buffer_type, vk::QueryType::eTimestamp);
     }
-}
-
-static Frequency GetGpuFrequency()
-{
-    META_FUNCTION_TASK();
-    Frequency gpu_frequency = 0U;
-    return gpu_frequency;
 }
 
 static GpuTimeCalibration GetGpuTimeCalibration()
@@ -74,6 +69,10 @@ static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_tim
 
 QueryVK::QueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
     : Query(buffer, command_list, index, data_range)
+    , m_vk_device(GetQueryBufferVK().GetContextVK().GetDeviceVK().GetNativeDevice())
+    , m_vk_command_buffer(dynamic_cast<ICommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary))
+    , m_query_results(buffer.GetSlotsCountPerQuery(), 0U)
+    , m_query_results_byte_size(m_query_results.size() * sizeof(QueryResults::value_type))
 {
     META_FUNCTION_TASK();
 }
@@ -82,30 +81,33 @@ void QueryVK::Begin()
 {
     META_FUNCTION_TASK();
     Query::Begin();
+    m_vk_command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eTopOfPipe, GetQueryBufferVK().GetNativeQueryPool(), GetIndex());
 }
 
 void QueryVK::End()
 {
     META_FUNCTION_TASK();
     Query::End();
+    m_vk_command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, GetQueryBufferVK().GetNativeQueryPool(), GetIndex());
 }
 
-void QueryVK::ResolveData()
-{
-    META_FUNCTION_TASK();
-    Query::ResolveData();
-    //QueryBufferVK& query_buffer_dx = GetQueryBufferVK();
-}
-
-SubResource QueryVK::GetData()
+SubResource QueryVK::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), Query::State::Resolved, "query data can not be retrieved for unresolved query");
-    return SubResource(nullptr, 0U);
+
+    vk::Result vk_query_result = m_vk_device.getQueryPoolResults(
+        GetQueryBufferVK().GetNativeQueryPool(), GetIndex(), GetQueryBuffer().GetSlotsCountPerQuery(),
+        m_query_results_byte_size, m_query_results.data(), sizeof(QueryResults::value_type),
+        vk::QueryResultFlagBits::e64);
+    META_CHECK_ARG_NOT_EQUAL_DESCR(vk_query_result, vk::Result::eNotReady, "query results not ready");
+    META_CHECK_ARG_EQUAL(vk_query_result, vk::Result::eSuccess);
+
+    return SubResource(reinterpret_cast<Data::ConstRawPtr>(m_query_results.data()), // NOSONAR
+                       static_cast<Data::Size>(m_query_results_byte_size));
 }
 
-QueryBufferVK& QueryVK::GetQueryBufferVK() noexcept
+QueryBufferVK& QueryVK::GetQueryBufferVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<QueryBufferVK&>(GetQueryBuffer());
@@ -117,8 +119,10 @@ Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command
     return std::make_shared<TimestampQueryBufferVK>(static_cast<CommandQueueVK&>(command_queue), max_timestamps_per_frame);
 }
 
-QueryBufferVK::QueryBufferVK(CommandQueueVK& command_queue, Type type, Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
-    : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, buffer_size, query_size)
+QueryBufferVK::QueryBufferVK(CommandQueueVK& command_queue, Type type,
+                             Data::Size max_query_count, Query::Count slots_count_per_query,
+                             Data::Size buffer_size, Data::Size query_size)
+    : QueryBuffer(command_queue, type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_context_vk(dynamic_cast<const IContextVK&>(GetContext()))
     , m_vk_query_pool(command_queue.GetDeviceVK().GetNativeDevice().createQueryPool(vk::QueryPoolCreateInfo({}, GetQueryTypeVk(type), max_query_count)))
 {
@@ -132,13 +136,15 @@ CommandQueueVK& QueryBufferVK::GetCommandQueueVK() noexcept
 }
 
 TimestampQueryBufferVK::TimestampQueryBufferVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame)
-    : QueryBufferVK(command_queue, Type::Timestamp, 1U << 15U,
+    : QueryBufferVK(command_queue, Type::Timestamp, 1U << 15U, 1U,
                     GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
 {
     META_FUNCTION_TASK();
-    SetGpuFrequency(Graphics::GetGpuFrequency());
-    SetCpuTimeCalibration(Graphics::GetGpuTimeCalibration());
+    using namespace std::chrono_literals;
+    const float gpu_timestamp_period = command_queue.GetDeviceVK().GetNativePhysicalDevice().getProperties().limits.timestampPeriod;
+    SetGpuFrequency(static_cast<Frequency>(gpu_timestamp_period * std::chrono::nanoseconds(1s).count()));
+    SetGpuTimeCalibration(Graphics::GetGpuTimeCalibration());
 }
 
 Ptr<TimestampQueryBuffer::TimestampQuery> TimestampQueryBufferVK::CreateTimestampQuery(CommandListBase& command_list)
@@ -165,7 +171,7 @@ void TimestampQueryVK::ResolveTimestamp()
     QueryVK::ResolveData();
 }
 
-Timestamp TimestampQueryVK::GetGpuTimestamp()
+Timestamp TimestampQueryVK::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
@@ -174,15 +180,15 @@ Timestamp TimestampQueryVK::GetGpuTimestamp()
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR
 }
 
-Timestamp TimestampQueryVK::GetCpuNanoseconds()
+Timestamp TimestampQueryVK::GetCpuNanoseconds() const
 {
     META_FUNCTION_TASK();
-    const TimestampQueryBufferVK& timestamp_query_buffer_dx = GetTimestampQueryBufferVK();
+    const TimestampQueryBufferVK& timestamp_query_buffer_vk = GetTimestampQueryBufferVK();
     const Timestamp gpu_timestamp = TimestampQueryVK::GetGpuTimestamp();
-    return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
+    return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_vk.GetGpuTimeOffset(), timestamp_query_buffer_vk.GetGpuFrequency());
 }
 
-TimestampQueryBufferVK& TimestampQueryVK::GetTimestampQueryBufferVK() noexcept
+TimestampQueryBufferVK& TimestampQueryVK::GetTimestampQueryBufferVK() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<TimestampQueryBufferVK&>(GetQueryBuffer());

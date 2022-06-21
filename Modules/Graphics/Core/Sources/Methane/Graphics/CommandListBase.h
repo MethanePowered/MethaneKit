@@ -95,7 +95,7 @@ public:
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
-    CommandQueue& GetCommandQueue() override;
+    CommandQueue& GetCommandQueue() final;
 
     // CommandListBase interface
     virtual void Execute(const CompletedCallback& completed_callback = {});

@@ -128,13 +128,13 @@ void QueryDX::ResolveData()
     m_native_command_list.ResolveQueryData(
         &query_buffer_dx.GetNativeQueryHeap(),
         m_native_query_type,
-        GetIndex(), 1U,
+        GetIndex(), query_buffer_dx.GetSlotsCountPerQuery(),
         query_buffer_dx.GetResultResourceDX().GetNativeResource(),
         GetDataRange().GetStart()
     );
 }
 
-Resource::SubResource QueryDX::GetData()
+Resource::SubResource QueryDX::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
@@ -143,7 +143,7 @@ Resource::SubResource QueryDX::GetData()
     return GetQueryBufferDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
 }
 
-QueryBufferDX& QueryDX::GetQueryBufferDX() noexcept
+QueryBufferDX& QueryDX::GetQueryBufferDX() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<QueryBufferDX&>(GetQueryBuffer());
@@ -155,8 +155,10 @@ Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command
     return std::make_shared<TimestampQueryBufferDX>(static_cast<CommandQueueDX&>(command_queue), max_timestamps_per_frame);
 }
 
-QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type, Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
-    : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, buffer_size, query_size)
+QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type,
+                             Data::Size max_query_count, Query::Count slots_count_per_query,
+                             Data::Size buffer_size, Data::Size query_size)
+    : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_result_buffer_ptr(Buffer::CreateReadBackBuffer(GetContext(), buffer_size))
     , m_context_dx(dynamic_cast<const IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
@@ -173,13 +175,13 @@ CommandQueueDX& QueryBufferDX::GetCommandQueueDX() noexcept
 }
 
 TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
-    : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U,
+    : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U, 1U,
                     GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
 {
     META_FUNCTION_TASK();
     SetGpuFrequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
-    SetCpuTimeCalibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
+    SetGpuTimeCalibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
 }
 
 Ptr<TimestampQuery> TimestampQueryBufferDX::CreateTimestampQuery(CommandListBase& command_list)
@@ -206,7 +208,7 @@ void TimestampQueryDX::ResolveTimestamp()
     QueryDX::ResolveData();
 }
 
-Timestamp TimestampQueryDX::GetGpuTimestamp()
+Timestamp TimestampQueryDX::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
     Resource::SubResource query_data = GetData();
@@ -215,7 +217,7 @@ Timestamp TimestampQueryDX::GetGpuTimestamp()
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR
 }
 
-Timestamp TimestampQueryDX::GetCpuNanoseconds()
+Timestamp TimestampQueryDX::GetCpuNanoseconds() const
 {
     META_FUNCTION_TASK();
     const TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
@@ -223,7 +225,7 @@ Timestamp TimestampQueryDX::GetCpuNanoseconds()
     return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
 }
 
-TimestampQueryBufferDX& TimestampQueryDX::GetTimestampQueryBufferDX() noexcept
+TimestampQueryBufferDX& TimestampQueryDX::GetTimestampQueryBufferDX() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer());

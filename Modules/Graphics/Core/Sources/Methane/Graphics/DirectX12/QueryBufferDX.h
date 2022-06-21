@@ -48,10 +48,10 @@ public:
     void Begin() override;
     void End() override;
     void ResolveData() override;
-    Resource::SubResource GetData() override;
+    Resource::SubResource GetData() const override;
 
 protected:
-    [[nodiscard]] QueryBufferDX& GetQueryBufferDX() noexcept;
+    [[nodiscard]] QueryBufferDX& GetQueryBufferDX() const noexcept;
 
 private:
     ID3D12GraphicsCommandList&  m_native_command_list;
@@ -62,7 +62,8 @@ class QueryBufferDX : public QueryBuffer
 {
 public:
     QueryBufferDX(CommandQueueDX& command_queue, Type type,
-                  Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
+                  Data::Size max_query_count, Query::Count slots_count_per_query,
+                  Data::Size buffer_size, Data::Size query_size);
 
     CommandQueueDX&   GetCommandQueueDX() noexcept;
     const IContextDX& GetContextDX() const noexcept          { return m_context_dx; }
@@ -82,8 +83,8 @@ private:
 };
 
 class TimestampQueryDX final
-    : public QueryDX
-      , public TimestampQuery
+    : protected QueryDX
+    , public TimestampQuery
 {
 public:
     TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
@@ -91,11 +92,11 @@ public:
     // TimestampQuery overrides
     void InsertTimestamp() override;
     void ResolveTimestamp() override;
-    Timestamp GetGpuTimestamp() override;
-    Timestamp GetCpuNanoseconds() override;
+    Timestamp GetGpuTimestamp() const override;
+    Timestamp GetCpuNanoseconds() const override;
 
 private:
-    [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept;
+    [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() const noexcept;
 };
 
 class TimestampQueryBufferDX final

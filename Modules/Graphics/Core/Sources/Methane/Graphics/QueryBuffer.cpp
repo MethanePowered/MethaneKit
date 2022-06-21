@@ -77,11 +77,13 @@ void Query::ResolveData()
 }
 
 QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
-                         Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
+                         Query::Count max_query_count, Query::Count slots_count_per_query,
+                         Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
     , m_buffer_size(buffer_size)
     , m_query_size(query_size)
-    , m_free_indices({ { 0U, max_query_count } })
+    , m_slots_count_per_query(slots_count_per_query)
+    , m_free_indices({ { 0U, max_query_count * slots_count_per_query } })
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
     , m_context(dynamic_cast<const Context&>(command_queue.GetContext()))
@@ -99,7 +101,7 @@ void QueryBuffer::ReleaseQuery(const Query& query)
 QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
-    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1U);
+    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, m_slots_count_per_query);
     META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
     const Query::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
@@ -114,7 +116,7 @@ void TimestampQueryBuffer::SetGpuFrequency(Frequency gpu_frequency)
     m_gpu_frequency = gpu_frequency;
 }
 
-void TimestampQueryBuffer::SetCpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration)
+void TimestampQueryBuffer::SetGpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration)
 {
     META_FUNCTION_TASK();
     m_gpu_time_calibration = gpu_time_calibration;

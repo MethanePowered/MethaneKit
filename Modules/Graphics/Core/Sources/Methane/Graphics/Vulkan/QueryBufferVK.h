@@ -32,6 +32,7 @@ namespace Methane::Graphics
 {
 
 struct IContextVK;
+struct ICommandListVK;
 class  CommandQueueVK;
 class  QueryBufferVK;
 class  TimestampQueryBufferVK;
@@ -44,23 +45,30 @@ public:
     // Query overrides
     void Begin() override;
     void End() override;
-    void ResolveData() override;
-    Resource::SubResource GetData() override;
+    [[nodiscard]] Resource::SubResource GetData() const override;
 
 protected:
-    [[nodiscard]] QueryBufferVK& GetQueryBufferVK() noexcept;
+    [[nodiscard]] QueryBufferVK& GetQueryBufferVK() const noexcept;
 
 private:
+    using QueryResults = std::vector<uint64_t>;
+
+    const vk::Device        m_vk_device;
+    const vk::CommandBuffer m_vk_command_buffer;
+    mutable QueryResults    m_query_results;
+    vk::DeviceSize          m_query_results_byte_size;
 };
 
 class QueryBufferVK : public QueryBuffer
 {
 public:
     QueryBufferVK(CommandQueueVK& command_queue, Type type,
-                  Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
+                  Data::Size max_query_count, Query::Count slots_count_per_query,
+                  Data::Size buffer_size, Data::Size query_size);
 
-    CommandQueueVK&   GetCommandQueueVK() noexcept;
-    const IContextVK& GetContextVK() const noexcept { return m_context_vk; }
+    CommandQueueVK&      GetCommandQueueVK() noexcept;
+    const IContextVK&    GetContextVK() const noexcept       { return m_context_vk; }
+    const vk::QueryPool& GetNativeQueryPool() const noexcept { return m_vk_query_pool; }
 
 private:
     const IContextVK& m_context_vk;
@@ -70,8 +78,8 @@ private:
 using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
 
 class TimestampQueryVK final
-    : public QueryVK
-      , public TimestampQuery
+    : protected QueryVK
+    , public TimestampQuery
 {
 public:
     TimestampQueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
@@ -79,11 +87,11 @@ public:
     // TimestampQuery overrides
     void InsertTimestamp() override;
     void ResolveTimestamp() override;
-    Timestamp GetGpuTimestamp() override;
-    Timestamp GetCpuNanoseconds() override;
+    Timestamp GetGpuTimestamp() const override;
+    Timestamp GetCpuNanoseconds() const override;
 
 private:
-    [[nodiscard]] TimestampQueryBufferVK& GetTimestampQueryBufferVK() noexcept;
+    [[nodiscard]] TimestampQueryBufferVK& GetTimestampQueryBufferVK() const noexcept;
 };
 
 class TimestampQueryBufferVK final
