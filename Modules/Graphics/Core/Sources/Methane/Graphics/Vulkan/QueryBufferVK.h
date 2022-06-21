@@ -56,7 +56,7 @@ private:
     const vk::Device        m_vk_device;
     const vk::CommandBuffer m_vk_command_buffer;
     mutable QueryResults    m_query_results;
-    vk::DeviceSize          m_query_results_byte_size;
+    size_t                  m_query_results_byte_size;
 };
 
 class QueryBufferVK : public QueryBuffer

@@ -72,7 +72,7 @@ public:
         InitializeSecondaryCommandBuffers(1U);
 
         CommandListBaseT::InitializeTimestampQueries();
-        BeginGpuZone();
+        CommandListBaseT::BeginGpuZone();
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -91,7 +91,7 @@ public:
         InitializeSecondaryCommandBuffers(0U);
 
         CommandListBaseT::InitializeTimestampQueries();
-        BeginGpuZone();
+        CommandListBaseT::BeginGpuZone();
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -111,7 +111,7 @@ public:
         InitializePrimaryCommandBuffer(vk_buffer_level);
 
         CommandListBaseT::InitializeTimestampQueries();
-        BeginGpuZone();
+        CommandListBaseT::BeginGpuZone();
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -138,8 +138,7 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBaseT::Commit();
-
-        EndGpuZone();
+        CommandListBaseT::EndGpuZone();
 
         // End command buffers encoding
         for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
@@ -201,7 +200,7 @@ public:
             m_vk_command_buffer_encoding_flags[cmd_buffer_index] = true;
         }
 
-        BeginGpuZone();
+        CommandListBaseT::BeginGpuZone();
 
         CommandListBase::Reset(p_debug_group);
     }
