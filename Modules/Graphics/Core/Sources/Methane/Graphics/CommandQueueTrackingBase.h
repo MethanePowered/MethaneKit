@@ -57,6 +57,8 @@ public:
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
     TimestampQueryBuffer*   GetTimestampQueryBuffer() const noexcept final { return m_timestamp_query_buffer_ptr.get(); }
 
+    void InitializeTimestampQueryBuffer();
+
 protected:
     using CommandListSetsQueue = std::queue<Ptr<CommandListSetBase>>;
 
@@ -83,8 +85,6 @@ protected:
     }
 
     virtual void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
-
-    void InitializeTimestampQueryBuffer();
 
 private:
     void WaitForExecution() noexcept;

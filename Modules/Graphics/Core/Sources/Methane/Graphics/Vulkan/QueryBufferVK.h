@@ -49,6 +49,7 @@ public:
 
 protected:
     [[nodiscard]] QueryBufferVK& GetQueryBufferVK() const noexcept;
+    [[nodiscard]] const vk::CommandBuffer& GetCommandBufferVK() const noexcept { return m_vk_command_buffer; }
 
 private:
     using QueryResults = std::vector<uint64_t>;
@@ -103,6 +104,12 @@ public:
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
+    void Calibrate() override;
+
+private:
+    const vk::TimeDomainEXT m_vk_cpu_time_domain;
+    const uint64_t          m_qpc_to_nsec = 1U;
+    uint64_t                m_deviation = 0U;
 };
 
 } // namespace Methane::Graphics

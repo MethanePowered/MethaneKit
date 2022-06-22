@@ -44,7 +44,12 @@ namespace Methane::Graphics
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    Ptr<CommandQueueDX> command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
+    command_queue_ptr->InitializeTimestampQueryBuffer();
+#endif
+    return command_queue_ptr;
 }
 
 static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, Context::Options options)
@@ -88,11 +93,8 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    InitializeTimestampQueryBuffer();
-#if METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     m_tracy_context = TracyD3D12Context(GetContextDX().GetDeviceDX().GetNativeDevice().Get(), m_cp_command_queue.Get());
-#endif
 #endif
 }
 

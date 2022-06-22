@@ -80,15 +80,6 @@ static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D1
     return gpu_frequency;
 }
 
-static GpuTimeCalibration GetGpuTimeCalibration(ID3D12CommandQueue& native_command_queue, ID3D12Device& native_device)
-{
-    META_FUNCTION_TASK();
-    UINT64 gpu_timestamp = 0U;
-    UINT64 cpu_timestamp = 0U;
-    ThrowIfFailed(native_command_queue.GetClockCalibration(&gpu_timestamp, &cpu_timestamp), &native_device);
-    return { gpu_timestamp, static_cast<TimeDelta>(gpu_timestamp - cpu_timestamp) };
-}
-
 static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
@@ -181,13 +172,23 @@ TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, ui
 {
     META_FUNCTION_TASK();
     SetGpuFrequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
-    SetGpuTimeCalibration(Graphics::GetGpuTimeCalibration(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
+    Calibrate();
 }
 
 Ptr<TimestampQuery> TimestampQueryBufferDX::CreateTimestampQuery(CommandListBase& command_list)
 {
     META_FUNCTION_TASK();
     return QueryBuffer::CreateQuery<TimestampQueryDX>(command_list);
+}
+
+void TimestampQueryBufferDX::Calibrate()
+{
+    META_FUNCTION_TASK();
+    UINT64 gpu_ts = 0U;
+    UINT64 cpu_ts = 0U;
+    ThrowIfFailed(GetCommandQueueDX().GetNativeCommandQueue().GetClockCalibration(&gpu_ts, &cpu_ts),
+                  GetContextDX().GetDeviceDX().GetNativeDevice().Get());
+    SetGpuTimeCalibration({ gpu_ts, static_cast<TimeDelta>(gpu_ts - cpu_ts) });
 }
 
 TimestampQueryDX::TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)

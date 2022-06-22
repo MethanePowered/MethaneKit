@@ -145,7 +145,7 @@ public:
     [[nodiscard]] static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
     [[nodiscard]] virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
-
+    virtual void Calibrate() = 0;
     virtual ~TimestampQueryBuffer() = default;
 
     Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }

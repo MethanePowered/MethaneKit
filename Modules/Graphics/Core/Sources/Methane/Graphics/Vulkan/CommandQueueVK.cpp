@@ -97,7 +97,12 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    Ptr<CommandQueueVK> command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
+    command_queue_ptr->InitializeTimestampQueryBuffer();
+#endif
+    return command_queue_ptr;
 }
 
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type)
@@ -131,9 +136,6 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
     , m_vk_supported_access_flags(GetAccessFlagsByQueueFlags(family_properties.queueFlags))
 {
     META_FUNCTION_TASK();
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    InitializeTimestampQueryBuffer();
-#endif
 }
 
 CommandQueueVK::~CommandQueueVK()
