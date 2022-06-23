@@ -82,7 +82,7 @@ Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, Re
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list));
+    return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list), false);
 }
 
 Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue& cmd_queue)
@@ -104,9 +104,8 @@ RenderCommandListVK::RenderCommandListVK(CommandQueueVK& command_queue, RenderPa
     static_cast<Data::IEmitter<IRenderPassCallback>&>(render_pass).Connect(*this);
 }
 
-RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list)
-    : CommandListVK(CreateRenderCommandBufferInheritanceInfo(parallel_render_command_list.GetPassVK()), parallel_render_command_list)
-    , m_is_parallel(true)
+RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list, bool is_beginning_cmd_list)
+    : CommandListVK(CreateRenderCommandBufferInheritanceInfo(parallel_render_command_list.GetPassVK()), parallel_render_command_list, is_beginning_cmd_list)
 {
     META_FUNCTION_TASK();
     static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetPassVK()).Connect(*this);
@@ -195,7 +194,7 @@ void RenderCommandListVK::Commit()
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
 
-    if (!m_is_parallel)
+    if (!IsParallel())
     {
         CommitCommandBuffer(CommandBufferType::SecondaryRenderPass);
 

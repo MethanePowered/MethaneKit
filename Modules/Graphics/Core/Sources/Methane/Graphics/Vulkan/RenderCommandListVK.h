@@ -45,7 +45,7 @@ class RenderCommandListVK final
 public:
     explicit RenderCommandListVK(CommandQueueVK& command_queue);
     RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
-    explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list);
+    explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list, bool is_beginning_cmd_list);
 
     // CommandList interface
     void Commit() override;
@@ -67,8 +67,6 @@ private:
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPassVK& GetPassVK();
-
-    const bool m_is_parallel = false;
 };
 
 } // namespace Methane::Graphics

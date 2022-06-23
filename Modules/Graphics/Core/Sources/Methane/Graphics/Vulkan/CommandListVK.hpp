@@ -77,27 +77,38 @@ public:
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
-    CommandListVK(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ParallelRenderCommandListVK& parallel_render_command_list)
+    CommandListVK(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ParallelRenderCommandListVK& parallel_render_command_list, bool is_beginning_cmd_list)
         : CommandListBaseT(parallel_render_command_list)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetCommandQueueVK().GetFamilyIndex()))
+        , m_debug_group_command_buffer_type(is_beginning_cmd_list ? ICommandListVK::CommandBufferType::Primary : default_command_buffer_type)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
-        // Do not use primary command buffers in case of command list created as a part of ParallelRenderCommandListVK
-        SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
-        InitializeSecondaryCommandBuffers(0U);
+        if (is_beginning_cmd_list)
+        {
+            // Beginning command list of the parallel rendering requires only primary command buffer for submitting all other commands
+            InitializePrimaryCommandBuffer();
 
-        CommandListBaseT::InitializeTimestampQueries();
-        CommandListBaseT::BeginGpuZone();
+            // Timestamp queries are used only in the beginning command list with Primary command buffer
+            // because queries can not be performed inside render pass, but thread render command lists have only render pass commands
+            CommandListBaseT::InitializeTimestampQueries();
+            CommandListBaseT::BeginGpuZone();
+        }
+        else
+        {
+            // Thread render and ending command lists of the parallel rendering do not use primary command buffers
+            SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
+            InitializeSecondaryCommandBuffers(0U);
+        }
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
 
     template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
-        typename = std::enable_if_t<buffers_count == 1>>
+             typename = std::enable_if_t<buffers_count == 1>>
     CommandListVK(const vk::CommandBufferLevel& vk_buffer_level, const vk::CommandBufferBeginInfo& vk_begin_info, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice()) // NOSONAR
@@ -110,8 +121,11 @@ public:
 
         InitializePrimaryCommandBuffer(vk_buffer_level);
 
-        CommandListBaseT::InitializeTimestampQueries();
-        CommandListBaseT::BeginGpuZone();
+        if (vk_buffer_level == vk::CommandBufferLevel::ePrimary)
+        {
+            CommandListBaseT::InitializeTimestampQueries();
+            CommandListBaseT::BeginGpuZone();
+        }
 
         CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
     }
@@ -122,16 +136,14 @@ public:
     {
         META_FUNCTION_TASK();
         CommandListBase::PushDebugGroup(debug_group);
-
-        GetNativeCommandBufferDefault().beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
+        GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
         CommandListBase::PopDebugGroup();
-
-        GetNativeCommandBufferDefault().endDebugUtilsLabelEXT();
+        GetNativeCommandBuffer(m_debug_group_command_buffer_type).endDebugUtilsLabelEXT();
     }
 
     void Commit() override
@@ -193,7 +205,7 @@ public:
         // Begin command buffers encoding
         for (size_t cmd_buffer_index = 0; cmd_buffer_index < command_buffers_count; ++cmd_buffer_index)
         {
-            if (m_vk_command_buffer_encoding_flags[cmd_buffer_index])
+            if (m_vk_command_buffer_encoding_flags[cmd_buffer_index] || !m_vk_unique_command_buffers[cmd_buffer_index])
                 continue;
 
             m_vk_unique_command_buffers[cmd_buffer_index].get().begin(GetCommandBufferBeginInfo(static_cast<CommandBufferType>(cmd_buffer_index)));
@@ -340,6 +352,7 @@ private:
     std::array<bool, command_buffers_count>                       m_vk_command_buffer_encoding_flags;
     std::array<vk::CommandBufferBeginInfo, command_buffers_count> m_vk_command_buffer_begin_infos;
     std::optional<vk::CommandBufferInheritanceInfo>               m_vk_secondary_render_buffer_inherit_info_opt;
+    const ICommandListVK::CommandBufferType                       m_debug_group_command_buffer_type = default_command_buffer_type;
 };
 
 } // namespace Methane::Graphics

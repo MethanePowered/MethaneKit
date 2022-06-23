@@ -41,7 +41,7 @@ Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& c
 
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
     : ParallelRenderCommandListBase(command_queue, render_pass)
-    , m_beginning_command_list(command_queue, render_pass)
+    , m_beginning_command_list(*this, true)
     , m_vk_ending_inheritance_info(render_pass.GetPatternVK().GetNativeRenderPass(), 0U, render_pass.GetNativeFrameBuffer())
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
                             vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, &m_vk_ending_inheritance_info),
@@ -56,7 +56,7 @@ bool ParallelRenderCommandListVK::SetName(const std::string& name)
     if (!ParallelRenderCommandListBase::SetName(name))
         return false;
 
-    m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
+    m_beginning_command_list.SetName(name);
     m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
     return true;
 }
@@ -65,6 +65,16 @@ void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Reset(p_debug_group);
+
+    if (p_debug_group)
+    {
+        // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
+        m_beginning_command_list.ClearOpenDebugGroups();
+
+        m_ending_command_list.ResetOnce();
+        m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
+    }
+
     ParallelRenderCommandListBase::Reset(p_debug_group);
 }
 
@@ -74,9 +84,9 @@ void ParallelRenderCommandListVK::ResetWithState(RenderState& render_state, Debu
 
     m_beginning_command_list.Reset(p_debug_group);
 
-    // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
     if (p_debug_group)
     {
+        // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
         m_beginning_command_list.ClearOpenDebugGroups();
 
         m_ending_command_list.ResetOnce();
@@ -124,13 +134,9 @@ void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
-
-    m_beginning_command_list.Commit();
-
     ParallelRenderCommandListBase::Commit();
 
     const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
-    vk_beginning_primary_cmd_buffer.begin(vk::CommandBufferBeginInfo());
     vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_sync_cmd_buffers);
 
     RenderPassVK& render_pass = GetPassVK();
@@ -147,7 +153,7 @@ void ParallelRenderCommandListVK::Commit()
         vk_beginning_primary_cmd_buffer.executeCommands(vk_ending_secondary_cmd_buffer);
     }
 
-    vk_beginning_primary_cmd_buffer.end();
+    m_beginning_command_list.Commit();
 }
 
 void ParallelRenderCommandListVK::Execute(const CompletedCallback& completed_callback)

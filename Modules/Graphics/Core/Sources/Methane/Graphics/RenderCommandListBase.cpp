@@ -54,7 +54,6 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
     , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPassBase>())
-    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetPtr<ParallelRenderCommandListBase>())
 {
     META_FUNCTION_TASK();
 }

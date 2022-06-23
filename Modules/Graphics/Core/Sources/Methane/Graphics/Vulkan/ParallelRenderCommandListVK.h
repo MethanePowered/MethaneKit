@@ -26,6 +26,7 @@ Vulkan implementation of the parallel render command list interface.
 #include "RenderCommandListVK.h"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
+#include <Methane/Graphics/QueryBuffer.h>
 
 namespace Methane::Graphics
 {
@@ -66,8 +67,8 @@ private:
     RenderCommandListVK              m_beginning_command_list;
     vk::CommandBufferInheritanceInfo m_vk_ending_inheritance_info;
     SyncCommandListVK                m_ending_command_list;
-    std::vector<vk::CommandBuffer> m_vk_parallel_sync_cmd_buffers;
-    std::vector<vk::CommandBuffer> m_vk_parallel_pass_cmd_buffers;
+    std::vector<vk::CommandBuffer>   m_vk_parallel_sync_cmd_buffers;
+    std::vector<vk::CommandBuffer>   m_vk_parallel_pass_cmd_buffers;
 };
 
 } // namespace Methane::Graphics
