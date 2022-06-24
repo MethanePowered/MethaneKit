@@ -155,10 +155,10 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
             const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
-            const auto emplace_result = m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
-            if (!emplace_result.second)
+            if (const auto [it, added] = m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
+                !added)
             {
-                emplace_result.first->second->MergeSettings(*argument_binging_ptr);
+                it->second->MergeSettings(*argument_binging_ptr);
             }
             shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }

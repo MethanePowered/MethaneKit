@@ -234,7 +234,7 @@ bool ContextBase::SetName(const std::string& name)
 }
 
 template<CommandKit::CommandListPurpose cmd_list_purpose>
-void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit)
+void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const
 {
     META_FUNCTION_TASK();
     constexpr auto cmd_list_id = static_cast<CommandKit::CommandListId>(cmd_list_purpose);
@@ -277,7 +277,7 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit)
 bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-    CommandKit& upload_cmd_kit = GetUploadCommandKit();
+    const CommandKit& upload_cmd_kit = GetUploadCommandKit();
     if (!upload_cmd_kit.HasList())
         return false;
 

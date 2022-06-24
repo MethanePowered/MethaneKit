@@ -136,8 +136,8 @@ private:
                 if (has_texcoord)
                 {
                     Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
-                    vertex_texcoord.SetX(texcoord_long_spacing * long_line_index);
-                    vertex_texcoord.SetY(texcoord_lat_spacing * lat_line_index);
+                    vertex_texcoord.SetX(texcoord_long_spacing * static_cast<float>(long_line_index));
+                    vertex_texcoord.SetY(texcoord_lat_spacing  * static_cast<float>(lat_line_index));
                 }
             }
         }

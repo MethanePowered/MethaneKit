@@ -109,7 +109,7 @@ private:
     void InitVertexNormal(const FaceType& face_type, VType& vertex)
     {
         Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-        const float depth_norm      = m_depth_pos ? m_depth_pos / abs(m_depth_pos) : 1.F;
+        const float depth_norm      = m_depth_pos >= 0.F ? 1.F : -1.F;
         switch (face_type)
         {
         case FaceType::XY: vertex_normal = Mesh::Normal(0.F, 0.F, depth_norm); break;

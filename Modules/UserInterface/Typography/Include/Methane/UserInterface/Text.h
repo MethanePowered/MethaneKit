@@ -110,7 +110,7 @@ public:
         // NOTE: State name should be different in case of render state incompatibility between Text objects
         std::string state_name = "Screen Text Render State";
 
-        Settings& SetName(const std::string& new_name) noexcept                                       { name = new_name; return *this; }
+        Settings& SetName(std::string_view new_name) noexcept                                         { name = new_name; return *this; }
         Settings& SetText(const StringType& new_text) noexcept                                        { text = new_text; return *this; }
         Settings& SetRect(const UnitRect& new_rect) noexcept                                          { rect = new_rect; return *this; }
         Settings& SetLayout(const Layout& new_layout) noexcept                                        { layout = new_layout; return *this; }
@@ -118,7 +118,7 @@ public:
         Settings& SetIncrementalUpdate(bool new_incremental_update) noexcept                          { incremental_update = new_incremental_update; return *this; }
         Settings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept                     { adjust_vertical_content_offset = new_adjust_offset; return *this; }
         Settings& SetMeshBuffersReservationMultiplier(Data::Size new_reservation_multiplier) noexcept { mesh_buffers_reservation_multiplier = new_reservation_multiplier; return *this; }
-        Settings& SetStateName(const std::string& new_state_name) noexcept                            { state_name = new_state_name; return *this; }
+        Settings& SetStateName(std::string_view new_state_name) noexcept                            { state_name = new_state_name; return *this; }
     };
 
     using SettingsUtf8  = Settings<std::string>;

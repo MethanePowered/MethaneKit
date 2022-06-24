@@ -64,10 +64,12 @@ protected:
     static std::string GetCompiledEntryFunctionName(const Settings& settings);
 
 private:
-    const Type                    m_type;
-    const ContextBase&            m_context;
-    const Settings                m_settings;
-    mutable std::set<std::string> m_cached_arg_names;
+    using ArgNamesSet = std::set<std::string, std::less<>>;
+
+    const Type          m_type;
+    const ContextBase&  m_context;
+    const Settings      m_settings;
+    mutable ArgNamesSet m_cached_arg_names;
 };
 
 } // namespace Methane::Graphics

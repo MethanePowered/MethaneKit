@@ -105,7 +105,7 @@ private:
     using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
 
     template<CommandKit::CommandListPurpose cmd_list_purpose>
-    void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit);
+    void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const;
 
     const Type                       m_type;
     Ptr<DeviceBase>                  m_device_ptr;

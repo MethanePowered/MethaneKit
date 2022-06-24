@@ -107,7 +107,7 @@ public:
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
                                          Program::ArgumentAccessor::Type apply_access_mask = static_cast<Program::ArgumentAccessor::Type>(~0U),
-                                         CommandQueue* owner_queue_ptr = nullptr) const
+                                         const CommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
             m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())

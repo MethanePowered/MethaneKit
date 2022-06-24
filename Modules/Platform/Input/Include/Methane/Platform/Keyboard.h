@@ -175,6 +175,7 @@ public:
 
     State() = default;
     State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
+    virtual ~State() = default;
 
     [[nodiscard]] bool operator<(const State& other) const noexcept;
     [[nodiscard]] bool operator==(const State& other) const noexcept;

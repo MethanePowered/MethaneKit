@@ -32,7 +32,7 @@ Base implementation of the named object interface.
 namespace Methane::Graphics
 {
 
-class ObjectBase
+class ObjectBase // NOSONAR - destructor is required
     : public virtual Object // NOSONAR
     , public std::enable_shared_from_this<ObjectBase>
     , public Data::Emitter<IObjectCallback>
@@ -59,6 +59,12 @@ public:
     ObjectBase() = default;
     explicit ObjectBase(const std::string& name);
     ~ObjectBase() override;
+
+    ObjectBase(const ObjectBase&) = default;
+    ObjectBase(ObjectBase&&) noexcept = default;
+
+    ObjectBase& operator=(const ObjectBase&) = default;
+    ObjectBase& operator=(ObjectBase&&) noexcept = default;
 
     // Object interface
     bool               SetName(const std::string& name) override;

@@ -41,7 +41,6 @@ struct RenderState;
 struct ViewState;
 struct BufferSet;
 struct Buffer;
-struct Buffer;
 struct Texture;
 struct Sampler;
 struct ProgramBindings;

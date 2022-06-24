@@ -436,7 +436,7 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
         if (!resource_view.GetResourcePtr())
             continue;
 
-        Resource& resource = resource_view.GetResource();
+        const Resource& resource = resource_view.GetResource();
         if (resource.GetResourceType() == Resource::Type::Sampler)
             continue;
 
