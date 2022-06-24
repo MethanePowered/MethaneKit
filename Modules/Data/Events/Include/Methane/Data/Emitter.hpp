@@ -240,7 +240,12 @@ private:
     bool                                m_is_emitting = false;
     std::vector<Receiver<EventType>*>   m_connected_receivers;
     std::set<Receiver<EventType>*>      m_additional_connected_receivers;
+#if defined(__GNUG__) && !defined(__clang__)
+    // GCC fails with internal compiler error: Segmentation fault
+    std::recursive_mutex                m_connected_receivers_mutex;
+#else
     TracyLockable(std::recursive_mutex, m_connected_receivers_mutex);
+#endif
 };
 
 } // namespace Methane::Data
