@@ -103,7 +103,7 @@ public:
 private:
     struct Slice : SliceDesc
     {
-        Slice(const SliceDesc& slice_desc)
+        explicit Slice(const SliceDesc& slice_desc)
             : SliceDesc(slice_desc)
         {}
 

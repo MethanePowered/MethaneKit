@@ -55,7 +55,7 @@ struct IDescriptorHeapCallback
     virtual ~IDescriptorHeapCallback() = default;
 };
 
-class DescriptorHeapDX : public Data::Emitter<IDescriptorHeapCallback>
+class DescriptorHeapDX : public Data::Emitter<IDescriptorHeapCallback> // NOSONAR - this class requires destructor
 {
 public:
     enum class Type : uint32_t

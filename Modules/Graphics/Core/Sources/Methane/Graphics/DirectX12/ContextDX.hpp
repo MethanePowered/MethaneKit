@@ -81,7 +81,7 @@ public:
     {
         META_FUNCTION_TASK();
 
-        DescriptorManagerDX& descriptor_manager = GetDescriptorManagerDX();
+        const DescriptorManagerDX& descriptor_manager = GetDescriptorManagerDX();
         m_descriptor_manager_init_settings.default_heap_sizes        = descriptor_manager.GetDescriptorHeapSizes(true, false);
         m_descriptor_manager_init_settings.shader_visible_heap_sizes = descriptor_manager.GetDescriptorHeapSizes(true, true);
 

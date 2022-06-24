@@ -311,7 +311,7 @@ void CommandListBase::SetCommandListStateNoLock(State state)
     Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
-void CommandListBase::InitializeTimestampQueries()
+void CommandListBase::InitializeTimestampQueries() // NOSONAR - function is not const when instrumentation enabled
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
@@ -324,7 +324,7 @@ void CommandListBase::InitializeTimestampQueries()
 #endif
 }
 
-void CommandListBase::BeginGpuZone()
+void CommandListBase::BeginGpuZone() // NOSONAR - function is not const when instrumentation enabled
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
@@ -334,7 +334,7 @@ void CommandListBase::BeginGpuZone()
 #endif
 }
 
-void CommandListBase::EndGpuZone()
+void CommandListBase::EndGpuZone() // NOSONAR - function is not const when instrumentation enabled
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
@@ -483,8 +483,8 @@ const std::string& CommandListSetBase::GetCombinedName()
 
     for (size_t list_index = 0u; list_index < list_count; ++list_index)
     {
-        const std::string& list_name = m_refs[list_index].get().GetName();
-        if (list_name.empty())
+        if (const std::string& list_name = m_refs[list_index].get().GetName();
+            list_name.empty())
             name_ss << "<unnamed>";
         else
             name_ss << "'" << list_name << "'";

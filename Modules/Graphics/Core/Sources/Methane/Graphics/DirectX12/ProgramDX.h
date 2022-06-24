@@ -41,7 +41,7 @@ struct IResourceDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramDX final : public ProgramBase
+class ProgramDX final : public ProgramBase // NOSONAR - this class requires destructor
 {
     friend class ProgramBindingsDX;
 
@@ -60,11 +60,9 @@ public:
 
     const IContextDX& GetContextDX() const noexcept;
 
-protected:
-    DescriptorHeapDX::Range ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
-
 private:
     void InitRootSignature();
+    DescriptorHeapDX::Range ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
 
     struct DescriptorHeapReservation
     {

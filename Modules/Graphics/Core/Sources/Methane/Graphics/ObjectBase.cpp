@@ -118,7 +118,16 @@ ObjectBase::ObjectBase(const std::string& name)
 ObjectBase::~ObjectBase()
 {
     META_FUNCTION_TASK();
-    Emit(&IObjectCallback::OnObjectDestroyed, *this);
+    try
+    {
+        Emit(&IObjectCallback::OnObjectDestroyed, *this);
+    }
+    catch(const std::exception& e)
+    {
+        META_UNUSED(e);
+        META_LOG("WARNING: Unexpected error during object destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 Ptr<Object> ObjectBase::GetPtr()

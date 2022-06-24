@@ -409,7 +409,7 @@ bool AsteroidsApp::Render()
         return false;
 
     // Upload uniform buffers to GPU
-    AsteroidsFrame& frame = GetCurrentFrame();
+    const AsteroidsFrame& frame = GetCurrentFrame();
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
 

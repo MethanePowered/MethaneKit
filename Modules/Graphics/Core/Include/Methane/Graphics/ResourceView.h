@@ -16,8 +16,9 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/SubResource.h
-Methane sub-resource used for resource data transfers.
+FILE: Methane/Graphics/ResourceView.h
+Methane sub-resource used for resource data transfers
+and resource view used in program bindings.
 
 ******************************************************************************/
 
@@ -80,7 +81,7 @@ public:
     class Index
     {
     public:
-        Index() noexcept { } // = default does not work for Clang here, but works fine for Count(), which is weird.
+        Index() noexcept { } // NOSONAR = default does not work for Clang here, but works fine for Count(), which is weird.
         explicit Index(Data::Index depth_slice, Data::Index array_index = 0U, Data::Index mip_level = 0U) noexcept;
         Index(Data::Index raw_index, const Count& count);
         explicit Index(const Count& count);

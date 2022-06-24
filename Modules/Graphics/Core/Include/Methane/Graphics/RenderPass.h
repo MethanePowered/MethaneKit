@@ -96,9 +96,9 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
         [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
 
-        [[nodiscard]] Type GetType() const noexcept final { return Type::Color; }
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Color; }
     };
 
     using ColorAttachments = std::vector<ColorAttachment>;
@@ -117,9 +117,9 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
         [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
 
-        [[nodiscard]] Type GetType() const noexcept final { return Type::Depth; }
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Depth; }
     };
 
     struct StencilAttachment final : Attachment
@@ -136,9 +136,9 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
         [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
 
-        [[nodiscard]] Type GetType() const noexcept final { return Type::Stencil; }
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
     };
 
     enum class Access : uint32_t
@@ -186,7 +186,7 @@ struct IRenderPassCallback
 
 struct RenderPass
     : virtual Object // NOSONAR
-    , virtual Data::IEmitter<IRenderPassCallback>
+    , virtual Data::IEmitter<IRenderPassCallback> // NOSONAR
 {
     using Pattern           = RenderPattern;
     using Attachment        = RenderPattern::Attachment;

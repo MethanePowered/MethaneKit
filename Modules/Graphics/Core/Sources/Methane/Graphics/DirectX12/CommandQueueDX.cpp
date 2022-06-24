@@ -44,7 +44,7 @@ namespace Methane::Graphics
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    Ptr<CommandQueueDX> command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
     command_queue_ptr->InitializeTimestampQueryBuffer();
@@ -98,7 +98,7 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
 #endif
 }
 
-CommandQueueDX::~CommandQueueDX()
+CommandQueueDX::~CommandQueueDX() // NOSONAR - destructor is not default under define
 {
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     TracyD3D12Destroy(m_tracy_context);

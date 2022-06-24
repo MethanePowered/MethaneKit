@@ -31,7 +31,7 @@ Code scope measurement timer with aggregating and averaging of timings.
 namespace Methane
 {
 
-ScopeTimer::Aggregator& ScopeTimer::Aggregator::Get()
+ScopeTimer::Aggregator& ScopeTimer::Aggregator::Get() noexcept
 {
     META_FUNCTION_TASK();
     static Aggregator s_scope_aggregator;
@@ -44,7 +44,7 @@ ScopeTimer::Aggregator::~Aggregator()
     Flush();
 }
 
-void ScopeTimer::Aggregator::Flush()
+void ScopeTimer::Aggregator::Flush() noexcept
 {
     META_FUNCTION_TASK();
     if (m_logger_ptr)
@@ -57,7 +57,7 @@ void ScopeTimer::Aggregator::Flush()
     m_new_scope_id = 0U;
 }
 
-void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
+void ScopeTimer::Aggregator::LogTimings(ILogger& logger) noexcept
 {
     META_FUNCTION_TASK();
     if (m_timing_by_scope_id.empty())
@@ -68,7 +68,8 @@ void ScopeTimer::Aggregator::LogTimings(ILogger& logger)
 
     for (const auto& [scope_name, scope_id] : m_scope_id_by_name)
     {
-        META_CHECK_ARG_LESS(scope_id, m_timing_by_scope_id.size());
+        if (scope_id >= m_timing_by_scope_id.size())
+            continue;
 
         const Timing& scope_timing = m_timing_by_scope_id[scope_id];
         const double total_duration_sec = std::chrono::duration_cast<std::chrono::duration<double>>(scope_timing.duration).count();
@@ -97,13 +98,18 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
     return Registration{ scope_name_and_id_it->first, scope_name_and_id_it->second };
 }
 
-void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration)
+void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registration, TimeDuration duration) noexcept
 {
     META_FUNCTION_TASK();
     ITT_COUNTER_VALUE(m_counters_by_scope_id[scope_registration.id], std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
     TracyPlot(scope_registration.name, std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
 
-    META_CHECK_ARG_LESS(scope_registration.id, m_timing_by_scope_id.size());
+    if (scope_registration.id >= m_timing_by_scope_id.size())
+    {
+        assert(false);
+        return;
+    }
+
     Timing& scope_timing = m_timing_by_scope_id[scope_registration.id];
     scope_timing.count++;
     scope_timing.duration += duration;

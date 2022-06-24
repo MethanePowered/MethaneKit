@@ -67,7 +67,7 @@ public:
         m_cp_command_list.As(&m_cp_command_list_4);
 
         InitializeTimestampQueries();
-        BeginGpuZone();
+        BeginGpuZoneDX();
 
         SetCommandListState(CommandList::State::Encoding);
     }
@@ -94,7 +94,7 @@ public:
         META_FUNCTION_TASK();
         CommandListBaseT::Commit();
 
-        EndGpuZone();
+        EndGpuZoneDX();
 
         m_cp_command_list->Close();
         m_is_native_committed = true;
@@ -131,7 +131,7 @@ public:
         ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
-        BeginGpuZone();
+        BeginGpuZoneDX();
 
         CommandListBase::Reset(p_debug_group);
     }
@@ -185,14 +185,14 @@ protected:
         return *m_cp_command_list.Get();
     }
 
-    void BeginGpuZone()
+    void BeginGpuZoneDX()
     {
         CommandListBaseT::BeginGpuZone();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
         static const std::string cl_unnamed = "Unnamed Command List";
         const std::string& cl_name = GetName();
         const std::string_view zone_name = cl_name.empty() ? cl_unnamed : cl_name;
-        m_tracy_gpu_scope_opt.emplace(GetCommandQueueDX().GetTracyContext(),
+        m_tracy_gpu_scope_opt.emplace(GetCommandQueueDX().GetTracyD3D12Ctx(),
                                       static_cast<uint32_t>(__LINE__), __FILE__, strlen(__FILE__),
                                       __FUNCTION__, strlen(__FUNCTION__),
                                       zone_name.data(), zone_name.length(),
@@ -200,7 +200,7 @@ protected:
 #endif
     }
 
-    void EndGpuZone()
+    void EndGpuZoneDX()
     {
         CommandListBaseT::EndGpuZone();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2

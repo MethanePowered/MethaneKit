@@ -44,7 +44,7 @@ public:
         : m_connected_emitter_refs(other.m_connected_emitter_refs)
     {
         META_FUNCTION_TASK();
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         ConnectEmitters();
     }
 
@@ -52,14 +52,14 @@ public:
         : m_connected_emitter_refs(other.DisconnectEmitters())
     {
         META_FUNCTION_TASK();
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         ConnectEmitters();
     }
 
     ~Receiver() override // NOSONAR
     {
         META_FUNCTION_TASK();
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         DisconnectEmitters();
     }
 
@@ -69,7 +69,7 @@ public:
         if (this == std::addressof(other))
             return *this;
 
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         DisconnectEmitters();
         m_connected_emitter_refs = other.m_connected_emitter_refs;
         ConnectEmitters();
@@ -82,7 +82,7 @@ public:
         if (this == std::addressof(other))
             return *this;
 
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         DisconnectEmitters();
         m_connected_emitter_refs = std::move(other.m_connected_emitter_refs);
         ConnectEmitters();
@@ -96,7 +96,7 @@ protected:
     void OnConnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         if (FindConnectedEmitter(emitter) != m_connected_emitter_refs.end())
             return;
 
@@ -106,7 +106,7 @@ protected:
     void OnDisconnected(IEmitter<EventType>& emitter) noexcept
     {
         META_FUNCTION_TASK();
-        std::lock_guard<std::recursive_mutex> lock(m_connected_emitter_refs_mutex);
+        std::lock_guard lock(m_connected_emitter_refs_mutex);
         const auto connected_emitter_ref_it = FindConnectedEmitter(emitter);
         if (connected_emitter_ref_it == m_connected_emitter_refs.end())
             return;
@@ -148,7 +148,7 @@ private:
     }
 
     Refs<IEmitter<EventType>> m_connected_emitter_refs;
-    std::recursive_mutex      m_connected_emitter_refs_mutex;
+    TracyLockable(std::recursive_mutex, m_connected_emitter_refs_mutex);
 };
 
 } // namespace Methane::Data

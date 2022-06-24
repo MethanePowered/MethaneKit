@@ -12,11 +12,11 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 #ifndef CUBE_MAP_ARRAY_UNIFORMS_H
 #define CUBE_MAP_ARRAY_UNIFORMS_H
 
-#define CUBE_MAP_ARRAY_SIZE 8
+#define CUBE_MAP_ARRAY_SIZE 8 // NOSONAR
 
 struct Uniforms
 {
-    float4x4 mvp_matrix_per_instance[CUBE_MAP_ARRAY_SIZE];
+    float4x4 mvp_matrix_per_instance[CUBE_MAP_ARRAY_SIZE]; // NOSONAR
 };
 
 #endif // CUBE_MAP_ARRAY_UNIFORMS_H

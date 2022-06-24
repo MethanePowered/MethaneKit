@@ -67,7 +67,16 @@ public:
         }
 
         // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        try
+        {
+            Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        }
+        catch(const std::exception& e)
+        {
+            META_UNUSED(e);
+            META_LOG("WARNING: Unexpected error during resource destruction: {}", e.what());
+            assert(false);
+        }
     }
 
     ResourceDX(const ResourceDX&) = delete;

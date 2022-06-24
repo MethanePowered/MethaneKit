@@ -42,8 +42,8 @@ struct CommandQueue;
 
 struct ICommandListCallback
 {
-    virtual void OnCommandListStateChanged(CommandList&) {};
-    virtual void OnCommandListExecutionCompleted(CommandList&) {};
+    virtual void OnCommandListStateChanged(CommandList&)        { /* does nothing by default */ };
+    virtual void OnCommandListExecutionCompleted(CommandList&)  { /* does nothing by default */ };
     
     virtual ~ICommandListCallback() = default;
 };

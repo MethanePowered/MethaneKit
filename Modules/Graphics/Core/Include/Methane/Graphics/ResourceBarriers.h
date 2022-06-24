@@ -146,8 +146,8 @@ public:
 private:
     union Change
     {
-        Change(const StateChange& state) : state(state) {}
-        Change(const OwnerChange& owner) : owner(owner) {}
+        explicit Change(const StateChange& state) : state(state) {}
+        explicit Change(const OwnerChange& owner) : owner(owner) {}
 
         StateChange state;
         OwnerChange owner;

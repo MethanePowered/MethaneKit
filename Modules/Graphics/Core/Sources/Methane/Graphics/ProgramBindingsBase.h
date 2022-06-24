@@ -123,7 +123,7 @@ protected:
     Program& GetProgram();
     void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
     ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                 const ResourceViewsByArgument& replace_resource_views);
+                                                 const ResourceViewsByArgument& replace_resource_views) const;
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
@@ -147,7 +147,7 @@ private:
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
     using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
 
-    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, CommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<Program>              m_program_ptr;

@@ -107,8 +107,6 @@ struct ProgramBindings : virtual Object // NOSONAR
     [[nodiscard]] virtual Data::Index               GetFrameIndex() const noexcept = 0;
     [[nodiscard]] virtual Data::Index               GetBindingsIndex() const noexcept = 0;
     [[nodiscard]] virtual explicit operator         std::string() const = 0;
-
-    virtual ~ProgramBindings() = default;
 };
 
 } // namespace Methane::Graphics

@@ -51,7 +51,7 @@ struct AppSettings
     AppSettings& SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept;
 };
 
-class AppBase
+class AppBase // NOSONAR
     : public Platform::App
     , protected Data::Receiver<IContextCallback> //NOSONAR
 {

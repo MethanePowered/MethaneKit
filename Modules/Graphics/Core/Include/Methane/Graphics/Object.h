@@ -36,8 +36,8 @@ struct Object;
 
 struct IObjectCallback
 {
-    virtual void OnObjectNameChanged(Object&, const std::string& /*old_name*/) {}
-    virtual void OnObjectDestroyed(Object&) {}
+    virtual void OnObjectNameChanged(Object&, const std::string& /*old_name*/) { /* does nothing by default */ }
+    virtual void OnObjectDestroyed(Object&)                                    { /* does nothing by default */ }
 
     virtual ~IObjectCallback() = default;
 };
@@ -65,8 +65,6 @@ struct Object
     virtual bool SetName(const std::string& name) = 0;
     [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
     [[nodiscard]] virtual Ptr<Object>        GetPtr() = 0;
-
-    virtual ~Object() = default;
 };
 
 } // namespace Methane::Graphics

@@ -42,7 +42,7 @@ struct ICommandListDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramBindingsDX final : public ProgramBindingsBase
+class ProgramBindingsDX final : public ProgramBindingsBase // NOSONAR - this class requires destructor
 {
 public:
     class ArgumentBindingDX final : public ArgumentBindingBase
@@ -101,7 +101,7 @@ public:
     
     ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
-    ~ProgramBindingsDX();
+    ~ProgramBindingsDX() override;
 
     void Initialize();
 

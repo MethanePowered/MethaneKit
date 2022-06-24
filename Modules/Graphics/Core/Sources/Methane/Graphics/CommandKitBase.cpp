@@ -206,8 +206,8 @@ Fence& CommandKitBase::GetFence(CommandListId fence_id) const
 CommandKitBase::CommandListIndex CommandKitBase::GetCommandListIndexById(CommandListId cmd_list_id) const noexcept
 {
     META_FUNCTION_TASK();
-    const auto emplace_result = m_cmd_list_index_by_id.try_emplace(cmd_list_id, static_cast<CommandListIndex>(m_cmd_list_index_by_id.size()));
-    return emplace_result.first->second;
+    const auto [it, success] = m_cmd_list_index_by_id.try_emplace(cmd_list_id, static_cast<CommandListIndex>(m_cmd_list_index_by_id.size()));
+    return it->second;
 }
 
 CommandKitBase::CommandListSetId CommandKitBase::GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const

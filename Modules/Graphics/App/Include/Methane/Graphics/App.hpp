@@ -45,6 +45,7 @@ struct AppFrame
     Ptr<RenderPass> screen_pass_ptr;
 
     explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
+    virtual ~AppFrame() = default;
 
     // AppFrame interface
     virtual void ReleaseScreenPassAttachmentTextures()

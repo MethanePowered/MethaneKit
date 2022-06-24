@@ -89,7 +89,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, co
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        Texture& texture = dynamic_cast<Texture&>(texture_location.GetResource());
+        const auto& texture = dynamic_cast<Texture&>(texture_location.GetResource());
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(texture.GetSettings().pixel_format);
         const std::array<float, 4> clear_color_components = color_attachment.clear_color.AsArray();
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());

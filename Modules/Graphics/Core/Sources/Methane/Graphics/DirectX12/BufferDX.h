@@ -50,7 +50,7 @@ public:
         using namespace magic_enum::bitwise_operators;
 
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
-        const bool is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
+        const auto is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;

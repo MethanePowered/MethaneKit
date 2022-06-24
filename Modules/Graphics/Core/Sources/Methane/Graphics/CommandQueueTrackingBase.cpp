@@ -63,7 +63,8 @@ CommandQueueTrackingBase::~CommandQueueTrackingBase()
     META_FUNCTION_TASK();
     try
     {
-        CompleteExecution();
+        // Do not use virtual call in destructor
+        CommandQueueTrackingBase::CompleteExecution();
     }
     catch(const std::exception& ex)
     {

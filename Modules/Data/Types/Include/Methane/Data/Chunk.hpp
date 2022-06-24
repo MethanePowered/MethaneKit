@@ -49,6 +49,8 @@ public:
         , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
     { }
 
+    ~Chunk() = default;
+
     [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
     [[nodiscard]] bool IsDataStored() const noexcept  { return !m_data_storage.empty(); }
 

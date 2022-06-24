@@ -261,15 +261,15 @@ void ParallelRenderingApp::Init()
     GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
 }
 
-ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters()
+ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters() const
 {
     META_FUNCTION_TASK();
     const uint32_t cubes_count     = m_settings.GetTotalCubesCount();
-    const size_t   cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(static_cast<float>(cubes_count))));
+    const auto     cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(static_cast<float>(cubes_count))));
     const size_t   cbrt_count_sqr  = cbrt_count * cbrt_count;
     const float    cbrt_count_half = static_cast<float>(cbrt_count - 1) / 2.F;
 
-    const float ts = g_scene_scale / cbrt_count;
+    const float ts = g_scene_scale / static_cast<float>(cbrt_count);
     const float median_cube_scale = ts / 2.F;
     const float cube_scale_delta = median_cube_scale / 3.F;
 
@@ -312,7 +312,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
                    { return left.thread_index < right.thread_index; });
 
     // Fixup even distribution of cubes between threads
-    const uint32_t cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.render_thread_count));
+    const auto cubes_count_per_thread = static_cast<uint32_t>(std::ceil(static_cast<double>(cubes_count) / m_settings.render_thread_count));
     tf::Task even_task = task_flow.for_each_index(0U, cubes_count, 1U,
         [&cube_array_parameters, cubes_count_per_thread](const uint32_t cube_index)
         {
@@ -445,7 +445,7 @@ bool ParallelRenderingApp::Render()
 }
 
 void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
-                                            uint32_t begin_instance_index, const uint32_t end_instance_index)
+                                            uint32_t begin_instance_index, const uint32_t end_instance_index) const
 {
     META_FUNCTION_TASK();
     // Resource barriers are not set for vertex and index buffers, since it works with automatic state propagation from Common state

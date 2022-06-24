@@ -96,10 +96,10 @@ private:
     using CubeArrayParameters = std::vector<CubeParameters>;
     using MeshBuffers = gfx::MeshBuffers<hlslpp::Uniforms>;
 
-    CubeArrayParameters InitializeCubeArrayParameters();
+    CubeArrayParameters InitializeCubeArrayParameters() const;
     bool Animate(double elapsed_seconds, double delta_seconds);
     void RenderCubesRange(gfx::RenderCommandList& remder_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
-                          uint32_t begin_instance_index, const uint32_t end_instance_index);
+                          uint32_t begin_instance_index, const uint32_t end_instance_index) const;
 
     Settings              m_settings;
     gfx::Camera           m_camera;

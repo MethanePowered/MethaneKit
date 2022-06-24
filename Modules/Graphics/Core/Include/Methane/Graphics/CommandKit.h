@@ -42,7 +42,7 @@ struct CommandKit : virtual Object // NOSONAR
 {
     using CommandListId = uint32_t;
 
-    enum class CommandListPurpose : CommandListId
+    enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initialized
     {
         Default        = 0U,
         PreUploadSync  = std::numeric_limits<CommandListId>::max() - 2,

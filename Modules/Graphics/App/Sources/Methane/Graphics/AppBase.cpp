@@ -124,9 +124,9 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
 AppBase::~AppBase()
 {
     META_FUNCTION_TASK();
-    // Prevent OnContextReleased callback emitting during application destruction
     if (m_context_ptr)
     {
+        // Prevent OnContextReleased callback emitting during application destruction
         static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Disconnect(*this);
     }
 }

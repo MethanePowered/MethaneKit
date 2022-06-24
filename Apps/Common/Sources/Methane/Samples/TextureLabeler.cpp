@@ -134,7 +134,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     {
         for(Data::Size depth_index = 0U; depth_index < sub_res_count.GetDepth(); ++depth_index)
         {
-            m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
+            m_slices.emplace_back(Slice(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count)));
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass_ptr = gfx::RenderPass::Create(*m_texture_face_render_pattern_ptr, {
@@ -188,9 +188,8 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
 void TextureLabeler::Render()
 {
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group_ptr, "Texture Faces Rendering");
-    for (size_t slice_index = 0U; slice_index < m_slices.size(); ++slice_index)
+    for (const Slice& slice : m_slices)
     {
-        const Slice& slice = m_slices[slice_index];
         META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);

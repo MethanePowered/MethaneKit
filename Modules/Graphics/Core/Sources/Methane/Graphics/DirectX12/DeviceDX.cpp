@@ -32,7 +32,7 @@ DirectX 12 implementation of the device interface.
 #include <dxgidebug.h>
 
 // Uncomment to enable debugger breakpoint on DirectX debug warning or error
-#define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+// #define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
 #endif
 
 #include <magic_enum.hpp>
@@ -184,7 +184,7 @@ const wrl::ComPtr<ID3D12Device>& DeviceDX::GetNativeDevice() const
     }
     else
     {
-        assert(0);
+        assert(false);
         META_LOG("WARNING: GPU instrumentation results may be unreliable because we failed to switch GPU to stable power state." \
                  "Enable Windows Developer Mode and try again.");
     }
@@ -372,14 +372,13 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));
 }
 
-void SystemDX::ReportLiveObjects() const
+void SystemDX::ReportLiveObjects() const noexcept
 {
     META_FUNCTION_TASK();
 #ifdef _DEBUG
     wrl::ComPtr<IDXGIDebug1> dxgi_debug;
-    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))))
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgi_debug))) && dxgi_debug)
     {
-        META_CHECK_ARG_NOT_NULL(dxgi_debug);
         dxgi_debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
     }
 #endif

@@ -46,6 +46,7 @@ struct CubeVertex
 };
 
 constexpr uint32_t g_cube_texture_size = 320U;
+constexpr float    g_model_scale = 6.F;
 
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
@@ -58,8 +59,7 @@ CubeMapArrayApp::CubeMapArrayApp()
         }(),
         { HeadsUpDisplayMode::WindowTitle },
         "Methane tutorial of cube-map array texturing")
-    , m_model_scale(6.F)
-    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(m_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi)))
+    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi)))
 {
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
@@ -160,7 +160,7 @@ void CubeMapArrayApp::Init()
         gfx::SkyBox::Settings
         {
             m_camera,
-            m_model_scale * 100.F,
+            g_model_scale * 100.F,
             gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
         });
 
@@ -195,7 +195,6 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    // FIXME: texture state transition from RenderTarget to Common does not work in this sample, while it works fine in ParallelRendering.
     TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(), gfx::ResourceState::Undefined, { g_cube_texture_size / 4U, 10U });
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
@@ -231,10 +230,10 @@ bool CubeMapArrayApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    static const size_t s_cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(float(CUBE_MAP_ARRAY_SIZE))));
+    static const auto   s_cbrt_count      = static_cast<size_t>(std::floor(std::cbrt(float(CUBE_MAP_ARRAY_SIZE))));
     static const size_t s_cbrt_count_sqr  = s_cbrt_count * s_cbrt_count;
     static const float  s_cbrt_count_half = static_cast<float>(s_cbrt_count - 1) / 2.f;
-    const float ts = m_model_scale * 1.7F;
+    const float ts = g_model_scale * 1.7F;
 
     // Update MVP-matrices for all cube instances so that they are positioned in a cube grid
     hlslpp::Uniforms uniforms{};

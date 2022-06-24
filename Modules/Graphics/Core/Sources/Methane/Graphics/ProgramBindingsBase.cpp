@@ -56,22 +56,22 @@ struct fmt::formatter<Methane::Graphics::Resource::View>
 namespace Methane::Graphics
 {
 
-static Resource::State GetBoundResourceTargetState(Resource& resource, Resource::Type resource_type, bool is_constant_binding)
+static Resource::State GetBoundResourceTargetState(const Resource& resource, Resource::Type resource_type, bool is_constant_binding)
 {
     META_FUNCTION_TASK();
     switch (resource_type)
     {
     case Resource::Type::Buffer:
-        // FIXME: state transition DX upload heap resources should be reworked properly and made friendly with Vulkan
+        // FIXME: state transition of DX upload heap resources should be reworked properly and made friendly with Vulkan
         // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
-        if (dynamic_cast<Buffer&>(resource).GetSettings().storage_mode != Buffer::StorageMode::Private)
+        if (dynamic_cast<const Buffer&>(resource).GetSettings().storage_mode != Buffer::StorageMode::Private)
             return resource.GetState();
         else if (is_constant_binding)
             return Resource::State::ConstantBuffer;
         break;
 
     case Resource::Type::Texture:
-        if (dynamic_cast<Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
+        if (dynamic_cast<const Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
             return Resource::State::DepthRead;
         break;
 
@@ -302,7 +302,7 @@ void ProgramBindingsBase::InitializeArgumentBindings(const ProgramBindingsBase* 
 }
 
 ProgramBindings::ResourceViewsByArgument ProgramBindingsBase::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                                                   const ResourceViewsByArgument& replace_resource_views)
+                                                                                   const ResourceViewsByArgument& replace_resource_views) const
 {
     META_FUNCTION_TASK();
     ResourceViewsByArgument resource_views_by_argument = replace_resource_views;
@@ -445,7 +445,7 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
     }
 }
 
-bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, CommandQueue* owner_queue_ptr) const
+bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

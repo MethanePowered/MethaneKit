@@ -36,6 +36,9 @@ struct BlitCommandList : virtual CommandList // NOSONAR
 
     // Create BlitCommandList instance
     [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
+
+    // No public functions here for now, BLIT command lists are used internally only
+    // Later it will include memory copy operations and mip-map generation for textures on GPU
 };
 
 } // namespace Methane::Graphics
