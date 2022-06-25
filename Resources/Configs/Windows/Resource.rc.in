@@ -5,7 +5,7 @@ IDI_APP_ICON               ICON    DISCARDABLE     @METHANE_APP_ICON_FILE_PATH@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
+#include <Windows.h>
 
 #undef APSTUDIO_READONLY_SYMBOLS
 

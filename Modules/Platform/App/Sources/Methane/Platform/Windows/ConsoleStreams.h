@@ -17,7 +17,8 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/Windows/ConsoleStreams.h
-IO Stream class used for standard and error output redirection from GUI app to console.
+IOStream class is used for standard and error output redirection
+ from GUI Windows app to console output when it was started from terminal.
 
 ******************************************************************************/
 #pragma once
@@ -33,6 +34,12 @@ public:
     IOStream(FILE* std_stream, DWORD std_handle);
     ~IOStream();
 
+    IOStream(const IOStream& other) = delete;
+    IOStream(IOStream&& other) noexcept = delete;
+
+    IOStream& operator=(const IOStream& other) = delete;
+    IOStream& operator=(IOStream&& other) noexcept = delete;
+
     bool RedirectToFile(std::string_view file_name, std::string_view file_mode);
 
 private:
@@ -44,7 +51,7 @@ private:
 class ConsoleStreams
 {
 public:
-    ConsoleStreams();
+    ConsoleStreams() = default;
 
     const IOStream& GetOutputStream() const noexcept { return m_output_stream; }
     const IOStream& GetErrorStream() const noexcept  { return m_error_stream; }
@@ -52,8 +59,8 @@ public:
     bool Attach();
 
 private:
-    IOStream m_output_stream;
-    IOStream m_error_stream;
+    IOStream m_output_stream = { stdout, STD_OUTPUT_HANDLE };
+    IOStream m_error_stream  = { stderr, STD_ERROR_HANDLE  };
 };
 
 } // namespace Methane::Platform

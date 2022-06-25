@@ -83,10 +83,12 @@ protected:
         Resource::DescriptorByViewId descriptor_by_view_id;
         std::string name;
 
-        explicit ResourceRestoreInfo(const Resource& resource)
-            : descriptor_by_view_id(resource.GetDescriptorByViewId())
-            , name(resource.GetName())
-        { }
+        explicit ResourceRestoreInfo(const Resource& resource);
+        ResourceRestoreInfo(const ResourceRestoreInfo& other) = default;
+        ResourceRestoreInfo(ResourceRestoreInfo&& other) noexcept = default;
+
+        ResourceRestoreInfo& operator=(const ResourceRestoreInfo& other) = default;
+        ResourceRestoreInfo& operator=(ResourceRestoreInfo&& other) noexcept = default;
     };
 
     Texture::Views GetScreenPassAttachments(Texture& frame_buffer_texture) const;

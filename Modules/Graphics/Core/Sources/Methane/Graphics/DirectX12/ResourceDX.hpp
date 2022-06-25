@@ -188,12 +188,11 @@ protected:
         return upload_cmd_list;
     }
 
-protected:
     const Resource::Descriptor& GetDescriptorByViewId(const ResourceViewDX::Id& view_id)
     {
         META_FUNCTION_TASK();
-        const auto it = m_descriptor_by_view_id.find(view_id);
-        if (it != m_descriptor_by_view_id.end())
+        if (const auto it = m_descriptor_by_view_id.find(view_id);
+            it != m_descriptor_by_view_id.end())
             return it->second;
 
         return m_descriptor_by_view_id.try_emplace(view_id, CreateResourceDescriptor(view_id.usage)).first->second;

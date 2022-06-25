@@ -28,7 +28,7 @@ Windows application implementation.
 #include <Methane/Platform/Mouse.h>
 #include <Methane/Memory.hpp>
 
-#include <windows.h>
+#include <Windows.h>
 
 #include <vector>
 #include <memory>
@@ -42,7 +42,7 @@ class AppWin : public AppBase
 {
 public:
     explicit AppWin(const Settings& settings);
-    ~AppWin();
+    ~AppWin() override;
 
     // AppBase interface
     int Run(const RunArgs& args) override;

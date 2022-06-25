@@ -43,7 +43,6 @@ class ResourceViewDX final : public ResourceView
 {
 public:
     ResourceViewDX(const ResourceView& view_id, Resource::Usage usage);
-    ~ResourceViewDX();
 
     [[nodiscard]] const Id&                        GetId() const noexcept                { return m_id; }
     [[nodiscard]] Resource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
@@ -72,7 +71,7 @@ public:
     using ViewDX      = ResourceViewDX;
     using ViewsDX     = ResourceViewsDX;
 
-    [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(Resource& resource, Resource::Usage resource_usage);
+    [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(const Resource& resource, Resource::Usage resource_usage);
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)

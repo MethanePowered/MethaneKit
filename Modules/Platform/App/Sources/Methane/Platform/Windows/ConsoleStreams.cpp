@@ -34,7 +34,7 @@ static bool IsMappedToFile(FILE* std_stream)
 {
     META_FUNCTION_TASK();
     const int file_desc = _fileno(std_stream);
-    const HANDLE file_handle = reinterpret_cast<HANDLE>(_get_osfhandle(file_desc));
+    const auto file_handle = reinterpret_cast<HANDLE>(_get_osfhandle(file_desc)); // NOSONAR
     return file_handle != INVALID_HANDLE_VALUE;
 }
 
@@ -62,21 +62,14 @@ bool IOStream::RedirectToFile(std::string_view file_name, std::string_view file_
         return true;
 
     FILE* target_stream = nullptr;
-    const errno_t error = freopen_s(&target_stream, file_name.data(), file_mode.data(), m_std_stream);
-    if (error)
+    if (const errno_t error = freopen_s(&target_stream, file_name.data(), file_mode.data(), m_std_stream);
+        error)
         return false;
 
     setvbuf(m_std_stream, nullptr, _IONBF, 0);
     m_std_stream = target_stream;
     return true;
     
-}
-
-ConsoleStreams::ConsoleStreams()
-    : m_output_stream(stdout, STD_OUTPUT_HANDLE)
-    , m_error_stream(stderr, STD_ERROR_HANDLE)
-{
-    META_FUNCTION_TASK();
 }
 
 bool ConsoleStreams::Attach()

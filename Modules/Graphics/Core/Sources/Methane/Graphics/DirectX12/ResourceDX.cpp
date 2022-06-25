@@ -37,7 +37,7 @@ DirectX 12 specialization of the resource interface.
 namespace Methane::Graphics
 {
 
-DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(Resource& resource, Resource::Usage resource_usage)
+DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(const Resource& resource, Resource::Usage resource_usage)
 {
     META_FUNCTION_TASK();
     const Resource::Type resource_type = resource.GetResourceType();
@@ -70,12 +70,7 @@ ResourceViewDX::ResourceViewDX(const ResourceView& view_id, Resource::Usage usag
     META_FUNCTION_TASK();
 }
 
-ResourceViewDX::~ResourceViewDX()
-{
-    META_FUNCTION_TASK();
-}
-
-[[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS ResourceViewDX::GetNativeGpuAddress() const noexcept
+D3D12_GPU_VIRTUAL_ADDRESS ResourceViewDX::GetNativeGpuAddress() const noexcept
 {
     META_FUNCTION_TASK();
     return m_resource_dx.GetNativeGpuAddress() + GetOffset();

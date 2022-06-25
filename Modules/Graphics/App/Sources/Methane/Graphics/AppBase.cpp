@@ -97,6 +97,11 @@ AppSettings& AppSettings::SetRenderContextSettings(RenderContext::Settings&& new
     return *this;
 }
 
+AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const Resource& resource)
+    : descriptor_by_view_id(resource.GetDescriptorByViewId())
+    , name(resource.GetName())
+{ }
+
 AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)

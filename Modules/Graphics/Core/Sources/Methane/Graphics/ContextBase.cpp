@@ -239,7 +239,6 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
     META_FUNCTION_TASK();
     constexpr auto cmd_list_id = static_cast<CommandKit::CommandListId>(cmd_list_purpose);
     const std::vector<CommandKit::CommandListId> cmd_list_ids = { cmd_list_id };
-    Fence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
 
     for (const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
@@ -257,16 +256,19 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
 
         META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
         CommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
-        Fence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
 
         if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PreUploadSync)
         {
+            // Execute pre-upload synchronization on other queue and wait for sync completion on upload queue
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
+            Fence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
             cmd_kit_fence.Signal();
             cmd_kit_fence.WaitOnGpu(upload_cmd_kit.GetQueue());
         }
         if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PostUploadSync)
         {
+            // Wait for upload execution on other queue and execute post-upload synchronization commands on that queue
+            Fence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
             upload_fence.Signal();
             upload_fence.WaitOnGpu(cmd_queue);
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));

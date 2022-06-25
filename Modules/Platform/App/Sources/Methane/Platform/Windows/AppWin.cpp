@@ -53,7 +53,7 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
-    , m_console_streams_ptr(std::make_unique<ConsoleStreams>())
+    , m_console_streams_ptr(std::make_unique<ConsoleStreams>()) // NOSONAR
 {
     META_FUNCTION_TASK();
     m_console_streams_ptr->Attach();
