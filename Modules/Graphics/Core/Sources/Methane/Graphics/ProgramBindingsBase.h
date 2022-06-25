@@ -120,7 +120,7 @@ protected:
     // ProgramBindings::IArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
 
-    virtual void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
     Program& GetProgram();
     void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
