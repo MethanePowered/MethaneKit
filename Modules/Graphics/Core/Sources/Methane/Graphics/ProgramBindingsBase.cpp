@@ -193,7 +193,6 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const 
     META_FUNCTION_TASK();
     SetResourcesForArguments(resource_views_by_argument);
     VerifyAllArgumentsAreBoundToResources();
-    InitResourceRefsByAccess();
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
@@ -202,7 +201,6 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     META_FUNCTION_TASK();
     SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_views_by_argument));
     VerifyAllArgumentsAreBoundToResources();
-    InitResourceRefsByAccess();
 }
 
 ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index)
@@ -331,6 +329,7 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceViewsByArgument
         argument_binding.SetResourceViews(resource_views);
         AddTransitionResourceStates(argument_binding);
     }
+    InitResourceRefsByAccess();
 }
 
 ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const Program::Argument& shader_argument) const
@@ -490,6 +489,7 @@ void ProgramBindingsBase::InitResourceRefsByAccess()
     {
         const std::set<Resource*>& unique_resources = unique_resources_by_access[access_index];
         Refs<Resource>& resource_refs = m_resource_refs_by_access[access_index];
+        resource_refs.clear();
         std::transform(unique_resources.begin(), unique_resources.end(), std::back_inserter(resource_refs),
                        [](Resource* resource_ptr) { return Ref<Resource>(*resource_ptr); });
     }

@@ -223,7 +223,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     });
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(resource_views_by_argument);
+    SetResourcesForArgumentsVK(resource_views_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
 
@@ -267,11 +267,11 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     }
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
+    SetResourcesForArgumentsVK(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
     VerifyAllArgumentsAreBoundToResources();
 }
 
-void ProgramBindingsVK::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)
+void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument& resource_views_by_argument)
 {
     META_FUNCTION_TASK();
     ProgramBindingsBase::SetResourcesForArguments(resource_views_by_argument);

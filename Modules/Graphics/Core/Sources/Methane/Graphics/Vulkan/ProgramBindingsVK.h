@@ -105,7 +105,7 @@ private:
     // IObjectCallback interface
     void OnObjectNameChanged(Object&, const std::string&) override; // Program name changed
 
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument) override;
+    void SetResourcesForArgumentsVK(const ResourceViewsByArgument& resource_views_by_argument);
 
     template<typename FuncType> // function void(const Program::Argument&, ArgumentBindingVK&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
