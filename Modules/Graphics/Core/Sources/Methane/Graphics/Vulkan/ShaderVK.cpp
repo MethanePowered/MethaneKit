@@ -132,19 +132,6 @@ static Resource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_
     }
 }
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
-}
-
-ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
-    : ShaderBase(shader_type, context, settings)
-    , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
-{
-    META_FUNCTION_TASK();
-}
-
 static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const Program::ArgumentAccessor& argument_accessor)
 {
     META_FUNCTION_TASK();
@@ -160,11 +147,76 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
     }
 }
 
+static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spirv_compiler,
+                                                const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
+                                                const vk::DescriptorType vk_descriptor_type,
+                                                const Program::ArgumentAccessors& argument_accessors,
+                                                const ShaderVK& shader,
+                                                ShaderBase::ArgumentBindings& argument_bindings)
+{
+    META_FUNCTION_TASK();
+    if (spirv_resources.begin() == spirv_resources.end())
+        return;
+
+    const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
+    const Shader::Type shader_type = shader.GetType();
+
+    for (const spirv_cross::Resource& resource : spirv_resources)
+    {
+        const Program::Argument         shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
+        const auto                      argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Program::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
+                                                        ? Program::ArgumentAccessor(shader_argument)
+                                                        : *argument_acc_it;
+
+        const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
+        const uint32_t array_size = GetArraySize(spirv_type);
+
+        ProgramBindingsVK::ArgumentBindingVK::ByteCodeMap byte_code_map{ shader_type };
+        META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
+        META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+
+        argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
+            shader.GetContext(),
+            ProgramBindingsVK::ArgumentBindingVK::SettingsVK
+            {
+                ProgramBindings::ArgumentBinding::Settings
+                {
+                    argument_acc,
+                    resource_type,
+                    array_size
+                },
+                UpdateDescriptorType(vk_descriptor_type, argument_acc),
+                { std::move(byte_code_map) }
+            }
+        ));
+
+#ifdef METHANE_LOGGING_ENABLED
+        log_ss << "  - '" << shader_argument.GetName()
+               << "' with descriptor type " << vk::to_string(vk_descriptor_type)
+               << ", array size " << array_size
+               << ";" << std::endl;
+#endif
+    }
+}
+
+Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
+}
+
+ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
+    : ShaderBase(shader_type, context, settings)
+    , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
+{
+    META_FUNCTION_TASK();
+}
+
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
-    const Shader::Type shader_type = GetType();
     const Shader::Settings& shader_settings = GetSettings();
     ArgumentBindings argument_bindings;
 
@@ -178,50 +230,11 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     META_UNUSED(shader_settings);
 #endif
 
-    const auto add_spirv_resources_to_argument_bindings = [&](const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
-                                                              const vk::DescriptorType vk_descriptor_type)
+    const auto add_spirv_resources_to_argument_bindings = [this, &spirv_compiler, &argument_accessors, &argument_bindings]
+                                                          (const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
+                                                           const vk::DescriptorType vk_descriptor_type)
     {
-        if (spirv_resources.begin() == spirv_resources.end())
-            return;
-
-        const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);
-        for (const spirv_cross::Resource& resource : spirv_resources)
-        {
-            const Program::Argument shader_argument(shader_type, ShaderBase::GetCachedArgName(spirv_compiler.get_name(resource.id)));
-            const auto argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
-            const Program::ArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                         ? Program::ArgumentAccessor(shader_argument)
-                                                         : *argument_acc_it;
-            
-            const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
-            const uint32_t array_size = GetArraySize(spirv_type);
-
-            ProgramBindingsVK::ArgumentBindingVK::ByteCodeMap byte_code_map{ shader_type };
-            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
-            META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding,       byte_code_map.binding_offset));
-
-            argument_bindings.push_back(std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(
-                GetContext(),
-                ProgramBindingsVK::ArgumentBindingVK::SettingsVK
-                {
-                    ProgramBindings::ArgumentBinding::Settings
-                    {
-                        argument_acc,
-                        resource_type,
-                        array_size
-                    },
-                    UpdateDescriptorType(vk_descriptor_type, argument_acc),
-                    { std::move(byte_code_map) }
-                }
-            ));
-
-#ifdef METHANE_LOGGING_ENABLED
-            log_ss << "  - '" << shader_argument.GetName()
-                   << "' with descriptor type " << vk::to_string(vk_descriptor_type)
-                   << ", array size " << array_size
-                   << ";" << std::endl;
-#endif
-        }
+        AddSpirvResourcesToArgumentBindings(spirv_compiler, spirv_resources, vk_descriptor_type, argument_accessors, *this, argument_bindings);
     };
 
     // Get only resources that are statically used in SPIRV-code (skip all resources that are never accessed by the shader)

@@ -28,7 +28,7 @@ IOStream class is used for standard and error output redirection
 namespace Methane::Platform
 {
 
-class IOStream
+class IOStream // NOSONAR - destructor is required in this class
 {
 public:
     IOStream(FILE* std_stream, DWORD std_handle);

@@ -122,7 +122,7 @@ ObjectBase::~ObjectBase()
     {
         Emit(&IObjectCallback::OnObjectDestroyed, *this);
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
         META_UNUSED(e);
         META_LOG("WARNING: Unexpected error during object destruction: {}", e.what());

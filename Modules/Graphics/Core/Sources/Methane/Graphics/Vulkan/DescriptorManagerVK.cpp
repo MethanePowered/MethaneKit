@@ -81,9 +81,13 @@ vk::DescriptorSet DescriptorManagerVK::AllocDescriptorSet(vk::DescriptorSetLayou
     }
     catch(const vk::OutOfPoolMemoryError&)
     {
+        // Exception is handled below try-catch block
+        META_LOG("Out of descriptor pool memory, reallocating.");
     }
     catch(const vk::FragmentedPoolError&)
     {
+        // Exception is handled below try-catch block
+        META_LOG("Fragmented descriptor pool, reallocating.");
     }
 
     // Reallocate descriptor set for the new pool
@@ -100,7 +104,7 @@ vk::DescriptorPool DescriptorManagerVK::CreateDescriptorPool()
     pool_sizes.reserve(m_pool_size_ratio_by_desc_type.size());
     for (const auto& [desc_type, size_ratio] : m_pool_size_ratio_by_desc_type)
     {
-        pool_sizes.emplace_back(desc_type, static_cast<uint32_t>(m_pool_sets_count * size_ratio));
+        pool_sizes.emplace_back(desc_type, static_cast<uint32_t>(static_cast<float>(m_pool_sets_count) * size_ratio));
     }
     const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
     m_vk_descriptor_pools.emplace_back(vk_device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, m_pool_sets_count, pool_sizes)));

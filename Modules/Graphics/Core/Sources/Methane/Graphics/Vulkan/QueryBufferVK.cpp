@@ -56,7 +56,7 @@ namespace Methane::Graphics
 static vk::QueryType GetQueryTypeVk(QueryBuffer::Type query_buffer_type)
 {
     META_FUNCTION_TASK();
-    switch(query_buffer_type)
+    switch(query_buffer_type) // NOSONAR
     {
     case QueryBuffer::Type::Timestamp: return vk::QueryType::eTimestamp;
     // vk::QueryType::eOcclusion
@@ -148,13 +148,8 @@ TimestampQueryBufferVK::TimestampQueryBufferVK(CommandQueueVK& command_queue, ui
     : QueryBufferVK(command_queue, Type::Timestamp, 1U << 15U, 1U,
                     GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
                     sizeof(Timestamp))
-#if defined(_WIN32)
-    , m_vk_cpu_time_domain(vk::TimeDomainEXT::eQueryPerformanceCounter)
+#ifdef _WIN32
     , m_qpc_to_nsec(static_cast<uint64_t>(1000000000.0 / GetQpcFrequency()))
-#elif defined(__linux__) && defined CLOCK_MONOTONIC_RAW
-    , m_vk_cpu_time_domain(vk::TimeDomainEXT::eClockMonotonicRaw)
-#else
-    , m_vk_cpu_time_domain(static_cast<vk::TimeDomainEXT>(-1))
 #endif
 {
     META_FUNCTION_TASK();

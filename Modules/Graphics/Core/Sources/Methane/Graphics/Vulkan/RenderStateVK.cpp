@@ -398,7 +398,7 @@ void RenderStateVK::Reset(const Settings& settings)
     );
 
     auto& program = static_cast<ProgramVK&>(*GetSettings().program_ptr);
-    auto& render_pattern = static_cast<RenderPatternVK&>(*GetSettings().render_pattern_ptr);
+    const auto& render_pattern = static_cast<RenderPatternVK&>(*GetSettings().render_pattern_ptr);
 
     const vk::PipelineVertexInputStateCreateInfo vk_vertex_input_state_info = program.GetNativeVertexInputStateCreateInfo();
     const std::vector<vk::PipelineShaderStageCreateInfo> vk_stages_info = program.GetNativeShaderStageCreateInfos();
@@ -427,7 +427,7 @@ void RenderStateVK::Reset(const Settings& settings)
 void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
-    auto& vulkan_render_command_list = static_cast<RenderCommandListVK&>(render_command_list);
+    const auto& vulkan_render_command_list = static_cast<RenderCommandListVK&>(render_command_list);
     vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 

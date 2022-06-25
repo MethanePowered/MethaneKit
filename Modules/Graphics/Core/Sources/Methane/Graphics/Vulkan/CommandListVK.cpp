@@ -119,8 +119,8 @@ void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_c
     );
     
     Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
-    const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
-    if (!vk_wait_values.empty())
+    if (const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
+        !vk_wait_values.empty())
     {
         META_CHECK_ARG_EQUAL(vk_wait_values.size(), submit_info.waitSemaphoreCount);
         vk_timeline_submit_info_opt.emplace(vk_wait_values);

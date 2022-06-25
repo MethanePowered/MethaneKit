@@ -88,7 +88,7 @@ private:
                    const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
-    void AddWaitForFrameExecution(CommandListSet& command_list_set);
+    void AddWaitForFrameExecution(const CommandListSet& command_list_set);
 
     using FrameWaitInfos = std::vector<WaitInfo>;
 

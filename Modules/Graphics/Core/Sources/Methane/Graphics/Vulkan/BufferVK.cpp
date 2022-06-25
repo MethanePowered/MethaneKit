@@ -162,7 +162,7 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_c
         const vk::DeviceSize sub_resource_offset = 0U;
         Data::RawPtr sub_resource_data_ptr = nullptr;
         const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
-                                                             reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
+                                                                     reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
 
         META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
         META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");

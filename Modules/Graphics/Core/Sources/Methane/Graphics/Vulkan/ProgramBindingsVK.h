@@ -98,15 +98,14 @@ public:
     // ProgramBindingsBase interface
     void CompleteInitialization() override;
 
-    void Apply(ICommandListVK& command_list, CommandQueue& command_queue,
+    void Apply(ICommandListVK& command_list, const CommandQueue& command_queue,
                const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
-
-protected:
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
 private:
     // IObjectCallback interface
     void OnObjectNameChanged(Object&, const std::string&) override; // Program name changed
+
+    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument) override;
 
     template<typename FuncType> // function void(const Program::Argument&, ArgumentBindingVK&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;

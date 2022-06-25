@@ -97,7 +97,7 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    Ptr<CommandQueueVK> command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    auto command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
     command_queue_ptr->InitializeTimestampQueryBuffer();
@@ -217,13 +217,13 @@ void CommandQueueVK::ResetWaitForFrameExecution(Data::Index frame_index)
     wait_info.stages.clear();
 }
 
-void CommandQueueVK::AddWaitForFrameExecution(CommandListSet& command_list_set)
+void CommandQueueVK::AddWaitForFrameExecution(const CommandListSet& command_list_set)
 {
     META_FUNCTION_TASK();
     if (GetCommandListType() != CommandList::Type::Render)
         return;
 
-    auto& vulkan_command_list_set = static_cast<CommandListSetVK&>(command_list_set);
+    const auto& vulkan_command_list_set = static_cast<const CommandListSetVK&>(command_list_set);
     const Data::Index wait_info_index = command_list_set.GetFrameIndex().value_or(0U);
 
     std::scoped_lock lock_guard(m_wait_frame_execution_completed_mutex);

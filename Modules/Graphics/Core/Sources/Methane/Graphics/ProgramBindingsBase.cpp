@@ -488,8 +488,8 @@ void ProgramBindingsBase::InitResourceRefsByAccess()
 
     for(size_t access_index = 0; access_index < access_count; ++access_index)
     {
-        std::set<Resource*>& unique_resources = unique_resources_by_access[access_index];
-        Refs<Resource>&      resource_refs    = m_resource_refs_by_access[access_index];
+        const std::set<Resource*>& unique_resources = unique_resources_by_access[access_index];
+        Refs<Resource>& resource_refs = m_resource_refs_by_access[access_index];
         std::transform(unique_resources.begin(), unique_resources.end(), std::back_inserter(resource_refs),
                        [](Resource* resource_ptr) { return Ref<Resource>(*resource_ptr); });
     }

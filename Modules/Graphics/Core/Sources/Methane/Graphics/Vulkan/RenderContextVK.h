@@ -51,7 +51,7 @@ struct IRenderContextVKCallback
     virtual ~IRenderContextVKCallback() = default;
 };
 
-class RenderContextVK final
+class RenderContextVK final // NOSONAR - this class requires destructor
     : public ContextVK<RenderContextBase>
     , public Data::Emitter<IRenderContextVKCallback>
 {
@@ -98,7 +98,7 @@ private:
     void InitializeNativeSwapchain();
     void ReleaseNativeSwapchainResources();
     void ResetNativeSwapchain();
-    void ResetNativeObjectNames();
+    void ResetNativeObjectNames() const;
 
     const vk::Device m_vk_device;
 #ifdef __APPLE__

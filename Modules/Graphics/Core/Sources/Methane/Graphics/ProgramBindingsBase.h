@@ -120,11 +120,12 @@ protected:
     // ProgramBindings::IArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
 
+    virtual void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+
     Program& GetProgram();
     void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
     ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
                                                  const ResourceViewsByArgument& replace_resource_views) const;
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Resource>& GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const;

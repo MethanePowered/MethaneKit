@@ -34,7 +34,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include <mutex>
 
 // Uncomment to enable deferred program bindings initialization
-#define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION 1
+#define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
 
 namespace Methane::Graphics
 {

@@ -97,11 +97,12 @@ static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Atta
 static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    // TODO: Current solution is unreliable, instead initial attachment State should be set in RenderPattern::Settings
+    // FIXME: Current solution is unreliable, instead initial attachment State should be set in RenderPattern::Settings
+    const vk::ImageLayout attachment_type_layout = attachment.GetType() == RenderPattern::Attachment::Type::Color
+                                                 ? vk::ImageLayout::eColorAttachmentOptimal
+                                                 : vk::ImageLayout::eDepthStencilAttachmentOptimal;
     const vk::ImageLayout initial_image_layout = attachment.load_action == RenderPattern::Attachment::LoadAction::Load
-                                               ? (attachment.GetType() == RenderPattern::Attachment::Type::Color
-                                                    ? vk::ImageLayout::eColorAttachmentOptimal
-                                                    : vk::ImageLayout::eDepthStencilAttachmentOptimal)
+                                               ? attachment_type_layout
                                                : vk::ImageLayout::eUndefined;
     return vk::AttachmentDescription(
         vk::AttachmentDescriptionFlags{},

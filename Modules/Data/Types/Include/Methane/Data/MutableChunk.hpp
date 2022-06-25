@@ -30,7 +30,7 @@ Data chunk representing owning or non-owning memory container
 namespace Methane::Data
 {
 
-class MutableChunk
+class MutableChunk // NOSONAR - custom copy and move constructors are required here.
 {
 public:
     MutableChunk(ConstRawPtr data_ptr, Size size) noexcept
@@ -57,6 +57,8 @@ public:
         : m_data(other.m_data)
         , m_chunk(m_data.data(), static_cast<Size>(m_data.size()))
     { }
+
+    ~MutableChunk() = default;
 
     MutableChunk& operator=(const MutableChunk&) noexcept = delete;
     MutableChunk& operator=(MutableChunk&&) noexcept = delete;

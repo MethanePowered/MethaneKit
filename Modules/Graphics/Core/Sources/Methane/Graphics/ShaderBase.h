@@ -53,12 +53,12 @@ public:
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
     virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const = 0;
 
-    Ptr<ShaderBase> GetPtr() { return shared_from_this(); }
+    const ContextBase& GetContext() const noexcept { return m_context; }
+    std::string_view   GetCachedArgName(std::string_view arg_name) const;
+    Ptr<ShaderBase>    GetPtr() { return shared_from_this(); }
 
 protected:
-    const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
-    std::string_view    GetCachedArgName(std::string_view arg_name) const;
     std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
 
     static std::string GetCompiledEntryFunctionName(const Settings& settings);

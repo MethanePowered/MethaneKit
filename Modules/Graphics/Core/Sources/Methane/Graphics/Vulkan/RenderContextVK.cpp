@@ -368,7 +368,7 @@ void RenderContextVK::ResetNativeSwapchain()
     UpdateFrameBufferIndex();
 }
 
-void RenderContextVK::ResetNativeObjectNames()
+void RenderContextVK::ResetNativeObjectNames() const
 {
     META_FUNCTION_TASK();
     const std::string& context_name = GetName();

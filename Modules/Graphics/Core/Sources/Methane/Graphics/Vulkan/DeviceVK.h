@@ -109,11 +109,11 @@ private:
     QueueFamilyReservationByType           m_queue_family_reservation_by_type;
 };
 
-class SystemVK final : public SystemBase
+class SystemVK final : public SystemBase // NOSONAR - destructor is required in this class
 {
 public:
     SystemVK();
-    ~SystemVK();
+    ~SystemVK() override;
 
     // System interface
     void CheckForChanges() override;

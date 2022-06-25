@@ -310,7 +310,6 @@ void FrameBufferTextureVK::ResetNativeImage()
 DepthStencilTextureVK::DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings,
                                              const Opt<DepthStencil>& depth_stencil_opt)
     : ResourceVK(render_context, settings, CreateNativeImage(render_context, settings))
-    , m_render_context(render_context)
     , m_depth_stencil_opt(depth_stencil_opt)
 {
     META_FUNCTION_TASK();
@@ -348,7 +347,6 @@ Ptr<ResourceViewVK::ViewDescriptorVariant> DepthStencilTextureVK::CreateNativeVi
 
 RenderTargetTextureVK::RenderTargetTextureVK(const RenderContextVK& render_context, const Settings& settings)
     : ResourceVK(render_context, settings, CreateNativeImage(render_context, settings))
-    , m_render_context(render_context)
 {
     META_FUNCTION_TASK();
     // Allocate resource primary memory
@@ -487,7 +485,7 @@ void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State tar
                               "texture pixel format does not support linear blitting");
 
     constexpr auto post_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync);
-    CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+    const CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
     const vk::CommandBuffer& vk_cmd_buffer = dynamic_cast<const RenderCommandListVK&>(target_cmd_list).GetNativeCommandBufferDefault();
 
     const SubResource::Count& subresource_count = GetSubresourceCount();
@@ -519,8 +517,8 @@ void ImageTextureVK::GenerateMipLevels(CommandQueue& target_cmd_queue, State tar
         vk_image_barrier.subresourceRange.layerCount     = 1U;
         vk_image_barrier.subresourceRange.levelCount     = 1U;
 
-        int32_t prev_mip_width  = static_cast<int32_t>(texture_settings.dimensions.GetWidth());
-        int32_t prev_mip_height = static_cast<int32_t>(texture_settings.dimensions.GetHeight());
+        auto prev_mip_width  = static_cast<int32_t>(texture_settings.dimensions.GetWidth());
+        auto prev_mip_height = static_cast<int32_t>(texture_settings.dimensions.GetHeight());
 
         for (uint32_t mip_level_index = 1U; mip_level_index < mip_levels_count; ++mip_level_index)
         {

@@ -97,7 +97,7 @@ vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreat
     return vertex_shader.GetNativeVertexInputStateCreateInfo(*this);
 }
 
-const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts()
+const std::vector<vk::DescriptorSetLayout>& ProgramVK::GetNativeDescriptorSetLayouts() const
 {
     META_FUNCTION_TASK();
     return m_vk_descriptor_set_layouts;
@@ -264,7 +264,7 @@ void ProgramVK::UpdatePipelineName()
                         fmt::format("{} Pipeline Layout", program_name));
 }
 
-void ProgramVK::UpdateDescriptorSetLayoutNames()
+void ProgramVK::UpdateDescriptorSetLayoutNames() const
 {
     META_FUNCTION_TASK();
     const std::string& program_name = GetName();
@@ -296,7 +296,7 @@ void ProgramVK::UpdateConstantDescriptorSetName()
         fmt::format("{} Constant Argument Bindings", program_name));
 }
 
-void ProgramVK::UpdateFrameConstantDescriptorSetNames()
+void ProgramVK::UpdateFrameConstantDescriptorSetNames() const
 {
     META_FUNCTION_TASK();
     if (m_vk_frame_constant_descriptor_sets.empty())

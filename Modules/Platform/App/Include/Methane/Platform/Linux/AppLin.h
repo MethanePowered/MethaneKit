@@ -38,7 +38,7 @@ namespace Methane::Platform
 
 class MessageBox;
 
-class AppLin : public AppBase
+class AppLin : public AppBase // NOSONAR - this class requires destructor
 {
 public:
     explicit AppLin(const Settings& settings);

@@ -332,7 +332,7 @@ static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamily
     // Try to find queue family with exact flags match
     if (const std::optional<uint32_t> family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count,
                                                                            reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
-        family_index)
+        family_index) // NOSONAR - can not use value_or here
         return *family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags

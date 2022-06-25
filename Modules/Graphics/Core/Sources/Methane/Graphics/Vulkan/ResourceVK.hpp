@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -74,8 +74,17 @@ public:
         m_upload_begin_transition_barriers_ptr.reset();
         m_upload_end_transition_barriers_ptr.reset();
 
-        // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        try
+        {
+            // Resource released callback has to be emitted before native resource is released
+            Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        }
+        catch (const std::exception& e)
+        {
+            META_UNUSED(e);
+            META_LOG("WARNING: Unexpected error during resource destruction: {}", e.what());
+            assert(false);
+        }
     }
 
     ResourceVK(const ResourceVK&) = delete;
@@ -91,8 +100,8 @@ public:
         if (!ResourceBaseType::SetName(name))
             return false;
 
-        const auto& vk_resource = GetNativeResource();
-        if (vk_resource)
+        if (const auto& vk_resource = GetNativeResource();
+            vk_resource)
         {
             SetVulkanObjectName(m_vk_device, vk_resource, name.c_str());
         }
@@ -102,15 +111,15 @@ public:
             META_CHECK_ARG_NOT_NULL(view_desc_ptr);
             const std::string view_name = fmt::format("{} View for usage {}", name, magic_enum::enum_name(view_id.usage));
 
-            const auto* image_view_desc_ptr = std::get_if<ResourceViewVK::ImageViewDescriptor>(view_desc_ptr.get());
-            if (image_view_desc_ptr)
+            if (const auto* image_view_desc_ptr = std::get_if<ResourceViewVK::ImageViewDescriptor>(view_desc_ptr.get());
+                image_view_desc_ptr)
             {
                 SetVulkanObjectName(m_vk_device, image_view_desc_ptr->vk_view.get(), view_name.c_str());
                 continue;
             }
 
-            const auto* buffer_view_desc_ptr = std::get_if<ResourceViewVK::BufferViewDescriptor>(view_desc_ptr.get());
-            if (buffer_view_desc_ptr)
+            if (const auto* buffer_view_desc_ptr = std::get_if<ResourceViewVK::BufferViewDescriptor>(view_desc_ptr.get());
+                buffer_view_desc_ptr)
             {
                 SetVulkanObjectName(m_vk_device, buffer_view_desc_ptr->vk_view.get(), view_name.c_str());
             }
@@ -151,8 +160,8 @@ public:
     const Ptr<ResourceViewVK::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const View::Id& view_id) final
     {
         META_FUNCTION_TASK();
-        const auto it = m_view_descriptor_by_view_id.find(view_id);
-        if (it != m_view_descriptor_by_view_id.end())
+        if (const auto it = m_view_descriptor_by_view_id.find(view_id);
+            it != m_view_descriptor_by_view_id.end())
             return it->second;
 
         return m_view_descriptor_by_view_id.try_emplace(view_id, CreateNativeViewDescriptor(view_id)).first->second;
@@ -201,13 +210,13 @@ protected:
     BlitCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
-        CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
+        const CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
         auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
-        const bool state_changed = SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr);
-        if ((owner_changed || state_changed) &&
+        if (const bool state_changed = SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr);
+            (owner_changed || state_changed) &&
             m_upload_begin_transition_barriers_ptr && !m_upload_begin_transition_barriers_ptr->IsEmpty())
         {
             upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);

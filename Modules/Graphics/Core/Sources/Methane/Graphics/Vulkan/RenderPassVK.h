@@ -81,13 +81,11 @@ public:
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
 
-protected:
+private:
     // IRenderContextVKCallback overrides
     void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
 
-    const ResourceViewVK& GetAttachmentTextureViewVK(const Attachment& attachment) const;
-
-private:
+    const ResourceViewVK&   GetAttachmentTextureViewVK(const Attachment& attachment) const;
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
     vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 

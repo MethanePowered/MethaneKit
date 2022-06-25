@@ -219,7 +219,7 @@ ScreenRect GetPrimaryMonitorRect(xcb_connection_t* connection, xcb_window_t root
             return screen_rect;
     }
 
-    free(monitors_reply);
+    free(monitors_reply); // NOSONAR
     return screen_rect;
 
 #endif

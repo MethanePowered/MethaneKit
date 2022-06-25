@@ -63,11 +63,10 @@ public:
 
     void ResetNativeImage();
 
-protected:
+private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
-private:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
@@ -90,12 +89,10 @@ public:
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
-protected:
+private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
-private:
-    const RenderContextVK& m_render_context;
     Opt<DepthStencil>      m_depth_stencil_opt;
 };
 
@@ -113,12 +110,9 @@ public:
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
-protected:
+private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
-
-private:
-    const RenderContextVK& m_render_context;
 };
 
 class ImageTextureVK final
@@ -138,11 +132,10 @@ public:
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
     vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
 
-protected:
+private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
-private:
     void GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state);
 
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;

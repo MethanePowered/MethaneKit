@@ -179,7 +179,7 @@ public:
             CommandListBase::GetName(),
             static_cast<std::string>(resource_barriers));
 
-        const ResourceBarriersVK& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
+        const auto& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
         const ResourceBarriersVK::NativePipelineBarrier& pipeline_barrier = vulkan_resource_barriers.GetNativePipelineBarrierData(GetCommandQueueVK());
 
         GetNativeCommandBuffer(CommandBufferType::Primary).pipelineBarrier(

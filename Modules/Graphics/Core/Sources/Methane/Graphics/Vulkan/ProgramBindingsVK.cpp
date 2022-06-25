@@ -43,7 +43,7 @@ namespace Methane::Graphics
 Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(program_ptr, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindingsVK>(program_ptr, resource_views_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -51,7 +51,7 @@ Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, co
 Ptr<ProgramBindings> ProgramBindings::CreateCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    Ptr<ProgramBindingsVK> program_bindings_ptr = std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_view_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindingsVK>(static_cast<const ProgramBindingsVK&>(other_program_bindings), replace_resource_view_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -182,7 +182,6 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     if (vk_frame_constant_descriptor_set)
         m_descriptor_sets.emplace_back(vk_frame_constant_descriptor_set);
 
-    vk::DescriptorSet mutable_descriptor_set;
     if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type::Mutable);
         vk_mutable_descriptor_set_layout)
     {
@@ -201,7 +200,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         const ProgramVK::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
-        const uint32_t layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
+        const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
 
         switch (access_type)
@@ -282,8 +281,8 @@ void ProgramBindingsVK::SetResourcesForArguments(const ResourceViewsByArgument& 
     std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
     dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
 
-    ForEachArgumentBinding([this, &program, &program_argument_accessors, &dynamic_offsets_by_set_index]
-                           (const Program::Argument& program_argument, ArgumentBindingVK& argument_binding)
+    ForEachArgumentBinding([&program, &program_argument_accessors, &dynamic_offsets_by_set_index]
+                           (const Program::Argument& program_argument, const ArgumentBindingVK& argument_binding)
         {
             const auto program_accessor_it = Program::FindArgumentAccessor(program_argument_accessors, program_argument);
             META_CHECK_ARG(program_argument, program_accessor_it != program_argument_accessors.end());
@@ -337,7 +336,7 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
           command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, CommandQueue& command_queue,
+void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const CommandQueue& command_queue,
                               const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();

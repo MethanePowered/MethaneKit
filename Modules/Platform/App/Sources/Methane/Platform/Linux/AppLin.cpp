@@ -214,18 +214,18 @@ Data::FrameSize AppLin::InitWindow()
 
     // Calculate frame size relative to screen_id size in case of floating point value
     const uint16_t frame_width  = settings.is_full_screen
-                                  ? m_env.primary_screen_rect.width
-                                  : AppBase::GetScaledSize(settings.size.GetWidth(), m_env.primary_screen_rect.width);
+                                  ? static_cast<uint16_t>(m_env.primary_screen_rect.width)
+                                  : static_cast<uint16_t>(AppBase::GetScaledSize(settings.size.GetWidth(), m_env.primary_screen_rect.width));
     const uint16_t frame_height = settings.is_full_screen
-                                  ? m_env.primary_screen_rect.height
-                                  : AppBase::GetScaledSize(settings.size.GetHeight(), m_env.primary_screen_rect.height);
+                                  ? static_cast<uint16_t>(m_env.primary_screen_rect.height)
+                                  : static_cast<uint16_t>(AppBase::GetScaledSize(settings.size.GetHeight(), m_env.primary_screen_rect.height));
 
     const int16_t pos_x = settings.is_full_screen
-                        ? m_env.primary_screen_rect.x
-                        : m_env.primary_screen_rect.x + static_cast<int16_t>(m_env.primary_screen_rect.width - frame_width) / 2;
+                        ? static_cast<uint16_t>(m_env.primary_screen_rect.x)
+                        : static_cast<uint16_t>(m_env.primary_screen_rect.x + static_cast<int16_t>(m_env.primary_screen_rect.width - frame_width) / 2);
     const int16_t pos_y = settings.is_full_screen
-                        ? m_env.primary_screen_rect.y
-                        : m_env.primary_screen_rect.y + static_cast<int16_t>(m_env.primary_screen_rect.height - frame_height) / 2;
+                        ? static_cast<uint16_t>(m_env.primary_screen_rect.y)
+                        : static_cast<uint16_t>(m_env.primary_screen_rect.y + static_cast<int16_t>(m_env.primary_screen_rect.height - frame_height) / 2);
 
     // Create window and position it in the center of the screen_id
     m_env.window = xcb_generate_id(m_env.connection);
