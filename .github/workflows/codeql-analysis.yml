@@ -48,7 +48,7 @@ jobs:
     - name: Install prerequisites
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-             sudo apt install libx11-xcb-dev libxcb-randr0-dev
+             sudo apt install lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
         fi
       shell: bash
 
