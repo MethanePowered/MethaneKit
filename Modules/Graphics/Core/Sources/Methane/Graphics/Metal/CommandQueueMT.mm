@@ -48,6 +48,7 @@ CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandList::Type com
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
             Tracy::GpuContext::Type::Metal,
+            0U,
             Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
         )
     );
