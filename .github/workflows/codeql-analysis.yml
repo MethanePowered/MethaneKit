@@ -45,14 +45,13 @@ jobs:
 
     steps:
 
-    - name: Install prerequisites
-      run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-             sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
-        fi
-      shell: bash
+    - name: Install Linux prerequisites
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
 
+      # Windows CodeQL analysis is DISABLED (see the reason description above the Analysis step below)
     - name: Checkout repository
+      if: ${{ matrix.os != 'windows-2019' }}
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
@@ -69,5 +68,7 @@ jobs:
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
 
+    # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
     - name: Perform CodeQL Analysis
+      if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/analyze@v2
