@@ -64,15 +64,10 @@ jobs:
         config-file: ./.github/codeql/codeql-config.yml
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: >
-        cmake --preset ${{ matrix.config_preset }}
-              -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF
-              -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF
-              -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
-      run: |
-        cmake --build --preset ${{ matrix.build_preset }} --parallel 4
+      run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
