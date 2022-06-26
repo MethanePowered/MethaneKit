@@ -48,7 +48,7 @@ jobs:
     - name: Install prerequisites
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-             sudo apt install lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+             sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
         fi
       shell: bash
 
@@ -63,13 +63,16 @@ jobs:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
 
-    - name: Configure & Build Project
+    - name: CMake Configure Preset ${{ matrix.config_preset }}
+        run: |
+          cmake --preset ${{ matrix.config_preset }} \
+              -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF \
+              -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF \
+              -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
+
+    - name: CMake Build Preset ${{ matrix.build_preset }}
       run: |
-       cmake --preset ${{ matrix.config_preset }}
-       cmake --build --preset ${{ matrix.build_preset }} --parallel 4 \
-          -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF \
-          -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF \
-          -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
+       cmake --build --preset ${{ matrix.build_preset }} --parallel 4
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
