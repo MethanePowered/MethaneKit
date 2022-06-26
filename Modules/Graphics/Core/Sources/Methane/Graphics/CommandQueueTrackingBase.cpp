@@ -85,10 +85,12 @@ void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
     if (!m_timestamp_query_buffer_ptr)
         return;
 
+    const TimestampQueryBuffer::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_buffer_ptr->GetCalibratedTimestamps();
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
             ConvertSystemGraphicsApiToTracyGpuContextType(System::GetGraphicsApi()),
-            m_timestamp_query_buffer_ptr->GetGpuCalibrationTimestamp(),
+            calibrated_timestamps.cpu_ts,
+            calibrated_timestamps.gpu_ts,
             Data::ConvertFrequencyToTickPeriod(m_timestamp_query_buffer_ptr->GetGpuFrequency())
         )
     );
@@ -163,6 +165,12 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
 
                 command_list_set_ptr->WaitUntilCompleted();
                 CompleteCommandListSetExecution(*command_list_set_ptr);
+            }
+
+            if (m_timestamp_query_buffer_ptr)
+            {
+                const TimestampQueryBuffer::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_buffer_ptr->Calibrate();
+                GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
         }
         while (m_execution_waiting);

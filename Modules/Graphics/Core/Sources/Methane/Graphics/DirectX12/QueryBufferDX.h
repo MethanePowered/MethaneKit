@@ -108,7 +108,7 @@ public:
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-    void Calibrate() override;
+    CalibratedTimestamps Calibrate() override;
 };
 
 } // namespace Methane::Graphics

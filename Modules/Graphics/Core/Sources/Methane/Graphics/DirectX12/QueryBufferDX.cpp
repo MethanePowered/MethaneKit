@@ -180,14 +180,14 @@ Ptr<TimestampQuery> TimestampQueryBufferDX::CreateTimestampQuery(CommandListBase
     return QueryBuffer::CreateQuery<TimestampQueryDX>(command_list);
 }
 
-void TimestampQueryBufferDX::Calibrate()
+TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferDX::Calibrate()
 {
     META_FUNCTION_TASK();
-    UINT64 gpu_ts = 0U;
-    UINT64 cpu_ts = 0U;
-    ThrowIfFailed(GetCommandQueueDX().GetNativeCommandQueue().GetClockCalibration(&gpu_ts, &cpu_ts),
+    CalibratedTimestamps calibrated_timestamps{ 0U, 0U };
+    ThrowIfFailed(GetCommandQueueDX().GetNativeCommandQueue().GetClockCalibration(&calibrated_timestamps.gpu_ts, &calibrated_timestamps.cpu_ts),
                   GetContextDX().GetDeviceDX().GetNativeDevice().Get());
-    SetGpuTimeCalibration({ gpu_ts, static_cast<TimeDelta>(gpu_ts - cpu_ts) });
+    SetCalibratedTimestamps(calibrated_timestamps);
+    return calibrated_timestamps;
 }
 
 TimestampQueryDX::TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)

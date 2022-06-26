@@ -110,16 +110,22 @@ QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
     return { index_range.GetStart(), data_range };
 }
 
+TimeDelta TimestampQueryBuffer::GetGpuTimeOffset() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<TimeDelta>(m_calibrated_timestamps.gpu_ts) - static_cast<TimeDelta>(m_calibrated_timestamps.cpu_ts);
+}
+
 void TimestampQueryBuffer::SetGpuFrequency(Frequency gpu_frequency)
 {
     META_FUNCTION_TASK();
     m_gpu_frequency = gpu_frequency;
 }
 
-void TimestampQueryBuffer::SetGpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration)
+void TimestampQueryBuffer::SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps)
 {
     META_FUNCTION_TASK();
-    m_gpu_time_calibration = gpu_time_calibration;
+    m_calibrated_timestamps = calibrated_timestamps;
 }
 
 } // namespace Methane::Graphics

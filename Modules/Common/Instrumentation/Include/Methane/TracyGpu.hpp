@@ -64,11 +64,12 @@ public:
 
     struct Settings
     {
-        Type      type            = Type::Undefined;
-        Timestamp gpu_timestamp   = 0;
-        Timestamp cpu_timestamp   = 0;
-        float     gpu_time_period = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
-        bool      is_thread_local = false;
+        Type      type              = Type::Undefined;
+        Timestamp gpu_timestamp     = 0;
+        Timestamp cpu_timestamp     = 0;
+        Timestamp cpu_ref_timestamp = 0;
+        float     gpu_time_period   = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
+        bool      is_thread_local   = false;
 
 #ifdef METHANE_TRACY_GPU_ENABLED
 
@@ -76,12 +77,14 @@ public:
             : type(type)
             , gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
+            , cpu_ref_timestamp(cpu_timestamp)
         { }
 
-        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
+        Settings(Type type, Timestamp cpu_timestamp, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
-            , cpu_timestamp(tracy::Profiler::GetTime())
+            , cpu_timestamp(cpu_timestamp)
+            , cpu_ref_timestamp(tracy::Profiler::GetTime())
             , gpu_time_period(gpu_time_period)
             , is_thread_local(is_thread_local)
         { }
@@ -125,12 +128,13 @@ public:
 
     explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
+        , m_prev_calibration_cpu_timestamp(settings.cpu_timestamp)
     {
         META_CHECK_ARG_LESS_DESCR(m_id, 255, "Tracy GPU context count is exceeding the maximum 255.");
 
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,              tracy::QueueType::GpuNewContext);
-        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_ref_timestamp);
         tracy::MemWrite(&item->gpuNewContext.gpuTime, settings.gpu_timestamp);
         tracy::MemWrite(&item->gpuNewContext.period,  settings.gpu_time_period);
         tracy::MemWrite(&item->gpuNewContext.context, m_id);
@@ -147,6 +151,23 @@ public:
         }
 
         FinishSerialItem(*item);
+    }
+
+    void Calibrate(Timestamp cpu_timestamp, Timestamp gpu_timestamp) noexcept
+    {
+        const int64_t reference_cpu_timestamp = tracy::Profiler::GetTime();
+        const int64_t cpu_delta = static_cast<int64_t>(cpu_timestamp) - m_prev_calibration_cpu_timestamp;
+        if (cpu_delta <= 0)
+            return;
+
+        m_prev_calibration_cpu_timestamp = cpu_timestamp;
+        auto item = tracy::Profiler::QueueSerial();
+        tracy::MemWrite( &item->hdr.type, tracy::QueueType::GpuCalibration );
+        tracy::MemWrite( &item->gpuCalibration.gpuTime,  gpu_timestamp );
+        tracy::MemWrite( &item->gpuCalibration.cpuTime,  reference_cpu_timestamp );
+        tracy::MemWrite( &item->gpuCalibration.cpuDelta, cpu_delta );
+        tracy::MemWrite( &item->gpuCalibration.context,  m_id );
+        tracy::Profiler::QueueSerialFinish();
     }
 
     void SetName(std::string_view name) noexcept
@@ -188,12 +209,15 @@ private:
 
     const uint8_t               m_id;
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
+    int64_t                     m_prev_calibration_cpu_timestamp = 0;
     QueryId                     m_query_id    = 0U;
     TracyLockable(std::mutex,   m_query_mutex)
 
 #else // METHANE_TRACY_GPU_ENABLED
 
-    explicit GpuContext(const Settings&) { }
+    explicit GpuContext(const Settings&)          { /* empty method when Tracy GPU is disabled */ }
+
+    void Calibrate(Timestamp, Timestamp) noexcept { /* empty method when Tracy GPU is disabled */ }
 
     void SetName(std::string_view) const noexcept { /* empty method when Tracy GPU is disabled */ }
 

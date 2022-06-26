@@ -36,8 +36,6 @@ class CommandListBase;
 class QueryBuffer;
 struct Context;
 
-using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
-
 class Query
 {
 public:
@@ -142,23 +140,29 @@ class TimestampQueryBuffer
 public:
     using TimestampQuery = Methane::Graphics::TimestampQuery;
 
+    struct CalibratedTimestamps
+    {
+        Timestamp gpu_ts;
+        Timestamp cpu_ts;
+    };
+
     [[nodiscard]] static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
     [[nodiscard]] virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
-    virtual void Calibrate() = 0;
+    virtual CalibratedTimestamps Calibrate() = 0;
     virtual ~TimestampQueryBuffer() = default;
 
-    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
-    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
-    TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
+    Frequency                   GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
+    const CalibratedTimestamps& GetCalibratedTimestamps() const noexcept    { return m_calibrated_timestamps; }
+    TimeDelta                   GetGpuTimeOffset() const noexcept;
 
 protected:
     void SetGpuFrequency(Frequency gpu_frequency);
-    void SetGpuTimeCalibration(const GpuTimeCalibration& gpu_time_calibration);
+    void SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps);
 
 private:
-    Frequency          m_gpu_frequency = 0U;
-    GpuTimeCalibration m_gpu_time_calibration{};
+    Frequency            m_gpu_frequency = 0U;
+    CalibratedTimestamps m_calibrated_timestamps{ 0U, 0U};
 };
 
 } // namespace Methane::Graphics

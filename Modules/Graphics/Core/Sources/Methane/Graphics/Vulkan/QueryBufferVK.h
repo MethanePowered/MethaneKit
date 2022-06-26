@@ -76,8 +76,6 @@ private:
     vk::QueryPool     m_vk_query_pool;
 };
 
-using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
-
 class TimestampQueryVK final
     : protected QueryVK
     , public TimestampQuery
@@ -104,7 +102,7 @@ public:
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-    void Calibrate() override;
+    CalibratedTimestamps Calibrate() override;
 
 private:
 #if defined(_WIN32)

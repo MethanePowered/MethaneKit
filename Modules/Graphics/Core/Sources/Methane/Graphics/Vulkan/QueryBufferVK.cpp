@@ -191,7 +191,7 @@ Ptr<TimestampQueryBuffer::TimestampQuery> TimestampQueryBufferVK::CreateTimestam
     return QueryBuffer::CreateQuery<TimestampQueryVK>(command_list);
 }
 
-void TimestampQueryBufferVK::Calibrate()
+TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferVK::Calibrate()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EQUAL(m_vk_cpu_time_domain, vk::TimeDomainEXT::eDevice);
@@ -208,9 +208,12 @@ void TimestampQueryBufferVK::Calibrate()
     }
     while(deviation > m_deviation);
 
-    const Timestamp gpu_ts = timestamps[0];
-    const Timestamp cpu_ts = timestamps[1] * m_qpc_to_nsec;
-    SetGpuTimeCalibration({ gpu_ts, static_cast<TimeDelta>(gpu_ts - cpu_ts) });
+    CalibratedTimestamps calibrated_timestamps{};
+    calibrated_timestamps.gpu_ts = timestamps[0];
+    calibrated_timestamps.cpu_ts = timestamps[1] * m_qpc_to_nsec;
+    SetCalibratedTimestamps(calibrated_timestamps);
+
+    return calibrated_timestamps;
 }
 
 TimestampQueryVK::TimestampQueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
