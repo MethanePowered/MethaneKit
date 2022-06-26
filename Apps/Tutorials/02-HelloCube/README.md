@@ -188,7 +188,7 @@ class HelloTriangleApp final : public GraphicsApp
 
         // Create index buffer for cube mesh
         m_index_buffer_ptr = Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
-        m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }); // NOSONAR
+        m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, render_cmd_queue);
 
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
@@ -417,6 +417,8 @@ add_methane_shaders_source(
 )
 ```
 
+### Add Uniforms Buffer in Application Code
+
 In C++ source file [HelloCubeApp.cpp](HelloCubeApp.cpp) uniform header is included inside namespace `hlslpp` to reuse
 matrix type definitions from `hlsl++.h` and is wrapped in `#pragma pack(push, 16)` to use the same structure fields
 memory alignment as in HLSL shaders.
@@ -548,6 +550,8 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
     ...
 }
 ```
+
+### Use Uniforms Buffer for Cube Rendering
 
 In the `HelloCubeApp::Update()` method we update the MVP matrix in the `m_shader_uniforms`
 structure, so that it can be uploaded to the uniform buffer on GPU with `frame.uniforms_buffer_ptr->SetData(...)`

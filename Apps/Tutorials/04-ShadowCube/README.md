@@ -11,12 +11,11 @@ This tutorial demonstrates rendering shadow of the textured cube on the floor pl
 - [Shaders/ShadowCube.hlsl](Shaders/ShadowCube.hlsl)
 
 Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
-- Rendering with multiple render passes;
-- Using texture as render target in one pass and as an input program binding in another pass;
-- Compiling and loading shaders code with macro-definitions to render state programs;
-- Using graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code;
-- Simple shadows rendering technique implementation.
-  See detailed [technique description here](http://www.opengl-tutorial.org/ru/intermediate-tutorials/tutorial-16-shadow-mapping/)
+- Render with multiple render passes;
+- Use texture as render target attachment in one pass and as an input program binding in another pass;
+- Compile and loading shaders code with macro-definitions to render state programs;
+- Use graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code;
+- Simple shadows rendering technique. See detailed [technique description here](http://www.opengl-tutorial.org/ru/intermediate-tutorials/tutorial-16-shadow-mapping/)
 
 ## Application and Frame Class Definitions
 
@@ -43,8 +42,8 @@ struct Constants
 
 struct SceneUniforms
 {
-    float4   eye_position;
-    float3   light_position;
+    float4 eye_position;
+    float3 light_position;
 };
 
 struct MeshUniforms
@@ -561,11 +560,11 @@ bool ShadowCubeApp::Render()
 
     // Upload uniform buffers to GPU
     const ShadowCubeFrame& frame = GetCurrentFrame();
-    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources);
-    frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.final_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources());
-    frame.final_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources());
+    frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
+    frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
+    frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
+    frame.final_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.final_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass);
@@ -733,21 +732,11 @@ float4 CubePS(PSInput input) : SV_TARGET
 }
 ```
 
-Shaders configuration file [Shaders/ShadowCube.cfg](Shaders/ShadowCube.cfg)
-is created in pair with shaders file and describes shader types along with entry points and
-macro definitions used to pre-build shaders to bytecode at build time.
-Note that vertex shader `CubeVS` is built twice with different set of macro definitions:
-one instance is used for shadow pass, the other is for final pass rendering.
-
-```ini
-frag=CubePS:ENABLE_SHADOWS ENABLE_TEXTURING
-vert=CubeVS:ENABLE_SHADOWS ENABLE_TEXTURING
-vert=CubeVS:ENABLE_TEXTURING
-```
-
 ## CMake Build Configuration
 
 Shaders are compiled in build time and added as byte code to the application embedded resources.
+Note that vertex shader `CubeVS` is built twice with different set of macro definitions:
+one instance is used for shadow pass, the other is for final pass rendering.
 Texture images are added to the application embedded resources too.
 
 ```cmake
@@ -777,8 +766,20 @@ add_methane_application(MethaneShadowCube
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
+
 add_methane_embedded_textures(MethaneShadowCube "${TEXTURES_DIR}" "${TEXTURES}")
-add_methane_shaders(MethaneShadowCube "${SHADERS_HLSL}" "6_0")
+
+add_methane_shaders_source(
+    TARGET MethaneShadowCube
+    SOURCE Shaders/ShadowCube.hlsl
+    VERSION 6_0
+    TYPES
+        frag=CubePS:ENABLE_SHADOWS,ENABLE_TEXTURING
+        vert=CubeVS:ENABLE_SHADOWS,ENABLE_TEXTURING
+        vert=CubeVS:ENABLE_TEXTURING
+)
+
+add_methane_shaders_library(MethaneShadowCube)
 
 target_link_libraries(MethaneShadowCube
     PRIVATE

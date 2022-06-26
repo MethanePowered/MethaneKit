@@ -67,7 +67,7 @@ class TypographyApp final
 public:
     struct Settings
     {
-        gui::Text::Layout text_layout                 { gui::Text::Wrap::Word, gui::Text::HorizontalAlignment::Center, gui::Text::VerticalAlignment::Top };
+        gui::Text::Layout text_layout{ gui::Text::Wrap::Word, gui::Text::HorizontalAlignment::Center, gui::Text::VerticalAlignment::Top };
         bool              is_incremental_text_update  = true;
         bool              is_forward_typing_direction = true;
         double            typing_update_interval_sec  = 0.03;
@@ -356,7 +356,6 @@ bool TypographyApp::Render()
 ```cmake
 include(MethaneApplications)
 
-set(TARGET MethaneTypography)
 set(SOURCES
     TypographyApp.h
     TypographyApp.cpp
@@ -369,7 +368,7 @@ set(FONTS
     ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
 )
 
-add_methane_application(${TARGET}
+add_methane_application(MethaneTypography
     "${SOURCES}"
     "${RESOURCES_DIR}"
     "Apps"
@@ -380,15 +379,15 @@ add_methane_application(${TARGET}
     "${METHANE_VERSION_BUILD}"
 )
 
-add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
+add_methane_embedded_fonts(MethaneTypography "${RESOURCES_DIR}" "${FONTS}")
 
-target_link_libraries(${TARGET}
+target_link_libraries(MethaneTypography
     PRIVATE
         MethaneAppsCommon
 )
-
-set_target_properties(${TARGET}
-    PROPERTIES
-    FOLDER Apps/Tutorials
-)
 ```
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [CubeMapArray](../06-CubeMapArray),
+which is demonstrating cube-map array texturing and sky-box rendering.

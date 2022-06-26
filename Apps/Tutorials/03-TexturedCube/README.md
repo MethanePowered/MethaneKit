@@ -11,9 +11,9 @@ This tutorial demonstrates textured cube rendering using Methane Kit:
 - [Shaders/TexturedCube.hlsl](Shaders/TexturedCube.hlsl)
 
 Tutorial demonstrates the following Methane Kit features additionally to demonstrated in [Hello Cube](../02-HelloCube):
-- Base user interface application implementing graphics UI overlay rendering
-- Creating 2D textures with data loaded data from images and creating samplers
-- Binding buffers and textures to program arguments and configuring argument modifiers
+- Use base user interface application for graphics UI overlay rendering
+- Create 2D textures with data loaded data from images and creating samplers
+- Bind buffers and textures to program arguments and configure argument access modifiers
 - SRGB gamma-correction support in textures loader and color transformation in pixel shaders
 
 ## Application and Frame Class Definitions
@@ -221,18 +221,27 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
     const Data::Size vertex_size      = cube_mesh.GetVertexSize();
     Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
-    vertex_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } });
+    vertex_buffer_ptr->SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } },
+        render_cmd_queue
+    );
     m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
-    m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } });
+    m_index_buffer_ptr->SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } },
+        render_cmd_queue
+    );
 
     // Create constants buffer for frame rendering
     const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
     m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
-    m_const_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } });
+    m_const_buffer_ptr->SetData(
+        { { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } },
+        render_cmd_queue
+    );
 
     ...
 }
@@ -256,7 +265,7 @@ void TexturedCubeApp::Init()
     using namespace magic_enum::bitwise_operators;
     const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
                                                   | gfx::ImageLoader::Options::SrgbColorSpace;
-    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(GetRenderContext(), "MethaneBubbles.jpg", image_options, "Cube Face Texture");
+    m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -527,15 +536,6 @@ float4 CubePS(PSInput input) : SV_TARGET
 }
 ```
 
-Shaders configuration file [Shaders/Cube.cfg](Shaders/Cube.cfg) 
-is created in pair with shaders file and describes shader types along with entry points and 
-optional sets of macro definitions used to pre-build shaders to bytecode at build time.
-
-```ini
-frag=CubePS
-vert=CubeVS
-```
-
 ## CMake Build Configuration
 
 CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application
@@ -558,7 +558,6 @@ set(SOURCES
     Shaders/TexturedCubeUniforms.h
 )
 
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/Cube.hlsl)
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
 
@@ -572,8 +571,19 @@ add_methane_application(MethaneTexturedCube
     "${METHANE_VERSION_SHORT}"
     "${METHANE_VERSION_BUILD}"
 )
+
 add_methane_embedded_textures(MethaneTexturedCube "${TEXTURES_DIR}" "${TEXTURES}")
-add_methane_shaders(MethaneTexturedCube "${SHADERS_HLSL}" "6_0")
+
+add_methane_shaders_source(
+    TARGET MethaneTexturedCube
+    SOURCE Shaders/TexturedCube.hlsl
+    VERSION 6_0
+    TYPES
+        frag=CubePS
+        vert=CubeVS
+)
+
+add_methane_shaders_library(MethaneTexturedCube)
 
 target_link_libraries(MethaneTexturedCube
     PRIVATE

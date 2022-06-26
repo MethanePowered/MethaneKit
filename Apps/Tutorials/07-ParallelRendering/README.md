@@ -4,7 +4,7 @@
 | -------------------- | ------------- |-----------------------------------------------------------------|
 | ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) |
 
-This tutorial demonstrates multi-threaded rendering with 'ParallelRenderCommandList' using Methane Kit:
+This tutorial demonstrates multi-threaded rendering with `ParallelRenderCommandList` using Methane Kit:
   - [ParallelRenderingApp.h](ParallelRenderingApp.h)
   - [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
   - [ParallelRenderingAppController.h](ParallelRenderingAppController.h)

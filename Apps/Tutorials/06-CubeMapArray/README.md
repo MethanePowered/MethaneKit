@@ -4,7 +4,7 @@
 | -------------------- | ------------- |-----------------------------------------------------------------|
 | ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) |
 
-This tutorial demonstrates cube-map array texturing with Methane Kit:
+This tutorial demonstrates cube-map array texturing and sky-box rendering with Methane Kit:
   - [CubeMapArrayApp.h](CubeMapArrayApp.h)
   - [CubeMapArrayApp.cpp](CubeMapArrayApp.cpp)
   - [Shaders/CubeMapArray.hlsl](Shaders/CubeMapArray.hlsl)
@@ -16,4 +16,9 @@ Tutorial demonstrates the following techniques:
   - Rendering text labels to the faces of cube-map array texture via separate render passes 
     using helper class [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
   - Instanced rendering of multiple cubes displaying all faces of the pre-rendered cube-map array texture;
-  - Using Sky-box rendering extension primitive with panoramic cube-map texture loaded from file.
+  - Using Sky-box rendering extension with panoramic cube-map texture loaded from image files.
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [ParallelRendering](../07-ParallelRendering),
+which is demonstrating multi-threaded rendering with `ParallelRenderCommandList`.
