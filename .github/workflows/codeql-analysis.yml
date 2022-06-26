@@ -63,10 +63,13 @@ jobs:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
 
-    - name: Build Project
+    - name: Configure & Build Project
       run: |
        cmake --preset ${{ matrix.config_preset }}
-       cmake --build --preset ${{ matrix.build_preset }} --parallel 4
+       cmake --build --preset ${{ matrix.build_preset }} --parallel 4 \
+          -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF \
+          -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF \
+          -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
