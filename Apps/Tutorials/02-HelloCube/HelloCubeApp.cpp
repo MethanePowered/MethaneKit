@@ -81,10 +81,9 @@ private:
     const Resource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
-
-    Ptr<BufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<BufferSet>               m_vertex_buffer_set_ptr;
 #else
-    std::vector<CubeVertex>    m_proj_vertices;
+    std::vector<CubeVertex>      m_proj_vertices;
 #endif
 
     Ptr<RenderState> m_render_state_ptr;
