@@ -49,14 +49,14 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
 
-      # Windows CodeQL analysis is DISABLED (see the reason description above the Analysis step below)
     - name: Checkout repository
-      if: ${{ matrix.os != 'windows-2019' }}
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
 
+    # Windows CodeQL analysis is DISABLED (see reason description next to Analysis step below)
     - name: Initialize CodeQL
+      if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/init@v2
       with:
         languages: cpp
