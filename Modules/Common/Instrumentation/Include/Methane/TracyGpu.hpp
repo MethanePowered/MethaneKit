@@ -96,15 +96,15 @@ public:
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp)
+        Settings(Type, Timestamp, Timestamp)
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp, float)
+        Settings(Type, Timestamp, Timestamp, float)
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp, float, bool)
+        Settings(Type, Timestamp, Timestamp, float, bool)
         {
             // Intentionally unimplemented: stub
         }
