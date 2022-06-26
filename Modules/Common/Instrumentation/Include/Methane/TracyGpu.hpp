@@ -215,11 +215,11 @@ private:
 
 #else // METHANE_TRACY_GPU_ENABLED
 
-    explicit GpuContext(const Settings&)          { /* empty method when Tracy GPU is disabled */ }
+    explicit GpuContext(const Settings&)                { /* empty method when Tracy GPU is disabled */ }
 
-    void Calibrate(Timestamp, Timestamp) noexcept { /* empty method when Tracy GPU is disabled */ }
+    void Calibrate(Timestamp, Timestamp) const noexcept { /* empty method when Tracy GPU is disabled */ }
 
-    void SetName(std::string_view) const noexcept { /* empty method when Tracy GPU is disabled */ }
+    void SetName(std::string_view) const noexcept       { /* empty method when Tracy GPU is disabled */ }
 
 #endif // METHANE_TRACY_GPU_ENABLED
 };
