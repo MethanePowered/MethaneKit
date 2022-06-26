@@ -158,6 +158,7 @@ TypographyApp::~TypographyApp()
 
     // Clear the font library to release all atlas textures
     gui::Font::Library::Get().Clear();
+    m_font_atlas_badges.clear();
 }
 
 void TypographyApp::Init()
