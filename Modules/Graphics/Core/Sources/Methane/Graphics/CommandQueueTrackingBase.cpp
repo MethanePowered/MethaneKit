@@ -167,11 +167,14 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
                 CompleteCommandListSetExecution(*command_list_set_ptr);
             }
 
+            // FIXME: GPU timestamps re-calibration does not work correctly for DirectX, so it's used for Vulkan only
+#ifdef METHANE_GFX_VULKAN
             if (m_timestamp_query_buffer_ptr)
             {
                 const TimestampQueryBuffer::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_buffer_ptr->Calibrate();
                 GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
+#endif
         }
         while (m_execution_waiting);
     }
