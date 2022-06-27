@@ -53,9 +53,9 @@ struct Sampler : virtual Resource // NOSONAR
             Linear
         };
         
-        Filter(MinMag in_min, MinMag in_mag, Mip in_mip) : min(in_min), mag(in_mag), mip(in_mip) { }
-        Filter(MinMag in_min_max, Mip in_mip) : Filter(in_min_max, in_min_max, in_mip) { }
-        explicit Filter(MinMag in_min_max) : Filter(in_min_max, Mip::NotMipmapped) { }
+        Filter(MinMag min, MinMag mag, Mip mip) : min(min), mag(mag), mip(mip) { }
+        Filter(MinMag min_mag, Mip mip) : Filter(min_mag, min_mag, mip) { }
+        explicit Filter(MinMag min_mag) : Filter(min_mag, Mip::NotMipmapped) { }
 
         MinMag min = MinMag::Nearest;
         MinMag mag = MinMag::Nearest;
@@ -73,7 +73,7 @@ struct Sampler : virtual Resource // NOSONAR
             RepeatMirror,
         };
         
-        Address(Mode in_s, Mode in_t, Mode in_r) : s(in_s), t(in_t), r(in_r) { }
+        Address(Mode s, Mode t, Mode r) : s(s), t(t), r(r) { }
         explicit Address(Mode all) : s(all), t(all), r(all) { }
 
         Mode s = Mode::ClampToEdge; // width
@@ -83,7 +83,7 @@ struct Sampler : virtual Resource // NOSONAR
 
     struct LevelOfDetail
     {
-        LevelOfDetail(float in_bias = 0.F, float in_min = 0.F, float in_max = std::numeric_limits<float>::max());
+        LevelOfDetail(float bias = 0.F, float min = 0.F, float max = std::numeric_limits<float>::max());
         
         float min     = 0.F;
         float max     = std::numeric_limits<float>::max();
@@ -99,12 +99,12 @@ struct Sampler : virtual Resource // NOSONAR
 
     struct Settings
     {
-        Settings(const Filter& in_filter,
-                 const Address& in_address,
-                 const LevelOfDetail& in_lod = LevelOfDetail(),
-                 uint32_t  in_max_anisotropy = 1,
-                 BorderColor in_border_color = BorderColor::TransparentBlack,
-                 Compare in_compare_function = Compare::Never);
+        Settings(const Filter& filter,
+                 const Address& address,
+                 const LevelOfDetail& lod = LevelOfDetail(),
+                 uint32_t  max_anisotropy = 1,
+                 BorderColor border_color = BorderColor::TransparentBlack,
+                 Compare compare_function = Compare::Never);
 
         Filter          filter;
         Address         address;
@@ -115,7 +115,7 @@ struct Sampler : virtual Resource // NOSONAR
     };
 
     // Create Sampler instance
-    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings);
 
     // Sampler interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

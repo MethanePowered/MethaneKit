@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ Vulkan implementation of the render command list interface.
 #include "CommandListVK.hpp"
 
 #include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Data/Receiver.hpp>
 
-#include <functional>
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
@@ -37,17 +38,17 @@ class BufferVK;
 class RenderPassVK;
 class ParallelRenderCommandListVK;
 
-class RenderCommandListVK final : public CommandListVK<RenderCommandListBase>
+class RenderCommandListVK final
+    : public CommandListVK<RenderCommandListBase, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
+    , private Data::Receiver<IRenderPassCallback>
 {
 public:
+    explicit RenderCommandListVK(CommandQueueVK& command_queue);
     RenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
-    explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list);
+    explicit RenderCommandListVK(ParallelRenderCommandListVK& parallel_render_command_list, bool is_beginning_cmd_list);
 
     // CommandList interface
     void Commit() override;
-
-    // CommandListBase interface
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
 
     // RenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
@@ -60,7 +61,9 @@ public:
               uint32_t instance_count, uint32_t start_instance) override;
 
 private:
-    void ResetRenderPass();
+    // IRenderPassCallback
+    void OnRenderPassUpdated(const RenderPass& render_pass) override;
+
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPassVK& GetPassVK();

@@ -54,6 +54,7 @@ static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_typ
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
+    case D3D_SIT_STRUCTURED:
     case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
     case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
     case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
@@ -150,16 +151,16 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Program::Argument         shader_argument(GetType(), binding_desc.Name);
-        const auto                      argument_desc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Program::ArgumentAccessor argument_desc    = argument_desc_it == argument_accessors.end()
+        const Program::Argument         shader_argument(GetType(), ShaderBase::GetCachedArgName(binding_desc.Name));
+        const auto                      argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Program::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
                                                          ? Program::ArgumentAccessor(shader_argument)
-                                                         : *argument_desc_it;
+                                                         : *argument_acc_it;
 
         const ProgramBindingsDX::ArgumentBindingDX::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
                                                                                      ? ProgramBindingsDX::ArgumentBindingDX::Type::ConstantBufferView
                                                                                      : ProgramBindingsDX::ArgumentBindingDX::Type::ShaderResourceView;
-        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type             = argument_desc.IsAddressable()
+        const ProgramBindingsDX::ArgumentBindingDX::Type dx_binding_type             = argument_acc.IsAddressable()
                                                                                      ? dx_addressable_binding_type
                                                                                      : ProgramBindingsDX::ArgumentBindingDX::Type::DescriptorTable;
 
@@ -167,8 +168,9 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
             GetContext(),
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
+                ProgramBindings::ArgumentBinding::Settings
                 {
-                    argument_desc,
+                    argument_acc,
                     GetResourceTypeByInputType(binding_desc.Type),
                     binding_desc.BindCount
                 },
@@ -191,7 +193,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
                << ", space="        << binding_desc.Space
                << ", flags="        << binding_desc.uFlags
                << ", id="           << binding_desc.uID;
-        if (argument_desc_it == argument_accessors.end())
+        if (argument_acc_it == argument_accessors.end())
         {
             log_ss << ", no user argument description was found, using default";
         }

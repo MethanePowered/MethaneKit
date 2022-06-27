@@ -22,7 +22,6 @@ Base implementation of the texture interface.
 ******************************************************************************/
 
 #include "TextureBase.h"
-#include "DescriptorHeap.h"
 #include "RenderContextBase.h"
 
 #include <Methane/Graphics/TypeFormatters.hpp>
@@ -32,42 +31,49 @@ Base implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-Texture& Texture::Location::GetTexture() const
+Texture::View::View(Texture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count, Opt<TextureDimensionType> texture_dimension_type_opt)
+    : Resource::View(texture, subresource_index, subresource_count, texture_dimension_type_opt)
+    , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
 {
-    META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource location");
+    META_FUNCTION_TASK();
+}
+
+Texture& Texture::View::GetTexture() const
+{
+    META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource view");
     return *m_texture_ptr;
 }
 
-Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
+Texture::Settings Texture::Settings::Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, TextureBase::Usage usage)
 {
     META_FUNCTION_TASK();
 
     Settings settings;
     if (dimensions.GetHeight() == 1)
-        settings.dimension_type = array_length == 1 ? DimensionType::Tex1D : DimensionType::Tex1DArray;
+        settings.dimension_type = array_length_opt ? DimensionType::Tex1DArray : DimensionType::Tex1D;
     else if (dimensions.GetDepth() == 1)
-        settings.dimension_type = array_length == 1 ? DimensionType::Tex2D : DimensionType::Tex2DArray;
+        settings.dimension_type = array_length_opt ? DimensionType::Tex2DArray : DimensionType::Tex2D;
     else
         settings.dimension_type = DimensionType::Tex3D;
-    settings.type           = Type::Texture;
-    settings.dimensions     = dimensions;
-    settings.array_length   = array_length;
-    settings.pixel_format   = pixel_format;
-    settings.usage_mask     = usage;
-    settings.mipmapped      = mipmapped;
+    settings.type         = Type::Texture;
+    settings.dimensions   = dimensions;
+    settings.array_length = array_length_opt.value_or(1U);
+    settings.pixel_format = pixel_format;
+    settings.usage_mask   = usage;
+    settings.mipmapped    = mipmapped;
 
     return settings;
 }
 
-Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage)
+Texture::Settings Texture::Settings::Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage)
 {
     META_FUNCTION_TASK();
 
     Settings settings;
     settings.type           = Type::Texture;
-    settings.dimension_type = array_length == 1 ? DimensionType::Cube : DimensionType::CubeArray;
+    settings.dimension_type = array_length_opt ? DimensionType::CubeArray : DimensionType::Cube;
     settings.dimensions     = Dimensions(dimension_size, dimension_size, 6U);
-    settings.array_length   = array_length;
+    settings.array_length   = array_length_opt.value_or(1U);
     settings.pixel_format   = pixel_format;
     settings.usage_mask     = usage;
     settings.mipmapped      = mipmapped;
@@ -103,8 +109,9 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
     return settings;
 }
 
-TextureBase::TextureBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(Resource::Type::Texture, settings.usage_mask, context, descriptor_by_usage)
+TextureBase::TextureBase(const ContextBase& context, const Settings& settings,
+                         State initial_state, Opt<State> auto_transition_source_state_opt)
+    : ResourceBase(context, Resource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -154,7 +161,7 @@ void TextureBase::ValidateDimensions(DimensionType dimension_type, const Dimensi
 Data::Size TextureBase::GetRequiredMipLevelsCount(const Dimensions& dimensions)
 {
     META_FUNCTION_TASK();
-    return 1U + static_cast<uint32_t>(std::log2(static_cast<double>(dimensions.GetLongestSide())));
+    return 1U + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(dimensions.GetLongestSide()))));
 }
 
 Data::Size TextureBase::GetDataSize(Data::MemoryState size_type) const noexcept

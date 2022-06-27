@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ struct IRenderContextVKCallback
     virtual ~IRenderContextVKCallback() = default;
 };
 
-class RenderContextVK final
+class RenderContextVK final // NOSONAR - this class requires destructor
     : public ContextVK<RenderContextBase>
     , public Data::Emitter<IRenderContextVKCallback>
 {
@@ -77,7 +77,7 @@ public:
     void Release() override;
 
     // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
     const vk::SwapchainKHR& GetNativeSwapchain() const noexcept   { return m_vk_unique_swapchain.get(); }
@@ -98,6 +98,7 @@ private:
     void InitializeNativeSwapchain();
     void ReleaseNativeSwapchainResources();
     void ResetNativeSwapchain();
+    void ResetNativeObjectNames() const;
 
     const vk::Device m_vk_device;
 #ifdef __APPLE__

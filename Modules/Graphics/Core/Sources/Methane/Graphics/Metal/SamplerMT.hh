@@ -37,11 +37,11 @@ struct IContextMT;
 class SamplerMT final : public ResourceMT<SamplerBase>
 {
 public:
-    SamplerMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerMT(const ContextBase& context, const Settings& settings);
     ~SamplerMT() override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 

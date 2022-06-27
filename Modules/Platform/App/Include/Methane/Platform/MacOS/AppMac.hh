@@ -69,9 +69,9 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
-    NSApplicationType*  m_ns_app;
-    AppDelegateType*    m_ns_app_delegate;
-    NSWindowType*       m_ns_window;
+    NSApplicationType*  m_ns_app          = nullptr;
+    AppDelegateType*    m_ns_app_delegate = nullptr;
+    NSWindowType*       m_ns_window       = nullptr;
 };
 
 } // namespace Methane::Platform

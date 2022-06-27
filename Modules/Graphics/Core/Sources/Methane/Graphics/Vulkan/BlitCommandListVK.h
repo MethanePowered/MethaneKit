@@ -28,13 +28,15 @@ Vulkan implementation of the blit command list interface.
 #include <Methane/Graphics/BlitCommandList.h>
 #include <Methane/Graphics/CommandListBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
 class CommandQueueVK;
 
 class BlitCommandListVK final
-    : public CommandListVK<CommandListBase>
+    : public CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>
     , public BlitCommandList
 {
 public:

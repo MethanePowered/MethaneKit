@@ -23,6 +23,15 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
+#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/ProgramBindings.h>
+#include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -67,13 +76,14 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shade
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Settings& settings)
-    : ScreenQuad(render_pattern, nullptr, settings)
+ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings)
+    : ScreenQuad(render_cmd_queue, render_pattern, nullptr, settings)
 {
 }
 
-ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
     , m_render_pattern_ptr(std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr()))
     , m_texture_ptr(texture_ptr)
 {
@@ -167,11 +177,12 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName(s_vertex_buffer_name);
         vertex_buffer_ptr->SetData({
-            {
-                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()), // NOSONAR
-                quad_mesh.GetVertexDataSize()
-            }
-        });
+                {
+                    reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()), // NOSONAR
+                    quad_mesh.GetVertexDataSize()
+                }
+            },
+            *m_render_cmd_queue_ptr);
         render_context.GetObjectsRegistry().AddGraphicsObject(*vertex_buffer_ptr);
     }
 
@@ -184,28 +195,30 @@ ScreenQuad::ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& textur
         m_index_buffer_ptr = Buffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetName(s_index_buffer_name);
         m_index_buffer_ptr->SetData({
-            {
-                reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()), // NOSONAR
-                quad_mesh.GetIndexDataSize()
-            }
-        });
+                {
+                    reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()), // NOSONAR
+                    quad_mesh.GetIndexDataSize()
+                }
+            },
+            *m_render_cmd_queue_ptr);
         render_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
     m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
-    ProgramBindings::ResourceLocationsByArgument program_binding_resource_locations = {
+    ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
         { { Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Locations{ { *m_texture_ptr         } });
-        program_binding_resource_locations.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Locations{ { *m_texture_sampler_ptr } });
+        program_binding_resource_views.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
+        program_binding_resource_views.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
     }
 
-    m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_locations);
+    m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
+    m_const_program_bindings_ptr->SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
     UpdateConstantsBuffer();
 }
@@ -256,7 +269,7 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
         return;
 
     m_texture_ptr = texture_ptr;
-    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_texture_ptr } });
+    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceViews({ { *m_texture_ptr } });
 }
 
 const Texture& ScreenQuad::GetTexture() const
@@ -298,7 +311,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
                 static_cast<Data::Size>(sizeof(constants))
             }
         },
-        &m_render_pattern_ptr->GetRenderContext().GetRenderCommandKit().GetQueue()
+        *m_render_cmd_queue_ptr
     );
 }
 

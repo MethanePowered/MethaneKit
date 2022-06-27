@@ -24,6 +24,7 @@ Vulkan implementation of the render pass interface.
 #pragma once
 
 #include "RenderContextVK.h"
+#include "ResourceVK.h"
 
 #include <Methane/Graphics/RenderPassBase.h>
 
@@ -42,7 +43,7 @@ public:
     RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
 
     // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
     [[nodiscard]] RenderContextVK&       GetRenderContextVK() noexcept;
@@ -71,7 +72,7 @@ public:
     void End(RenderCommandListBase& command_list) override;
 
     // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
     
     void Reset();
 
@@ -80,13 +81,15 @@ public:
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
 
-protected:
+private:
     // IRenderContextVKCallback overrides
     void OnRenderContextVKSwapchainChanged(RenderContextVK&) override;
 
-private:
-    vk::RenderPassBeginInfo CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
+    const ResourceViewVK&   GetAttachmentTextureViewVK(const Attachment& attachment) const;
+    vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
+    vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 
+    ResourceViewsVK         m_vk_attachments;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };

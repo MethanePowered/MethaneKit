@@ -36,7 +36,7 @@ static D3D12_COMMAND_LIST_TYPE GetBlitCommandListNativeType(Context::Options opt
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return magic_enum::flags::enum_contains(options & Context::Options::BlitWithDirectQueueOnWindows)
+    return static_cast<bool>(options & Context::Options::BlitWithDirectQueueOnWindows)
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }

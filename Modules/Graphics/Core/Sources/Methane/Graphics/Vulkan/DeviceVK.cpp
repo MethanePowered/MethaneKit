@@ -35,6 +35,7 @@ Vulkan implementation of the device interface.
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <string_view>
 
 //#define VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
@@ -51,12 +52,20 @@ static const std::string g_vk_validation_layer        = "VK_LAYER_KHRONOS_valida
 static const std::string g_vk_debug_utils_extension   = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME;
 
+// Google extensions are used to reflect HLSL semantic names from shader input decorations,
+// and it works fine, but is not listed by Windows NVidia drivers, who knows why?
+#ifdef __linux__
+#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+#endif
+
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-
-    // Extension is used to reflect HLSL semantic names from shader input decorations,
-    // and it actually works but is not listed by NVidia or AMD drivers, who knows why?
-    // VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
+    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+    VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+#ifdef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+    VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
+    VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
+#endif
 };
 
 static const std::vector<std::string_view> g_render_device_extensions{
@@ -70,10 +79,7 @@ static const std::vector<std::string_view> g_present_device_extensions = {
 static std::vector<char const*> GetEnabledLayers(const std::vector<std::string_view>& layers)
 {
     META_FUNCTION_TASK();
-
-#ifndef NDEBUG
     const std::vector<vk::LayerProperties> layer_properties = vk::enumerateInstanceLayerProperties();
-#endif
 
     std::vector<const char*> enabled_layers;
     enabled_layers.reserve(layers.size() );
@@ -124,8 +130,11 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
             enabled_extensions.push_back(extension.c_str());
         }
     };
+    META_UNUSED(add_enabled_extension);
 
+#ifndef NDEBUG
     add_enabled_extension(g_vk_debug_utils_extension);
+#endif
 
 #if defined(VULKAN_VALIDATION_BEST_PRACTICES_ENABLED) && !defined(NDEBUG)
     add_enabled_extension(g_vk_validation_extension);
@@ -143,19 +152,34 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
 
 #ifndef NDEBUG
 
-    if (callback_data_ptr->messageIdNumber == 648835635) // UNASSIGNED-khronos-Validation-debug-build-warning-message
+    // Assert on calling vkBeginCommandBuffer() on active VkCommandBuffer before it has completed. You must check command buffer fence before this call.
+    //assert(callback_data_ptr->messageIdNumber == -2080204129); // VUID-vkBeginCommandBuffer-commandBuffer-00049
+
+    if (callback_data_ptr->messageIdNumber == 648835635 || // UNASSIGNED-khronos-Validation-debug-build-warning-message
+        callback_data_ptr->messageIdNumber == 767975156 || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+        callback_data_ptr->messageIdNumber == -400166253)  // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         return VK_FALSE;
 
-    if (callback_data_ptr->messageIdNumber == 767975156) // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+    if (callback_data_ptr->messageIdNumber == 0 && (
+        strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file") ||
+        strstr(callback_data_ptr->pMessage, "terminator_CreateInstance: Failed to CreateInstance in ICD")))
         return VK_FALSE;
 
-#endif
+#ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+    // Filter out validation error appeared due to missing HLSL extension for SPIRV bytecode, which can not be used because of bug in NVidia Windows drivers:
+    // vkCreateShaderModule(): The SPIR-V Extension (SPV_GOOGLE_hlsl_functionality1 | SPV_GOOGLE_user_type) was declared, but none of the requirements were met to use it.
+    if (callback_data_ptr->messageIdNumber == 1028204675 && // VUID-VkShaderModuleCreateInfo-pCode-04147
+        strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_"))
+        return VK_FALSE;
+#endif // VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+
+#endif // !NDEBUG
 
     std::stringstream ss;
     ss << vk::to_string(static_cast<vk::DebugUtilsMessageSeverityFlagBitsEXT>(message_severity)) << " "
        << vk::to_string(static_cast<vk::DebugUtilsMessageTypeFlagsEXT>(message_types)) << ":" << std::endl;
-    ss << "\t- messageIDName:   " << callback_data_ptr->pMessageIdName << std::endl;
-    ss << "\t- messageIdNumber: "  << callback_data_ptr->messageIdNumber << std::endl;
+    ss << "\t- messageIdName:   " << callback_data_ptr->pMessageIdName << std::endl;
+    ss << "\t- messageIdNumber: " << callback_data_ptr->messageIdNumber << std::endl;
     ss << "\t- message:         " << callback_data_ptr->pMessage << std::endl;
     if (callback_data_ptr->queueLabelCount > 0)
     {
@@ -179,7 +203,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         for (uint32_t i = 0; i < callback_data_ptr->objectCount; i++)
         {
             ss << "\t\t- Object " << i << ":" << std::endl;
-            ss << "\t\t\t- objectType:   " << vk::to_string( static_cast<vk::ObjectType>( callback_data_ptr->pObjects[i].objectType ) ) << std::endl;
+            ss << "\t\t\t- objectType:   " << vk::to_string( static_cast<vk::ObjectType>(callback_data_ptr->pObjects[i].objectType)) << std::endl;
             ss << "\t\t\t- objectHandle: " << callback_data_ptr->pObjects[i].objectHandle << std::endl;
             if (callback_data_ptr->pObjects[i].pObjectName)
                 ss << "\t\t\t- objectName:   " << callback_data_ptr->pObjects[i].pObjectName << std::endl;
@@ -187,8 +211,27 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     }
 
     Platform::PrintToDebugOutput(ss.str());
-    return VK_TRUE;
+    return VK_FALSE;
 }
+
+#ifndef NDEBUG
+static vk::DebugUtilsMessengerCreateInfoEXT MakeDebugUtilsMessengerCreateInfoEXT()
+{
+    return vk::DebugUtilsMessengerCreateInfoEXT {
+        vk::DebugUtilsMessengerCreateFlagsEXT{},
+        vk::DebugUtilsMessageSeverityFlagsEXT {
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
+        },
+        vk::DebugUtilsMessageTypeFlagsEXT {
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+        },
+        &DebugUtilsMessengerCallback
+    };
+}
+#endif // !NDEBUG
 
 #ifdef NDEBUG
 using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo>;
@@ -198,41 +241,29 @@ using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::D
 using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::DebugUtilsMessengerCreateInfoEXT>;
 #endif
 
-InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
-                                                    const std::vector<const char*>& layers,
-                                                    const std::vector<const char*>& extensions)
+static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
+                                                           const std::vector<const char*>& layers,
+                                                           const std::vector<const char*>& extensions)
 {
     META_FUNCTION_TASK();
 
-#if defined( NDEBUG )
+#ifdef NDEBUG
     return InstanceCreateInfoChain({ {}, &vk_app_info, layers, extensions });
-#else
-    vk::DebugUtilsMessageSeverityFlagsEXT severity_flags(
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-    );
-    vk::DebugUtilsMessageTypeFlagsEXT message_type_flags(
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-    );
-#ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
-    const vk::ValidationFeatureEnableEXT validation_feature_enable = vk::ValidationFeatureEnableEXT::eBestPractices;
-#endif
+#else   
     return InstanceCreateInfoChain(
         { {}, &vk_app_info, layers, extensions },
-        { {}, severity_flags, message_type_flags, &DebugUtilsMessengerCallback }
+        MakeDebugUtilsMessengerCreateInfoEXT()
 #ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
-        , { validation_feature_enable }
+        , { vk::ValidationFeatureEnableEXT::eBestPractices }
 #endif
     );
 #endif
 }
 
 static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
-                                         const std::vector<std::string_view>& layers = {},
-                                         const std::vector<std::string_view>& extensions = {},
-                                         uint32_t vk_api_version = VK_API_VERSION_1_1)
+                                               const std::vector<std::string_view>& layers = {},
+                                               const std::vector<std::string_view>& extensions = {},
+                                               uint32_t vk_api_version = VK_API_VERSION_1_1)
 {
     META_FUNCTION_TASK();
 
@@ -251,7 +282,7 @@ static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loade
 
 template<bool exact_flags_matching>
 std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
-                                        vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                        vk::QueueFlags queue_flags, uint32_t queues_count,
                                         const std::vector<uint32_t>& reserved_queues_count_per_family,
                                         const vk::PhysicalDevice& vk_physical_device = {},
                                         const vk::SurfaceKHR& vk_present_surface = {})
@@ -268,7 +299,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
         }
         else
         {
-            if (!(vk_family_props.queueFlags & queue_flags))
+            if ((vk_family_props.queueFlags & queue_flags) != queue_flags)
                 continue;
         }
 
@@ -279,6 +310,11 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
             !vk_physical_device.getSurfaceSupportKHR(static_cast<uint32_t>(family_index), vk_present_surface))
             continue;
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+        if (!vk_family_props.timestampValidBits)
+            continue;
+#endif
+
         return static_cast<uint32_t>(family_index);
     }
 
@@ -286,7 +322,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
 }
 
 static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
-                                               vk::QueueFlagBits queue_flags, uint32_t queues_count,
+                                               vk::QueueFlags queue_flags, uint32_t queues_count,
                                                const std::vector<uint32_t>& reserved_queues_count_per_family,
                                                const vk::PhysicalDevice& vk_physical_device = {},
                                                const vk::SurfaceKHR& vk_present_surface = {})
@@ -296,7 +332,7 @@ static std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamily
     // Try to find queue family with exact flags match
     if (const std::optional<uint32_t> family_index = FindQueueFamily<true>(vk_queue_family_properties, queue_flags, queues_count,
                                                                            reserved_queues_count_per_family, vk_physical_device, vk_present_surface);
-        family_index)
+        family_index) // NOSONAR - can not use value_or here
         return *family_index;
 
     // If no family with exact match, find one which contains a subset of queue flags
@@ -312,7 +348,7 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
-static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
+static vk::QueueFlags GetQueueFlagsByType(CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
     switch(cmd_list_type)
@@ -323,7 +359,7 @@ static vk::QueueFlagBits GetQueueFlagBitsByType(CommandList::Type cmd_list_type)
     }
 }
 
-QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window)
+QueueFamilyReservationVK::QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window)
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
     , m_queues_count(queues_count)
@@ -377,10 +413,17 @@ void QueueFamilyReservationVK::IncrementQueuesCount(uint32_t extra_queues_count)
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice&)
+Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
-    return Device::Features::BasicRendering;
+    using namespace magic_enum::bitwise_operators;
+    vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
+    Device::Features device_features = Device::Features::BasicRendering;
+    if (vk_device_features.samplerAnisotropy)
+        device_features |= Device::Features::AnisotropicFiltering;
+    if (vk_device_features.imageCubeArray)
+        device_features |= Device::Features::ImageCubeArray;
+    return device_features;
 }
 
 DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)
@@ -388,26 +431,24 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  capabilities)
     , m_vk_physical_device(vk_physical_device)
+    , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
 
     using namespace magic_enum::bitwise_operators;
     if (const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
-        !magic_enum::flags::enum_contains(device_supported_features & capabilities.features))
+        !static_cast<bool>(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
-    const std::vector<vk::QueueFamilyProperties> vk_queue_family_properties = vk_physical_device.getQueueFamilyProperties();
-    std::vector<uint32_t> reserved_queues_count_per_family(vk_queue_family_properties.size(), 0U);
+    std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
 
     if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
         throw IncompatibleException("Device does not support some of required extensions");
 
-    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count,
-                       vk_queue_family_properties, reserved_queues_count_per_family,
+    ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count,
-                       vk_queue_family_properties, reserved_queues_count_per_family);
+    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count, reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;
@@ -425,7 +466,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-    if (magic_enum::flags::enum_contains(capabilities.features & Device::Features::BasicRendering))
+    if (static_cast<bool>(capabilities.features & Device::Features::BasicRendering))
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
@@ -434,25 +475,34 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
                    [](const std::string_view& extension_name) { return extension_name.data(); });
 
+    // Enable physical device features:
+    vk::PhysicalDeviceFeatures vk_device_features;
+    vk_device_features.samplerAnisotropy = static_cast<bool>(capabilities.features & Features::AnisotropicFiltering);
+    vk_device_features.imageCubeArray    = static_cast<bool>(capabilities.features & Features::ImageCubeArray);
+
     // Add descriptions of enabled device features:
-    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_info(true);
-    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR vk_device_timeline_semaphores_info(true);
-    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names);
-    vk_device_info.setPNext(&vk_device_dynamic_state_info);
-    vk_device_dynamic_state_info.setPNext(&vk_device_timeline_semaphores_info);
+    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
+    vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR    vk_device_timeline_semaphores_feature(true);
+    vk::PhysicalDeviceSynchronization2FeaturesKHR     vk_device_synchronization_2_feature(true);
+    vk::PhysicalDeviceHostQueryResetFeatures          vk_device_host_query_reset_feature(true);
+    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
+    vk_device_info.setPNext(&vk_device_dynamic_state_feature);
+    vk_device_dynamic_state_feature.setPNext(&vk_device_timeline_semaphores_feature);
+    vk_device_timeline_semaphores_feature.setPNext(&vk_device_synchronization_2_feature);
+    vk_device_synchronization_2_feature.setPNext(&vk_device_host_query_reset_feature);
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
 }
 
-void DeviceVK::SetName(const std::string& name)
+bool DeviceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (!DeviceBase::SetName(name))
+        return false;
 
-    DeviceBase::SetName(name);
     SetVulkanObjectName(m_vk_unique_device.get(), m_vk_unique_device.get(), name.c_str());
+    return true;
 }
 
 bool DeviceVK::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const
@@ -507,8 +557,14 @@ Opt<uint32_t> DeviceVK::FindMemoryType(uint32_t type_filter, vk::MemoryPropertyF
     return std::nullopt;
 }
 
+const vk::QueueFamilyProperties& DeviceVK::GetNativeQueueFamilyProperties(uint32_t queue_family_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(queue_family_index, m_vk_queue_family_properties.size(), "invalid queue family index");
+    return m_vk_queue_family_properties[queue_family_index];
+}
+
 void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queues_count,
-                                  const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                                   std::vector<uint32_t>& reserved_queues_count_per_family,
                                   const vk::SurfaceKHR& vk_surface)
 {
@@ -516,12 +572,14 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
     if (!queues_count)
         return;
 
-    const vk::QueueFlagBits queue_flags = GetQueueFlagBitsByType(cmd_list_type);
-    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(vk_queue_family_properties, queue_flags, queues_count,
+    const vk::QueueFlags queue_flags = GetQueueFlagsByType(cmd_list_type);
+    const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(m_vk_queue_family_properties, queue_flags, queues_count,
                                                                           reserved_queues_count_per_family, m_vk_physical_device, vk_surface);
     if (!vk_queue_family_index)
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
 
+    META_CHECK_ARG_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
+    META_CHECK_ARG_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
     const auto queue_family_reservation_it = std::find_if(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(),
                                                           [&vk_queue_family_index](const auto& type_and_queue_family_reservation)
                                                           { return type_and_queue_family_reservation.second->GetFamilyIndex() == *vk_queue_family_index; });
@@ -536,6 +594,9 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
             ? std::make_shared<QueueFamilyReservationVK>(*vk_queue_family_index, queue_flags, queues_count, static_cast<bool>(vk_surface))
             : queue_family_reservation_it->second
     );
+
+    META_LOG("Vulkan command queue family [{}] was reserved for allocating {} {} queues.",
+             *vk_queue_family_index, queues_count, magic_enum::enum_name(cmd_list_type));
 }
 
 System& System::Get()
@@ -547,6 +608,9 @@ System& System::Get()
 
 SystemVK::SystemVK()
     : m_vk_unique_instance(CreateVulkanInstance(m_vk_loader, {}, PlatformVK::GetVulkanInstanceRequiredExtensions(), VK_API_VERSION_1_1))
+#ifndef NDEBUG
+    , m_vk_unique_debug_utils_messanger(m_vk_unique_instance.get().createDebugUtilsMessengerEXTUnique(MakeDebugUtilsMessengerCreateInfoEXT()))
+#endif
 {
     META_FUNCTION_TASK();
 }

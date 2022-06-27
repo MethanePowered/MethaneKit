@@ -24,10 +24,12 @@ Base implementation of the command list interface.
 #pragma once
 
 #include "ObjectBase.h"
+#include "QueryBuffer.h"
 
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Checks.hpp>
@@ -47,14 +49,17 @@ class ProgramBindingsBase;
 class CommandListBase
     : public ObjectBase
     , public virtual CommandList // NOSONAR
+    , public Data::Emitter<ICommandListCallback>
 {
     friend class CommandQueueBase;
 
 public:
     struct CommandState final
     {
-        Ptr<ProgramBindingsBase> program_bindings_ptr;
-        Ptrs<ObjectBase>         retained_resources;
+        // Raw pointer is used for program bindings instead of smart pointer for performance reasons
+        // to get rid of shared_from_this() overhead required to acquire smart pointer from reference
+        const ProgramBindingsBase* program_bindings_ptr;
+        Ptrs<ObjectBase>           retained_resources;
     };
 
     class DebugGroupBase
@@ -65,7 +70,7 @@ public:
         explicit DebugGroupBase(const std::string& name);
 
         // Object overrides
-        void SetName(const std::string&) override;
+        bool SetName(const std::string&) override;
 
         // DebugGroup interface
         DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
@@ -89,21 +94,21 @@ public:
     void  SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
-    Data::TimeRange GetGpuTimeRange(bool) const override { return { 0U, 0U }; }
-    CommandQueue& GetCommandQueue() override;
+    Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
+    CommandQueue& GetCommandQueue() final;
 
     // CommandListBase interface
-    virtual void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {});
-    virtual void Complete(uint32_t frame_index); // Called from command queue thread, which is tracking GPU execution
+    virtual void Execute(const CompletedCallback& completed_callback = {});
+    virtual void Complete(); // Called from command queue thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(DebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    CommandQueueBase&               GetCommandQueueBase();
-    const CommandQueueBase&         GetCommandQueueBase() const;
-    const Ptr<ProgramBindingsBase>& GetProgramBindings() const noexcept  { return GetCommandState().program_bindings_ptr; }
-    Ptr<CommandListBase>            GetCommandListPtr()                  { return GetPtr<CommandListBase>(); }
+    CommandQueueBase&          GetCommandQueueBase();
+    const CommandQueueBase&    GetCommandQueueBase() const;
+    const ProgramBindingsBase* GetProgramBindingsPtr() const noexcept   { return GetCommandState().program_bindings_ptr; }
+    Ptr<CommandListBase>       GetCommandListPtr()                      { return GetPtr<CommandListBase>(); }
 
     inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
     inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
@@ -119,17 +124,18 @@ protected:
     virtual void ResetCommandState();
     virtual void ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior);
 
-    CommandState&       GetCommandState()           { return m_command_state; }
-    const CommandState& GetCommandState() const     { return m_command_state; }
+    CommandState&       GetCommandState()               { return m_command_state; }
+    const CommandState& GetCommandState() const         { return m_command_state; }
 
     void        SetCommandListState(State state);
     void        SetCommandListStateNoLock(State state);
-    bool        IsExecutingOnAnyFrame() const               { return m_state == State::Executing; }
-    bool        IsCommitted(uint32_t frame_index) const     { return m_state == State::Committed && m_committed_frame_index == frame_index; }
-    bool        IsCommitted() const                         { return IsCommitted(GetCurrentFrameIndex()); }
-    bool        IsExecuting(uint32_t frame_index) const     { return m_state == State::Executing && m_committed_frame_index == frame_index; }
-    bool        IsExecuting() const                         { return IsExecuting(GetCurrentFrameIndex()); }
-    uint32_t    GetCurrentFrameIndex() const;
+    bool        IsExecutingOnAnyFrame() const           { return m_state == State::Executing; }
+    bool        IsCommitted() const                     { return m_state == State::Committed; }
+    bool        IsExecuting() const                     { return m_state == State::Executing; }
+
+    void InitializeTimestampQueries();
+    void BeginGpuZone();
+    void EndGpuZone();
 
     inline void VerifyEncodingState() const
     {
@@ -141,55 +147,63 @@ protected:
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroupBase>>;
 
-    void CompleteInternal(uint32_t frame_index);
+    void CompleteInternal();
 
     const Type                  m_type;
-    Ptr<CommandQueue>           m_command_queue_ptr;
+    Ptr<CommandQueueBase>       m_command_queue_ptr;
     CommandState                m_command_state;
     DebugGroupStack             m_open_debug_groups;
-    uint32_t                    m_committed_frame_index = 0;
     CompletedCallback           m_completed_callback;
     State                       m_state = State::Pending;
     mutable TracyLockable(std::mutex, m_state_mutex)
     TracyLockable(std::mutex,   m_state_change_mutex)
     std::condition_variable_any m_state_change_condition_var;
+    TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;
 
-    TRACY_GPU_SCOPE_TYPE                  m_tracy_gpu_scope;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_construct_location_ptr;
-    UniquePtr<TRACE_SOURCE_LOCATION_TYPE> m_tracy_reset_location_ptr;
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_begin_timestamp_query_ptr;
+    Ptr<TimestampQueryBuffer::TimestampQuery> m_end_timestamp_query_ptr;
+#endif
 };
 
 class CommandListSetBase
     : public CommandListSet
+    , protected Data::Receiver<IObjectCallback>
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs);
+    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // CommandListSet overrides
-    Data::Size               GetCount() const noexcept override { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<CommandList>& GetRefs() const noexcept override  { return m_refs; }
-    CommandList&             operator[](Data::Index index) const override;
+    Data::Size               GetCount() const noexcept final        { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<CommandList>& GetRefs() const noexcept final         { return m_refs; }
+    CommandList&             operator[](Data::Index index) const final;
+    const Opt<Data::Index>&  GetFrameIndex() const noexcept final   { return m_frame_index_opt; }
 
     // CommandListSetBase interface
-    virtual void Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback);
+    virtual void Execute(const CommandList::CompletedCallback& completed_callback);
     virtual void WaitUntilCompleted() = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
-    Ptr<CommandListSetBase>      GetPtr()                                   { return shared_from_this(); }
-    const Refs<CommandListBase>& GetBaseRefs() const noexcept               { return m_base_refs; }
-    Data::Index                  GetExecutingOnFrameIndex() const noexcept  { return m_executing_on_frame_index; }
-    const CommandListBase&       GetCommandListBase(Data::Index index) const;
-    CommandQueueBase&            GetCommandQueueBase()                      { return m_base_refs.back().get().GetCommandQueueBase(); }
-    const CommandQueueBase&      GetCommandQueueBase() const                { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] Ptr<CommandListSetBase>      GetPtr()                                     { return shared_from_this(); }
+    [[nodiscard]] const Refs<CommandListBase>& GetBaseRefs() const noexcept                 { return m_base_refs; }
+    [[nodiscard]] const CommandListBase&       GetCommandListBase(Data::Index index) const;
+    [[nodiscard]] CommandQueueBase&            GetCommandQueueBase()                        { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const CommandQueueBase&      GetCommandQueueBase() const                  { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const std::string&           GetCombinedName();
+
+protected:
+    // IObjectCallback interface
+    void OnObjectNameChanged(Object&, const std::string&) override;
 
 private:
     Refs<CommandList>     m_refs;
     Refs<CommandListBase> m_base_refs;
     Ptrs<CommandListBase> m_base_ptrs;
-    Data::Index           m_executing_on_frame_index = 0U;
+    Opt<Data::Index>      m_frame_index_opt;
+    std::string           m_combined_name;
 
     mutable TracyLockable(std::mutex, m_command_lists_mutex)
     mutable std::atomic<bool> m_is_executing = false;

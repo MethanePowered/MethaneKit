@@ -129,10 +129,10 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(render_pattern);
+    m_ui_context_ptr = std::make_unique<Context>(render_cmd_queue, render_pattern);
     m_frame_size    = UnitSize(Units::Pixels, frame_size);
     m_text_margins  = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
 
@@ -142,7 +142,7 @@ void AppBase::InitUI(gfx::RenderPattern& render_pattern, const gfx::FrameSize& f
         Badge::Settings logo_badge_settings { "Methane Logo" };
         logo_badge_settings.blend_color = m_app_settings.logo_badge_color;
         m_logo_badge_ptr = std::make_shared<Badge>(
-            *m_ui_context_ptr, Data::TextureProvider::Get(), "Logo/MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
+            *m_ui_context_ptr, Data::TextureProvider::Get(), "MethaneLogoNameWatermark.png", std::move(logo_badge_settings)
         );
     }
 
@@ -452,6 +452,12 @@ Font& AppBase::GetMainFont()
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
     ).GetPtr();
     return *m_main_font_ptr;
+}
+
+const Data::Provider& AppBase::GetFontProvider() const noexcept
+{
+    META_FUNCTION_TASK();
+    return Data::FontProvider::Get();
 }
 
 } // namespace Methane::UserInterface

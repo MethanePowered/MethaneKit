@@ -94,13 +94,13 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
     using ColorChannels = RenderState::Blending::ColorChannels;
 
     UINT8 d3d12_color_write_mask = 0;
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Red))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;   // NOSONAR
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Green))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Green))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN; // NOSONAR
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Blue))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Blue))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;  // NOSONAR
-    if (magic_enum::flags::enum_contains(rt_write_mask & ColorChannels::Alpha))
+    if (static_cast<bool>(rt_write_mask & ColorChannels::Alpha))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA; // NOSONAR
     return d3d12_color_write_mask;
 };
@@ -383,31 +383,33 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Groups state_grou
     const auto& dx_render_command_list = static_cast<RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
-    if (magic_enum::flags::enum_contains(state_groups & Groups::Program)    ||
-        magic_enum::flags::enum_contains(state_groups & Groups::Rasterizer) ||
-        magic_enum::flags::enum_contains(state_groups & Groups::Blending)   ||
-        magic_enum::flags::enum_contains(state_groups & Groups::DepthStencil))
+    if (static_cast<bool>(state_groups & Groups::Program)    ||
+        static_cast<bool>(state_groups & Groups::Rasterizer) ||
+        static_cast<bool>(state_groups & Groups::Blending)   ||
+        static_cast<bool>(state_groups & Groups::DepthStencil))
     {
         d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
     }
 
     d3d12_command_list.SetGraphicsRootSignature(GetProgramDX().GetNativeRootSignature().Get());
 
-    if (magic_enum::flags::enum_contains(state_groups & Groups::BlendingColor))
+    if (static_cast<bool>(state_groups & Groups::BlendingColor))
     {
         d3d12_command_list.OMSetBlendFactor(m_blend_factor.data());
     }
 }
 
-void RenderStateDX::SetName(const std::string& name)
+bool RenderStateDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::SetName(name);
+    if (!RenderStateBase::SetName(name))
+        return false;
 
     if (m_cp_pipeline_state)
     {
         m_cp_pipeline_state->SetName(nowide::widen(name).c_str());
     }
+    return true;
 }
 
 void RenderStateDX::InitializeNativePipelineState()

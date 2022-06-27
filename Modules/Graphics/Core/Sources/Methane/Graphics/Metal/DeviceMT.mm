@@ -126,7 +126,7 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
     using namespace magic_enum::bitwise_operators;
 
     Device::Features device_supported_features = DeviceMT::GetSupportedFeatures(mtl_device);
-    if (!magic_enum::flags::enum_contains(device_supported_features & GetDeviceCapabilities().features))
+    if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
         return;
 
     SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device, GetDeviceCapabilities()));

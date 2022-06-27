@@ -38,26 +38,16 @@ DirectX 12 implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-static std::string GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix)
-{
-    return base_name.empty() ? std::string() : fmt::format("{} {}", base_name, suffix);
-}
-
-static std::string GetTrailingCommandListDebugName(std::string_view base_name, bool is_beginning)
-{
-    return GetParallelCommandListDebugName(base_name, is_beginning ? "[Beginning]" : "[Ending]");
-}
-
 Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass)
-    : ParallelRenderCommandListBase(cmd_buffer, render_pass)
-    , m_beginning_command_list(cmd_buffer, render_pass)
-    , m_ending_command_list(cmd_buffer, render_pass)
+ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass)
+    : ParallelRenderCommandListBase(cmd_queue, render_pass)
+    , m_beginning_command_list(cmd_queue, render_pass)
+    , m_ending_command_list(cmd_queue, render_pass)
 {
     META_FUNCTION_TASK();
 
@@ -102,20 +92,20 @@ void ParallelRenderCommandListDX::SetEndingResourceBarriers(const Resource::Barr
     m_ending_command_list.SetResourceBarriers(resource_barriers);
 }
 
-void ParallelRenderCommandListDX::SetName(const std::string& name)
+bool ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (!ParallelRenderCommandListBase::SetName(name))
+        return false;
 
     m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
     m_ending_command_list.SetName(GetTrailingCommandListDebugName(name, false));
-
-    ParallelRenderCommandListBase::SetName(name);
+    return true;
 }
 
 void ParallelRenderCommandListDX::Commit()
 {
     META_FUNCTION_TASK();
-
     ParallelRenderCommandListBase::Commit();
 
     // Render pass was begun in "beginning" command list,
@@ -124,42 +114,37 @@ void ParallelRenderCommandListDX::Commit()
     m_beginning_command_list.Commit();
 }
 
-void ParallelRenderCommandListDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandListDX::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-
-    m_beginning_command_list.Execute(frame_index);
+    m_beginning_command_list.Execute();
     
-    ParallelRenderCommandListBase::Execute(frame_index, completed_callback);
+    ParallelRenderCommandListBase::Execute(completed_callback);
 
-    m_ending_command_list.Execute(frame_index);
+    m_ending_command_list.Execute();
 }
 
-void ParallelRenderCommandListDX::Complete(uint32_t frame_index)
+void ParallelRenderCommandListDX::Complete()
 {
     META_FUNCTION_TASK();
+    m_beginning_command_list.Complete();
 
-    m_beginning_command_list.Complete(frame_index);
+    ParallelRenderCommandListBase::Complete();
 
-    ParallelRenderCommandListBase::Complete(frame_index);
-
-    m_ending_command_list.Complete(frame_index);
+    m_ending_command_list.Complete();
 }
 
 ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetNativeCommandLists() const
 {
     META_FUNCTION_TASK();
-
     D3D12CommandLists dx_command_lists;
-    const Ptrs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
+    const Refs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
     dx_command_lists.push_back(&m_beginning_command_list.GetNativeCommandList());
 
-    for (const Ptr<RenderCommandList>& command_list_ptr : parallel_command_lists)
+    for (const Ref<RenderCommandList>& command_list_ref : parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(command_list_ptr);
-        const auto& dx_command_list = static_cast<const RenderCommandListDX&>(*command_list_ptr);
-        dx_command_lists.push_back(&dx_command_list.GetNativeCommandList());
+        dx_command_lists.push_back(&static_cast<const RenderCommandListDX&>(command_list_ref.get()).GetNativeCommandList());
     }
 
     dx_command_lists.push_back(&m_ending_command_list.GetNativeCommandList());

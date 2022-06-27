@@ -51,9 +51,9 @@ public:
     {
         META_FUNCTION_TASK();
 
-        const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
-        const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
-        const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+        const bool has_colors   = BaseMeshT::HasVertexField(Mesh::VertexField::Color);
+        const bool has_normals  = BaseMeshT::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_texcoord = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
 
         for (size_t face_vertex_idx = 0; face_vertex_idx < Mesh::Mesh::GetFacePositionCount(); ++face_vertex_idx)
         {
@@ -80,7 +80,7 @@ public:
                                      ((face_type == FaceType::XZ || face_type == FaceType::YZ) && m_depth_pos >= 0);
 #endif
 
-        const Mesh::Index face_indices_count = Mesh::GetFaceIndicesCount();
+        const Mesh::Index face_indices_count = BaseMeshT::GetFaceIndicesCount();
         Mesh::ResizeIndices(face_indices_count);
         for(Mesh::Index index = 0; index < face_indices_count; ++index)
         {
@@ -109,7 +109,7 @@ private:
     void InitVertexNormal(const FaceType& face_type, VType& vertex)
     {
         Mesh::Normal& vertex_normal = BaseMeshT::template GetVertexField<Mesh::Normal>(vertex, Mesh::VertexField::Normal);
-        const float depth_norm      = m_depth_pos ? m_depth_pos / abs(m_depth_pos) : 1.F;
+        const float depth_norm      = m_depth_pos >= 0.F ? 1.F : -1.F;
         switch (face_type)
         {
         case FaceType::XY: vertex_normal = Mesh::Normal(0.F, 0.F, depth_norm); break;

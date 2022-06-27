@@ -8,9 +8,15 @@ trigger:
     - develop
   paths:
     exclude:
+    - .github/**
+    - .idea/**
+    - .vscode/**
+    - .gitpod.yml
+    - Docs/**
     - Build/Windows/Build.bat
     - Build/Unix/Build.sh
     - README.md
+    - SECURITY.md
     - LICENSE
 
 pr:
@@ -262,7 +268,7 @@ jobs:
     vmImage: 'ubuntu-20.04'
 
   variables:
-    cmake.ConfigurePreset: 'Make-Lin-VK-Default'
+    cmake.ConfigurePreset: 'Make-Lin-VK-Release'
     cmake.BuildPreset: 'Make-Lin-VK-Release'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
 
@@ -272,7 +278,7 @@ jobs:
       extraInitSteps:
         - bash: |
             sudo apt-get update
-            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
+            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
           displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_Profiling
@@ -292,7 +298,7 @@ jobs:
       extraInitSteps:
         - bash: |
             sudo apt-get update
-            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev
+            sudo apt-get -y install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
           displayName: 'Install prerequisite packages on Linux'
 
 - job: Ubuntu_VK_SonarScan
@@ -318,7 +324,7 @@ jobs:
         extraInitSteps:
           - bash: |
               sudo apt-get update
-              sudo apt-get -y install lcov xcb libx11-dev libx11-xcb-dev
+              sudo apt-get -y install lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
             displayName: 'Install prerequisite packages on Linux'
         extraScanSteps:
           - bash: |

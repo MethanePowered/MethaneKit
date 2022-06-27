@@ -37,7 +37,8 @@ class RenderContextBase
     , public RenderContext
 {
 public:
-    RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
+    RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
+                      tf::Executor& parallel_executor, const Settings& settings);
 
     // Context interface
     [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
@@ -64,6 +65,10 @@ protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete(bool signal_frame_fence = true);
     void UpdateFrameBufferIndex();
+
+    // Rarely actual frame buffers count in swap-chain may be different from the requested,
+    // so it may be changed from RenderContextXX::Initialize() method
+    void InvalidateFrameBuffersCount(uint32_t frame_buffers_count);
 
     Fence& GetCurrentFrameFence() const;
     Fence& GetRenderFence() const;

@@ -105,8 +105,8 @@ public:
         Parameters               parameters;
     };
 
-    AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings);
-    AsteroidsArray(gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state);
+    AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings);
+    AsteroidsArray(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const Settings& settings, ContentState& state);
 
     [[nodiscard]] const Settings& GetSettings() const         { return m_settings; }
     [[nodiscard]] const Ptr<ContentState>& GetState() const   { return m_content_state_ptr; }
@@ -117,11 +117,9 @@ public:
                                                      const Ptr<gfx::Buffer>& asteroids_uniforms_buffer_ptr,
                                                      Data::Index frame_index) const;
 
-    Ptr<gfx::Resource::Barriers> CreateBeginningResourceBarriers(gfx::Buffer& constants_buffer);
-
     bool Update(double elapsed_seconds, double delta_seconds);
-    void Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
-    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void Draw(gfx::RenderCommandList& cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
+    void DrawParallel(gfx::ParallelRenderCommandList& parallel_cmd_list, const gfx::InstancedMeshBufferBindings& buffer_bindings, gfx::ViewState& view_state);
 
     [[nodiscard]] bool IsMeshLodColoringEnabled() const             { return m_mesh_lod_coloring_enabled; }
     void SetMeshLodColoringEnabled(bool mesh_lod_coloring_enabled)  { m_mesh_lod_coloring_enabled = mesh_lod_coloring_enabled; }
@@ -138,14 +136,15 @@ private:
 
     void UpdateAsteroidUniforms(const Asteroid::Parameters& asteroid_parameters, const hlslpp::float3& eye_position, float elapsed_radians);
 
-    const Settings            m_settings;
-    Ptr<ContentState>         m_content_state_ptr;
-    Textures                  m_unique_textures;
-    Ptr<gfx::Sampler>         m_texture_sampler_ptr;
-    Ptr<gfx::RenderState>     m_render_state_ptr;
-    MeshSubsetByInstanceIndex m_mesh_subset_by_instance_index;
-    bool                      m_mesh_lod_coloring_enabled = false;
-    float                     m_min_mesh_lod_screen_size_log_2;
+    const Settings               m_settings;
+    const Ptr<gfx::CommandQueue> m_render_cmd_queue_ptr;
+    Ptr<ContentState>            m_content_state_ptr;
+    Textures                     m_unique_textures;
+    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
+    Ptr<gfx::RenderState>        m_render_state_ptr;
+    MeshSubsetByInstanceIndex    m_mesh_subset_by_instance_index;
+    bool                         m_mesh_lod_coloring_enabled = false;
+    float                        m_min_mesh_lod_screen_size_log_2;
 };
 
 } // namespace Methane::Samples

@@ -5,13 +5,13 @@
     <mapping directory="$PROJECT_DIR$/Externals" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/BoostNowide" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CLI11" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/CLI11/extern/googletest" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMRC" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/CMakeModules" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Catch2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/DirectXTex" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/FMT" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/FreeType2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Externals/FreeType2/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/HLSLpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/IttApi" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/MagicEnum" vcs="Git" />
@@ -19,8 +19,6 @@
     <mapping directory="$PROJECT_DIR$/Externals/STB" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/TaskFlow" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Tracy" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Externals/Tracy/vcpkg/vcpkg/downloads/git-tmp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Externals/Vulkan-Headers" vcs="Git" />
   </component>
 </project>

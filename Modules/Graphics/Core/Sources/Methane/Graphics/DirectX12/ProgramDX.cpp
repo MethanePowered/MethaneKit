@@ -72,13 +72,13 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
 }
 
 [[nodiscard]]
-static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
+static DescriptorHeapDX::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RANGE_TYPE range_type) noexcept
 {
     META_FUNCTION_TASK();
     if (range_type == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER)
-        return DescriptorHeap::Type::Samplers;
+        return DescriptorHeapDX::Type::Samplers;
     else
-        return DescriptorHeap::Type::ShaderResources;
+        return DescriptorHeapDX::Type::ShaderResources;
 }
 
 [[nodiscard]]
@@ -95,7 +95,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_typ
 };
 
 static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>& descriptor_ranges, std::vector<CD3DX12_ROOT_PARAMETER1>& root_parameters,
-                                          std::map<DescriptorHeap::Type, DescriptorsCountByAccess>& descriptor_offset_by_heap_type,
+                                          std::map<DescriptorHeapDX::Type, DescriptorsCountByAccess>& descriptor_offset_by_heap_type,
                                           ProgramBindingsDX::ArgumentBindingDX& argument_binding,
                                           const ProgramBindingsDX::ArgumentBindingDX::SettingsDX& bind_settings,
                                           const D3D12_SHADER_VISIBILITY& shader_visibility)
@@ -111,7 +111,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     descriptor_ranges.emplace_back(range_type, bind_settings.resource_count, bind_settings.point, bind_settings.space, range_flags);
     root_parameters.back().InitAsDescriptorTable(1, &descriptor_ranges.back(), shader_visibility);
 
-    const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
+    const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByRangeType(range_type);
     DescriptorsCountByAccess& descriptor_offsets = descriptor_offset_by_heap_type[heap_type];
     uint32_t& descriptor_offset = descriptor_offsets[bind_settings.argument.GetAccessorType()];
     argument_binding.SetDescriptorRange({ heap_type, descriptor_offset, bind_settings.resource_count });
@@ -133,13 +133,28 @@ ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
     InitRootSignature();
 }
 
-void ProgramDX::SetName(const std::string& name)
+ProgramDX::~ProgramDX()
 {
     META_FUNCTION_TASK();
-    ObjectBase::SetName(name);
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    for (const auto& [heap_and_access_type, heap_reservation] : m_constant_descriptor_range_by_heap_and_access_type)
+    {
+        if (heap_reservation.range.IsEmpty())
+            continue;
+
+        heap_reservation.heap.get().ReleaseRange(heap_reservation.range);
+    }
+}
+
+bool ProgramDX::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (!ProgramBase::SetName(name))
+        return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
     m_cp_root_signature->SetName(nowide::widen(name).c_str());
+    return true;
 }
 
 void ProgramDX::InitRootSignature()
@@ -154,7 +169,7 @@ void ProgramDX::InitRootSignature()
     descriptor_ranges.reserve(binding_by_argument.size());
     root_parameters.reserve(binding_by_argument.size());
 
-    std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptor_offset_by_heap_type;
+    std::map<DescriptorHeapDX::Type, DescriptorsCountByAccess> descriptor_offset_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
@@ -215,6 +230,37 @@ void ProgramDX::InitRootSignature()
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
     ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
+}
+
+DescriptorHeapDX::Range ProgramDX::ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
+{
+    META_FUNCTION_TASK();
+    if (access_type == ArgumentAccessor::Type::Mutable)
+    {
+        DescriptorHeapDX::Range descriptor_range = heap.ReserveRange(range_length);
+        META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+        return descriptor_range;
+    }
+
+    const DescriptorHeapDX::Type heap_type = heap.GetSettings().type;
+    const auto heap_and_access_type      = std::make_pair(heap_type, access_type);
+
+    std::scoped_lock lock_guard(m_constant_descriptor_ranges_reservation_mutex);
+    if (auto constant_descriptor_range_it = m_constant_descriptor_range_by_heap_and_access_type.find(heap_and_access_type);
+        constant_descriptor_range_it != m_constant_descriptor_range_by_heap_and_access_type.end())
+    {
+        const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
+        META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
+                                  "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
+        META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
+                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
+        return heap_reservation.range;
+    }
+
+    DescriptorHeapDX::Range descriptor_range = heap.ReserveRange(range_length);
+    META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+    m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
+    return descriptor_range;
 }
 
 const IContextDX& ProgramDX::GetContextDX() const noexcept

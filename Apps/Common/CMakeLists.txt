@@ -3,24 +3,29 @@ set(TARGET MethaneAppsCommon)
 get_module_dirs("Methane/Samples")
 
 set(HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}/AppSettings.hpp
+    ${INCLUDE_DIR}/AppSettings.hpp
+    ${INCLUDE_DIR}/TextureLabeler.h
 )
 
-add_library(${TARGET} INTERFACE)
+set(SOURCES
+    ${SOURCES_DIR}/TextureLabeler.cpp
+)
 
-target_sources(${TARGET}
-    INTERFACE
-        ${HEADERS}
+add_library(${TARGET} STATIC
+    ${HEADERS}
+    ${SOURCES}
 )
 
 target_include_directories(${TARGET}
-    INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Include
+    PUBLIC
+        Include
 )
 
 target_link_libraries(${TARGET}
-    INTERFACE
+    PUBLIC
         MethaneGraphicsApp
         MethaneBuildOptions
         magic_enum
+    PRIVATE
+        MethaneUserInterfaceTypography
 )

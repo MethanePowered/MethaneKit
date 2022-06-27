@@ -45,4 +45,10 @@ void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk
     );
 }
 
+template<typename VulkanObjectType>
+void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, const std::string& name)
+{
+    SetVulkanObjectName<VulkanObjectType>(vk_device, vk_object, name.c_str());
+}
+
 } // namespace Methane::Graphics

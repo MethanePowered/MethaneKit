@@ -37,10 +37,13 @@ class ResourceBarriersDX final
     , private Data::Receiver<IResourceCallback>
 {
 public:
+    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+
     explicit ResourceBarriersDX(const Set& barriers);
 
     // ResourceBarriers overrides
-    AddResult AddStateChange(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change) override;
+    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
     bool Remove(const ResourceBarrier::Id& id) override;
 
     [[nodiscard]] const std::vector <D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const
@@ -50,6 +53,7 @@ private:
     // IResourceCallback
     void OnResourceReleased(Resource& resource) override;
 
+    void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
 
     std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;

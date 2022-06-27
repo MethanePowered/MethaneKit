@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ Vulkan implementation of the shader interface.
 #pragma once
 
 #include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Data/MutableChunk.hpp>
 #include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -54,19 +55,23 @@ public:
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
 
-    const Data::Chunk&                     GetNativeByteCode() const noexcept { return *m_byte_code_chunk_ptr; }
-    const vk::ShaderModule&                GetNativeModule() const noexcept   { return m_vk_unique_module.get(); }
+    const Data::Chunk&                     GetNativeByteCode() const noexcept { return m_byte_code_chunk.AsConstChunk(); }
+    const vk::ShaderModule&                GetNativeModule() const;
     const spirv_cross::Compiler&           GetNativeCompiler() const;
     vk::PipelineShaderStageCreateInfo      GetNativeStageCreateInfo() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo(const ProgramVK& program);
+
+    Data::MutableChunk& GetMutableByteCode() noexcept;
+
+    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(Shader::Type shader_type);
 
 private:
     void InitializeVertexInputDescriptions(const ProgramVK& program);
 
     const IContextVK& GetContextVK() const noexcept;
 
-    UniquePtr<Data::Chunk>                           m_byte_code_chunk_ptr;
-    vk::UniqueShaderModule                           m_vk_unique_module;
+    Data::MutableChunk                               m_byte_code_chunk;
+    mutable vk::UniqueShaderModule                   m_vk_unique_module;
     mutable UniquePtr<spirv_cross::Compiler>         m_spirv_compiler_ptr;
     std::vector<vk::VertexInputBindingDescription>   m_vertex_input_binding_descriptions;
     std::vector<vk::VertexInputAttributeDescription> m_vertex_input_attribute_descriptions;

@@ -24,10 +24,10 @@ Base implementation of the context interface.
 #pragma once
 
 #include "ObjectBase.h"
-#include "ResourceManager.h"
 
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -50,6 +50,7 @@ class CommandQueueBase;
 struct CommandQueue;
 struct CommandList;
 struct CommandListSet;
+struct DescriptorManager;
 
 class ContextBase
     : public ObjectBase
@@ -58,7 +59,9 @@ class ContextBase
     , public Data::Emitter<IContextCallback>
 {
 public:
-    ContextBase(DeviceBase& device, tf::Executor& parallel_executor, Type type);
+    ContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
+                tf::Executor& parallel_executor, Type type);
+    ~ContextBase() override;
 
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
@@ -80,13 +83,13 @@ public:
     virtual void Release();
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
-    DeferredAction    GetRequestedAction() const noexcept  { return m_requested_action; }
-    ResourceManager&  GetResourceManager() const noexcept  { return m_resource_manager; }
-    DeviceBase&       GetDeviceBase();
-    const DeviceBase& GetDeviceBase() const;
-    Ptr<DeviceBase>   GetDeviceBasePtr() const noexcept { return m_device_ptr; }
+    DeferredAction     GetRequestedAction() const noexcept { return m_requested_action; }
+    Ptr<DeviceBase>    GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
+    DeviceBase&        GetDeviceBase();
+    const DeviceBase&  GetDeviceBase() const;
+    DescriptorManager& GetDescriptorManager() const;
 
 protected:
     void PerformRequestedAction();
@@ -101,16 +104,18 @@ private:
     using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
     using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
 
-    const Type                  m_type;
-    Ptr<DeviceBase>             m_device_ptr;
-    tf::Executor&               m_parallel_executor;
-    ObjectBase::RegistryBase    m_objects_cache;
-    ResourceManager::Settings   m_resource_manager_init_settings{ true, {}, {} };
-    mutable ResourceManager     m_resource_manager;
-    mutable CommandKitPtrByType m_default_command_kit_ptrs;
-    mutable CommandKitByQueue   m_default_command_kit_ptr_by_queue;
-    mutable DeferredAction      m_requested_action = DeferredAction::None;
-    mutable bool                m_is_completing_initialization = false;
+    template<CommandKit::CommandListPurpose cmd_list_purpose>
+    void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const;
+
+    const Type                       m_type;
+    Ptr<DeviceBase>                  m_device_ptr;
+    UniquePtr<DescriptorManager>     m_descriptor_manager_ptr;
+    tf::Executor&                    m_parallel_executor;
+    ObjectBase::RegistryBase         m_objects_cache;
+    mutable CommandKitPtrByType      m_default_command_kit_ptrs;
+    mutable CommandKitByQueue        m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction           m_requested_action = DeferredAction::None;
+    mutable bool                     m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

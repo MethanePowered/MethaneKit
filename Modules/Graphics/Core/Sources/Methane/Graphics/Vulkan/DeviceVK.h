@@ -37,12 +37,12 @@ namespace Methane::Graphics
 class QueueFamilyReservationVK // NOSONAR
 {
 public:
-    QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlagBits queue_flags, uint32_t queues_count, bool can_present_to_window = false);
+    QueueFamilyReservationVK(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window = false);
     ~QueueFamilyReservationVK();
 
     [[nodiscard]] vk::DeviceQueueCreateInfo MakeDeviceQueueCreateInfo() const noexcept;
     [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept      { return m_family_index; }
-    [[nodiscard]] vk::QueueFlagBits         GetQueueFlags() const noexcept       { return m_queue_flags; }
+    [[nodiscard]] vk::QueueFlags            GetQueueFlags() const noexcept       { return m_queue_flags; }
     [[nodiscard]] uint32_t                  GetQueuesCount() const noexcept      { return m_queues_count; }
     [[nodiscard]] bool                      CanPresentToWindow() const noexcept  { return m_can_present_to_window; }
     [[nodiscard]] const std::vector<float>& GetPriorities() const noexcept       { return m_priorities; }
@@ -54,7 +54,7 @@ public:
 
 private:
     uint32_t           m_family_index;
-    vk::QueueFlagBits  m_queue_flags;
+    vk::QueueFlags     m_queue_flags;
     uint32_t           m_queues_count;
     bool               m_can_present_to_window;
     std::vector<float> m_priorities;
@@ -82,38 +82,38 @@ public:
 
     DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
 
-    // ObjectBase overrides
-    void SetName(const std::string& name) override;
+    // Object interface
+    bool SetName(const std::string& name) override;
 
     [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
     [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
     [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
     [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
-    const vk::PhysicalDevice& GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
-    const vk::Device&         GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
+    const vk::PhysicalDevice&        GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
+    const vk::Device&                GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
+    const vk::QueueFamilyProperties& GetNativeQueueFamilyProperties(uint32_t queue_family_index) const;
 
 private:
     using QueueFamilyReservationByType = std::map<CommandList::Type, Ptr<QueueFamilyReservationVK>>;
 
     void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
-                            const std::vector<vk::QueueFamilyProperties>& vk_queue_family_properties,
                             std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
     bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
 
-    Capabilities                 m_device_caps;
-    vk::PhysicalDevice           m_vk_physical_device;
-    vk::UniqueDevice             m_vk_unique_device;
-    QueueFamilyReservationByType m_queue_family_reservation_by_type;
+    vk::PhysicalDevice                     m_vk_physical_device;
+    std::vector<vk::QueueFamilyProperties> m_vk_queue_family_properties;
+    vk::UniqueDevice                       m_vk_unique_device;
+    QueueFamilyReservationByType           m_queue_family_reservation_by_type;
 };
 
-class SystemVK final : public SystemBase
+class SystemVK final : public SystemBase // NOSONAR - destructor is required in this class
 {
 public:
     SystemVK();
-    ~SystemVK();
+    ~SystemVK() override;
 
     // System interface
     void CheckForChanges() override;
@@ -127,9 +127,10 @@ public:
     const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
 
 private:    
-    vk::DynamicLoader    m_vk_loader;
-    vk::UniqueInstance   m_vk_unique_instance;
-    vk::UniqueSurfaceKHR m_vk_unique_surface;
+    vk::DynamicLoader                m_vk_loader;
+    vk::UniqueInstance               m_vk_unique_instance;
+    vk::UniqueDebugUtilsMessengerEXT m_vk_unique_debug_utils_messanger;
+    vk::UniqueSurfaceKHR             m_vk_unique_surface;
 };
 
 } // namespace Methane::Graphics

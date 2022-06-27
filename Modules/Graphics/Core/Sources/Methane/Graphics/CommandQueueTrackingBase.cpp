@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2021 Evgeny Gorodetskiy
+Copyright 2021-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -22,8 +22,11 @@ Base implementation of the command queue with execution tracking.
 ******************************************************************************/
 
 #include "CommandQueueTrackingBase.h"
+#include "QueryBuffer.h"
 
 #include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Device.h>
+#include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -34,6 +37,19 @@ Base implementation of the command queue with execution tracking.
 
 namespace Methane::Graphics
 {
+
+static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(System::GraphicsApi graphics_api)
+{
+    META_FUNCTION_TASK();
+    switch(graphics_api)
+    {
+    case System::GraphicsApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
+    case System::GraphicsApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
+    case System::GraphicsApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
+    case System::GraphicsApi::Metal:        return Tracy::GpuContext::Type::Metal;
+    default: META_UNEXPECTED_ARG_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
+    }
+};
 
 CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueBase(context, command_lists_type)
@@ -47,7 +63,8 @@ CommandQueueTrackingBase::~CommandQueueTrackingBase()
     META_FUNCTION_TASK();
     try
     {
-        CompleteExecution();
+        // Do not use virtual call in destructor
+        CommandQueueTrackingBase::CompleteExecution();
     }
     catch(const std::exception& ex)
     {
@@ -60,6 +77,25 @@ CommandQueueTrackingBase::~CommandQueueTrackingBase()
     m_execution_waiting_thread.join();
 }
 
+void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
+{
+    META_FUNCTION_TASK();
+    constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
+    m_timestamp_query_buffer_ptr = TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame);
+    if (!m_timestamp_query_buffer_ptr)
+        return;
+
+    const TimestampQueryBuffer::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_buffer_ptr->GetCalibratedTimestamps();
+    InitializeTracyGpuContext(
+        Tracy::GpuContext::Settings(
+            ConvertSystemGraphicsApiToTracyGpuContextType(System::GetGraphicsApi()),
+            calibrated_timestamps.cpu_ts,
+            calibrated_timestamps.gpu_ts,
+            Data::ConvertFrequencyToTickPeriod(m_timestamp_query_buffer_ptr->GetGpuFrequency())
+        )
+    );
+}
+
 void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
@@ -69,23 +105,24 @@ void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const Comm
     {
         m_execution_waiting_thread.join();
         META_CHECK_ARG_NOT_NULL_DESCR(m_execution_waiting_exception_ptr, "Command queue '{}' execution waiting thread has unexpectedly finished", GetName());
-        std::rethrow_exception(m_execution_waiting_exception_ptr);
+        if (m_execution_waiting_exception_ptr)
+            std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
 
-    auto& dx_command_lists = static_cast<CommandListSetBase&>(command_lists);
+    auto& command_lists_base = static_cast<CommandListSetBase&>(command_lists);
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
-    m_executing_command_lists.push(dx_command_lists.GetPtr());
+    m_executing_command_lists.push(command_lists_base.GetPtr());
     m_execution_waiting_condition_var.notify_one();
 }
 
-void CommandQueueTrackingBase::SetName(const std::string& name)
+bool CommandQueueTrackingBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (name == GetName())
-        return;
+    if (!CommandQueueBase::SetName(name))
+        return false;
 
-    CommandQueueBase::SetName(name);
     m_name_changed = true;
+    return true;
 }
 
 void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_index)
@@ -93,7 +130,7 @@ void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_i
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
     while (!m_executing_command_lists.empty() &&
-          (!frame_index.has_value() || m_executing_command_lists.front()->GetExecutingOnFrameIndex() == *frame_index))
+           m_executing_command_lists.front()->GetFrameIndex() == frame_index)
     {
         META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
         m_executing_command_lists.front()->Complete();
@@ -128,6 +165,12 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
 
                 command_list_set_ptr->WaitUntilCompleted();
                 CompleteCommandListSetExecution(*command_list_set_ptr);
+            }
+
+            if (m_timestamp_query_buffer_ptr)
+            {
+                const TimestampQueryBuffer::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_buffer_ptr->Calibrate();
+                GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
         }
         while (m_execution_waiting);

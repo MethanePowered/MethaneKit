@@ -42,14 +42,14 @@ CommandListDebugGroupMT::CommandListDebugGroupMT(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetMT>(command_list_refs);
+    return std::make_shared<CommandListSetMT>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetMT::CommandListSetMT(const Refs<CommandList>& command_list_refs)
-    : CommandListSetBase(std::move(command_list_refs))
+CommandListSetMT::CommandListSetMT(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+    : CommandListSetBase(command_list_refs, frame_index_opt)
 {
     META_FUNCTION_TASK();
 }

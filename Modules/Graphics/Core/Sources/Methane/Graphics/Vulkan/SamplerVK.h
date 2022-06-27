@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -27,18 +27,26 @@ Vulkan implementation of the sampler interface.
 
 #include <Methane/Graphics/SamplerBase.h>
 
+#include <vulkan/vulkan.hpp>
+
 namespace Methane::Graphics
 {
 
 struct IContextVK;
 
-class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler>
+class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler, false>
 {
 public:
-    SamplerVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    SamplerVK(const ContextBase& context, const Settings& settings);
+
+    const vk::Sampler& GetNativeSampler() const noexcept { return m_vk_unique_sampler.get(); }
+
+protected:
+    // ResourceVK override
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
     
 private:
-    void ResetSamplerState();
+    vk::UniqueSampler m_vk_unique_sampler;
 };
 
 } // namespace Methane::Graphics

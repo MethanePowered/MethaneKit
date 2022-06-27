@@ -25,12 +25,15 @@ Vulkan command lists sequence implementation
 #include "CommandQueueVK.h"
 #include "ContextVK.h"
 #include "RenderContextVK.h"
+#include "RenderCommandListVK.h"
+#include "ParallelRenderCommandListVK.h"
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Instrumentation.h>
 
+#include <sstream>
 #include <algorithm>
 
 namespace Methane::Graphics
@@ -45,8 +48,11 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Comma
         if (command_list_ref.get().GetType() != CommandList::Type::Render)
             continue;
 
-        const auto& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
-        for(const Texture::Location& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
+        const auto& render_command_list = dynamic_cast<const RenderCommandListVK&>(command_list_ref.get());
+        if (!render_command_list.HasPass())
+            continue;
+
+        for(const Texture::View& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
         {
             const Texture::Type attach_texture_type = attach_location.GetTexture().GetSettings().type;
             if (attach_texture_type == Texture::Type::FrameBuffer)
@@ -71,40 +77,57 @@ ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetVK>(command_list_refs);
+    return std::make_shared<CommandListSetVK>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs)
-    : CommandListSetBase(command_list_refs)
+CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+    : CommandListSetBase(command_list_refs, frame_index_opt)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_unique_execution_completed_semaphore(m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo()))
     , m_vk_unique_execution_completed_fence(m_vk_device.createFenceUnique(vk::FenceCreateInfo()))
 {
     META_FUNCTION_TASK();
+    const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
+    
     m_vk_command_buffers.reserve(command_list_refs.size());
-    std::transform(command_list_refs.begin(), command_list_refs.end(), std::back_inserter(m_vk_command_buffers),
-                   [](const Ref<CommandList>& command_list_ref)
-                   {
-                       return dynamic_cast<const ICommandListVK&>(command_list_ref.get()).GetNativeCommandBuffer();
-                   });
+    for (const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
+    {
+        const CommandListBase& command_list = command_list_ref.get();
+        const auto& vulkan_command_list = command_list.GetType() == CommandList::Type::ParallelRender
+                                        ? static_cast<const ParallelRenderCommandListVK&>(command_list).GetPrimaryCommandListVK()
+                                        : dynamic_cast<const ICommandListVK&>(command_list_ref.get());
+        m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
+    }
+
+    UpdateNativeDebugName();
 }
 
-void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::Execute(frame_index, completed_callback);
+    CommandListSetBase::Execute(completed_callback);
 
-    const vk::SubmitInfo submit_info(
+    vk::SubmitInfo submit_info(
         GetWaitSemaphores(),
         GetWaitStages(),
         m_vk_command_buffers,
         GetNativeExecutionCompletedSemaphore()
     );
+    
+    Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
+    if (const std::vector<uint64_t>& vk_wait_values = CommandListSetVK::GetWaitValues();
+        !vk_wait_values.empty())
+    {
+        META_CHECK_ARG_EQUAL(vk_wait_values.size(), submit_info.waitSemaphoreCount);
+        vk_timeline_submit_info_opt.emplace(vk_wait_values);
+        submit_info.setPNext(&vk_timeline_submit_info_opt.value());
+    }
 
+    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
     m_vk_device.resetFences(GetNativeExecutionCompletedFence());
     GetCommandQueueVK().GetNativeQueue().submit(submit_info, GetNativeExecutionCompletedFence());
 }
@@ -112,6 +135,7 @@ void CommandListSetVK::Execute(uint32_t frame_index, const CommandList::Complete
 void CommandListSetVK::WaitUntilCompleted()
 {
     META_FUNCTION_TASK();
+    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
     const vk::Result execution_completed_fence_wait_result = m_vk_device.waitForFences(
         GetNativeExecutionCompletedFence(),
         true, std::numeric_limits<uint64_t>::max()
@@ -140,12 +164,8 @@ const std::vector<vk::Semaphore>& CommandListSetVK::GetWaitSemaphores()
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_semaphores;
 
-    m_vk_wait_semaphores.resize(vk_wait_semaphores.size() + 1);
-    if (!vk_wait_semaphores.empty())
-    {
-        m_vk_wait_semaphores.assign(vk_wait_semaphores.begin(), vk_wait_semaphores.end());
-    }
-    m_vk_wait_semaphores.back() = dynamic_cast<const RenderContextVK&>(command_queue.GetContextVK()).GetNativeFrameImageAvailableSemaphore();
+    m_vk_wait_semaphores = vk_wait_semaphores;
+    m_vk_wait_semaphores.push_back(dynamic_cast<const RenderContextVK&>(command_queue.GetContextVK()).GetNativeFrameImageAvailableSemaphore());
     return m_vk_wait_semaphores;
 }
 
@@ -157,13 +177,40 @@ const std::vector<vk::PipelineStageFlags>& CommandListSetVK::GetWaitStages()
     if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_stages;
 
-    m_vk_wait_stages.resize(vk_wait_stages.size() + 1);
-    if (!vk_wait_stages.empty())
-    {
-        m_vk_wait_stages.assign(vk_wait_stages.begin(), vk_wait_stages.end());
-    }
-    m_vk_wait_stages.back() = m_vk_wait_frame_buffer_rendering_on_stages;
+    m_vk_wait_stages = vk_wait_stages;
+    m_vk_wait_stages.push_back(m_vk_wait_frame_buffer_rendering_on_stages);
     return m_vk_wait_stages;
+}
+
+const std::vector<uint64_t>& CommandListSetVK::GetWaitValues()
+{
+    META_FUNCTION_TASK();
+    const CommandQueueVK& command_queue = GetCommandQueueVK();
+    const CommandQueueVK::WaitInfo& wait_before_exec = command_queue.GetWaitBeforeExecuting();
+    META_CHECK_ARG_EQUAL(wait_before_exec.wait_values.size(), wait_before_exec.semaphores.size());
+
+    const std::vector<uint64_t>& vk_wait_values = wait_before_exec.wait_values;
+    if (!m_vk_wait_frame_buffer_rendering_on_stages || vk_wait_values.empty())
+        return vk_wait_values;
+
+    m_vk_wait_values = vk_wait_values;
+    m_vk_wait_values.push_back(0U);
+    return m_vk_wait_values;
+}
+
+void CommandListSetVK::OnObjectNameChanged(Object& object, const std::string& old_name)
+{
+    META_FUNCTION_TASK();
+    CommandListSetBase::OnObjectNameChanged(object, old_name);
+    UpdateNativeDebugName();
+}
+
+void CommandListSetVK::UpdateNativeDebugName()
+{
+    META_FUNCTION_TASK();
+    const std::string execution_completed_name = fmt::format("{} Execution Completed", GetCombinedName());
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_semaphore.get(), execution_completed_name);
+    SetVulkanObjectName(m_vk_device, m_vk_unique_execution_completed_fence.get(), execution_completed_name);
 }
 
 } // namespace Methane::Graphics

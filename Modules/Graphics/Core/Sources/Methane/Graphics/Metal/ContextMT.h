@@ -40,6 +40,8 @@ struct IContextMT
     virtual const DeviceMT& GetDeviceMT() const noexcept = 0;
     virtual CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) = 0;
     virtual const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name = "") const = 0;
+
+    virtual ~IContextMT() = default;
 };
 
 } // namespace Methane::Graphics

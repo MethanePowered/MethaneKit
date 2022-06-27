@@ -15,7 +15,7 @@ set(HEADERS
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/ResourceBarriers.h
-    ${INCLUDE_DIR}/SubResource.h
+    ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
@@ -50,9 +50,12 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.h
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
         ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
@@ -114,8 +117,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.hh
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapMT.mm
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerMT.h
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
@@ -148,7 +151,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     set(GRAPHICS_API_SOURCES
         ${SOURCES_GRAPHICS_DIR}/PlatformVK.h
         ${SOURCES_GRAPHICS_DIR}/PlatformVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.${CPP_EXT}
+        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.${CPP_EXT}
         ${SOURCES_GRAPHICS_DIR}/UtilsVK.hpp
         ${SOURCES_GRAPHICS_DIR}/TypesVK.h
         ${SOURCES_GRAPHICS_DIR}/TypesVK.cpp
@@ -168,11 +171,15 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/RenderContextVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderStateVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.h
+        ${SOURCES_GRAPHICS_DIR}/ResourceVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ResourceVK.hpp
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.h
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.h
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapVK.cpp  
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerVK.h
+        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferVK.h
+        ${SOURCES_GRAPHICS_DIR}/QueryBufferVK.cpp
         ${SOURCES_GRAPHICS_DIR}/BufferVK.h
         ${SOURCES_GRAPHICS_DIR}/BufferVK.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureVK.h
@@ -205,7 +212,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
             ${VULKAN_TO_METAL_SOURCES}
         )
         set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
-            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformVK.mm
+            ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.mm
         )
     endif()
 
@@ -239,7 +246,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ProgramBindingsBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
-    ${SOURCES_DIR}/SubResource.cpp
+    ${SOURCES_DIR}/ResourceView.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
@@ -263,15 +270,14 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/RenderCommandListBase.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListBase.h
     ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
+    ${SOURCES_DIR}/DescriptorManager.h
+    ${SOURCES_DIR}/DescriptorManagerBase.h
+    ${SOURCES_DIR}/DescriptorManagerBase.cpp
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
 
     # Other sources
-    ${SOURCES_DIR}/DescriptorHeap.h
-    ${SOURCES_DIR}/DescriptorHeap.cpp
-    ${SOURCES_DIR}/ResourceManager.h
-    ${SOURCES_DIR}/ResourceManager.cpp
     ${SOURCES_DIR}/QueryBuffer.h
     ${SOURCES_DIR}/QueryBuffer.cpp
     ${SOURCES_DIR}/CoreFormatters.hpp
@@ -316,7 +322,7 @@ target_compile_definitions(${TARGET}
     PUBLIC
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
-        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED>
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN VK_NO_PROTOTYPES>

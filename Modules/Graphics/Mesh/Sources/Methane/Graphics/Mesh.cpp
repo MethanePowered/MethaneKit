@@ -106,7 +106,7 @@ Mesh::Index Mesh::GetFaceIndicesCount() noexcept
     return g_face_indices_count;
 }
 
-std::string Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
+std::string_view Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex_field)
 {
     META_FUNCTION_TASK();
 
@@ -127,11 +127,12 @@ Mesh::VertexLayout::IncompatibleException::IncompatibleException(VertexField mis
     META_FUNCTION_TASK();
 }
 
-std::vector<std::string> Mesh::VertexLayout::GetSemantics() const
+std::vector<std::string_view> Mesh::VertexLayout::GetSemantics() const
 {
     META_FUNCTION_TASK();
 
-    std::vector<std::string> semantic_names;
+    std::vector<std::string_view> semantic_names;
+    semantic_names.reserve(size());
     for(VertexField vertex_field : *this)
     {
         semantic_names.emplace_back(GetSemanticByVertexField(vertex_field));

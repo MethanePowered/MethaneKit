@@ -49,7 +49,7 @@ struct ParallelRenderCommandList : virtual CommandList // NOSONAR
     virtual void SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
     virtual void SetEndingResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;
-    [[nodiscard]] virtual const Ptrs<RenderCommandList>& GetParallelCommandLists() const = 0;
+    [[nodiscard]] virtual const Refs<RenderCommandList>& GetParallelCommandLists() const = 0;
     
     using CommandList::Reset;
 };

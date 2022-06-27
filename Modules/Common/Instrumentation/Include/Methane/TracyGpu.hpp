@@ -23,7 +23,11 @@ Tracy GPU instrumentation helpers
 
 #pragma once
 
-#ifdef TRACY_GPU_ENABLE
+#if defined(TRACY_GPU_ENABLE) && defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 1
+#define METHANE_TRACY_GPU_ENABLED
+#endif
+
+#ifdef METHANE_TRACY_GPU_ENABLED
 #include <Tracy.hpp>
 #include <client/TracyProfiler.hpp>
 #include <client/TracyCallstack.hpp>
@@ -43,7 +47,7 @@ class GpuScope;
 
 using QueryId   = uint16_t;
 using Timestamp = int64_t;
-using ThreadId  = uint64_t;
+using ThreadId  = uint32_t;
 
 class GpuContext
 {
@@ -60,52 +64,55 @@ public:
 
     struct Settings
     {
-        Type      type            = Type::Undefined;
-        Timestamp gpu_timestamp   = 0;
-        Timestamp cpu_timestamp   = 0;
-        float     gpu_time_period = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
-        bool      is_thread_local = false;
+        Type      type              = Type::Undefined;
+        Timestamp gpu_timestamp     = 0;
+        Timestamp cpu_timestamp     = 0;
+        Timestamp cpu_ref_timestamp = 0;
+        float     gpu_time_period   = 1.F; // number of nanoseconds required for a timestamp query to be incremented by 1
+        bool      is_thread_local   = false;
 
-#ifdef TRACY_GPU_ENABLE
+#ifdef METHANE_TRACY_GPU_ENABLED
 
         explicit Settings(Type type = Type::Undefined)
             : type(type)
             , gpu_timestamp(tracy::Profiler::GetTime())
             , cpu_timestamp(gpu_timestamp)
+            , cpu_ref_timestamp(cpu_timestamp)
         { }
 
-        Settings(Type type, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
+        Settings(Type type, Timestamp cpu_timestamp, Timestamp gpu_timestamp, float gpu_time_period = 1.F, bool is_thread_local = false)
             : type(type)
             , gpu_timestamp(gpu_timestamp)
-            , cpu_timestamp(tracy::Profiler::GetTime())
+            , cpu_timestamp(cpu_timestamp)
+            , cpu_ref_timestamp(tracy::Profiler::GetTime())
             , gpu_time_period(gpu_time_period)
             , is_thread_local(is_thread_local)
         { }
 
-#else // TRACY_GPU_ENABLE
+#else // METHANE_TRACY_GPU_ENABLED
 
         Settings() = default;
         explicit Settings(Type)
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp)
+        Settings(Type, Timestamp, Timestamp)
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp, float)
+        Settings(Type, Timestamp, Timestamp, float)
         {
             // Intentionally unimplemented: stub
         }
-        Settings(Type, Timestamp, float, bool)
+        Settings(Type, Timestamp, Timestamp, float, bool)
         {
             // Intentionally unimplemented: stub
         }
 
-#endif // TRACY_GPU_ENABLE
+#endif // METHANE_TRACY_GPU_ENABLED
     };
 
-#ifdef TRACY_GPU_ENABLE
+#ifdef METHANE_TRACY_GPU_ENABLED
 
     static tracy::GpuContextType GetTracyGpuContextType(Type type)
     {
@@ -121,12 +128,13 @@ public:
 
     explicit GpuContext(const Settings& settings)
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
+        , m_prev_calibration_cpu_timestamp(settings.cpu_timestamp)
     {
         META_CHECK_ARG_LESS_DESCR(m_id, 255, "Tracy GPU context count is exceeding the maximum 255.");
 
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,              tracy::QueueType::GpuNewContext);
-        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_timestamp);
+        tracy::MemWrite(&item->gpuNewContext.cpuTime, settings.cpu_ref_timestamp);
         tracy::MemWrite(&item->gpuNewContext.gpuTime, settings.gpu_timestamp);
         tracy::MemWrite(&item->gpuNewContext.period,  settings.gpu_time_period);
         tracy::MemWrite(&item->gpuNewContext.context, m_id);
@@ -141,7 +149,25 @@ public:
         {
             memset(&item->gpuNewContext.thread, 0, sizeof(item->gpuNewContext.thread));
         }
+
         FinishSerialItem(*item);
+    }
+
+    void Calibrate(Timestamp cpu_timestamp, Timestamp gpu_timestamp) noexcept
+    {
+        const int64_t reference_cpu_timestamp = tracy::Profiler::GetTime();
+        const int64_t cpu_delta = static_cast<int64_t>(cpu_timestamp) - m_prev_calibration_cpu_timestamp;
+        if (cpu_delta <= 0)
+            return;
+
+        m_prev_calibration_cpu_timestamp = cpu_timestamp;
+        auto item = tracy::Profiler::QueueSerial();
+        tracy::MemWrite( &item->hdr.type, tracy::QueueType::GpuCalibration );
+        tracy::MemWrite( &item->gpuCalibration.gpuTime,  gpu_timestamp );
+        tracy::MemWrite( &item->gpuCalibration.cpuTime,  reference_cpu_timestamp );
+        tracy::MemWrite( &item->gpuCalibration.cpuDelta, cpu_delta );
+        tracy::MemWrite( &item->gpuCalibration.context,  m_id );
+        tracy::Profiler::QueueSerialFinish();
     }
 
     void SetName(std::string_view name) noexcept
@@ -154,6 +180,7 @@ public:
         tracy::MemWrite(&item->gpuContextNameFat.context, m_id);
         tracy::MemWrite(&item->gpuContextNameFat.ptr,     reinterpret_cast<uint64_t>(name_ptr)); // NOSONAR
         tracy::MemWrite(&item->gpuContextNameFat.size,    static_cast<uint16_t>(name.length()));
+
         FinishSerialItem(*item);
     }
 
@@ -182,22 +209,25 @@ private:
 
     const uint8_t               m_id;
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
+    int64_t                     m_prev_calibration_cpu_timestamp = 0;
     QueryId                     m_query_id    = 0U;
     TracyLockable(std::mutex,   m_query_mutex)
 
-#else // TRACY_GPU_ENABLE
+#else // METHANE_TRACY_GPU_ENABLED
 
-    explicit GpuContext(const Settings&) { }
+    explicit GpuContext(const Settings&)                { /* empty method when Tracy GPU is disabled */ }
 
-    void SetName(std::string_view) const noexcept { /* empty method when Tracy GPU is disabled */ }
+    void Calibrate(Timestamp, Timestamp) const noexcept { /* empty method when Tracy GPU is disabled */ }
 
-#endif // TRACY_GPU_ENABLE
+    void SetName(std::string_view) const noexcept       { /* empty method when Tracy GPU is disabled */ }
+
+#endif // METHANE_TRACY_GPU_ENABLED
 };
 
 class GpuScope
 {
 public:
-#ifdef TRACY_GPU_ENABLE
+#ifdef METHANE_TRACY_GPU_ENABLED
     enum class State
     {
         Begun,
@@ -210,38 +240,81 @@ public:
     {
     }
 
-    tracy_force_inline void Begin(const tracy::SourceLocationData* src_location, int call_stack_depth = 0)
+    tracy_force_inline void Begin(uint64_t src_location, bool is_allocated_location = false, int call_stack_depth = 0)
     {
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
-#endif
         if (!m_is_active)
             return;
+#endif
 
         m_state           = State::Begun;
         m_begin_thread_id = tracy::GetThreadHandle();
         m_begin_query_id  = m_context.NextQueryId();
 
-        auto item = tracy::Profiler::QueueSerial();
-        const tracy::QueueType item_type = call_stack_depth > 0 ? tracy::QueueType::GpuZoneBeginCallstackSerial : tracy::QueueType::GpuZoneBeginSerial;
+        tracy::QueueItem* item = nullptr;
+        tracy::QueueType item_type {};
+        if (call_stack_depth)
+        {
+            item = tracy::Profiler::QueueSerialCallstack(tracy::Callstack(call_stack_depth));
+            item_type = is_allocated_location
+                      ? tracy::QueueType::GpuZoneBeginAllocSrcLocCallstackSerial
+                      : tracy::QueueType::GpuZoneBeginCallstackSerial;
+        }
+        else
+        {
+            item = tracy::Profiler::QueueSerial();
+            item_type = is_allocated_location
+                      ? tracy::QueueType::GpuZoneBeginAllocSrcLocSerial
+                      : tracy::QueueType::GpuZoneBeginSerial;
+        }
+
         tracy::MemWrite(&item->hdr.type,             item_type);
         tracy::MemWrite(&item->gpuZoneBegin.cpuTime, tracy::Profiler::GetTime());
-        tracy::MemWrite(&item->gpuZoneBegin.srcloc,  reinterpret_cast<uint64_t>(src_location)); // NOSONAR
+        tracy::MemWrite(&item->gpuZoneBegin.srcloc,  src_location);
         tracy::MemWrite(&item->gpuZoneBegin.thread,  m_begin_thread_id);
         tracy::MemWrite(&item->gpuZoneBegin.queryId, m_begin_query_id);
         tracy::MemWrite(&item->gpuZoneBegin.context, m_context.GetId());
         tracy::Profiler::QueueSerialFinish();
+    }
 
-        if (call_stack_depth)
-        {
-            tracy::GetProfiler().SendCallstack(call_stack_depth);
-        }
+    tracy_force_inline void Begin(int line, std::string_view source_file, std::string_view function, int call_stack_depth = 0)
+    {
+#ifdef TRACY_ON_DEMAND
+        m_is_active = tracy::GetProfiler().IsConnected();
+        if (!m_is_active)
+            return;
+#endif
+
+        const uint64_t source_location = tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(line),
+                                                                              source_file.data(), source_file.length(),
+                                                                              function.data(), function.length());
+        Begin(source_location, call_stack_depth);
+    }
+
+    tracy_force_inline void Begin(std::string_view name, int line, std::string_view source_file, std::string_view function,  int call_stack_depth = 0)
+    {
+        META_CHECK_ARG_NOT_EMPTY(name);
+
+#ifdef TRACY_ON_DEMAND
+        m_is_active = tracy::GetProfiler().IsConnected();
+        if (!m_is_active)
+            return;
+#endif
+        
+        const uint64_t source_location = tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(line),
+                                                                              source_file.data(), source_file.length(),
+                                                                              function.data(), function.length(),
+                                                                              name.data(), name.length());
+        Begin(source_location, true, call_stack_depth);
     }
 
     tracy_force_inline void End()
     {
+#ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
+#endif
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
@@ -258,11 +331,14 @@ public:
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
+#ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
+#endif
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
-        META_CHECK_ARG_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp, "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
+        META_CHECK_ARG_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp,
+                                       "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
 
         auto begin_item = tracy::Profiler::QueueSerial();
@@ -288,17 +364,19 @@ private:
     ThreadId    m_begin_thread_id = 0U;
     QueryId     m_begin_query_id  = 0U;
     QueryId     m_end_query_id    = 0U;
-    bool        m_is_active       = true;
+
+#ifdef TRACY_ON_DEMAND
+    bool m_is_active = true;
+#endif
 };
 
 } // namespace Methane::Tracy
 
-#define TRACE_SOURCE_LOCATION_TYPE tracy::SourceLocationData
-#define CREATE_TRACY_SOURCE_LOCATION(name) \
-    new TRACE_SOURCE_LOCATION_TYPE{ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }
+#define TRACY_SOURCE_LOCATION_ALLOC_UNNAMED() \
+    tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(__LINE__), __FILE__, __FUNCTION__)
 
-#define STATIC_TRACY_SOURCE_LOCATION(variable, name) \
-    static const TRACE_SOURCE_LOCATION_TYPE variable{ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }
+#define TRACY_SOURCE_LOCATION_ALLOC(name) \
+    tracy::Profiler::AllocSourceLocation(static_cast<uint32_t>(__LINE__), __FILE__, __FUNCTION__, name.c_str(), name.length())
 
 #define TRACY_GPU_SCOPE_TYPE Methane::Tracy::GpuScope
 #define TRACY_GPU_SCOPE_INIT(gpu_context) gpu_context
@@ -306,17 +384,31 @@ private:
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
     gpu_scope.Begin(p_location)
 
+#define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope) \
+    gpu_scope.Begin(__LINE__, __FUNCTION__,  __FILE__)
+
+#define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name) \
+    gpu_scope.Begin(name, __LINE__, __FUNCTION__,  __FILE__)
+
 #define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location) \
     if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
         gpu_scope.Begin(p_location)
 
+#define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope) \
+    if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
+        gpu_scope.Begin(__LINE__, __FUNCTION__,  __FILE__)
+
+#define TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(gpu_scope, name) \
+    if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
+        gpu_scope.Begin(name, __LINE__, __FUNCTION__,  __FILE__)
+
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name) \
-    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0 }; \
-    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, &TracyConcat(__tracy_gpu_source_location,__LINE__))
+    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0U }; \
+    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, reinterpret_cast<uint64_t>(&TracyConcat(__tracy_gpu_source_location,__LINE__)) /* NOSONAR */)
 
 #define TRACY_GPU_SCOPE_TRY_BEGIN(gpu_scope, name) \
-    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(, 0 }; \
-    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, &TracyConcat(__tracy_gpu_source_location,__LINE__))
+    static const tracy::SourceLocationData TracyConcat(__tracy_gpu_source_location,__LINE__){ name, __FUNCTION__,  __FILE__, static_cast<uint32_t>(__LINE__), 0U }; \
+    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, reinterpret_cast<uint64_t>(&TracyConcat(__tracy_gpu_source_location,__LINE__)) /* NOSONAR */)
 
 #define TRACY_GPU_SCOPE_END(gpu_scope) \
     gpu_scope.End()
@@ -325,7 +417,7 @@ private:
     const auto gpu_time_range_var = gpu_time_range; \
     gpu_scope.Complete(static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetStart()), static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetEnd()))
 
-#else // TRACY_GPU_ENABLE
+#else // METHANE_TRACY_GPU_ENABLED
 
     explicit GpuScope(const GpuContext&)
     {
@@ -350,16 +442,19 @@ private:
 
 struct SourceLocationStub { };
 
-#define TRACE_SOURCE_LOCATION_TYPE SourceLocationStub
-#define CREATE_TRACY_SOURCE_LOCATION(name) new TRACE_SOURCE_LOCATION_TYPE{}
-#define STATIC_TRACY_SOURCE_LOCATION(variable, name)
+#define TRACY_SOURCE_LOCATION_ALLOC_UNNAMED() 0U
+#define TRACY_SOURCE_LOCATION_ALLOC(name) 0U
 #define TRACY_GPU_SCOPE_TYPE char*
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope)
+#define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope)
+#define TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(gpu_scope, name)
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name)
 #define TRACY_GPU_SCOPE_TRY_BEGIN(gpu_scope, name)
 #define TRACY_GPU_SCOPE_END(gpu_scope)
 #define TRACY_GPU_SCOPE_COMPLETE(gpu_scope, gpu_time_range)
 
-#endif // TRACY_GPU_ENABLE
+#endif // METHANE_TRACY_GPU_ENABLED

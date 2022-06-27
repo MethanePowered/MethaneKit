@@ -38,8 +38,9 @@ struct CommandQueue : virtual Object // NOSONAR
     [[nodiscard]] static Ptr<CommandQueue> Create(const Context& context, CommandList::Type command_lists_type);
 
     // CommandQueue interface
-    [[nodiscard]] virtual const Context& GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const Context&    GetContext() const noexcept = 0;
     [[nodiscard]] virtual CommandList::Type GetCommandListType() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t          GetFamilyIndex() const noexcept = 0;
     virtual void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
 };
 

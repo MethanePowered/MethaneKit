@@ -27,7 +27,6 @@ DirectX 12 implementation of the command queue interface.
 #include "BlitCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
-#include "QueryBufferDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
@@ -42,12 +41,15 @@ DirectX 12 implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
-
 Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
+    command_queue_ptr->InitializeTimestampQueryBuffer();
+#endif
+    return command_queue_ptr;
 }
 
 static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, Context::Options options)
@@ -58,7 +60,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
     switch(command_list_type)
     {
     case CommandList::Type::Blit:
-        return magic_enum::flags::enum_contains(options & Context::Options::BlitWithDirectQueueOnWindows)
+        return static_cast<bool>(options & Context::Options::BlitWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 
@@ -89,32 +91,49 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type)
     : CommandQueueTrackingBase(context, command_lists_type)
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    , m_timestamp_query_buffer_ptr(TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame))
-#endif
 {
     META_FUNCTION_TASK();
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    TimestampQueryBufferDX& timestamp_query_buffer_dx = static_cast<TimestampQueryBufferDX&>(*m_timestamp_query_buffer_ptr);
-    InitializeTracyGpuContext(
-        Tracy::GpuContext::Settings(
-            Tracy::GpuContext::Type::DirectX12,
-            timestamp_query_buffer_dx.GetGpuCalibrationTimestamp(),
-            Data::ConvertFrequencyToTickPeriod(timestamp_query_buffer_dx.GetGpuFrequency())
-        )
-    );
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    m_tracy_context = TracyD3D12Context(GetContextDX().GetDeviceDX().GetNativeDevice().Get(), m_cp_command_queue.Get());
 #endif
 }
 
-void CommandQueueDX::SetName(const std::string& name)
+CommandQueueDX::~CommandQueueDX() // NOSONAR - destructor is not default under define
+{
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    TracyD3D12Destroy(m_tracy_context);
+#endif
+}
+
+bool CommandQueueDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
     if (name == GetName())
-        return;
+        return false;
 
     CommandQueueTrackingBase::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
+
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    TracyD3D12ContextName(m_tracy_context, GetName().c_str(), static_cast<uint16_t>(name.length()));
+#endif
+
+    return true;
 }
+
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+void CommandQueueDX::CompleteExecution(const Opt<Data::Index>& frame_index)
+{
+    META_FUNCTION_TASK();
+    CommandQueueTrackingBase::CompleteExecution(frame_index);
+
+    TracyD3D12Collect(m_tracy_context);
+    if (frame_index)
+    {
+        TracyD3D12NewFrame(m_tracy_context);
+    }
+}
+#endif
 
 const IContextDX& CommandQueueDX::GetContextDX() const noexcept
 {

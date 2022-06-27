@@ -37,7 +37,7 @@ Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
 }
 
 BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
-    : CommandListVK<CommandListBase>(command_queue, CommandList::Type::Blit)
+    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandList::Type::Blit)
 {
     META_FUNCTION_TASK();
 }

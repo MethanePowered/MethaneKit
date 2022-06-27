@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/DirectX12/ResourceDX.h
-DirectX 12 implementation of the resource interface.
+DirectX 12 specialization of the resource interface.
 
 ******************************************************************************/
 
 #pragma once
 
+#include "ContextDX.h"
+#include "DescriptorHeapDX.h"
 #include "ResourceBarriersDX.h"
 
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/Resource.h>
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -35,44 +37,54 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
+struct IResourceDX;
+
+class ResourceViewDX final : public ResourceView
+{
+public:
+    ResourceViewDX(const ResourceView& view_id, Resource::Usage usage);
+
+    [[nodiscard]] const Id&                        GetId() const noexcept                { return m_id; }
+    [[nodiscard]] Resource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
+    [[nodiscard]] IResourceDX&                     GetResourceDX() const noexcept        { return m_resource_dx; }
+    [[nodiscard]] bool                             HasDescriptor() const noexcept        { return m_descriptor_opt.has_value(); }
+    [[nodiscard]] const Opt<Resource::Descriptor>& GetDescriptor() const noexcept        { return m_descriptor_opt; }
+    [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS        GetNativeGpuAddress() const noexcept;
+    [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE      GetNativeCpuDescriptorHandle() const noexcept;
+    [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE      GetNativeGpuDescriptorHandle() const noexcept;
+
+private:
+    Id                         m_id;
+    IResourceDX&               m_resource_dx;
+    Opt<Resource::Descriptor>  m_descriptor_opt;
+};
+
+using ResourceViewsDX = std::vector<ResourceViewDX>;
+
 struct IResourceDX : virtual Resource // NOSONAR
 {
 public:
-    using Barrier    = Resource::Barrier;
-    using Barriers   = Resource::Barriers;
-    using State      = Resource::State;
-    using BarriersDX = ResourceBarriersDX;
+    using Barrier     = Resource::Barrier;
+    using Barriers    = Resource::Barriers;
+    using State       = Resource::State;
+    using BarriersDX  = ResourceBarriersDX;
+    using ViewDX      = ResourceViewDX;
+    using ViewsDX     = ResourceViewsDX;
 
-    class LocationDX final : public Location
-    {
-    public:
-        explicit LocationDX(const Location& location)
-            : Location(location)
-            , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))
-        { }
-
-        [[nodiscard]] IResourceDX&              GetResourceDX() const noexcept       { return m_resource_dx.get(); }
-        [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS GetNativeGpuAddress() const noexcept { return GetResourceDX().GetNativeGpuAddress() + GetOffset(); }
-
-    private:
-        Ref<IResourceDX> m_resource_dx;
-    };
-
-    using LocationsDX = std::vector<LocationDX>;
-
+    [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(const Resource& resource, Resource::Usage resource_usage);
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
-    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)  { return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange()); }
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)
+    {
+        return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
+    }
 
     [[nodiscard]] virtual ID3D12Resource&                     GetNativeResourceRef() const = 0;
     [[nodiscard]] virtual ID3D12Resource*                     GetNativeResource() const noexcept = 0;
     [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
     [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
-    [[nodiscard]] virtual D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(Usage usage) const noexcept = 0;
-    [[nodiscard]] virtual D3D12_CPU_DESCRIPTOR_HANDLE         GetNativeCpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
-    [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(Usage usage) const noexcept = 0;
-    [[nodiscard]] virtual D3D12_GPU_DESCRIPTOR_HANDLE         GetNativeGpuDescriptorHandle(const Descriptor& desc) const noexcept = 0;
-    [[nodiscard]] virtual DescriptorHeap::Types               GetDescriptorHeapTypes() const noexcept = 0;
+
+    virtual Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) = 0;
 
     ~IResourceDX() override = default;
 };

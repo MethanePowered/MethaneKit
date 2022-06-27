@@ -24,11 +24,11 @@ Base implementation of the shader interface.
 #pragma once
 
 #include "CommandListBase.h"
-#include "DescriptorHeap.h"
 #include "ProgramBindingsBase.h"
 
 #include <Methane/Graphics/Shader.h>
 
+#include <set>
 #include <string_view>
 
 namespace Methane::Graphics
@@ -53,19 +53,23 @@ public:
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
     virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const = 0;
 
-    Ptr<ShaderBase> GetPtr() { return shared_from_this(); }
+    const ContextBase& GetContext() const noexcept { return m_context; }
+    std::string_view   GetCachedArgName(std::string_view arg_name) const;
+    Ptr<ShaderBase>    GetPtr() { return shared_from_this(); }
 
 protected:
-    const ContextBase&  GetContext() const noexcept { return m_context; }
     uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const ProgramBase& program, const std::string& argument_semantic) const;
     std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
 
     static std::string GetCompiledEntryFunctionName(const Settings& settings);
 
 private:
-    const Type         m_type;
-    const ContextBase& m_context;
-    const Settings     m_settings;
+    using ArgNamesSet = std::set<std::string, std::less<>>;
+
+    const Type          m_type;
+    const ContextBase&  m_context;
+    const Settings      m_settings;
+    mutable ArgNamesSet m_cached_arg_names;
 };
 
 } // namespace Methane::Graphics

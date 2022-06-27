@@ -49,66 +49,76 @@ template<typename... ExtraArgs>
 class TextureDX final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraArgs... extra_args)
-        : ResourceDX<TextureBase>(context, settings, descriptor_by_usage)
+    TextureDX(const ContextBase& context, const Settings& settings, ExtraArgs... extra_args)
+        : ResourceDX<TextureBase>(context, settings)
     {
         META_FUNCTION_TASK();
-        InitializeDefaultDescriptors();
         Initialize(extra_args...);
     }
 
-    // Resource interface
-    void SetData(const SubResources&, CommandQueue*) override
+    // Resource override
+    void SetData(const SubResources&, CommandQueue&) override
     {
-        META_FUNCTION_NOT_IMPLEMENTED_DESCR("setting texture data is allowed for image textures only");
+        META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture data upload is allowed for image textures only");
     }
+
+    // IResourceDX override
+    Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
 
 private:
     void Initialize(ExtraArgs...);
 };
 
-struct ImageTextureArg { };
+using FrameBufferTextureDX  = TextureDX<Texture::FrameBufferIndex>;
 
-template<>
-class TextureDX<ImageTextureArg> final : public ResourceDX<TextureBase>
+using RenderTargetTextureDX = TextureDX<>;
+template<> class TextureDX<> final : public ResourceDX<TextureBase>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ImageTextureArg);
+    TextureDX(const ContextBase& context, const Settings& settings);
 
-    // Object overrides
-    void SetName(const std::string& name) override;
-
-    // Resource overrides
-    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
+    // IResourceDX override
+    Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
 
 private:
-    using ResourceAndViewDesc = std::pair<D3D12_RESOURCE_DESC, D3D12_SHADER_RESOURCE_VIEW_DESC>;
-    ResourceAndViewDesc GetResourceAndViewDesc() const;
+    void CreateShaderResourceView(const Descriptor& descriptor, const ViewDX::Id& view_id) const;
+    void CreateRenderTargetView(const Descriptor& descriptor, const ViewDX::Id& view_id) const;
+};
+
+using DepthStencilTextureDX = TextureDX<const Opt<DepthStencil>&>;
+template<> class TextureDX<const Opt<DepthStencil>&> final : public ResourceDX<TextureBase>
+{
+public:
+    TextureDX(const ContextBase& context, const Settings& settings, const Opt<DepthStencil>& clear_depth_stencil);
+
+    // IResourceDX override
+    Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
+
+private:
+    void CreateShaderResourceView(const Descriptor& descriptor) const;
+    void CreateDepthStencilView(const Descriptor& descriptor) const;
+};
+
+struct ImageTokenDX { };
+using ImageTextureDX = TextureDX<ImageTokenDX>;
+template<> class TextureDX<ImageTokenDX> final : public ResourceDX<TextureBase>
+{
+public:
+    TextureDX(const ContextBase& context, const Settings& settings, ImageTokenDX);
+
+    // Object overrides
+    bool SetName(const std::string& name) override;
+
+    // Resource overrides
+    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
+
+    // IResourceDX override
+    Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
+
+private:
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const;
 
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
-
-template<>
-class TextureDX<const std::optional<DepthStencil>&> final : public ResourceDX<TextureBase>
-{
-public:
-    TextureDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, const std::optional<DepthStencil>& clear_depth_stencil);
-
-    // Resource overrides
-    void SetData(const SubResources&, CommandQueue*) override
-    {
-        META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth stencil texture does not allow to set data");
-    }
-
-private:
-    void CreateShaderResourceView(const Texture::Settings& settings, const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const;
-    void CreateDepthStencilView(const Settings& settings, const DXGI_FORMAT& view_write_format, const wrl::ComPtr<ID3D12Device>& cp_device, const Resource::Descriptor& desc) const;
-};
-
-using FrameBufferTextureDX          = TextureDX<Texture::FrameBufferIndex>;
-using RenderTargetTextureDX         = TextureDX<>;
-using DepthStencilBufferTextureDX   = TextureDX<const std::optional<DepthStencil>&>;
-using ImageTextureDX                = TextureDX<ImageTextureArg>;
 
 } // namespace Methane::Graphics

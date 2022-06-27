@@ -42,7 +42,7 @@ struct Context;
 
 struct Shader
 {
-    enum class Type
+    enum class Type : uint32_t
     {
         Vertex,
         Pixel,

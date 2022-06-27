@@ -54,9 +54,15 @@ RenderCommandListBase::RenderCommandListBase(ParallelRenderCommandListBase& para
     : CommandListBase(static_cast<CommandQueueBase&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
     , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPassBase>())
-    , m_parallel_render_command_list_wptr(parallel_render_command_list.GetPtr<ParallelRenderCommandListBase>())
 {
     META_FUNCTION_TASK();
+}
+
+RenderPass& RenderCommandListBase::GetRenderPass() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
+    return *m_render_pass_ptr;
 }
 
 void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
@@ -126,8 +132,8 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    const ViewStateBase* p_prev_view_state = drawing_state.p_view_state;
-    drawing_state.p_view_state = static_cast<ViewStateBase*>(&view_state);
+    const ViewStateBase* p_prev_view_state = drawing_state.view_state_ptr;
+    drawing_state.view_state_ptr = static_cast<ViewStateBase*>(&view_state);
 
     if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
     {
@@ -135,8 +141,8 @@ void RenderCommandListBase::SetViewState(ViewState& view_state)
         return;
     }
 
-    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.p_view_state->GetSettings()));
-    drawing_state.p_view_state->Apply(*this);
+    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()));
+    drawing_state.view_state_ptr->Apply(*this);
 }
 
 bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
@@ -247,9 +253,10 @@ void RenderCommandListBase::Draw(Primitive primitive_type, uint32_t vertex_count
         ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
 
-    META_LOG("{} Command list '{}' DRAW with vertex buffers {} using {} primive type, {} vertices from {} vertex with {} instances count from {} instance",
-        magic_enum::enum_name(GetType()), GetName(), GetDrawingState().vertex_buffer_set_ptr->GetNames(),
-        magic_enum::enum_name(primitive_type), vertex_count, start_vertex, instance_count, start_instance);
+    META_LOG("{} Command list '{}' DRAW with vertex buffers {} using {} primitive type, {} vertices from {} vertex with {} instances count from {} instance",
+             magic_enum::enum_name(GetType()), GetName(),
+             GetDrawingState().vertex_buffer_set_ptr ? GetDrawingState().vertex_buffer_set_ptr->GetNames() : "None",
+             magic_enum::enum_name(primitive_type), vertex_count, start_vertex, instance_count, start_instance);
     META_UNUSED(start_instance);
 
     UpdateDrawingState(primitive_type);
@@ -266,8 +273,8 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.render_state_ptr.reset();
     m_drawing_state.vertex_buffer_set_ptr.reset();
     m_drawing_state.index_buffer_ptr.reset();
-    m_drawing_state.opt_primitive_type.reset();
-    m_drawing_state.p_view_state = nullptr;
+    m_drawing_state.primitive_type_opt.reset();
+    m_drawing_state.view_state_ptr = nullptr;
     m_drawing_state.render_state_groups = RenderState::Groups::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
@@ -276,12 +283,12 @@ void RenderCommandListBase::UpdateDrawingState(Primitive primitive_type)
 {
     META_FUNCTION_TASK();
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.opt_primitive_type && *drawing_state.opt_primitive_type == primitive_type)
+    if (drawing_state.primitive_type_opt && *drawing_state.primitive_type_opt == primitive_type)
         return;
 
     using namespace magic_enum::bitwise_operators;
     drawing_state.changes |= DrawingState::Changes::PrimitiveType;
-    drawing_state.opt_primitive_type = primitive_type;
+    drawing_state.primitive_type_opt = primitive_type;
 }
 
 void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count) const

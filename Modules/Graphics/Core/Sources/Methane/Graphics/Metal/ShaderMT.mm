@@ -141,7 +141,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::Argume
             continue;
         }
         
-        const Program::Argument shader_argument(GetType(), argument_name);
+        const Program::Argument shader_argument(GetType(), ShaderBase::GetCachedArgName(argument_name));
         const auto argument_desc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
         const Program::ArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
                                                   ? Program::ArgumentAccessor(shader_argument)

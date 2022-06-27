@@ -45,14 +45,14 @@ ICommandListDX::DebugGroupDX::DebugGroupDX(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandListSetDX>(command_list_refs);
+    return std::make_shared<CommandListSetDX>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
-    : CommandListSetBase(command_list_refs)
+CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+    : CommandListSetBase(command_list_refs, frame_index_opt)
     , m_execution_completed_fence(GetCommandQueueBase())
 {
     META_FUNCTION_TASK();
@@ -81,10 +81,10 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs)
     m_execution_completed_fence.SetName(fence_name_ss.str());
 }
 
-void CommandListSetDX::Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetDX::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::Execute(frame_index, completed_callback);
+    CommandListSetBase::Execute(completed_callback);
     GetCommandQueueDX().GetNativeCommandQueue().ExecuteCommandLists(static_cast<UINT>(m_native_command_lists.size()), m_native_command_lists.data());
     m_execution_completed_fence.Signal();
 }

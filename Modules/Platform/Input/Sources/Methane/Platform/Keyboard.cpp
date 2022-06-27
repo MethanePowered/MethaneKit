@@ -235,7 +235,7 @@ std::string KeyConverter::ToString() const
     META_FUNCTION_TASK();
     return m_modifiers == Modifiers::None
            ? std::string(GetKeyName())
-           : fmt::format("{}{}{}", magic_enum::flags::enum_name(m_modifiers), g_keys_separator, GetKeyName());
+           : fmt::format("{}{}{}", magic_enum::enum_flags_name(m_modifiers), g_keys_separator, GetKeyName());
 };
 
 State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
@@ -390,10 +390,10 @@ std::string State::ToString() const
     if (m_modifiers_mask != Modifiers::None)
     {
         // Serialize modifiers
-        for(Modifiers modifier : magic_enum::flags::enum_values<Modifiers>())
+        for(Modifiers modifier : magic_enum::enum_values<Modifiers>())
         {
             using namespace magic_enum::bitwise_operators;
-            if (!magic_enum::flags::enum_contains(m_modifiers_mask & modifier))
+            if (!static_cast<bool>(m_modifiers_mask & modifier))
                 continue;
 
             if (!is_first_key)

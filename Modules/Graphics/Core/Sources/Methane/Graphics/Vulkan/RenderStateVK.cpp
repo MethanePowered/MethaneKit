@@ -164,16 +164,16 @@ vk::ColorComponentFlags BlendingColorChannelsToVulkan(RenderState::Blending::Col
     using ColorChannels = RenderState::Blending::ColorChannels;
 
     vk::ColorComponentFlags color_component_flags{};
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Red))
+    if (static_cast<bool>(color_channels & ColorChannels::Red))
         color_component_flags |= vk::ColorComponentFlagBits::eR;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Green))
+    if (static_cast<bool>(color_channels & ColorChannels::Green))
         color_component_flags |= vk::ColorComponentFlagBits::eG;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Blue))
+    if (static_cast<bool>(color_channels & ColorChannels::Blue))
         color_component_flags |= vk::ColorComponentFlagBits::eB;
 
-    if (magic_enum::flags::enum_contains(color_channels & ColorChannels::Alpha))
+    if (static_cast<bool>(color_channels & ColorChannels::Alpha))
         color_component_flags |= vk::ColorComponentFlagBits::eA;
 
     return color_component_flags;
@@ -268,9 +268,9 @@ bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewStateVK::Apply(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.setViewport(0U, m_vk_viewports);
-    vk_command_buffer.setScissor(0U, m_vk_scissor_rects);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBufferDefault();
+    vk_command_buffer.setViewportWithCountEXT(m_vk_viewports);
+    vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }
 
 Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
@@ -384,12 +384,12 @@ void RenderStateVK::Reset(const Settings& settings)
     // Fake viewport state, actual state is set dynamically
     vk::PipelineViewportStateCreateInfo viewport_info(
         vk::PipelineViewportStateCreateFlags{},
-        1, nullptr, 1, nullptr
+        0, nullptr, 0, nullptr
     );
 
     const std::vector<vk::DynamicState> dynamic_states = {
-        vk::DynamicState::eViewport,
-        vk::DynamicState::eScissor,
+        vk::DynamicState::eViewportWithCountEXT,
+        vk::DynamicState::eScissorWithCountEXT,
         vk::DynamicState::ePrimitiveTopologyEXT,
     };
     vk::PipelineDynamicStateCreateInfo dynamic_info(
@@ -397,8 +397,8 @@ void RenderStateVK::Reset(const Settings& settings)
         dynamic_states
     );
 
-    const auto& program = static_cast<const ProgramVK&>(*GetSettings().program_ptr);
-    const auto& render_pattern = static_cast<const RenderPatternVK&>(*GetSettings().render_pattern_ptr);
+    auto& program = static_cast<ProgramVK&>(*GetSettings().program_ptr);
+    const auto& render_pattern = static_cast<RenderPatternVK&>(*GetSettings().render_pattern_ptr);
 
     const vk::PipelineVertexInputStateCreateInfo vk_vertex_input_state_info = program.GetNativeVertexInputStateCreateInfo();
     const std::vector<vk::PipelineShaderStageCreateInfo> vk_stages_info = program.GetNativeShaderStageCreateInfos();
@@ -424,21 +424,21 @@ void RenderStateVK::Reset(const Settings& settings)
     m_vk_unique_pipeline = std::move(pipe.value);
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& command_list, Groups /*state_groups*/)
+void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
+    const auto& vulkan_render_command_list = static_cast<RenderCommandListVK&>(render_command_list);
+    vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 
-void RenderStateVK::SetName(const std::string& name)
+bool RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (!RenderStateBase::SetName(name))
+        return false;
 
-    RenderStateBase::SetName(name);
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
+    return true;
 }
 
 const IContextVK& RenderStateVK::GetContextVK() const noexcept

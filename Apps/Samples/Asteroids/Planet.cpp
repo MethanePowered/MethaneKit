@@ -26,22 +26,25 @@ Planet rendering primitive
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/SphereMesh.hpp>
 #include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Samples
 {
 
-Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings)
-    : Planet(render_pattern, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
+Planet::Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings)
+    : Planet(render_cmd_queue, render_pattern, image_loader, settings, gfx::SphereMesh<Vertex>(Vertex::layout, 1.F, 32, 32))
 {
     META_FUNCTION_TASK();
 }
 
-Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
+Planet::Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_context(render_pattern.GetRenderContext())
-    , m_mesh_buffers(m_context, mesh, "Planet")
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<gfx::CommandQueue>(render_cmd_queue.GetPtr()))
+    , m_mesh_buffers(render_cmd_queue, mesh, "Planet")
+
 {
     META_FUNCTION_TASK();
 
@@ -76,7 +79,7 @@ Planet::Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image
     m_render_state_ptr = gfx::RenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Planet Render State");
     
-    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(m_context, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
+    m_mesh_buffers.SetTexture(image_loader.LoadImageToTexture2D(render_cmd_queue, m_settings.texture_path, m_settings.image_options, "Planet Texture"));
 
     m_texture_sampler_ptr = gfx::Sampler::Create(m_context, {
         gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
@@ -125,18 +128,16 @@ bool Planet::Update(double elapsed_seconds, double)
 void Planet::Draw(gfx::RenderCommandList& cmd_list, const gfx::MeshBufferBindings& buffer_bindings, gfx::ViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet rendering");
-
     META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
     META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(hlslpp::PlanetUniforms));
-    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources());
+    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);
 
+    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
+
+    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Planet Rendering");
     cmd_list.ResetWithState(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
-    
-    META_CHECK_ARG_NOT_EMPTY(buffer_bindings.program_bindings_per_instance);
-    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_per_instance[0]);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_per_instance[0]);
+    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_ptr);
 }
 
 } // namespace Methane::Graphics

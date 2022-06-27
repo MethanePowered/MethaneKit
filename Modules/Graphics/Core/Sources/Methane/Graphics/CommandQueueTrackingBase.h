@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2021 Evgeny Gorodetskiy
+Copyright 2021-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ Base implementation of the command queue with execution tracking.
 namespace Methane::Graphics
 {
 
+class TimestampQueryBuffer;
+
 class CommandQueueTrackingBase // NOSONAR - destructor is required
     : public CommandQueueBase
 {
@@ -48,43 +50,48 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
-    void CompleteExecution(const Opt<Data::Index>& frame_index = { });
+    virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
     Ptr<CommandListSetBase> GetLastExecutingCommandListSet() const;
+    TimestampQueryBuffer*   GetTimestampQueryBuffer() const noexcept final { return m_timestamp_query_buffer_ptr.get(); }
+
+    void InitializeTimestampQueryBuffer();
 
 protected:
-    using ExecutingCommandListSets = std::queue<Ptr<CommandListSetBase>>;
+    using CommandListSetsQueue = std::queue<Ptr<CommandListSetBase>>;
 
-    template<typename MutexType>
-    class ExecutingCommandListSetsGuard
+    template<bool const_access, typename MutexType>
+    class CommandListSetsQueueGuard
     {
     public:
-        ExecutingCommandListSetsGuard(const ExecutingCommandListSets& executing_command_lists, MutexType& mutex)
+        using CommandListSetsQueueType = std::conditional_t<const_access, const CommandListSetsQueue, CommandListSetsQueue>;
+        CommandListSetsQueueGuard(CommandListSetsQueueType& executing_command_lists, MutexType& mutex)
             : m_lock_guard(mutex)
-            , m_executing_command_lists(executing_command_lists)
+            , m_command_lists_queue(executing_command_lists)
         { }
 
-        const ExecutingCommandListSets& GetExecutingCommandLists() const noexcept { return m_executing_command_lists; }
+        CommandListSetsQueueType& GetCommandListsQueue() const noexcept { return m_command_lists_queue; }
 
     private:
-        std::scoped_lock<MutexType>     m_lock_guard;
-        const ExecutingCommandListSets& m_executing_command_lists;
+        std::scoped_lock<MutexType> m_lock_guard;
+        CommandListSetsQueueType&   m_command_lists_queue;
     };
 
     decltype(auto) GetExecutingCommandListsGuard() const
     {
-        return ExecutingCommandListSetsGuard<decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
+        return CommandListSetsQueueGuard<true, decltype(m_executing_command_lists_mutex)>(m_executing_command_lists, m_executing_command_lists_mutex);
     }
+
+    virtual void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
 private:
     void WaitForExecution() noexcept;
 
     const Ptr<CommandListSetBase>& GetNextExecutingCommandListSet() const;
-    void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
-    ExecutingCommandListSets            m_executing_command_lists;
+    CommandListSetsQueue                m_executing_command_lists;
     mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex)
     TracyLockable(std::mutex,           m_execution_waiting_mutex)
     std::condition_variable_any         m_execution_waiting_condition_var;
@@ -92,6 +99,7 @@ private:
     std::thread                         m_execution_waiting_thread;
     std::exception_ptr                  m_execution_waiting_exception_ptr;
     std::atomic<bool>                   m_name_changed{ true };
+    Ptr<TimestampQueryBuffer>           m_timestamp_query_buffer_ptr;
 };
 
 } // namespace Methane::Graphics

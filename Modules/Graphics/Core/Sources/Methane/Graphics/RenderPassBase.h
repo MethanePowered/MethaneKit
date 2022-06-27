@@ -60,9 +60,11 @@ private:
 class RenderPassBase
     : public RenderPass
     , public ObjectBase
+    , public Data::Emitter<IRenderPassCallback>
 {
 public:
-    RenderPassBase(RenderPatternBase& pattern, const Settings& settings);
+    RenderPassBase(RenderPatternBase& pattern, const Settings& settings,
+                   bool update_attachment_states = true);
 
     // RenderPass interface
     const Pattern&  GetPattern() const noexcept final  { return *m_pattern_base_ptr; }
@@ -74,7 +76,7 @@ public:
     virtual void Begin(RenderCommandListBase& render_command_list);
     virtual void End(RenderCommandListBase& render_command_list);
 
-    const Texture::Location& GetAttachmentTextureLocation(const Attachment& attachment) const;
+    const Texture::View&     GetAttachmentTextureView(const Attachment& attachment) const;
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
     TextureBase*             GetStencilAttachmentTexture() const;
@@ -84,22 +86,24 @@ public:
 protected:
     RenderPatternBase& GetPatternBase() const noexcept { return *m_pattern_base_ptr; }
 
-private:
-    void InitAttachmentStates() const;
+    void SetAttachmentStates(const std::optional<Resource::State>& color_state,
+                             const std::optional<Resource::State>& depth_state) const;
     void SetAttachmentStates(const std::optional<Resource::State>& color_state,
                              const std::optional<Resource::State>& depth_state,
                              Ptr<Resource::Barriers>& transition_barriers_ptr,
                              RenderCommandListBase& render_command_list) const;
 
+private:
+    void InitAttachmentStates() const;
+
     Ptr<RenderPatternBase>    m_pattern_base_ptr;
     Settings                  m_settings;
+    const bool                m_update_attachment_states;
     bool                      m_is_begun = false;
     mutable Refs<TextureBase> m_color_attachment_textures;
     mutable Ptrs<TextureBase> m_non_frame_buffer_attachment_textures;
     mutable TextureBase*      m_p_depth_attachment_texture = nullptr;
     mutable TextureBase*      m_p_stencil_attachment_texture = nullptr;
-    Ptr<Resource::Barriers>   m_begin_transition_barriers_ptr;
-    Ptr<Resource::Barriers>   m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

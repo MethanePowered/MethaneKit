@@ -184,32 +184,28 @@ private:
     __itt_counter m_id;
 };
 
-#define ITT_DOMAIN_LOCAL(/*const char* */domain)\
+#define ITT_DOMAIN_LOCAL(/*const char* */domain) \
     static const __itt_domain* __itt_domain_instance = UNICODE_AGNOSTIC(__itt_domain_create)(domain)
 
-#define ITT_DOMAIN_GLOBAL(/*const char* */domain)\
-    const char* __itt_domain_name = domain;\
-    __itt_domain* __itt_domain_instance = nullptr
+#define ITT_DOMAIN_GLOBAL(/*const char* */domain) \
+    const __itt_domain* GetIttDomainInstance() \
+    { \
+        ITT_DOMAIN_LOCAL(domain); \
+        return __itt_domain_instance; \
+    }
 
 #define ITT_DOMAIN_EXTERN()\
-    extern const char* __itt_domain_name;\
-    extern __itt_domain* __itt_domain_instance
-
-#define ITT_DOMAIN_INIT()\
-    if (!__itt_domain_instance && __itt_domain_name)\
-        __itt_domain_instance = UNICODE_AGNOSTIC(__itt_domain_create)(__itt_domain_name)
+    const __itt_domain* GetIttDomainInstance();
 
 #define ITT_SCOPE(region, name)\
     static __itt_string_handle* __itt_scope_name = UNICODE_AGNOSTIC(__itt_string_handle_create)(name);\
-    ITT_DOMAIN_INIT();\
-    Methane::ITT::Task<region> __itt_scope_item(__itt_domain_instance, __itt_scope_name)
+    Methane::ITT::Task<region> __itt_scope_item(GetIttDomainInstance(), __itt_scope_name)
 
 #define ITT_SCOPE_TASK(/*const char* */name) ITT_SCOPE(false, name)
 #define ITT_SCOPE_REGION(/*const char* */name) ITT_SCOPE(true, name)
 
 #define ITT_MARKER(/*Methane::ITT::Marker::Scope*/scope, /*const char* */name) \
-    ITT_DOMAIN_INIT(); \
-    static const Methane::ITT::Marker __itt_marker_item(__itt_domain_instance, name, scope); \
+    static const Methane::ITT::Marker __itt_marker_item(GetIttDomainInstance(), name, scope); \
     __itt_marker_item.Notify()
 
 #define ITT_ARG(item_variable, /*const char* */name, /*number or string*/ value) { \
@@ -282,7 +278,6 @@ public:
 #define ITT_DOMAIN_LOCAL(domain)
 #define ITT_DOMAIN_GLOBAL(domain)
 #define ITT_DOMAIN_EXTERN()
-#define ITT_DOMAIN_INIT()
 #define ITT_SCOPE(region, name)
 #define ITT_SCOPE_TASK(name)
 #define ITT_SCOPE_REGION(name)

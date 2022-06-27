@@ -37,6 +37,7 @@ namespace Methane::Graphics
 struct RenderContext;
 struct RenderCommandList;
 struct RenderState;
+struct RenderPattern;
 struct ViewState;
 struct ProgramBindings;
 struct Buffer;
@@ -94,31 +95,39 @@ public:
     template<typename StringType>
     struct Settings // NOSONAR
     {
-        const std::string name;
-        StringType        text;
-        UnitRect          rect;
-        Layout            layout;
-        Color4F           color { 1.F, 1.F, 1.F, 1.F };
-        bool              incremental_update = true;
-        bool              adjust_vertical_content_offset = true;
+        std::string name;
+        StringType  text;
+        UnitRect    rect;
+        Layout      layout;
+        Color4F     color { 1.F, 1.F, 1.F, 1.F };
+        bool        incremental_update = true;
+        bool        adjust_vertical_content_offset = true;
 
         // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
-        Data::Size        mesh_buffers_reservation_multiplier = 2U;
+        Data::Size  mesh_buffers_reservation_multiplier = 2U;
 
-        Settings& SetName(const std::string& new_name) noexcept { name = new_name; return *this; }
-        Settings& SetText(const StringType& new_text) noexcept  { text = new_text; return *this; }
-        Settings& SetRect(const UnitRect& new_rect) noexcept    { rect = new_rect; return *this; }
-        Settings& SetLayout(const Layout& new_layout) noexcept  { layout = new_layout; return *this; }
-        Settings& SetColor(const Color4F& new_color) noexcept   { color = new_color; return *this; }
-        Settings& SetIncrementalUpdate(bool new_incremental_update) noexcept { incremental_update = new_incremental_update; return *this; }
-        Settings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept { adjust_vertical_content_offset = new_adjust_offset; return *this; }
+        // Text render state object name for using as a key in graphics object cache
+        // NOTE: State name should be different in case of render state incompatibility between Text objects
+        std::string state_name = "Screen Text Render State";
+
+        Settings& SetName(std::string_view new_name) noexcept                                         { name = new_name; return *this; }
+        Settings& SetText(const StringType& new_text) noexcept                                        { text = new_text; return *this; }
+        Settings& SetRect(const UnitRect& new_rect) noexcept                                          { rect = new_rect; return *this; }
+        Settings& SetLayout(const Layout& new_layout) noexcept                                        { layout = new_layout; return *this; }
+        Settings& SetColor(const Color4F& new_color) noexcept                                         { color = new_color; return *this; }
+        Settings& SetIncrementalUpdate(bool new_incremental_update) noexcept                          { incremental_update = new_incremental_update; return *this; }
+        Settings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept                     { adjust_vertical_content_offset = new_adjust_offset; return *this; }
         Settings& SetMeshBuffersReservationMultiplier(Data::Size new_reservation_multiplier) noexcept { mesh_buffers_reservation_multiplier = new_reservation_multiplier; return *this; }
+        Settings& SetStateName(std::string_view new_state_name) noexcept                            { state_name = new_state_name; return *this; }
     };
 
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
-    Text(Context& ui_context, Font& font, const SettingsUtf8&  settings);
+
+    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 
@@ -168,10 +177,10 @@ private:
             Mesh     = 1U << 0U,
             Uniforms = 1U << 1U,
             Atlas    = 1U << 2U,
-            All      = ~0U
+            All      = Mesh | Uniforms | Atlas
         };
 
-        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier);
+        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources);
 
         void SetDirty(DirtyFlags dirty_flags) noexcept;
 
@@ -187,11 +196,12 @@ private:
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
-        void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr);
+        void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+                                       const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name);
 
     private:
         uint32_t                  m_frame_index;
-        DirtyFlags                m_dirty_mask = DirtyFlags::None;
+        DirtyFlags                m_dirty_mask = DirtyFlags::All;
         Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::Buffer>          m_index_buffer_ptr;
         Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
@@ -226,7 +236,8 @@ private:
     Ptr<gfx::Buffer>            m_const_buffer_ptr;
     Ptr<gfx::Sampler>           m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
-    bool                        m_is_viewport_dirty;
+    bool                        m_is_viewport_dirty = true;
+    bool                        m_is_const_buffer_dirty = true;
 };
 
 } // namespace Methane::Graphics

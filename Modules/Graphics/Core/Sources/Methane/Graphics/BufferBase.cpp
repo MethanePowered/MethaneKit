@@ -22,7 +22,6 @@ Base implementation of the buffer interface.
 ******************************************************************************/
 
 #include "BufferBase.h"
-#include "DescriptorHeap.h"
 #include "ContextBase.h"
 
 #include <Methane/Checks.hpp>
@@ -34,8 +33,9 @@ Base implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-BufferBase::BufferBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceBase(Resource::Type::Buffer, settings.usage_mask, context, descriptor_by_usage)
+BufferBase::BufferBase(const ContextBase& context, const Settings& settings,
+                       State initial_state, Opt<State> auto_transition_source_state_opt)
+    : ResourceBase(context, Resource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

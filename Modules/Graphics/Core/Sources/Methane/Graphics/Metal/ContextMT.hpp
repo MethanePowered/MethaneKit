@@ -26,6 +26,7 @@ Metal template implementation of the base context interface.
 #include "ContextMT.h"
 #include "DeviceMT.hh"
 #include "ProgramLibraryMT.hh"
+#include "DescriptorManagerMT.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -46,7 +47,7 @@ class ContextMT : public ContextBaseT
 {
 public:
     ContextMT(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerMT>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
@@ -82,11 +83,14 @@ public:
 
     // Object overrides
 
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        ContextBase::SetName(name);
+        if (!ContextBase::SetName(name))
+            return false;
+
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
+        return true;
     }
 
 protected:

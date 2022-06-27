@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -33,13 +33,20 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferVK final : public ResourceVK<BufferBase, vk::Buffer>
+class BufferVK final : public ResourceVK<BufferBase, vk::Buffer, true>
 {
 public:
-    BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferVK(const ContextBase& context, const Settings& settings);
 
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
+
+    // Object interface
+    bool SetName(const std::string& name) override;
+
+protected:
+    // ResourceVK override
+    Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
     vk::UniqueBuffer            m_vk_unique_staging_buffer;

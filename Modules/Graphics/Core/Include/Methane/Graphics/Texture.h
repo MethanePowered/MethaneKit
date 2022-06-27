@@ -34,6 +34,8 @@ namespace Methane::Graphics
 
 struct Texture : virtual Resource // NOSONAR
 {
+    using DimensionType = TextureDimensionType;
+
     enum class Type : uint32_t
     {
         Texture = 0,
@@ -41,38 +43,26 @@ struct Texture : virtual Resource // NOSONAR
         DepthStencilBuffer,
     };
 
-    enum class DimensionType : uint32_t
-    {
-        Tex1D = 0,
-        Tex1DArray,
-        Tex2D,
-        Tex2DArray,
-        Tex2DMultisample,
-        Cube,
-        CubeArray,
-        Tex3D,
-    };
-
-    class Location : public Resource::Location
+    class View : public Resource::View
     {
     public:
-        Location(Texture& texture, const SubResource::Index& subresource_index = SubResource::Index())
-            : Resource::Location(texture, subresource_index)
-            , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
-        { }
+        View(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {},
+             Opt<TextureDimensionType> texture_dimension_type_opt = {});
 
-        using Resource::Location::operator==;
+        using Resource::View::operator==;
+        using Resource::View::operator!=;
+        using Resource::View::operator std::string;
 
         [[nodiscard]] const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
         [[nodiscard]] Texture&            GetTexture() const;
 
     private:
-        // Resource::Location stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::Location too
+        // Resource::View stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::View too.
         // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
         Ptr<Texture> m_texture_ptr;
     };
 
-    using Locations = std::vector<Location>;
+    using Views = std::vector<View>;
 
     struct Settings
     {
@@ -84,8 +74,8 @@ struct Texture : virtual Resource // NOSONAR
         uint32_t       array_length   = 1U;
         bool           mipmapped      = false;
 
-        [[nodiscard]] static Settings Image(const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
-        [[nodiscard]] static Settings Cube(uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage);
+        [[nodiscard]] static Settings Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, Usage usage);
         [[nodiscard]] static Settings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
         [[nodiscard]] static Settings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Usage usage_mask = Usage::RenderTarget);
     };
@@ -93,16 +83,11 @@ struct Texture : virtual Resource // NOSONAR
     using FrameBufferIndex = uint32_t;
 
     // Create Texture instance
-    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings,
-                                                         const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index,
-                                                        const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context,
-                                                               const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateImage(const Context& context, const Dimensions& dimensions, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                                                  const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
-    [[nodiscard]] static Ptr<Texture> CreateCube(const Context& context, uint32_t dimension_size, uint32_t array_length, PixelFormat pixel_format, bool mipmapped,
-                                                 const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index);
+    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context);
+    [[nodiscard]] static Ptr<Texture> CreateImage(const Context& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
+    [[nodiscard]] static Ptr<Texture> CreateCube(const Context& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
 
     // Texture interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

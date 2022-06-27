@@ -105,9 +105,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderStateDX>& render_state_ptr
     ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
     ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
 
-    // Insert beginning GPU timestamp query
-    if (HasBeginTimestampQuery())
-        GetBeginTimestampQuery().InsertTimestamp();
+    BeginGpuZone();
 
     if (!render_state_ptr)
         return;
@@ -166,7 +164,7 @@ bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
 
     auto& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
     if (const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexAndConstantBuffer) && buffer_set_setup_barriers_ptr)
+        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -208,7 +206,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, uint32_t index_count,
 
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    if (magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+    if (static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
@@ -227,7 +225,7 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     if (DrawingState& drawing_state = GetDrawingState();
-        magic_enum::flags::enum_contains(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+        static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);

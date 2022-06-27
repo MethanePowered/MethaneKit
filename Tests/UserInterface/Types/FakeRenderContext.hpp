@@ -36,10 +36,12 @@ Fake render context used for UI types testing
 namespace Methane::Graphics
 {
 
-class FakeObjectRegistry : public Object::Registry
+class FakeObjectRegistry
+    : public Object::Registry
 {
 public:
     void                      AddGraphicsObject(Object&) override                           { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void                      RemoveGraphicsObject(Object&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] Ptr<Object> GetGraphicsObject(const std::string&) const noexcept override { return nullptr; }
     [[nodiscard]] bool        HasGraphicsObject(const std::string&) const noexcept override { return false; }
 };
@@ -47,6 +49,7 @@ public:
 class FakeDevice
     : public Device
     , public Data::Emitter<IDeviceCallback>
+    , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeDevice>
 {
 public:
@@ -57,13 +60,14 @@ public:
     [[nodiscard]] std::string ToString() const override { return { }; }
 
     // Object interface
-    void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
 };
 
 class FakeCommandQueue
     : public CommandQueue
+    , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeCommandQueue>
 {
 public:
@@ -75,10 +79,11 @@ public:
     // CommandQueue interface
     [[nodiscard]] const Context&    GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
+    [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // Object interface
-    void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
 
@@ -124,7 +129,7 @@ public:
     [[nodiscard]] CommandQueue& GetCommandQueue() override                              { return m_command_queue; }
 
     // Object interface
-    void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
 
@@ -137,6 +142,7 @@ using FakeBlitCommandList   = FakeCommandList<BlitCommandList,   CommandList::Ty
 class FakeRenderContext
     : public RenderContext
     , public Data::Emitter<IContextCallback>
+    , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeRenderContext>
 {
 public:
@@ -148,8 +154,8 @@ public:
 
     // RenderContext interface
     [[nodiscard]] bool ReadyToRender() const override                                   { return false; }
-    void Resize(const FrameSize&) override                                              { throw Methane::NotImplementedException("Resize"); }
-    void Present() override                                                             { throw Methane::NotImplementedException("Present"); }
+    void Resize(const FrameSize&) override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Present() override                                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] Platform::AppView GetAppView() const override                         { return { }; }
     [[nodiscard]] const Settings&   GetSettings() const noexcept override               { return m_settings; }
     [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override       { return 0U; }
@@ -168,18 +174,18 @@ public:
     [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override              { return m_object_registry; }
     [[nodiscard]] const Object::Registry& GetObjectsRegistry() const noexcept override  { return m_object_registry; }
     void RequestDeferredAction(DeferredAction) const noexcept override                  { }
-    void CompleteInitialization() override                                              { throw Methane::NotImplementedException("CompleteInitialization"); }
+    void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
-    void WaitForGpu(WaitFor) override                                                   { throw Methane::NotImplementedException("WaitForGpu"); }
-    void Reset(Device&) override                                                        { throw Methane::NotImplementedException("Reset"); }
-    void Reset() override                                                               { throw Methane::NotImplementedException("Reset"); }
+    void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     [[nodiscard]] const Device& GetDevice() const override                              { return m_fake_device; }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // Object interface
-    void SetName(const std::string&) override                                           { throw Methane::NotImplementedException("SetName"); }
+    bool SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override                  { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return shared_from_this(); }
 
@@ -195,6 +201,7 @@ private:
 
 class FakeRenderPattern
     : public RenderPattern
+    , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeRenderPattern>
 {
 public:
@@ -208,7 +215,7 @@ public:
     AttachmentFormats    GetAttachmentFormats() const noexcept override { return {}; }
 
     // Object interface
-    void SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
 

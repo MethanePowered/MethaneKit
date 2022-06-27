@@ -38,15 +38,22 @@ Base implementation of the command list interface.
 namespace Methane::Graphics
 {
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
+{
+    return Data::TimeRange(std::min(start, end), std::max(start, end));
+}
+#endif
+
 CommandListBase::DebugGroupBase::DebugGroupBase(const std::string& name)
     : ObjectBase(name)
 {
     META_FUNCTION_TASK();
 }
 
-void CommandListBase::DebugGroupBase::SetName(const std::string&)
+bool CommandListBase::DebugGroupBase::SetName(const std::string&)
 {
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Debug Group can not be renamed");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
 CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
@@ -72,10 +79,9 @@ CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_command_queue_ptr(command_queue.GetPtr<CommandQueueBase>())
     , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContext()))
-    , m_tracy_construct_location_ptr(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()))
 {
     META_FUNCTION_TASK();
-    TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_construct_location_ptr.get());
+    TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(m_tracy_gpu_scope);
     META_LOG("{} Command list '{}' was created", magic_enum::enum_name(m_type), GetName());
     META_UNUSED(m_tracy_gpu_scope); // silence unused member warning on MacOS when Tracy GPU profiling
 }
@@ -133,9 +139,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
         PopDebugGroup();
     }
 
-    if (!m_tracy_reset_location_ptr)
-        m_tracy_reset_location_ptr.reset(CREATE_TRACY_SOURCE_LOCATION(GetName().c_str()));
-    TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(m_tracy_gpu_scope, m_tracy_reset_location_ptr.get());
+    TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(m_tracy_gpu_scope, GetName());
 
     if (p_debug_group && debug_group_changed)
     {
@@ -158,9 +162,7 @@ void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
 void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    if (m_command_state.program_bindings_ptr.get() == std::addressof(program_bindings))
+    if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
         return;
 
     META_LOG("{} Command list '{}' SET PROGRAM BINDINGS for program '{}':\n{}",
@@ -169,12 +171,20 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
 
     auto& program_bindings_base = static_cast<ProgramBindingsBase&>(program_bindings);
     ApplyProgramBindings(program_bindings_base, apply_behavior);
-    if (!magic_enum::flags::enum_contains(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
-        return;
 
-    Ptr<ObjectBase> program_bindings_object_ptr = program_bindings_base.GetBasePtr();
-    m_command_state.program_bindings_ptr = std::static_pointer_cast<ProgramBindingsBase>(program_bindings_object_ptr);
-    RetainResource(program_bindings_object_ptr);
+    using namespace magic_enum::bitwise_operators;
+    if (static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::ConstantOnce) ||
+        static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::ChangesOnly))
+    {
+        META_SCOPE_TASK("AcquireProgramBindingsPtr");
+        m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
+    }
+
+    if (static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
+    {
+        META_SCOPE_TASK("RetainResource");
+        RetainResource(program_bindings_base.GetBasePtr());
+    }
 }
 
 void CommandListBase::Commit()
@@ -187,13 +197,11 @@ void CommandListBase::Commit()
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
-    META_LOG("{} Command list '{}' COMMIT on frame {}", magic_enum::enum_name(m_type), GetName(), GetCurrentFrameIndex());
-
-    m_committed_frame_index = GetCurrentFrameIndex();
+    META_LOG("{} Command list '{}' COMMIT", magic_enum::enum_name(m_type), GetName());
 
     SetCommandListStateNoLock(State::Committed);
-
-    if (!m_open_debug_groups.empty())
+    
+    while (!m_open_debug_groups.empty())
     {
         PopDebugGroup();
     }
@@ -219,7 +227,7 @@ void CommandListBase::WaitUntilCompleted(uint32_t timeout_ms)
     }
 }
 
-void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& completed_callback)
+void CommandListBase::Execute(const CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
@@ -228,27 +236,25 @@ void CommandListBase::Execute(uint32_t frame_index, const CompletedCallback& com
                                "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
-    META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
-                               "{} command list '{}' committed on frame {} can not be executed on frame {}",
-                               magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
-
-    META_LOG("{} Command list '{}' EXECUTE on frame {}", magic_enum::enum_name(m_type), GetName(), frame_index);
+    META_LOG("{} Command list '{}' EXECUTE", magic_enum::enum_name(m_type), GetName());
 
     m_completed_callback = completed_callback;
 
     SetCommandListStateNoLock(State::Executing);
 }
 
-void CommandListBase::Complete(uint32_t frame_index)
+void CommandListBase::Complete()
 {
     META_FUNCTION_TASK();
-    CompleteInternal(frame_index);
+    CompleteInternal();
 
     if (m_completed_callback)
         m_completed_callback(*this);
+    
+    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListExecutionCompleted, *this);
 }
 
-void CommandListBase::CompleteInternal(uint32_t frame_index)
+void CommandListBase::CompleteInternal()
 {
     std::scoped_lock lock_guard(m_state_mutex);
 
@@ -256,14 +262,10 @@ void CommandListBase::CompleteInternal(uint32_t frame_index)
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
-    META_CHECK_ARG_EQUAL_DESCR(frame_index, m_committed_frame_index,
-                               "{} command list '{}' committed on frame {} can not be completed on frame {}",
-                               magic_enum::enum_name(m_type), GetName(), m_committed_frame_index, frame_index);
-
     SetCommandListStateNoLock(State::Pending);
 
     TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
-    META_LOG("{} Command list '{}' was COMPLETED on frame {} with GPU timings {}", magic_enum::enum_name(m_type), GetName(), frame_index, static_cast<std::string>(GetGpuTimeRange(true)));
+    META_LOG("{} Command list '{}' was COMPLETED with GPU timings {}", magic_enum::enum_name(m_type), GetName(), static_cast<std::string>(GetGpuTimeRange(true)));
 }
 
 CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
@@ -305,25 +307,79 @@ void CommandListBase::SetCommandListStateNoLock(State state)
 
     m_state = state;
     m_state_change_condition_var.notify_one();
+    
+    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
+}
+
+void CommandListBase::InitializeTimestampQueries() // NOSONAR - function is not const when instrumentation enabled
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    TimestampQueryBuffer* query_buffer_ptr = GetCommandQueueBase().GetTimestampQueryBuffer();
+    if (!query_buffer_ptr)
+        return;
+
+    m_begin_timestamp_query_ptr = query_buffer_ptr->CreateTimestampQuery(*this);
+    m_end_timestamp_query_ptr   = query_buffer_ptr->CreateTimestampQuery(*this);
+#endif
+}
+
+void CommandListBase::BeginGpuZone() // NOSONAR - function is not const when instrumentation enabled
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    // Insert beginning GPU timestamp query
+    if (m_begin_timestamp_query_ptr)
+        m_begin_timestamp_query_ptr->InsertTimestamp();
+#endif
+}
+
+void CommandListBase::EndGpuZone() // NOSONAR - function is not const when instrumentation enabled
+{
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    META_FUNCTION_TASK();
+    // Insert ending GPU timestamp query
+    // and resolve timestamps of beginning and ending queries
+    if (m_end_timestamp_query_ptr)
+    {
+        m_end_timestamp_query_ptr->InsertTimestamp();
+        m_end_timestamp_query_ptr->ResolveTimestamp();
+    }
+    if (m_begin_timestamp_query_ptr)
+    {
+        m_begin_timestamp_query_ptr->ResolveTimestamp();
+    }
+#endif
+}
+
+Data::TimeRange CommandListBase::GetGpuTimeRange(bool in_cpu_nanoseconds) const
+{
+    META_FUNCTION_TASK();
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
+    {
+        META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandListBase::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
+        return in_cpu_nanoseconds
+             ? GetNormalTimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
+             : GetNormalTimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
+    }
+#else
+    META_UNUSED(in_cpu_nanoseconds);
+#endif
+    return { 0U, 0U };
 }
 
 CommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
-    return static_cast<CommandQueueBase&>(*m_command_queue_ptr);
-}
-
-uint32_t CommandListBase::GetCurrentFrameIndex() const
-{
-    META_FUNCTION_TASK();
-    return  GetCommandQueueBase().GetCurrentFrameBufferIndex();
+    return *m_command_queue_ptr;
 }
 
 void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
-    m_command_state.program_bindings_ptr.reset();
+    m_command_state.program_bindings_ptr = nullptr;
     m_command_state.retained_resources.clear();
 }
 
@@ -335,18 +391,20 @@ void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings
 CommandQueueBase& CommandListBase::GetCommandQueueBase()
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueueBase&>(CommandListBase::GetCommandQueue());
+    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
+    return *m_command_queue_ptr;
 }
 
 const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
-    return static_cast<const CommandQueueBase&>(*m_command_queue_ptr);
+    return *m_command_queue_ptr;
 }
 
-CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs)
+CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : m_refs(command_list_refs)
+    , m_frame_index_opt(frame_index_opt)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
@@ -361,6 +419,8 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
                                   std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
                                   "all command lists in set must be created in one command queue");
 
+        static_cast<Data::IEmitter<IObjectCallback>&>(command_list_base).Connect(*this);
+
         m_base_refs.emplace_back(command_list_base);
         m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
     }
@@ -374,17 +434,16 @@ CommandList& CommandListSetBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-void CommandListSetBase::Execute(Data::Index frame_index, const CommandList::CompletedCallback& completed_callback)
+void CommandListSetBase::Execute(const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_command_lists_mutex);
 
     m_is_executing = true;
-    m_executing_on_frame_index = frame_index;
 
     for (const Ref<CommandListBase>& command_list_ref : m_base_refs)
     {
-        command_list_ref.get().Execute(frame_index, completed_callback);
+        command_list_ref.get().Execute(completed_callback);
     }
 }
 
@@ -399,7 +458,7 @@ void CommandListSetBase::Complete() const
         if (command_list.GetState() != CommandListBase::State::Executing)
             continue;
 
-        command_list.Complete(m_executing_on_frame_index);
+        command_list.Complete();
     }
 
     m_is_executing = false;
@@ -410,6 +469,38 @@ const CommandListBase& CommandListSetBase::GetCommandListBase(Data::Index index)
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_base_refs.size());
     return m_base_refs[index].get();
+}
+
+const std::string& CommandListSetBase::GetCombinedName()
+{
+    META_FUNCTION_TASK();
+    if (!m_combined_name.empty())
+        return m_combined_name;
+
+    std::stringstream name_ss;
+    const size_t list_count = m_refs.size();
+    name_ss << list_count << " Command List" << (list_count > 1 ? "s: " : ": ");
+
+    for (size_t list_index = 0u; list_index < list_count; ++list_index)
+    {
+        if (const std::string& list_name = m_refs[list_index].get().GetName();
+            list_name.empty())
+            name_ss << "<unnamed>";
+        else
+            name_ss << "'" << list_name << "'";
+
+        if (list_index < list_count - 1)
+            name_ss << ", ";
+    }
+
+    m_combined_name = name_ss.str();
+    return m_combined_name;
+}
+
+void CommandListSetBase::OnObjectNameChanged(Object&, const std::string&)
+{
+    META_FUNCTION_TASK();
+    m_combined_name.clear();
 }
 
 } // namespace Methane::Graphics

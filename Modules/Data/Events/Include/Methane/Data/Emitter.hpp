@@ -84,6 +84,7 @@ public:
     void Connect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
+        std::lock_guard lock(m_connected_receivers_mutex);
         if (FindConnectedReceiver(receiver) != m_connected_receivers.end())
             return;
 
@@ -102,6 +103,8 @@ public:
     void Disconnect(Receiver<EventType>& receiver) noexcept override
     {
         META_FUNCTION_TASK();
+        std::lock_guard lock(m_connected_receivers_mutex);
+
         const auto connected_receiver_it = FindConnectedReceiver(receiver);
         if (connected_receiver_it == m_connected_receivers.end())
         {
@@ -129,6 +132,7 @@ protected:
     void Emit(FuncType&& func_ptr, ArgTypes&&... args)
     {
         META_FUNCTION_TASK();
+        std::lock_guard lock(m_connected_receivers_mutex);
 
         // Additional receivers may be non-empty before emitting connected receiver calls
         // only in case when current emit is called during another emitted callback for the same emitter
@@ -198,6 +202,7 @@ private:
     inline void CleanupConnectedReceivers() noexcept
     {
         // Erase receivers disconnected during emit cycle from the connected receivers
+        std::lock_guard lock(m_connected_receivers_mutex);
         for(auto connected_receiver_it  = m_connected_receivers.begin(); connected_receiver_it != m_connected_receivers.end();)
         {
             if (*connected_receiver_it)
@@ -209,6 +214,7 @@ private:
 
     inline void ConnectReceivers() noexcept
     {
+        std::lock_guard lock(m_connected_receivers_mutex);
         for(Receiver<EventType>* p_connected_receiver : m_connected_receivers)
         {
             if (p_connected_receiver)
@@ -219,6 +225,7 @@ private:
     inline auto DisconnectReceivers() noexcept
     {
         // Move connected receivers so that OnDisconnected callbacks are not processed (m_connected_receivers would be empty)
+        std::lock_guard lock(m_connected_receivers_mutex);
         const auto connected_receivers = std::move(m_connected_receivers);
         for(Receiver<EventType>* p_receiver : connected_receivers)
         {
@@ -230,9 +237,15 @@ private:
         return connected_receivers;
     }
 
-    bool                              m_is_emitting = false;
-    std::vector<Receiver<EventType>*> m_connected_receivers;
-    std::set<Receiver<EventType>*>    m_additional_connected_receivers;
+    bool                                m_is_emitting = false;
+    std::vector<Receiver<EventType>*>   m_connected_receivers;
+    std::set<Receiver<EventType>*>      m_additional_connected_receivers;
+#if defined(__GNUG__) && !defined(__clang__)
+    // GCC fails with internal compiler error: Segmentation fault
+    std::recursive_mutex                m_connected_receivers_mutex;
+#else
+    TracyLockable(std::recursive_mutex, m_connected_receivers_mutex);
+#endif
 };
 
 } // namespace Methane::Data

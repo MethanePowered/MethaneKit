@@ -33,7 +33,46 @@ namespace Methane::Graphics
 
 class CommandQueueBase;
 class CommandListBase;
+class QueryBuffer;
 struct Context;
+
+class Query
+{
+public:
+    using Index = Data::Index;
+    using Count = Data::Size;
+    using Range = Data::Range<Data::Index>;
+
+    enum class State
+    {
+        Resolved = 0,
+        Begun,
+        Ended,
+    };
+
+    Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    Query(const Query&) = delete;
+    Query(Query&&) = delete;
+    virtual ~Query();
+
+    virtual void Begin();
+    virtual void End();
+    virtual void ResolveData();
+    virtual Resource::SubResource GetData() const = 0;
+
+    [[nodiscard]] Index            GetIndex() const noexcept       { return m_index; }
+    [[nodiscard]] const Range&     GetDataRange() const noexcept   { return m_data_range; }
+    [[nodiscard]] State            GetState() const noexcept       { return m_state; }
+    [[nodiscard]] QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
+    [[nodiscard]] CommandListBase& GetCommandList() const noexcept { return m_command_list; }
+
+private:
+    Ptr<QueryBuffer> m_buffer_ptr;
+    CommandListBase& m_command_list;
+    const Index      m_index;
+    const Range      m_data_range;
+    State            m_state = State::Resolved;
+};
 
 class QueryBuffer : public std::enable_shared_from_this<QueryBuffer>
 {
@@ -41,43 +80,6 @@ public:
     enum class Type
     {
         Timestamp,
-    };
-
-    class Query
-    {
-    public:
-        using Index = Data::Index;
-        using Range = Data::Range<Data::Index>;
-
-        enum class State
-        {
-            Resolved = 0,
-            Begun,
-            Ended,
-        };
-
-        Query(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-        Query(const Query&) = delete;
-        Query(Query&&) = delete;
-        virtual ~Query();
-
-        virtual void Begin();
-        virtual void End();
-        virtual void ResolveData();
-        virtual Resource::SubResource GetData() = 0;
-
-        [[nodiscard]] Index            GetIndex() const noexcept       { return m_index; }
-        [[nodiscard]] const Range&     GetDataRange() const noexcept   { return m_data_range; }
-        [[nodiscard]] State            GetState() const noexcept       { return m_state; }
-        [[nodiscard]] QueryBuffer&     GetQueryBuffer() const noexcept { return *m_buffer_ptr; }
-        [[nodiscard]] CommandListBase& GetCommandList() const noexcept { return m_command_list; }
-
-    private:
-        Ptr<QueryBuffer> m_buffer_ptr;
-        CommandListBase& m_command_list;
-        const Index      m_index;
-        const Range      m_data_range;
-        State            m_state = State::Resolved;
     };
 
     virtual ~QueryBuffer() = default;
@@ -90,16 +92,18 @@ public:
         return std::make_shared<QueryT>(*this, command_list, query_index, query_range);
     }
 
-    [[nodiscard]] Ptr<QueryBuffer>  GetPtr()                       { return shared_from_this(); }
-    [[nodiscard]] Type              GetType() const noexcept       { return m_type; }
-    [[nodiscard]] Data::Size        GetBufferSize() const noexcept { return m_buffer_size; }
-    [[nodiscard]] Data::Size        GetQuerySize() const noexcept  { return m_query_size; }
-    [[nodiscard]] CommandQueueBase& GetCommandQueueBase() noexcept { return m_command_queue; }
-    [[nodiscard]] const Context&    GetContext() const noexcept    { return m_context; }
+    [[nodiscard]] Ptr<QueryBuffer>  GetPtr()                               { return shared_from_this(); }
+    [[nodiscard]] Type              GetType() const noexcept               { return m_type; }
+    [[nodiscard]] Data::Size        GetBufferSize() const noexcept         { return m_buffer_size; }
+    [[nodiscard]] Data::Size        GetQuerySize() const noexcept          { return m_query_size; }
+    [[nodiscard]] Query::Count      GetSlotsCountPerQuery() const noexcept { return m_slots_count_per_query; }
+    [[nodiscard]] CommandQueueBase& GetCommandQueueBase() noexcept         { return m_command_queue; }
+    [[nodiscard]] const Context&    GetContext() const noexcept            { return m_context; }
 
 protected:
     QueryBuffer(CommandQueueBase& command_queue, Type type,
-                Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
+                Query::Count max_query_count, Query::Count slots_count_per_query,
+                Data::Size buffer_size, Data::Size query_size);
 
     friend class Query;
     virtual void ReleaseQuery(const Query& query);
@@ -110,33 +114,55 @@ protected:
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
 
-    const Type        m_type;
-    const Data::Size  m_buffer_size;
-    const Data::Size  m_query_size;
-    RangeSet          m_free_indices;
-    RangeSet          m_free_data_ranges;
-    CommandQueueBase& m_command_queue;
-    const Context&    m_context;
+    const Type         m_type;
+    const Data::Size   m_buffer_size;
+    const Data::Size   m_query_size;
+    const Query::Count m_slots_count_per_query;
+    RangeSet           m_free_indices;
+    RangeSet           m_free_data_ranges;
+    CommandQueueBase&  m_command_queue;
+    const Context&     m_context;
 };
 
-struct TimestampQueryBuffer
+struct TimestampQuery
 {
-    struct TimestampQuery
+    virtual void InsertTimestamp() = 0;
+    virtual void ResolveTimestamp() = 0;
+
+    [[nodiscard]] virtual Timestamp GetGpuTimestamp() const = 0;
+    [[nodiscard]] virtual Timestamp GetCpuNanoseconds() const = 0;
+
+    virtual ~TimestampQuery() = default;
+};
+
+class TimestampQueryBuffer
+{
+public:
+    using TimestampQuery = Methane::Graphics::TimestampQuery;
+
+    struct CalibratedTimestamps
     {
-        virtual void InsertTimestamp() = 0;
-        virtual void ResolveTimestamp() = 0;
-
-        [[nodiscard]] virtual Timestamp GetGpuTimestamp() = 0;
-        [[nodiscard]] virtual Timestamp GetCpuNanoseconds() = 0;
-
-        virtual ~TimestampQuery() = default;
+        Timestamp gpu_ts;
+        Timestamp cpu_ts;
     };
 
     [[nodiscard]] static Ptr<TimestampQueryBuffer> Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame);
 
     [[nodiscard]] virtual Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) = 0;
-
+    virtual CalibratedTimestamps Calibrate() = 0;
     virtual ~TimestampQueryBuffer() = default;
+
+    Frequency                   GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
+    const CalibratedTimestamps& GetCalibratedTimestamps() const noexcept    { return m_calibrated_timestamps; }
+    TimeDelta                   GetGpuTimeOffset() const noexcept;
+
+protected:
+    void SetGpuFrequency(Frequency gpu_frequency);
+    void SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps);
+
+private:
+    Frequency            m_gpu_frequency = 0U;
+    CalibratedTimestamps m_calibrated_timestamps{ 0U, 0U};
 };
 
 } // namespace Methane::Graphics

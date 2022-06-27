@@ -12,27 +12,27 @@
 
 Download [release builds](https://github.com/egorodet/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
 Check latest build status, tests, code coverage and analysis results or get build artifacts from [Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI and [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
-See [Building from Sources](#building-from-sources) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) and other tutorials documentation.
+See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) and other tutorials' documentation.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/egorodet/MethaneKit)
 
 |     Platform     | Graphics API |  Master Build Status  |  Develop Build Status  |
 | ---------------- | -------------| --------------------- | ---------------------- |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal | [![MacOS Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x64** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x64 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x64 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x86 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win32_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win32_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x64** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan<sup><sup>wip</sup> | [![Windows x64 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x64 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan<sup><sup>wip</sup> | [![Windows x86 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win32_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win32_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan<sup><sup>wip</sup></sup> | [![Ubuntu Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Ubuntu Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x64** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x64 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x64 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/DirectX12Small.png" width=24 valign="middle"> DirectX 12 | [![Windows x86 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win32_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win32_DX_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x64** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan | [![Windows x64 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x64 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan | [![Windows x86 Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win32_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win32_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan | [![Ubuntu Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Ubuntu Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** | <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal | [![MacOS Master Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Build Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_Release)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 
 [Static code analysis](#static-code-analysis) scans are performed as a part of automated CI build process on master and develop branches
 with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organizations/egorodet-github).
 
 |     Platform     | Sonar Quality Gate |  Master Scan Status  |  Develop Scan Status  |
 | ---------------- | ------------------ | -------------------- | --------------------- |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** Metal | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows** DirectX | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
-| <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** Vulkan | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows** DirectX | [![Windows Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows) | [![Windows Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Win64_DX_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" width=24 valign="middle"> **Linux** Vulkan | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Linux&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Linux) | [![Linux Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Linux Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=Ubuntu_VK_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
+| <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS** Metal | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_MacOS&metric=alert_status)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_MacOS) | [![MacOS Master Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=master&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![MacOS Develop Scan Status](https://egorodet.visualstudio.com/MethaneKit/_apis/build/status/egorodet.MethaneKit?branchName=develop&jobName=MacOS_MTL_SonarScan)](https://egorodet.visualstudio.com/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 
 [![Windows Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
 [![Windows Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=egorodet_MethaneKit_Windows&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=egorodet_MethaneKit_Windows)
@@ -64,13 +64,15 @@ which make modern graphics programming easy and convenient in a platform and API
 Start learning Methane Graphics API with [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) tutorial documentation
 and continue with others.
 
-| <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
-| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| 1. [Hello Triangle](/Apps/Tutorials/01-HelloTriangle) | ![Hello Triangle on Windows](Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg) | Colored triangle rendering in 100 lines of code. |
-| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube) | ![Hello Cube on Windows](Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg) | Colored cube rendering in 200 lines of code with vertex and index buffers. |
-| 3. [Textured Cube](/Apps/Tutorials/03-TexturedCube) | ![Textured Cube on Windows](Apps/Tutorials/03-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg) | Textured cube introduces buffers, textures and samplers usage with Phong shading.<br/>* _Vulkan is not supported yet._ |
-| 4. [Shadow Cube](/Apps/Tutorials/04-ShadowCube) | ![Shadow Cube on Windows](Apps/Tutorials/04-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg) | Shadow cube introduces multi-pass rendering with render passes.<br/>* _Vulkan is not supported yet._ |
-| 5. [Typography](/Apps/Tutorials/05-Typography) | ![Typography on Windows](Apps/Tutorials/05-Typography/Screenshots/TypographyWinDirectX12.jpg) | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI.<br/>* _Vulkan is not supported yet._ |
+| <pre><b>Name / Link</b></pre>                                 | <pre><b>Screenshot</b></pre>                                                                                         | <pre><b>Description</b>                                         </pre>                                        |
+|---------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| 1. [Hello Triangle](/Apps/Tutorials/01-HelloTriangle)         | ![Hello Triangle on Windows](/Apps/Tutorials/01-HelloTriangle/Screenshots/HelloTriangleWinDirectX12.jpg)             | Colored triangle rendering in 100 lines of code.                                                              |
+| 2. [Hello Cube](/Apps/Tutorials/02-HelloCube)                 | ![Hello Cube on Windows](/Apps/Tutorials/02-HelloCube/Screenshots/HelloCubeWinDirectX12.jpg)                         | Colored cube rendering in 200 lines of code with vertex and index buffers.                                    |
+| 3. [Textured Cube](/Apps/Tutorials/03-TexturedCube)           | ![Textured Cube on Windows](/Apps/Tutorials/03-TexturedCube/Screenshots/TexturedCubeWinDirectX12.jpg)                | Textured cube introduces buffers, textures and samplers usage with Phong shading.                             |
+| 4. [Shadow Cube](/Apps/Tutorials/04-ShadowCube)               | ![Shadow Cube on Windows](/Apps/Tutorials/04-ShadowCube/Screenshots/ShadowCubeWinDirectX12.jpg)                      | Shadow cube introduces multi-pass rendering with render passes.                                               |
+| 5. [Typography](/Apps/Tutorials/05-Typography)                | ![Typography on Windows](/Apps/Tutorials/05-Typography/Screenshots/TypographyWinDirectX12.jpg)                       | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI.             |
+| 6. [Cube-Map Array](/Apps/Tutorials/06-CubeMapArray)          | ![Cube-Map Array on Windows](/Apps/Tutorials/06-CubeMapArray/Screenshots/CubeMapArrayWinDirectX12.jpg)               | Cube-map array texturing along with sky-box rendering is demonstrated in this tutorial.                       |
+| 7. [Parallel Rendering](/Apps/Tutorials/07-ParallelRendering) | ![Parallel Rendering on Windows](/Apps/Tutorials/07-ParallelRendering/Screenshots/ParallelRenderingWinDirectX12.jpg) | Parallel rendering of the textured cube instances to the single render pass is demonstrated in this tutorial. |
 
 ### Samples
 
@@ -78,7 +80,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
 
 | <pre><b>Name / Link</b></pre> | <pre><b>Screenshot</b></pre> | <pre><b>Description</b>                                         </pre> |
 | ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads.<br/>* _Vulkan is not supported yet._ |
+| [Asteroids](/Apps/Samples/Asteroids) | ![Asteroids on Windows](Apps/Samples/Asteroids/Screenshots/AsteroidsWinDirectX12.jpg) | Benchmark demonstrating parallel render commands encoding in a single render pass for the large number of heterogeneous asteroid objects processed in multiple threads. |
 
 ### Features
 
@@ -87,7 +89,7 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
   - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
   - **HLSL++ Math** library with [HLSL-like syntax](https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-reference) in C++
     and vector-instruction optimizations for different platforms
-- **Modern Graphics API abstractions**: based on DirectX 12, Metal and Vulkan APIs
+- **Modern Graphics API abstractions**: based on DirectX 12, Vulkan and Metal APIs
   - Render state and program configuration with compact initialization syntax
   - Program binding objects implement efficient binding of shader arguments to resources
   - Automatic resource state tracking used for automatic resource transition barriers setup
@@ -122,183 +124,30 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 
-## Building from Sources 
+# [Build Instructions](/Build/README.md)
 
-### Prerequisites
-
-- **Common**
-  - Git (required to pull sub-modules)
-  - CMake 3.18 or later
-- **Windows**
-  - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2019 with MSVC v142 or later
-  - Windows 10 SDK latest
-- **MacOS**
-  - MacOS 10.15 "Catalina" or later
-  - XCode 11 or later with command-line tools
-- **Linux**
-  - Ubuntu 20.04 or later
-  - GCC 9 or later
-  - LCov, X11 & XCB libraries
-  ```console
-  sudo apt-get update && sudo apt-get install lcov xcb libx11-dev libx11-xcb-dev
-  ```
-
-### Fetch Sources
-
-**IMPORTANT!**
-- <ins>Do not download source code via Zip archive</ins>, since it does not include content of 
-[Externals](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
-Use `git clone` command as described below.
-- Consider using <ins>short path for repository location on Windows</ins> (for example `c:\Git`),
-which may be required to resolve problem with support of paths longer than 260 symbols in some Microsoft build tools.
-
-#### First time initialization
-
-```console
-git clone --recurse-submodules https://github.com/egorodet/MethaneKit.git
-cd MethaneKit
-```
-
-#### Update sources to latest revision
-
-```console
-cd MethaneKit
-git pull && git submodule update --init --recursive
-```
-
-### Build
-
-#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Windows.png" width=24 valign="middle"> Windows Build with Visual Studio 2019
-
-Start Command Prompt, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Windows/Build.bat](Build/Windows/Build.bat) or build with CMake command line:
-
-```console
-set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
-cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
-cmake --build %OUTPUT_DIR%\Build --config Release --target install
-```
-
-Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in Visual Studio or 
-[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
-
-[Methane Graphics Core](Modules/Graphics/Core) is built using **DirectX 12** graphics API by default on Windows. 
-Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or 
-by running `Build/Windows/Build.bat --vulkan`.
-
-Run built applications from the installation directory `Build\Output\VisualStudio\Win64-DX\Install\Apps`
-
-#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS Build with XCode
-
-Start Terminal, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.sh) or build with CMake command line:
-
-```console
-OUTPUT_DIR=Build/Output/XCode
-cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install
-```
-
-Note that starting with XCode 12 and Clang 12 build architectures have to be specified explicitly
-using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` to build the fat binary.
-This option should be omitted with earlier versions of Clang on macOS.
-
-Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in Visual Studio or 
-[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
-
-[Methane Graphics Core](Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
-Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
-by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
-on top of Metal, which is not currently supporting all extensions required by Methane Kit.
-
-Run built applications from the installation directory `Build/Output/XCode/Install/Apps`.
-
-#### <img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux Build with Unix Makefiles
-
-Start Terminal, go to MethaneKit root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Unix/Build.sh](Build/Unix/Build.sh) or build with CMake command line:
-
-```console
-OUTPUT_DIR=Build/Output/Linux
-cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
-```
-
-[Methane Graphics Core](Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
-
-Alternatively root [CMakeLists.txt](CMakeLists.txt) can be opened directly in 
-[any IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
-
-Run built applications from the installation directory `Build/Output/Linux/Install/Apps`.
-Note that in Ubuntu Linux even GUI applications should be started from "Terminal" app, 
-because of `noexec` permission set on user's home directory by security reasons.
-
-#### CMake Options
-
-Build options listed in table below can be used in cmake generator command line:
-```console
-cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
-```
-
-| Build Option Name                               | Initial Value           | Default Preset          | Profiling Preset        | Description             |
-| ----------------------------------------------- | ----------------------- | ----------------------- | ----------------------- | ----------------------- |
-| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>...</b></sub>   | <sub><b>...</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub> |
-| <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub> |
-| <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>OFF</b></sub>   | <sub>Enable tests build</sub> |
-| <sub>METHANE_CHECKS_ENABLED</sub>               | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable runtime checks of input arguments</sub> |
-| <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub><b>ON</b></sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable test auto-run after module build</sub> |
-| <sub>METHANE_UNITY_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable unity build speedup for some modules</sub> |
-| <sub>METHANE_CODE_COVERAGE_ENABLED</sub>        | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable code coverage data collection with GCC and Clang</sub>  |
-| <sub>METHANE_SHADERS_CODEVIEW_ENABLED</sub>     | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable shaders code symbols viewing in debug tools</sub>  |
-| <sub>METHANE_OPEN_IMAGE_IO_ENABLED</sub>        | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable using OpenImageIO library for images loading</sub> |
-| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable command list debug groups with frame markup</sub>  |
-| <sub>METHANE_LOGGING_ENABLED</sub>              | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable debug logging</sub> |
-| <sub>METHANE_SCOPE_TIMERS_ENABLED</sub>         | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable low-overhead profiling with scope-timers</sub> |
-| <sub>METHANE_ITT_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable ITT instrumentation for trace capture with Intel GPA or VTune</sub> |
-| <sub>METHANE_ITT_METADATA_ENABLED</sub>         | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable ITT metadata for tasks and events like function source locations</sub> |
-| <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable GPU instrumentation to collect command list execution timings</sub> |
-| <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable realtime profiling with Tracy</sub> |
-| <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable Tracy data collection on demand, after client connection</sub> |
-
-#### CMake Presets
-
-[CMake Presets](CMakePresets.json) can be used to configure and build project with a set of predefined options (CMake 3.20 is required):
-```console
-cmake --preset [ConfigPresetName]
-cmake --build --preset [BuildPresetName] --target install
-```
-
-Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to the next schema using compatible kets according to preset matrix:
-```console
-[ConfigPresetName] = [VS2019|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac]-[DX|VK|MTL]-[Default|Profile|Scan]
-```
-
-| Preset Matrix | VS2019    | Xcode     | Make      | Ninja     |   
-|---------------|-----------|-----------|-----------|-----------|
-| Win64         | DX / VK   | -         | -         | -         |
-| Win32         | DX / VK   | -         | -         | -         |
-| Win           | -         | -         | -         | DX / VK   |
-| Mac           | -         | MTL       | -         | MTL       |
-| Lin           | -         | -         | VK        | VK        |
-
-Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
-"x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or directly from Visual Studio.
-
-[Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
-CMake presets can be also used in [VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
-to reproduce CI builds on the development system with a few configuration options in IDE UI.
+- [Prerequisites](/Build/README.md#prerequisites)
+- [Fetch Sources](/Build/README.md#fetch-sources)
+  - [First time initialization](/Build/README.md#first-time-initialization)
+  - [Update sources to latest revision](/Build/README.md#update-sources-to-latest-revision)
+- [Building from Sources](/Build/README.md#building-from-sources)
+  - [Windows Build with Visual Studio](/Build/README.md#-windows-build-with-visual-studio)
+  - [MacOS Build with XCode](/Build/README.md#-macos-build-with-xcode)
+  - [Linux Build with Unix Makefiles](/Build/README.md#-linux-build-with-unix-makefiles)
+- [CMake Generator](/Build/README.md#cmake-generator)
+  - [CMake Options](/Build/README.md#cmake-options)
+  - [CMake Presets](/Build/README.md#cMake-presets)
 
 ## Supported Development Tools
 
 ### Development Environments
 
-<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Resources/Images/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
+<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
 - Microsoft Visual Studio 2019
-  - Solutions and projects build (generate with [Build.bat](/Build/Windows/Build.bat))
+  - Solutions and projects build (generate with [Build/Windows/Build.bat](/Build/Windows/Build.bat))
   - CMake native build support (pre-configured with [CMakePresets.json](/CMakePresets.json))
 - Apple XCode
-  - XCode workspace and projects (generate with [Build.sh](/Build/Unix/Build.sh))
+  - XCode workspace and projects (generate with [Build/Unix/Build.sh](/Build/Unix/Build.sh))
 - Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/egorodet/MethaneKit) (pre-configured with [CMakePresets.json](/CMakePresets.json) and [.vscode/settings.json](/.vscode/settings.json))
 - Jet Brains CLion (pre-configured with [.idea](/.idea))
 - Qt Creator with CMake native support

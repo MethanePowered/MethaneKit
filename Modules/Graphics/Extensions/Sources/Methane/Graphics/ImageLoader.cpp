@@ -24,6 +24,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
+#include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
@@ -161,21 +162,21 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(const Context& context, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<Texture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
-    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateImage(context, image_data.GetDimensions(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
-    texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
+    texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(const Context& context, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<Texture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -198,7 +199,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(const Context& context, const 
             face_images_data.emplace_back(face_index, std::move(image_data));
         }
     );
-    context.GetParallelExecutor().run(load_task_flow).get();
+    target_cmd_queue.GetContext().GetParallelExecutor().run(load_task_flow).get();
 
     // Verify cube textures
     META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
@@ -217,10 +218,10 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(const Context& context, const 
 
     // Load face images to cube texture
     using namespace magic_enum::bitwise_operators;
-    const PixelFormat image_format = GetDefaultImageFormat(magic_enum::flags::enum_contains(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateCube(context, face_dimensions.GetWidth(), 1, image_format, magic_enum::flags::enum_contains(options & Options::Mipmapped));
+    const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
+    Ptr<Texture> texture_ptr = Texture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
-    texture_ptr->SetData(face_resources);
+    texture_ptr->SetData(face_resources, target_cmd_queue);
 
     return texture_ptr;
 }

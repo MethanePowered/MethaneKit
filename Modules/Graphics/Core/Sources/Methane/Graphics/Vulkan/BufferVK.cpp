@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, 
     vk::BufferUsageFlags vk_usage_flags;
     switch(buffer_type)
     {
-    case Buffer::Type::Data:     vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
+    case Buffer::Type::Storage:  vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
     case Buffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
     case Buffer::Type::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
     case Buffer::Type::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
@@ -67,6 +67,20 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, 
         vk_usage_flags |= vk::BufferUsageFlagBits::eTransferDst;
 
     return vk_usage_flags;
+}
+
+static Resource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_type)
+{
+    META_FUNCTION_TASK();
+    switch(buffer_type)
+    {
+    case Buffer::Type::Storage:     return Resource::State::ShaderResource;
+    case Buffer::Type::Constant:    return Resource::State::ConstantBuffer;
+    case Buffer::Type::Index:       return Resource::State::IndexBuffer;
+    case Buffer::Type::Vertex:      return Resource::State::VertexBuffer;
+    case Buffer::Type::ReadBack:    return Resource::State::StreamOut;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Resource::State::Undefined, "Unsupported buffer type");
+    }
 }
 
 Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
@@ -81,10 +95,10 @@ Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, P
     return Graphics::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile, descriptor_by_usage);
+    return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
 }
 
 Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -93,8 +107,8 @@ Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceVK(context, settings, descriptor_by_usage,
+BufferVK::BufferVK(const ContextBase& context, const Settings& settings)
+    : ResourceVK(context, settings,
                  dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice().createBufferUnique(
                      vk::BufferCreateInfo(
                          vk::BufferCreateFlags{},
@@ -103,8 +117,6 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const D
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
-
     const bool is_private_storage = settings.storage_mode == Buffer::StorageMode::Private;
     const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
     const vk::MemoryPropertyFlags vk_memory_property_flags = is_private_storage ? vk::MemoryPropertyFlagBits::eDeviceLocal : vk_staging_memory_flags;
@@ -128,20 +140,20 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings, const D
     GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue)
+void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
-    ResourceVK::SetData(sub_resources, sync_cmd_queue);
+    ResourceVK::SetData(sub_resources, target_cmd_queue);
 
-    const bool is_private_storage = GetSettings().storage_mode == Buffer::StorageMode::Private;
-    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
-
+    const Settings& buffer_settings = GetSettings();
+    const bool is_private_storage = buffer_settings.storage_mode == Buffer::StorageMode::Private;
     if (is_private_storage)
     {
         m_vk_copy_regions.clear();
         m_vk_copy_regions.reserve(sub_resources.size());
     }
 
+    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
     for(const SubResource& sub_resource : sub_resources)
     {
         ValidateSubResource(sub_resource);
@@ -150,7 +162,7 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
         const vk::DeviceSize sub_resource_offset = 0U;
         Data::RawPtr sub_resource_data_ptr = nullptr;
         const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
-                                                             reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
+                                                                     reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
 
         META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
         META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
@@ -168,11 +180,36 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue* sync_cmd
         return;
 
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
-    const BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
-    upload_cmd_list.GetNativeCommandBuffer().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
+    BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
+    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
     GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
+}
 
-    m_vk_copy_regions.clear();
+bool BufferVK::SetName(const std::string& name)
+{
+    META_FUNCTION_TASK();
+    if (!ResourceVK::SetName(name))
+        return false;
+
+    if (m_vk_unique_staging_buffer)
+    {
+        SetVulkanObjectName(GetNativeDevice(), m_vk_unique_staging_buffer.get(), fmt::format("{} Staging Buffer", name));
+    }
+    return true;
+}
+
+Ptr<ResourceViewVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
+{
+    META_FUNCTION_TASK();
+    ResourceViewVK::BufferViewDescriptor buffer_view_desc;
+    buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
+        GetNativeResource(),
+        static_cast<vk::DeviceSize>(view_id.offset),
+        view_id.size ? view_id.size : GetSubResourceDataSize(view_id.subresource_index)
+    );
+
+    return std::make_shared<ResourceViewVK::ViewDescriptorVariant>(std::move(buffer_view_desc));
 }
 
 Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)

@@ -23,9 +23,12 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma once
 
-#include "QueryBufferDX.h"
-
 #include <Methane/Graphics/CommandQueueTrackingBase.h>
+
+#pragma warning(push)
+#pragma warning(disable: 4189)
+#include <TracyD3D12.hpp>
+#pragma warning(pop)
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -42,17 +45,26 @@ class CommandQueueDX final : public CommandQueueTrackingBase
 {
 public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
+    ~CommandQueueDX() override;
+
+    // CommandQueue interface
+    uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
-    const IContextDX&       GetContextDX() const noexcept;
-    ID3D12CommandQueue&     GetNativeCommandQueue();
-    TimestampQueryBuffer*   GetTimestampQueryBuffer() noexcept { return m_timestamp_query_buffer_ptr.get(); }
+#if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
+    // CommandQueueTrackingBase override
+    void CompleteExecution(const Opt<Data::Index>& frame_index = { }) override;
+#endif
+
+    const IContextDX&   GetContextDX() const noexcept;
+    ID3D12CommandQueue& GetNativeCommandQueue();
+    const TracyD3D12Ctx& GetTracyD3D12Ctx() const noexcept { return m_tracy_context; }
 
 private:
-    wrl::ComPtr<ID3D12CommandQueue>   m_cp_command_queue;
-    Ptr<TimestampQueryBuffer>         m_timestamp_query_buffer_ptr;
+    wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
+    TracyD3D12Ctx                   m_tracy_context;
 };
 
 } // namespace Methane::Graphics

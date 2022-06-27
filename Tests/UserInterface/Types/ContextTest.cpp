@@ -41,8 +41,9 @@ static const UnitSize g_frame_size_px  { Units::Pixels, 1920U, 1080U };
 TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 {
     const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
     const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    UserInterface::Context ui_context(*render_pattern_ptr);
+    UserInterface::Context ui_context(*render_cmd_queue_ptr, *render_pattern_ptr);
 
     SECTION("Get UI render context")
     {
@@ -70,8 +71,9 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
     const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
     const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(*render_pattern_ptr);
+    const UserInterface::Context ui_context(*render_cmd_queue_ptr, *render_pattern_ptr);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -161,8 +163,9 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
 TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
     const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
     const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(*render_pattern_ptr);
+    const UserInterface::Context ui_context(*render_cmd_queue_ptr, *render_pattern_ptr);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -186,8 +189,9 @@ TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][c
 TEMPLATE_TEST_CASE("UI Context Convertors of Scalar Types", "[ui][context][unit][convert]", int32_t, uint32_t, float, double)
 {
     const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() }, g_dot_to_px_factor, g_font_resolution_dpi);
+    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
     const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(*render_pattern_ptr);
+    const UserInterface::Context ui_context(*render_cmd_queue_ptr, *render_pattern_ptr);
     const TestType scalar_value = 640;
 
     SECTION("Convert scalar Dots to Pixels")

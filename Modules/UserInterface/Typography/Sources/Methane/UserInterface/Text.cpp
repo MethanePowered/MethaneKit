@@ -32,6 +32,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/Program.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
@@ -54,14 +55,23 @@ namespace Methane::UserInterface
 {
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
-    : Text(ui_context, font,
+    : Text(ui_context, ui_context.GetRenderPattern(), font, settings)
+{
+}
+
+Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
+    : Text(ui_context, render_pattern, font,
         SettingsUtf32
         {
             settings.name,
             Font::ConvertUtf8To32(settings.text),
             settings.rect,
             settings.layout,
-            settings.color
+            settings.color,
+            settings.incremental_update,
+            settings.adjust_vertical_content_offset,
+            settings.mesh_buffers_reservation_multiplier,
+            settings.state_name
         }
     )
 {
@@ -69,24 +79,31 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
 }
 
 Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
+    : Text(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+{
+}
+
+Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_font_ptr(font.shared_from_this())
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
+
     m_font_ptr->Connect(*this);
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
-    UpdateTextMesh();
-    UpdateConstantsBuffer();
 
-    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
-
-    static const std::string s_state_name = "Text Render State";
-    m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(s_state_name));
-    if (!m_render_state_ptr)
+    m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
+    if (m_render_state_ptr)
+    {
+        META_CHECK_ARG_EQUAL_DESCR(m_render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+                                   "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name, m_settings.state_name);
+    }
+    else
     {
         gfx::RenderState::Settings state_settings;
         state_settings.program_ptr = gfx::Program::Create(GetUIContext().GetRenderContext(),
@@ -111,11 +128,11 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
                     { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
                     { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
-                ui_context.GetRenderPattern().GetAttachmentFormats()
+                render_pattern.GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
-        state_settings.render_pattern_ptr                                   = ui_context.GetRenderPatternPtr();
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -126,11 +143,14 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
 
         m_render_state_ptr = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
-        m_render_state_ptr->SetName(s_state_name);
+        m_render_state_ptr->SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(*m_render_state_ptr);
     }
 
+    UpdateTextMesh();
+
+    const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
     m_view_state_ptr = gfx::ViewState::Create({
         { gfx::GetFrameViewport(viewport_rect)    },
         { gfx::GetFrameScissorRect(viewport_rect) }
@@ -149,10 +169,6 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
         gfx_objects_registry.AddGraphicsObject(*m_atlas_sampler_ptr);
     }
 
-    if (m_text_mesh_ptr)
-    {
-        InitializeFrameResources();
-    }
     Item::SetRect(m_frame_rect);
 }
 
@@ -262,7 +278,7 @@ void Text::SetColor(const gfx::Color4F& color)
         return;
 
     m_settings.color = color;
-    UpdateConstantsBuffer();
+    m_is_const_buffer_dirty = true;
 }
 
 void Text::SetLayout(const Layout& layout)
@@ -315,20 +331,27 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         UpdateViewport(render_attachment_size);
     }
+    if (m_is_const_buffer_dirty)
+    {
+        UpdateConstantsBuffer();
+    }
     if (frame_resources.IsDirty(FrameResources::DirtyFlags::Mesh) && m_text_mesh_ptr)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr &&
-        !frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext())) && m_render_state_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr)
     {
-        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr);
+        frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
     if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
     }
-    assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr || !m_text_mesh_ptr);
+    if (m_render_state_ptr)
+    {
+        frame_resources.InitializeProgramBindings(*m_render_state_ptr, m_const_buffer_ptr, m_atlas_sampler_ptr, m_settings.name);
+    }
+    assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
 }
 
 void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
@@ -374,14 +397,11 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atla
     }
 }
 
-Text::FrameResources::FrameResources(uint32_t frame_index,  const CommonResourceRefs& common_resources, const std::string& text_name, Data::Size reservation_multiplier)
+Text::FrameResources::FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources)
     : m_frame_index(frame_index)
     , m_atlas_texture_ptr(common_resources.atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
-    UpdateMeshBuffers(common_resources.render_context, common_resources.text_mesh, text_name, reservation_multiplier);
-    UpdateUniformsBuffer(common_resources.render_context, common_resources.text_mesh, text_name);
-    InitializeProgramBindings(common_resources.render_state, common_resources.const_buffer_ptr, common_resources.atlas_sampler_ptr);
 }
 
 void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
@@ -393,10 +413,11 @@ void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
 bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
 {
     using namespace magic_enum::bitwise_operators;
-    return magic_enum::flags::enum_contains(m_dirty_mask & dirty_flags);
+    return static_cast<bool>(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr, const Ptr<gfx::Sampler>& atlas_sampler_ptr)
+void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+                                                     const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)
@@ -413,6 +434,7 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
         { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
         { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
+    m_program_bindings_ptr->SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 }
 
 gfx::BufferSet& Text::FrameResources::GetVertexBufferSet() const
@@ -439,6 +461,9 @@ gfx::ProgramBindings& Text::FrameResources::GetProgramBindings() const
 bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
+    using namespace magic_enum::bitwise_operators;
+    m_dirty_mask &= ~DirtyFlags::Atlas;
+
     if (m_atlas_texture_ptr.get() == new_atlas_texture_ptr.get())
         return true;
 
@@ -453,10 +478,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceLocations({ { *m_atlas_texture_ptr } });
-
-    using namespace magic_enum::bitwise_operators;
-    m_dirty_mask &= ~DirtyFlags::Atlas;
+    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
     return true;
 }
 
@@ -481,7 +503,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
         )
-    }, &render_context.GetRenderCommandKit().GetQueue());
+    }, render_context.GetRenderCommandKit().GetQueue());
 
     // Update index buffer
     const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -499,7 +521,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
             gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
         )
-    }, &render_context.GetRenderCommandKit().GetQueue());
+    }, render_context.GetRenderCommandKit().GetQueue());
 
     using namespace magic_enum::bitwise_operators;
     m_dirty_mask &= ~DirtyFlags::Mesh;
@@ -529,7 +551,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceLocations({ { *m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(
@@ -537,7 +559,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render
         {
             { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
         },
-        &render_context.GetRenderCommandKit().GetQueue()
+        render_context.GetRenderCommandKit().GetQueue()
     );
 
     using namespace magic_enum::bitwise_operators;
@@ -555,6 +577,12 @@ void Text::InitializeFrameResources()
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     m_frame_resources.reserve(frame_buffers_count);
 
+    if (!m_const_buffer_ptr)
+    {
+        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
+        m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
+    }
+
     const Ptr<gfx::Texture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
@@ -568,9 +596,7 @@ void Text::InitializeFrameResources()
                 atlas_texture_ptr,
                 m_atlas_sampler_ptr,
                 *m_text_mesh_ptr
-            },
-            m_settings.name,
-            m_settings.mesh_buffers_reservation_multiplier
+            }
         );
     }
 }
@@ -631,23 +657,20 @@ void Text::UpdateTextMesh()
 void Text::UpdateConstantsBuffer()
 {
     META_FUNCTION_TASK();
-    hlslpp::TextConstants constants{
+    META_CHECK_ARG_NOT_NULL(m_const_buffer_ptr);
+
+    const hlslpp::TextConstants constants{
         m_settings.color.AsVector()
     };
-    const auto const_data_size = static_cast<Data::Size>(sizeof(constants));
-
-    if (!m_const_buffer_ptr)
-    {
-        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetUIContext().GetRenderContext(), const_data_size);
-        m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
-    }
     m_const_buffer_ptr->SetData(
         gfx::Resource::SubResources
         {
-            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), const_data_size) // NOSONAR
+            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
+                                       static_cast<Data::Size>(sizeof(constants)))
         },
-        &GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
+        GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
     );
+    m_is_const_buffer_dirty = false;
 }
 
 FrameRect Text::GetAlignedViewportRect() const

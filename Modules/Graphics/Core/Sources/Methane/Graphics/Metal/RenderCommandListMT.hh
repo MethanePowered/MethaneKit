@@ -35,6 +35,7 @@ namespace Methane::Graphics
 class CommandQueueMT;
 class BufferMT;
 class RenderPassMT;
+class ParallelRenderCommandListMT;
 
 class RenderCommandListMT final
     : public CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>
@@ -55,6 +56,8 @@ public:
 private:
     RenderPassMT& GetRenderPassMT();
     void ResetCommandEncoder();
+
+    const ParallelRenderCommandListMT* m_parallel_render_command_list_ptr = nullptr;
 };
 
 } // namespace Methane::Graphics

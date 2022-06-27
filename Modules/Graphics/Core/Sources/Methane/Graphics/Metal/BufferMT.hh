@@ -35,13 +35,13 @@ namespace Methane::Graphics
 class BufferMT final : public ResourceMT<BufferBase>
 {
 public:
-    BufferMT(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage = DescriptorByUsage());
+    BufferMT(const ContextBase& context, const Settings& settings);
 
     // Resource interface
-    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }
     MTLIndexType         GetNativeIndexType() const noexcept;

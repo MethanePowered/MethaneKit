@@ -102,8 +102,9 @@ RenderContext::Settings& RenderContext::Settings::SetUnsyncMaxFps(uint32_t new_u
     return *this;
 }
 
-RenderContextBase::RenderContextBase(DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings)
-    : ContextBase(device, parallel_executor, Type::Render)
+RenderContextBase::RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
+                                     tf::Executor& parallel_executor, const Settings& settings)
+    : ContextBase(device, std::move(descriptor_manager_ptr), parallel_executor, Type::Render)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -213,7 +214,7 @@ void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_alloca
 
     if (is_callback_emitted)
     {
-        Emit(&IContextCallback::OnContextInitialized, *this);
+        Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
     }
 }
 
@@ -261,6 +262,13 @@ void RenderContextBase::UpdateFrameBufferIndex()
     META_CHECK_ARG_LESS(m_frame_buffer_index, GetSettings().frame_buffers_count);
     m_frame_index++;
     m_is_frame_buffer_in_use = true;
+}
+
+void RenderContextBase::InvalidateFrameBuffersCount(uint32_t frame_buffers_count)
+{
+    META_FUNCTION_TASK();
+    // We just change count in settings assuming that this method is called only inside RenderContextXX::Initialize()s function
+    m_settings.frame_buffers_count = frame_buffers_count;
 }
     
 uint32_t RenderContextBase::GetNextFrameBufferIndex()

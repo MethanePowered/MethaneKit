@@ -41,9 +41,9 @@ static std::string GetBitMaskFlagNames(EnumType mask_value, EnumType none_value 
         return "All";
 
     std::stringstream ss;
-    for (const auto& flag_value : magic_enum::flags::enum_values<EnumType>())
-        if (!magic_enum::flags::enum_contains(mask_value & flag_value))
-            ss << magic_enum::flags::enum_name(flag_value) << "|";
+    for (const auto& flag_value : magic_enum::enum_values<EnumType>())
+        if (!static_cast<bool>(mask_value & flag_value))
+            ss << magic_enum::enum_flags_name(flag_value) << "|";
 
     std::string mask_name = ss.str();
     if (!mask_name.empty())

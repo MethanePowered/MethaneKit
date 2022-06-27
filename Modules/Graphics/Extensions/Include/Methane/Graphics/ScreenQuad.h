@@ -23,22 +23,27 @@ ScreenQuad rendering primitive.
 
 #pragma once
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/CommandList.h>
-#include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Program.h>
-#include <Methane/Graphics/ProgramBindings.h>
-#include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
-
-#include <memory>
+#include <Methane/Graphics/Rect.hpp>
+#include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/Shader.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
+struct CommandQueue;
+struct RenderContext;
 struct RenderCommandList;
+struct RenderPattern;
+struct RenderState;
+struct ViewState;
+struct BufferSet;
+struct Buffer;
+struct Texture;
+struct Sampler;
+struct ProgramBindings;
 
 class ScreenQuad
 {
@@ -59,8 +64,9 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(RenderPattern& render_pattern, const Settings& settings);
-    ScreenQuad(RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings);
+    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings);
+    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings);
+    virtual ~ScreenQuad() = default;
 
     void SetBlendColor(const Color4F& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
@@ -68,7 +74,6 @@ public:
     void SetTexture(Ptr<Texture> texture_ptr);
 
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
-    [[nodiscard]] FrameRect       GetScreenRectInDots() const noexcept { return m_settings.screen_rect / GetRenderContext().GetContentScalingFactor(); }
     [[nodiscard]] const Texture&  GetTexture() const;
 
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
@@ -83,6 +88,7 @@ private:
     [[nodiscard]] static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings                 m_settings;
+    const Ptr<CommandQueue>  m_render_cmd_queue_ptr;
     const Ptr<RenderPattern> m_render_pattern_ptr;
     Ptr<RenderState>         m_render_state_ptr;
     Ptr<ViewState>           m_view_state_ptr;

@@ -77,19 +77,44 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachmen
     }
 }
 
-static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment)
+static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
+    const RenderPattern::Attachment::Type attachment_type = attachment.GetType();
+    switch(attachment_type)
+    {
+    case RenderPattern::Attachment::Type::Color:   return is_final_pass
+                                                        ? vk::ImageLayout::ePresentSrcKHR
+                                                        : vk::ImageLayout::eColorAttachmentOptimal;
+    case RenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case RenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    default:
+        META_UNEXPECTED_ARG_DESCR_RETURN(attachment_type, vk::ImageLayout::eUndefined,
+                                         "attachment type is not supported by render pass");
+    }
+}
+
+static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
+{
+    META_FUNCTION_TASK();
+    // FIXME: Current solution is unreliable, instead initial attachment State should be set in RenderPattern::Settings
+    const vk::ImageLayout attachment_type_layout = attachment.GetType() == RenderPattern::Attachment::Type::Color
+                                                 ? vk::ImageLayout::eColorAttachmentOptimal
+                                                 : vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    const vk::ImageLayout initial_image_layout = attachment.load_action == RenderPattern::Attachment::LoadAction::Load
+                                               ? attachment_type_layout
+                                               : vk::ImageLayout::eUndefined;
     return vk::AttachmentDescription(
         vk::AttachmentDescriptionFlags{},
         TypeConverterVK::PixelFormatToVulkan(attachment.format),
         GetVulkanSampleCountFlag(attachment.samples_count),
         GetVulkanAttachmentLoadOp(attachment.load_action),
         GetVulkanAttachmentStoreOp(attachment.store_action),
-        vk::AttachmentLoadOp::eDontCare,  // TODO: stencil is not supported yet
-        vk::AttachmentStoreOp::eDontCare, // TODO: stencil is not supported yet
-        vk::ImageLayout::eUndefined,      // TODO: add initial resource state in render pattern attachment
-        vk::ImageLayout::ePresentSrcKHR   // TODO: add final resource state in render pattern attachment
+        // TODO: stencil is not supported yet
+        vk::AttachmentLoadOp::eDontCare,
+        vk::AttachmentStoreOp::eDontCare,
+        initial_image_layout,
+        GetFinalImageLayoutOfAttachment(attachment, is_final_pass)
     );
 }
 
@@ -104,7 +129,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
 
     for(const RenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment, settings.is_final_pass));
         vk_color_attachment_refs.emplace_back(color_attachment.attachment_index, vk::ImageLayout::eColorAttachmentOptimal);
     }
 
@@ -116,18 +141,30 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
         vk_color_attachment_refs
     );
 
+    std::vector<vk::SubpassDependency> vk_dependencies;
+#if 0
+    vk_dependencies.emplace_back(
+        0, 0,
+        vk::PipelineStageFlagBits{},
+        vk::PipelineStageFlagBits{},
+        vk::AccessFlagBits{},
+        vk::AccessFlagBits{},
+        vk::DependencyFlags{}
+    );
+#endif
+
     if (settings.depth_attachment)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.depth_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.depth_attachment->attachment_index);
-        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthAttachmentOptimal);
+        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
     if (settings.stencil_attachment)
     {
-        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.stencil_attachment));
+        vk_attachment_descs.push_back(GetVulkanAttachmentDescription(*settings.stencil_attachment, settings.is_final_pass));
         vk_depth_stencil_attachment_ref.setAttachment(settings.stencil_attachment->attachment_index);
-        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eStencilAttachmentOptimal);
+        vk_depth_stencil_attachment_ref.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         vk_subpass_default.setPDepthStencilAttachment(&vk_depth_stencil_attachment_ref);
     }
 
@@ -135,30 +172,8 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
         vk::RenderPassCreateInfo(
             vk::RenderPassCreateFlags{},
             vk_attachment_descs,
-            vk_subpasses
-        )
-    );
-}
-
-static vk::UniqueFramebuffer CreateVulkanFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const RenderPass::Settings& settings)
-{
-    META_FUNCTION_TASK();
-    std::vector<vk::ImageView> vk_attachment_views;
-    std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(vk_attachment_views),
-        [](const Texture::Location& texture_location)
-        {
-            return dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).GetNativeImageView();
-        }
-    );
-
-    return vk_device.createFramebufferUnique(
-        vk::FramebufferCreateInfo(
-            vk::FramebufferCreateFlags{},
-            vk_render_pass,
-            vk_attachment_views,
-            settings.frame_size.GetWidth(),
-            settings.frame_size.GetHeight(),
-            1U
+            vk_subpasses,
+            vk_dependencies
         )
     );
 }
@@ -193,14 +208,14 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
     }
 }
 
-void RenderPatternVK::SetName(const std::string& name)
+bool RenderPatternVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (!RenderPatternBase::SetName(name))
+        return false;
 
-    RenderPatternBase::SetName(name);
     SetVulkanObjectName(GetRenderContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
+    return true;
 }
 
 const RenderContextVK& RenderPatternVK::GetRenderContextVK() const noexcept
@@ -223,34 +238,21 @@ Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings)
-    , m_vk_unique_frame_buffer(CreateVulkanFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
-    , m_vk_pass_begin_info(CreateBeginInfo(GetNativeFrameBuffer()))
+    , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
+    , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {
     META_FUNCTION_TASK();
-    render_pattern.GetRenderContextVK().Data::Emitter<IRenderContextVKCallback>::Connect(*this);
-}
-
-vk::RenderPassBeginInfo RenderPassVK::CreateBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
-{
-    META_FUNCTION_TASK();
-    const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
-    const FrameSize& frame_size = GetSettings().frame_size;
-    return vk::RenderPassBeginInfo(
-        GetPatternVK().GetNativeRenderPass(),
-        vk_frame_buffer,
-        vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(frame_size.GetWidth(), frame_size.GetHeight())),
-        attachment_clear_values
-    );
+    static_cast<Data::IEmitter<IRenderContextVKCallback>&>(render_pattern.GetRenderContextVK()).Connect(*this);
 }
 
 bool RenderPassVK::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (RenderPassBase::Update(settings))
-    {
-        Reset();
-    }
-    return false;
+    if (!RenderPassBase::Update(settings))
+        return false;
+
+    Reset();
+    return true;
 }
 
 void RenderPassVK::ReleaseAttachmentTextures()
@@ -268,35 +270,37 @@ void RenderPassVK::Begin(RenderCommandListBase& command_list)
     META_FUNCTION_TASK();
     RenderPassBase::Begin(command_list);
 
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
-    vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eInline);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
+    vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eSecondaryCommandBuffers);
 }
 
 void RenderPassVK::End(RenderCommandListBase& command_list)
 {
     META_FUNCTION_TASK();
-
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer();
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_command_buffer.endRenderPass();
 
     RenderPassBase::End(command_list);
 }
 
-void RenderPassVK::SetName(const std::string& name)
+bool RenderPassVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (!RenderPassBase::SetName(name))
+        return false;
 
-    RenderPassBase::SetName(name);
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());
+    return true;
 }
 
 void RenderPassVK::Reset()
 {
     META_FUNCTION_TASK();
-    m_vk_unique_frame_buffer = CreateVulkanFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
-    m_vk_pass_begin_info = CreateBeginInfo(m_vk_unique_frame_buffer.get());
+    m_vk_attachments.clear();
+    m_vk_unique_frame_buffer = CreateNativeFrameBuffer(GetContextVK().GetDeviceVK().GetNativeDevice(), GetPatternVK().GetNativeRenderPass(), GetSettings());
+    m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
+
+    Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
 }
 
 const IContextVK& RenderPassVK::GetContextVK() const noexcept
@@ -308,11 +312,65 @@ const IContextVK& RenderPassVK::GetContextVK() const noexcept
 void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
 {
     META_FUNCTION_TASK();
-    for (const Texture::Location& texture_location : GetSettings().attachments)
+    const Texture::Views& attachment_texture_locations = GetSettings().attachments;
+    if (attachment_texture_locations.empty())
+        return;
+
+    for (const Texture::View& texture_location : attachment_texture_locations)
     {
-        dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
+        if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
+            dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
     }
+
     Reset();
+}
+
+const ResourceViewVK& RenderPassVK::GetAttachmentTextureViewVK(const Attachment& attachment) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_vk_attachments.size(),
+                              "attachment index is out of bounds of render pass VK attachments array");
+    return m_vk_attachments[attachment.attachment_index];
+}
+
+vk::RenderPassBeginInfo RenderPassVK::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
+{
+    META_FUNCTION_TASK();
+    const std::vector<vk::ClearValue>& attachment_clear_values = GetPatternVK().GetAttachmentClearValues();
+    const FrameSize& frame_size = GetSettings().frame_size;
+    return vk::RenderPassBeginInfo(
+        GetPatternVK().GetNativeRenderPass(),
+        vk_frame_buffer,
+        vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D(frame_size.GetWidth(), frame_size.GetHeight())),
+        attachment_clear_values
+    );
+}
+
+vk::UniqueFramebuffer RenderPassVK::CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    if (m_vk_attachments.empty())
+    {
+        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
+                       [](const Texture::View& texture_location)
+                       { return ResourceViewVK(texture_location, Resource::Usage::RenderTarget); });
+    }
+
+    std::vector<vk::ImageView> vk_attachment_views;
+    std::transform(m_vk_attachments.begin(), m_vk_attachments.end(), std::back_inserter(vk_attachment_views),
+                   [](const ResourceViewVK& resource_view)
+                   { return resource_view.GetNativeImageView(); });
+
+    return vk_device.createFramebufferUnique(
+        vk::FramebufferCreateInfo(
+            vk::FramebufferCreateFlags{},
+            vk_render_pass,
+            vk_attachment_views,
+            settings.frame_size.GetWidth(),
+            settings.frame_size.GetHeight(),
+            1U
+        )
+    );
 }
 
 } // namespace Methane::Graphics

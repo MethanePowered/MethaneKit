@@ -26,11 +26,6 @@ SkyBox rendering primitive
 #include "ImageLoader.h"
 #include "MeshBuffers.hpp"
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/Program.h>
-#include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 
 namespace hlslpp // NOSONAR
@@ -46,6 +41,10 @@ namespace hlslpp // NOSONAR
 namespace Methane::Graphics
 {
 
+struct CommandQueue;
+struct RenderContext;
+struct RenderState;
+struct Sampler;
 class Camera;
 
 class SkyBox
@@ -61,12 +60,10 @@ public:
 
     struct Settings
     {
-        const Camera&                  view_camera;
-        ImageLoader::CubeFaceResources face_resources;
-        float                          scale;
-        ImageLoader::Options           image_options  = ImageLoader::Options::None;
-        Options                        render_options = Options::None;
-        float                          lod_bias       = 0.F;
+        const Camera& view_camera;
+        float         scale;
+        Options       render_options = Options::None;
+        float         lod_bias       = 0.F;
     };
 
     struct META_UNIFORM_ALIGN Uniforms
@@ -74,11 +71,11 @@ public:
         hlslpp::float4x4 mvp_matrix;
     };
 
-    SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings);
+    SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture, const Settings& settings);
 
     Ptr<ProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
-    void Draw(RenderCommandList& cmd_list, MeshBufferBindings& buffer_bindings, ViewState& view_state);
+    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, ViewState& view_state);
 
 private:
     struct Vertex
@@ -90,15 +87,17 @@ private:
         };
     };
 
-    SkyBox(RenderPattern& render_pattern, const ImageLoader& image_loader, const Settings& settings, const BaseMesh<Vertex>& mesh);
+    SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture,
+           const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
 
-    Settings         m_settings;
-    RenderContext&   m_context;
-    TexMeshBuffers   m_mesh_buffers;
-    Ptr<Sampler>     m_texture_sampler_ptr;
-    Ptr<RenderState> m_render_state_ptr;
+    Settings                m_settings;
+    const Ptr<CommandQueue> m_render_cmd_queue_ptr;
+    RenderContext&          m_context;
+    TexMeshBuffers          m_mesh_buffers;
+    Ptr<Sampler>            m_texture_sampler_ptr;
+    Ptr<RenderState>        m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

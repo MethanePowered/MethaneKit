@@ -26,7 +26,7 @@ X11/XCB utility functions.
 #include <fmt/format.h>
 
 #include <X11/Xlib-xcb.h>
-#include <X11/keysym.h>
+#include <xcb/randr.h>
 
 namespace Methane::Platform::Linux
 {
@@ -151,4 +151,79 @@ void SetXcbWindowStringProperty(xcb_connection_t* connection, xcb_window_t windo
              connection, "failed to set string property");
 }
 
+ScreenRect GetPrimaryMonitorRect(xcb_connection_t* connection, xcb_window_t root)
+{
+    META_FUNCTION_TASK();
+    xcb_generic_error_t* error = nullptr;
+    ScreenRect screen_rect {};
+
+#if 0 // Use X11 screen resources
+
+    const xcb_randr_get_screen_resources_current_cookie_t screen_resources_cookie = xcb_randr_get_screen_resources_current(connection, root);
+    xcb_randr_get_screen_resources_current_reply_t* screen_resources_reply  = xcb_randr_get_screen_resources_current_reply(connection, screen_resources_cookie, &error);
+    if (error)
+        throw XcbException("failed to get screen outputs", *error);
+
+    const xcb_timestamp_t timestamp = screen_resources_reply->config_timestamp;
+    const int screen_outputs_length = xcb_randr_get_screen_resources_current_outputs_length(screen_resources_reply);
+    const xcb_randr_output_t* screen_outputs = xcb_randr_get_screen_resources_current_outputs(screen_resources_reply);
+
+    for (int output_index = 0; output_index < screen_outputs_length; ++output_index)
+    {
+        const xcb_randr_get_output_info_cookie_t output_info_cookie = xcb_randr_get_output_info(connection, screen_outputs[output_index], timestamp);
+        xcb_randr_get_output_info_reply_t* output = xcb_randr_get_output_info_reply(connection, output_info_cookie, &error);
+        if (error)
+            throw XcbException("failed to get screen output information", *error);
+
+        if (!output || output->crtc == XCB_NONE || output->connection == XCB_RANDR_CONNECTION_DISCONNECTED)
+            continue;
+
+        const xcb_randr_get_crtc_info_cookie_t crtc_info_cookie = xcb_randr_get_crtc_info(connection, output->crtc, timestamp);
+        xcb_randr_get_crtc_info_reply_t* crtc = xcb_randr_get_crtc_info_reply(connection, crtc_info_cookie, &error);
+        if (error)
+            throw XcbException("failed to get screen output information", *error);
+
+        screen_rect.x      = crtc->x;
+        screen_rect.y      = crtc->y;
+        screen_rect.width  = crtc->width;
+        screen_rect.height = crtc->height;
+
+        free(crtc);
+        free(output);
+
+        break; // Use first found screen as primary
+    }
+
+    free(screen_resources_reply);
+    return screen_rect;
+
+#else // Use X11 monitors
+
+    const xcb_randr_get_monitors_cookie_t monitors_cookie = xcb_randr_get_monitors(connection, root, 1);
+    xcb_randr_get_monitors_reply_t* monitors_reply = xcb_randr_get_monitors_reply(connection, monitors_cookie, &error);
+    if (error)
+        throw XcbException("failed to get monitors", *error);
+
+    for (xcb_randr_monitor_info_iterator_t monitors_iter = xcb_randr_get_monitors_monitors_iterator(monitors_reply);
+         monitors_iter.rem > 0;
+         xcb_randr_monitor_info_next(&monitors_iter))
+    {
+        const xcb_randr_monitor_info_t* const monitor_info = monitors_iter.data;
+
+        screen_rect.x      = monitor_info->x;
+        screen_rect.y      = monitor_info->y;
+        screen_rect.width  = monitor_info->width;
+        screen_rect.height = monitor_info->height;
+
+        if (monitor_info->primary)
+            return screen_rect;
+    }
+
+    free(monitors_reply); // NOSONAR
+    return screen_rect;
+
+#endif
+}
+
 } // namespace Methane::Platform
+;

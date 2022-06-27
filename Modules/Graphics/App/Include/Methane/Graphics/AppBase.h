@@ -51,12 +51,13 @@ struct AppSettings
     AppSettings& SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept;
 };
 
-class AppBase
+class AppBase // NOSONAR
     : public Platform::App
     , protected Data::Receiver<IContextCallback> //NOSONAR
 {
 public:
-    explicit AppBase(const AppSettings& settings, Data::Provider& textures_provider);
+    AppBase(const AppSettings& settings, Data::Provider& textures_provider);
+    ~AppBase() override;
 
     AppBase(const AppBase&) = delete;
     AppBase(AppBase&&) = delete;
@@ -77,22 +78,23 @@ public:
     void SetShowHudInWindowTitle(bool show_hud_in_window_title);
 
 protected:
-    struct ResourceRestoreInfo // NOSONAR - noexcept move constructor should be auto-generated
+    struct ResourceRestoreInfo
     {
-        Resource::DescriptorByUsage descriptor_by_usage;
-        std::string                 name;
+        Resource::DescriptorByViewId descriptor_by_view_id;
+        std::string name;
 
-        ResourceRestoreInfo() = default;
-        explicit ResourceRestoreInfo(const Ptr<Resource>& resource_ptr)
-            : descriptor_by_usage(resource_ptr ? resource_ptr->GetDescriptorByUsage() : Resource::DescriptorByUsage())
-            , name(resource_ptr ? resource_ptr->GetName() : std::string())
-        { }
+        explicit ResourceRestoreInfo(const Resource& resource);
+        ResourceRestoreInfo(const ResourceRestoreInfo& other) = default;
+        ResourceRestoreInfo(ResourceRestoreInfo&& other) noexcept = default;
+
+        ResourceRestoreInfo& operator=(const ResourceRestoreInfo& other) = default;
+        ResourceRestoreInfo& operator=(ResourceRestoreInfo&& other) noexcept = default;
     };
 
-    Texture::Locations GetScreenPassAttachments(Texture& frame_buffer_texture) const;
+    Texture::Views GetScreenPassAttachments(Texture& frame_buffer_texture) const;
     Ptr<RenderPass> CreateScreenRenderPass(Texture& frame_buffer_texture) const;
-    ResourceRestoreInfo ReleaseDepthTexture();
-    void RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info);
+    Opt<ResourceRestoreInfo> ReleaseDepthTexture();
+    void RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt);
 
     const Graphics::IApp::Settings& GetBaseGraphicsAppSettings() const noexcept { return m_settings; }
     bool SetBaseAnimationsEnabled(bool animations_enabled);

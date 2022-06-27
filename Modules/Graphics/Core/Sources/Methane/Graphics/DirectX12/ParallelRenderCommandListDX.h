@@ -36,7 +36,7 @@ class CommandQueueDX;
 class ParallelRenderCommandListDX final : public ParallelRenderCommandListBase
 {
 public:
-    ParallelRenderCommandListDX(CommandQueueBase& cmd_buffer, RenderPassBase& render_pass);
+    ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
@@ -47,11 +47,11 @@ public:
     void Commit() override;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_indexc, const CompletedCallback& completed_callback = {}) override;
-    void Complete(uint32_t frame_index) override;
+    void Execute(const CompletedCallback& completed_callback = {}) override;
+    void Complete() override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;

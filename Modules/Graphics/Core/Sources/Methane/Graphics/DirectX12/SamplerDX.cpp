@@ -36,7 +36,7 @@ namespace Methane::Graphics
 using FilterMinMag = Sampler::Filter::MinMag;
 using FilterMip = Sampler::Filter::Mip;
 
-static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagNearestToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -51,7 +51,7 @@ static D3D12_FILTER ConvertFilterMinNearesetMagNearestToDX(const Sampler::Filter
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagLinearToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -66,15 +66,15 @@ static D3D12_FILTER ConvertFilterMinNearesetMagLinearToDX(const Sampler::Filter&
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearesetToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestToDX(const Sampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
 
     switch(filter.mag)
     {
-    case FilterMinMag::Nearest: return ConvertFilterMinNearesetMagNearestToDX(filter);
-    case FilterMinMag::Linear:  return ConvertFilterMinNearesetMagLinearToDX(filter);
+    case FilterMinMag::Nearest: return ConvertFilterMinNearestMagNearestToDX(filter);
+    case FilterMinMag::Linear:  return ConvertFilterMinNearestMagLinearToDX(filter);
     default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
@@ -128,7 +128,7 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
 
     switch (filter.min)
     {
-    case FilterMinMag::Nearest: return ConvertFilterMinNearesetToDX(filter);
+    case FilterMinMag::Nearest: return ConvertFilterMinNearestToDX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinLinearToDX(filter);
     default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
@@ -204,17 +204,24 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     }
 }
 
-Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings, const DescriptorByUsage& descriptor_by_usage)
+Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings, descriptor_by_usage);
+    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage)
-    : ResourceDX(context, settings, descriptor_by_usage)
+SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings)
+    : ResourceDX(context, settings)
 {
     META_FUNCTION_TASK();
-    InitializeDefaultDescriptors();
+}
+
+Opt<Resource::Descriptor> SamplerDX::InitializeNativeViewDescriptor(const ViewDX::Id& view_id)
+{
+    META_FUNCTION_TASK();
+    const Resource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
+    const Settings& settings = GetSettings();
 
     D3D12_SAMPLER_DESC dx_sampler_desc{};
     dx_sampler_desc.Filter             = ConvertFilterToDX(settings.filter);
@@ -228,7 +235,8 @@ SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings, const
     dx_sampler_desc.ComparisonFunc     = TypeConverterDX::CompareFunctionToD3D(settings.compare_function);
     ConvertBorderColorToDXColor(settings.border_color, &dx_sampler_desc.BorderColor[0]);
 
-    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, GetNativeCpuDescriptorHandle(Usage::ShaderRead));
+    GetContextDX().GetDeviceDX().GetNativeDevice()->CreateSampler(&dx_sampler_desc, cpu_descriptor_handle);
+    return descriptor;
 }
 
 } // namespace Methane::Graphics

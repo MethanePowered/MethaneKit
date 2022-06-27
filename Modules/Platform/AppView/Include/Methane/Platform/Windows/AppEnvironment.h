@@ -23,7 +23,7 @@ Windows application environment.
 
 #pragma once
 
-#include <windows.h>
+#include <Windows.h>
 
 namespace Methane::Platform
 {

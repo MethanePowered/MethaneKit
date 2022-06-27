@@ -64,10 +64,10 @@ public:
     void Reset(const Settings& settings) override;
 
     // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
+    void Apply(RenderCommandListBase& render_command_list, Groups state_groups) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
 

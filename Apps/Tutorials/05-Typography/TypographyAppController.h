@@ -64,4 +64,4 @@ private:
     TypographyApp& m_typography_app;
 };
 
-} // namespace Methane::Graphics
+} // namespace Methane::Tutorials

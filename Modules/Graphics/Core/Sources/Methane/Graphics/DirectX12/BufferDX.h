@@ -25,9 +25,9 @@ DirectX 12 implementation of the buffer interface.
 
 #include "BlitCommandListDX.h"
 #include "ResourceDX.hpp"
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/BufferBase.h>
-#include <Methane/Graphics/DescriptorHeap.h>
 #include <Methane/Graphics/Windows/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -39,25 +39,24 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-template<typename TViewNative, typename... ExtraViewArgs>
+template<typename TNativeView, typename... ExtraViewArgs>
 class BufferDX final : public ResourceDX<BufferBase>
 {
 public:
-    BufferDX(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage, ExtraViewArgs... view_args)
-        : ResourceDX(context, settings, descriptor_by_usage)
+    BufferDX(const ContextBase& context, const Settings& settings, ExtraViewArgs... view_args)
+        : ResourceDX(context, settings)
     {
         META_FUNCTION_TASK();
         using namespace magic_enum::bitwise_operators;
 
         const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
-        const bool is_read_back_buffer = magic_enum::flags::enum_contains(settings.usage_mask & Usage::ReadBack);
+        const auto is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-        const D3D12_RESOURCE_STATES resource_state = (is_read_back_buffer || is_private_storage) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_GENERIC_READ;
+        const Resource::State       resource_state = is_read_back_buffer || is_private_storage ? ResourceState::CopyDest : ResourceState::GenericRead;
         const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
-        InitializeDefaultDescriptors();
         InitializeCommittedResource(resource_desc, heap_type, resource_state);
         InitializeView(view_args...);
 
@@ -65,25 +64,31 @@ public:
         {
             m_cp_upload_resource = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
         }
+
+        // Resources on D3D12_HEAP_TYPE_UPLOAD heaps requires D3D12_RESOURCE_STATE_GENERIC_READ or D3D12_RESOURCE_STATE_RESOLVE_SOURCE, which can not be changed.
+        // SetState(state, barriers) behavior is prevent updating resource barriers while setting a given state
+        SetStateChangeUpdatesBarriers(is_private_storage);
     }
 
     // Object overrides
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        ResourceDX::SetName(name);
+        if (!ResourceDX::SetName(name))
+            return false;
 
         if (m_cp_upload_resource)
         {
             m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
         }
+        return true;
     }
 
     // Resource overrides
-    void SetData(const SubResources& sub_resources, CommandQueue* sync_cmd_queue) override
+    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override
     {
         META_FUNCTION_TASK();
-        ResourceDX::SetData(sub_resources, sync_cmd_queue);
+        ResourceDX::SetData(sub_resources, target_cmd_queue);
 
         const CD3DX12_RANGE zero_read_range(0U, 0U);
         const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
@@ -120,7 +125,7 @@ public:
             return;
 
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
-        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(sync_cmd_queue);
+        const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
         GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
     }
@@ -130,7 +135,7 @@ public:
         META_FUNCTION_TASK();
 
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(GetUsage(), magic_enum::flags::enum_contains(GetUsage() & Usage::ReadBack),
+        META_CHECK_ARG_DESCR(GetUsage(), static_cast<bool>(GetUsage() & Usage::ReadBack),
                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);
@@ -161,22 +166,25 @@ public:
         return SubResource(std::move(sub_resource_data), sub_resource_index, data_range);
     }
 
-    const TViewNative& GetNativeView() const { return m_buffer_view; }
+    const TNativeView& GetNativeView() const { return m_buffer_view; }
+
+    // IResourceDX override
+    Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
 
 private:
     void InitializeView(ExtraViewArgs...);
 
-    // NOTE: in case of resource context placed in descriptor heap, m_buffer_view field holds context descriptor instead of context
-    TViewNative                 m_buffer_view;
+    // In case of resource placed in descriptor heap, m_buffer_view field holds view descriptor instead of a view
+    TNativeView                 m_buffer_view;
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 
-struct ReadBackBufferView { };
+struct ReadBackBufferViewDesc { };
 
 using VertexBufferDX   = BufferDX<D3D12_VERTEX_BUFFER_VIEW, Data::Size>;
 using IndexBufferDX    = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
-using ReadBackBufferDX = BufferDX<ReadBackBufferView>;
+using ReadBackBufferDX = BufferDX<ReadBackBufferViewDesc>;
 
 class BufferSetDX final : public BufferSetBase
 {

@@ -100,6 +100,8 @@ private:
     {
         if constexpr (std::is_enum_v<V>)
             return fmt::format("{}::{}({}) is not valid", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), value);
+        else if constexpr (std::is_pointer_v<V>)
+            return fmt::format("{}*({}) is not valid", typeid(V).name(), fmt::ptr(value));
         else if constexpr (IsStaticCastable<V, std::string>::value)
             return fmt::format("{}({}) is not valid", typeid(V).name(), static_cast<std::string>(value));
         else

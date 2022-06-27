@@ -45,6 +45,7 @@ struct AppFrame
     Ptr<RenderPass> screen_pass_ptr;
 
     explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
+    virtual ~AppFrame() = default;
 
     // AppFrame interface
     virtual void ReleaseScreenPassAttachmentTextures()
@@ -112,20 +113,22 @@ public:
         frame_restore_infos.reserve(m_frames.size());
         for (FrameT& frame : m_frames)
         {
-            frame_restore_infos.emplace_back(frame.screen_texture_ptr);
+            META_CHECK_ARG_NOT_NULL(frame.screen_texture_ptr);
+            frame_restore_infos.emplace_back(*frame.screen_texture_ptr);
             frame.ReleaseScreenPassAttachmentTextures();
         }
-        const ResourceRestoreInfo depth_restore_info = ReleaseDepthTexture();
+        const Opt<ResourceRestoreInfo> depth_restore_info_opt = ReleaseDepthTexture();
 
         // Resize render context
         GetRenderContext().Resize(frame_size);
 
         // Restore frame and depth buffers with new size and update textures in render pass settings
-        RestoreDepthTexture(depth_restore_info);
+        RestoreDepthTexture(depth_restore_info_opt);
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index, frame_restore_info.descriptor_by_usage);
+            frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index);
+            frame.screen_texture_ptr->RestoreDescriptorViews(frame_restore_info.descriptor_by_view_id);
             frame.screen_texture_ptr->SetName(frame_restore_info.name);
             frame.screen_pass_ptr->Update({
                 GetScreenPassAttachments(*frame.screen_texture_ptr),

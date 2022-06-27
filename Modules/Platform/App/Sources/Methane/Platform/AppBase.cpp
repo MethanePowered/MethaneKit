@@ -168,13 +168,14 @@ AppBase::AppBase(const AppBase::Settings& settings)
 
 AppBase::~AppBase()
 {
-    m_parallel_executor_ptr->wait_for_all();
+    META_FUNCTION_TASK();
+    if (m_parallel_executor_ptr)
+        m_parallel_executor_ptr->wait_for_all();
 }
 
 int AppBase::Run(const RunArgs& args)
 {
     META_FUNCTION_TASK();
-
     try
     {
         parse(args.cmd_arg_count, args.cmd_arg_values);
@@ -189,7 +190,6 @@ int AppBase::Run(const RunArgs& args)
         std::cerr << "Failed to parse command line:" << std::endl; // NOSONAR
         return exit(e);
     }
-
     return 0;
 }
 

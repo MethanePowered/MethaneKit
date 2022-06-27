@@ -158,6 +158,7 @@ TypographyApp::~TypographyApp()
 
     // Clear the font library to release all atlas textures
     gui::Font::Library::Get().Clear();
+    m_font_atlas_badges.clear();
 }
 
 void TypographyApp::Init()
@@ -217,7 +218,7 @@ void TypographyApp::Init()
     {
         frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Text Rendering", frame.index));
-        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr });
+        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
 
     CompleteInitialization();

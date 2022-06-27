@@ -27,7 +27,6 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include "DescriptorHeap.h"
 #include "CommandListBase.h"
 #include "ObjectBase.h"
 
@@ -39,6 +38,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 class CommandListBase;
+class ResourceBase;
 
 class ProgramBindingsBase
     : public ProgramBindings
@@ -56,44 +56,47 @@ public:
 
         ArgumentBindingBase(const ContextBase& context, const Settings& settings);
 
-        // ArgumentBinding interface
-        const Settings&            GetSettings() const noexcept override            { return m_settings; }
-        const Resource::Locations& GetResourceLocations() const noexcept override   { return m_resource_locations; }
-        void                       SetResourceLocations(const Resource::Locations& resource_locations) override;
-        explicit operator std::string() const override;
+        virtual void MergeSettings(const ArgumentBindingBase& other);
 
-        DescriptorHeap::Type       GetDescriptorHeapType() const;
+        // ArgumentBinding interface
+        const Settings&        GetSettings() const noexcept override     { return m_settings; }
+        const Resource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
+        bool                   SetResourceViews(const Resource::Views& resource_views) override;
+        explicit operator std::string() const final;
+
         Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
 
         bool IsAlreadyApplied(const Program& program,
                               const ProgramBindingsBase& applied_program_bindings,
                               bool check_binding_value_changes = true) const;
+
     protected:
         const ContextBase& GetContext() const noexcept { return m_context; }
 
     private:
-        const ContextBase&  m_context;
-        const Settings      m_settings;
-        Resource::Locations m_resource_locations;
+        const ContextBase& m_context;
+        const Settings     m_settings;
+        Resource::Views    m_resource_views;
     };
 
     using ArgumentBindings = std::unordered_map<Program::Argument, Ptr<ArgumentBindingBase>, Program::Argument::Hash>;
 
-    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index = 0U);
-    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceLocationsByArgument& replace_resource_location_by_argument = {}, const Opt<Data::Index>& frame_index = {});
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index);
+    ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindingsBase(ProgramBindingsBase&&) noexcept = default;
-    ~ProgramBindingsBase() override;
 
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
-    const Program::Arguments& GetArguments() const noexcept  { return m_arguments; }
-    Data::Index               GetFrameIndex() const noexcept { return m_frame_index; }
-
     // ProgramBindings interface
-    Program&         GetProgram() const override;
-    ArgumentBinding& Get(const Program::Argument& shader_argument) const override;
-    explicit operator std::string() const override;
+    Program&                  GetProgram() const final;
+    const Program::Arguments& GetArguments() const noexcept final     { return m_arguments; }
+    Data::Index               GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index               GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    ArgumentBinding&          Get(const Program::Argument& shader_argument) const final;
+    explicit operator std::string() const final;
 
     // ProgramBindingsBase interface
     virtual void CompleteInitialization() = 0;
@@ -101,38 +104,61 @@ public:
 
     Program::Arguments GetUnboundArguments() const;
 
+    template<typename CommandListType>
+    void ApplyResourceTransitionBarriers(CommandListType& command_list,
+                                         Program::ArgumentAccessor::Type apply_access_mask = static_cast<Program::ArgumentAccessor::Type>(~0U),
+                                         const CommandQueue* owner_queue_ptr = nullptr) const
+    {
+        if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
+            m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
+        {
+            command_list.SetResourceBarriers(*m_resource_state_transition_barriers_ptr);
+        }
+    }
+
 protected:
     // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding&, const Resource::Locations&, const Resource::Locations&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
+
+    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
     Program& GetProgram();
-    void ReserveDescriptorHeapRanges();
-    void SetResourcesForArguments(const ResourceLocationsByArgument& resource_locations_by_argument) const;
+    void InitializeArgumentBindings(const ProgramBindingsBase* other_program_bindings_ptr = nullptr);
+    ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+                                                 const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
-
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const std::optional<DescriptorHeap::Reservation>& GetDescriptorHeapReservationByType(DescriptorHeap::Type heap_type) const;
+    const Refs<Resource>& GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const;
+
+    void ClearTransitionResourceStates();
+    void RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource);
+    void AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource);
+    void AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding);
 
 private:
-    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    struct ResourceAndState
+    {
+        Ptr<ResourceBase> resource_ptr;
+        Resource::State   state;
+
+        ResourceAndState(Ptr<ResourceBase> resource_ptr, Resource::State);
+    };
+
+    using ResourceStates = std::vector<ResourceAndState>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+
+    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
+    void InitResourceRefsByAccess();
 
     const Ptr<Program>              m_program_ptr;
     Data::Index                     m_frame_index;
     Program::Arguments              m_arguments;
     ArgumentBindings                m_binding_by_argument;
-    DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
-};
-
-class DescriptorsCountByAccess
-{
-public:
-    DescriptorsCountByAccess();
-
-    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
-    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
-
-private:
-    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
+    ResourceStatesByAccess          m_transition_resource_states_by_access;
+    ResourceRefsByAccess            m_resource_refs_by_access;
+    mutable Ptr<Resource::Barriers> m_resource_state_transition_barriers_ptr;
+    Data::Index                     m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
 } // namespace Methane::Graphics

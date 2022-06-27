@@ -44,8 +44,8 @@ struct fmt::formatter<Methane::Graphics::RenderPattern::ColorAttachment>
 namespace Methane::Graphics
 {
 
-RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                   LoadAction load_action, StoreAction store_action)
+RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format,
+                                      Data::Size samples_count, LoadAction load_action, StoreAction store_action)
     : attachment_index(attachment_index)
     , format(format)
     , samples_count(samples_count)
@@ -81,7 +81,7 @@ RenderPattern::Attachment::operator std::string() const
 }
 
 RenderPattern::ColorAttachment::ColorAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                             LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
+                                                LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_color(clear_color)
 {
@@ -109,7 +109,7 @@ RenderPattern::ColorAttachment::operator std::string() const
 }
 
 RenderPattern::DepthAttachment::DepthAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                             LoadAction load_action, StoreAction store_action, Depth clear_value)
+                                                LoadAction load_action, StoreAction store_action, Depth clear_value)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {
@@ -137,7 +137,7 @@ RenderPattern::DepthAttachment::operator std::string() const
 }
 
 RenderPattern::StencilAttachment::StencilAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                                 LoadAction load_action, StoreAction store_action, Stencil clear_value)
+                                                    LoadAction load_action, StoreAction store_action, Stencil clear_value)
     : Attachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {
@@ -255,9 +255,10 @@ bool RenderPass::Settings::operator!=(const Settings& other) const
            std::tie(other.attachments, other.frame_size);
 }
 
-RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings& settings)
+RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings& settings, bool update_attachment_states)
     : m_pattern_base_ptr(std::dynamic_pointer_cast<RenderPatternBase>(render_pattern.GetBasePtr()))
     , m_settings(settings)
+    , m_update_attachment_states(update_attachment_states)
 {
     META_FUNCTION_TASK();
     InitAttachmentStates();
@@ -274,8 +275,6 @@ bool RenderPassBase::Update(const RenderPass::Settings& settings)
     m_non_frame_buffer_attachment_textures.clear();
     m_color_attachment_textures.clear();
     m_p_depth_attachment_texture = nullptr;
-    m_begin_transition_barriers_ptr.reset();
-    m_end_transition_barriers_ptr.reset();
 
     InitAttachmentStates();
     return true;
@@ -288,23 +287,26 @@ void RenderPassBase::ReleaseAttachmentTextures()
     m_settings.attachments.clear();
 }
 
-void RenderPassBase::Begin(RenderCommandListBase& render_command_list)
+void RenderPassBase::Begin(RenderCommandListBase&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
-    SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite, m_begin_transition_barriers_ptr, render_command_list);
+    if (m_update_attachment_states)
+    {
+        SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite);
+    }
     m_is_begun = true;
 }
 
-void RenderPassBase::End(RenderCommandListBase& render_command_list)
+void RenderPassBase::End(RenderCommandListBase&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
-    if (GetPatternBase().GetSettings().is_final_pass)
+    if (m_update_attachment_states && GetPatternBase().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(Resource::State::Present, { }, m_end_transition_barriers_ptr, render_command_list);
+        SetAttachmentStates(Resource::State::Present, { });
     }
     m_is_begun = false;
 }
@@ -312,11 +314,35 @@ void RenderPassBase::End(RenderCommandListBase& render_command_list)
 void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    Ptr<Resource::Barriers> transition_barriers_ptr;
+    const bool is_final_pass = GetPatternBase().GetSettings().is_final_pass;
+    const Resource::State color_attachment_state = is_final_pass ? Resource::State::Present : Resource::State::RenderTarget;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Resource::State::Common)
-            color_texture_ref.get().SetState(Resource::State::Present, transition_barriers_ptr);
+        if (color_texture_ref.get().GetState() == Resource::State::Common ||
+            color_texture_ref.get().GetState() == Resource::State::Undefined)
+            color_texture_ref.get().SetState(color_attachment_state);
+    }
+}
+
+void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& color_state,
+                                         const std::optional<Resource::State>& depth_state) const
+{
+    META_FUNCTION_TASK();
+    if (color_state)
+    {
+        for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
+        {
+            color_texture_ref.get().SetState(*color_state);
+        }
+    }
+
+    if (depth_state)
+    {
+        if (TextureBase* p_depth_texture = GetDepthAttachmentTexture();
+            p_depth_texture)
+        {
+            p_depth_texture->SetState(*depth_state);
+        }
     }
 }
 
@@ -351,7 +377,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& c
     }
 }
 
-const Texture::Location& RenderPassBase::GetAttachmentTextureLocation(const Attachment& attachment) const
+const Texture::View& RenderPassBase::GetAttachmentTextureView(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
@@ -369,7 +395,7 @@ const Refs<TextureBase>& RenderPassBase::GetColorAttachmentTextures() const
     m_color_attachment_textures.reserve(color_attachments.size());
     for (const ColorAttachment& color_attach : color_attachments)
     {
-        m_color_attachment_textures.push_back(static_cast<TextureBase&>(GetAttachmentTextureLocation(color_attach).GetTexture()));
+        m_color_attachment_textures.push_back(static_cast<TextureBase&>(GetAttachmentTextureView(color_attach).GetTexture()));
     }
     return m_color_attachment_textures;
 }
@@ -384,7 +410,7 @@ TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
     if (!depth_attachment_opt)
         return nullptr;
 
-    m_p_depth_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*depth_attachment_opt).GetTexturePtr().get());
+    m_p_depth_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureView(*depth_attachment_opt).GetTexturePtr().get());
     return m_p_depth_attachment_texture;
 }
 
@@ -398,7 +424,7 @@ TextureBase* RenderPassBase::GetStencilAttachmentTexture() const
     if (!stencil_attachment_opt)
         return nullptr;
 
-    m_p_stencil_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureLocation(*stencil_attachment_opt).GetTexturePtr().get());
+    m_p_stencil_attachment_texture = static_cast<TextureBase*>(GetAttachmentTextureView(*stencil_attachment_opt).GetTexturePtr().get());
     return m_p_stencil_attachment_texture;
 }
 

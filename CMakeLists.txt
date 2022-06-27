@@ -23,15 +23,16 @@ if (POLICY CMP0110)
 endif()
 
 # Build configuration
-option(METHANE_GFX_VULKAN_ENABLED        "Enable Vulkan graphics API instead of platform native API" OFF)
-option(METHANE_APPS_BUILD_ENABLED        "Enable applications build" ON)
-option(METHANE_TESTS_BUILD_ENABLED       "Enable tests build" ON)
-option(METHANE_CHECKS_ENABLED            "Enable runtime checks of input arguments" ON)
-option(METHANE_RUN_TESTS_DURING_BUILD    "Enable test auto-run after module build" ON)
-option(METHANE_UNITY_BUILD_ENABLED       "Enable unity build speedup for some modules" ON)
-option(METHANE_CODE_COVERAGE_ENABLED     "Enable code coverage data collection with GCC and Clang" OFF)
-option(METHANE_SHADERS_CODEVIEW_ENABLED  "Enable shaders code symbols viewing in debug tools)" OFF)
-option(METHANE_OPEN_IMAGE_IO_ENABLED     "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
+option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ON)
+option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ON)
+option(METHANE_CHECKS_ENABLED               "Enable runtime checks of input arguments" ON)
+option(METHANE_RUN_TESTS_DURING_BUILD       "Enable test auto-run after module build" ON)
+option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some modules" ON)
+option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collection with GCC and Clang" OFF)
+option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
+option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
+option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -131,8 +132,10 @@ elseif(APPLE)
 else(UNIX)
 
     find_package(X11 REQUIRED)
-    if (NOT X11_xcb_FOUND OR NOT X11_X11_xcb_FOUND)
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libx11-xcb-dev`")
+    if (NOT X11_xcb_FOUND OR
+        NOT X11_X11_xcb_FOUND)
+        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
     endif()
 
 endif()
@@ -275,6 +278,10 @@ endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)
     message(STATUS "Methane shaders code symbols are enabled")
+endif()
+
+if (METHANE_SHADERS_VALIDATION_ENABLED)
+    message(STATUS "Methane shaders DXIL code signature validation is enabled")
 endif()
 
 if(METHANE_OPEN_IMAGE_IO_ENABLED)

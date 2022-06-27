@@ -37,14 +37,17 @@ CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandList::Type
     META_FUNCTION_TASK();
 }
 
-void CommandQueueBase::SetName(const std::string& name)
+bool CommandQueueBase::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    ObjectBase::SetName(name);
+    if (!ObjectBase::SetName(name))
+        return false;
+
     if (m_tracy_gpu_context_ptr)
     {
         m_tracy_gpu_context_ptr->SetName(name);
     }
+    return true;
 }
 
 const Context& CommandQueueBase::GetContext() const noexcept
@@ -56,10 +59,9 @@ const Context& CommandQueueBase::GetContext() const noexcept
 void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    const uint32_t frame_index = GetCurrentFrameBufferIndex();
-    META_LOG("Command queue '{}' is executing on frame {}", GetName(), frame_index);
+    META_LOG("Command queue '{}' is executing", GetName());
 
-    static_cast<CommandListSetBase&>(command_lists).Execute(frame_index, completed_callback);
+    static_cast<CommandListSetBase&>(command_lists).Execute(completed_callback);
 }
 
 Tracy::GpuContext& CommandQueueBase::GetTracyContext()
@@ -73,14 +75,6 @@ void CommandQueueBase::InitializeTracyGpuContext(const Tracy::GpuContext::Settin
 {
     META_FUNCTION_TASK();
     m_tracy_gpu_context_ptr = std::make_unique<Tracy::GpuContext>(tracy_settings);
-}
-
-uint32_t CommandQueueBase::GetCurrentFrameBufferIndex() const
-{
-    META_FUNCTION_TASK();
-    return m_context.GetType() == Context::Type::Render
-         ? dynamic_cast<const RenderContextBase&>(m_context).GetFrameBufferIndex()
-         : 0U;
 }
 
 } // namespace Methane::Graphics

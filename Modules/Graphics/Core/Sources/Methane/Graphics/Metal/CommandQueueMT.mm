@@ -48,6 +48,7 @@ CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandList::Type com
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
             Tracy::GpuContext::Type::Metal,
+            0U,
             Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
         )
     );
@@ -59,14 +60,15 @@ CommandQueueMT::~CommandQueueMT()
     [m_mtl_command_queue release];
 }
 
-void CommandQueueMT::SetName(const std::string& name)
+bool CommandQueueMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
+    if (!CommandQueueBase::SetName(name))
+        return false;
+
     META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
-
-    CommandQueueBase::SetName(name);
-
     m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    return true;
 }
 
 const IContextMT& CommandQueueMT::GetContextMT() const noexcept

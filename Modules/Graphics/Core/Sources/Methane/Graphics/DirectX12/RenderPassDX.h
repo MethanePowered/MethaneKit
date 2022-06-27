@@ -23,6 +23,9 @@ DirectX 12 implementation of the render pass interface.
 
 #pragma once
 
+#include "DescriptorHeapDX.h"
+#include "ResourceDX.h"
+
 #include <Methane/Graphics/RenderPassBase.h>
 #include <Methane/Data/Receiver.hpp>
 
@@ -45,6 +48,7 @@ public:
 
     // RenderPass interface
     bool Update(const Settings& settings) override;
+    void ReleaseAttachmentTextures() override;
 
     // RenderPassBase interface
     void Begin(RenderCommandListBase& command_list) override;
@@ -67,12 +71,12 @@ private:
         D3D12_RENDER_PASS_BEGINNING_ACCESS beginning  { };
         D3D12_RENDER_PASS_ENDING_ACCESS    ending     { };
 
-        explicit AccessDesc(const Attachment& attachment, const Texture::Location& texture_location);
-        explicit AccessDesc(const Attachment* attachment_ptr, const Texture::Location* texture_location_ptr);
-        explicit AccessDesc(const ColorAttachment& color_attachment, const RenderPassBase& render_pass);
-        explicit AccessDesc(const ColorAttachment& color_attachment, const Texture::Location& texture_location);
-        AccessDesc(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt, const RenderPassBase& render_pass);
-        AccessDesc(const Opt<StencilAttachment>& stencil_attachment_opt, const Opt<DepthAttachment>& depth_attachment_opt, const RenderPassBase& render_pass);
+        AccessDesc(const Attachment& attachment, const ResourceViewDX& dx_texture_location);
+        AccessDesc(const Attachment* attachment_ptr, const ResourceViewDX* dx_texture_location_ptr);
+        AccessDesc(const ColorAttachment& color_attachment, const RenderPassDX& render_pass);
+        AccessDesc(const ColorAttachment& color_attachment, const ResourceViewDX& dx_texture_location);
+        AccessDesc(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt, const RenderPassDX& render_pass);
+        AccessDesc(const Opt<StencilAttachment>& stencil_attachment_opt, const Opt<DepthAttachment>& depth_attachment_opt, const RenderPassDX& render_pass);
 
         void InitDepthStencilClearValue(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt);
 
@@ -85,7 +89,7 @@ private:
         D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle  { };
         std::array<float, 4>        clear_color { };
 
-        RTClearInfo(const ColorAttachment& color_attach, const RenderPassBase& render_pass);
+        RTClearInfo(const ColorAttachment& color_attach, const RenderPassDX& render_pass);
     };
 
     struct DSClearInfo
@@ -98,19 +102,22 @@ private:
         UINT8                       stencil_value   = 0;
 
         DSClearInfo() = default;
-        DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassBase& render_pass);
+        DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassDX& render_pass);
     };
+
+    const ResourceViewDX& GetAttachmentTextureViewDX(const Attachment& attachment) const;
 
     void UpdateNativeRenderPassDesc(bool settings_changed);
     void UpdateNativeClearDesc();
 
-    template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
+    template<typename FuncType> // function void(DescriptorHeapDX& descriptor_heap)
     void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
 
     // IDescriptorHeapCallback implementation
-    void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;
+    void OnDescriptorHeapAllocated(DescriptorHeapDX& descriptor_heap) override;
 
     // D3D12 Render-Pass description
+    ResourceViewsDX                                     m_dx_attachments;
     std::optional<bool>                                 m_is_native_render_pass_available;
     std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;
     std::optional<D3D12_RENDER_PASS_DEPTH_STENCIL_DESC> m_depth_stencil_desc;
@@ -125,6 +132,10 @@ private:
     mutable std::vector<ID3D12DescriptorHeap*>          m_native_descriptor_heaps;
     mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>    m_native_rt_cpu_handles;
     mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
+
+    // Resource transition barriers
+    Ptr<Resource::Barriers> m_begin_transition_barriers_ptr;
+    Ptr<Resource::Barriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

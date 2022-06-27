@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -73,14 +73,14 @@ void RenderContextVK::Release()
     ContextVK<RenderContextBase>::Release();
 }
 
-void RenderContextVK::SetName(const std::string& name)
+bool RenderContextVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (ObjectBase::GetName() == name)
-        return;
+    if (!ContextVK::SetName(name))
+        return false;
 
-    ContextVK::SetName(name);
-    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), name.c_str());
+    ResetNativeObjectNames();
+    return true;
 }
 
 void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
@@ -133,18 +133,20 @@ void RenderContextVK::Present()
     META_SCOPE_TIMER("RenderContextDX::Present");
     ContextVK<RenderContextBase>::Present();
 
-    const auto& render_command_queue = static_cast<const CommandQueueVK&>(GetRenderCommandKit().GetQueue());
+    auto& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
 
     // Present frame to screen
     const uint32_t image_index = GetFrameBufferIndex();
     const vk::PresentInfoKHR present_info(
-        render_command_queue.GetWaitForExecutionCompleted(image_index).semaphores,
+        render_command_queue.GetWaitForFrameExecutionCompleted(image_index).semaphores,
         GetNativeSwapchain(), image_index
     );
     if (const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
         present_result != vk::Result::eSuccess &&
         present_result != vk::Result::eSuboptimalKHR)
         throw InvalidArgumentException<vk::Result>("RenderContextVK::Present", "present_result", present_result, "failed to present frame image on screen");
+
+    render_command_queue.ResetWaitForFrameExecution(image_index);
 
     ContextVK<RenderContextBase>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();
@@ -240,8 +242,8 @@ vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::
 {
     META_FUNCTION_TASK();
     const std::vector<vk::PresentModeKHR> required_present_modes = GetSettings().vsync_enabled
-        ? std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eFifo }
-        : std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eImmediate };
+        ? std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eFifoRelaxed, vk::PresentModeKHR::eFifo }
+        : std::vector<vk::PresentModeKHR>{ vk::PresentModeKHR::eMailbox,     vk::PresentModeKHR::eImmediate };
 
     std::optional<vk::PresentModeKHR> present_mode_opt;
     for (vk::PresentModeKHR required_present_mode : required_present_modes)
@@ -286,6 +288,7 @@ vk::Extent2D RenderContextVK::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
 void RenderContextVK::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
+
     if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
         !GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
@@ -303,7 +306,7 @@ void RenderContextVK::InitializeNativeSwapchain()
         image_count = swap_chain_support.capabilities.maxImageCount;
     }
 
-    vk::UniqueSwapchainKHR vk_new_swapchain = m_vk_device.createSwapchainKHRUnique(
+    m_vk_unique_swapchain = m_vk_device.createSwapchainKHRUnique(
         vk::SwapchainCreateInfoKHR(
             vk::SwapchainCreateFlagsKHR(),
             GetNativeSurface(),
@@ -317,20 +320,19 @@ void RenderContextVK::InitializeNativeSwapchain()
             swap_chain_support.capabilities.currentTransform,
             vk::CompositeAlphaFlagBitsKHR::eOpaque,
             swap_present_mode,
-            true,
-            m_vk_unique_swapchain.get()
+            true
         )
     );
-
-    const bool is_swap_chain_change = !!m_vk_unique_swapchain;
-    m_vk_unique_swapchain = std::move(vk_new_swapchain);
-
     m_vk_frame_images = m_vk_device.getSwapchainImagesKHR(GetNativeSwapchain());
     m_vk_frame_format = swap_surface_format.format;
     m_vk_frame_extent = swap_extent;
 
+    if (m_vk_frame_images.size() != GetSettings().frame_buffers_count)
+        InvalidateFrameBuffersCount(static_cast<uint32_t>(m_vk_frame_images.size()));
+
     // Create frame semaphores in pool
-    m_vk_frame_semaphores_pool.resize(GetSettings().frame_buffers_count);
+    const uint32_t frame_buffers_count = GetSettings().frame_buffers_count;
+    m_vk_frame_semaphores_pool.resize(frame_buffers_count);
     for(vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
     {
         if (vk_unique_frame_semaphore)
@@ -340,12 +342,11 @@ void RenderContextVK::InitializeNativeSwapchain()
     }
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
-    m_vk_frame_image_available_semaphores.resize(GetSettings().frame_buffers_count);
+    m_vk_frame_image_available_semaphores.resize(frame_buffers_count);
 
-    if (is_swap_chain_change)
-    {
-        Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
-    }
+    ResetNativeObjectNames();
+
+    Data::Emitter<IRenderContextVKCallback>::Emit(&IRenderContextVKCallback::OnRenderContextVKSwapchainChanged, std::ref(*this));
 }
 
 void RenderContextVK::ReleaseNativeSwapchainResources()
@@ -356,13 +357,36 @@ void RenderContextVK::ReleaseNativeSwapchainResources()
     m_vk_frame_semaphores_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
+    m_vk_unique_swapchain.reset();
 }
 
 void RenderContextVK::ResetNativeSwapchain()
 {
+    META_FUNCTION_TASK();
     ReleaseNativeSwapchainResources();
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
+}
+
+void RenderContextVK::ResetNativeObjectNames() const
+{
+    META_FUNCTION_TASK();
+    const std::string& context_name = GetName();
+    if (context_name.empty())
+        return;
+
+    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.c_str());
+
+    uint32_t frame_index = 0u;
+    for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    {
+        if (!vk_unique_frame_semaphore)
+            continue;
+
+        const std::string frame_semaphore_name = fmt::format("{} Frame {} Image Available", GetName(), frame_index);
+        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(), frame_semaphore_name.c_str());
+        frame_index++;
+    }
 }
 
 } // namespace Methane::Graphics

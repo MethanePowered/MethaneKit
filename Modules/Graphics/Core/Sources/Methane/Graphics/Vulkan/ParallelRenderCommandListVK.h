@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ Vulkan implementation of the parallel render command list interface.
 
 #pragma once
 
+#include "RenderCommandListVK.h"
+
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
+#include <Methane/Graphics/QueryBuffer.h>
 
 namespace Methane::Graphics
 {
@@ -35,26 +38,37 @@ class RenderPassVK;
 class ParallelRenderCommandListVK final : public ParallelRenderCommandListBase
 {
 public:
-    ParallelRenderCommandListVK(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
 
     // ParallelRenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void SetBeginningResourceBarriers(const Resource::Barriers&) override;
-    void SetEndingResourceBarriers(const Resource::Barriers&) override;
+    void SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers) override;
+    void SetEndingResourceBarriers(const Resource::Barriers& resource_barriers) override;
+    void SetParallelCommandListsCount(uint32_t count) override;
 
     // CommandList interface
     void Commit() override;
 
     // CommandListBase interface
-    void Execute(uint32_t frame_index, const CompletedCallback& completed_callback = {}) override;
+    void Execute(const CompletedCallback& completed_callback = {}) override;
+    void Complete() override;
 
     // Object interface
-    void SetName(const std::string& label) override;
+    bool SetName(const std::string& label) override;
+
+    const ICommandListVK& GetPrimaryCommandListVK() const noexcept { return m_beginning_command_list; }
+    CommandQueueVK& GetCommandQueueVK() noexcept;
+    RenderPassVK& GetPassVK() noexcept;
 
 private:
-    CommandQueueVK& GetCommandQueueVK() noexcept;
-    RenderPassVK&   GetPassVK();
+    using SyncCommandListVK = CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>;
+
+    RenderCommandListVK              m_beginning_command_list;
+    vk::CommandBufferInheritanceInfo m_vk_ending_inheritance_info;
+    SyncCommandListVK                m_ending_command_list;
+    std::vector<vk::CommandBuffer>   m_vk_parallel_sync_cmd_buffers;
+    std::vector<vk::CommandBuffer>   m_vk_parallel_pass_cmd_buffers;
 };
 
 } // namespace Methane::Graphics

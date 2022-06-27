@@ -39,7 +39,7 @@ static const std::string_view g_proc_self_exe = "/proc/self/exe";
 void PrintToDebugOutput(__attribute__((unused)) std::string_view msg)
 {
     META_FUNCTION_TASK();
-    std::cerr << msg;
+    std::cout << msg << std::endl;
     TracyMessage(msg.data(), msg.size());
 }
 

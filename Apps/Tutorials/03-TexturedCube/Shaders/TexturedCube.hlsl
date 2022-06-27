@@ -39,8 +39,8 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-ConstantBuffer<Constants> g_constants : register(b1);
-ConstantBuffer<Uniforms>  g_uniforms  : register(b2);
+ConstantBuffer<Constants> g_constants : register(b0);
+ConstantBuffer<Uniforms>  g_uniforms  : register(b1);
 Texture2D                 g_texture   : register(t0);
 SamplerState              g_sampler   : register(s0);
 

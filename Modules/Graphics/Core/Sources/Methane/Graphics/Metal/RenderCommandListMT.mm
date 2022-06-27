@@ -77,6 +77,7 @@ RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, Render
 
 RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list)
     : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(false, parallel_render_command_list)
+    , m_parallel_render_command_list_ptr(&static_cast<ParallelRenderCommandListMT&>(parallel_render_command_list))
 {
     META_FUNCTION_TASK();
 }
@@ -103,10 +104,8 @@ void RenderCommandListMT::ResetCommandEncoder()
 
     if (IsParallel())
     {
-        Ptr<ParallelRenderCommandListMT> parallel_render_cmd_list_ptr = std::static_pointer_cast<ParallelRenderCommandListMT>(GetParallelRenderCommandList());
-        META_CHECK_ARG_NOT_NULL(parallel_render_cmd_list_ptr);
-
-        InitializeCommandEncoder([parallel_render_cmd_list_ptr->GetNativeCommandEncoder() renderCommandEncoder]);
+        META_CHECK_ARG_NOT_NULL(m_parallel_render_command_list_ptr);
+        InitializeCommandEncoder([m_parallel_render_command_list_ptr->GetNativeCommandEncoder() renderCommandEncoder]);
     }
     else
     {

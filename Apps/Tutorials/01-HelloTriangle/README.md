@@ -9,11 +9,11 @@ This tutorial demonstrates colored triangle rendering implemented in just 130 li
 - [Shaders/HelloTriangle.hlsl](Shaders/HelloTriangle.hlsl)
 
 Tutorial demonstrates the following Methane Kit features and techniques:
-- Using of the base graphics application for deferred frames rendering.
-- Loading shaders, creating program and render state.
-- Using render command lists for encoding draw commands.
-- Executing command lists on GPU and presenting frame buffers on screen.
-- Configuring cross-platform application build with shaders compilation to embedded resources.
+- Use base graphics application class for deferred frames rendering with triple buffering.
+- Load shaders, creating program and render state.
+- Use render command lists for encoding draw commands.
+- Execute command lists on GPU and presenting frame buffers on screen.
+- Configure cross-platform application build with shaders compilation to embedded resources.
 
 ## Application and Frame Class Definitions
 
@@ -23,12 +23,13 @@ which implements base platform and graphics application infrastructure with supp
 Application frame class `HelloTriangleFrame` is derived from the base class `Graphics::AppFrame` and extends it 
 with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
 for rendering to frame buffer `index`. Application is initialized with default settings using `Graphics::AppSettings` structure,
-which is initialized with convenience function `Samples::GetGraphicsAppSettings(...)`. 
+which is initialized with helper function `Samples::GetGraphicsAppSettings(...)`. 
 Destroying of application along with its resources is delayed until all rendering is completed on GPU.
 
 ```cpp
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
+#include <Methane/Samples/AppSettings.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -120,7 +121,7 @@ public:
         for (HelloTriangleFrame& frame : GetFrames())
         {
             frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr });
+            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();
@@ -219,21 +220,12 @@ float4 TrianglePS(PSInput input) : SV_TARGET
 }
 ```
 
-Shaders configuration file [Shaders/Triangle.cfg](Shaders/Triangle.cfg) 
-is created in pair with every shaders file and describes shader types along with entry points and 
-optional sets of macro definitions used to pre-build shaders to bytecode at build time:
-
-```ini
-vert=TriangleVS
-frag=TrianglePS
-```
-
 ## CMake Build Configuration
 
 Finally CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application
 is powered by the included Methane CMake modules:
 - [MethaneApplications.cmake](/CMake/MethaneApplications.cmake) - defines function `add_methane_application`
-- [MethaneShaders.cmake](/CMake/MethaneShaders.cmake) - defines function `add_methane_shaders`
+- [MethaneShaders.cmake](/CMake/MethaneShaders.cmake) - defines functions `add_methane_shaders_source` and `add_methane_shaders_library`
 - [MethaneResources.cmake](/CMake/MethaneResources.cmake) - defines functions `add_methane_embedded_textures` and `add_methane_copy_textures`
 
 ```cmake
@@ -243,21 +235,35 @@ include(MethaneShaders)
 add_methane_application(MethaneHelloTriangle
     "HelloTriangleApp.cpp"
     "${RESOURCES_DIR}"
-    "Apps/"
+    "Apps"
     "Methane Hello Triangle"
     "Tutorial demonstrating colored triangle rendering with Methane Kit."
 )
 
-add_methane_shaders(MethaneHelloTriangle
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloTriangle.hlsl"
-    "6_0"
+add_methane_shaders_source(
+    TARGET MethaneHelloTriangle
+    SOURCE Shaders/HelloTriangle.hlsl
+    VERSION 6_0
+    TYPES
+        vert=TriangleVS
+        frag=TrianglePS
 )
 
-target_link_libraries(${TARGET}
+add_methane_shaders_library(MethaneHelloTriangle)
+
+target_link_libraries(MethaneHelloTriangle
     PRIVATE
         MethaneAppsCommon
 )
 ```
+
+Each shader source file is added to build target with `add_methane_shaders_source` function which may contain several
+shaders. Every usable shader entry point is described in TYPES parameter in form of `{shader_type}={entry_function}[:{macro_definitions}]`.
+After all shader sources are added to build target, `add_methane_shaders_library` function is called to pack compiled shader
+binaries to resource library and link it to the given build target. This makes all compiled shaders available in 
+C++ code of target using `Data::ShaderProvider` singleton class.
+
+
 
 Now you have all in one application executable/bundle running on Windows & MacOS, which is rendering colored triangle in window with support of resizing the frame buffer.
 

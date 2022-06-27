@@ -28,6 +28,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
@@ -45,8 +46,14 @@ Mesh buffers with texture extension structure.
 
 namespace Methane::Graphics
 {
-    
+
 struct MeshBufferBindings
+{
+    Ptr<Buffer>          uniforms_buffer_ptr;
+    Ptr<ProgramBindings> program_bindings_ptr;
+};
+    
+struct InstancedMeshBufferBindings
 {
     Ptr<Buffer>           uniforms_buffer_ptr;
     Ptrs<ProgramBindings> program_bindings_per_instance;
@@ -57,8 +64,8 @@ class MeshBuffers
 {
 public:
     template<typename VType>
-    MeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
-        : m_render_context(context)
+    MeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+        : m_context(render_cmd_queue.GetContext())
         , m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
                                                : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(), { 0, mesh_data.GetVertexCount() },
@@ -67,7 +74,7 @@ public:
         META_FUNCTION_TASK();
         SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(context,
+        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
                                                                    static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                                    static_cast<Data::Size>(mesh_data.GetVertexSize()));
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
@@ -76,29 +83,51 @@ public:
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetVertices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
-        });
+        }, render_cmd_queue);
         m_vertex_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
-        m_index_ptr = Buffer::CreateIndexBuffer(context, static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
+        m_index_ptr = Buffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
                 reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
                 static_cast<Data::Size>(mesh_data.GetIndexDataSize())
             }
-        });
+        }, render_cmd_queue);
     }
 
     template<typename VType>
-    MeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
-        : MeshBuffers(context, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
+    MeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+        : MeshBuffers(render_cmd_queue, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         META_FUNCTION_TASK();
     }
     
     virtual ~MeshBuffers() = default;
 
-    [[nodiscard]] RenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    [[nodiscard]] const Context& GetContext() const noexcept { return m_context; }
+
+    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    {
+        META_FUNCTION_TASK();
+        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = Resource::Barriers::Create({
+            { GetIndexBuffer(), GetIndexBuffer().GetState(), Resource::State::IndexBuffer },
+        });
+
+        if (constants_buffer_ptr)
+        {
+            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), Resource::State::ConstantBuffer);
+        }
+
+        const BufferSet& vertex_buffer_set = GetVertexBuffers();
+        for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
+        {
+            Buffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
+            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), Resource::State::VertexBuffer);
+        }
+
+        return beginning_resource_barriers_ptr;
+    }
 
     void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
@@ -167,7 +196,7 @@ public:
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
-        const Ptrs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const Refs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
@@ -175,20 +204,19 @@ public:
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
-                const Ptr<RenderCommandList>& render_command_list_ptr = render_cmd_lists[cmd_list_index];
+                RenderCommandList& render_cmd_list  = render_cmd_lists[cmd_list_index].get();
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
 
-                META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-                Draw(*render_command_list_ptr,
+                Draw(render_cmd_list,
                      instance_program_bindings.begin() + begin_instance_index,
                      instance_program_bindings.begin() + end_instance_index,
                      bindings_apply_behavior, begin_instance_index,
                      retain_bindings_once, set_resource_barriers);
             }
         );
-        m_render_context.GetParallelExecutor().run(render_task_flow).get();
+        m_context.GetParallelExecutor().run(render_task_flow).get();
     }
 
     [[nodiscard]] const std::string&  GetMeshName() const      { return m_mesh_name; }
@@ -211,6 +239,12 @@ public:
     }
 
     [[nodiscard]]
+    static constexpr Data::Size GetAlignedUniformSize() noexcept
+    {
+        return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
+    }
+
+    [[nodiscard]]
     Data::Size GetUniformsBufferSize() const
     {
         META_FUNCTION_TASK();
@@ -221,21 +255,18 @@ public:
     }
 
     [[nodiscard]]
-    const Resource::SubResources& GetFinalPassUniformsSubresources() const { return m_final_pass_instance_uniforms_subresources; }
-
-protected:
-    // Allows to override instance to mesh subset mapping, which is 1:1 by default
-    void SetInstanceCount(Data::Size instance_count)
+    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
     {
         META_FUNCTION_TASK();
-        m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
-            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
-        };
+        return static_cast<Data::Size>(
+            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
+                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
+        );
     }
 
     [[nodiscard]]
-    virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
+    const Resource::SubResources& GetFinalPassUniformsSubresources() const
+    { return m_final_pass_instance_uniforms_subresources; }
 
     [[nodiscard]]
     const BufferSet& GetVertexBuffers() const
@@ -265,26 +296,30 @@ protected:
         return *m_index_ptr;
     }
 
-    [[nodiscard]]
-    Data::Size GetUniformsBufferOffset(uint32_t instance_index) const
+protected:
+    // Allows to override instance to mesh subset mapping, which is 1:1 by default
+    void SetInstanceCount(Data::Size instance_count)
     {
         META_FUNCTION_TASK();
-        return static_cast<Data::Size>(
-            std::distance(reinterpret_cast<const std::byte*>(m_final_pass_instance_uniforms.data()), // NOSONAR
-                          reinterpret_cast<const std::byte*>(&m_final_pass_instance_uniforms[instance_index])) // NOSONAR
-        );
+        m_final_pass_instance_uniforms.resize(instance_count);
+        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
+            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
+        };
     }
+
+    [[nodiscard]]
+    virtual Data::Index GetSubsetByInstanceIndex(Data::Index instance_index) const { return instance_index; }
 
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
-    RenderContext&         m_render_context;
-    const std::string      m_mesh_name;
-    const Mesh::Subsets    m_mesh_subsets;
-    Ptr<BufferSet>         m_vertex_ptr;
-    Ptr<Buffer>            m_index_ptr;
-    InstanceUniforms       m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
-    Resource::SubResources m_final_pass_instance_uniforms_subresources;
+    const Context&          m_context;
+    const std::string       m_mesh_name;
+    const Mesh::Subsets     m_mesh_subsets;
+    Ptr<BufferSet>          m_vertex_ptr;
+    Ptr<Buffer>             m_index_ptr;
+    InstanceUniforms        m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
+    Resource::SubResources  m_final_pass_instance_uniforms_subresources;
 };
 
 template<typename UniformsType>
@@ -292,19 +327,31 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(RenderContext& context, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
-        : MeshBuffers<UniformsType>(context, mesh_data, mesh_name)
+    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
+        : MeshBuffers<UniformsType>(render_cmd_queue, mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(1);
     }
 
     template<typename VType>
-    TexturedMeshBuffers(RenderContext& context, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
-        : MeshBuffers<UniformsType>(context, uber_mesh_data, mesh_name)
+    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+        : MeshBuffers<UniformsType>(render_cmd_queue, uber_mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
+    }
+
+    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    {
+        META_FUNCTION_TASK();
+        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
+        for (const Ptr<Texture>& texture_ptr : m_subset_textures)
+        {
+            META_CHECK_ARG_NOT_NULL(texture_ptr);
+            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), Resource::State::ShaderResource);
+        }
+        return beginning_resource_barriers_ptr;
     }
 
     [[nodiscard]]

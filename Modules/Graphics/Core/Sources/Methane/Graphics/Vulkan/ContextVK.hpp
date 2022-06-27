@@ -26,6 +26,7 @@ Vulkan template implementation of the base context interface.
 #include "ContextVK.h"
 #include "DeviceVK.h"
 #include "CommandQueueVK.h"
+#include "DescriptorManagerVK.h"
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -44,19 +45,20 @@ class ContextVK : public ContextBaseT
 {
 public:
     ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManagerVK>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
 
-    // Context interface
-
-    void WaitForGpu(Context::WaitFor wait_for) override
+    void Release() override
     {
         META_FUNCTION_TASK();
-        ContextBaseT::WaitForGpu(wait_for);
-        // ...
-        ContextBaseT::OnGpuWaitComplete(wait_for);
+
+        // Vulkan descriptor pools have to be released before destroying device
+        // to release all descriptor sets using live device instance
+        ContextBaseT::GetDescriptorManager().Release();
+
+        ContextBaseT::Release();
     }
 
     // IContextVK interface
@@ -71,6 +73,11 @@ public:
     {
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());
+    }
+
+    DescriptorManagerVK& GetDescriptorManagerVK() const final
+    {
+        return static_cast<DescriptorManagerVK&>(ContextBaseT::GetDescriptorManager());
     }
 };
 

@@ -37,7 +37,7 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Resource::Descriptor::Descriptor(DescriptorHeap& in_heap, Data::Index in_index)
+Resource::Descriptor::Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {
@@ -51,59 +51,18 @@ Resource::AllocationError::AllocationError(const Resource& resource, std::string
     META_FUNCTION_TASK();
 }
 
-ResourceBase::ResourceBase(Type type, Usage usage_mask, const ContextBase& context, const DescriptorByUsage& descriptor_by_usage)
-    : m_type(type)
+ResourceBase::ResourceBase(const ContextBase& context, Type type, Usage usage_mask,
+                           State initial_state, Opt<State> auto_transition_source_state_opt)
+    : m_context(context)
+    , m_type(type)
     , m_usage_mask(usage_mask)
-    , m_context(context)
-    , m_descriptor_by_usage(descriptor_by_usage)
+    , m_state(initial_state)
+    , m_auto_transition_source_state_opt(auto_transition_source_state_opt)
 {
     META_FUNCTION_TASK();
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        descriptor.heap.ReplaceResource(*this, descriptor.index);
-    }
 }
 
-ResourceBase::~ResourceBase()
-{
-    META_FUNCTION_TASK();
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        descriptor.heap.RemoveResource(descriptor.index);
-    }
-}
-
-void ResourceBase::InitializeDefaultDescriptors()
-{
-    META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    for (Usage usage : GetPrimaryUsageValues())
-    {
-        if (!magic_enum::flags::enum_contains(usage & m_usage_mask))
-            continue;
-
-        if (const auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-            descriptor_by_usage_it == m_descriptor_by_usage.end())
-        {
-            // Create default resource descriptor by usage
-            const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByUsage(usage);
-            DescriptorHeap& heap = m_context.GetResourceManager().GetDescriptorHeap(heap_type);
-            m_descriptor_by_usage.try_emplace(usage, Descriptor(heap, heap.AddResource(*this)));
-        }
-    }
-}
-
-const Resource::Descriptor& ResourceBase::GetDescriptor(Usage usage) const
-{
-    META_FUNCTION_TASK();
-    auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "resource '{}' does not support '{}' usage",
-                         GetName(), magic_enum::enum_name(usage));
-    return descriptor_by_usage_it->second;
-}
-
-void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue*)
+void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");
@@ -154,66 +113,31 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
-DescriptorHeap::Type ResourceBase::GetDescriptorHeapTypeByUsage(ResourceBase::Usage resource_usage) const
-{
-    META_FUNCTION_TASK();
-    switch (resource_usage)
-    {
-    case Resource::Usage::ShaderRead:
-        return (m_type == Type::Sampler)
-                ? DescriptorHeap::Type::Samplers
-                : DescriptorHeap::Type::ShaderResources;
-
-    case Resource::Usage::ShaderWrite:
-    case Resource::Usage::RenderTarget:
-        return (m_type == Type::Texture && static_cast<const TextureBase&>(*this).GetSettings().type == Texture::Type::DepthStencilBuffer)
-                ? DescriptorHeap::Type::DepthStencil
-                : DescriptorHeap::Type::RenderTargets;
-
-    default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined, "resource usage does not map to descriptor heap");
-    }
-}
-
-const Resource::Descriptor& ResourceBase::GetDescriptorByUsage(Usage usage) const
-{
-    META_FUNCTION_TASK();
-    auto descriptor_by_usage_it = m_descriptor_by_usage.find(usage);
-    META_CHECK_ARG_DESCR(usage, descriptor_by_usage_it != m_descriptor_by_usage.end(),
-                         "Resource '{}' does not have descriptor for usage '{}'",
-                         GetName(), magic_enum::enum_name(usage));
-    return descriptor_by_usage_it->second;
-}
-
-DescriptorHeap::Types ResourceBase::GetUsedDescriptorHeapTypes() const noexcept
-{
-    META_FUNCTION_TASK();
-    DescriptorHeap::Types heap_types;
-    for (const auto& [usage, descriptor] : m_descriptor_by_usage)
-    {
-        heap_types.insert(descriptor.heap.GetSettings().type);
-    }
-    return heap_types;
-}
-
 bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
 {
     META_FUNCTION_TASK();
+    if (!m_is_state_change_updates_barriers)
+        ResourceBase::SetState(state);
+
     std::scoped_lock lock_guard(m_state_mutex);
     if (m_state == state)
     {
         if (out_barriers)
-            out_barriers->RemoveTransition(*this);
+            out_barriers->RemoveStateTransition(*this);
+
         return false;
     }
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    META_LOG("{} resource '{}' state changed from {} to {} with barrier update",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
-    if (m_state != State::Common)
+    if (m_state != m_auto_transition_source_state_opt)
     {
         if (!out_barriers)
             out_barriers = Barriers::Create();
-        out_barriers->AddTransition(*this, m_state, state);
+
+        out_barriers->AddStateTransition(*this, m_state, state);
     }
 
     m_state = state;
@@ -227,8 +151,54 @@ bool ResourceBase::SetState(State state)
     if (m_state == state)
         return false;
 
-    META_LOG("Resource '{}' state changed from {} to {}", GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+    META_LOG("{} resource '{}' state changed from {} to {}",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+
     m_state = state;
+    return true;
+}
+
+bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers)
+{
+    META_FUNCTION_TASK();
+    if (m_owner_queue_family_index_opt == family_index)
+    {
+        if (out_barriers)
+            out_barriers->RemoveOwnerTransition(*this);
+        return false;
+    }
+
+    META_LOG("{} resource '{}' owner queue changed from {} to {} queue family {} barrier update",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             m_owner_queue_family_index_opt ? std::to_string(*m_owner_queue_family_index_opt) : "n/a",
+             family_index,
+             m_owner_queue_family_index_opt ? "with" : "without");
+
+    if (m_owner_queue_family_index_opt)
+    {
+        if (!out_barriers)
+            out_barriers = Barriers::Create();
+
+        out_barriers->AddOwnerTransition(*this, *m_owner_queue_family_index_opt, family_index);
+    }
+
+    m_owner_queue_family_index_opt = family_index;
+    return true;
+}
+
+bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index)
+{
+    META_FUNCTION_TASK();
+    if (m_owner_queue_family_index_opt == family_index)
+        return false;
+
+    META_LOG("{} resource '{}' owner queue changed from {} to {} queue family",
+             magic_enum::enum_name(GetResourceType()), GetName(),
+             m_owner_queue_family_index_opt ? std::to_string(*m_owner_queue_family_index_opt) : "n/a",
+             family_index);
+
+    m_owner_queue_family_index_opt = family_index;
     return true;
 }
 
@@ -303,22 +273,6 @@ void ResourceBase::FillSubresourceSizes()
         const SubResource::Index subresource_index(subresource_raw_index, m_sub_resource_count);
         m_sub_resource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
     }
-}
-
-const std::vector<Resource::Usage>& ResourceBase::GetPrimaryUsageValues() noexcept
-{
-    META_FUNCTION_TASK();
-    static std::vector<Resource::Usage> s_primary_usages;
-    if (!s_primary_usages.empty())
-        return s_primary_usages;
-
-    for (Usage usage : magic_enum::enum_values<Usage>())
-    {
-        using namespace magic_enum::bitwise_operators;
-        if (!magic_enum::flags::enum_contains(usage & s_secondary_usage_mask) && usage != Usage::None)
-            s_primary_usages.push_back(usage);
-    }
-    return s_primary_usages;
 }
 
 } // namespace Methane::Graphics

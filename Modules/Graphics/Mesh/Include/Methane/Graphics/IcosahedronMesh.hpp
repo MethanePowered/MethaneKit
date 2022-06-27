@@ -40,9 +40,9 @@ public:
     {
         META_FUNCTION_TASK();
 
-        const bool has_colors   = Mesh::HasVertexField(Mesh::VertexField::Color);
-        const bool has_normals  = Mesh::HasVertexField(Mesh::VertexField::Normal);
-        const bool has_texcoord = Mesh::HasVertexField(Mesh::VertexField::TexCoord);
+        const bool has_colors   = BaseMeshT::HasVertexField(Mesh::VertexField::Color);
+        const bool has_normals  = BaseMeshT::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_texcoord = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
 
         META_CHECK_ARG_FALSE_DESCR(has_colors, "colored vertices are not supported by icosahedron mesh");
 
@@ -164,7 +164,7 @@ public:
     void Spherify()
     {
         META_FUNCTION_TASK();
-        const bool has_normals = Mesh::HasVertexField(Mesh::VertexField::Normal);
+        const bool has_normals = BaseMeshT::HasVertexField(Mesh::VertexField::Normal);
 
         for(size_t vertex_index = 0; vertex_index < BaseMeshT::GetVertexCount(); ++vertex_index)
         {

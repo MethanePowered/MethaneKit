@@ -35,7 +35,7 @@ GPU data query buffer base implementation.
 namespace Methane::Graphics
 {
 
-QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
+Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
     : m_buffer_ptr(buffer.GetPtr())
     , m_command_list(command_list)
     , m_index(index)
@@ -44,13 +44,13 @@ QueryBuffer::Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Da
     META_FUNCTION_TASK();
 }
 
-QueryBuffer::Query::~Query()
+Query::~Query()
 {
     META_FUNCTION_TASK();
     m_buffer_ptr->ReleaseQuery(*this);
 }
 
-void QueryBuffer::Query::Begin()
+void Query::Begin()
 {
     META_FUNCTION_TASK();
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
@@ -59,7 +59,7 @@ void QueryBuffer::Query::Begin()
     m_state = State::Begun;
 }
 
-void QueryBuffer::Query::End()
+void Query::End()
 {
     META_FUNCTION_TASK();
     const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
@@ -69,7 +69,7 @@ void QueryBuffer::Query::End()
     m_state = State::Ended;
 }
 
-void QueryBuffer::Query::ResolveData()
+void Query::ResolveData()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");
@@ -77,11 +77,13 @@ void QueryBuffer::Query::ResolveData()
 }
 
 QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
-                         Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size)
+                         Query::Count max_query_count, Query::Count slots_count_per_query,
+                         Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
     , m_buffer_size(buffer_size)
     , m_query_size(query_size)
-    , m_free_indices({ { 0U, max_query_count } })
+    , m_slots_count_per_query(slots_count_per_query)
+    , m_free_indices({ { 0U, max_query_count * slots_count_per_query } })
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
     , m_context(dynamic_cast<const Context&>(command_queue.GetContext()))
@@ -99,13 +101,31 @@ void QueryBuffer::ReleaseQuery(const Query& query)
 QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
-    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, 1U);
+    const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, m_slots_count_per_query);
     META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
     const Query::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
     META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };
+}
+
+TimeDelta TimestampQueryBuffer::GetGpuTimeOffset() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<TimeDelta>(m_calibrated_timestamps.gpu_ts) - static_cast<TimeDelta>(m_calibrated_timestamps.cpu_ts);
+}
+
+void TimestampQueryBuffer::SetGpuFrequency(Frequency gpu_frequency)
+{
+    META_FUNCTION_TASK();
+    m_gpu_frequency = gpu_frequency;
+}
+
+void TimestampQueryBuffer::SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps)
+{
+    META_FUNCTION_TASK();
+    m_calibrated_timestamps = calibrated_timestamps;
 }
 
 } // namespace Methane::Graphics

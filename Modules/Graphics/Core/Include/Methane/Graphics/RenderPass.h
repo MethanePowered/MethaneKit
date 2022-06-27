@@ -27,6 +27,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #include "Object.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Data/IEmitter.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Color.hpp>
 
@@ -41,6 +42,13 @@ struct RenderPattern : virtual Object // NOSONAR
 {
     struct Attachment
     {
+        enum class Type : uint32_t
+        {
+            Color,
+            Depth,
+            Stencil
+        };
+
         enum class LoadAction : uint32_t
         {
             DontCare = 0U,
@@ -72,6 +80,7 @@ struct RenderPattern : virtual Object // NOSONAR
         [[nodiscard]] bool operator==(const Attachment& other) const;
         [[nodiscard]] bool operator!=(const Attachment& other) const;
         [[nodiscard]] virtual explicit operator std::string() const;
+        [[nodiscard]] virtual Type GetType() const noexcept = 0;
     };
 
     struct ColorAttachment : Attachment
@@ -87,12 +96,14 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const ColorAttachment& other) const;
         [[nodiscard]] bool operator!=(const ColorAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
+
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Color; }
     };
 
     using ColorAttachments = std::vector<ColorAttachment>;
 
-    struct DepthAttachment : Attachment
+    struct DepthAttachment final : Attachment
     {
         Depth clear_value = 1.F;
 
@@ -106,10 +117,12 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const DepthAttachment& other) const;
         [[nodiscard]] bool operator!=(const DepthAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
+
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Depth; }
     };
 
-    struct StencilAttachment : Attachment
+    struct StencilAttachment final : Attachment
     {
         Stencil clear_value = 0U;
 
@@ -123,7 +136,9 @@ struct RenderPattern : virtual Object // NOSONAR
 
         [[nodiscard]] bool operator==(const StencilAttachment& other) const;
         [[nodiscard]] bool operator!=(const StencilAttachment& other) const;
-        [[nodiscard]] explicit operator std::string() const final;
+        [[nodiscard]] explicit operator std::string() const override;
+
+        [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
     };
 
     enum class Access : uint32_t
@@ -160,7 +175,18 @@ struct RenderPattern : virtual Object // NOSONAR
     [[nodiscard]] virtual AttachmentFormats    GetAttachmentFormats() const noexcept = 0;
 };
 
-struct RenderPass : virtual Object // NOSONAR
+struct RenderPass;
+
+struct IRenderPassCallback
+{
+    virtual void OnRenderPassUpdated(const RenderPass& render_pass) = 0;
+
+    virtual ~IRenderPassCallback() = default;
+};
+
+struct RenderPass
+    : virtual Object // NOSONAR
+    , virtual Data::IEmitter<IRenderPassCallback> // NOSONAR
 {
     using Pattern           = RenderPattern;
     using Attachment        = RenderPattern::Attachment;
@@ -169,11 +195,12 @@ struct RenderPass : virtual Object // NOSONAR
     using DepthAttachment   = RenderPattern::DepthAttachment;
     using StencilAttachment = RenderPattern::StencilAttachment;
     using Access            = RenderPattern::Access;
+    using ICallback         = IRenderPassCallback;
 
     struct Settings
     {
-        Texture::Locations attachments;
-        FrameSize          frame_size;
+        Texture::Views attachments;
+        FrameSize      frame_size;
 
         [[nodiscard]] bool operator==(const Settings& other) const;
         [[nodiscard]] bool operator!=(const Settings& other) const;

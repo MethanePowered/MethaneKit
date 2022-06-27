@@ -128,19 +128,19 @@ public:
 
     void SetResourceBarriers(const Resource::Barriers&) override { }
 
-    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override
+    void Execute(const CommandList::CompletedCallback& completed_callback) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        CommandListBaseT::Execute(frame_index, completed_callback);
+        CommandListBaseT::Execute(completed_callback);
 
         if (!m_is_cmd_buffer_enabled || !m_mtl_cmd_buffer)
             return;
 
         [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
             std::scoped_lock lock_guard(m_cmd_buffer_mutex);
-            CommandListBaseT::Complete(frame_index);
+            CommandListBaseT::Complete();
             [m_mtl_cmd_buffer release];
             m_mtl_cmd_buffer  = nil;
         }];
@@ -150,12 +150,14 @@ public:
 
     // Object interface
 
-    void SetName(const std::string& name) override
+    bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        CommandListBaseT::SetName(name);
+        if (!CommandListBaseT::SetName(name))
+            return false;
+
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
 
         if (m_mtl_cmd_encoder != nil)
@@ -167,9 +169,12 @@ public:
         {
             m_mtl_cmd_buffer.label = m_ns_name;
         }
+
+        return true;
     }
 
-    const MTLCommandEncoderId& GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }
+    const MTLCommandEncoderId&  GetNativeCommandEncoder() const noexcept { return m_mtl_cmd_encoder; }
+    const id<MTLCommandBuffer>& GetNativeCommandBuffer() const noexcept { return m_mtl_cmd_buffer; }
 
     CommandQueueMT& GetCommandQueueMT() noexcept
     {

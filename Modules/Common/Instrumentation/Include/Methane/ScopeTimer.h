@@ -57,7 +57,7 @@ public:
             uint32_t     count    = 0U;
         };
 
-        [[nodiscard]] static Aggregator& Get();
+        [[nodiscard]] static Aggregator& Get() noexcept;
 
         Aggregator(const Aggregator&) = delete;
         Aggregator(Aggregator&&) = delete;
@@ -66,15 +66,15 @@ public:
         Aggregator& operator=(const Aggregator&) = delete;
         Aggregator& operator=(Aggregator&&) = delete;
 
-        void SetLogger(Ptr<ILogger> logger_ptr)             { m_logger_ptr = std::move(logger_ptr); }
-        [[nodiscard]] const Ptr<ILogger>& GetLogger() const { return m_logger_ptr; }
+        void SetLogger(Ptr<ILogger> logger_ptr) noexcept             { m_logger_ptr = std::move(logger_ptr); }
+        [[nodiscard]] const Ptr<ILogger>& GetLogger() const noexcept { return m_logger_ptr; }
 
-        void LogTimings(ILogger& logger);
-        void Flush();
+        void LogTimings(ILogger& logger) noexcept;
+        void Flush() noexcept;
 
     protected:
         Registration RegisterScope(const char* scope_name);
-        void AddScopeTiming(const Registration& scope_registration, TimeDuration duration);
+        void AddScopeTiming(const Registration& scope_registration, TimeDuration duration) noexcept;
 
     private:
         Aggregator() = default;

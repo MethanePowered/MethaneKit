@@ -32,6 +32,7 @@ pipeline via state object and used to create resource binding objects.
 
 #include <vector>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 
 namespace Methane::Graphics
@@ -51,7 +52,7 @@ struct Program : virtual Object // NOSONAR
             PerInstance,
         };
 
-        using ArgumentSemantics = std::vector<std::string>;
+        using ArgumentSemantics = std::vector<std::string_view>;
 
         ArgumentSemantics argument_semantics;
         StepType          step_type = StepType::PerVertex;
@@ -81,20 +82,20 @@ struct Program : virtual Object // NOSONAR
             [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.m_hash; }
         };
 
-        Argument(Shader::Type shader_type, const std::string& argument_name) noexcept;
+        Argument(Shader::Type shader_type, std::string_view argument_name) noexcept;
         virtual ~Argument() = default;
 
-        [[nodiscard]] Shader::Type       GetShaderType() const noexcept { return m_shader_type; }
-        [[nodiscard]] const std::string& GetName() const noexcept       { return m_name; }
-        [[nodiscard]] size_t             GetHash() const noexcept       { return m_hash; }
+        [[nodiscard]] Shader::Type     GetShaderType() const noexcept { return m_shader_type; }
+        [[nodiscard]] std::string_view GetName() const noexcept       { return m_name; }
+        [[nodiscard]] size_t           GetHash() const noexcept       { return m_hash; }
 
         [[nodiscard]] bool operator==(const Argument& other) const noexcept;
         [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
     private:
-        Shader::Type m_shader_type;
-        std::string  m_name;
-        size_t       m_hash;
+        Shader::Type     m_shader_type;
+        std::string_view m_name;
+        size_t           m_hash;
     };
 
     using Arguments = std::unordered_set<Argument, Argument::Hash>;
@@ -109,7 +110,7 @@ struct Program : virtual Object // NOSONAR
             Mutable       = 1U << 2U,
         };
 
-        ArgumentAccessor(Shader::Type shader_type, const std::string& argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+        ArgumentAccessor(Shader::Type shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
         ArgumentAccessor(const Argument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
         [[nodiscard]] size_t GetAccessorIndex() const noexcept;
@@ -141,9 +142,10 @@ struct Program : virtual Object // NOSONAR
     [[nodiscard]] static Ptr<Program> Create(const Context& context, const Settings& settings);
 
     // Program interface
-    [[nodiscard]] virtual const Settings&      GetSettings() const = 0;
-    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const = 0;
+    [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const noexcept = 0;
     [[nodiscard]] virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
+    [[nodiscard]] virtual Data::Size           GetBindingsCount() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics

@@ -113,7 +113,6 @@ Data::Size GetPixelSize(PixelFormat pixel_format)
 bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept
 {
     META_FUNCTION_TASK();
-
     switch (pixel_format)
     {
     case PixelFormat::RGBA8Unorm_sRGB:
@@ -123,6 +122,12 @@ bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept
     default:
         return false;
     }
+}
+
+bool IsDepthFormat(PixelFormat pixel_format) noexcept
+{
+    META_FUNCTION_TASK();
+    return pixel_format == PixelFormat::Depth32Float;
 }
 
 } // namespace Methane::Graphics

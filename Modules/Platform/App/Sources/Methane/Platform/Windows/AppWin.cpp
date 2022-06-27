@@ -21,6 +21,8 @@ Windows application implementation.
 
 ******************************************************************************/
 
+#include "ConsoleStreams.h"
+
 #include <Methane/Platform/Windows/AppWin.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
@@ -51,9 +53,13 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
 
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
+    , m_console_streams_ptr(std::make_unique<ConsoleStreams>()) // NOSONAR
 {
     META_FUNCTION_TASK();
+    m_console_streams_ptr->Attach();
 }
+
+AppWin::~AppWin() = default;
 
 int AppWin::Run(const RunArgs& args)
 {

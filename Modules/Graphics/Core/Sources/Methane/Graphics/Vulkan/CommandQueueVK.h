@@ -25,7 +25,10 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/CommandQueueTrackingBase.h>
 
+#include <Tracy.hpp>
 #include <vulkan/vulkan.hpp>
+
+#include <mutex>
 
 namespace Methane::Graphics
 {
@@ -42,46 +45,62 @@ public:
     {
         std::vector<vk::Semaphore>          semaphores;
         std::vector<vk::PipelineStageFlags> stages;
+        std::vector<uint64_t>               wait_values;
     };
 
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueVK() override;
 
     // CommandQueue interface
-    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
+    void Execute(CommandListSet& command_list_set, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     const IContextVK& GetContextVK() const noexcept;
     DeviceVK& GetDeviceVK() const noexcept;
 
-    void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags);
+    void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags, const uint64_t* timeline_wait_value_ptr = nullptr);
     const WaitInfo& GetWaitBeforeExecuting() const noexcept { return m_wait_before_executing; }
-    const WaitInfo& GetWaitForExecutionCompleted(const Opt<Data::Index>& frame_index_opt = { }) const;
+    const WaitInfo& GetWaitForExecutionCompleted() const;
+    const WaitInfo& GetWaitForFrameExecutionCompleted(Data::Index frame_index) const;
+    void ResetWaitForFrameExecution(Data::Index frame_index);
 
-    vk::Queue&       GetNativeQueue()       { return m_vk_queue; }
-    const vk::Queue& GetNativeQueue() const { return m_vk_queue; }
+    uint32_t GetNativeQueueFamilyIndex() const noexcept { return m_queue_family_index; }
+    uint32_t GetNativeQueueIndex() const noexcept       { return m_queue_index; }
 
-    vk::CommandPool&       GetNativeCommandPool()       { return m_vk_unique_command_pool.get(); }
-    const vk::CommandPool& GetNativeCommandPool() const { return m_vk_unique_command_pool.get(); }
+    vk::Queue&       GetNativeQueue() noexcept          { return m_vk_queue; }
+    const vk::Queue& GetNativeQueue() const noexcept    { return m_vk_queue; }
+
+    vk::PipelineStageFlags GetNativeSupportedStageFlags() const noexcept    { return m_vk_supported_stage_flags; }
+    vk::AccessFlags        GetNativeSupportedAccessFlags() const noexcept   { return m_vk_supported_access_flags; }
+
+protected:
+    // CommandQueueTrackingBase override
+    void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set) override;
 
 private:
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                   const DeviceVK& device);
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type,
-                   const DeviceVK& device, const QueueFamilyReservationVK& family_reservation);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                   const QueueFamilyReservationVK& family_reservation);
+    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+                   const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
+    void AddWaitForFrameExecution(const CommandListSet& command_list_set);
 
-    using Semaphores = std::vector<vk::Semaphore>;
+    using FrameWaitInfos = std::vector<WaitInfo>;
 
     const uint32_t         m_queue_family_index;
     const uint32_t         m_queue_index;
     vk::Queue              m_vk_queue;
-    vk::UniqueCommandPool  m_vk_unique_command_pool;
+    vk::PipelineStageFlags m_vk_supported_stage_flags;
+    vk::AccessFlags        m_vk_supported_access_flags;
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
+    FrameWaitInfos         m_wait_frame_execution_completed;
+    mutable TracyLockable(std::mutex, m_wait_frame_execution_completed_mutex)
 };
 
 } // namespace Methane::Graphics

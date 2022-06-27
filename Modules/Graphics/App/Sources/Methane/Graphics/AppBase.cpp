@@ -97,6 +97,11 @@ AppSettings& AppSettings::SetRenderContextSettings(RenderContext::Settings&& new
     return *this;
 }
 
+AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const Resource& resource)
+    : descriptor_by_view_id(resource.GetDescriptorByViewId())
+    , name(resource.GetName())
+{ }
+
 AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)
@@ -121,6 +126,16 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
 #endif
 }
 
+AppBase::~AppBase()
+{
+    META_FUNCTION_TASK();
+    if (m_context_ptr)
+    {
+        // Prevent OnContextReleased callback emitting during application destruction
+        static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Disconnect(*this);
+    }
+}
+
 void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
@@ -142,7 +157,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     m_initial_context_settings.frame_size = frame_size;
     m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
     m_context_ptr->SetName("Graphics Context");
-    m_context_ptr->Connect(*this);
+    static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Connect(*this);
 
     // Fill initial screen render-pass pattern settings
     m_screen_pass_pattern_settings.shader_access_mask = m_settings.screen_pass_access;
@@ -205,6 +220,7 @@ void AppBase::Init()
 
     // Create screen render pass pattern
     m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+    m_screen_render_pattern_ptr->SetName("Final Render Pass");
 
     m_view_state_ptr = ViewState::Create({
         { GetFrameViewport(context_settings.frame_size)    },
@@ -335,11 +351,11 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Texture::Locations AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
+Texture::Views AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    Texture::Locations attachments{
-        Texture::Location(frame_buffer_texture)
+    Texture::Views attachments{
+        Texture::View(frame_buffer_texture)
     };
 
     if (m_depth_texture_ptr)
@@ -358,22 +374,26 @@ Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) c
     });
 }
 
-AppBase::ResourceRestoreInfo AppBase::ReleaseDepthTexture()
+Opt<AppBase::ResourceRestoreInfo> AppBase::ReleaseDepthTexture()
 {
     META_FUNCTION_TASK();
-    ResourceRestoreInfo depth_restore_info(m_depth_texture_ptr);
+    if (!m_depth_texture_ptr)
+        return std::nullopt;
+
+    ResourceRestoreInfo depth_restore_info(*m_depth_texture_ptr);
     m_depth_texture_ptr.reset();
     return depth_restore_info;
 }
 
-void AppBase::RestoreDepthTexture(const ResourceRestoreInfo& depth_restore_info)
+void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt)
 {
     META_FUNCTION_TASK();
-    if (depth_restore_info.descriptor_by_usage.empty())
+    if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext(), depth_restore_info.descriptor_by_usage);
-    m_depth_texture_ptr->SetName(depth_restore_info.name);
+    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext());
+    m_depth_texture_ptr->RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
+    m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }
 
 void AppBase::UpdateWindowTitle()

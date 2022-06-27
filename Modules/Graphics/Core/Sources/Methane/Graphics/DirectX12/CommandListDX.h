@@ -63,10 +63,10 @@ struct ICommandListDX
 class CommandListSetDX final : public CommandListSetBase
 {
 public:
-    explicit CommandListSetDX(const Refs<CommandList>& command_list_refs);
+    explicit CommandListSetDX(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // CommandListSetBase interface
-    void Execute(uint32_t frame_index, const CommandList::CompletedCallback& completed_callback) override;
+    void Execute(const CommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 
     using NativeCommandLists = std::vector<ID3D12CommandList*>;

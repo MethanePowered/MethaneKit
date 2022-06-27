@@ -44,6 +44,8 @@ public:
         META_FUNCTION_TASK();
     }
 
+    virtual ~ActionControllerBase() = default;
+
     [[nodiscard]]
     size_t GetMouseActionsCount() const noexcept { return m_action_by_mouse_button.size(); }
 

@@ -32,8 +32,6 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
-add_methane_shaders(${TARGET} "${HLSL_SOURCES}" "6_0")
-
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsCore
@@ -74,6 +72,28 @@ target_include_directories(${TARGET}
         Include
         Shaders
 )
+
+add_methane_shaders_source(
+    TARGET ${TARGET}
+    SOURCE Shaders/ScreenQuad.hlsl
+    VERSION 6_0
+    TYPES
+    "vert=QuadVS"
+    "frag=QuadPS"
+    "frag=QuadPS:TTEXEL=float,RMASK=r,WMASK=a"
+    "frag=QuadPS:TEXTURE_DISABLED"
+)
+
+add_methane_shaders_source(
+    TARGET ${TARGET}
+    SOURCE Shaders/SkyBox.hlsl
+    VERSION 6_0
+    TYPES
+    frag=SkyboxPS
+    vert=SkyboxVS
+)
+
+add_methane_shaders_library(${TARGET})
 
 # Disable GCC/Clang warnings produced by external code from 'stb_image.h'
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

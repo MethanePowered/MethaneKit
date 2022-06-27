@@ -65,7 +65,7 @@ public:
         float                     lod_bias            = 0.F;
     };
 
-    Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings);
+    Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings);
 
     Ptr<gfx::ProgramBindings> CreateProgramBindings(const Ptr<gfx::Buffer>& constants_buffer_ptr, const Ptr<gfx::Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     bool Update(double elapsed_seconds, double delta_seconds);
@@ -87,13 +87,14 @@ private:
         };
     };
 
-    Planet(gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
+    Planet(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::ImageLoader& image_loader, const Settings& settings, const gfx::BaseMesh<Vertex>& mesh);
 
-    Settings              m_settings;
-    gfx::RenderContext&   m_context;
-    TexturedMeshBuffers   m_mesh_buffers;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
-    Ptr<gfx::RenderState> m_render_state_ptr;
+    Settings                     m_settings;
+    gfx::RenderContext&          m_context;
+    const Ptr<gfx::CommandQueue> m_render_cmd_queue_ptr;
+    TexturedMeshBuffers          m_mesh_buffers;
+    Ptr<gfx::Sampler>            m_texture_sampler_ptr;
+    Ptr<gfx::RenderState>        m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

@@ -39,8 +39,11 @@ public:
     CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueMT() override;
 
+    // CommandQueue interface
+    uint32_t GetFamilyIndex() const noexcept override { return 0U; }
+
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
     
     const IContextMT& GetContextMT() const noexcept;
     const RenderContextMT& GetRenderContextMT() const;

@@ -42,7 +42,7 @@ struct ICommandListDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramBindingsDX final : public ProgramBindingsBase
+class ProgramBindingsDX final : public ProgramBindingsBase // NOSONAR - this class requires destructor
 {
 public:
     class ArgumentBindingDX final : public ArgumentBindingBase
@@ -65,9 +65,9 @@ public:
 
         struct DescriptorRange
         {
-            DescriptorHeap::Type  heap_type = DescriptorHeap::Type::Undefined;
-            uint32_t              offset    = 0;
-            uint32_t              count     = 0;
+            DescriptorHeapDX::Type heap_type = DescriptorHeapDX::Type::Undefined;
+            uint32_t               offset    = 0;
+            uint32_t               count     = 0;
         };
 
         ArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
@@ -79,27 +79,29 @@ public:
         ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
         // ArgumentBinding interface
-        void SetResourceLocations(const Resource::Locations& resource_locations) override;
+        bool SetResourceViews(const Resource::Views& resource_views) override;
 
-        const SettingsDX&               GetSettingsDX() const noexcept            { return m_settings_dx; }
-        uint32_t                        GetRootParameterIndex() const noexcept    { return m_root_parameter_index; }
-        const DescriptorRange&          GetDescriptorRange() const noexcept       { return m_descriptor_range; }
-        const IResourceDX::LocationsDX& GetResourceLocationsDX() const noexcept   { return m_resource_locations_dx; }
+        const SettingsDX&      GetSettingsDX() const noexcept          { return m_settings_dx; }
+        uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }
+        const DescriptorRange& GetDescriptorRange() const noexcept     { return m_descriptor_range; }
+        const ResourceViewsDX& GetResourceViewsDX() const noexcept     { return m_resource_views_dx; }
+        DescriptorHeapDX::Type GetDescriptorHeapType() const;
 
-        void SetRootParameterIndex(uint32_t root_parameter_index)                 { m_root_parameter_index = root_parameter_index; }
+        void SetRootParameterIndex(uint32_t root_parameter_index)          { m_root_parameter_index = root_parameter_index; }
         void SetDescriptorRange(const DescriptorRange& descriptor_range);
-        void SetDescriptorHeapReservation(const DescriptorHeap::Reservation* p_reservation);
+        void SetDescriptorHeapReservation(const DescriptorHeapDX::Reservation* p_reservation);
 
     private:
-        const SettingsDX                   m_settings_dx;
-        uint32_t                           m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
-        DescriptorRange                    m_descriptor_range;
-        const DescriptorHeap::Reservation* m_p_descriptor_heap_reservation = nullptr;
-        IResourceDX::LocationsDX           m_resource_locations_dx;
+        const SettingsDX                     m_settings_dx;
+        uint32_t                             m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
+        DescriptorRange                      m_descriptor_range;
+        const DescriptorHeapDX::Reservation* m_p_descriptor_heap_reservation = nullptr;
+        ResourceViewsDX                      m_resource_views_dx;
     };
     
-    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceLocationsByArgument& resource_locations_by_argument, Data::Index frame_index);
-    ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceLocationsByArgument& replace_resource_locations_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
+    ~ProgramBindingsDX() override;
 
     void Initialize();
 
@@ -107,11 +109,7 @@ public:
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
-    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
-
-protected:
-    // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceLocationsChanged(const ArgumentBinding& argument_binding, const Resource::Locations& old_resource_locations, const Resource::Locations& new_resource_locations) override;
+    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const;
 
 private:
     struct RootParameterBinding
@@ -122,34 +120,37 @@ private:
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0U;
     };
 
-    struct ResourceState
-    {
-        Ptr<ResourceBase> resource_ptr;
-        Resource::State   state;
-    };
-
-    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeap::Reservation*)
+    template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeapDX::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
+    void ReserveDescriptorHeapRanges();
     void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
-    void AddResourceState(const Program::ArgumentAccessor& argument_desc, ResourceState resource_state);
     void UpdateRootParameterBindings();
-    void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    bool ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask) const;
+    void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
     void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                    const ProgramBindingsBase* p_applied_program_bindings, bool apply_changes_only) const;
+                                    const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
-    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation) const;
+    void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding,
+                                         const DescriptorHeapDX::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
     using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
     RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
 
-    using ResourceStates = std::vector<ResourceState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
-    ResourceStatesByAccess m_resource_states_by_access;
+    using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeapDX::Reservation>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
+    DescriptorHeapReservationByType m_descriptor_heap_reservations_by_type;
+};
 
-    mutable Ptr<Resource::Barriers> m_resource_transition_barriers_ptr;
+class DescriptorsCountByAccess
+{
+public:
+    DescriptorsCountByAccess();
+
+    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
+    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
+
+private:
+    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
 };
 
 } // namespace Methane::Graphics

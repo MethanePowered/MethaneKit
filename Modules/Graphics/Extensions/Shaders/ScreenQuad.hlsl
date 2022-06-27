@@ -60,8 +60,8 @@ struct PSInput
 ConstantBuffer<ScreenQuadConstants> g_constants : register(b1);
 
 #ifndef TEXTURE_DISABLED
-Texture2D<TTEXEL>         g_texture   : register(t0);
-SamplerState              g_sampler   : register(s0);
+Texture2D<TTEXEL> g_texture : register(t0);
+SamplerState      g_sampler : register(s0);
 #endif
 
 PSInput QuadVS(VSInput input)

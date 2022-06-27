@@ -23,7 +23,7 @@ Font atlas textures generation and fonts library management classes.
 
 #pragma once
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/Provider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -151,9 +151,9 @@ public:
 
         [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
         [[nodiscard]] bool                  IsLineBreak() const noexcept    { using namespace magic_enum::bitwise_operators;
-                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::LineBreak); }
+                                                                              return static_cast<bool>(m_type_mask & Type::LineBreak); }
         [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { using namespace magic_enum::bitwise_operators;
-                                                                              return magic_enum::flags::enum_contains(m_type_mask & Type::Whitespace); }
+                                                                              return static_cast<bool>(m_type_mask & Type::Whitespace); }
         [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         [[nodiscard]] const gfx::Point2I&   GetOffset() const noexcept      { return m_offset; }
         [[nodiscard]] const gfx::Point2I&   GetAdvance() const noexcept     { return m_advance; }
@@ -205,8 +205,8 @@ public:
     [[nodiscard]] uint32_t                 GetLineHeight() const;
     [[nodiscard]] const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     [[nodiscard]] const gfx::FrameSize&    GetAtlasSize() const noexcept;
-    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::Context& context);
-    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::Context& context);
+    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::RenderContext& context);
+    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::RenderContext& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -227,16 +227,16 @@ private:
         bool              is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(const gfx::Context& context, bool deferred_data_init);
-    void RemoveAtlasTexture(gfx::Context& context);
+    AtlasTexture CreateAtlasTexture(const gfx::RenderContext& context, bool deferred_data_init);
+    void RemoveAtlasTexture(gfx::RenderContext& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(const gfx::Context& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const gfx::RenderContext& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<gfx::Context*, AtlasTexture>;
+    using TextureByContext = std::map<gfx::RenderContext*, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

@@ -52,14 +52,14 @@ public:
             All           = ~0U
         };
 
-        Ptrs<TextureBase>        render_pass_attachments_ptr;
-        Ptr<RenderStateBase>     render_state_ptr;
-        Ptr<BufferSetBase>       vertex_buffer_set_ptr;
-        Ptr<BufferBase>          index_buffer_ptr;
-        std::optional<Primitive> opt_primitive_type;
-        ViewStateBase*           p_view_state        = nullptr;
-        RenderState::Groups      render_state_groups = RenderState::Groups::None;
-        Changes                  changes             = Changes::None;
+        Ptrs<TextureBase>    render_pass_attachments_ptr;
+        Ptr<RenderStateBase> render_state_ptr;
+        Ptr<BufferSetBase>   vertex_buffer_set_ptr;
+        Ptr<BufferBase>      index_buffer_ptr;
+        Opt<Primitive>       primitive_type_opt;
+        ViewStateBase*       view_state_ptr      = nullptr;
+        RenderState::Groups  render_state_groups = RenderState::Groups::None;
+        Changes              changes             = Changes::None;
     };
 
     static Ptr<RenderCommandList> CreateForSynchronization(CommandQueue& cmd_queue);
@@ -71,9 +71,9 @@ public:
     using CommandListBase::Reset;
 
     // RenderCommandList interface
-    bool IsValidationEnabled() const noexcept override                      { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) override          { m_is_validation_enabled = is_validation_enabled; }
-    RenderPass& GetRenderPass() const noexcept override                     { return *m_render_pass_ptr; }
+    bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
+    RenderPass& GetRenderPass() const final;
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
     void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
@@ -94,10 +94,9 @@ protected:
     // CommandListBase overrides
     void ResetCommandState() override;
 
-    DrawingState&                      GetDrawingState()                    { return m_drawing_state; }
-    const DrawingState&                GetDrawingState() const              { return m_drawing_state; }
-    bool                               IsParallel() const                   { return m_is_parallel; }
-    Ptr<ParallelRenderCommandListBase> GetParallelRenderCommandList() const { return m_parallel_render_command_list_wptr.lock(); }
+    DrawingState&       GetDrawingState()       { return m_drawing_state; }
+    const DrawingState& GetDrawingState() const { return m_drawing_state; }
+    bool                IsParallel() const      { return m_is_parallel; }
 
     inline void UpdateDrawingState(Primitive primitive_type);
     inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0) const;
@@ -105,7 +104,6 @@ protected:
 private:
     const bool                             m_is_parallel = false;
     const Ptr<RenderPassBase>              m_render_pass_ptr;
-    WeakPtr<ParallelRenderCommandListBase> m_parallel_render_command_list_wptr;
     DrawingState                           m_drawing_state;
     bool                                   m_is_validation_enabled = true;
 };

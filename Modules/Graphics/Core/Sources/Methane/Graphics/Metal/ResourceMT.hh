@@ -40,8 +40,8 @@ class ResourceMT : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceMT(const ContextBase& context, const SettingsType& settings, const Resource::DescriptorByUsage& descriptor_by_usage)
-        : ReourceBaseType(context, settings, descriptor_by_usage)
+    ResourceMT(const ContextBase& context, const SettingsType& settings)
+        : ReourceBaseType(context, settings)
     {
         META_FUNCTION_TASK();
     }
@@ -52,6 +52,14 @@ public:
         // Resource released callback has to be emitted before native resource is released
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
+
+    const Resource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
+    {
+        static const Resource::DescriptorByViewId s_dummy_descriptor_by_view_id;
+        return s_dummy_descriptor_by_view_id;
+    }
+
+    void RestoreDescriptorViews(const Resource::DescriptorByViewId&) final { /* intentionally uninitialized */ }
 
 protected:
     const IContextMT& GetContextMT() const noexcept
@@ -73,7 +81,6 @@ protected:
             mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
                                                                     length:sub_resource.GetDataSize()
                                                                    options:MTLResourceStorageModeShared];
-            [mtl_upload_subresource_buffer setPurgeableState:MTLPurgeableStateVolatile];
         }
         else
         {

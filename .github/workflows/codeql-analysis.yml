@@ -27,7 +27,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: windows-2019
+            config_preset: "VS2019-Win64-DX-Scan"
+            build_preset: "VS2019-Win64-DX-Scan"
+          - os: ubuntu-latest
+            config_preset: "Make-Lin-VK-Scan"
+            build_preset: "Make-Lin-VK-Scan"
+          - os: macos-latest
+            config_preset: "Xcode-Mac-MTL-Scan"
+            build_preset: "Xcode-Mac-MTL-Scan"
 
     runs-on: ${{ matrix.os }}
 
@@ -36,28 +45,30 @@ jobs:
 
     steps:
 
-    - name: Install prerequisites
-      run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-             sudo apt install libx11-xcb-dev
-        fi
-      shell: bash
+    - name: Install Linux prerequisites
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
 
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
 
+    # Windows CodeQL analysis is DISABLED (see reason description next to Analysis step below)
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      if: ${{ matrix.os != 'windows-2019' }}
+      uses: github/codeql-action/init@v2
       with:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
 
-    - run: |
-       mkdir -p Build/Output && cd Build/Output
-       cmake $CMAKE_CONFIGURE_OPTIONS -DCMAKE_BUILD_TYPE=Debug -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF -DMETHANE_UNITY_BUILD_ENABLED:BOOL=OFF ../..
-       cmake --build .
+    - name: CMake Configure Preset ${{ matrix.config_preset }}
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
 
+    - name: CMake Build Preset ${{ matrix.build_preset }}
+      run: cmake --build --preset ${{ matrix.build_preset }} --parallel 4
+
+    # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      if: ${{ matrix.os != 'windows-2019' }}
+      uses: github/codeql-action/analyze@v2

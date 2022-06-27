@@ -41,13 +41,16 @@ struct IResourceDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramDX final : public ProgramBase
+class ProgramDX final : public ProgramBase // NOSONAR - this class requires destructor
 {
+    friend class ProgramBindingsDX;
+
 public:
     ProgramDX(const ContextBase& context, const Settings& settings);
+    ~ProgramDX() override;
 
     // Object interface
-    void SetName(const std::string& name) override;
+    bool SetName(const std::string& name) override;
 
     ShaderDX& GetVertexShaderDX() const;
     ShaderDX& GetPixelShaderDX() const;
@@ -59,9 +62,21 @@ public:
 
 private:
     void InitRootSignature();
+    DescriptorHeapDX::Range ReserveDescriptorRange(DescriptorHeapDX& heap, ArgumentAccessor::Type access_type, uint32_t range_length);
 
-    wrl::ComPtr<ID3D12RootSignature> m_cp_root_signature;
+    struct DescriptorHeapReservation
+    {
+        Ref<DescriptorHeapDX>   heap;
+        DescriptorHeapDX::Range range;
+    };
+
+    using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeapDX::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
+
+    wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
+
+    DescriptorRangeByHeapAndAccessType m_constant_descriptor_range_by_heap_and_access_type;
+    TracyLockable(std::mutex,          m_constant_descriptor_ranges_reservation_mutex)
 };
 
 } // namespace Methane::Graphics

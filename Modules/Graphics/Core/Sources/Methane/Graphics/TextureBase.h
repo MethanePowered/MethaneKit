@@ -35,18 +35,20 @@ class TextureBase
     , public ResourceBase
 {
 public:
-    TextureBase(const ContextBase& context, const Settings& settings, const DescriptorByUsage& descriptor_by_usage);
+    TextureBase(const ContextBase& context, const Settings& settings,
+                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // Texture interface
     const Settings& GetSettings() const override { return m_settings; }
     Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
+
+    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
 
 protected:
     // ResourceBase overrides
     Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const override;
 
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
-    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
 
 private:
     const Settings m_settings;

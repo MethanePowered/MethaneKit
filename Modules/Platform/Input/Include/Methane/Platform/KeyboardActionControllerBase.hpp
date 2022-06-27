@@ -49,6 +49,8 @@ public:
         META_FUNCTION_TASK();
     }
 
+    virtual ~ActionControllerBase() = default;
+
     [[nodiscard]]
     size_t GetKeyboardActionsCount() const noexcept { return m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size(); }
     

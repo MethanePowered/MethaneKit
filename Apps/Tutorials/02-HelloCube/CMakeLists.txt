@@ -1,30 +1,50 @@
 include(MethaneApplications)
 include(MethaneShaders)
 
-set(TARGET MethaneHelloCube)
+set(SIMPLE_VARIANT Simple)
+set(UNIFORMS_VARIANT Uniforms)
 
-add_methane_application(${TARGET}
-    HelloCubeApp.cpp
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Hello Cube"
-    "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
-)
+foreach(VARIANT ${SIMPLE_VARIANT} ${UNIFORMS_VARIANT})
 
-add_methane_shaders(${TARGET}
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shaders/HelloCube.hlsl"
-    "6_0"
-)
+    set(TARGET "MethaneHelloCube${VARIANT}")
 
-target_link_libraries(${TARGET}
-    PRIVATE
-        MethaneAppsCommon
-)
+    add_methane_application(${TARGET}
+        HelloCubeApp.cpp
+        "${RESOURCES_DIR}"
+        "Apps"
+        "Methane Hello Cube ${VARIANT}"
+        "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
+        "${METHANE_COPYRIGHT}"
+        "${METHANE_VERSION_SHORT}"
+        "${METHANE_VERSION_BUILD}"
+    )
 
-set_target_properties(${TARGET}
-    PROPERTIES
-    FOLDER Apps/Tutorials
-)
+    if(VARIANT STREQUAL "${UNIFORMS_VARIANT}")
+        set(VERTEX_SHADER_DEFINES ":UNIFORMS_BUFFER_ENABLED")
+        target_compile_definitions(${TARGET}
+            PRIVATE UNIFORMS_BUFFER_ENABLED
+        )
+    endif()
+
+    add_methane_shaders_source(
+        TARGET ${TARGET}
+        SOURCE Shaders/HelloCube.hlsl
+        VERSION 6_0
+        TYPES
+            vert=CubeVS${VERTEX_SHADER_DEFINES}
+            frag=CubePS
+    )
+
+    add_methane_shaders_library(${TARGET})
+
+    target_link_libraries(${TARGET}
+        PRIVATE
+            MethaneAppsCommon
+    )
+
+    set_target_properties(${TARGET}
+        PROPERTIES
+        FOLDER Apps/Tutorials
+    )
+
+endforeach()

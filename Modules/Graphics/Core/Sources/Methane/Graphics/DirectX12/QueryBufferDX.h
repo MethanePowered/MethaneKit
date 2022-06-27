@@ -36,31 +36,34 @@ struct IContextDX;
 struct ICommandListDX;
 struct IResourceDX;
 class  CommandQueueDX;
+class  QueryBufferDX;
+class  TimestampQueryBufferDX;
+
+class QueryDX : public Query
+{
+public:
+    QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+    // Query overrides
+    void Begin() override;
+    void End() override;
+    void ResolveData() override;
+    Resource::SubResource GetData() const override;
+
+protected:
+    [[nodiscard]] QueryBufferDX& GetQueryBufferDX() const noexcept;
+
+private:
+    ID3D12GraphicsCommandList&  m_native_command_list;
+    const D3D12_QUERY_TYPE      m_native_query_type;
+};
 
 class QueryBufferDX : public QueryBuffer
 {
 public:
-    class QueryDX : public Query
-    {
-    public:
-        QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-
-        // Query overrides
-        void Begin() override;
-        void End() override;
-        void ResolveData() override;
-        Resource::SubResource GetData() override;
-
-    protected:
-        [[nodiscard]] QueryBufferDX& GetQueryBufferDX() noexcept  { return static_cast<QueryBufferDX&>(GetQueryBuffer()); }
-
-    private:
-        ID3D12GraphicsCommandList&  m_native_command_list;
-        const D3D12_QUERY_TYPE      m_native_query_type;
-    };
-
     QueryBufferDX(CommandQueueDX& command_queue, Type type,
-                  Data::Size max_query_count, Data::Size buffer_size, Data::Size query_size);
+                  Data::Size max_query_count, Query::Count slots_count_per_query,
+                  Data::Size buffer_size, Data::Size query_size);
 
     CommandQueueDX&   GetCommandQueueDX() noexcept;
     const IContextDX& GetContextDX() const noexcept          { return m_context_dx; }
@@ -79,42 +82,33 @@ private:
     ID3D12QueryHeap&  m_native_query_heap;
 };
 
-using GpuTimeCalibration = std::pair<Timestamp, TimeDelta>;
+class TimestampQueryDX final
+    : protected QueryDX
+    , public TimestampQuery
+{
+public:
+    TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+
+    // TimestampQuery overrides
+    void InsertTimestamp() override;
+    void ResolveTimestamp() override;
+    Timestamp GetGpuTimestamp() const override;
+    Timestamp GetCpuNanoseconds() const override;
+
+private:
+    [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() const noexcept;
+};
 
 class TimestampQueryBufferDX final
     : public QueryBufferDX
     , public TimestampQueryBuffer
 {
 public:
-    class TimestampQueryDX final
-        : public QueryDX
-        , public TimestampQuery
-    {
-    public:
-        TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
-
-        // TimestampQuery overrides
-        void InsertTimestamp() override;
-        void ResolveTimestamp() override;
-        Timestamp GetGpuTimestamp() override;
-        Timestamp GetCpuNanoseconds() override;
-
-    private:
-        [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() noexcept { return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer()); }
-    };
-
     TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryBuffer interface
     Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
-
-    Frequency GetGpuFrequency() const noexcept            { return m_gpu_frequency; }
-    TimeDelta GetGpuTimeOffset() const noexcept           { return m_gpu_time_calibration.second; }
-    TimeDelta GetGpuCalibrationTimestamp() const noexcept { return m_gpu_time_calibration.first; }
-
-private:
-    const Frequency          m_gpu_frequency;
-    const GpuTimeCalibration m_gpu_time_calibration;
+    CalibratedTimestamps Calibrate() override;
 };
 
 } // namespace Methane::Graphics

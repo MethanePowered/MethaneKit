@@ -29,11 +29,15 @@ Metal implementation of the render context interface.
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
+#include <Methane/Platform/MacOS/Types.hh>
 
 // Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
 // NOTE: when fences are used for frames synchronization,
 // application runs slower than expected when started from XCode, but runs normally when started from Finder
 //#define USE_DISPATCH_QUEUE_SEMAPHORE
+
+// Enables automatic capture of all initialization commands before the first frame rendering
+//#define CAPTURE_INITIALIZATION_SCOPE
 
 namespace Methane::Graphics
 {
@@ -58,8 +62,14 @@ RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase
     META_FUNCTION_TASK();
     META_UNUSED(m_dispatch_semaphore);
 
-    m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Capture Scope");
+    m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Frame Scope");
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
+
+#ifdef CAPTURE_INITIALIZATION_SCOPE
+    // Begin frame capture scope at context creation to enable capturing all initialization commands
+    Capture(m_frame_capture_scope);
+    BeginFrameCaptureScope();
+#endif
 
     // Start redrawing main view
     m_app_view.redrawing = YES;
@@ -126,7 +136,7 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
 #endif
-        [m_frame_capture_scope beginScope];
+        BeginFrameCaptureScope();
     }
 }
 
@@ -151,7 +161,7 @@ void RenderContextMT::Present()
     [mtl_cmd_buffer presentDrawable:GetNativeDrawable()];
     [mtl_cmd_buffer commit];
 
-    [m_frame_capture_scope endScope];
+    EndFrameCaptureScope();
 
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     ContextMT<RenderContextBase>::OnCpuPresentComplete(false);
@@ -194,7 +204,48 @@ float RenderContextMT::GetContentScalingFactor() const
 uint32_t RenderContextMT::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
+    // TODO: use real font DPI, get it from OS
     return 72U * GetContentScalingFactor();
+}
+
+void RenderContextMT::BeginFrameCaptureScope()
+{
+    META_FUNCTION_TASK();
+    if (m_frame_capture_scope_begun)
+    {
+        [m_frame_capture_scope endScope];
+    }
+    else
+    {
+        m_frame_capture_scope_begun = true;
+    }
+
+    [m_frame_capture_scope beginScope];
+}
+
+void RenderContextMT::EndFrameCaptureScope()
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_TRUE_DESCR(m_frame_capture_scope_begun, "Metal frame capture scope was not begun");
+
+    [m_frame_capture_scope endScope];
+    m_frame_capture_scope_begun = false;
+}
+
+void RenderContextMT::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(mtl_capture_scope);
+    
+    MTLCaptureManager*    mtl_capture_manager = [MTLCaptureManager sharedCaptureManager];
+    MTLCaptureDescriptor* mtl_capture_desc    = [[MTLCaptureDescriptor alloc] init];
+    mtl_capture_desc.captureObject = mtl_capture_scope;
+
+    NSError* ns_error = nil;
+    const bool capture_success = [mtl_capture_manager startCaptureWithDescriptor:mtl_capture_desc error:&ns_error];
+    META_CHECK_ARG_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
+                              MacOS::ConvertFromNsType<NSString, std::string>(mtl_capture_scope.label),
+                              MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
 }
 
 } // namespace Methane::Graphics

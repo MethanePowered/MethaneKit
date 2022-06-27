@@ -29,6 +29,7 @@ Abstract mesh class
 #include <magic_enum.hpp>
 #include <vector>
 #include <array>
+#include <string_view>
 #include <map>
 
 namespace Methane::Graphics
@@ -101,9 +102,9 @@ public:
 
         using std::vector<VertexField>::vector;
 
-        [[nodiscard]] std::vector<std::string> GetSemantics() const;
+        [[nodiscard]] std::vector<std::string_view> GetSemantics() const;
 
-        [[nodiscard]] static std::string GetSemanticByVertexField(VertexField vertex_field);
+        [[nodiscard]] static std::string_view GetSemanticByVertexField(VertexField vertex_field);
     };
 
     Mesh(Type type, const VertexLayout& vertex_layout);
