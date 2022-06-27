@@ -58,7 +58,7 @@ AsteroidsArray::UberMesh::UberMesh(tf::Executor& parallel_executor, uint32_t ins
 
     m_depth_ranges.reserve(static_cast<size_t>(m_instance_count) * m_subdivisions_count);
 
-    std::mt19937 rng(random_seed);
+    std::mt19937 rng(random_seed); // NOSONAR - using pseudorandom generator is safe here
     TracyLockable(std::mutex, data_mutex)
 
     for (uint32_t subdivision_index = 0; subdivision_index < m_subdivisions_count; ++subdivision_index)
@@ -117,7 +117,7 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("AsteroidsArray::ContentState::ContentState");
 
-    std::mt19937 rng(settings.random_seed);
+    std::mt19937 rng(settings.random_seed); // NOSONAR - using pseudorandom generator is safe here
 
     // Randomly generate perlin-noise textures
     std::normal_distribution<float>       noise_persistence_distribution(0.9F, 0.2F);

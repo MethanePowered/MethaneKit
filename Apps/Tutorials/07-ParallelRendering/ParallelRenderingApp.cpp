@@ -273,7 +273,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
     const float median_cube_scale = ts / 2.F;
     const float cube_scale_delta = median_cube_scale / 3.F;
 
-    std::mt19937 rng(1234U);
+    std::mt19937 rng(1234U); // NOSONAR - using pseudorandom generator is safe here
     std::uniform_real_distribution<float>   cube_scale_distribution(median_cube_scale - cube_scale_delta, median_cube_scale + cube_scale_delta);
     std::uniform_real_distribution<double>  rotation_speed_distribution(-0.8F, 0.8F);
     std::uniform_int_distribution<uint32_t> thread_index_distribution(0U, m_settings.render_thread_count);

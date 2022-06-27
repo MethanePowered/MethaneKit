@@ -77,7 +77,7 @@ void Asteroid::Mesh::Randomize(uint32_t random_seed)
     const float radius_scale = 1.8F;
     const float radius_bias = 0.3F;
 
-    std::mt19937 rng(random_seed);
+    std::mt19937 rng(random_seed); // NOSONAR - using pseudorandom generator is safe here
 
     auto random_persistence = std::normal_distribution<float>(0.95F, 0.04F);
     const gfx::PerlinNoise perlin_noise(random_persistence(rng));
@@ -129,7 +129,7 @@ gfx::Resource::SubResources Asteroid::GenerateTextureArraySubresources(const gfx
     gfx::Resource::SubResources sub_resources;
     sub_resources.reserve(array_size);
 
-    std::mt19937 rng(noise_parameters.random_seed);
+    std::mt19937 rng(noise_parameters.random_seed); // NOSONAR - using pseudorandom generator is safe here
     std::uniform_real_distribution<float> noise_seed_distribution(0.F, 10000.F);
 
     for (uint32_t array_index = 0; array_index < array_size; ++array_index)
