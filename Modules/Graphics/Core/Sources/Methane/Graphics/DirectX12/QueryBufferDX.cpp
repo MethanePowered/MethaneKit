@@ -89,6 +89,19 @@ static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_tim
     return frames_count * max_timestamps_per_frame;
 }
 
+static bool CheckCommandQueueSupportsTimestampQueries(CommandQueueDX& command_queue)
+{
+    META_FUNCTION_TASK();
+    if (command_queue.GetNativeCommandQueue().GetDesc().Type != D3D12_COMMAND_LIST_TYPE_COPY)
+        return true;
+
+    if (D3D12_FEATURE_DATA_D3D12_OPTIONS3 feature_data{};
+        SUCCEEDED(command_queue.GetContextDX().GetDeviceDX().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &feature_data, sizeof(feature_data))))
+        return static_cast<bool>(feature_data.CopyQueueTimestampQueriesSupported);
+
+    return true;
+}
+
 QueryDX::QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
     : Query(buffer, command_list, index, data_range)
     , m_native_command_list(dynamic_cast<ICommandListDX&>(command_list).GetNativeCommandList())
@@ -142,7 +155,9 @@ QueryBufferDX& QueryDX::GetQueryBufferDX() const noexcept
 Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TimestampQueryBufferDX>(static_cast<CommandQueueDX&>(command_queue), max_timestamps_per_frame);
+    return CheckCommandQueueSupportsTimestampQueries(static_cast<CommandQueueDX&>(command_queue))
+         ? std::make_shared<TimestampQueryBufferDX>(static_cast<CommandQueueDX&>(command_queue), max_timestamps_per_frame)
+         : nullptr;
 }
 
 QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type,
