@@ -64,7 +64,7 @@ void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList:
     static_cast<CommandListSetBase&>(command_lists).Execute(completed_callback);
 }
 
-Tracy::GpuContext& CommandQueueBase::GetTracyContext()
+Tracy::GpuContext& CommandQueueBase::GetTracyContext() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_tracy_gpu_context_ptr);

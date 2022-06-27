@@ -60,9 +60,11 @@ public:
     // CommandQueueBase interface
     virtual TimestampQueryBuffer* GetTimestampQueryBuffer() const noexcept { return nullptr; }
 
-    const ContextBase&    GetContextBase() const noexcept { return m_context; }
-    DeviceBase&           GetDeviceBase() const noexcept  { return *m_device_ptr; }
-    Tracy::GpuContext&    GetTracyContext();
+    const ContextBase& GetContextBase() const noexcept     { return m_context; }
+    DeviceBase&        GetDeviceBase() const noexcept      { return *m_device_ptr; }
+    bool               HasTracyContext() const noexcept    { return !!m_tracy_gpu_context_ptr; }
+    Tracy::GpuContext* GetTracyContextPtr() const noexcept { return m_tracy_gpu_context_ptr.get(); }
+    Tracy::GpuContext& GetTracyContext() const;
 
 protected:
     void InitializeTracyGpuContext(const Tracy::GpuContext::Settings& tracy_settings);

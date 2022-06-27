@@ -235,13 +235,16 @@ public:
         Completed
     };
 
-    explicit GpuScope(GpuContext& context)
-        : m_context(context)
+    explicit GpuScope(GpuContext* context_ptr)
+        : m_context_ptr(context_ptr)
     {
     }
 
     tracy_force_inline void Begin(uint64_t src_location, bool is_allocated_location = false, int call_stack_depth = 0)
     {
+        if (!m_context_ptr)
+            return;
+
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
         if (!m_is_active)
@@ -250,7 +253,7 @@ public:
 
         m_state           = State::Begun;
         m_begin_thread_id = tracy::GetThreadHandle();
-        m_begin_query_id  = m_context.NextQueryId();
+        m_begin_query_id  = m_context_ptr->NextQueryId();
 
         tracy::QueueItem* item = nullptr;
         tracy::QueueType item_type {};
@@ -274,12 +277,15 @@ public:
         tracy::MemWrite(&item->gpuZoneBegin.srcloc,  src_location);
         tracy::MemWrite(&item->gpuZoneBegin.thread,  m_begin_thread_id);
         tracy::MemWrite(&item->gpuZoneBegin.queryId, m_begin_query_id);
-        tracy::MemWrite(&item->gpuZoneBegin.context, m_context.GetId());
+        tracy::MemWrite(&item->gpuZoneBegin.context, m_context_ptr->GetId());
         tracy::Profiler::QueueSerialFinish();
     }
 
     tracy_force_inline void Begin(int line, std::string_view source_file, std::string_view function, int call_stack_depth = 0)
     {
+        if (!m_context_ptr)
+            return;
+
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
         if (!m_is_active)
@@ -294,8 +300,11 @@ public:
 
     tracy_force_inline void Begin(std::string_view name, int line, std::string_view source_file, std::string_view function,  int call_stack_depth = 0)
     {
-        META_CHECK_ARG_NOT_EMPTY(name);
+        if (!m_context_ptr)
+            return;
 
+        META_CHECK_ARG_NOT_EMPTY(name);
+        
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
         if (!m_is_active)
@@ -311,6 +320,9 @@ public:
 
     tracy_force_inline void End()
     {
+        if (!m_context_ptr)
+            return;
+
 #ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
@@ -318,19 +330,22 @@ public:
 
         META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
-        m_end_query_id = m_context.NextQueryId();
+        m_end_query_id = m_context_ptr->NextQueryId();
 
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,           tracy::QueueType::GpuZoneEndSerial);
         tracy::MemWrite(&item->gpuZoneEnd.cpuTime, tracy::Profiler::GetTime());
         tracy::MemWrite(&item->gpuZoneEnd.thread,  m_begin_thread_id);
         tracy::MemWrite(&item->gpuZoneEnd.queryId, m_end_query_id);
-        tracy::MemWrite(&item->gpuZoneEnd.context, m_context.GetId());
+        tracy::MemWrite(&item->gpuZoneEnd.context, m_context_ptr->GetId());
         tracy::Profiler::QueueSerialFinish();
     }
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
+        if (!m_context_ptr)
+            return;
+
 #ifdef TRACY_ON_DEMAND
         if (!m_is_active)
             return;
@@ -345,25 +360,25 @@ public:
         tracy::MemWrite(&begin_item->hdr.type, tracy::QueueType::GpuTime);
         tracy::MemWrite(&begin_item->gpuTime.gpuTime, gpu_begin_timestamp);
         tracy::MemWrite(&begin_item->gpuTime.queryId, m_begin_query_id);
-        tracy::MemWrite(&begin_item->gpuTime.context, m_context.GetId());
+        tracy::MemWrite(&begin_item->gpuTime.context, m_context_ptr->GetId());
         tracy::Profiler::QueueSerialFinish();
 
         auto end_item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&end_item->hdr.type, tracy::QueueType::GpuTime);
         tracy::MemWrite(&end_item->gpuTime.gpuTime, gpu_end_timestamp);
         tracy::MemWrite(&end_item->gpuTime.queryId, m_end_query_id);
-        tracy::MemWrite(&end_item->gpuTime.context, m_context.GetId());
+        tracy::MemWrite(&end_item->gpuTime.context, m_context_ptr->GetId());
         tracy::Profiler::QueueSerialFinish();
     }
 
     tracy_force_inline State GetState() const { return m_state; }
 
 private:
-    GpuContext& m_context;
-    State       m_state           = State::Completed;
-    ThreadId    m_begin_thread_id = 0U;
-    QueryId     m_begin_query_id  = 0U;
-    QueryId     m_end_query_id    = 0U;
+    GpuContext* const m_context_ptr;
+    State             m_state           = State::Completed;
+    ThreadId          m_begin_thread_id = 0U;
+    QueryId           m_begin_query_id  = 0U;
+    QueryId           m_end_query_id    = 0U;
 
 #ifdef TRACY_ON_DEMAND
     bool m_is_active = true;
