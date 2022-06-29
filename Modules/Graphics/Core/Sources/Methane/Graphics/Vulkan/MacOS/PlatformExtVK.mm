@@ -35,6 +35,7 @@ const std::vector<std::string_view>& PlatformVK::GetVulkanInstanceRequiredExtens
 {
     META_FUNCTION_TASK();
     static const std::vector<std::string_view> s_instance_extensions = GetPlatformInstanceExtensions({
+        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
         VK_EXT_METAL_SURFACE_EXTENSION_NAME
     });
     return s_instance_extensions;
