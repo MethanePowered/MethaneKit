@@ -191,12 +191,10 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
             }
         ));
 
-#ifdef METHANE_LOGGING_ENABLED
-        log_ss << "  - '" << shader_argument.GetName()
-               << "' with descriptor type " << vk::to_string(vk_descriptor_type)
-               << ", array size " << array_size
-               << ";" << std::endl;
-#endif
+        META_LOG("  - '{}' with descriptor type {}, array size {};",
+                 shader_argument.GetName(),
+                 vk::to_string(vk_descriptor_type),
+                 array_size);
     }
 }
 
@@ -216,20 +214,16 @@ ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const S
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
     const Shader::Settings& shader_settings = GetSettings();
-    ArgumentBindings argument_bindings;
-
-#ifdef METHANE_LOGGING_ENABLED
-    std::stringstream log_ss;
-    log_ss << magic_enum::enum_name(GetType())
-           << " shader '" << shader_settings.entry_function.function_name
-           << "' (" << Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
-           << ") with argument bindings:" << std::endl;
-#else
     META_UNUSED(shader_settings);
-#endif
 
+    META_LOG("{} shader '{}' ({}) with argument bindings:",
+             magic_enum::enum_name(GetType()),
+             shader_settings.entry_function.function_name,
+             Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+
+    ArgumentBindings argument_bindings;
+    const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
     const auto add_spirv_resources_to_argument_bindings = [this, &spirv_compiler, &argument_accessors, &argument_bindings]
                                                           (const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                            const vk::DescriptorType vk_descriptor_type)
@@ -248,12 +242,13 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
     add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
     // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
 
-#ifdef METHANE_LOGGING_ENABLED
     if (argument_bindings.empty())
-        log_ss << "  - No argument bindings." << std::endl;
-#endif
-
-    META_LOG("{}", log_ss.str());
+    {
+        META_LOG("  - No argument bindings.",
+                 magic_enum::enum_name(GetType()),
+                 shader_settings.entry_function.function_name,
+                 Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+    }
 
     return argument_bindings;
 }

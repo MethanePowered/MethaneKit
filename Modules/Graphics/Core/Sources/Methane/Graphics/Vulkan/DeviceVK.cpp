@@ -503,7 +503,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 
 #ifndef __APPLE__
     vk::PhysicalDeviceSynchronization2FeaturesKHR vk_device_synchronization_2_feature(true);
-    vk_device_host_query_reset_feature.setPNext(vk_device_synchronization_2_feature);
+    vk_device_host_query_reset_feature.setPNext(&vk_device_synchronization_2_feature);
 #endif
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
