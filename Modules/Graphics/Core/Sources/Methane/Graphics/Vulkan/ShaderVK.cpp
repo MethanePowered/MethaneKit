@@ -244,10 +244,7 @@ ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::Argume
 
     if (argument_bindings.empty())
     {
-        META_LOG("  - No argument bindings.",
-                 magic_enum::enum_name(GetType()),
-                 shader_settings.entry_function.function_name,
-                 Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+        META_LOG("  - No argument bindings.");
     }
 
     return argument_bindings;
