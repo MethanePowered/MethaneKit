@@ -343,7 +343,7 @@ public:
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
-        if (!m_context_ptr)
+        if (!m_context_ptr || gpu_begin_timestamp == gpu_end_timestamp)
             return;
 
 #ifdef TRACY_ON_DEMAND
@@ -430,8 +430,7 @@ private:
 
 #define TRACY_GPU_SCOPE_COMPLETE(gpu_scope, gpu_time_range) \
     const auto gpu_time_range_var = gpu_time_range; \
-    if (!gpu_time_range_var.IsEmpty()) \
-        gpu_scope.Complete(static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetStart()), static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetEnd()))
+    gpu_scope.Complete(static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetStart()), static_cast<Methane::Data::Timestamp>(gpu_time_range_var.GetEnd()))
 
 #else // METHANE_TRACY_GPU_ENABLED
 

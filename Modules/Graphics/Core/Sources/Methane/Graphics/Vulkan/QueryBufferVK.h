@@ -105,14 +105,6 @@ public:
     CalibratedTimestamps Calibrate() override;
 
 private:
-#if defined(_WIN32)
-    const vk::TimeDomainEXT m_vk_cpu_time_domain = vk::TimeDomainEXT::eQueryPerformanceCounter;
-#elif defined(__linux__) && defined CLOCK_MONOTONIC_RAW
-    const vk::TimeDomainEXT m_vk_cpu_time_domain = vk::TimeDomainEXT::eClockMonotonicRaw;
-#else
-    const vk::TimeDomainEXT m_vk_cpu_time_domain = static_cast<vk::TimeDomainEXT>(-1);
-#endif
-    const uint64_t          m_qpc_to_nsec = 1U;
     uint64_t                m_deviation = 0U;
 };
 

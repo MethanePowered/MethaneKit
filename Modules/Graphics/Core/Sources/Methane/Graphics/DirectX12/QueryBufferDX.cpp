@@ -201,6 +201,7 @@ TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferDX::Calibrate()
     CalibratedTimestamps calibrated_timestamps{ 0U, 0U };
     ThrowIfFailed(GetCommandQueueDX().GetNativeCommandQueue().GetClockCalibration(&calibrated_timestamps.gpu_ts, &calibrated_timestamps.cpu_ts),
                   GetContextDX().GetDeviceDX().GetNativeDevice().Get());
+    calibrated_timestamps.cpu_ts *= Data::GetQpcToNSecMultiplier();
     SetCalibratedTimestamps(calibrated_timestamps);
     return calibrated_timestamps;
 }
