@@ -110,8 +110,9 @@ public:
     const ProgramBindingsBase* GetProgramBindingsPtr() const noexcept   { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>       GetCommandListPtr()                      { return GetPtr<CommandListBase>(); }
 
-    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
-    inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)     { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
+    inline void RetainResource(ObjectBase& resource)                    { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void ReleaseRetainedResources()                              { m_command_state.retained_resources.clear(); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)

@@ -54,8 +54,11 @@ void DescriptorManagerBase::CompleteInitialization()
     static const auto binding_initialization_completer = [](const WeakPtr<ProgramBindings>& program_bindings_wptr)
     {
         META_FUNCTION_TASK();
+        // Some binding pointers may become expired here due to command list retained resources cleanup on execution completion
         Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
-        META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
+        if (!program_bindings_ptr)
+            return;
+
         static_cast<ProgramBindingsBase&>(*program_bindings_ptr).CompleteInitialization();
     };
 

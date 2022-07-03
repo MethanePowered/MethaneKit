@@ -104,7 +104,7 @@ void ContextBase::Reset(Device& device)
 
     WaitForGpu(WaitFor::RenderComplete);
     Release();
-    Initialize(static_cast<DeviceBase&>(device), false);
+    Initialize(static_cast<DeviceBase&>(device), true);
 }
 
 void ContextBase::Reset()

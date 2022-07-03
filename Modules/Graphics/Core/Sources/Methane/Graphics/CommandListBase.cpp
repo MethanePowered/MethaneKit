@@ -262,6 +262,7 @@ void CommandListBase::CompleteInternal()
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
+    ReleaseRetainedResources();
     SetCommandListStateNoLock(State::Pending);
 
     TRACY_GPU_SCOPE_COMPLETE(m_tracy_gpu_scope, GetGpuTimeRange(false));
@@ -380,7 +381,6 @@ void CommandListBase::ResetCommandState()
 {
     META_FUNCTION_TASK();
     m_command_state.program_bindings_ptr = nullptr;
-    m_command_state.retained_resources.clear();
 }
 
 void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
