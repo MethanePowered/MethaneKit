@@ -92,6 +92,7 @@ public:
     void Commit() override
     {
         META_FUNCTION_TASK();
+        const auto state_lock = CommandListBase::LockStateMutex();
         CommandListBaseT::Commit();
 
         EndGpuZoneDX();
@@ -122,6 +123,7 @@ public:
     void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
+        const auto state_lock = CommandListBase::LockStateMutex();
         if (!m_is_native_committed)
             return;
 

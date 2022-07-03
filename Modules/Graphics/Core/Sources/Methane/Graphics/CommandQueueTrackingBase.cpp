@@ -132,7 +132,6 @@ void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_i
     while (!m_executing_command_lists.empty() &&
            m_executing_command_lists.front()->GetFrameIndex() == frame_index)
     {
-        META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
         m_executing_command_lists.front()->Complete();
         m_executing_command_lists.pop();
     }
