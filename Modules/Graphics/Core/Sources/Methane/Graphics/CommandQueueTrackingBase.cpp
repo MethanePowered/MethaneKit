@@ -145,7 +145,7 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
         do
         {
             std::unique_lock lock(m_execution_waiting_mutex);
-            m_execution_waiting_condition_var.wait(lock,
+            m_execution_waiting_condition_var.wait_for(lock, std::chrono::milliseconds(32),
                 [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
             );
 
