@@ -147,7 +147,7 @@ void ContextBase::Release()
     Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextReleased, std::ref(*this));
 }
 
-void ContextBase::Initialize(DeviceBase& device, bool /* deferred_heap_allocation */, bool is_callback_emitted)
+void ContextBase::Initialize(DeviceBase& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     META_LOG("Context '{}' INITIALIZE", GetName());

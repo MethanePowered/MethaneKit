@@ -57,11 +57,10 @@ public:
 
     // ContextBase interface
 
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted) override
+    void Initialize(DeviceBase& device, bool is_callback_emitted) override
     {
         META_FUNCTION_TASK();
-        META_UNUSED(deferred_heap_allocation);
-        ContextBaseT::Initialize(device, deferred_heap_allocation, false);
+        ContextBaseT::Initialize(device, false);
         GetDescriptorManagerDX().Initialize(m_descriptor_manager_init_settings);
         if (is_callback_emitted)
         {

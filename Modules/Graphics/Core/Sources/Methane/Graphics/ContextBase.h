@@ -79,7 +79,7 @@ public:
     const Device&     GetDevice() const final;
 
     // ContextBase interface
-    virtual void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true);
+    virtual void Initialize(DeviceBase& device, bool is_callback_emitted = true);
     virtual void Release();
 
     // Object interface
