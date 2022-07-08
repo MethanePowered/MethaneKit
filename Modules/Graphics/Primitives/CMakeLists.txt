@@ -6,12 +6,10 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/FpsCounter.h
-    ${INCLUDE_DIR}/PerlinNoise.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
-    ${SOURCES_DIR}/PerlinNoise.cpp
 )
 
 if (WIN32)
@@ -44,7 +42,6 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         MethanePlatformUtils
-        PerlinNoise
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

@@ -103,7 +103,6 @@ Methane samples demonstrate advanced techniques and usage scenarios with more co
   - Graphics application base class with per-frame resource management and frame buffers resizing enable effective triple buffering
   - Camera primitive and interactive arc-ball camera
   - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
-  - Perlin Noise generator
   - Screen-quad and sky-box rendering extension classes
   - Texture loader (currently implemented with STB, planned for replacement with OpenImageIO)
 - **User Interface**:

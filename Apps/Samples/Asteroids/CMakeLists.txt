@@ -15,6 +15,8 @@ set(SOURCES
     AsteroidsArray.cpp
     Planet.h
     Planet.cpp
+    MultiOctavePerlinNoise.h
+    MultiOctavePerlinNoise.cpp
     Shaders/AsteroidUniforms.h
     Shaders/PlanetUniforms.h
     Shaders/SceneConstants.h
@@ -80,6 +82,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneAppsCommon
         TaskFlow
+        FastNoise
 )
 
 set_target_properties(${TARGET}

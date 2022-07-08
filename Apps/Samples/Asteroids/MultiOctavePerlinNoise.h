@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Noise.h
+FILE: MultiOctavePerlinNoise.h
 Multi-octave simplex noise generator in range [0, 1]
 
 ******************************************************************************/
@@ -28,13 +28,18 @@ Multi-octave simplex noise generator in range [0, 1]
 
 #include <vector>
 
-namespace Methane::Graphics
+namespace FastNoise
+{
+    class Simplex;
+}
+
+namespace Methane::Samples
 {
 
-class PerlinNoise
+class MultiOctavePerlinNoise
 {
 public:
-    explicit PerlinNoise(float persistence = 0.5F, size_t octaves_count = 4);
+    explicit MultiOctavePerlinNoise(float persistence = 0.5F, size_t octaves_count = 4, int seed = 1234);
 
     [[nodiscard]] float operator()(const hlslpp::float2& pos) const noexcept;
     [[nodiscard]] float operator()(const hlslpp::float3& pos) const noexcept;
@@ -50,10 +55,12 @@ private:
     template<typename VectorType>
     [[nodiscard]] float GetValue(VectorType v) const noexcept;
     [[nodiscard]] static Weights GetWeights(float persistence, size_t octaves_count) noexcept;
-    [[nodiscard]] static float GetWeightsSum(const PerlinNoise::Weights& weights) noexcept;
+    [[nodiscard]] static float GetWeightsSum(const MultiOctavePerlinNoise::Weights& weights) noexcept;
+    [[nodiscard]] const FastNoise::Simplex& GetSimplexNoise() const;
 
     const Weights m_weights;
     const float   m_norm_multiplier;
+    const int     m_seed;
 };
 
 } // namespace Methane::Graphics

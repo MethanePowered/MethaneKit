@@ -23,7 +23,6 @@ Random generated asteroids array with uber mesh and textures ready for rendering
 
 #include "AsteroidsArray.h"
 
-#include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
@@ -120,21 +119,27 @@ AsteroidsArray::ContentState::ContentState(tf::Executor& parallel_executor, cons
     std::mt19937 rng(settings.random_seed); // NOSONAR - using pseudorandom generator is safe here
 
     // Randomly generate perlin-noise textures
-    std::normal_distribution<float>       noise_persistence_distribution(0.9F, 0.2F);
+    std::uniform_real_distribution<float> noise_gain_distribution(0.2F, 0.8F);
+    std::uniform_real_distribution<float> noise_fractal_distribution(0.3F, 0.7F);
+    std::uniform_real_distribution<float> noise_lacunarity_distribution(1.5F, 2.5F);
     std::uniform_real_distribution<float> noise_scale_distribution(0.05F, 0.1F);
+    std::uniform_real_distribution<float> noise_strength_distribution(0.8F, 1.0F);
 
     texture_array_subresources.resize(settings.textures_count);
     tf::Taskflow task_flow;
     task_flow.for_each(texture_array_subresources.begin(), texture_array_subresources.end(),
-        [&rng, &noise_persistence_distribution, &noise_scale_distribution, &settings](gfx::Resource::SubResources& sub_resources)
+        [&rng, &noise_gain_distribution, &noise_fractal_distribution, &noise_lacunarity_distribution, &noise_scale_distribution, &noise_strength_distribution, &settings]
+        (gfx::Resource::SubResources& sub_resources)
         {
-            Asteroid::TextureNoiseParameters noise_parameters{
-                static_cast<uint32_t>(rng()), //NOSONAR
-                noise_persistence_distribution(rng),
-                noise_scale_distribution(rng),
-                1.5F
-            };
-            sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3, noise_parameters);
+            sub_resources = Asteroid::GenerateTextureArraySubresources(settings.texture_dimensions, 3,
+                                                                       Asteroid::TextureNoiseParameters{
+                                                                           static_cast<uint32_t>(rng()), //NOSONAR
+                                                                           noise_gain_distribution(rng),
+                                                                           noise_fractal_distribution(rng),
+                                                                           noise_lacunarity_distribution(rng),
+                                                                           noise_scale_distribution(rng),
+                                                                           noise_strength_distribution(rng)
+                                                                       });
         }
     );
     parallel_executor.run(task_flow).get();
