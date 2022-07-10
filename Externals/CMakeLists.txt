@@ -18,6 +18,18 @@ include(CMakeModules)
 include(CMRC)
 include(FindPkgConfig)
 
+# Set Windows SDK for external libraries build
+include(FindWindowsSDK)
+if(WINDOWSSDK_FOUND)
+    message(STATUS "${WINDOWSSDK_LATEST_NAME} from directory '${WINDOWSSDK_LATEST_DIR}' is used for External libraries build")
+    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_INCLUDE_DIRS)
+    get_windowssdk_library_dirs(${WINDOWSSDK_LATEST_DIR} WINSDK_LINK_DIRS)
+    include_directories(${WINSDK_INCLUDE_DIRS})
+    link_directories(${WINSDK_LINK_DIRS})
+else()
+    message(FATAL_ERROR "Windows SDK was not found!")
+endif()
+
 # Cross-platform C++ libraries
 include(BoostNowide)
 include(FMT)
