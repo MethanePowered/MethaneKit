@@ -204,7 +204,7 @@ else()
     set(CTEST_EXE "ctest")
 endif()
 
-add_subdirectory(External)
+add_subdirectory(Externals)
 
 include(MethaneBuildOptions)
 
