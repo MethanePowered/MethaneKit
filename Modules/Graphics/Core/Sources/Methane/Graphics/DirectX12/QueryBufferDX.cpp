@@ -31,7 +31,7 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/QueryBuffer.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

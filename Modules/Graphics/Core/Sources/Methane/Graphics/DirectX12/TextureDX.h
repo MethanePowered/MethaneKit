@@ -28,7 +28,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

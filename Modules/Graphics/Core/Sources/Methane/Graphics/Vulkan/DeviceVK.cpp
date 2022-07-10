@@ -545,7 +545,9 @@ const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList:
 {
     META_FUNCTION_TASK();
     const QueueFamilyReservationVK* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
-    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr, fmt::format("queue family was not reserved for {} command list type", cmd_list_type));
+    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr,
+                                  fmt::format("queue family was not reserved for {} command list type",
+                                              magic_enum::enum_name(cmd_list_type)));
     return *queue_family_reservation_ptr;
 }
 

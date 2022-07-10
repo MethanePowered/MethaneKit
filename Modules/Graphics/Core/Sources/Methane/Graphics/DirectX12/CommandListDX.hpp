@@ -31,7 +31,7 @@ DirectX 12 base template implementation of the command list interface.
 #include "ProgramBindingsDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Memory.hpp>

@@ -28,7 +28,7 @@ DirectX 12 implementation of the shader interface.
 #include "TypesDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Data/Provider.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

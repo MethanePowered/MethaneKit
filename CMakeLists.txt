@@ -86,7 +86,10 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if (NOT CPM_SOURCE_CACHE)
+# Use build-independent location for CPM package source cache to speedup CMake configuration
+# NOTE: Do not use single cache location under CLion IDE to workaround CPM cache initialization collision
+#       when multiple CMake configurations are initialized simultaneously
+if (NOT CPM_SOURCE_CACHE AND NOT DEFINED ENV{CLION_IDE})
     set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/CPM.Cache" CACHE STRING "Set default CPM source cache path")
 endif()
 

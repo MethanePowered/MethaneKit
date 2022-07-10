@@ -21,7 +21,7 @@ Windows platform graphics primitives.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 
 #include <system_error>

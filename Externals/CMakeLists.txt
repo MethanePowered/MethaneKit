@@ -27,14 +27,11 @@ include(FreeType2)
 include(HLSLpp)
 include(MagicEnum)
 include(TaskFlow)
+include(Tracy)
 include(PerlinNoise)
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     include(IttApi)
-endif()
-
-if(METHANE_TRACY_PROFILING_ENABLED)
-    include(Tracy)
 endif()
 
 if (NOT METHANE_OPEN_IMAGE_IO_ENABLED)
