@@ -31,7 +31,7 @@ DirectX 12 implementation of the command queue interface.
 #pragma warning(pop)
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

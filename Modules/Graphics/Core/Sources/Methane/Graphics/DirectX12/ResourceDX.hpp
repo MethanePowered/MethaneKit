@@ -36,7 +36,7 @@ DirectX 12 implementation of the resource interface.
 #include <Methane/Checks.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

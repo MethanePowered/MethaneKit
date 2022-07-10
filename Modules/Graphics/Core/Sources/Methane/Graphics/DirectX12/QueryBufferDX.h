@@ -26,7 +26,7 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/QueryBuffer.h>
 #include <Methane/Memory.hpp>
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

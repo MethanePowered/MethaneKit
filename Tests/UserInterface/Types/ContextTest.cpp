@@ -27,7 +27,8 @@ Unit-tests of the User Interface Context
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/TypeTraits.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -54,7 +55,7 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 
     SECTION("Get UI content scale factor and font DPI")
     {
-        CHECK(ui_context.GetDotsToPixelsFactor() == Approx(g_dot_to_px_factor));
+        CHECK(ui_context.GetDotsToPixelsFactor() == Catch::Approx(g_dot_to_px_factor));
         CHECK(ui_context.GetFontResolutionDpi() == g_font_resolution_dpi);
     }
 

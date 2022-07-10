@@ -35,7 +35,7 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
-#include <d3dx12.h>
+#include <directx/d3dx12.h>
 
 namespace Methane::Graphics
 {

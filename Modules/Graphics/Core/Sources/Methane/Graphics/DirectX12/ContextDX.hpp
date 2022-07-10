@@ -36,7 +36,7 @@ DirectX 12 base template implementation of the context interface.
 #include <Methane/Checks.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <array>
 

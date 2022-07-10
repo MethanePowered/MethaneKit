@@ -4,7 +4,7 @@ include(Catch)
 set(TARGET MethaneDataEventsTest)
 
 set(SOURCES
-    Main.cpp
+    #Main.cpp
     EventWrappers.hpp
     EventsTest.cpp
 )
@@ -31,7 +31,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-        Catch2
+        Catch2WithMain
 )
 
 catch_discover_tests(${TARGET})

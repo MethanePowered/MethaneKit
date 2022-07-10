@@ -23,7 +23,7 @@ Unit-tests of the RectSize data type
 
 #include <Methane/Data/Rect.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 using namespace Methane::Data;
 

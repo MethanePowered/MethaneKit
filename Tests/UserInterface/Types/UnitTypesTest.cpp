@@ -25,6 +25,8 @@ Unit-tests of the Unit Types
 
 #include <Methane/Data/TypeTraits.hpp>
 
+#include <catch2/catch_template_test_macros.hpp>
+
 using namespace Methane;
 using namespace Methane::UserInterface;
 

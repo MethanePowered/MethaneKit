@@ -25,10 +25,12 @@ Unit-tests of the Point data type wrapping HLSL++ vector
 
 #include <Methane/Data/Point.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <sstream>
 
 using namespace Methane::Data;
+using Catch::Approx;
 
 template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)

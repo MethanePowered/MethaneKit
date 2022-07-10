@@ -23,5 +23,5 @@ FILE: Test/Main.cpp
 #define CATCH_CONFIG_CONSOLE_WIDTH 300 // Required for VS Code Test Explorer to work
 #define CATCH_CONFIG_MAIN
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_reporter_sonarqube.hpp>

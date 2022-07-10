@@ -28,7 +28,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <magic_enum.hpp>
 #include <functional>

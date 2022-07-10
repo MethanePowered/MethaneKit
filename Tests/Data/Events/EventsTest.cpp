@@ -23,7 +23,7 @@ Unit tests of event connections with Emitter and Receiver classes
 
 #include "EventWrappers.hpp"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <array>
 

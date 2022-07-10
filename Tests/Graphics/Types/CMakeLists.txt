@@ -4,7 +4,6 @@ include(Catch)
 set(TARGET MethaneGraphicsTypesTest)
 
 add_executable(${TARGET}
-    Main.cpp
     VolumeSizeTest.cpp
     VolumeTest.cpp
     ColorTest.cpp
@@ -18,7 +17,7 @@ target_link_libraries(${TARGET}
     MethaneBuildOptions
     MethanePrecompiledExtraHeaders
     $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-    Catch2
+    Catch2WithMain
 )
 
 catch_discover_tests(${TARGET})

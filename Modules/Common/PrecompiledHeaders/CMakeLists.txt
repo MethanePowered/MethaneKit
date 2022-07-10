@@ -91,12 +91,12 @@ set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
 
     set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
-        <d3d12.h>
-        <d3dx12.h>
+        <directx/d3d12.h>
+        <directx/d3dx12.h>
     )
 
     set(PLATFORM_LIBRARIES
-        D3DX12
+        DirectX-Headers
     )
 
 endif()

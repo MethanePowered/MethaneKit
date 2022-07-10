@@ -33,7 +33,7 @@ DirectX 12 implementation of the shader interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <d3dx12.h>
+#include <directx/d3dx12.h>
 #include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>

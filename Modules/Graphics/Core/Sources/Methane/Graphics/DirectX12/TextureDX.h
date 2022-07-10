@@ -32,7 +32,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <d3dx12.h>
+#include <directx/d3dx12.h>
 #include <optional>
 
 namespace DirectX

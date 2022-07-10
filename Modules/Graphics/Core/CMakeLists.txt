@@ -82,9 +82,9 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     )
 
     set(PLATFORM_LIBRARIES
-        D3DX12
+        DirectX-Headers
         DirectXTex
-        D3DCompilerToDXC
+        DirectXCompiler
         d3d12
         dxgi
         dxguid

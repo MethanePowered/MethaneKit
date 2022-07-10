@@ -4,7 +4,6 @@ include(Catch)
 set(TARGET MethaneUserInterfaceTypesTest)
 
 add_executable(${TARGET}
-    Main.cpp
     UnitTypeCatchHelpers.hpp
     UnitTypesTest.cpp
     FakeRenderContext.hpp
@@ -21,7 +20,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-        Catch2
+        Catch2WithMain
 )
 
 catch_discover_tests(${TARGET})

@@ -23,7 +23,8 @@ Benchmark connection and emit of events with emitter and receiver classes.
 
 #include "EventWrappers.hpp"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 using namespace Methane::Data;
 

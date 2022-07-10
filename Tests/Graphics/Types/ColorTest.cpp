@@ -23,10 +23,12 @@ Unit-tests of the Color data type wrapping HLSL++ vector
 
 #include <Methane/Graphics/Color.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 using namespace Methane::Graphics;
 using namespace Methane::Data;
+using Catch::Approx;
 
 #define COLOR_TYPES_MATRIX \
     ((typename T, size_t size), T, size), \

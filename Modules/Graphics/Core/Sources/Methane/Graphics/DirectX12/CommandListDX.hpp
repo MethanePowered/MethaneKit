@@ -37,7 +37,7 @@ DirectX 12 base template implementation of the command list interface.
 #include <Methane/Memory.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 #include <pix.h>
 #include <nowide/convert.hpp>
 #include <fmt/format.h>

@@ -16,9 +16,10 @@ steps:
     displayName: 'Download and unpack Sonar Build-Wrapper'
 
   - powershell: |
-      Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath '.'
-    workingDirectory: Externals\Tools
-    displayName: 'Unpack OpenCppCoverage tool'
+      Invoke-WebRequest -Uri 'https://github.com/MethanePowered/OpenCppCoverageBinary/blob/main/Windows.zip?raw=true' -OutFile 'OpenCppCoverage.zip'
+      Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
+    workingDirectory: $(buildDir)
+    displayName: 'Prepare OpenCppCoverage tool'
 
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
@@ -58,7 +59,7 @@ steps:
       mkdir Results
       mkdir Coverage
       for /r "." %%a in (*Test.exe) do (
-        "$(Build.SourcesDirectory)\Externals\Tools\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+        "$(buildDir)\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
       )
       exit 0

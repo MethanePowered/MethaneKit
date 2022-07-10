@@ -36,7 +36,7 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Checks.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace wrl = Microsoft::WRL;
 

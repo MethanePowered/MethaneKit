@@ -24,7 +24,7 @@ Unit-tests of the Rect data type
 #include <Methane/Data/Rect.hpp>
 #include <Methane/Data/TypeFormatters.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 using namespace Methane::Data;
 
