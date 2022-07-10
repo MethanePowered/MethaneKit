@@ -75,6 +75,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win64-DX-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -103,6 +104,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win32-DX-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -133,6 +135,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win64-VK-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -163,6 +166,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win32-VK-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -210,6 +214,7 @@ jobs:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -290,6 +295,7 @@ jobs:
     cmake.ConfigurePreset: 'Make-Lin-VK-Profile'
     cmake.BuildPreset: 'Make-Lin-VK-Profile'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Unix/AzureBuild.yml
