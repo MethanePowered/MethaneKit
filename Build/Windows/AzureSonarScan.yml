@@ -15,12 +15,6 @@ steps:
     workingDirectory: $(buildDir)
     displayName: 'Download and unpack Sonar Build-Wrapper'
 
-  - powershell: |
-      Invoke-WebRequest -Uri '$(coverage.OpenCppCoverageUrl)' -OutFile 'OpenCppCoverage.zip'
-      Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
-    workingDirectory: $(buildDir)
-    displayName: 'Download and unpack OpenCppCoverage tool'
-
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
     inputs:
@@ -53,18 +47,33 @@ steps:
     workingDirectory: $(Build.SourcesDirectory)
     displayName: 'Build under Sonar Build-Wrapper with $(cmake.BuildPreset)'
 
+  - powershell: |
+      Invoke-WebRequest -Uri '$(coverage.OpenCppCoverageUrl)' -OutFile 'OpenCppCoverage.zip'
+      Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
+      if (-not(Test-Path -Path 'OpenCppCoverage\OpenCppCoverage.exe' -PathType Leaf)) {
+        Get-ChildItem 'OpenCppCoverage'
+        throw 'OpenCppCoverage\OpenCppCoverage.exe executable was not found in unpacked content!'
+      }
+    workingDirectory: '$(installDir)\Tests'
+    displayName: 'Download and unpack OpenCppCoverage tool'
+
   - script: |
       setlocal enabledelayedexpansion
+      set open_cpp_coverage_exe="OpenCppCoverage\OpenCppCoverage.exe"
+      if not exist "%open_cpp_coverage_exe%" (
+        echo File path "%open_cpp_coverage_exe%" does not exist!
+        exit 101
+      )
       echo Running unit-tests in directory "%cd%"
       mkdir Results
       mkdir Coverage
-      set result_error_level = 0
+      set /A result_error_level=0
       for /r "." %%a in (*Test.exe) do (
-        echo Run: "$(buildDir)\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
-        "$(buildDir)\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+        echo "%open_cpp_coverage_exe%" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+        "%open_cpp_coverage_exe%" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
-        if not !errorlevel! == 0 (
-          set result_error_level = !errorlevel!
+        if not !errorlevel!==0 (
+          set /A result_error_level=!errorlevel!
         )
       )
       exit !result_error_level!
