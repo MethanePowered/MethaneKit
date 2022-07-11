@@ -69,7 +69,7 @@ jobs:
         cache-name: cache-externals
       with:
         path: Build/Output/ExternalsCache
-        key: MethaneKit-${{ env.cache-name }}-${{ runner.os }}-${{ matrix.config_preset }}
+        key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
       run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
@@ -87,17 +87,17 @@ jobs:
 
     - name: Filter CodeQL Results
       if: ${{ matrix.os != 'windows-2019' }}
-      uses: zbazztian/filter-sarif@master
+      uses: MethanePowered/FilterSarif@master
       with:
         patterns: |
-          -**/Build/Output/**
-          -**/Externals/**
-          -**/Tests/**
+          -Build/Output/**
+          -Externals/**
+          -Tests/**
         input: results/cpp.sarif
         output: results/cpp-filtered.sarif
 
     - name: Upload Filtered CodeQL Results
       if: ${{ matrix.os != 'windows-2019' }}
-      uses: github/codeql-action/upload-sarif@v1
+      uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: results/cpp-filtered.sarif

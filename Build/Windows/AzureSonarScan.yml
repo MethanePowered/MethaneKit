@@ -24,7 +24,7 @@ steps:
   - task: Cache@2
     displayName: 'Initialize Externals Cache'
     inputs:
-      key: 'ExternalsCache | Windows | $(Build.SourceBranchName) | $(cmake.ConfigurePreset)'
+      key: 'ExternalsCache | $(cmake.ConfigurePreset) | Externals/*.cmake'
       path: '$(cmake.ExternalsCacheDir)'
 
   - task: SonarCloudPrepare@1
