@@ -47,6 +47,8 @@ variables:
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
   sonar.ScannerVersion: '4.4.0.2170'
 
+  coverage.OpenCppCoverageUrl: 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip'
+
   cmake.ConfigureFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
     -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)'

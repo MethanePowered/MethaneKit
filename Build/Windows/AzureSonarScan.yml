@@ -16,10 +16,10 @@ steps:
     displayName: 'Download and unpack Sonar Build-Wrapper'
 
   - powershell: |
-      Invoke-WebRequest -Uri 'https://github.com/MethanePowered/OpenCppCoverageBinary/blob/main/Windows.zip?raw=true' -OutFile 'OpenCppCoverage.zip'
+      Invoke-WebRequest -Uri '$(coverage.OpenCppCoverageUrl)' -OutFile 'OpenCppCoverage.zip'
       Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
     workingDirectory: $(buildDir)
-    displayName: 'Prepare OpenCppCoverage tool'
+    displayName: 'Download and unpack OpenCppCoverage tool'
 
   - task: Cache@2
     displayName: 'Sonar Scanner Cache'
@@ -58,11 +58,16 @@ steps:
       echo Running unit-tests in directory "%cd%"
       mkdir Results
       mkdir Coverage
+      set result_error_level = 0
       for /r "." %%a in (*Test.exe) do (
+        echo Run: "$(buildDir)\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         "$(buildDir)\OpenCppCoverage\OpenCppCoverage.exe" --sources "$(Build.SourcesDirectory)\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
         echo  - %%~na - completed with !errorlevel! exit status
+        if not !errorlevel! == 0 (
+          set result_error_level = !errorlevel!
+        )
       )
-      exit 0
+      exit !result_error_level!
     workingDirectory: '$(installDir)\Tests'
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
