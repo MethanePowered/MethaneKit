@@ -90,7 +90,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # NOTE: Do not use single cache location under CLion IDE to workaround CPM cache initialization collision
 #       when multiple CMake configurations are initialized simultaneously
 if (NOT CPM_SOURCE_CACHE AND NOT DEFINED ENV{CLION_IDE})
-    set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/CPM.Cache" CACHE STRING "Set default CPM source cache path")
+    set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/ExternalsCache" CACHE STRING "Set default CPM source cache path for External repositories")
 endif()
 
 if(WIN32)

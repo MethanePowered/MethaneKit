@@ -6,7 +6,9 @@ queries:
 paths:
   - Apps
   - Modules
+
 paths-ignore:
+  - Build/Output
   - Externals
   - Tests
   - CMake
