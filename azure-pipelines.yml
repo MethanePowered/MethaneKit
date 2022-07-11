@@ -49,9 +49,11 @@ variables:
 
   coverage.OpenCppCoverageUrl: 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip'
 
+  cmake.ExternalsCacheDir: '$(Pipeline.Workspace)/ExternalsCache'
   cmake.ConfigureFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
-    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)'
+    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DCPM_SOURCE_CACHE="$(cmake.ExternalsCacheDir)"'
 
 jobs:
 

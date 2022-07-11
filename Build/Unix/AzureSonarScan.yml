@@ -26,10 +26,16 @@ steps:
     displayName: 'Download and unpack Sonar Build-Wrapper'
 
   - task: Cache@2
-    displayName: 'Sonar Scanner Cache'
+    displayName: 'Initialize Sonar Scanner Cache'
     inputs:
       key: 'SonarCache | $(sonar.ProjectKey) | $(Build.SourceBranchName) | $(cmake.ConfigurePreset) | "$(sonar.ScannerVersion)"'
       path: $(sonar.CacheDir)
+
+  - task: Cache@2
+    displayName: 'Initialize Externals Cache'
+    inputs:
+      key: 'ExternalsCache | Unix | $(Build.SourceBranchName) | $(cmake.ConfigurePreset)'
+      path: '$(cmake.ExternalsCacheDir)'
 
   - task: SonarCloudPrepare@1
     displayName: 'Prepare Sonar Cloud Scanner'
