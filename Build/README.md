@@ -5,9 +5,9 @@
   - [First time initialization](#first-time-initialization)
   - [Update sources to latest revision](#update-sources-to-latest-revision)
 - [Building from Sources](#building-from-sources)
-  - [Windows Build with Visual Studio](#-windows-build-with-visual-studio)
-  - [MacOS Build with XCode](#-macos-build-with-xcode)
-  - [Linux Build with Unix Makefiles](#-linux-build-with-unix-makefiles)
+  - [Windows Build with Visual Studio](#windows-build-with-visual-studio)
+  - [Linux Build with Unix Makefiles](#linux-build-with-unix-makefiles)
+  - [MacOS Build with XCode](#macos-build-with-xcode)
 - [CMake Generator](#cmake-generator)
   - [CMake Options](#cmake-options)
   - [CMake Presets](#cMake-presets)
@@ -15,12 +15,11 @@
 ## Prerequisites
 
 - **Common**
-  - Git (required to pull sub-modules)
   - CMake 3.18 or later
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019/22 with MSVC v142 or later
-  - Windows 10 SDK latest
+  - Windows 10 SDK (latest)
 - **MacOS**
   - MacOS 10.15 "Catalina" or later
   - XCode 11 or later with command-line tools
@@ -34,33 +33,36 @@
 
 ## Fetch Sources
 
-**IMPORTANT!**
-- <ins>Do not download source code via Zip archive</ins>, since it does not include content of 
-[Externals](https://github.com/egorodet/MethaneExternals/tree/master) submodules.
-Use `git clone` command as described below.
-- Consider using <ins>short path for repository location on Windows</ins> (for example `c:\Git`),
-which may be required to resolve problem with support of paths longer than 260 symbols in some Microsoft build tools.
+### Notes
+- Since v0.6 Methane Kit does not use Git submodules anymore and switches to [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
+to fetch dependent repositories during CMake configuration stage, so it should be both possible to acquire sources
+with `git clone` command or to download as ZIP-archive using `Code > Download ZIP` button.
+- All [External](/Externals) dependencies are fetched to the `Build/Output/ExternalsCache/...` directory,
+which can be changed by adding `-DCPM_SOURCE_CACHE=<cache_path>` to the CMake configuration command. 
+- Consider using <ins>short path for repository location on Windows</ins> (for example `c:\Git\`),
+which may be required to resolve problem with support of paths longer than 260 symbols for some of Microsoft build tools.
 
-#### First time initialization
+### First time initialization
 
 ```console
-git clone --recurse-submodules https://github.com/egorodet/MethaneKit.git
+git clone https://github.com/egorodet/MethaneKit.git
 cd MethaneKit
 ```
 
-#### Update sources to latest revision
+### Update sources to latest revision
 
 ```console
 cd MethaneKit
-git pull && git submodule update --init --recursive
+git pull
 ```
 
 ## Building from Sources
 
-### <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> Windows Build with Visual Studio
+### Windows Build with Visual Studio
 
-Start Command Prompt, go to `MethaneKit` root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) or build with CMake command line
+<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle">
+Start Command Prompt, go to `MethaneKit` root directory and either start auxiliary build script
+[Build/Windows/Build.bat](/Build/Windows/Build.bat) or build with CMake command line
 to generate Visual Studio 2019/22 solution:
 
 ```console
@@ -70,7 +72,7 @@ cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
-[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
+[any other IDE with native CMake support](/README.md#development-environments) and [built using CMake presets](#cmake-presets).
 
 [Methane Graphics Core](/Modules/Graphics/Core) is built using **DirectX 12** graphics API by default on Windows. 
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or 
@@ -78,10 +80,32 @@ by running `Build/Windows/Build.bat --vulkan`.
 
 Run built applications from the installation directory `Build\Output\VisualStudio\Win64-DX\Install\Apps`
 
-### <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> MacOS Build with XCode
+###  Linux Build with Unix Makefiles
 
-Start Terminal, go to `MethaneKit` root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line:
+<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" valign="middle">
+Start Terminal, go to `MethaneKit` root directory and either start auxiliary build script
+[Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line to generate Unix Makefiles:
+
+```console
+OUTPUT_DIR=Build/Output/Linux
+cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
+```
+
+[Methane Graphics Core](/Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
+
+Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in
+[any IDE with native CMake support](/README.md#development-environments) and [built using CMake presets](#cmake-presets).
+
+Run built applications from the installation directory `Build/Output/Linux/Install/Apps`.
+Note that in Ubuntu Linux even GUI applications should be started from "Terminal" app,
+because of `noexec` permission set on user's home directory by security reasons.
+
+### MacOS Build with XCode
+
+<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle">
+Start Terminal, go to `MethaneKit` root directory and either start auxiliary build script
+[Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line to generate XCode workspace:
 
 ```console
 OUTPUT_DIR=Build/Output/XCode
@@ -94,7 +118,7 @@ using CMake generator command line option `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_
 This option should be omitted with earlier versions of Clang on macOS.
 
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
-[any other IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
+[any other IDE with native CMake support](/README.md#development-environments) and [built using CMake presets](#cmake-presets).
 
 [Methane Graphics Core](/Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
@@ -102,26 +126,6 @@ by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installati
 on top of Metal, which is not currently supporting all extensions required by Methane Kit.
 
 Run built applications from the installation directory `Build/Output/XCode/Install/Apps`.
-
-### <img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" width=24 valign="middle"> Linux Build with Unix Makefiles
-
-Start Terminal, go to `MethaneKit` root directory (don't forget to pull dependent submodules as [described above](#fetch-sources))
-and either start auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line:
-
-```console
-OUTPUT_DIR=Build/Output/Linux
-cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
-```
-
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
-
-Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in 
-[any IDE with native CMake support](#development-environments) and [built using CMake presets](#cmake-presets).
-
-Run built applications from the installation directory `Build/Output/Linux/Install/Apps`.
-Note that in Ubuntu Linux even GUI applications should be started from "Terminal" app, 
-because of `noexec` permission set on user's home directory by security reasons.
 
 ## CMake Generator
 

@@ -31,8 +31,6 @@ pr:
 resources:
   repositories:
   - repository: self
-    checkoutOptions:
-      submodules: recursive
 
 variables:
 

@@ -51,8 +51,6 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        submodules: 'recursive'
 
     # NOTE: CodeQL is temporary DISABLED on Windows (see reason description next to Analysis step below)
     - name: Initialize CodeQL
