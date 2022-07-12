@@ -61,20 +61,7 @@ CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, C
 CommandQueueTrackingBase::~CommandQueueTrackingBase()
 {
     META_FUNCTION_TASK();
-    try
-    {
-        // Do not use virtual call in destructor
-        CommandQueueTrackingBase::CompleteExecution();
-    }
-    catch(const std::exception& ex)
-    {
-        META_UNUSED(ex);
-        META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
-        assert(false);
-    }
-    m_execution_waiting = false;
-    m_execution_waiting_condition_var.notify_one();
-    m_execution_waiting_thread.join();
+    ShutdownQueueExecution();
 }
 
 void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
@@ -210,6 +197,34 @@ void CommandQueueTrackingBase::CompleteCommandListSetExecution(CommandListSetBas
     {
         m_executing_command_lists.pop();
     }
+}
+
+void CommandQueueTrackingBase::ShutdownQueueExecution()
+{
+    META_FUNCTION_TASK();
+    if (!m_execution_waiting)
+        return;
+
+    {
+        std::unique_lock lock(m_execution_waiting_mutex);
+        m_timestamp_query_buffer_ptr.reset();
+
+        try
+        {
+            // Do not use virtual call in destructor
+            CommandQueueTrackingBase::CompleteExecution();
+        }
+        catch (const std::exception& ex)
+        {
+            META_UNUSED(ex);
+            META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
+            assert(false);
+        }
+
+        m_execution_waiting = false;
+    }
+    m_execution_waiting_condition_var.notify_one();
+    m_execution_waiting_thread.join();
 }
 
 } // namespace Methane::Graphics

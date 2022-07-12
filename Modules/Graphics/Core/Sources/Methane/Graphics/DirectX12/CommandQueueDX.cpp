@@ -100,6 +100,8 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
 
 CommandQueueDX::~CommandQueueDX() // NOSONAR - destructor is not default under define
 {
+    META_FUNCTION_TASK();
+    ShutdownQueueExecution();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     TracyD3D12Destroy(m_tracy_context);
 #endif

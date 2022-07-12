@@ -141,6 +141,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandList::Type com
 CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
+    ShutdownQueueExecution();
     GetDeviceVK().GetQueueFamilyReservation(CommandQueueBase::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
