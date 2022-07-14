@@ -214,7 +214,7 @@ void CommandQueueTrackingBase::ShutdownQueueExecution()
             // Do not use virtual call in destructor
             CommandQueueTrackingBase::CompleteExecution();
         }
-        catch (const std::exception& ex)
+        catch (const std::exception& ex) // NOSONAR
         {
             META_UNUSED(ex);
             META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());

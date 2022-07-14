@@ -41,7 +41,8 @@ namespace wrl = Microsoft::WRL;
 struct IContextDX;
 class CommandListSetDX;
 
-class CommandQueueDX final : public CommandQueueTrackingBase
+class CommandQueueDX final // NOSONAR - destructor is needed
+    : public CommandQueueTrackingBase
 {
 public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);

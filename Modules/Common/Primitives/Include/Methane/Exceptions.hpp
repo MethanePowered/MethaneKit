@@ -36,10 +36,6 @@ Methane common exception types
 #include <stdexcept>
 #include <string>
 
-#ifdef GetMessage
-#undef GetMessage
-#endif
-
 namespace Methane
 {
 

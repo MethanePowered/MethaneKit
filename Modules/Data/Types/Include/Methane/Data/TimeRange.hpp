@@ -66,7 +66,7 @@ inline uint64_t GetQpcFrequency() noexcept
 
 inline uint64_t GetQpcToNSecMultiplier() noexcept
 {
-    static const uint64_t s_qpc_to_nsec = static_cast<uint64_t>(static_cast<double>(g_one_sec_in_nanoseconds) / GetQpcFrequency());
+    static const auto s_qpc_to_nsec = static_cast<uint64_t>(static_cast<double>(g_one_sec_in_nanoseconds) / static_cast<double>(GetQpcFrequency()));
     return s_qpc_to_nsec;
 }
 
