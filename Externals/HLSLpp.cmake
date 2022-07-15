@@ -1,8 +1,8 @@
 CPMAddPackage(
     NAME HLSLpp
     GITHUB_REPOSITORY MethanePowered/HLSLpp
-    GIT_TAG 3.0
-    VERSION 3.0
+    GIT_TAG 3.2
+    VERSION 3.2
 )
 
 add_library(HLSLpp INTERFACE)
