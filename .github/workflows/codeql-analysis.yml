@@ -9,14 +9,18 @@ on:
     - '.github/**/codeql-*.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Externals/**'
     - 'Tests/**'
+    - 'CMakeLists.txt'
   pull_request:
     branches: [ master ]
     paths:
     - '.github/**/codeql-*.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Externals/**'
     - 'Tests/**'
+    - 'CMakeLists.txt'
   schedule:
     - cron: '20 23 * * 3'
 
