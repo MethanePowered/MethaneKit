@@ -27,6 +27,15 @@ Unit-tests of the RectSize data type
 
 using namespace Methane::Data;
 
+template<typename D>
+struct Catch::StringMaker<RectSize<D>>
+{
+    static std::string convert(const RectSize<D>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
+
 #define RECT_SIZE_TYPES int32_t, uint32_t, float, double
 
 TEMPLATE_TEST_CASE("Rectangle Size Initialization", "[rect][size][init]", RECT_SIZE_TYPES)

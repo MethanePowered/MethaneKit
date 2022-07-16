@@ -32,6 +32,15 @@ Unit-tests of the RawVector data type
 using namespace Methane::Data;
 using Catch::Approx;
 
+template<typename T, size_t size>
+struct Catch::StringMaker<RawVector<T, size>>
+{
+    static std::string convert(const RawVector<T, size>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
+
 template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckRawVector(const RawVector<T, size>& vec, const std::array<T, size>& components)
 {
