@@ -72,6 +72,16 @@ public:
     VectorType& AsVector() noexcept               { return m_vector; }
     const VectorType& AsVector() const noexcept   { return m_vector; }
 
+    std::array<T, size> AsArray() const noexcept
+    {
+        if constexpr (size == 2)
+            return std::array<T, 2>{{ GetX(), GetY() }};
+        else if constexpr (size == 3)
+            return std::array<T, 3>{{ GetX(), GetY(), GetZ() }};
+        else if constexpr (size == 4)
+            return std::array<T, 4>{{ GetX(), GetY(), GetZ(), GetW() }};
+    }
+
     T GetX() const noexcept { return m_vector.x; }
     T GetY() const noexcept { return m_vector.y; }
 
@@ -111,7 +121,17 @@ public:
         return *this;
     }
 
-    bool operator==(const PointType& other) const noexcept { return hlslpp::all(m_vector == other.AsVector()); }
+    bool operator==(const PointType& other) const noexcept
+    {
+#if defined(__APPLE__) and defined(__x86_64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
+        //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
+        return AsArray() == other.AsArray();
+#else
+        return hlslpp::all(m_vector == other.AsVector());
+#endif
+    }
+
     bool operator!=(const PointType& other) const noexcept { return !operator==(other); }
     bool operator<(const PointType& other) const noexcept  { return hlslpp::all(m_vector <  other.AsVector()); }
     bool operator<=(const PointType& other) const noexcept { return hlslpp::all(m_vector <= other.AsVector()); }
@@ -140,6 +160,13 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(M divisor) const noexcept
     {
+#if defined(__APPLE__) and defined(__aarch64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
+        //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
+        std::array<T, size> components = AsArray();
+        Divide(components, divisor);
+        return PointType(std::move(components));
+#else
         if constexpr (std::is_same_v<T, M>)
             return PointType(m_vector / divisor);
         else
@@ -149,6 +176,7 @@ public:
             else
                 return PointType(m_vector / static_cast<T>(divisor));
         }
+#endif
     }
 
     template<typename M>
@@ -170,6 +198,13 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(const Point<M, size>& divisor) const noexcept
     {
+#if defined(__APPLE__) and defined(__aarch64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
+        //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
+        std::array<T, size> components = AsArray();
+        Divide(components, divisor.AsArray());
+        return PointType(std::move(components));
+#else
         if constexpr (std::is_same_v<T, M>)
             return PointType(m_vector / divisor.AsVector());
         else
@@ -179,6 +214,7 @@ public:
             else
                 return PointType(m_vector / static_cast<PointType>(divisor).AsVector());
         }
+#endif
     }
 
     template<typename M>
@@ -199,6 +235,13 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType&> operator/=(M divisor) noexcept
     {
+#if defined(__APPLE__) and defined(__aarch64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
+        //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
+        std::array<T, size> components = AsArray();
+        Divide(components, divisor);
+        m_vector = RawVector<T, size>(std::move(components)).AsHlsl();
+#else
         if constexpr (std::is_same_v<T, M>)
             m_vector /= divisor;
         else
@@ -208,6 +251,7 @@ public:
             else
                 m_vector /= static_cast<T>(divisor);
         }
+#endif
         return *this;
     }
 
@@ -229,6 +273,13 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType&> operator/=(const Point<M, size>& divisor) noexcept
     {
+#if defined(__APPLE__) and defined(__aarch64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
+        //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
+        std::array<T, size> components = AsArray();
+        Divide(components, divisor.AsArray());
+        m_vector = RawVector<T, size>(std::move(components)).AsHlsl();
+#else
         if constexpr (std::is_same_v<T, M>)
             m_vector /= divisor.AsVector();
         else
@@ -238,6 +289,7 @@ public:
             else
                 m_vector /= static_cast<PointType>(divisor).AsVector();
         }
+#endif
         return *this;
     }
 
@@ -264,10 +316,36 @@ public:
 
     explicit operator VectorType() const noexcept { return m_vector; }
 
-    const VectorType& AsHlsl() const noexcept { return m_vector; }
-
 private:
     static inline T Square(T s) noexcept { return s * s; }
+
+    template<typename M>
+    static void Divide(T& component, M divisor)
+    {
+        if constexpr (std::is_same_v<T, M>)
+            component /= divisor;
+        else
+        {
+            if constexpr (std::is_floating_point_v<M>)
+                component = RoundCast<T>(static_cast<M>(component) / divisor);
+            else
+                component = RoundCast<T>(component / static_cast<T>(divisor));
+        }
+    }
+
+    template<typename M>
+    static void Divide(std::array<T, size>& components, M divisor)
+    {
+        for (T& component: components)
+            Divide(component, divisor);
+    }
+
+    template<typename M>
+    static void Divide(std::array<T, size>& components, const std::array<M, size>& divisors)
+    {
+        for (size_t i = 0; i < size; ++i)
+            Divide(components[i], divisors[i]);
+    }
 
     VectorType m_vector;
 };

@@ -200,7 +200,7 @@ TEMPLATE_TEST_CASE_SIG("Point Conversions to Other Types", "[point][convert]", V
 
     SECTION("Convert to HLSL vector")
     {
-        CHECK(hlslpp::all(test_point.AsHlsl() == CreateHlslVector(test_arr)));
+        CHECK(hlslpp::all(test_point.AsVector() == CreateHlslVector(test_arr)));
     }
 }
 
