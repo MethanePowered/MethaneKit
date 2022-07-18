@@ -121,7 +121,19 @@ public:
         return *this;
     }
 
-    bool operator==(const PointType& other) const noexcept
+    [[nodiscard]] T operator[](size_t index) const
+    {
+        switch(index)
+        {
+        case 0: return m_vector.x;
+        case 1: return m_vector.y;
+        case 2: if constexpr(size > 2) return m_vector.z;
+        case 3: if constexpr(size > 3) return m_vector.w;
+        default: META_UNEXPECTED_ARG_RETURN(index, T{});
+        }
+    }
+
+    [[nodiscard]] bool operator==(const PointType& other) const noexcept
     {
 #if defined(__APPLE__) && defined(__x86_64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
@@ -132,10 +144,36 @@ public:
 #endif
     }
 
+    [[nodiscard]] bool operator<(const PointType& other) const noexcept
+    {
+#if defined(__APPLE__) && defined(__x86_64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
+        //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
+        for(size_t i = 0; i < size; ++i)
+            if ((*this)[i] >= other[i])
+                return false;
+        return true;
+#else
+        return hlslpp::all(m_vector <  other.AsVector());
+#endif
+    }
+
+    [[nodiscard]] bool operator>(const PointType& other) const noexcept
+    {
+#if defined(__APPLE__) && defined(__x86_64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
+        //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
+        for(size_t i = 0; i < size; ++i)
+            if ((*this)[i] <= other[i])
+                return false;
+        return true;
+#else
+        return hlslpp::all(m_vector >  other.AsVector());
+#endif
+    }
+
     bool operator!=(const PointType& other) const noexcept { return !operator==(other); }
-    bool operator<(const PointType& other) const noexcept  { return hlslpp::all(m_vector <  other.AsVector()); }
     bool operator<=(const PointType& other) const noexcept { return hlslpp::all(m_vector <= other.AsVector()); }
-    bool operator>(const PointType& other) const noexcept  { return hlslpp::all(m_vector >  other.AsVector()); }
     bool operator>=(const PointType& other) const noexcept { return hlslpp::all(m_vector >= other.AsVector()); }
 
     PointType operator+(const PointType& other) const noexcept { return PointType(m_vector + other.AsVector()); }

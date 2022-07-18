@@ -213,6 +213,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     SECTION("X-coordinate getter and setter")
     {
         CHECK(test_point.GetX() == Approx(test_arr[0]));
+        CHECK(test_point[0] == Approx(test_arr[0]));
         auto new_arr = test_arr; new_arr[0] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetX(new_value), new_arr);
     }
@@ -220,6 +221,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     SECTION("Y-coordinate getter and setter")
     {
         CHECK(test_point.GetY() == Approx(test_arr[1]));
+        CHECK(test_point[1] == Approx(test_arr[1]));
         auto new_arr = test_arr; new_arr[1] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetY(new_value), new_arr);
     }
@@ -229,6 +231,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         SECTION("Z-coordinate getter and setter")
         {
             CHECK(test_point.GetZ() == Approx(test_arr[2]));
+            CHECK(test_point[2] == Approx(test_arr[2]));
             auto new_arr = test_arr; new_arr[2] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetZ(new_value), new_arr);
         }
@@ -239,6 +242,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         SECTION("W-coordinate getter and setter")
         {
             CHECK(test_point.GetW() == Approx(test_arr[3]));
+            CHECK(test_point[3] == Approx(test_arr[3]));
             auto new_arr = test_arr; new_arr[3] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetW(new_value), new_arr);
         }
