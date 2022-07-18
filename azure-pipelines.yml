@@ -197,7 +197,7 @@ jobs:
 - job: MacOS_MTL_Release
 
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
@@ -210,7 +210,7 @@ jobs:
 - job: MacOS_MTL_Profiling
 
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
@@ -227,7 +227,7 @@ jobs:
   continueOnError: true
 
   pool:
-    vmImage: 'macos-12'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
