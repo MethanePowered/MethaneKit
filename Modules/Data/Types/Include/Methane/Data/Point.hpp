@@ -123,7 +123,7 @@ public:
 
     bool operator==(const PointType& other) const noexcept
     {
-#if defined(__APPLE__) and defined(__x86_64__)
+#if defined(__APPLE__) && defined(__x86_64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
         //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
         return AsArray() == other.AsArray();
@@ -160,7 +160,7 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(M divisor) const noexcept
     {
-#if defined(__APPLE__) and defined(__aarch64__)
+#if defined(__APPLE__) && defined(__aarch64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
         //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
         std::array<T, size> components = AsArray();
@@ -198,7 +198,7 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(const Point<M, size>& divisor) const noexcept
     {
-#if defined(__APPLE__) and defined(__aarch64__)
+#if defined(__APPLE__) && defined(__aarch64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
         //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
         std::array<T, size> components = AsArray();
@@ -235,7 +235,7 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType&> operator/=(M divisor) noexcept
     {
-#if defined(__APPLE__) and defined(__aarch64__)
+#if defined(__APPLE__) && defined(__aarch64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
         //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
         std::array<T, size> components = AsArray();
@@ -273,7 +273,7 @@ public:
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, PointType&> operator/=(const Point<M, size>& divisor) noexcept
     {
-#if defined(__APPLE__) and defined(__aarch64__)
+#if defined(__APPLE__) && defined(__aarch64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/60)
         //        Integer vector division is working incorrectly on Macs with Apple M1 (ARM)
         std::array<T, size> components = AsArray();
