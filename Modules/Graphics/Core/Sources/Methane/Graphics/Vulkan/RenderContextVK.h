@@ -73,7 +73,7 @@ public:
     Platform::AppView GetAppView() const override { return { }; }
 
     // ContextBase overrides
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
+    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
     void Release() override;
 
     // ObjectBase overrides

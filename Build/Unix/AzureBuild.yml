@@ -19,6 +19,12 @@ steps:
     inputs:
       cmakeArgs: '--version'
 
+  - task: Cache@2
+    displayName: 'Initialize Externals Cache'
+    inputs:
+      key: 'ExternalsCache | $(cmake.ConfigurePreset) | Externals/*.cmake'
+      path: '$(cmake.ExternalsCacheDir)'
+
   - task: CMake@1
     displayName: 'Generate with configuration preset $(cmake.ConfigurePreset)'
     inputs:

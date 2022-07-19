@@ -28,13 +28,13 @@ DirectX 12 implementation of the buffer interface.
 #include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/BufferBase.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
 #include <fmt/format.h>
-#include <d3dx12.h>
+#include <directx/d3dx12.h>
 
 namespace Methane::Graphics
 {

@@ -25,10 +25,21 @@ Unit-tests of the Point data type wrapping HLSL++ vector
 
 #include <Methane/Data/Point.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <sstream>
 
 using namespace Methane::Data;
+using Catch::Approx;
+
+template<typename T, size_t size>
+struct Catch::StringMaker<Point<T, size>>
+{
+    static std::string convert(const Point<T, size>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
 
 template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)
@@ -189,7 +200,7 @@ TEMPLATE_TEST_CASE_SIG("Point Conversions to Other Types", "[point][convert]", V
 
     SECTION("Convert to HLSL vector")
     {
-        CHECK(hlslpp::all(test_point.AsHlsl() == CreateHlslVector(test_arr)));
+        CHECK(hlslpp::all(test_point.AsVector() == CreateHlslVector(test_arr)));
     }
 }
 
@@ -202,6 +213,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     SECTION("X-coordinate getter and setter")
     {
         CHECK(test_point.GetX() == Approx(test_arr[0]));
+        CHECK(test_point[0] == Approx(test_arr[0]));
         auto new_arr = test_arr; new_arr[0] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetX(new_value), new_arr);
     }
@@ -209,6 +221,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
     SECTION("Y-coordinate getter and setter")
     {
         CHECK(test_point.GetY() == Approx(test_arr[1]));
+        CHECK(test_point[1] == Approx(test_arr[1]));
         auto new_arr = test_arr; new_arr[1] = new_value;
         CheckPoint(Point<T, size>(test_arr).SetY(new_value), new_arr);
     }
@@ -218,6 +231,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         SECTION("Z-coordinate getter and setter")
         {
             CHECK(test_point.GetZ() == Approx(test_arr[2]));
+            CHECK(test_point[2] == Approx(test_arr[2]));
             auto new_arr = test_arr; new_arr[2] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetZ(new_value), new_arr);
         }
@@ -228,6 +242,7 @@ TEMPLATE_TEST_CASE_SIG("Point Coordinate Accessors and Property Getters", "[poin
         SECTION("W-coordinate getter and setter")
         {
             CHECK(test_point.GetW() == Approx(test_arr[3]));
+            CHECK(test_point[3] == Approx(test_arr[3]));
             auto new_arr = test_arr; new_arr[3] = new_value;
             CheckPoint(Point<T, size>(test_arr).SetW(new_value), new_arr);
         }

@@ -83,13 +83,13 @@ bool RenderContextVK::SetName(const std::string& name)
     return true;
 }
 
-void RenderContextVK::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
+void RenderContextVK::Initialize(DeviceBase& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     SetDevice(device);
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
-    ContextVK<RenderContextBase>::Initialize(device, deferred_heap_allocation, is_callback_emitted);
+    ContextVK<RenderContextBase>::Initialize(device, is_callback_emitted);
 }
 
 void RenderContextVK::WaitForGpu(WaitFor wait_for)

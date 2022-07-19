@@ -31,8 +31,6 @@ pr:
 resources:
   repositories:
   - repository: self
-    checkoutOptions:
-      submodules: recursive
 
 variables:
 
@@ -47,9 +45,13 @@ variables:
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
   sonar.ScannerVersion: '4.4.0.2170'
 
+  coverage.OpenCppCoverageUrl: 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip'
+
+  cmake.ExternalsCacheDir: '$(Pipeline.Workspace)/ExternalsCache'
   cmake.ConfigureFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
-    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)'
+    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DCPM_SOURCE_CACHE="$(cmake.ExternalsCacheDir)"'
 
 jobs:
 
@@ -75,6 +77,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win64-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win64-DX-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -103,6 +106,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win32-DX-Profile'
     cmake.BuildPreset: 'VS2019-Win32-DX-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Windows/AzureBuild.yml
@@ -133,6 +137,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win64-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win64-VK-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -163,6 +168,7 @@ jobs:
     cmake.ConfigurePreset: 'VS2019-Win32-VK-Profile'
     cmake.BuildPreset: 'VS2019-Win32-VK-Profile'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
     - template: Build/Windows/AzureBuild.yml
@@ -191,7 +197,7 @@ jobs:
 - job: MacOS_MTL_Release
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
@@ -204,12 +210,13 @@ jobs:
 - job: MacOS_MTL_Profiling
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
     cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Unix/AzureBuild.yml
@@ -220,7 +227,7 @@ jobs:
   continueOnError: true
 
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-11'
 
   variables:
     cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
@@ -290,6 +297,7 @@ jobs:
     cmake.ConfigurePreset: 'Make-Lin-VK-Profile'
     cmake.BuildPreset: 'Make-Lin-VK-Profile'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    TRACY_NO_INVARIANT_CHECK: 1
 
   steps:
   - template: Build/Unix/AzureBuild.yml

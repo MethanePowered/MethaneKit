@@ -31,7 +31,7 @@ DirectX 12 implementation of the command queue interface.
 #pragma warning(pop)
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {
@@ -41,7 +41,8 @@ namespace wrl = Microsoft::WRL;
 struct IContextDX;
 class CommandListSetDX;
 
-class CommandQueueDX final : public CommandQueueTrackingBase
+class CommandQueueDX final // NOSONAR - destructor is needed
+    : public CommandQueueTrackingBase
 {
 public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);

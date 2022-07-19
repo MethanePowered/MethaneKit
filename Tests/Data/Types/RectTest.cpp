@@ -24,9 +24,27 @@ Unit-tests of the Rect data type
 #include <Methane/Data/Rect.hpp>
 #include <Methane/Data/TypeFormatters.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 using namespace Methane::Data;
+
+template<typename T, size_t size>
+struct Catch::StringMaker<Point<T, size>>
+{
+    static std::string convert(const Point<T, size>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
+
+template<typename D>
+struct Catch::StringMaker<RectSize<D>>
+{
+    static std::string convert(const RectSize<D>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
 
 template<typename D> using RectPtInt    = Rect<int32_t, D>;
 template<typename D> using RectPtUint   = Rect<uint32_t, D>;

@@ -56,7 +56,7 @@ public:
     bool              SetFullScreen(bool is_full_screen) override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
+    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
 
     // Frame buffer is in use while there are executing rendering commands contributing to this frame buffer
     bool IsFrameBufferInUse() const noexcept { return m_is_frame_buffer_in_use; }

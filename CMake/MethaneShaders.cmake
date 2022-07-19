@@ -58,16 +58,12 @@ function(get_generated_shader_extension OUT_SHADER_EXT)
 endfunction()
 
 function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES OUT_SHADERS_METAL OUT_GENERATE_METAL_TARGETS)
-    get_platform_dir(PLATFORM_DIR CPP_EXT)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
 
-    set(DXC_BIN_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_DIR}/bin")
-    set(DXC_EXE     "${DXC_BIN_DIR}/dxc")
-
-    set(SPIRV_BIN_DIR   "${CMAKE_SOURCE_DIR}/Externals/SPIRV/binaries/${PLATFORM_DIR}")
-    set(SPIRV_GEN_EXE   "${SPIRV_BIN_DIR}/glslangValidator")
-    set(SPIRV_CROSS_EXE "${SPIRV_BIN_DIR}/spirv-cross")
+    set(DXC_EXE "${DXC_BINARY_DIR}/dxc")
+    set(SPIRV_GEN_EXE   "${SPIRV_BINARY_DIR}/glslangValidator")
+    set(SPIRV_CROSS_EXE "${SPIRV_BINARY_DIR}/spirv-cross")
 
     foreach(KEY_VALUE_STRING ${SHADER_TYPES})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
@@ -172,14 +168,11 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
 endfunction()
 
 function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES OUT_COMPILED_SHADER_BINARIES OUT_COMPILE_SHADER_TARGETS)
-
-    get_platform_arch_dir(PLATFORM_ARCH_DIR CPP_EXT)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
     get_generated_shader_extension(OUTPUT_FILE_EXT)
 
-    set(DXC_DIR "${CMAKE_SOURCE_DIR}/Externals/DirectXCompiler/binaries/${PLATFORM_ARCH_DIR}/bin")
-    set(DXC_EXE "${DXC_DIR}/dxc")
+    set(DXC_EXE "${DXC_BINARY_DIR}/dxc")
 
     if (NOT WIN32)
         set(DXC_EXE "LD_LIBRARY_PATH=.;${DXC_EXE}")
@@ -236,7 +229,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES O
             COMMENT "Compiling HLSL shader from file ${SHADERS_HLSL} with profile ${SHADER_PROFILE} and macro-definitions \"${SHADER_DEFINITIONS}\" to ${OUTPUT_FILE_EXT} file ${SHADER_OBJ_FILE}"
             BYPRODUCTS "${SHADER_OBJ_PATH}"
             DEPENDS "${SHADERS_HLSL}" "${SHADERS_CONFIG}"
-            WORKING_DIRECTORY "${DXC_DIR}"
+            WORKING_DIRECTORY "${DXC_BINARY_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${DXC_EXE} ${OUTPUT_TYPE_ARG} ${EXTRA_OPTIONS} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )

@@ -86,6 +86,8 @@ protected:
 
     virtual void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set);
 
+    void ShutdownQueueExecution();
+
 private:
     void WaitForExecution() noexcept;
 

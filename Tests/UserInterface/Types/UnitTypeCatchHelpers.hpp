@@ -25,7 +25,7 @@ Unit-test helpers for User Interface Unit types
 
 #include <Methane/UserInterface/Types.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #define POINT_BASE_TYPES Methane::Data::FramePoint, Methane::Data::FloatPoint
 #define SIZE_BASE_TYPES  Methane::Data::FrameSize,  Methane::Data::FloatSize

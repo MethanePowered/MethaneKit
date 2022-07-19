@@ -4,7 +4,6 @@ include(Catch)
 set(TARGET MethanePlatformInputTest)
 
 add_executable(${TARGET}
-    Main.cpp
     KeyboardTest.cpp
     MouseTest.cpp
 )
@@ -17,7 +16,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-        Catch2
+        Catch2WithMain
         magic_enum
 )
 

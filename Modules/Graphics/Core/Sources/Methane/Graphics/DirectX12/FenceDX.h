@@ -26,7 +26,7 @@ DirectX 12 fence implementation.
 #include <Methane/Graphics/FenceBase.h>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

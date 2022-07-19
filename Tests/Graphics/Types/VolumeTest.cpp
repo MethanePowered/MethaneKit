@@ -24,7 +24,7 @@ Unit-tests of the Volume data type
 #include <Methane/Graphics/Volume.hpp>
 #include <Methane/Graphics/TypeFormatters.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
 using namespace Methane::Graphics;
 

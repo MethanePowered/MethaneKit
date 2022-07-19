@@ -4,7 +4,6 @@ include(Catch)
 set(TARGET MethaneGraphicsCameraTest)
 
 add_executable(${TARGET}
-    Main.cpp
     ArcBallCameraTest.cpp
 )
 
@@ -17,7 +16,7 @@ target_link_libraries(${TARGET}
         MethanePrecompiledHeaders
         MethaneTestsCatchHelpers
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-        Catch2
+        Catch2WithMain
 )
 
 catch_discover_tests(${TARGET})

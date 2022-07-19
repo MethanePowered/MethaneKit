@@ -30,14 +30,14 @@ DirectX 12 implementation of the render state interface.
 #include "TextureDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
 #include <magic_enum.hpp>
-#include <d3dx12.h>
+#include <directx/d3dx12.h>
 #include <d3dcompiler.h>
 
 #include <algorithm>

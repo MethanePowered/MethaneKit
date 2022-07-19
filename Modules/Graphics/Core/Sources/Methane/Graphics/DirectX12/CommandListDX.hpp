@@ -31,13 +31,13 @@ DirectX 12 base template implementation of the command list interface.
 #include "ProgramBindingsDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Memory.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 #include <pix.h>
 #include <nowide/convert.hpp>
 #include <fmt/format.h>
@@ -92,6 +92,7 @@ public:
     void Commit() override
     {
         META_FUNCTION_TASK();
+        const auto state_lock = CommandListBase::LockStateMutex();
         CommandListBaseT::Commit();
 
         EndGpuZoneDX();
@@ -122,6 +123,7 @@ public:
     void Reset(CommandList::DebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
+        const auto state_lock = CommandListBase::LockStateMutex();
         if (!m_is_native_committed)
             return;
 

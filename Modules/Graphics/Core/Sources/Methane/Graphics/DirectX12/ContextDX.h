@@ -25,7 +25,7 @@ DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
 
 #include <Methane/Graphics/CommandList.h>
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

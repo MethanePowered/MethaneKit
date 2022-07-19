@@ -60,8 +60,12 @@ static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATUR
 
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+#endif
+#ifndef __APPLE__
+    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+#endif
 #ifdef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
     VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
@@ -242,16 +246,17 @@ using InstanceCreateInfoChain = vk::StructureChain<vk::InstanceCreateInfo, vk::D
 #endif
 
 static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::ApplicationInfo& vk_app_info,
+                                                           vk::InstanceCreateFlags vk_instance_create_flags,
                                                            const std::vector<const char*>& layers,
                                                            const std::vector<const char*>& extensions)
 {
     META_FUNCTION_TASK();
 
 #ifdef NDEBUG
-    return InstanceCreateInfoChain({ {}, &vk_app_info, layers, extensions });
+    return InstanceCreateInfoChain({ vk_instance_create_flags, &vk_app_info, layers, extensions });
 #else   
     return InstanceCreateInfoChain(
-        { {}, &vk_app_info, layers, extensions },
+        { vk_instance_create_flags, &vk_app_info, layers, extensions },
         MakeDebugUtilsMessengerCreateInfoEXT()
 #ifdef VULKAN_VALIDATION_BEST_PRACTICES_ENABLED
         , { vk::ValidationFeatureEnableEXT::eBestPractices }
@@ -269,11 +274,18 @@ static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loade
 
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_loader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr"));
 
+    vk::InstanceCreateFlags vk_instance_create_flags{};
+    if (std::find_if(extensions.begin(), extensions.end(),
+                     [](const std::string_view& ext) { return ext == VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME; })
+                     != extensions.end())
+        vk_instance_create_flags = vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
+
     constexpr uint32_t engine_version = METHANE_VERSION_MAJOR * 10 + METHANE_VERSION_MINOR;
     const std::vector<const char*> enabled_layers     = GetEnabledLayers(layers);
     const std::vector<const char*> enabled_extensions = GetEnabledExtensions(extensions);
     const vk::ApplicationInfo vk_app_info(g_vk_app_name.c_str(), 1, g_vk_engine_name.c_str(), engine_version, vk_api_version);
-    const vk::InstanceCreateInfo vk_instance_create_info = MakeInstanceCreateInfoChain(vk_app_info, enabled_layers, enabled_extensions).get<vk::InstanceCreateInfo>();
+    const vk::InstanceCreateInfo vk_instance_create_info = MakeInstanceCreateInfoChain(vk_app_info, vk_instance_create_flags,
+                                                                                       enabled_layers, enabled_extensions).get<vk::InstanceCreateInfo>();
 
     vk::UniqueInstance vk_unique_instance = vk::createInstanceUnique(vk_instance_create_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_unique_instance.get());
@@ -483,13 +495,16 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
     vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR    vk_device_timeline_semaphores_feature(true);
-    vk::PhysicalDeviceSynchronization2FeaturesKHR     vk_device_synchronization_2_feature(true);
     vk::PhysicalDeviceHostQueryResetFeatures          vk_device_host_query_reset_feature(true);
     vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
     vk_device_info.setPNext(&vk_device_dynamic_state_feature);
     vk_device_dynamic_state_feature.setPNext(&vk_device_timeline_semaphores_feature);
-    vk_device_timeline_semaphores_feature.setPNext(&vk_device_synchronization_2_feature);
-    vk_device_synchronization_2_feature.setPNext(&vk_device_host_query_reset_feature);
+    vk_device_timeline_semaphores_feature.setPNext(&vk_device_host_query_reset_feature);
+
+#ifndef __APPLE__
+    vk::PhysicalDeviceSynchronization2FeaturesKHR vk_device_synchronization_2_feature(true);
+    vk_device_host_query_reset_feature.setPNext(&vk_device_synchronization_2_feature);
+#endif
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
@@ -530,7 +545,9 @@ const QueueFamilyReservationVK& DeviceVK::GetQueueFamilyReservation(CommandList:
 {
     META_FUNCTION_TASK();
     const QueueFamilyReservationVK* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
-    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr, fmt::format("queue family was not reserved for {} command list type", cmd_list_type));
+    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr,
+                                  fmt::format("queue family was not reserved for {} command list type",
+                                              magic_enum::enum_name(cmd_list_type)));
     return *queue_family_reservation_ptr;
 }
 

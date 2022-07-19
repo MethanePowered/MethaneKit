@@ -110,8 +110,9 @@ public:
     const ProgramBindingsBase* GetProgramBindingsPtr() const noexcept   { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandListBase>       GetCommandListPtr()                      { return GetPtr<CommandListBase>(); }
 
-    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)      { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
-    inline void RetainResource(ObjectBase& resource)                     { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void RetainResource(const Ptr<ObjectBase>& resource_ptr)     { if (resource_ptr) m_command_state.retained_resources.emplace_back(resource_ptr); }
+    inline void RetainResource(ObjectBase& resource)                    { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
+    inline void ReleaseRetainedResources()                              { m_command_state.retained_resources.clear(); }
 
     template<typename T, typename = std::enable_if_t<std::is_base_of_v<ObjectBase, T>>>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
@@ -127,11 +128,12 @@ protected:
     CommandState&       GetCommandState()               { return m_command_state; }
     const CommandState& GetCommandState() const         { return m_command_state; }
 
-    void        SetCommandListState(State state);
-    void        SetCommandListStateNoLock(State state);
-    bool        IsExecutingOnAnyFrame() const           { return m_state == State::Executing; }
-    bool        IsCommitted() const                     { return m_state == State::Committed; }
-    bool        IsExecuting() const                     { return m_state == State::Executing; }
+    void SetCommandListState(State state);
+    void SetCommandListStateNoLock(State state);
+    bool IsExecutingOnAnyFrame() const           { return m_state == State::Executing; }
+    bool IsCommitted() const                     { return m_state == State::Committed; }
+    bool IsExecuting() const                     { return m_state == State::Executing; }
+    auto LockStateMutex() const                  { return std::scoped_lock(m_state_mutex); }
 
     void InitializeTimestampQueries();
     void BeginGpuZone();
@@ -155,7 +157,7 @@ private:
     DebugGroupStack             m_open_debug_groups;
     CompletedCallback           m_completed_callback;
     State                       m_state = State::Pending;
-    mutable TracyLockable(std::mutex, m_state_mutex)
+    mutable TracyLockable(std::recursive_mutex, m_state_mutex)
     TracyLockable(std::mutex,   m_state_change_mutex)
     std::condition_variable_any m_state_change_condition_var;
     TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;

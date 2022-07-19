@@ -26,7 +26,7 @@ Arc-Ball camera unit tests
 #include <Methane/Checks.hpp>
 #include <Methane/HlslCatchHelpers.hpp>
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 
 using namespace Methane::Graphics;

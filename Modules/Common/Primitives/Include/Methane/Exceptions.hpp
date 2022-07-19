@@ -99,7 +99,7 @@ private:
     [[nodiscard]] static std::string GetMessage(const V& value) noexcept
     {
         if constexpr (std::is_enum_v<V>)
-            return fmt::format("{}::{}({}) is not valid", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), value);
+            return fmt::format("{}::{}({}) is not valid", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), magic_enum::enum_integer(value));
         else if constexpr (std::is_pointer_v<V>)
             return fmt::format("{}*({}) is not valid", typeid(V).name(), fmt::ptr(value));
         else if constexpr (IsStaticCastable<V, std::string>::value)
@@ -158,29 +158,30 @@ public:
     { }
 };
 
-template<typename T, typename RawType = typename std::decay_t<T>>
+template<typename T>
 class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    template<typename ValueType = RawType>
-    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, ValueType&& value, const std::string& description = "")
+    using DecayType = typename std::decay_t<T>;
+
+    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, DecayType value, const std::string& description = "")
         : ArgumentExceptionBaseType(function_name, variable_name, GetMessage(value), description)
-        , m_value(std::forward<ValueType>(value))
+        , m_value(std::move(value))
     { }
 
-    [[nodiscard]] RawType GetValue() const noexcept { m_value; }
+    [[nodiscard]] const DecayType& GetValue() const noexcept { m_value; }
 
 private:
-    template<typename ValueType = RawType>
-    static std::string GetMessage(ValueType&& value)
+    template<typename V = DecayType>
+    static std::string GetMessage(const V& value)
     {
-        if constexpr (std::is_enum_v<ValueType>)
-            return fmt::format("{}::{}({}) is unexpected", magic_enum::enum_type_name<ValueType>(), magic_enum::enum_name(std::forward<ValueType>(value)), std::forward<ValueType>(value));
+        if constexpr (std::is_enum_v<V>)
+            return fmt::format("{}::{}({}) is unexpected", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), magic_enum::enum_integer(value));
         else
-            return fmt::format("{}({}) is unexpected", typeid(ValueType).name(), std::forward<ValueType>(value));
+            return fmt::format("{}({}) is unexpected", typeid(V).name(), value);
     }
 
-    RawType m_value;
+    DecayType m_value;
 };
 
 class NotImplementedException : public std::logic_error

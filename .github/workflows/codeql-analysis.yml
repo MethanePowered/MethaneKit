@@ -9,14 +9,18 @@ on:
     - '.github/**/codeql-*.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Externals/**'
     - 'Tests/**'
+    - 'CMakeLists.txt'
   pull_request:
     branches: [ master ]
     paths:
     - '.github/**/codeql-*.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Externals/**'
     - 'Tests/**'
+    - 'CMakeLists.txt'
   schedule:
     - cron: '20 23 * * 3'
 
@@ -51,16 +55,23 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        submodules: 'recursive'
 
-    # Windows CodeQL analysis is DISABLED (see reason description next to Analysis step below)
+    # NOTE: CodeQL is temporary DISABLED on Windows (see reason description next to Analysis step below)
     - name: Initialize CodeQL
       if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/init@v2
       with:
         languages: cpp
         config-file: ./.github/codeql/codeql-config.yml
+
+    - name: Initialize Externals Cache
+      id: cache-externals
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-externals
+      with:
+        path: Build/Output/ExternalsCache
+        key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
       run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF -DMETHANE_TESTS_BUILD_ENABLED:BOOL=OFF -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=OFF
@@ -72,3 +83,23 @@ jobs:
     - name: Perform CodeQL Analysis
       if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/analyze@v2
+      with:
+        upload: false
+        output: results
+
+    - name: Filter CodeQL Results
+      if: ${{ matrix.os != 'windows-2019' }}
+      uses: MethanePowered/FilterSarif@master
+      with:
+        patterns: |
+          -Build/Output/**
+          -Externals/**
+          -Tests/**
+        input: results/cpp.sarif
+        output: results/cpp-filtered.sarif
+
+    - name: Upload Filtered CodeQL Results
+      if: ${{ matrix.os != 'windows-2019' }}
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: results/cpp-filtered.sarif

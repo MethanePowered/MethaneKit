@@ -26,6 +26,10 @@ Methane time range type definition
 #include <Methane/Data/Types.h>
 #include <Methane/Data/Range.hpp>
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 namespace Methane::Data
 {
 
@@ -34,21 +38,45 @@ using TimeRange = Range<Timestamp>;
 constexpr Timestamp g_one_sec_in_nanoseconds = 1000000000;
 
 [[nodiscard]]
-inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds)
+inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds) noexcept
 {
     return static_cast<Timestamp>(seconds * g_one_sec_in_nanoseconds);
 }
 
 [[nodiscard]]
-inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency)
+inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency) noexcept
 {
     return ticks * g_one_sec_in_nanoseconds / frequency;
 }
 
 [[nodiscard]]
-inline float ConvertFrequencyToTickPeriod(Frequency frequency)
+inline float ConvertFrequencyToTickPeriod(Frequency frequency) noexcept
 {
     return static_cast<float>(g_one_sec_in_nanoseconds) / static_cast<float>(frequency);
 }
+
+#ifdef _WIN32
+
+inline uint64_t GetQpcFrequency() noexcept
+{
+    LARGE_INTEGER t;
+    QueryPerformanceFrequency( &t );
+    return static_cast<uint64_t>(t.QuadPart);
+}
+
+inline uint64_t GetQpcToNSecMultiplier() noexcept
+{
+    static const auto s_qpc_to_nsec = static_cast<uint64_t>(static_cast<double>(g_one_sec_in_nanoseconds) / static_cast<double>(GetQpcFrequency()));
+    return s_qpc_to_nsec;
+}
+
+#else // !defined(_WIN32)
+
+inline uint64_t GetQpcToNSecMultiplier() noexcept
+{
+    return 1U;
+}
+
+#endif // defined(_WIN32)
 
 } // namespace Methane::Data

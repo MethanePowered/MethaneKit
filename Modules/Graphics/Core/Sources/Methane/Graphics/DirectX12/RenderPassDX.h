@@ -29,7 +29,7 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Graphics/RenderPassBase.h>
 #include <Methane/Data/Receiver.hpp>
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <vector>
 #include <optional>

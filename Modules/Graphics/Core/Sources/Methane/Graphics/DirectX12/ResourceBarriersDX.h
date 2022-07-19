@@ -27,7 +27,7 @@ DirectX 12 specialization of the resource barriers.
 #include <Methane/Data/Receiver.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics
 {

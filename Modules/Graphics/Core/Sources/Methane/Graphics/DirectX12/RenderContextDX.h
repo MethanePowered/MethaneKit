@@ -51,7 +51,7 @@ public:
     uint32_t GetFontResolutionDpi() const override;
 
     // ContextBase interface
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted = true) override;
+    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
     void Release() override;
 
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }

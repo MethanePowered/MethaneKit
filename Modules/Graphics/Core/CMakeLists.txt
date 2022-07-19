@@ -82,9 +82,9 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     )
 
     set(PLATFORM_LIBRARIES
-        D3DX12
+        DirectX-Headers
         DirectXTex
-        D3DCompilerToDXC
+        DirectXCompiler
         d3d12
         dxgi
         dxguid
@@ -217,7 +217,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     endif()
 
     set(PLATFORM_LIBRARIES
-        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, so only Vulkan headers are needed
+        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
+        $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
         $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with MoltenVK framework on MacOS
         spirv-cross-core
         spirv-cross-hlsl

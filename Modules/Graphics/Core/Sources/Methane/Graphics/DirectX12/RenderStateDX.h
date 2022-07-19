@@ -26,8 +26,8 @@ DirectX 12 implementation of the render state interface.
 #include <Methane/Graphics/RenderStateBase.h>
 
 #include <wrl.h>
-#include <d3d12.h>
-#include <d3dx12.h>
+#include <directx/d3d12.h>
+#include <directx/d3dx12.h>
 
 namespace Methane::Graphics
 {

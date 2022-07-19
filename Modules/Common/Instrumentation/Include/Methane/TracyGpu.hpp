@@ -343,7 +343,7 @@ public:
 
     tracy_force_inline void Complete(Timestamp gpu_begin_timestamp, Timestamp gpu_end_timestamp)
     {
-        if (!m_context_ptr)
+        if (!m_context_ptr || gpu_begin_timestamp == gpu_end_timestamp)
             return;
 
 #ifdef TRACY_ON_DEMAND

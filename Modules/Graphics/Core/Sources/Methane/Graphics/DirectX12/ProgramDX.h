@@ -29,7 +29,7 @@ DirectX 12 implementation of the program interface.
 #include "ProgramBindingsDX.h"
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <functional>
 

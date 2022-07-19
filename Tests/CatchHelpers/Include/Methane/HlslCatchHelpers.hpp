@@ -24,7 +24,7 @@ Catch2 unit-test helpers for HLSL++ vector types
 #include <Methane/Data/TypeFormatters.hpp>
 
 #include <hlsl++.h>
-#include <catch2/catch.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 
 namespace Catch
 {
@@ -42,7 +42,7 @@ namespace Methane
 
 template<typename HlslVectorType>
 class HlslVectorEqualsMatcher
-    : public Catch::Matchers::Impl::MatcherBase<HlslVectorType>
+    : public Catch::Matchers::MatcherBase<HlslVectorType>
 {
 public:
     HlslVectorEqualsMatcher(const HlslVectorType& reference_vector)
@@ -71,7 +71,7 @@ auto HlslVectorEquals(const HlslVectorType& reference_vector) -> decltype(auto)
 
 template<typename HlslVectorType>
 class HlslVectorApproxEqualsMatcher
-    : public Catch::Matchers::Impl::MatcherBase<HlslVectorType>
+    : public Catch::Matchers::MatcherBase<HlslVectorType>
 {
 public:
     template<typename ComponentType>

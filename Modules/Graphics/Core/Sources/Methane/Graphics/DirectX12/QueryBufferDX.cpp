@@ -31,12 +31,12 @@ DirectX 12 GPU query results buffer.
 #include <Methane/Graphics/QueryBuffer.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 namespace wrl = Microsoft::WRL;
 
@@ -201,6 +201,7 @@ TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferDX::Calibrate()
     CalibratedTimestamps calibrated_timestamps{ 0U, 0U };
     ThrowIfFailed(GetCommandQueueDX().GetNativeCommandQueue().GetClockCalibration(&calibrated_timestamps.gpu_ts, &calibrated_timestamps.cpu_ts),
                   GetContextDX().GetDeviceDX().GetNativeDevice().Get());
+    calibrated_timestamps.cpu_ts *= Data::GetQpcToNSecMultiplier();
     SetCalibratedTimestamps(calibrated_timestamps);
     return calibrated_timestamps;
 }

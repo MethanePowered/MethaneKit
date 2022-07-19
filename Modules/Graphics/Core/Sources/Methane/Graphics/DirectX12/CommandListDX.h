@@ -28,7 +28,7 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 #include <Methane/Graphics/CommandListBase.h>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <mutex>
 

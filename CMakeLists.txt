@@ -52,6 +52,7 @@ set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
 set(METHANE_COPYRIGHT     "Copyright 2019-2021 Evgeny Gorodetskiy")
+set(RESOURCES_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 
 # Methane graphics native APIs
 set(METHANE_GFX_METAL 1)   # MacOS default API
@@ -73,16 +74,9 @@ else()
     endif()
 endif()
 
-list(APPEND CMAKE_MODULE_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeModules"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMakeExtraModules"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/Catch2/contrib"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Externals/CMRC"
-)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 include(MethaneModules)
-include(MethaneUtils)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
@@ -92,44 +86,32 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-add_library(MethaneBuildOptions INTERFACE)
-
-if(NOT WIN32 AND NOT APPLE AND UNIX)
-    set(LINUX 1)
+# Use build-independent location for CPM package source cache to speedup CMake configuration
+# NOTE: Do not use single cache location under CLion IDE to workaround CPM cache initialization collision
+#       when multiple CMake configurations are initialized simultaneously
+if (NOT CPM_SOURCE_CACHE AND NOT DEFINED ENV{CLION_IDE})
+    set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/ExternalsCache" CACHE STRING "Set default CPM source cache path for External repositories")
 endif()
 
 if(WIN32)
 
-    include(FindWindowsSDK)
-    if(WINDOWSSDK_FOUND)
-        message(STATUS "${WINDOWSSDK_LATEST_NAME} was selected for build")
-    else()
-        message(FATAL_ERROR "Windows SDK was not found!")
+    set(VS_STARTUP_PROJECT MethaneAsteroids)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
+    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # Enable multi-threaded build with MSVC
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     endif()
 
-    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WINDOWSSDK_INCLUDE_DIRS)
-    if(NOT WINDOWSSDK_INCLUDE_DIRS)
-        message(FATAL_ERROR "Failed to get Windows SDK include directories from ${WINDOWSSDK_LATEST_DIR}")
-    endif()
-
-    get_windowssdk_library_dirs(${WINDOWSSDK_LATEST_DIR} WINDOWSSDK_LIBRARY_DIRS)
-    if(NOT WINDOWSSDK_LIBRARY_DIRS)
-        message(FATAL_ERROR "Failed to get Windows SDK library directories from ${WINDOWSSDK_LATEST_DIR}")
-    endif()
-
-    target_include_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_INCLUDE_DIRS})
-    target_link_directories(MethaneBuildOptions INTERFACE ${WINDOWSSDK_LIBRARY_DIRS})
-    target_compile_definitions(MethaneBuildOptions INTERFACE
-        UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN USE_PIX
-        _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING # silence warning C4996 about std::wstring_convert deprecation
-    )
-
-elseif(APPLE)
+elseif(APPLE) # MacOS
 
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
 
-else(UNIX)
+else(UNIX) # Linux
+
+    set(LINUX 1)
 
     find_package(X11 REQUIRED)
     if (NOT X11_xcb_FOUND OR
@@ -140,105 +122,23 @@ else(UNIX)
 
 endif()
 
-if (MSVC)
-
-    set(VS_STARTUP_PROJECT MethaneAsteroids)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-
-        # Enable multi-threaded build with MSVC
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-        target_compile_options(MethaneBuildOptions INTERFACE
-            # Exception handling mode
-            /EHsc
-            # Set maximum warnings level and treat warnings as errors
-            /W4 /WX
-            # Disable useless warnings
-            /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
-            /wd4324 # - C4324: structure was padded due to alignment specifier
-        )
-
-    else() # Clang compiler on Windows
-
-        target_compile_options(MethaneBuildOptions INTERFACE
-            # Set maximum warnings level & treat warnings as errors
-            -Werror
-            # Disable useless warnings produced by Windows headers
-            -Wno-unknown-pragmas
-            -Wno-unused-local-typedef
-            -Wno-ignored-pragma-intrinsic
-            -Wno-expansion-to-defined
-            -Wno-nonportable-include-path
-            -Wno-pragma-pack
-            -Wno-unused-value
-            -Wno-microsoft-template
-            -Wno-microsoft-template-shadow
-            -Wno-microsoft-sealed
-            -Wno-microsoft-exception-spec
-            -Wno-ignored-attributes
-            -Wno-macro-redefined
-            -Wno-extern-c-compat
-            -Wno-invalid-noreturn
-        )
-
-    endif()
-
-else() # Clang or GCC on Linux/MacOS
-
-    target_compile_options(MethaneBuildOptions INTERFACE
-        # Set maximum warnings level & treat warnings as errors
-        -Wall -Wextra -Werror
-        # Disable useless Clang and GCC warnings
-        -Wno-missing-field-initializers
-    )
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
-
-        target_compile_options(MethaneBuildOptions INTERFACE
-            # Disable useless GCC warnings
-            -Wno-ignored-qualifiers
-        )
-
-    endif()
-
-endif()
-
-target_compile_definitions(MethaneBuildOptions INTERFACE
-    "$<$<CONFIG:Debug>:_DEBUG>"
-    "$<$<CONFIG:Release>:NDEBUG>"
-    "$<$<CONFIG:MinSizeRel>:NDEBUG>"
-    "$<$<CONFIG:RelWithDebInfo>:NDEBUG>"
-)
-
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
-split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
-target_compile_definitions(MethaneBuildOptions INTERFACE
-    METHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
-    METHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
-    METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
-)
 
 # METHANE_GFX_API is platform dependent and is selected in CMake/MethaneModules.cmake
-if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-    message(STATUS "Methane is using DirectX 12 graphics API")
-elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
-    message(STATUS "Methane is using Metal graphics API")
-elseif (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-    message(STATUS "Methane is using Vulkan graphics API")
+get_graphics_dir(GRAPHICS_API_NAME)
+message(STATUS "Methane is built with ${GRAPHICS_API_NAME} graphics API")
+
+if (APPLE AND METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
     # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
-    if (APPLE)
-        message(WARNING "Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
-        # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
-        # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
-        # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
-        find_package(Vulkan REQUIRED)
-        # To run Vulkan application on MacOS, additional environment variables need to be set for application:
-        # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json
-        # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
-    endif()
+    message(AUTHOR_WARNING "Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
+    # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
+    # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
+    # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
+    find_package(Vulkan REQUIRED)
+    # To run Vulkan application on MacOS, additional environment variables need to be set for application:
+    # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json
+    # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
 endif()
 
 if (METHANE_APPS_BUILD_ENABLED)
@@ -252,28 +152,10 @@ endif()
 
 if (METHANE_CHECKS_ENABLED)
     message(STATUS "Methane runtime checks of input arguments are enabled")
-    target_compile_definitions(MethaneBuildOptions INTERFACE METHANE_CHECKS_ENABLED)
 endif()
 
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
-endif()
-
-if (METHANE_CODE_COVERAGE_ENABLED)
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
-        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-        message(STATUS "Methane code coverage is enabled with Clang compiler")
-        target_compile_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate -fcoverage-mapping)
-        target_link_options(MethaneBuildOptions INTERFACE -fprofile-instr-generate)
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        message(STATUS "Methane code coverage is enabled with GCC compiler")
-        target_compile_options(MethaneBuildOptions INTERFACE -coverage)
-        target_link_options(MethaneBuildOptions INTERFACE -coverage)
-    else()
-        message(STATUS "Methane code coverage is unavailable with ${CMAKE_CXX_COMPILER_ID} compiler")
-    endif()
-
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)
@@ -298,11 +180,8 @@ endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     message(STATUS "Methane ITT instrumentation is enabled")
-    target_compile_definitions(MethaneBuildOptions INTERFACE ITT_INSTRUMENTATION_ENABLED)
-
     if(METHANE_ITT_METADATA_ENABLED)
         message(STATUS "Methane ITT metadata is enabled")
-        target_compile_definitions(MethaneBuildOptions INTERFACE ITT_ARGUMENTS_METADATA_ENABLED)
     endif()
 endif()
 
@@ -328,22 +207,10 @@ else()
     set(CTEST_EXE "ctest")
 endif()
 
-set(RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
-
-# Disable finding packages by External libraries
-set(CMAKE_DISABLE_FIND_PACKAGE_Doxygen TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_HarfBuzz TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_PkgConfig TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_ZLIB TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_PNG TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_BZip2 TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_HHC TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_LATEX TRUE)
-set(CMAKE_DISABLE_FIND_PACKAGE_Perl TRUE)
-
-set(MAGIC_ENUM_OPT_INSTALL ON CACHE BOOL "Generate and install magic_enum target")
-
 add_subdirectory(Externals)
+
+include(MethaneBuildOptions)
+
 add_subdirectory(Modules)
 
 if (METHANE_APPS_BUILD_ENABLED)

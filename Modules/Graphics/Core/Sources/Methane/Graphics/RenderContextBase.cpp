@@ -205,10 +205,10 @@ void RenderContextBase::ResetWithSettings(const Settings& settings)
     Initialize(*device_ptr, true);
 }
 
-void RenderContextBase::Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted)
+void RenderContextBase::Initialize(DeviceBase& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-    ContextBase::Initialize(device, deferred_heap_allocation, false);
+    ContextBase::Initialize(device, false);
 
     m_frame_index = 0U;
 

@@ -14,12 +14,12 @@ set(SOURCES
     ${SOURCES_DIR}/PerlinNoise.cpp
 )
 
-if (WIN32)
+if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     set(HEADERS ${HEADERS}
-        ${INCLUDE_PLATFORM_DIR}/ErrorHandling.h
+        ${INCLUDE_PLATFORM_DIR}/DirectXErrorHandling.h
     )
     set(SOURCES ${SOURCES}
-        ${SOURCES_PLATFORM_DIR}/ErrorHandling.cpp
+        ${SOURCES_PLATFORM_DIR}/DirectXErrorHandling.cpp
     )
 endif()
 

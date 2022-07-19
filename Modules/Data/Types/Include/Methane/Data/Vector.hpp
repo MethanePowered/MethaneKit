@@ -254,10 +254,10 @@ public:
         return RoundCast<T>(std::sqrt(square_sum));
     }
 
-    [[nodiscard]] T operator[](size_t index) const noexcept { return m_components[index]; }
-    [[nodiscard]] T& operator[](size_t index) noexcept      { return m_components[index]; }
+    [[nodiscard]] T operator[](size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T& operator[](size_t index)      { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
 
-    [[nodiscard]] T Get(size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T Get(size_t index) const        { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
 
     [[nodiscard]] T GetX() const noexcept { return m_components[0]; }
     [[nodiscard]] T GetY() const noexcept { return m_components[1]; }

@@ -31,12 +31,12 @@ DirectX 12 base template implementation of the context interface.
 
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Windows/ErrorHandling.h>
+#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <wrl.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <array>
 
@@ -57,20 +57,11 @@ public:
 
     // ContextBase interface
 
-    void Initialize(DeviceBase& device, bool deferred_heap_allocation, bool is_callback_emitted) override
+    void Initialize(DeviceBase& device, bool is_callback_emitted) override
     {
         META_FUNCTION_TASK();
-        ContextBaseT::Initialize(device, deferred_heap_allocation, false);
-
-        m_descriptor_manager_init_settings.deferred_heap_allocation = deferred_heap_allocation;
-        if (deferred_heap_allocation)
-        {
-            m_descriptor_manager_init_settings.default_heap_sizes        = {};
-            m_descriptor_manager_init_settings.shader_visible_heap_sizes = {};
-        }
-
+        ContextBaseT::Initialize(device, false);
         GetDescriptorManagerDX().Initialize(m_descriptor_manager_init_settings);
-
         if (is_callback_emitted)
         {
             Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
@@ -130,7 +121,7 @@ private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
 
     DescriptorManagerDX::Settings m_descriptor_manager_init_settings{ true, {}, {} };
-    mutable NativeQueryHeaps    m_query_heaps;
+    mutable NativeQueryHeaps      m_query_heaps;
 };
 
 } // namespace Methane::Graphics

@@ -4,7 +4,6 @@ include(Catch)
 set(TARGET MethaneDataTypesTest)
 
 add_executable(${TARGET}
-    Main.cpp
     RawVectorTest.cpp
     PointTest.cpp
     RectSizeTest.cpp
@@ -19,7 +18,7 @@ target_link_libraries(${TARGET}
     MethaneBuildOptions
     MethanePrecompiledExtraHeaders
     $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-    Catch2
+    Catch2WithMain
 )
 
 catch_discover_tests(${TARGET})

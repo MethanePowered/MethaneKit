@@ -61,20 +61,7 @@ CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, C
 CommandQueueTrackingBase::~CommandQueueTrackingBase()
 {
     META_FUNCTION_TASK();
-    try
-    {
-        // Do not use virtual call in destructor
-        CommandQueueTrackingBase::CompleteExecution();
-    }
-    catch(const std::exception& ex)
-    {
-        META_UNUSED(ex);
-        META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
-        assert(false);
-    }
-    m_execution_waiting = false;
-    m_execution_waiting_condition_var.notify_one();
-    m_execution_waiting_thread.join();
+    ShutdownQueueExecution();
 }
 
 void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
@@ -132,7 +119,6 @@ void CommandQueueTrackingBase::CompleteExecution(const Opt<Data::Index>& frame_i
     while (!m_executing_command_lists.empty() &&
            m_executing_command_lists.front()->GetFrameIndex() == frame_index)
     {
-        META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
         m_executing_command_lists.front()->Complete();
         m_executing_command_lists.pop();
     }
@@ -146,7 +132,7 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
         do
         {
             std::unique_lock lock(m_execution_waiting_mutex);
-            m_execution_waiting_condition_var.wait(lock,
+            m_execution_waiting_condition_var.wait_for(lock, std::chrono::milliseconds(32),
                 [this] { return !m_execution_waiting || !m_executing_command_lists.empty(); }
             );
 
@@ -167,14 +153,11 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
                 CompleteCommandListSetExecution(*command_list_set_ptr);
             }
 
-            // FIXME: GPU timestamps re-calibration does not work correctly for DirectX, so it's used for Vulkan only
-#ifdef METHANE_GFX_VULKAN
             if (m_timestamp_query_buffer_ptr)
             {
                 const TimestampQueryBuffer::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_buffer_ptr->Calibrate();
                 GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
-#endif
         }
         while (m_execution_waiting);
     }
@@ -214,6 +197,34 @@ void CommandQueueTrackingBase::CompleteCommandListSetExecution(CommandListSetBas
     {
         m_executing_command_lists.pop();
     }
+}
+
+void CommandQueueTrackingBase::ShutdownQueueExecution()
+{
+    META_FUNCTION_TASK();
+    if (!m_execution_waiting)
+        return;
+
+    {
+        std::unique_lock lock(m_execution_waiting_mutex);
+        m_timestamp_query_buffer_ptr.reset();
+
+        try
+        {
+            // Do not use virtual call in destructor
+            CommandQueueTrackingBase::CompleteExecution();
+        }
+        catch (const std::exception& ex) // NOSONAR
+        {
+            META_UNUSED(ex);
+            META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
+            assert(false);
+        }
+
+        m_execution_waiting = false;
+    }
+    m_execution_waiting_condition_var.notify_one();
+    m_execution_waiting_thread.join();
 }
 
 } // namespace Methane::Graphics
