@@ -87,7 +87,7 @@ steps:
     failOnStderr: false
     displayName: 'Collect code coverage from all unit-tests in install directory'
 
-  - task: reportgenerator@4
+  - task: reportgenerator@5
     displayName: 'Generate SonarCube and Cobertura code coverage reports'
     inputs:
       reports: '$(installDir)\Tests\Coverage\*.xml'

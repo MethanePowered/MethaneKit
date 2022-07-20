@@ -65,7 +65,7 @@ steps:
   - ${{ each step in parameters.extraScanSteps }}:
     - ${{ step }}
 
-  - task: reportgenerator@4
+  - task: reportgenerator@5
     displayName: 'Generate SonarCube report with code coverage'
     condition: ne(variables.coverageReports, '')
     inputs:
