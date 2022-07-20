@@ -6,17 +6,17 @@
     <option name="resources">
       <list>
         <Resource>
-          <option name="key" value="egorodet_MethaneKit_Windows" />
+          <option name="key" value="methane-powered-kit-windows" />
           <option name="name" value="MethaneKit for Windows" />
           <option name="qualifier" value="TRK" />
         </Resource>
         <Resource>
-          <option name="key" value="egorodet_MethaneKit_MacOS" />
+          <option name="key" value="methane-powered-kit-macos" />
           <option name="name" value="MethaneKit for MacOS" />
           <option name="qualifier" value="TRK" />
         </Resource>
         <Resource>
-          <option name="key" value="egorodet_MethaneKit_Linux" />
+          <option name="key" value="methane-powered-kit-linux" />
           <option name="name" value="MethaneKit for Linux" />
           <option name="qualifier" value="TRK" />
         </Resource>

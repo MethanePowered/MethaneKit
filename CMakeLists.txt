@@ -50,7 +50,7 @@ set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
-set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/egorodet/MethaneKit)")
+set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/MethanePowered/MethaneKit)")
 set(METHANE_COPYRIGHT     "Copyright 2019-2021 Evgeny Gorodetskiy")
 set(RESOURCES_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 

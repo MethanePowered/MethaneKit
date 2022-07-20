@@ -171,8 +171,8 @@ IF DEFINED ANALYZE_BUILD (
     ECHO Analyzing build with SonarScanner and submitting results...
     CD "%SOURCE_DIR%"
     CALL "%SONAR_SCANNER_BAT%"^
-        -D sonar.organization="egorodet-github"^
-        -D sonar.projectKey="egorodet_MethaneKit_Windows"^
+        -D sonar.organization="methane-powered"^
+        -D sonar.projectKey="methane-powered-kit-windows"^
         -D sonar.branch.name="!GITBRANCH!"^
         -D sonar.projectVersion="%BUILD_VERSION%"^
         -D sonar.projectBaseDir="%SOURCE_DIR%"^

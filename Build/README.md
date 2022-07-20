@@ -45,7 +45,7 @@ which may be required to resolve problem with support of paths longer than 260 s
 ### First time initialization
 
 ```console
-git clone https://github.com/egorodet/MethaneKit.git
+git clone https://github.com/MethanePowered/MethaneKit.git
 cd MethaneKit
 ```
 
@@ -60,7 +60,7 @@ git pull
 
 ### Windows Build with Visual Studio
 
-<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle">
+<img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle">
 Start Command Prompt, go to `MethaneKit` root directory and either start auxiliary build script
 [Build/Windows/Build.bat](/Build/Windows/Build.bat) or build with CMake command line
 to generate Visual Studio 2019/22 solution:
@@ -82,7 +82,7 @@ Run built applications from the installation directory `Build\Output\VisualStudi
 
 ###  Linux Build with Unix Makefiles
 
-<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" valign="middle">
+<img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Ubuntu.png" valign="middle">
 Start Terminal, go to `MethaneKit` root directory and either start auxiliary build script
 [Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line to generate Unix Makefiles:
 
@@ -103,7 +103,7 @@ because of `noexec` permission set on user's home directory by security reasons.
 
 ### MacOS Build with XCode
 
-<img src="https://github.com/egorodet/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle">
+<img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle">
 Start Terminal, go to `MethaneKit` root directory and either start auxiliary build script
 [Build/Unix/Build.sh](/Build/Unix/Build.sh) or build with CMake command line to generate XCode workspace:
 
@@ -182,6 +182,6 @@ Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-pre
 Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
 "x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or directly from Visual Studio.
 
-[Azure Pipelines](https://egorodet.visualstudio.com/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
+[Azure Pipelines](https://dev.azure.com/MethanePowered/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
 CMake presets can be also used in [VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
 to reproduce CI builds on the development system with a few configuration options in IDE UI.

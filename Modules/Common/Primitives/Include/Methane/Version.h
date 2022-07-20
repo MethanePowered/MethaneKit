@@ -28,7 +28,7 @@ Methane version macro definitions
 #endif
 
 #ifndef METHANE_PRODUCT_URL
-#define METHANE_PRODUCT_URL "https://github.com/egorodet/MethaneKit"
+#define METHANE_PRODUCT_URL "https://github.com/MethanePowered/MethaneKit"
 #endif
 
 #ifndef METHANE_VERSION_MAJOR

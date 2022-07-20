@@ -32,8 +32,8 @@ Methane Kit includes the following Tracy instrumentation:
 - `METHANE_LOGGING_ENABLED:BOOL=ON` - enable logging displayed in Tracy log and in timeline markers
 
 ### Instructions for analysis
-1. Run Methane application built with Tracy profiling enabled or get `Profiling` [release build](https://github.com/egorodet/MethaneKit/releases)
-2. Run [Tracy profiler v0.7.1](https://github.com/egorodet/Tracy/releases/tag/v0.7.1) (run executable from Terminal on MacOS)
+1. Run Methane application built with Tracy profiling enabled or get `Profiling` [release build](https://github.com/MethanePowered/MethaneKit/releases)
+2. Run [Tracy profiler](https://github.com/wolfpld/tracy/releases) (run executable from Terminal on MacOS)
 3. Click Methane application record in the Tracy connection dialog. Realtime trace collection starts instantly.
   
 ## Intel ITT Instrumentation
@@ -63,7 +63,7 @@ Various GPU events and metrics are collected by [Intel GPA](https://software.int
     - Set the trace duration in seconds
     - In `GPA Domains` tab either select `Methane Kit` domain (to see Methane functions instrumentation) or `WinPixEventsRuntime` domain (to see command list debug group instrumentation) but not both - otherwise trace will display incorrectly.
 2. On the `Desktop Applications` launcher screen: select `Trace` mode from combo-box in the right-bottom corner
-3. Enter path to the Methane application executable built with ITT instrumentation enabled (any [release build](https://github.com/egorodet/MethaneKit/releases) can be used)
+3. Enter path to the Methane application executable built with ITT instrumentation enabled (any [release build](https://github.com/MethanePowered/MethaneKit/releases) can be used)
 4. Click `Start` button to start application. Press `CTRL+SHIFT+T` to capture a trace of requested duration with events prior the current moment
 5. Collected trace appears in the Graphics Monitor right-side list, double-click it to open.
 

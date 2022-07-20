@@ -38,8 +38,8 @@ variables:
   product.Version.Minor: 6
   product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(Build.BuildNumber)'
 
-  sonar.CloudName: 'Evgeny Gorodetsky Sonar Cloud'
-  sonar.Organization: 'egorodet-github'
+  sonar.CloudName: 'Methane Powered Graphics'
+  sonar.Organization: 'methane-powered'
   sonar.Sources: 'Apps,Modules'
   sonar.Tests: 'Tests'
   sonar.CacheDir: '$(Pipeline.Workspace)/SonarCache'
@@ -186,7 +186,7 @@ jobs:
     cmake.BuildPreset: 'VS2019-Win64-DX-Scan'
     buildDir: 'Build\Output\$(cmake.ConfigurePreset)\Build'
     installDir: 'Build\Output\$(cmake.ConfigurePreset)\Install'
-    sonar.ProjectKey: 'egorodet_MethaneKit_Windows'
+    sonar.ProjectKey: 'methane-powered-kit-windows'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-win-x86\build-wrapper-win-x86-64.exe
     sonar.Verbose: false
@@ -235,7 +235,7 @@ jobs:
     buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
     coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
-    sonar.ProjectKey: 'egorodet_MethaneKit_MacOS'
+    sonar.ProjectKey: 'methane-powered-kit-macos'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
     sonar.Verbose: false
@@ -321,7 +321,7 @@ jobs:
     buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
     installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
     coverageReports: '$(buildDir)/MethaneTestCoverage.info'
-    sonar.ProjectKey: 'egorodet_MethaneKit_Linux'
+    sonar.ProjectKey: 'methane-powered-kit-linux'
     sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip'
     sonar.BuildWrapperExe: build-wrapper-linux-x86/build-wrapper-linux-x86-64
     sonar.Verbose: false

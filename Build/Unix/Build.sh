@@ -195,8 +195,8 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
     echo ----------
     echo Analyzing build with SonarScanner and submitting results...
     if ! "$SONAR_SCANNER_EXE" \
-        -Dsonar.organization=egorodet-github \
-        -Dsonar.projectKey=egorodet_MethaneKit_$PLATFORM_NAME \
+        -Dsonar.organization=methane-powered \
+        -Dsonar.projectKey=methane-powered-kit-$PLATFORM_NAME \
         -Dsonar.branch.name=$GITBRANCH \
         -Dsonar.projectVersion=$BUILD_VERSION \
         -Dsonar.projectBaseDir="$SOURCE_DIR" \
