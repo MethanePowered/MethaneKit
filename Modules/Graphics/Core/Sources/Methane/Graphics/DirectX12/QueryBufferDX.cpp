@@ -46,7 +46,7 @@ namespace Methane::Graphics
 static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
 {
     META_FUNCTION_TASK();
-    switch(query_buffer_type)
+    switch(query_buffer_type) // NOSONAR - do not use if instead of switch
     {
     case QueryBuffer::Type::Timestamp: return D3D12_QUERY_TYPE_TIMESTAMP;
     //D3D12_QUERY_TYPE_OCCLUSION
@@ -59,7 +59,7 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
 static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
 {
     META_FUNCTION_TASK();
-    switch (query_buffer_type)
+    switch (query_buffer_type) // NOSONAR - do not use if instead of switch
     {
     case QueryBuffer::Type::Timestamp:
         return d3d_command_list_type == D3D12_COMMAND_LIST_TYPE_COPY

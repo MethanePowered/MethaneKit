@@ -33,7 +33,8 @@ DirectX 12 implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextDX final : public ContextDX<RenderContextBase>
+class RenderContextDX final // NOSONAR - manual destructor is required, inheritance hierarchy is greater than 5
+    : public ContextDX<RenderContextBase>
 {
 public:
     RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);

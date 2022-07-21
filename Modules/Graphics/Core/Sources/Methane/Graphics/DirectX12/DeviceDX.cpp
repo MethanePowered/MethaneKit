@@ -220,7 +220,9 @@ SystemDX::~SystemDX()
 {
     META_FUNCTION_TASK();
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     UnregisterAdapterChangeEvent();
+#endif
 
     m_cp_factory.Reset();
 
@@ -241,14 +243,16 @@ void SystemDX::Initialize()
     ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_cp_factory)));
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     RegisterAdapterChangeEvent();
+#endif
 }
+
+#ifdef ADAPTERS_CHANGE_HANDLING
 
 void SystemDX::RegisterAdapterChangeEvent()
 {
     META_FUNCTION_TASK();
-
-#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (!SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
         return;
@@ -261,14 +265,11 @@ void SystemDX::RegisterAdapterChangeEvent()
 
     META_CHECK_ARG_NOT_NULL(cp_factory7);
     ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
-#endif
 }
 
 void SystemDX::UnregisterAdapterChangeEvent()
 {
     META_FUNCTION_TASK();
-
-#ifdef ADAPTERS_CHANGE_HANDLING
     wrl::ComPtr<IDXGIFactory7> cp_factory7;
     if (m_adapter_change_registration_cookie == 0 ||
         !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
@@ -280,8 +281,9 @@ void SystemDX::UnregisterAdapterChangeEvent()
 
     CloseHandle(m_adapter_change_event);
     m_adapter_change_event = NULL;
-#endif
 }
+
+#endif // def ADAPTERS_CHANGE_HANDLING
 
 void SystemDX::CheckForChanges()
 {
@@ -294,7 +296,10 @@ void SystemDX::CheckForChanges()
     if (!adapters_changed)
         return;
 
+#ifdef ADAPTERS_CHANGE_HANDLING
     UnregisterAdapterChangeEvent();
+#endif
+
     Initialize();
 
     const Ptrs<Device>& devices = GetGpuDevices();

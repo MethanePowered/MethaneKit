@@ -33,7 +33,8 @@ namespace Methane::Graphics
 class RenderPassDX;
 class RenderStateDX;
 
-class RenderCommandListDX final : public CommandListDX<RenderCommandListBase>
+class RenderCommandListDX final // NOSONAR - inheritance hierarchy greater than 5
+    : public CommandListDX<RenderCommandListBase>
 {
 public:
     explicit RenderCommandListDX(CommandQueueBase& cmd_queue);

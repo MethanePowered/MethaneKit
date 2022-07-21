@@ -98,7 +98,7 @@ CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type com
 #endif
 }
 
-CommandQueueDX::~CommandQueueDX() // NOSONAR - destructor is not default under define
+CommandQueueDX::~CommandQueueDX()
 {
     META_FUNCTION_TASK();
     ShutdownQueueExecution();

@@ -42,10 +42,12 @@ struct ICommandListDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramBindingsDX final : public ProgramBindingsBase // NOSONAR - this class requires destructor
+class ProgramBindingsDX final // NOSONAR - custom destructor is required
+    : public ProgramBindingsBase
 {
 public:
-    class ArgumentBindingDX final : public ArgumentBindingBase
+    class ArgumentBindingDX   // NOSONAR - custom destructor is required
+        : public ArgumentBindingBase
     {
     public:
         enum class Type : uint32_t

@@ -51,7 +51,7 @@ namespace Methane::UserInterface
 
 class TextMesh;
 
-class Text
+class Text // NOSONAR - class destructor is required
     : public Item
     , protected Data::Receiver<IFontCallback> //NOSONAR
 {

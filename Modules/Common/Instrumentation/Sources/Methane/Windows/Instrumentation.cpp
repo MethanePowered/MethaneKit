@@ -68,7 +68,7 @@ static void SetLegacyThreadName(std::string_view) { }
 
 #endif
 
-extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR);
+extern "C" typedef HRESULT (WINAPI* SetThreadDescriptionFn)(HANDLE, PCWSTR); // NOSONAR
 
 void SetThreadName(std::string_view name)
 {

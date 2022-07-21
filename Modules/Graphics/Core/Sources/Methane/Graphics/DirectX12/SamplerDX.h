@@ -37,7 +37,8 @@ namespace wrl = Microsoft::WRL;
 
 class ContextBase;
 
-class SamplerDX final : public ResourceDX<SamplerBase>
+class SamplerDX final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<SamplerBase>
 {
 public:
     SamplerDX(const ContextBase& context, const Settings& settings);

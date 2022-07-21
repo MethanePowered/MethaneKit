@@ -41,7 +41,7 @@ class Text;
 class Panel;
 class Context;
 
-class AppBase
+class AppBase // NOSONAR - custom destructor is required
 {
 public:
     explicit AppBase(const IApp::Settings& ui_app_settings);

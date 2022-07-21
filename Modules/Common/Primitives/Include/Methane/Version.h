@@ -24,11 +24,11 @@ Methane version macro definitions
 #pragma once
 
 #ifndef METHANE_PRODUCT_NAME
-#define METHANE_PRODUCT_NAME "Methane Kit"
+#define METHANE_PRODUCT_NAME "Methane Kit" /* NOSONAR */
 #endif
 
 #ifndef METHANE_PRODUCT_URL
-#define METHANE_PRODUCT_URL "https://github.com/MethanePowered/MethaneKit"
+#define METHANE_PRODUCT_URL "https://github.com/MethanePowered/MethaneKit" /* NOSONAR */
 #endif
 
 #ifndef METHANE_VERSION_MAJOR

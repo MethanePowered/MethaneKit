@@ -31,7 +31,7 @@ namespace Methane::Data
 {
 
 template<typename D, typename = std::enable_if_t<std::is_arithmetic_v<D>>>
-class RectSize
+class RectSize // NOSONAR - class has more than 35 methods
 {
 public:
     using DimensionType = D;

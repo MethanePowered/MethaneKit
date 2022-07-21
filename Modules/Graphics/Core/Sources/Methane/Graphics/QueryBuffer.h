@@ -36,7 +36,7 @@ class CommandListBase;
 class QueryBuffer;
 struct Context;
 
-class Query
+class Query // NOSONAR - custom destructor is required
 {
 public:
     using Index = Data::Index;
@@ -74,7 +74,8 @@ private:
     State            m_state = State::Resolved;
 };
 
-class QueryBuffer : public std::enable_shared_from_this<QueryBuffer>
+class QueryBuffer
+    : public std::enable_shared_from_this<QueryBuffer>
 {
 public:
     enum class Type

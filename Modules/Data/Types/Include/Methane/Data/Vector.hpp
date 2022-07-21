@@ -104,7 +104,7 @@ HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noex
 }
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
-class RawVector
+class RawVector // NOSONAR - class has more than 35 methods
 {
 public:
     using ComponentType  = T;

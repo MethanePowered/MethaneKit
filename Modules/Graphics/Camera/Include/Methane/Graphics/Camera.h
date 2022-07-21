@@ -31,7 +31,7 @@ Camera helper implementation allowing to generate view and projection matrices.
 namespace Methane::Graphics
 {
 
-class Camera
+class Camera // NOSONAR - class has more than 35 methods
 {
 public:
     enum class Projection

@@ -66,7 +66,7 @@ struct IFontCallback
 using FT_Error = int;
 #endif
 
-class Font
+class Font // NOSONAR - class destructor is required, class has more than 35 methods
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
     , protected Data::Receiver<gfx::IContextCallback> //NOSONAR
@@ -190,11 +190,11 @@ public:
     [[nodiscard]] Ptr<Font>       GetPtr()            { return shared_from_this(); }
     [[nodiscard]] const Settings& GetSettings() const { return m_settings; }
 
-    void                     ResetChars(const std::string& utf8_characters);
-    void                     ResetChars(const std::u32string& utf32_characters);
-    void                     AddChars(const std::string& utf8_characters);
-    void                     AddChars(const std::u32string& utf32_characters);
-    const Font::Char&        AddChar(Char::Code char_code);
+    void              ResetChars(const std::string& utf8_characters);
+    void              ResetChars(const std::u32string& utf32_characters);
+    void              AddChars(const std::string& utf8_characters);
+    void              AddChars(const std::u32string& utf32_characters);
+    const Font::Char& AddChar(Char::Code char_code);
     
     [[nodiscard]] bool                     HasChar(Char::Code char_code) const;
     [[nodiscard]] const Char&              GetChar(Char::Code char_code) const;

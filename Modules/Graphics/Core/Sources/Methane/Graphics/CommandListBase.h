@@ -46,7 +46,7 @@ namespace Methane::Graphics
 class CommandQueueBase;
 class ProgramBindingsBase;
 
-class CommandListBase
+class CommandListBase // NOSONAR - custom destructor is used for logging, class has more than 35 methods
     : public ObjectBase
     , public virtual CommandList // NOSONAR
     , public Data::Emitter<ICommandListCallback>

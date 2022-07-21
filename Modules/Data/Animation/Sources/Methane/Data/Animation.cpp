@@ -37,11 +37,6 @@ Animation::Animation(double duration_sec) noexcept
     META_FUNCTION_TASK();
 }
 
-Animation::~Animation()
-{
-    META_FUNCTION_TASK();
-}
-
 void Animation::IncreaseDuration(double duration_sec)
 {
     META_FUNCTION_TASK();

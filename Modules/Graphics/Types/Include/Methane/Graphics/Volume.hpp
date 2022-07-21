@@ -313,7 +313,7 @@ private:
 };
 
 template<typename T, typename D>
-struct Volume
+struct Volume // NOSONAR - class has more than 35 methods
 {
     using Point = Point3T<T>;
     using Size  = VolumeSize<D>;

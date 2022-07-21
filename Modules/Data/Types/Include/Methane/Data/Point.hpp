@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ namespace Methane::Data
 {
 
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
-class Point
+class Point // NOSONAR - class has more than 35 methods
 {
 public:
     using CoordinateType = T;

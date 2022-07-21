@@ -194,7 +194,7 @@ void ResourceBarriersDX::UpdateNativeResourceBarrier(const ResourceBarrier::Id& 
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
 
-    switch (native_barrier_type)
+    switch (native_barrier_type) // NOSONAR - do not replace switch with if
     {
     case D3D12_RESOURCE_BARRIER_TYPE_TRANSITION:
         native_resource_barrier_it->Transition.StateBefore = GetNativeResourceState(state_change.GetStateBefore());

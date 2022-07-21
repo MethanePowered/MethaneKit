@@ -33,7 +33,8 @@ namespace Methane::Data
 {
 
 template<typename EventType>
-class Emitter : public virtual IEmitter<EventType>
+class Emitter // NOSONAR - custom destructor is required, rule of zero is not applicable
+    : public virtual IEmitter<EventType> // NOSONAR - virtual inheritance is required
 {
 public:
     Emitter() = default;
@@ -51,7 +52,7 @@ public:
         ConnectReceivers();
     }
 
-    ~Emitter() override // NOSONAR
+    ~Emitter() override
     {
         META_FUNCTION_TASK();
         DisconnectReceivers();

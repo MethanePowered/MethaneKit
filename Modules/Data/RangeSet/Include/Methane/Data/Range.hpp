@@ -40,13 +40,17 @@ class Range
 {
 public:
     Range() = default;
-    Range(ScalarT start, ScalarT end) : m_start(start), m_end(end) { META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end"); }
-    Range(std::initializer_list<ScalarT> init) : Range(*init.begin(), *(init.begin() + 1)) { } //NOSONAR - initializer list constructor is not explicit intentionally
-    Range(const Range& other) noexcept : m_start(other.m_start), m_end(other.m_end) { }
-    Range(Range&&) noexcept = default;
-    ~Range() = default;
+    Range(ScalarT start, ScalarT end)
+        : m_start(start)
+        , m_end(end)
+    {
+        META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end");
+    }
 
-    Range<ScalarT>&    operator=(const Range<ScalarT>& other) noexcept        { m_start = other.m_start; m_end = other.m_end; return *this; }
+    Range(std::initializer_list<ScalarT> init) // NOSONAR - initializer list constructor is not explicit intentionally
+        : Range(*init.begin(), *(init.begin() + 1))
+    { }
+
     [[nodiscard]] bool operator==(const Range<ScalarT>& other) const noexcept { return m_start == other.m_start && m_end == other.m_end; }
     [[nodiscard]] bool operator!=(const Range<ScalarT>& other) const noexcept { return !operator==(other); }
     [[nodiscard]] bool operator< (const Range<ScalarT>& other) const noexcept { return m_end  <= other.m_start; }

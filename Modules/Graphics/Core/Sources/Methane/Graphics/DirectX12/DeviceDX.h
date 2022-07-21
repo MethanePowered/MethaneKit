@@ -63,7 +63,8 @@ private:
     mutable wrl::ComPtr<ID3D12Device>   m_cp_device;
 };
 
-class SystemDX final : public SystemBase
+class SystemDX final // NOSONAR - custom destructor is required
+    : public SystemBase
 {
 public:
     [[nodiscard]] static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
@@ -86,15 +87,17 @@ public:
 
 private:
     void Initialize();
-    void RegisterAdapterChangeEvent();
-    void UnregisterAdapterChangeEvent();
     void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
-    wrl::ComPtr<IDXGIFactory5> m_cp_factory;
 #ifdef ADAPTERS_CHANGE_HANDLING
+    void RegisterAdapterChangeEvent();
+    void UnregisterAdapterChangeEvent();
+
     HANDLE                     m_adapter_change_event = NULL;
     DWORD                      m_adapter_change_registration_cookie = 0;
 #endif
+
+    wrl::ComPtr<IDXGIFactory5> m_cp_factory;
 };
 
 } // namespace Methane::Graphics

@@ -46,7 +46,8 @@ namespace Methane::Graphics
 class ContextBase;
 
 template<typename... ExtraArgs>
-class TextureDX final : public ResourceDX<TextureBase>
+class TextureDX final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(const ContextBase& context, const Settings& settings, ExtraArgs... extra_args)
@@ -72,7 +73,8 @@ private:
 using FrameBufferTextureDX  = TextureDX<Texture::FrameBufferIndex>;
 
 using RenderTargetTextureDX = TextureDX<>;
-template<> class TextureDX<> final : public ResourceDX<TextureBase>
+template<> class TextureDX<> final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(const ContextBase& context, const Settings& settings);
@@ -86,7 +88,8 @@ private:
 };
 
 using DepthStencilTextureDX = TextureDX<const Opt<DepthStencil>&>;
-template<> class TextureDX<const Opt<DepthStencil>&> final : public ResourceDX<TextureBase>
+template<> class TextureDX<const Opt<DepthStencil>&> final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(const ContextBase& context, const Settings& settings, const Opt<DepthStencil>& clear_depth_stencil);
@@ -101,7 +104,8 @@ private:
 
 struct ImageTokenDX { };
 using ImageTextureDX = TextureDX<ImageTokenDX>;
-template<> class TextureDX<ImageTokenDX> final : public ResourceDX<TextureBase>
+template<> class TextureDX<ImageTokenDX> final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<TextureBase>
 {
 public:
     TextureDX(const ContextBase& context, const Settings& settings, ImageTokenDX);

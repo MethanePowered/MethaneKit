@@ -459,7 +459,7 @@ struct SourceLocationStub { };
 
 #define TRACY_SOURCE_LOCATION_ALLOC_UNNAMED() 0U
 #define TRACY_SOURCE_LOCATION_ALLOC(name) 0U
-#define TRACY_GPU_SCOPE_TYPE char*
+#define TRACY_GPU_SCOPE_TYPE char* /* NOSONAR */
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
 #define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
 #define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope)

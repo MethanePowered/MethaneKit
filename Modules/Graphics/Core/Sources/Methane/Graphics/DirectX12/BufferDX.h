@@ -40,7 +40,8 @@ namespace Methane::Graphics
 {
 
 template<typename TNativeView, typename... ExtraViewArgs>
-class BufferDX final : public ResourceDX<BufferBase>
+class BufferDX final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceDX<BufferBase>
 {
 public:
     BufferDX(const ContextBase& context, const Settings& settings, ExtraViewArgs... view_args)

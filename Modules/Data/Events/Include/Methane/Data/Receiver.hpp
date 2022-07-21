@@ -36,7 +36,7 @@ namespace Methane::Data
 {
 
 template<class EventType>
-class Receiver : public EventType
+class Receiver : public EventType // NOSONAR - custom destructor is required, rule of zero is not applicable
 {
 public:
     Receiver() = default;

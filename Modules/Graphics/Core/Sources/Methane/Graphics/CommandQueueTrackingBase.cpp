@@ -205,26 +205,31 @@ void CommandQueueTrackingBase::ShutdownQueueExecution()
     if (!m_execution_waiting)
         return;
 
-    {
-        std::unique_lock lock(m_execution_waiting_mutex);
-        m_timestamp_query_buffer_ptr.reset();
+    CompleteExecutionSafely();
 
-        try
-        {
-            // Do not use virtual call in destructor
-            CommandQueueTrackingBase::CompleteExecution();
-        }
-        catch (const std::exception& ex) // NOSONAR
-        {
-            META_UNUSED(ex);
-            META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
-            assert(false);
-        }
-
-        m_execution_waiting = false;
-    }
     m_execution_waiting_condition_var.notify_one();
     m_execution_waiting_thread.join();
+}
+
+void CommandQueueTrackingBase::CompleteExecutionSafely()
+{
+    META_FUNCTION_TASK();
+    std::unique_lock lock(m_execution_waiting_mutex);
+    m_timestamp_query_buffer_ptr.reset();
+
+    try
+    {
+        // Do not use virtual call in destructor
+        CommandQueueTrackingBase::CompleteExecution();
+    }
+    catch (const std::exception& ex) // NOSONAR
+    {
+        META_UNUSED(ex);
+        META_LOG("WARNING: Command queue '{}' has failed to complete command list execution, exception occurred: {}", GetName(), ex.what());
+        assert(false);
+    }
+
+    m_execution_waiting = false;
 }
 
 } // namespace Methane::Graphics

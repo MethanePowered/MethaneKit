@@ -78,7 +78,7 @@ CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Inde
 CommandListBase::CommandListBase(CommandQueueBase& command_queue, Type type)
     : m_type(type)
     , m_command_queue_ptr(command_queue.GetPtr<CommandQueueBase>())
-    , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContextPtr()))
+    , m_tracy_gpu_scope(TRACY_GPU_SCOPE_INIT(command_queue.GetTracyContextPtr())) // NOSONAR - do not use in-class initializer
 {
     META_FUNCTION_TASK();
     TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(m_tracy_gpu_scope);

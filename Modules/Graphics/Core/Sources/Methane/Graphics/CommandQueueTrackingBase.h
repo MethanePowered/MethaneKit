@@ -89,6 +89,7 @@ protected:
     void ShutdownQueueExecution();
 
 private:
+    void CompleteExecutionSafely();
     void WaitForExecution() noexcept;
 
     const Ptr<CommandListSetBase>& GetNextExecutingCommandListSet() const;

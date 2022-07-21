@@ -35,7 +35,7 @@ Code scope measurement timer with aggregating and averaging of timings.
 namespace Methane
 {
 
-class ScopeTimer : public Timer
+class ScopeTimer : public Timer // NOSONAR - custom destructor is required
 {
 public:
     using ScopeId = uint32_t;
@@ -46,7 +46,7 @@ public:
         ScopeId     id;
     };
 
-    class Aggregator
+    class Aggregator // NOSONAR - custom destructor is required
     {
         friend class ScopeTimer;
 

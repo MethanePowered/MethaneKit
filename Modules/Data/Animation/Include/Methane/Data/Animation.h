@@ -41,7 +41,7 @@ public:
     explicit Animation(double duration_sec = std::numeric_limits<double>::max()) noexcept;
     Animation(const Animation&) = delete;
     Animation(Animation&&) = default;
-    virtual ~Animation();
+    virtual ~Animation() = default;
 
     Animation& operator=(const Animation&) = delete;
     Animation& operator=(Animation&&) = default;

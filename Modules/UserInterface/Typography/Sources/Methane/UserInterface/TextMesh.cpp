@@ -117,7 +117,7 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
     if (wrap == Text::Wrap::Word && frame_width)
     {
         ForEachTextCharacterInRange(font, text_chars, text_range, char_positions, frame_width, wrap,
-            [&font, &text_chars, &char_positions, &frame_width, &process_char_at_position]
+            [&font, &text_chars, &char_positions, &frame_width, &process_char_at_position] // NOSONAR - lambda function lines count is greater than 20
             (const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index)
             {
                 if (text_char.IsWhiteSpace())

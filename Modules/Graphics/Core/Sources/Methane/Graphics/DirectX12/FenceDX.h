@@ -35,7 +35,8 @@ namespace wrl = Microsoft::WRL;
 
 class CommandQueueDX;
 
-class FenceDX final : public FenceBase
+class FenceDX final // NOSONAR - custom destructor is required
+    : public FenceBase
 {
 public:
     explicit FenceDX(CommandQueueBase& command_queue);
