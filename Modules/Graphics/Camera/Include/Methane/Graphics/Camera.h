@@ -25,7 +25,8 @@ Camera helper implementation allowing to generate view and projection matrices.
 
 #include <Methane/Graphics/Types.h>
 
-#include <hlsl++.h>
+#include <hlsl++_vector_float.h>
+#include <hlsl++_matrix_float.h>
 #include <optional>
 
 namespace Methane::Graphics

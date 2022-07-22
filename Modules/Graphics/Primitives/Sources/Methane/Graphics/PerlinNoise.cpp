@@ -24,7 +24,7 @@ Multi-octave simplex noise generator in range [0, 1]
 #include <Methane/Graphics/PerlinNoise.h>
 #include <Methane/Instrumentation.h>
 
-#include <hlsl++.h>
+#include <hlsl++_vector_float.h>
 #include <simplexnoise1234.h>
 
 namespace Methane::Graphics

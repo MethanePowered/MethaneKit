@@ -28,6 +28,8 @@ SkyBox rendering primitive
 
 #include <Methane/Graphics/Types.h>
 
+#include <hlsl++_matrix_float.h>
+
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
