@@ -193,22 +193,23 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     const auto destrictor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
                                          (const Program::ArgumentAccessor::Type access_type) -> const vk::DescriptorSet&
     {
+        static const vk::DescriptorSet s_empty_set;
         switch (access_type)
         {
         case Program::ArgumentAccessor::Type::Constant:
             META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
             return vk_constant_descriptor_set;
-            break;
 
         case Program::ArgumentAccessor::Type::FrameConstant:
             META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
             return vk_frame_constant_descriptor_set;
-            break;
 
         case Program::ArgumentAccessor::Type::Mutable:
             META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
             return m_descriptor_sets.back();
-            break;
+
+        default:
+            return s_empty_set;
         }
     };
 
@@ -217,7 +218,6 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
     {
         const ArgumentBindingVK::SettingsVK& argument_binding_settings = argument_binding.GetSettingsVK();
         const Program::ArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
-
         const ProgramVK::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
