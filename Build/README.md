@@ -15,7 +15,8 @@
 ## Prerequisites
 
 - **Common**
-  - CMake 3.18 or later
+  - [CMake](https://cmake.org/download/) 3.18 or later
+  - [Git](https://git-scm.com/downloads) (is used to fetch external dependent repositories using CMake)
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019/22 with MSVC v142 or later
@@ -26,7 +27,7 @@
 - **Linux**
   - Ubuntu 20.04 or later
   - GCC 9 or later
-  - LCov, X11 & XCB libraries
+  - X11, XCB, LCov (optional for code coverage) libraries
   ```console
   sudo apt-get update && sudo apt-get install cmake g++ lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
   ```
