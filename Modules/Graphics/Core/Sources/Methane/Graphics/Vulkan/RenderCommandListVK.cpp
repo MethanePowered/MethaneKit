@@ -166,9 +166,8 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, uint32_t index_count,
                                       uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-
-    DrawingState& drawing_state = GetDrawingState();
-    if (index_count == 0 && drawing_state.index_buffer_ptr)
+    if (const DrawingState& drawing_state = GetDrawingState();
+        index_count == 0 && drawing_state.index_buffer_ptr)
     {
         index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }

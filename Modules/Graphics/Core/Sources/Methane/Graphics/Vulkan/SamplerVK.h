@@ -34,7 +34,8 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class SamplerVK final : public ResourceVK<SamplerBase, vk::Sampler, false>
+class SamplerVK final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceVK<SamplerBase, vk::Sampler, false>
 {
 public:
     SamplerVK(const ContextBase& context, const Settings& settings);

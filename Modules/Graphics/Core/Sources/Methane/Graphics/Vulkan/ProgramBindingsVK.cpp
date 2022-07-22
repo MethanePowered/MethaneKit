@@ -190,9 +190,30 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         m_has_mutable_descriptor_set = true;
     }
 
+    const auto destrictor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
+                                         (const Program::ArgumentAccessor::Type access_type) -> const vk::DescriptorSet&
+    {
+        switch (access_type)
+        {
+        case Program::ArgumentAccessor::Type::Constant:
+            META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
+            return vk_constant_descriptor_set;
+            break;
+
+        case Program::ArgumentAccessor::Type::FrameConstant:
+            META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
+            return vk_frame_constant_descriptor_set;
+            break;
+
+        case Program::ArgumentAccessor::Type::Mutable:
+            META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
+            return m_descriptor_sets.back();
+            break;
+        }
+    };
+
     // Initialize each argument binding with descriptor set pointer and binding index
-    ForEachArgumentBinding([this, &program, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
-                           (const Program::Argument& program_argument, ArgumentBindingVK& argument_binding)
+    ForEachArgumentBinding([&program, &destrictor_set_selector](const Program::Argument& program_argument, ArgumentBindingVK& argument_binding)
     {
         const ArgumentBindingVK::SettingsVK& argument_binding_settings = argument_binding.GetSettingsVK();
         const Program::ArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
@@ -202,24 +223,9 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<Program>& program_ptr,
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
         const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
+        const vk::DescriptorSet& descriptor_set = destrictor_set_selector(access_type);
 
-        switch (access_type)
-        {
-        case Program::ArgumentAccessor::Type::Constant:
-            META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
-            argument_binding.SetDescriptorSetBinding(vk_constant_descriptor_set, binding_value);
-            break;
-
-        case Program::ArgumentAccessor::Type::FrameConstant:
-            META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
-            argument_binding.SetDescriptorSetBinding(vk_frame_constant_descriptor_set, binding_value);
-            break;
-
-        case Program::ArgumentAccessor::Type::Mutable:
-            META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
-            argument_binding.SetDescriptorSetBinding(m_descriptor_sets.back(), binding_value);
-            break;
-        }
+        argument_binding.SetDescriptorSetBinding(descriptor_set, binding_value);
     });
 
     UpdateMutableDescriptorSetName();

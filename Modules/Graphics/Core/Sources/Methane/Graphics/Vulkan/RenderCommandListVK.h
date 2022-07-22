@@ -38,7 +38,7 @@ class BufferVK;
 class RenderPassVK;
 class ParallelRenderCommandListVK;
 
-class RenderCommandListVK final
+class RenderCommandListVK final // NOSONAR - inheritance hierarchy is greater than 5
     : public CommandListVK<RenderCommandListBase, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
     , private Data::Receiver<IRenderPassCallback>
 {

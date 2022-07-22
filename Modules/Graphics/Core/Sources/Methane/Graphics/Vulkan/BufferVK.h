@@ -33,7 +33,8 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-class BufferVK final : public ResourceVK<BufferBase, vk::Buffer, true>
+class BufferVK final // NOSONAR - inheritance hierarchy is greater than 5
+    : public ResourceVK<BufferBase, vk::Buffer, true>
 {
 public:
     BufferVK(const ContextBase& context, const Settings& settings);

@@ -48,7 +48,7 @@ struct ITextureVK
     virtual ~ITextureVK() = default;
 };
 
-class FrameBufferTextureVK final
+class FrameBufferTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
     : public ResourceVK<TextureBase, vk::Image, false>
     , public ITextureVK
 {
@@ -74,7 +74,7 @@ private:
     const FrameBufferIndex m_frame_buffer_index;
 };
 
-class DepthStencilTextureVK final
+class DepthStencilTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
     : public ResourceVK<TextureBase, vk::Image, true>
     , public ITextureVK
 {
@@ -96,7 +96,7 @@ private:
     Opt<DepthStencil>      m_depth_stencil_opt;
 };
 
-class RenderTargetTextureVK final
+class RenderTargetTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
     : public ResourceVK<TextureBase, vk::Image, true>
     , public ITextureVK
 {
@@ -115,7 +115,7 @@ private:
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 };
 
-class ImageTextureVK final
+class ImageTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
     : public ResourceVK<TextureBase, vk::Image, true>
     , public ITextureVK
 {

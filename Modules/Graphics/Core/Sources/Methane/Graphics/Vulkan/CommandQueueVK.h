@@ -38,7 +38,8 @@ class RenderPassVK;
 class QueueFamilyReservationVK;
 struct IContextVK;
 
-class CommandQueueVK final : public CommandQueueTrackingBase
+class CommandQueueVK final // NOSONAR - custom destructor is required
+    : public CommandQueueTrackingBase
 {
 public:
     struct WaitInfo

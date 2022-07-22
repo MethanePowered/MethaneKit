@@ -37,7 +37,8 @@ template<typename D>
 using RectSize = Data::RectSize<D>;
 
 template<typename D>
-class VolumeSize : public RectSize<D>
+class VolumeSize // NOSONAR - class has more than 35 methods
+    : public RectSize<D>
 {
 public:
     static VolumeSize<D> Max() noexcept

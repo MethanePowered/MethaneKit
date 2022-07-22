@@ -72,7 +72,7 @@ Font::FreeTypeError::FreeTypeError(FT_Error error)
     META_FUNCTION_TASK();
 }
 
-class Font::Library::Impl
+class Font::Library::Impl // NOSONAR - custom destructor is required
 {
 public:
     Impl()
@@ -99,7 +99,7 @@ private:
     FT_Library m_ft_library;
 };
 
-class Font::Char::Glyph
+class Font::Char::Glyph // NOSONAR - custom destructor is required
 {
 public:
     Glyph(FT_Glyph ft_glyph, uint32_t face_index)
@@ -129,7 +129,7 @@ private:
     const uint32_t m_face_index;
 };
 
-class Font::Face
+class Font::Face // NOSONAR - custom destructor is required
 {
 public:
     explicit Face(Data::Chunk&& font_data)
