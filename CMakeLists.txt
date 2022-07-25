@@ -12,6 +12,12 @@ if(APPLE)
 
 endif()
 
+if(NOT DEFINED PROJECT_NAME)
+    set(IS_ROOT_PROJECT ON)
+else()
+    set(IS_ROOT_PROJECT OFF)
+endif()
+
 project(MethaneKit)
 
 if (POLICY CMP0077)
@@ -24,8 +30,8 @@ endif()
 
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
-option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ON)
-option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ON)
+option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${IS_ROOT_PROJECT})
+option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ${IS_ROOT_PROJECT})
 option(METHANE_CHECKS_ENABLED               "Enable runtime checks of input arguments" ON)
 option(METHANE_RUN_TESTS_DURING_BUILD       "Enable test auto-run after module build" ON)
 option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some modules" ON)
@@ -219,4 +225,8 @@ endif()
 
 if (METHANE_TESTS_BUILD_ENABLED)
     add_subdirectory(Tests)
+endif()
+
+if (NOT IS_ROOT_PROJECT)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif()
