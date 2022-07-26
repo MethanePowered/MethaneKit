@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.18.0)
 
+set(METHANE_LANGUAGES CXX C)
+
 if(APPLE)
+
+    list(APPEND METHANE_LANGUAGES OBJCXX)
 
     # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
     # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
@@ -27,7 +31,7 @@ project(METHANE_KIT
         VERSION ${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_BUILD}
         DESCRIPTION "Modern 3D graphics made simple with C++17 cross-platform framework and rendering abstraction API on top of DirectX 12, Metal & Vulkan"
         HOMEPAGE_URL "https://github.com/MethanePowered/MethaneKit"
-        LANGUAGES CXX C OBJCXX)
+        LANGUAGES ${METHANE_LANGUAGES})
 
 if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW) # option honors normal variables
