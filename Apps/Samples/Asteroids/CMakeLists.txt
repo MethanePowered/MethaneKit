@@ -4,22 +4,6 @@ include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-set(SOURCES
-    AsteroidsApp.h
-    AsteroidsApp.cpp
-    AsteroidsAppController.h
-    AsteroidsAppController.cpp
-    Asteroid.h
-    Asteroid.cpp
-    AsteroidsArray.h
-    AsteroidsArray.cpp
-    Planet.h
-    Planet.cpp
-    Shaders/AsteroidUniforms.h
-    Shaders/PlanetUniforms.h
-    Shaders/SceneConstants.h
-)
-
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES
     ${TEXTURES_DIR}/Planet/Mars.jpg
@@ -31,15 +15,25 @@ set(TEXTURES
     ${TEXTURES_DIR}/SkyBox/Galaxy/NegativeZ.jpg
 )
 
-add_methane_application(${TARGET}
-    "${SOURCES}"
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Asteroids"
-    "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera."
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
+add_methane_application(
+    TARGET ${TARGET}
+    NAME "Methane Asteroids"
+    DESCRIPTION "Asteroids sample demonstrates parallel rendering of the asteroids field observable with interactive camera."
+    INSTALL_DIR "Apps"
+    SOURCES
+        AsteroidsApp.h
+        AsteroidsApp.cpp
+        AsteroidsAppController.h
+        AsteroidsAppController.cpp
+        Asteroid.h
+        Asteroid.cpp
+        AsteroidsArray.h
+        AsteroidsArray.cpp
+        Planet.h
+        Planet.cpp
+        Shaders/AsteroidUniforms.h
+        Shaders/PlanetUniforms.h
+        Shaders/SceneConstants.h
 )
 
 add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")

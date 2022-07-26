@@ -1,6 +1,6 @@
 #[[****************************************************************************
 
-Copyright 2019 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,37 +25,65 @@ include(MethaneUtils)
 include(MethaneModules)
 include(MethaneResources)
 
-function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NAME DESCRIPTION COPYRIGHT VERSION BUILD_NUMBER)
-    set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+function(add_methane_application)
+    set(ARGS_OPTIONS COPYRIGHT VERSION BUILD_NUMBER)
+    set(ARGS_SINGLE_VALUE TARGET INSTALL_DIR NAME DESCRIPTION)
+    set(ARGS_MULTI_VALUE SOURCES)
+    list(APPEND ARGS_REQUIRED ${ARGS_SINGLE_VALUE})
+    list(APPEND ARGS_REQUIRED ${ARGS_MULTI_VALUE})
 
+    cmake_parse_arguments(APP "${ARGS_OPTIONS}" "${ARGS_SINGLE_VALUE}" "${ARGS_MULTI_VALUE}" ${ARGN})
+    send_cmake_parse_errors("add_methane_shaders_source" "APP" "${APP_KEYWORDS_MISSING_VALUES}" "${APP_UNPARSED_ARGUMENTS}" "${ARGS_REQUIRED}")
+
+    set(BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     set(METHANE_APP_NAME ${APP_NAME})
-    set(METHANE_APP_DESCRIPTION ${DESCRIPTION})
-    set(METHANE_APP_COPYRIGHT ${COPYRIGHT})
-    set(METHANE_APP_SHORT_VERSION ${VERSION})
-    get_full_file_version(${VERSION} ${BUILD_NUMBER} METHANE_APP_LONG_VERSION)
+    if (DEFINED APP_DESCRIPTION)
+        set(METHANE_APP_DESCRIPTION ${APP_DESCRIPTION})
+    else()
+        set(METHANE_APP_DESCRIPTION ${PROJECT_DESCRIPTION})
+    endif()
+    if (DEFINED APP_COPYRIGHT)
+        set(METHANE_APP_COPYRIGHT ${APP_COPYRIGHT})
+    else()
+        if (DEFINED METHANE_COPYRIGHT)
+            set(METHANE_APP_COPYRIGHT ${METHANE_COPYRIGHT})
+        else()
+            set(METHANE_APP_COPYRIGHT ${PROJECT_HOMEPAGE_URL})
+        endif()
+    endif()
+    if (DEFINED APP_VERSION)
+        set(METHANE_APP_SHORT_VERSION ${APP_VERSION})
+    else()
+        set(METHANE_APP_SHORT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
+    endif()
+    if (DEFINED APP_BUILD_NUMBER)
+        get_full_file_version(${METHANE_APP_SHORT_VERSION} ${APP_BUILD_NUMBER} METHANE_APP_LONG_VERSION)
+    else()
+        get_full_file_version(${METHANE_APP_SHORT_VERSION} ${PROJECT_VERSION_PATCH} METHANE_APP_LONG_VERSION)
+    endif()
 
     if (WIN32)
 
         # Configure Resource and Manifest files
-        set(METHANE_APP_MANIFEST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/App.manifest)
-        set(METHANE_APP_RESOURCE_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
-        set(METHANE_APP_EXECUTABLE ${TARGET}.exe)
-        set(METHANE_APP_ICON_FILE_PATH ${RESOURCES_DIR}/Icons/Windows/Methane.ico)
+        set(METHANE_APP_MANIFEST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${APP_TARGET}/App.manifest)
+        set(METHANE_APP_RESOURCE_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${APP_TARGET}/Resource.rc)
+        set(METHANE_APP_EXECUTABLE ${APP_TARGET}.exe)
+        set(METHANE_APP_ICON_FILE_PATH ${METHANE_KIT_SOURCE_DIR}/Resources/Icons/Windows/Methane.ico)
         string(REPLACE "." "," METHANE_APP_SHORT_VERSION_CSV ${METHANE_APP_SHORT_VERSION})
         string(REPLACE "." "," METHANE_APP_LONG_VERSION_CSV ${METHANE_APP_LONG_VERSION})
-        configure_file(${RESOURCES_DIR}/Configs/Windows/App.manifest.in ${METHANE_APP_MANIFEST_FILE_PATH})
-        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/Windows/App.manifest.in ${METHANE_APP_MANIFEST_FILE_PATH})
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
 
-        set(MANIFEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Resource.rc)
-        configure_file(${RESOURCES_DIR}/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
+        set(MANIFEST_FILE ${CMAKE_CURRENT_BINARY_DIR}/${APP_TARGET}/Resource.rc)
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/Windows/Resource.rc.in ${METHANE_APP_RESOURCE_FILE_PATH})
 
-        add_executable(${TARGET} WIN32
-            ${SOURCES}
+        add_executable(${APP_TARGET} WIN32
+            ${APP_SOURCES}
             ${METHANE_APP_RESOURCE_FILE_PATH}
         )
 
         # Disable default manifest generation with linker, since manually written manifest is added to resources
-        set_target_properties(${TARGET}
+        set_target_properties(${APP_TARGET}
             PROPERTIES
                 LINK_FLAGS "/MANIFEST:NO /ENTRY:mainCRTStartup"
         )
@@ -65,19 +93,19 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
     elseif(APPLE)
 
         set(ICON_FILE Methane.icns)
-        set(ICON_FILE_PATH ${RESOURCES_DIR}/Icons/MacOS/${ICON_FILE})
-        set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}/Info.plist)
+        set(ICON_FILE_PATH ${METHANE_KIT_SOURCE_DIR}/Resources/Icons/MacOS/${ICON_FILE})
+        set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${APP_TARGET}/Info.plist)
 
         # Configure bundle plist
-        set(METHANE_APP_EXECUTABLE ${TARGET})
+        set(METHANE_APP_EXECUTABLE ${APP_TARGET})
         set(METHANE_APP_BUNDLE_VERSION "${BUILD_NUMBER}")
         set(METHANE_APP_BUNDLE_ICON ${ICON_FILE})
         set(METHANE_APP_BUNDLE_GUI_IDENTIFIER "")
         set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
-        configure_file(${RESOURCES_DIR}/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
 
-        add_executable(${TARGET} MACOSX_BUNDLE
-            ${SOURCES}
+        add_executable(${APP_TARGET} MACOSX_BUNDLE
+            ${APP_SOURCES}
             ${ICON_FILE_PATH}
         )
 
@@ -87,33 +115,33 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             "Resources"
         )
 
-        set_target_properties(${TARGET}
+        set_target_properties(${APP_TARGET}
             PROPERTIES
             MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
             XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
             XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
         )
 
-        set(BINARY_DIR ${BINARY_DIR}/${TARGET}.app/Contents/Resources)
+        set(BINARY_DIR ${BINARY_DIR}/${APP_TARGET}.app/Contents/Resources)
 
         source_group("Resources" FILES ${PLIST_FILE_PATH} ${ICON_FILE_PATH})
 
     else() # Linux
 
-        add_executable(${TARGET}
-            ${SOURCES}
+        add_executable(${APP_TARGET}
+            ${APP_SOURCES}
         )
 
-        set(ICONS_DIR ${RESOURCES_DIR}/Icons/Linux)
+        set(ICONS_DIR ${METHANE_KIT_SOURCE_DIR}/Resources/Icons/Linux)
         file(GLOB ICON_FILES "${ICONS_DIR}/Methane*.png")
-        add_methane_embedded_icons(${TARGET} "${ICONS_DIR}" "${ICON_FILES}")
+        add_methane_embedded_icons(${APP_TARGET} "${ICONS_DIR}" "${ICON_FILES}")
     
     endif()
 
-    source_group("Source Files" FILES ${SOURCES})
+    source_group("Source Files" FILES ${APP_SOURCES})
     source_group("Source Shaders" FILES ${SHADERS_HLSL} ${SHADERS_CONFIG})
 
-    target_link_libraries(${TARGET}
+    target_link_libraries(${APP_TARGET}
         PRIVATE
             MethaneKit
             MethaneBuildOptions
@@ -121,35 +149,35 @@ function(add_methane_application TARGET SOURCES RESOURCES_DIR INSTALL_DIR APP_NA
             $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 
-    target_precompile_headers(${TARGET} REUSE_FROM MethaneKit)
+    target_precompile_headers(${APP_TARGET} REUSE_FROM MethaneKit)
 
-    target_include_directories(${TARGET}
+    target_include_directories(${APP_TARGET}
         PRIVATE
             .
     )
 
     if (APPLE)
-        install(TARGETS ${TARGET}
+        install(TARGETS ${APP_TARGET}
             BUNDLE
-                DESTINATION ${INSTALL_DIR}
+                DESTINATION ${APP_INSTALL_DIR}
                 COMPONENT Runtime
         )
     else()
-        install(TARGETS ${TARGET}
+        install(TARGETS ${APP_TARGET}
             RUNTIME
-                DESTINATION ${INSTALL_DIR}
+                DESTINATION ${APP_INSTALL_DIR}
                 COMPONENT Runtime
         )
     endif()
 
     if (WIN32 AND MSVC)
-        install(FILES $<TARGET_PDB_FILE:${TARGET}>
-            DESTINATION ${INSTALL_DIR}
+        install(FILES $<TARGET_PDB_FILE:${APP_TARGET}>
+            DESTINATION ${APP_INSTALL_DIR}
             OPTIONAL
         )
     endif()
 
     get_target_property(METHANE_PREREQUISITE_MODULES MethaneKit PREREQUISITE_MODULES)
-    add_prerequisite_binaries(${TARGET} "${METHANE_PREREQUISITE_MODULES}" ${INSTALL_DIR})
+    add_prerequisite_binaries(${APP_TARGET} "${METHANE_PREREQUISITE_MODULES}" ${APP_INSTALL_DIR})
 
 endfunction()

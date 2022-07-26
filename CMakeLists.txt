@@ -18,7 +18,16 @@ else()
     set(IS_ROOT_PROJECT OFF)
 endif()
 
-project(MethaneKit)
+# Methane version, build & product info
+set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
+set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
+
+project(METHANE_KIT
+        VERSION ${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_BUILD}
+        DESCRIPTION "Modern 3D graphics made simple with C++17 cross-platform framework and rendering abstraction API on top of DirectX 12, Metal & Vulkan"
+        HOMEPAGE_URL "https://github.com/MethanePowered/MethaneKit"
+        LANGUAGES CXX C OBJCXX)
 
 if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW) # option honors normal variables
@@ -51,13 +60,10 @@ option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Trac
 option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand, after client connection" OFF)
 
 # Methane version, build & product info
-set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
-set(METHANE_PRODUCT_NAME  "Methane Kit (https://github.com/MethanePowered/MethaneKit)")
-set(METHANE_COPYRIGHT     "Copyright 2019-2021 Evgeny Gorodetskiy")
+set(METHANE_PRODUCT_NAME  "Methane Kit (${HOMEPAGE_URL})")
+set(METHANE_COPYRIGHT     "Copyright 2019-2022 Evgeny Gorodetskiy")
 set(RESOURCES_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 
 # Methane graphics native APIs

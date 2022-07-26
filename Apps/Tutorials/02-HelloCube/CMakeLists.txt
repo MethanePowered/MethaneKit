@@ -8,15 +8,13 @@ foreach(VARIANT ${SIMPLE_VARIANT} ${UNIFORMS_VARIANT})
 
     set(TARGET "MethaneHelloCube${VARIANT}")
 
-    add_methane_application(${TARGET}
-        HelloCubeApp.cpp
-        "${RESOURCES_DIR}"
-        "Apps"
-        "Methane Hello Cube ${VARIANT}"
-        "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
-        "${METHANE_COPYRIGHT}"
-        "${METHANE_VERSION_SHORT}"
-        "${METHANE_VERSION_BUILD}"
+    add_methane_application(
+        TARGET ${TARGET}
+        NAME "Methane Hello Cube ${VARIANT}"
+        DESCRIPTION "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
+        INSTALL_DIR "Apps"
+        SOURCES
+            HelloCubeApp.cpp
     )
 
     if(VARIANT STREQUAL "${UNIFORMS_VARIANT}")
