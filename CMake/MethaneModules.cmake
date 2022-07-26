@@ -60,6 +60,29 @@ function(get_platform_arch_dir PLATFORM_ARCH_DIR CPP_EXT)
     endif()
 endfunction()
 
+function(get_native_graphics_apis)
+    set(METHANE_GFX_METAL 1 PARENT_SCOPE)   # MacOS default API
+    set(METHANE_GFX_DIRECTX 2 PARENT_SCOPE) # Windows default API
+    set(METHANE_GFX_VULKAN 3 PARENT_SCOPE)  # Linux default API
+endfunction()
+
+function(get_default_graphics_api GRAPHICS_API)
+    get_native_graphics_apis()
+    if (METHANE_GFX_VULKAN_ENABLED)
+        set(${GRAPHICS_API} ${METHANE_GFX_VULKAN} PARENT_SCOPE)
+    else()
+        if (WIN32)
+            set(${GRAPHICS_API} ${METHANE_GFX_DIRECTX} PARENT_SCOPE)
+        elseif(APPLE)
+            set(${GRAPHICS_API} ${METHANE_GFX_METAL} PARENT_SCOPE)
+        elseif(UNIX)
+            set(${GRAPHICS_API} ${METHANE_GFX_VULKAN} PARENT_SCOPE)
+        else()
+            set(${GRAPHICS_API} 0)
+        endif()
+    endif()
+endfunction()
+
 function(get_graphics_dir GRAPHICS_DIR)
     if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         set(${GRAPHICS_DIR} DirectX12 PARENT_SCOPE)

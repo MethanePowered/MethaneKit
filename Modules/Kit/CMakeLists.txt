@@ -57,6 +57,7 @@ set_target_properties(${TARGET}
     PROPERTIES
         FOLDER Modules
         PUBLIC_HEADER "${HEADERS}"
+        GRAPHICS_API ${METHANE_GFX_API}
 )
 
 install(TARGETS ${TARGET}

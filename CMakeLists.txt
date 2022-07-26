@@ -70,29 +70,11 @@ set(METHANE_PRODUCT_NAME  "Methane Kit (${HOMEPAGE_URL})")
 set(METHANE_COPYRIGHT     "Copyright 2019-2022 Evgeny Gorodetskiy")
 set(RESOURCES_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 
-# Methane graphics native APIs
-set(METHANE_GFX_METAL 1)   # MacOS default API
-set(METHANE_GFX_DIRECTX 2) # Windows default API
-set(METHANE_GFX_VULKAN 3)  # Linux default API
-
-# Methane graphics API selection
-if (METHANE_GFX_VULKAN_ENABLED)
-    set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
-else()
-    if (WIN32)
-        set(METHANE_GFX_API ${METHANE_GFX_DIRECTX})
-    elseif(APPLE)
-        set(METHANE_GFX_API ${METHANE_GFX_METAL})
-    elseif(UNIX)
-        set(METHANE_GFX_API ${METHANE_GFX_VULKAN})
-    else()
-        set(METHANE_GFX_API 0)
-    endif()
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
-
 include(MethaneModules)
+
+get_native_graphics_apis()
+get_default_graphics_api(METHANE_GFX_API)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
