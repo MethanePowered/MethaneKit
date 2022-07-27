@@ -58,6 +58,8 @@ set_target_properties(${TARGET}
         FOLDER Modules
         PUBLIC_HEADER "${HEADERS}"
         GRAPHICS_API ${METHANE_GFX_API}
+        DXC_BINARY_DIR "${DXC_BINARY_DIR}"
+        SPIRV_BINARY_DIR "${SPIRV_BINARY_DIR}"
 )
 
 install(TARGETS ${TARGET}

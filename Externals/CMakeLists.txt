@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.14.0)
-
 set(CMAKE_DISABLE_FIND_PACKAGE_Doxygen TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_HarfBuzz TRUE)
 set(CMAKE_DISABLE_FIND_PACKAGE_PkgConfig TRUE)
@@ -35,7 +33,6 @@ endif()
 # Cross-platform C++ libraries
 include(BoostNowide)
 include(FMT)
-include(Catch2)
 include(CLI11)
 include(FreeType2)
 include(HLSLpp)
@@ -43,6 +40,10 @@ include(MagicEnum)
 include(TaskFlow)
 include(Tracy)
 include(PerlinNoise)
+
+if(METHANE_TESTS_BUILD_ENABLED)
+    include(Catch2)
+endif()
 
 if(METHANE_ITT_INSTRUMENTATION_ENABLED)
     include(IttApi)
