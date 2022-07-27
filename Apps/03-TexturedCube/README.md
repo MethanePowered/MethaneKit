@@ -22,8 +22,8 @@ Let's start from the application header file [TexturedCubeApp.h](TexturedCubeApp
 application class `TexturedCubeApp` derived from the base class `UserInterface::App<TexturedCubeFrame>`
 and frame class `TexturedCubeFrame` derived from the base class `Graphics::AppFrame` 
 similar to how it was done in [HelloCube](../02-HelloCube) tutorial.
-The difference here is the [UserInterface::App](../../../Modules/UserInterface/App) base class used instead of
-[Graphics::App](../../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay.
+The difference here is the [UserInterface::App](../../Modules/UserInterface/App) base class used instead of
+[Graphics::App](../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay.
 
 ```cpp
 #pragma once
@@ -369,7 +369,7 @@ void TexturedCubeApp::Init()
 ```
 
 `TexturedCubeApp::OnContextReleased` callback method releases all graphics resources before graphics context is released,
-for example when graphics device is changed via [Graphics::AppContextController](../../../Modules/Graphics/App/README.md#graphicsappcontextcontrollerincludemethanegraphicsappcontextcontrollerh)
+for example when graphics device is changed via [Graphics::AppContextController](../../Modules/Graphics/App/README.md#graphicsappcontextcontrollerincludemethanegraphicsappcontextcontrollerh)
 with `LCtrl + X` shortcut.
 
 ```cpp
@@ -475,7 +475,7 @@ int main(int argc, const char* argv[])
 ## Textured Cube Shaders
 
 HLSL 6 shaders [Shaders/Cube.hlsl](Shaders/Cube.hlsl) implement Phong shading with texturing.
-SRGB gamma-correction is implemented with `ColorLinearToSrgb(...)` function from [Common/Shaders/Primitives.hlsl](../../Common/Shaders/Primitives.hlsl)
+SRGB gamma-correction is implemented with `ColorLinearToSrgb(...)` function from [Common/Shaders/Primitives.hlsl](../Common/Shaders/Primitives.hlsl)
  which is converting final color from linear-space to SRGB color-space.
 
 ```cpp

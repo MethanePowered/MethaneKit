@@ -16,39 +16,39 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: MethaneKit/Apps/Tutorials/06-CubeMapArray/Shaders/CubeMapArray.hlsl
-Shaders for cube-map array textured rendering with Phong lighting model
+FILE: MethaneKit/Apps/Tutorials/07-ParallelRendering/Shaders/ParallelRendering.hlsl
+Shaders for cube rendering with sampling from Texture2DArray in parallel rendering tutorial
 
 ******************************************************************************/
 
-#include "CubeMapArrayUniforms.h"
-#include "..\..\..\Common\Shaders\Primitives.hlsl"
+#include "ParallelRenderingUniforms.h"
+#include "..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
 {
-    uint   instance_id : SV_InstanceID;
     float3 position    : POSITION;
+    float2 texcoord    : TEXCOORD;
 };
 
 struct PSInput
 {
-    float4 position : SV_POSITION;
-    float4 uvwi      : UVFACE;
+    float4 position    : SV_POSITION;
+    float2 texcoord    : TEXCOORD;
 };
 
 ConstantBuffer<Uniforms>  g_uniforms      : register(b1);
-TextureCubeArray          g_texture_array : register(t0);
+Texture2DArray            g_texture_array : register(t0);
 SamplerState              g_sampler       : register(s0);
 
 PSInput CubeVS(VSInput input)
 {
     PSInput output;
-    output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix_per_instance[input.instance_id]);
-    output.uvwi     = float4(-input.position, input.instance_id); // use position with negative sign to fix texture reflection
+    output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
+    output.texcoord = input.texcoord;
     return output;
 }
 
 float4 CubePS(PSInput input) : SV_TARGET
 {
-    return g_texture_array.Sample(g_sampler, input.uvwi);
+    return g_texture_array.Sample(g_sampler, float3(input.texcoord, g_uniforms.texture_index));
 }

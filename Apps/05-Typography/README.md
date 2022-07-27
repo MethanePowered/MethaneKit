@@ -17,7 +17,7 @@ rectangular areas with wrapping by characters and words. Right-to-left and Arabi
 ## Application and Frame Class Definitions
 
 `TypographyApp` class is declared in header file [TypographyApp.h](TypographyApp.h),
-and is derived from [UserInterface::App](../../../Modules/UserInterface/App) base class, same as in [previous tutorial](../03-ShadowCube).
+and is derived from [UserInterface::App](../../Modules/UserInterface/App) base class, same as in [previous tutorial](../03-ShadowCube).
 Base application class `UserInterface::App<TypographyFrame>` is using frame structure `TypographyFrame`, which defines only
 render command list and execution command list set which wraps this command list.
 

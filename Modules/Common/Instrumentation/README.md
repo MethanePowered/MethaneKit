@@ -2,9 +2,9 @@
 
 Methane Kit comes with integrated instrumentation of all libraries for convenient performance analysis using trace collection with the following tools.
 
-| Tracy Frame Profiler | Intel Graphics Trace Analyzer |
-| -------------------- | ----------------------------- |
-| ![Asteroids Trace in Tracy](../../../Apps/Samples/Asteroids/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](../../../Apps/Samples/Asteroids/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
+| Tracy Frame Profiler                                                                                         | Intel Graphics Trace Analyzer                                                                                               |
+|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| ![Asteroids Trace in Tracy](/../../../MethaneAsteroids/blob/main/Screenshots/AsteroidsWinTracyProfiling.jpg) | ![Asteroids Trace in GPA Trace Analyzer](/../../../MethaneAsteroids/blob/main/Screenshots/AsteroidsWinGPATraceAnalyzer.jpg) |
 
 ## Tracy Instrumentation
 

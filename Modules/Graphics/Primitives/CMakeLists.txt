@@ -6,12 +6,10 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/FpsCounter.h
-    ${INCLUDE_DIR}/PerlinNoise.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
-    ${SOURCES_DIR}/PerlinNoise.cpp
 )
 
 if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
@@ -38,13 +36,11 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataAnimation
-        MethaneGraphicsTypes
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         MethanePlatformUtils
-        PerlinNoise
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

@@ -93,7 +93,7 @@ endif()
 
 if(WIN32)
 
-    set(VS_STARTUP_PROJECT MethaneAsteroids)
+    set(VS_STARTUP_PROJECT MethaneShadowCube)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
     string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 

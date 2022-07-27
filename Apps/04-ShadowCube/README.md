@@ -56,7 +56,7 @@ struct MeshUniforms
 };
 ```
 
-[MeshBuffers.hpp](../../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) implements auxiliary class
+[MeshBuffers.hpp](../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) implements auxiliary class
 `TexturedMeshBuffers<UniformsType>` which is managing vertex, index, uniforms buffers and texture with data for particular
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
 
@@ -582,7 +582,7 @@ Scene rendering commands encoding is done similarly for both shadow and render p
 1. Render command list is reset with state taken from render pass resources and already configured debug group description.
 2. View state is set with viewports and scissor rects.
 3. Cube and floor meshes drawing commands are encoded using
-   [TexturedMeshBuffers<UniformsType>::Draw(...)](../../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp)
+   [TexturedMeshBuffers<UniformsType>::Draw(...)](../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp)
    method which is doing:
    1. Setting program bindings to resources;
    2. Setting vertex buffer to draw;

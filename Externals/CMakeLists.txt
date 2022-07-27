@@ -39,7 +39,6 @@ include(HLSLpp)
 include(MagicEnum)
 include(TaskFlow)
 include(Tracy)
-include(PerlinNoise)
 
 if(METHANE_TESTS_BUILD_ENABLED)
     include(Catch2)
