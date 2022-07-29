@@ -1,11 +1,6 @@
 include(MethaneApplications)
 
 set(TARGET MethaneTypography)
-set(FONTS
-    ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
-    ${RESOURCES_DIR}/Fonts/Playball/Playball-Regular.ttf
-    ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
-)
 
 add_methane_application(
     TARGET ${TARGET}
@@ -19,6 +14,11 @@ add_methane_application(
         TypographyAppController.cpp
 )
 
+set(FONTS
+    ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
+    ${RESOURCES_DIR}/Fonts/Playball/Playball-Regular.ttf
+    ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
+)
 add_methane_embedded_fonts(${TARGET} "${RESOURCES_DIR}" "${FONTS}")
 
 target_link_libraries(${TARGET}
@@ -28,5 +28,5 @@ target_link_libraries(${TARGET}
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Apps/Tutorials
+    FOLDER Apps
 )

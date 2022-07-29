@@ -552,26 +552,19 @@ include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-set(SOURCES
-    TexturedCubeApp.h
-    TexturedCubeApp.cpp
-    Shaders/TexturedCubeUniforms.h
+add_methane_application(
+    TARGET MethaneTexturedCube
+    NAME "Methane Textured Cube"
+    DESCRIPTION "Tutorial demonstrating textured rotating cube rendering with Methane Kit."
+    INSTALL_DIR "Apps"
+    SOURCES
+        TexturedCubeApp.h
+        TexturedCubeApp.cpp
+        Shaders/TexturedCubeUniforms.h
 )
 
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
-
-add_methane_application(MethaneTexturedCube
-    "${SOURCES}"
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Textured Cube"
-    "Tutorial demonstrating textured rotating cube rendering with Methane Kit."s
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
-)
-
 add_methane_embedded_textures(MethaneTexturedCube "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(

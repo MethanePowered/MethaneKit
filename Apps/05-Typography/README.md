@@ -356,29 +356,23 @@ bool TypographyApp::Render()
 ```cmake
 include(MethaneApplications)
 
-set(SOURCES
-    TypographyApp.h
-    TypographyApp.cpp
-    TypographyAppController.h
-    TypographyAppController.cpp
+add_methane_application(
+    TARGET MethaneTypography
+    NAME "Methane Typography"
+    DESCRIPTION "Tutorial demonstrating dynamic text rendering and font atlases management with Methane Kit."
+    INSTALL_DIR "Apps"
+    SOURCES
+        TypographyApp.h
+        TypographyApp.cpp
+        TypographyAppController.h
+        TypographyAppController.cpp
 )
+
 set(FONTS
     ${RESOURCES_DIR}/Fonts/Roboto/Roboto-Regular.ttf
     ${RESOURCES_DIR}/Fonts/Playball/Playball-Regular.ttf
     ${RESOURCES_DIR}/Fonts/SawarabiMincho/SawarabiMincho-Regular.ttf
 )
-
-add_methane_application(MethaneTypography
-    "${SOURCES}"
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Typography"
-    "Dynamic text rendering and fonts management tutorial with Methane Kit."
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
-)
-
 add_methane_embedded_fonts(MethaneTypography "${RESOURCES_DIR}" "${FONTS}")
 
 target_link_libraries(MethaneTypography

@@ -4,10 +4,6 @@ include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-set(SOURCES
-
-)
-
 add_methane_application(
     TARGET ${TARGET}
     NAME "Methane Parallel Rendering"
@@ -39,5 +35,5 @@ target_link_libraries(${TARGET}
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Apps/Tutorials
+    FOLDER Apps
 )

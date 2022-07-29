@@ -4,9 +4,6 @@ include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
-set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
-
 add_methane_application(
     TARGET ${TARGET}
     NAME "Methane Textured Cube"
@@ -18,6 +15,8 @@ add_methane_application(
         Shaders/TexturedCubeUniforms.h
 )
 
+set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
+set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
 add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(
@@ -38,5 +37,5 @@ target_link_libraries(${TARGET}
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Apps/Tutorials
+    FOLDER Apps
 )

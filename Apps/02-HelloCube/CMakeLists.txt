@@ -42,7 +42,7 @@ foreach(VARIANT ${SIMPLE_VARIANT} ${UNIFORMS_VARIANT})
 
     set_target_properties(${TARGET}
         PROPERTIES
-        FOLDER Apps/Tutorials
+        FOLDER Apps
     )
 
 endforeach()

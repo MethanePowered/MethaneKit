@@ -29,3 +29,8 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneUserInterfaceTypography
 )
+
+set_target_properties(${TARGET}
+    PROPERTIES
+    FOLDER Apps
+)

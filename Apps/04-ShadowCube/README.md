@@ -10,7 +10,7 @@ This tutorial demonstrates rendering shadow of the textured cube on the floor pl
 - [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h)
 - [Shaders/ShadowCube.hlsl](Shaders/ShadowCube.hlsl)
 
-Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../02-TexturedCube) tutorial:
+Tutorial demonstrates using of the following Methane Kit features additionally to features demonstrated in [TexturedCube](../03-TexturedCube) tutorial:
 - Render with multiple render passes;
 - Use texture as render target attachment in one pass and as an input program binding in another pass;
 - Compile and loading shaders code with macro-definitions to render state programs;
@@ -744,29 +744,22 @@ include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-set(SOURCES
-    ShadowCubeApp.h
-    ShadowCubeApp.cpp
+add_methane_application(
+    TARGET ${TARGET}
+    NAME "Methane Shadow Cube"
+    DESCRIPTION "Tutorial demonstrating shadow and final render passes done with Methane Kit."
+    INSTALL_DIR "Apps"
+    SOURCES
+        ShadowCubeApp.h
+        ShadowCubeApp.cpp
+        Shaders/ShadowCubeUniforms.h
 )
 
-set(SHADERS_HLSL ${CMAKE_CURRENT_SOURCE_DIR}/Shaders/ShadowCube.hlsl)
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
 set(TEXTURES
     ${TEXTURES_DIR}/MethaneBubbles.jpg
     ${TEXTURES_DIR}/MarbleWhite.jpg
 )
-
-add_methane_application(MethaneShadowCube
-    "${SOURCES}"
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Shadow Cube"
-    "Tutorial of the shadow pass rendering with Methane Kit."
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
-)
-
 add_methane_embedded_textures(MethaneShadowCube "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(

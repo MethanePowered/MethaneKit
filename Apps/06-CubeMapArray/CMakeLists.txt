@@ -45,5 +45,5 @@ target_link_libraries(${TARGET}
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Apps/Tutorials
+    FOLDER Apps
 )

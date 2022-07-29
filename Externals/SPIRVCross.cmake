@@ -17,7 +17,7 @@ CPMAddPackage(
         "SPIRV_CROSS_ENABLE_UTIL OFF"
 )
 
-set_target_properties(spirv-cross-core spirv-cross-hlsl spirv-cross-glsl uninstall
+set_target_properties(spirv-cross-core spirv-cross-hlsl spirv-cross-glsl
     PROPERTIES
     FOLDER Externals
 )

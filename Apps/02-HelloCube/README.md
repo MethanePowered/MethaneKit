@@ -7,8 +7,9 @@
 This tutorial demonstrates colored cube rendering implemented in just 220 lines of code using Methane Kit:
 - [HelloCubeApp.cpp](HelloCubeApp.cpp)
 - [Shaders/HelloCube.hlsl](Shaders/HelloCube.hlsl)
+- [Shaders/HelloCubeUniforms.h](Shaders/HelloCubeUniforms.h)
 
-Tutorial demonstrates the following Methane Kit features and techniques:
+Tutorial demonstrates the following Methane Kit features and techniques additionally to demonstrated in [Hello Triangle](../01-HelloTriangle):
 - **Simple version** (when macros `UNIFORMS_BUFFER_ENABLED` is not defined):
   - Create vertex and index buffers on GPU and filling them with data from CPU.
   - Generate cube mesh vertices and indices data with custom vertex layout.
@@ -615,15 +616,13 @@ coordinates on the GPU in vertex shader, which is much more efficient.
 CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application is powered by the included Methane CMake modules.
 
 ```cmake
-add_methane_application(MethaneHelloCube
-    HelloCubeApp.cpp
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Hello Cube"
-    "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
-    "${METHANE_COPYRIGHT}"
-    "${METHANE_VERSION_SHORT}"
-    "${METHANE_VERSION_BUILD}"
+add_methane_application(
+    TARGET MethaneHelloCube
+    NAME "Methane Hello Cube"
+    DESCRIPTION "Tutorial demonstrating colored rotating cube rendering with Methane Kit."
+    INSTALL_DIR "Apps"
+    SOURCES
+        HelloCubeApp.cpp
 )
 
 add_methane_shaders_source(

@@ -232,12 +232,13 @@ is powered by the included Methane CMake modules:
 include(MethaneApplications)
 include(MethaneShaders)
 
-add_methane_application(MethaneHelloTriangle
-    "HelloTriangleApp.cpp"
-    "${RESOURCES_DIR}"
-    "Apps"
-    "Methane Hello Triangle"
-    "Tutorial demonstrating colored triangle rendering with Methane Kit."
+add_methane_application(
+    TARGET ${TARGET}
+    NAME "Methane Hello Triangle"
+    DESCRIPTION "Tutorial demonstrating colored triangle rendering with Methane Kit."
+    INSTALL_DIR "Apps"
+    SOURCES
+        HelloTriangleApp.cpp
 )
 
 add_methane_shaders_source(
