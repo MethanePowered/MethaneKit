@@ -1,11 +1,7 @@
-if (POLICY CMP0048)
-    # IttApi CMake project(...) does not set VERSION, so CMAKE_PROJECT_VERSION will be set to empty
-    cmake_policy(SET CMP0048 NEW) # The `project()` command manages `VERSION` variables
-endif()
-
 CPMAddPackage(
     NAME IttApi
     GITHUB_REPOSITORY MethanePowered/IttApi
+    GIT_TAG 19ab01fb45aa9f4050a22026929417ade689a36a # last commit in 'fix_cmake_policy_0048_warning' branch
     VERSION 3.23.0
 )
 
