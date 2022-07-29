@@ -1,5 +1,6 @@
 if (POLICY CMP0048)
-    cmake_policy(SET CMP0048 OLD) # The `project()` command manages `VERSION` variables
+    # IttApi CMake project(...) does not set VERSION, so CMAKE_PROJECT_VERSION will be set to empty
+    cmake_policy(SET CMP0048 NEW) # The `project()` command manages `VERSION` variables
 endif()
 
 CPMAddPackage(
