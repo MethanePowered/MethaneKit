@@ -29,7 +29,7 @@ steps:
     displayName: 'Build with preset $(cmake.BuildPreset)'
     inputs:
       workingDirectory: $(Build.SourcesDirectory)
-      cmakeArgs: '--build --preset $(cmake.BuildPreset) --target install'
+      cmakeArgs: '--build --preset $(cmake.BuildPreset) --target install --parallel 4'
 
   - script: |
       setlocal enabledelayedexpansion

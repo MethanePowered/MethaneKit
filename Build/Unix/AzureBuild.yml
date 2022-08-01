@@ -35,7 +35,7 @@ steps:
     displayName: 'Build with preset $(cmake.BuildPreset)'
     inputs:
       workingDirectory: $(Build.SourcesDirectory)
-      cmakeArgs: '--build --preset $(cmake.BuildPreset) --target install'
+      cmakeArgs: '--build --preset $(cmake.BuildPreset) --target install --parallel 4'
 
   - bash: |
       result_ext='_result.xml'
