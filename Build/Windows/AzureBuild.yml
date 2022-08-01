@@ -46,7 +46,7 @@ steps:
 
   - script: |
       copy README.md $(installDir)\README.md
-      echo Methane Kit v.$(product.Version.Full), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) > $(installDir)\Build.txt
+      echo Methane Kit v.$(product.Version.Full), azure build number: $(Build.BuildNumber), git branch: $(Build.SourceBranchName), commit id: $(Build.SourceVersion) > $(installDir)\Build.txt
       echo   - Built with CMake configure preset $(cmake.ConfigurePreset) and build preset $(cmake.BuildPreset) >> $(installDir)\Build.txt
       echo   - Built on agent $(Agent.Name), $(Agent.OS), $(Agent.OSArchitecture): >> $(installDir)/Build.txt
       systeminfo >> $(installDir)\Build.txt
