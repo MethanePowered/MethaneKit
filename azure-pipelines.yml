@@ -36,7 +36,9 @@ variables:
 
   product.Version.Major: 0
   product.Version.Minor: 6
-  product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(Build.BuildNumber)'
+  product.Version.Patch: 5
+  product.Version.Build: $(Build.BuildId)
+  product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(product.Version.Patch).$(product.Version.Build)'
 
   sonar.CloudName: 'Methane Powered Graphics'
   sonar.Organization: 'methane-powered'
@@ -50,7 +52,8 @@ variables:
   cmake.ExternalsCacheDir: '$(Pipeline.Workspace)/ExternalsCache'
   cmake.ConfigureFlags: '-DMETHANE_VERSION_MAJOR=$(product.Version.Major)
     -DMETHANE_VERSION_MINOR=$(product.Version.Minor)
-    -DMETHANE_VERSION_BUILD=$(Build.BuildNumber)
+    -DMETHANE_VERSION_PATCH=$(product.Version.Patch)
+    -DMETHANE_VERSION_BUILD=$(product.Version.Build)
     -DCPM_SOURCE_CACHE="$(cmake.ExternalsCacheDir)"'
 
 jobs:

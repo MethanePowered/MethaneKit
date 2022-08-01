@@ -21,10 +21,6 @@ Methane compilation and build options interface target.
 
 *****************************************************************************]]
 
-include(MethaneUtils)
-
-split_by_first_delimiter("${METHANE_VERSION_BUILD}" "." METHANE_VERSION_BUILD_MAJOR METHANE_VERSION_BUILD_MINOR)
-
 add_library(MethaneBuildOptions INTERFACE)
 
 target_compile_definitions(MethaneBuildOptions INTERFACE
@@ -37,7 +33,8 @@ target_compile_definitions(MethaneBuildOptions INTERFACE
     $<$<AND:$<BOOL:${METHANE_ITT_INSTRUMENTATION_ENABLED}>,$<BOOL:${METHANE_ITT_METADATA_ENABLED}>>:ITT_ARGUMENTS_METADATA_ENABLED>
     METHANE_VERSION_MAJOR=${METHANE_VERSION_MAJOR}
     METHANE_VERSION_MINOR=${METHANE_VERSION_MINOR}
-    METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD_MAJOR}
+    METHANE_VERSION_PATCH=${METHANE_VERSION_PATCH}
+    METHANE_VERSION_BUILD=${METHANE_VERSION_BUILD}
 )
 
 if(WIN32)

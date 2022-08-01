@@ -25,10 +25,11 @@ endif()
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
 set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_PATCH 5 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 project(METHANE_KIT
-        VERSION ${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_BUILD}
+        VERSION ${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_PATCH}.${METHANE_VERSION_BUILD}
         DESCRIPTION "Modern 3D graphics made simple with C++17 cross-platform framework and rendering abstraction API on top of DirectX 12, Metal & Vulkan"
         HOMEPAGE_URL "https://github.com/MethanePowered/MethaneKit"
         LANGUAGES ${METHANE_LANGUAGES})
@@ -64,7 +65,7 @@ option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Trac
 option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand, after client connection" OFF)
 
 # Methane version, build & product info
-set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}")
+set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_PATCH}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
 set(METHANE_PRODUCT_NAME  "Methane Kit (${HOMEPAGE_URL})")
 set(METHANE_COPYRIGHT     "Copyright 2019-2022 Evgeny Gorodetskiy")
