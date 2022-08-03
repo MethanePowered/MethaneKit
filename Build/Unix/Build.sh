@@ -1,9 +1,10 @@
 #!/bin/bash
 # Run Build.sh with optional arguments:
-#   --debug               - Debug build instead of Release build by default
-#   --vulkan VULKAN_SDK   - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
-#   --graphviz            - enable GraphViz cmake module diagrams generation in Dot and Png formats
-#   --analyze SONAR_TOKEN - run local build with Sonar Scanner static analysis and submit results to the server using token login
+#   --apple_platform PLATFOTM - Apple platform name (OS64 - iOS, SIMULATORARM64 - iOS Sim, MAC_ARM64 - Apple Silicon Mac, MAC - x86_64 Mac, ...)
+#   --debug                   - Debug build instead of Release build by default
+#   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
+#   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
+#   --analyze SONAR_TOKEN     - run local build with Sonar Scanner static analysis and submit results to the server using token login
 
 BUILD_VERSION_MAJOR=0
 BUILD_VERSION_MINOR=6
@@ -12,6 +13,9 @@ BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 SOURCE_DIR=$SCRIPT_DIR/../..
 OUTPUT_DIR=$SCRIPT_DIR/../Output
+
+APPS_BUILD_ENABLED="ON"
+TESTS_BUILD_ENABLED="ON"
 
 # Parse command line arguments
 while [ $# -ne 0 ]
@@ -34,6 +38,11 @@ do
             SONAR_TOKEN="$2"
             shift
             ;;
+        --apple_platform)
+            IS_APPLE_PLATFORM_BUILD=true
+            APPLE_PLATFORM="$2"
+            shift
+            ;;
         *)
             echo "Unknown argument: $arg" && exit 1
             ;;
@@ -42,15 +51,30 @@ do
 done
 
 # Choose CMake generator depending on operating system
-UNAME_OUT="$(uname -s)"
-case "${UNAME_OUT}" in
+ARCH_NAME="$(uname -m)"
+OS_NAME="$(uname -s)"
+case "${OS_NAME}" in
     Linux*)
         CMAKE_GENERATOR=Unix\ Makefiles
         PLATFORM_NAME=Linux
+        IS_APPLE_PLATFORM_BUILD=false
         ;;
     Darwin*)
         CMAKE_GENERATOR=Xcode
         PLATFORM_NAME=MacOS
+        if [ "$IS_APPLE_PLATFORM_BUILD" == true ]; then
+            CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
+                         -DPLATFORM=$APPLE_PLATFORM \
+                         -DDEPLOYMENT_TARGET=10.15 \
+                         -DENABLE_BITCODE=1 \
+                         -DENABLE_ARC=1 \
+                         -DENABLE_VISIBILITY=0 \
+                         -DENABLE_STRICT_TRY_COMPILE=0"
+            TESTS_BUILD_ENABLED="OFF" # Disable tests cause unbundled console executables can not be built with iOS toolchain
+        else
+            IS_APPLE_PLATFORM_BUILD=true
+            APPLE_PLATFORM=MacOS_$ARCH_NAME
+        fi
         ;;
     *)
     echo "Unsupported operating system!" 1>&2 && exit 1
@@ -76,13 +100,28 @@ else
     GFX_API=MT
 fi
 
-CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR/$GFX_API-$BUILD_TYPE
+CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR
+if [ "$IS_APPLE_PLATFORM_BUILD" == true ]; then
+    CONFIG_DIR=$CONFIG_DIR/$APPLE_PLATFORM
+fi
+CONFIG_DIR=$CONFIG_DIR/$GFX_API-$BUILD_TYPE
+
 INSTALL_DIR=$CONFIG_DIR/Install
 
-CMAKE_FLAGS=" \
+if [ "$CMAKE_GENERATOR" == "Xcode" ]; then
+    # Build architectures have to be set explicitly via generator command line starting with XCode and Clang v12
+    CLANG_VERSION="$(clang --version | grep -o -E 'version [0-9]+\.' | grep -o -E '[0-9]+')"
+    if [ $CLANG_VERSION -ge 12 ]; then
+        CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=$ARCH_NAME"
+    fi
+fi
+
+CMAKE_FLAGS="$CMAKE_FLAGS \
     -DMETHANE_VERSION_MAJOR=$BUILD_VERSION_MAJOR \
     -DMETHANE_VERSION_MINOR=$BUILD_VERSION_MINOR \
     -DMETHANE_GFX_VULKAN_ENABLED:BOOL=$VULKAN_BUILD_FLAG \
+    -DMETHANE_APPS_BUILD_ENABLED:BOOL=$APPS_BUILD_ENABLED \
+    -DMETHANE_TESTS_BUILD_ENABLED:BOOL=$TESTS_BUILD_ENABLED \
     -DMETHANE_SHADERS_CODEVIEW_ENABLED:BOOL=ON \
     -DMETHANE_SHADERS_VALIDATION_ENABLED:BOOL=ON \
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF \
@@ -95,14 +134,6 @@ CMAKE_FLAGS=" \
     -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF"
-
-if [ "$CMAKE_GENERATOR" == "Xcode" ]; then
-    # Build architectures have to be set explicitly via generator command line starting with XCode and Clang v12
-    CLANG_VERSION="$(clang --version | grep -o -E 'version [0-9]+\.' | grep -o -E '[0-9]+')"
-    if [ $CLANG_VERSION -ge 12 ]; then
-        CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
-    fi
-fi
 
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     GRAPHVIZ_DIR=$CONFIG_DIR/GraphViz
@@ -120,22 +151,22 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
     SONAR_BUILD_WRAPPER_EXE=$SONAR_SCANNER_DIR/build-wrapper-macosx-x86/build-wrapper-macosx-x86
     SONAR_SCANNER_EXE=$SONAR_SCANNER_DIR/sonar-scanner-$SONAR_SCANNER_VERSION-macosx/bin/sonar-scanner
 
-    echo =========================================================
-    echo Code analysis for build Methane $GFX_API_NAME $BUILD_TYPE
-    echo =========================================================
+    echo =============================================================================
+    echo Code analysis for build Methane $GFX_API_NAME $BUILD_TYPE for $APPLE_PLATFORM
+    echo =============================================================================
     echo  \* Build in:   $BUILD_DIR
-    echo =========================================================
+    echo =============================================================================
 else
     BUILD_DIR=$CONFIG_DIR/Build
-    echo =========================================================
-    echo Clean build and install Methane $GFX_API_NAME $BUILD_TYPE
-    echo =========================================================
+    echo =============================================================================
+    echo Clean build and install Methane $GFX_API_NAME $BUILD_TYPE for $APPLE_PLATFORM
+    echo =============================================================================
     echo  \* Build in:   $BUILD_DIR
     echo  \* Install to: $INSTALL_DIR
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
         echo  \* Graphviz in: $GRAPHVIZ_DIR
 fi
-    echo =========================================================
+    echo =============================================================================
 fi
 
 rm -rf "$CONFIG_DIR"
