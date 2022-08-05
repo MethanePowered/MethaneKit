@@ -6,11 +6,11 @@ get_module_dirs("Methane/Platform")
 
 if (WIN32)
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppWin.h
     )
 
-    set(PLATFORM_SOURCES
+    list(APPEND PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppWin.cpp
         ${SOURCES_PLATFORM_DIR}/ConsoleStreams.h
         ${SOURCES_PLATFORM_DIR}/ConsoleStreams.cpp
@@ -18,31 +18,33 @@ if (WIN32)
 
 elseif(APPLE)
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppMac.hh
         ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
-        ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh
         ${SOURCES_PLATFORM_DIR}/AppViewController.hh
     )
 
-    set(PLATFORM_SOURCES
+    list(APPEND PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppMac.mm
         ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
-        ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm
         ${SOURCES_PLATFORM_DIR}/AppViewController.mm
     )
 
-    set(PLATFORM_LIBRARIES
-        "-framework AppKit"
-    )
+    if (APPLE_MACOS)
+        list(APPEND PLATFORM_HEADERS ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh)
+        list(APPEND PLATFORM_SOURCES ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm)
+        list(APPEND PLATFORM_LIBRARIES "-framework AppKit")
+    else()
+        list(APPEND PLATFORM_LIBRARIES "-framework UIKit")
+    endif()
 
 else(LINUX)
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppLin.h
     )
 
-    set(PLATFORM_SOURCES
+    list(APPEND PLATFORM_SOURCES
         ${SOURCES_PLATFORM_DIR}/AppLin.cpp
         ${SOURCES_PLATFORM_DIR}/MessageBox.h
         ${SOURCES_PLATFORM_DIR}/MessageBox.cpp
@@ -55,14 +57,14 @@ else(LINUX)
 
 endif()
 
-set(HEADERS ${PLATFORM_HEADERS}
+list(APPEND HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
 )
 
-set(SOURCES ${PLATFORM_SOURCES}
+list(APPEND SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
 )
@@ -93,7 +95,7 @@ target_link_libraries(${TARGET}
 
 target_compile_definitions(${TARGET}
     PRIVATE
-    METHANE_RENDER_APP
+        METHANE_RENDER_APP
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)

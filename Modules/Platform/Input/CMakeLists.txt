@@ -4,12 +4,10 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Platform")
 
-if(APPLE)
-
+if (APPLE_MACOS)
     set(PLATFORM_LIBRARIES
         "-framework AppKit"
     )
-
 endif()
 
 set(HEADERS
@@ -25,7 +23,7 @@ set(HEADERS
 )
 
 set(SOURCES
-    ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
+    $<$<BOOL:${APPLE_MACOS}>:${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}>
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp

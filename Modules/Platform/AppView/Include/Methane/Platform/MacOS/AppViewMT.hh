@@ -25,17 +25,16 @@ MacOS application view implementation.
 
 #import "AppEnvironment.hh"
 
-#import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-@interface AppViewMT : NSView
+@interface AppViewMT : NativeView
 {
-    IBOutlet NSViewController* viewController;
+    IBOutlet NativeViewController* viewController;
 }
 
-@property (nonatomic, readonly, nullable) NSWindow* appWindow;
-@property (nonatomic, readonly, nullable) NSScreen* currentScreen;
+@property (nonatomic, readonly, nullable) NativeWindow* appWindow;
+@property (nonatomic, readonly, nullable) NativeScreen* currentScreen;
 @property (nonatomic, readonly) MTLPixelFormat pixelFormat;
 @property (nonatomic, readwrite) NSUInteger drawableCount;
 @property (nonatomic, readwrite) BOOL vsyncEnabled;
@@ -48,8 +47,8 @@ MacOS application view implementation.
 @property (nonatomic, readonly, nonnull) id<CAMetalDrawable> currentDrawable;
 
 - (nonnull instancetype)initWithCoder:(nonnull NSCoder*) aDecoder;
-- (nonnull instancetype)initWithFrame:(NSRect) backing_frame
-                            appWindow:(nullable NSWindow*) app_window
+- (nonnull instancetype)initWithFrame:(NativeRect) backing_frame
+                            appWindow:(nullable NativeWindow*) app_window
                           pixelFormat:(MTLPixelFormat) pixelFormat
                         drawableCount:(NSUInteger) drawable_count
                          vsyncEnabled:(BOOL) vsync_enabled

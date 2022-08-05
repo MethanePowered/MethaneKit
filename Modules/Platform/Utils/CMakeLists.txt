@@ -61,7 +61,7 @@ if(APPLE)
 
     target_link_libraries(${TARGET}
         PUBLIC
-        "-framework Cocoa"
+            "-framework Foundation"
     )
 
 endif()

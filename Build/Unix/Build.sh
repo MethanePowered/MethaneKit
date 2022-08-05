@@ -65,11 +65,11 @@ case "${OS_NAME}" in
         if [ "$IS_APPLE_PLATFORM_BUILD" == true ]; then
             CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
                          -DPLATFORM=$APPLE_PLATFORM \
-                         -DDEPLOYMENT_TARGET=10.15 \
-                         -DENABLE_BITCODE=1 \
-                         -DENABLE_ARC=1 \
-                         -DENABLE_VISIBILITY=0 \
-                         -DENABLE_STRICT_TRY_COMPILE=0"
+                         -DDEPLOYMENT_TARGET=14.0 \
+                         -DENABLE_BITCODE:BOOL=OFF \
+                         -DENABLE_ARC:BOOL=ON \
+                         -DENABLE_VISIBILITY:BOOL=ON \
+                         -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
             TESTS_BUILD_ENABLED="OFF" # Disable tests cause unbundled console executables can not be built with iOS toolchain
         else
             IS_APPLE_PLATFORM_BUILD=true

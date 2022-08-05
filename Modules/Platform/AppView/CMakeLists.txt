@@ -6,48 +6,56 @@ get_module_dirs("Methane/Platform")
 
 if (WIN32)
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
     )
 
 elseif(APPLE)
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppViewMT.hh
         ${INCLUDE_PLATFORM_DIR}/AppEnvironment.hh
     )
 
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppViewMT.mm
-    )
+    if(APPLE_MACOS)
+        list(APPEND PLATFORM_SOURCES
+            Sources/Methane/Platform/MacOS/AppViewMT.mm
+        )
+    else()
+        list(APPEND PLATFORM_SOURCES
+            Sources/Methane/Platform/iOS/AppViewMT.mm
+        )
+    endif()
 
-    set(PLATFORM_LIBRARIES
-        "-framework AppKit \
-         -framework Metal \
-         -framework QuartzCore"
+    list(APPEND PLATFORM_LIBRARIES
+        "-framework $<IF:$<BOOL:${APPLE_MACOS}>,AppKit,UIKit>"
+        "-framework Metal"
+        "-framework QuartzCore"
     )
 
     # CLANG_ENABLE_OBJC_WEAK = YES
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
-        COMPILE_FLAGS -fobjc-weak
+            COMPILE_FLAGS -fobjc-weak
     )
 
 elseif() # Linux
 
-    set(PLATFORM_HEADERS
+    list(APPEND PLATFORM_HEADERS
         ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
     )
 
 endif()
 
-set(HEADERS ${PLATFORM_HEADERS}
+list(APPEND HEADERS
+    ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/AppView.h
     ${INCLUDE_DIR}/AppEnvironment.h
 )
 
-set(SOURCES ${PLATFORM_SOURCES}
+list(APPEND SOURCES
+    ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppView.cpp
 )
 

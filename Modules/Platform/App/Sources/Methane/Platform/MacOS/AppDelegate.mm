@@ -22,7 +22,10 @@ MacOS application delegate implementation.
 ******************************************************************************/
 
 #import "AppDelegate.hh"
+
+#ifdef APPLE_MACOS
 #import "WindowDelegate.hh"
+#endif
 
 #include <Methane/Platform/MacOS/AppMac.hh>
 #include <Methane/Platform/MacOS/Types.hh>
@@ -33,6 +36,11 @@ using namespace Methane;
 using namespace Methane::Platform;
 
 @implementation AppDelegate
+{
+#ifdef APPLE_MACOS
+    WindowDelegate* m_window_delegate;
+#endif
+}
 
 @synthesize window = m_window;
 
@@ -45,15 +53,23 @@ using namespace Methane::Platform;
         return nil;
 
     const Methane::Data::FloatSize& frame_size = p_settings->size;
-    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
 
-    NSScreen* ns_main_screen = [NSScreen mainScreen];
+    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
+#ifdef APPLE_MACOS
+    const auto& ns_frame_size = ns_main_screen.frame.size;
+#else
+    const auto& ns_frame_size = ns_main_screen.bounds.size;
+#endif
+
     CGFloat frame_width = frame_size.GetWidth() < 1.0
-                        ? ns_main_screen.frame.size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
-                        : static_cast<CGFloat>(frame_size.GetWidth());
+                          ? ns_frame_size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
+                          : static_cast<CGFloat>(frame_size.GetWidth());
     CGFloat frame_height = frame_size.GetHeight() < 1.0
-                         ? ns_main_screen.frame.size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
-                         : static_cast<CGFloat>(frame_size.GetHeight());
+                           ? ns_frame_size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
+                           : static_cast<CGFloat>(frame_size.GetHeight());
+
+#ifdef APPLE_MACOS
+    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
     NSUInteger style_mask = NSWindowStyleMaskTitled |
@@ -66,10 +82,19 @@ using namespace Methane::Platform;
     m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
     m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(min_frame_size.GetWidth()), static_cast<CGFloat>(min_frame_size.GetHeight()));
     m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
-    m_window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
+
+    m_window_delegate = [[WindowDelegate alloc] initWithApp:p_app];
+    m_window.delegate = m_window_delegate;
+
     [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
+#else
+    const CGRect backing_frame = CGRectMake(0, 0,
+                                            frame_width * ns_main_screen.nativeScale,
+                                            frame_height * ns_main_screen.nativeScale);
+#endif
+
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
     p_app->SetWindow(m_window);
@@ -80,13 +105,16 @@ using namespace Methane::Platform;
 - (void) run
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     [m_window setContentViewController: self.viewController];
     [m_window setAcceptsMouseMovedEvents:YES];
+#endif
 }
 
-- (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
+- (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NativeAlertStyle) ns_alert_style
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     META_CHECK_ARG_NOT_NULL(ns_title);
     META_CHECK_ARG_NOT_NULL(ns_info);
     
@@ -101,7 +129,12 @@ using namespace Methane::Platform;
     {
         [NSApp terminate:self];
     }
+#else
+    // TODO: iOS implementation missing
+#endif
 }
+
+#ifdef APPLE_MACOS
 
 - (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
@@ -149,5 +182,7 @@ using namespace Methane::Platform;
     #pragma unused(sender)
     return YES;
 }
+
+#endif // APPLE_MACOS
 
 @end

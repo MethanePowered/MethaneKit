@@ -95,7 +95,7 @@ endfunction()
 
 function(get_target_resources_dir FOR_TARGET RESOURCES_DIR)
     set(TARGET_DIR $<TARGET_FILE_DIR:${FOR_TARGET}>)
-    if(APPLE)
+    if(APPLE_MACOS)
         set(${RESOURCES_DIR} ${TARGET_DIR}/../Resources PARENT_SCOPE)
     else()
         set(${RESOURCES_DIR} ${TARGET_DIR} PARENT_SCOPE)

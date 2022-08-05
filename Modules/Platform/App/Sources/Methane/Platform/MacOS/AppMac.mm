@@ -29,30 +29,31 @@ MacOS application implementation.
 using namespace Methane::Platform;
 using namespace Methane::MacOS;
 
-NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
+NativeAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 {
     META_FUNCTION_TASK();
     switch(msg_type)
     {
+#ifdef APPLE_MACOS
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
         case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
         case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
-        default:                                  META_UNEXPECTED_ARG_RETURN(msg_type, NSAlertStyleInformational);
+        default: META_UNEXPECTED_ARG_RETURN(msg_type, NSAlertStyleInformational);
+#else
+        case AppBase::Message::Type::Information: return UIAlertActionStyleDefault;
+        case AppBase::Message::Type::Warning:     return UIAlertActionStyleCancel;
+        case AppBase::Message::Type::Error:       return UIAlertActionStyleDestructive;
+        default: META_UNEXPECTED_ARG_RETURN(msg_type, UIAlertActionStyleDestructive);
+#endif
+
     }
 }
 
 AppMac::AppMac(const AppBase::Settings& settings)
     : AppBase(settings)
-    , m_ns_app([NSApplication sharedApplication])
+    , m_ns_app([NativeApplication sharedApplication])
 {
     META_FUNCTION_TASK();
-}
-
-AppMac::~AppMac()
-{
-    META_FUNCTION_TASK();
-    [m_ns_app_delegate release];
-    [m_ns_app release];
 }
 
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
@@ -63,7 +64,9 @@ void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::Fr
     META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
     META_CHECK_ARG_NOT_NULL(m_ns_window);
 
+#ifdef APPLE_MACOS
     [m_ns_window.contentView addSubview: app_view.p_native_view];
+#endif
 }
 
 int AppMac::Run(const RunArgs& args)
@@ -76,7 +79,11 @@ int AppMac::Run(const RunArgs& args)
     m_ns_app_delegate = [[AppDelegate alloc] initWithApp:this andSettings: &GetPlatformAppSettings()];
     [m_ns_app setDelegate: m_ns_app_delegate];
     [m_ns_app_delegate run];
+
+#ifdef APPLE_MACOS
     [m_ns_app run];
+#endif
+
     return 0;
 }
 
@@ -104,13 +111,17 @@ void AppMac::Alert(const Message& msg, bool deferred)
 void AppMac::SetWindowTitle(const std::string& title_text)
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     NSString* ns_title_text = ConvertToNsType<std::string, NSString*>(title_text);
     dispatch_async(dispatch_get_main_queue(), ^(void){
         m_ns_window.title = ns_title_text;
     });
+#else
+    META_UNUSED(title_text);
+#endif
 }
 
-void AppMac::SetWindow(NSWindow* ns_window)
+void AppMac::SetWindow(NativeWindow* ns_window)
 {
     META_FUNCTION_TASK();
     m_ns_window = ns_window;
@@ -133,18 +144,22 @@ bool AppMac::SetFullScreen(bool is_full_screen)
     META_FUNCTION_TASK();
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
-    
+
+#ifdef APPLE_MACOS
     const NSApplicationPresentationOptions app_options = [m_ns_app presentationOptions];
     const bool is_app_fullscreen = (app_options & NSApplicationPresentationFullScreen);
     if (is_app_fullscreen != is_full_screen)
     {
         [m_ns_window toggleFullScreen:nil];
     }
+#endif
     return true;
 }
 
 void AppMac::Close()
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     [m_ns_window close];
+#endif
 }

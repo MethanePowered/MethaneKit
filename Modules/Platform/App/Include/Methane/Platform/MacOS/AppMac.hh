@@ -24,22 +24,16 @@ MacOS application implementation.
 #pragma once
 
 #include <Methane/Platform/AppBase.h>
-#include <Methane/Platform/AppEnvironment.h>
+#include <Methane/Platform/MacOS/AppEnvironment.hh>
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
 #import <Methane/Platform/MacOS/AppDelegate.hh>
-#import <AppKit/AppKit.h>
-
-using NSApplicationType = NSApplication;
 using AppDelegateType = AppDelegate;
-using NSWindowType = NSWindow;
 
 #else
 
-using NSApplicationType = uint8_t;
-using AppDelegateType = uint8_t;
-using NSWindowType = uint8_t;
+using AppDelegateType = void;
 
 #endif
 
@@ -50,7 +44,6 @@ class AppMac : public AppBase
 {
 public:
     explicit AppMac(const AppBase::Settings& settings);
-    ~AppMac() override;
 
     // AppBase interface
     void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
@@ -60,18 +53,18 @@ public:
     bool SetFullScreen(bool is_full_screen) override;
     void Close() override;
 
-    void SetWindow(NSWindowType* ns_window);
+    void SetWindow(NativeWindow* ns_window);
     bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
-    NSWindowType* GetWindow()                       { return m_ns_window; }
+    NativeWindow* GetWindow()                       { return m_ns_window; }
 
 protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
 private:
-    NSApplicationType*  m_ns_app          = nullptr;
-    AppDelegateType*    m_ns_app_delegate = nullptr;
-    NSWindowType*       m_ns_window       = nullptr;
+    NativeApplication* m_ns_app          = nullptr;
+    AppDelegateType*   m_ns_app_delegate = nullptr;
+    NativeWindow*      m_ns_window       = nullptr;
 };
 
 } // namespace Methane::Platform

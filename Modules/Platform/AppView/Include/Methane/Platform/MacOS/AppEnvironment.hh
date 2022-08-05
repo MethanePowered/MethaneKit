@@ -25,23 +25,52 @@ MacOS application environment.
 
 #ifdef __OBJC__
 
+#ifdef APPLE_MACOS
+
 #import <AppKit/AppKit.h>
+
+using NativeApplication = NSApplication;
+using NativeWindow      = NSWindow;
+using NativeScreen      = NSScreen;
+using NativeView        = NSView;
+using NativeRect        = NSRect;
+
+#else // APPLE_IOS || APPLE_TVOS
+
+#import <UIKit/UIKit.h>
+
+using NativeApplication = UIApplication;
+using NativeWindow      = UIWindow;
+using NativeScreen      = UIScreen;
+using NativeView        = UIView<CALayerDelegate>;
+using NativeRect        = CGRect;
+
+#endif // APPLE_MACOS
 
 @class AppViewMT;
 
-@protocol MetalAppViewDelegate <NSObject>
+@protocol MetalAppViewDelegate<NSObject>
 
-@property (nonatomic, readonly, nullable) NSWindow* window;
+@property (nonatomic, readonly, nullable) NativeWindow* window;
 
-- (void)drawInView:(nonnull AppViewMT *)view;
+- (void)drawInView:(nonnull AppViewMT *) view;
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size;
 
 @end
 
+#ifdef APPLE_MACOS
 using NativeViewController = NSViewController<MetalAppViewDelegate>;
-
 #else
+using NativeViewController = UIViewController<MetalAppViewDelegate>;
+#endif
 
+#else // __OBJC__
+
+using NativeApplication    = void;
+using NativeWindow         = void;
+using NativeScreen         = void;
+using NativeView           = void;
+using NativeRect           = void;
 using NativeViewController = void;
 
 #endif

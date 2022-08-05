@@ -25,7 +25,7 @@ MacOS platform utility functions.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 
 #include <string_view>
 
