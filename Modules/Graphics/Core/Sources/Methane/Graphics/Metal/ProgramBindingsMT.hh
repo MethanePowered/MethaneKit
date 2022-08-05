@@ -41,23 +41,28 @@ public:
             uint32_t argument_index;
         };
 
+        using NativeBuffers       = std::vector<__unsafe_unretained id<MTLBuffer>>;
+        using NativeTextures      = std::vector<__unsafe_unretained id<MTLTexture>>;
+        using NativeSamplerStates = std::vector<__unsafe_unretained id<MTLSamplerState>>;
+        using NativeOffsets       = std::vector<NSUInteger>;
+
         ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
 
         // ArgumentBinding interface
         bool SetResourceViews(const Resource::Views& resource_views) override;
 
-        const SettingsMT&                       GetSettingsMT() const noexcept { return m_settings_mt; }
-        const std::vector<id<MTLSamplerState>>& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
-        const std::vector<id<MTLTexture>>&      GetNativeTextures() const      { return m_mtl_textures; }
-        const std::vector<id<MTLBuffer>>&       GetNativeBuffers() const       { return m_mtl_buffers; }
-        const std::vector<NSUInteger>&          GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
+        const SettingsMT&          GetSettingsMT() const noexcept { return m_settings_mt; }
+        const NativeSamplerStates& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
+        const NativeTextures&      GetNativeTextures() const      { return m_mtl_textures; }
+        const NativeBuffers&       GetNativeBuffers() const       { return m_mtl_buffers; }
+        const NativeOffsets&       GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
 
     private:
-        const SettingsMT                 m_settings_mt;
-        std::vector<id<MTLSamplerState>> m_mtl_sampler_states;
-        std::vector<id<MTLTexture>>      m_mtl_textures;
-        std::vector<id<MTLBuffer>>       m_mtl_buffers;
-        std::vector<NSUInteger>          m_mtl_buffer_offsets;
+        const SettingsMT    m_settings_mt;
+        NativeSamplerStates m_mtl_sampler_states;
+        NativeTextures      m_mtl_textures;
+        NativeBuffers       m_mtl_buffers;
+        NativeOffsets       m_mtl_buffer_offsets;
     };
     
     ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);

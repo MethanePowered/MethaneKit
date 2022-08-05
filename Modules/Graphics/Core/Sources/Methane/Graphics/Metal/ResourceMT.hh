@@ -68,19 +68,19 @@ protected:
         return static_cast<const IContextMT&>(ResourceBase::GetContextBase());
     }
 
-    const id<MTLBuffer>& GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
         const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ResourceBase::GetSubresourceCount());
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
-        id<MTLBuffer>& mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
+        id<MTLBuffer> mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
         if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.GetDataSize())
         {
             const id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
-            mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
-                                                                    length:sub_resource.GetDataSize()
-                                                                   options:MTLResourceStorageModeShared];
+            m_upload_subresource_buffers[sub_resource_raw_index] = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
+                                                                                           length:sub_resource.GetDataSize()
+                                                                                          options:MTLResourceStorageModeShared];
         }
         else
         {

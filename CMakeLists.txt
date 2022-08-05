@@ -3,17 +3,17 @@ cmake_minimum_required(VERSION 3.18.0)
 set(METHANE_LANGUAGES CXX C)
 
 if(APPLE)
-
     list(APPEND METHANE_LANGUAGES OBJCXX)
 
-    # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
-    # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-    EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
-    string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
-    if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0 AND NOT CMAKE_OSX_ARCHITECTURES)
-        message(AUTHOR_WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+    if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
+        # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
+        string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
+        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0 AND NOT CMAKE_OSX_ARCHITECTURES)
+            message(AUTHOR_WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+        endif()
     endif()
-
 endif()
 
 if(NOT DEFINED PROJECT_NAME)
@@ -103,14 +103,13 @@ if(WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     endif()
 
-elseif(APPLE) # MacOS
+elseif(APPLE) # MacOS or iOS
 
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
     set(CMAKE_INSTALL_RPATH "@executable_path")
 
 else(UNIX) # Linux
-
-    set(LINUX 1)
 
     find_package(X11 REQUIRED)
     if (NOT X11_xcb_FOUND OR

@@ -79,8 +79,6 @@ RenderContextMT::~RenderContextMT()
 {
     META_FUNCTION_TASK();
 
-    [m_app_view release];
-    
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_release(m_dispatch_semaphore);
 #endif
@@ -198,7 +196,11 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 float RenderContextMT::GetContentScalingFactor() const
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
+#else
+    return static_cast<float>(m_app_view.appWindow.screen.nativeScale);
+#endif
 }
 
 uint32_t RenderContextMT::GetFontResolutionDpi() const

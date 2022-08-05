@@ -281,23 +281,10 @@ RenderStateMT::RenderStateMT(const RenderContextBase& context, const Settings& s
     Reset(settings);
 }
 
-RenderStateMT::~RenderStateMT()
-{
-    META_FUNCTION_TASK();
-
-    [m_mtl_pipeline_state_desc release];
-    [m_mtl_depth_stencil_state_desc release];
-    [m_mtl_pipeline_state release];
-    [m_mtl_depth_state release];
-}
-
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
     RenderStateBase::Reset(settings);
-
-    [m_mtl_pipeline_state_desc release];
-    [m_mtl_depth_stencil_state_desc release];
 
     ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.program_ptr);
 
@@ -435,7 +422,7 @@ void RenderStateMT::InitializeNativeDepthStencilState()
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth state");
 }
 
-id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
+id<MTLRenderPipelineState> RenderStateMT::GetNativePipelineState()
 {
     META_FUNCTION_TASK();
     if (!m_mtl_pipeline_state)
@@ -445,7 +432,7 @@ id<MTLRenderPipelineState>& RenderStateMT::GetNativePipelineState()
     return m_mtl_pipeline_state;
 }
 
-id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
+id<MTLDepthStencilState> RenderStateMT::GetNativeDepthStencilState()
 {
     META_FUNCTION_TASK();
     if (!m_mtl_depth_state)
@@ -458,11 +445,7 @@ id<MTLDepthStencilState>& RenderStateMT::GetNativeDepthStencilState()
 void RenderStateMT::ResetNativeState()
 {
     META_FUNCTION_TASK();
-
-    [m_mtl_pipeline_state release];
     m_mtl_pipeline_state = nil;
-    
-    [m_mtl_depth_state release];
     m_mtl_depth_state = nil;
 }
 

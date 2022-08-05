@@ -38,21 +38,21 @@ static NSString* GetLibraryFullPath(const std::string& library_name)
 }
 
 ProgramLibraryMT::ProgramLibraryMT(const DeviceMT& metal_device, const std::string& library_name)
-    : m_mtl_library(library_name.empty()
-                    ? [metal_device.GetNativeDevice() newDefaultLibrary]
-                    : [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&m_ns_error])
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
-                                  "Failed to create {} Metal library: {}",
-                                  library_name.empty() ? std::string("default") : library_name,
-                                  MacOS::ConvertFromNsType<NSString, std::string>([m_ns_error localizedDescription]));
-}
-
-ProgramLibraryMT::~ProgramLibraryMT()
-{
-    META_FUNCTION_TASK();
-    [m_mtl_library release];
+    if (library_name.empty())
+    {
+        m_mtl_library = [metal_device.GetNativeDevice() newDefaultLibrary];
+    }
+    else
+    {
+        NSError* ns_error = nil;
+        m_mtl_library = [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&ns_error];
+        META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
+                                      "Failed to create {} Metal library: {}",
+                                      library_name.empty() ? std::string("default") : library_name,
+                                      MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
+    }
 }
 
 } // namespace Methane::Graphics

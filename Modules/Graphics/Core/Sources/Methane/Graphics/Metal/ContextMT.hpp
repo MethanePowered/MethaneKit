@@ -52,11 +52,6 @@ public:
         META_FUNCTION_TASK();
     }
 
-    ~ContextMT() override
-    {
-        [m_ns_name release];
-    }
-
     // IContextMT overrides
 
     const DeviceMT& GetDeviceMT() const noexcept final

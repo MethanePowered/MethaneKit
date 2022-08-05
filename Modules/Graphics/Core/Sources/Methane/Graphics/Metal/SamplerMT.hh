@@ -38,7 +38,6 @@ class SamplerMT final : public ResourceMT<SamplerBase>
 {
 public:
     SamplerMT(const ContextBase& context, const Settings& settings);
-    ~SamplerMT() override;
 
     // Object interface
     bool SetName(const std::string& name) override;

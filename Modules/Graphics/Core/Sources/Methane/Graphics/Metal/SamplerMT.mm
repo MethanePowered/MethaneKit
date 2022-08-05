@@ -120,14 +120,6 @@ SamplerMT::SamplerMT(const ContextBase& context, const Settings& settings)
     ResetSamplerState();
 }
 
-SamplerMT::~SamplerMT()
-{
-    META_FUNCTION_TASK();
-
-    [m_mtl_sampler_state release];
-    [m_mtl_sampler_desc release];
-}
-
 bool SamplerMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
@@ -144,11 +136,6 @@ bool SamplerMT::SetName(const std::string& name)
 void SamplerMT::ResetSamplerState()
 {
     META_FUNCTION_TASK();
-    if (m_mtl_sampler_state)
-    {
-        [m_mtl_sampler_state release];
-    }
-
     META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }

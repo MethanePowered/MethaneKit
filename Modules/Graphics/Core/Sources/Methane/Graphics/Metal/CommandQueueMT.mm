@@ -54,12 +54,6 @@ CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandList::Type com
     );
 }
 
-CommandQueueMT::~CommandQueueMT()
-{
-    META_FUNCTION_TASK();
-    [m_mtl_command_queue release];
-}
-
 bool CommandQueueMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();

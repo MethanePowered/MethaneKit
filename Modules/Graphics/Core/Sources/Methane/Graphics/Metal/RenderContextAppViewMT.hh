@@ -54,7 +54,7 @@ inline AppViewMT* CreateRenderContextAppView(const Platform::AppEnvironment& env
 inline AppViewMT* CreateTemporaryAppView(const Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    AppViewMT* app_view = [[AppViewMT alloc] initWithFrame: env.ns_app_delegate.window.contentLayoutRect
+    AppViewMT* app_view = [[AppViewMT alloc] initWithFrame: MakeNativeRect(0.f, 0.f, 1.f, 1.f)
                                                  appWindow: env.ns_app_delegate.window
                                                pixelFormat: MTLPixelFormatBGRA8Unorm
                                              drawableCount: 3

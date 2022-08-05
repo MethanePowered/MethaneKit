@@ -36,12 +36,10 @@ class ProgramLibraryMT final
 {
 public:
     ProgramLibraryMT(const DeviceMT& metal_device, const std::string& library_name = "");
-    ~ProgramLibraryMT();
 
-    id<MTLLibrary>& Get() noexcept { return m_mtl_library; }
+    id<MTLLibrary> GetNativeLibrary() noexcept { return m_mtl_library; }
 
 private:
-    NSError*       m_ns_error = nil;
     id<MTLLibrary> m_mtl_library;
 };
 

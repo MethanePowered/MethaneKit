@@ -36,8 +36,7 @@ public:
     static Device::Features GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
     DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
-    ~DeviceMT() override;
-    
+
     const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
 
 private:
@@ -54,12 +53,14 @@ public:
     const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
     
 private:
-    void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
     void AddDevice(const id<MTLDevice>& mtl_device);
-    
     const Ptr<Device>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
-    
+
+#ifdef APPLE_MACOS
+    void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
+
     id<NSObject> m_device_observer = nil;
+#endif
 };
 
 } // namespace Methane::Graphics

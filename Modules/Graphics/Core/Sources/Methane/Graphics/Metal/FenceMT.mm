@@ -39,9 +39,9 @@ Ptr<Fence> Fence::Create(CommandQueue& command_queue)
     return std::make_shared<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
 }
     
-dispatch_queue_t& FenceMT::GetDispatchQueue()
+const dispatch_queue_t& FenceMT::GetDispatchQueue()
 {
-    static dispatch_queue_t s_fences_dispatch_queue = dispatch_queue_create("com.example.methane.fences", NULL);
+    static const dispatch_queue_t s_fences_dispatch_queue = dispatch_queue_create("com.example.methane.fences", NULL);
     return s_fences_dispatch_queue;
 }
 
@@ -51,12 +51,6 @@ FenceMT::FenceMT(CommandQueueBase& command_queue)
     , m_mtl_event_listener([[MTLSharedEventListener alloc] initWithDispatchQueue:GetDispatchQueue()])
 {
     META_FUNCTION_TASK();
-}
-
-FenceMT::~FenceMT()
-{
-    META_FUNCTION_TASK();
-    [m_mtl_event_listener release];
 }
 
 void FenceMT::Signal()

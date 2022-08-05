@@ -127,7 +127,7 @@ bool TextureMT::SetName(const std::string& name)
     if (!ResourceMT::SetName(name))
         return false;
 
-    m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
+    m_mtl_texture.label = [[NSString alloc] initWithUTF8String:name.data()];
     return true;
 }
 

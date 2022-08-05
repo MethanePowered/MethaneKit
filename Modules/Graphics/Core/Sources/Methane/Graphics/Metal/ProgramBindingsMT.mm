@@ -35,14 +35,19 @@ Metal implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-template<typename TMetalResource>
-static void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const TMetalResource& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset);
+using NativeBuffers       = ProgramBindingsMT::ArgumentBindingMT::NativeBuffers;
+using NativeTextures      = ProgramBindingsMT::ArgumentBindingMT::NativeTextures;
+using NativeSamplerStates = ProgramBindingsMT::ArgumentBindingMT::NativeSamplerStates;
+using NativeOffsets       = ProgramBindingsMT::ArgumentBindingMT::NativeOffsets;
 
 template<typename TMetalResource>
-static void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<TMetalResource>& mtl_buffer, uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets);
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, TMetalResource mtl_buffer, uint32_t arg_index, NSUInteger buffer_offset);
+
+template<typename TMetalResource>
+void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<TMetalResource>& mtl_buffer, uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets);
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLBuffer>& mtl_buffer, uint32_t arg_index, Data::Size buffer_offset)
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, __unsafe_unretained id<MTLBuffer> mtl_buffer, uint32_t arg_index, NSUInteger buffer_offset)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
@@ -54,7 +59,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
 }
 
 template<>
-void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLBuffer>>& mtl_buffers,
+void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const NativeBuffers& mtl_buffers,
                       uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets)
 {
     META_FUNCTION_TASK();
@@ -68,7 +73,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLTexture>& mtl_texture, uint32_t arg_index, Data::Size)
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, __unsafe_unretained id<MTLTexture> mtl_texture, uint32_t arg_index, NSUInteger)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
@@ -80,7 +85,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
 }
 
 template<>
-void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLTexture>>& mtl_textures,
+void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const NativeTextures& mtl_textures,
                        uint32_t arg_index, const std::vector<NSUInteger>&)
 {
     META_FUNCTION_TASK();
@@ -94,7 +99,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
 }
 
 template<>
-void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const id<MTLSamplerState>& mtl_sampler, uint32_t arg_index, Data::Size)
+void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, __unsafe_unretained id<MTLSamplerState> mtl_sampler, uint32_t arg_index, NSUInteger)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
@@ -106,7 +111,7 @@ void SetMetalResource(Shader::Type shader_type, const id<MTLRenderCommandEncoder
 }
 
 template<>
-void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const std::vector<id<MTLSamplerState>>& mtl_samplers,
+void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const NativeSamplerStates& mtl_samplers,
                       uint32_t arg_index, const std::vector<NSUInteger>&)
 {
     META_FUNCTION_TASK();
@@ -120,7 +125,7 @@ void SetMetalResources(Shader::Type shader_type, const id<MTLRenderCommandEncode
 }
 
 template<typename TMetalResource>
-static void SetMetalResourcesForAll(Shader::Type shader_type, const Program& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+void SetMetalResourcesForAll(Shader::Type shader_type, const Program& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                                    const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
                                    const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {

@@ -64,6 +64,23 @@ if(WIN32)
         _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING # silence warning C4996 about std::wstring_convert deprecation
     )
 
+elseif(APPLE)
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(APPLE_IOS 1)
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS APPLE_UI_KIT)
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
+        set(APPLE_TVOS 1)
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS APPLE_UI_KIT)
+    else() # Darwin
+        set(APPLE_MACOS 1)
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
+    endif()
+
+else(UNIX)
+
+    set(LINUX 1)
+
 endif()
 
 if (MSVC)
@@ -119,6 +136,13 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
+        )
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # Enable automatic reference counting in Objective-C
+            "-fobjc-arc"
         )
 
     endif()

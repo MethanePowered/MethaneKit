@@ -50,12 +50,6 @@ public:
         META_FUNCTION_TASK();
     }
 
-    ~CommandListMT() override
-    {
-        [m_mtl_cmd_encoder release];
-        [m_ns_name release];
-    }
-
     // CommandList interface
     void PushDebugGroup(CommandList::DebugGroup& debug_group) override
     {
@@ -91,7 +85,6 @@ public:
         if (m_mtl_cmd_encoder)
         {
             [m_mtl_cmd_encoder endEncoding];
-            [m_mtl_cmd_encoder release];
             m_mtl_cmd_encoder = nil;
         }
 
@@ -141,7 +134,6 @@ public:
         [m_mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer>) {
             std::scoped_lock lock_guard(m_cmd_buffer_mutex);
             CommandListBaseT::Complete();
-            [m_mtl_cmd_buffer release];
             m_mtl_cmd_buffer  = nil;
         }];
 
@@ -198,8 +190,6 @@ protected:
         m_mtl_cmd_buffer.label = m_ns_name;
 
         META_CHECK_ARG_NOT_NULL(m_mtl_cmd_buffer);
-        [m_mtl_cmd_buffer retain];
-        
         return m_mtl_cmd_buffer;
     }
 
@@ -210,7 +200,6 @@ protected:
 
         m_mtl_cmd_encoder = mtl_cmd_encoder;
         m_mtl_cmd_encoder.label = m_ns_name;
-        [m_mtl_cmd_encoder retain];
     }
 
     bool IsCommandBufferInitialized() const noexcept   { return m_mtl_cmd_buffer; }
