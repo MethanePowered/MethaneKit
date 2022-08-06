@@ -117,9 +117,7 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Managed);
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
-    
-    const MTLStorageMode storage_mode = m_mtl_buffer.storageMode;
-    META_CHECK_ARG_EQUAL(storage_mode, NativeStorageModeManaged);
+    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, NativeStorageModeManaged);
 
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
     META_CHECK_ARG_NOT_NULL(p_resource_data);
@@ -132,10 +130,9 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 
         std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data + data_offset);
 
-        if (storage_mode == MTLStorageModeManaged)
-        {
-            [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.GetDataSize())];
-        }
+#ifdef APPLE_MACOS // storage_mode == MTLStorageModeManaged
+        [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.GetDataSize())];
+#endif
         data_offset += sub_resource.GetDataSize();
     }
 }
