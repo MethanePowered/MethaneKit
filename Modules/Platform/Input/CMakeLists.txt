@@ -5,12 +5,12 @@ include(MethaneModules)
 get_module_dirs("Methane/Platform")
 
 if (APPLE_MACOS)
-    set(PLATFORM_LIBRARIES
+    list(APPEND PLATFORM_LIBRARIES
         "-framework AppKit"
     )
 endif()
 
-set(HEADERS
+list(APPEND HEADERS
     ${INCLUDE_PLATFORM_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
@@ -22,13 +22,17 @@ set(HEADERS
     ${INCLUDE_DIR}/Input/State.h
 )
 
-set(SOURCES
+list(APPEND SOURCES
     $<$<BOOL:${APPLE_MACOS}>:${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}>
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp
     ${SOURCES_DIR}/Input/State.cpp
 )
+
+if (NOT (APPLE_IOS OR APPLE_TVOS))
+    list(APPEND SOURCES ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT})
+endif()
 
 add_library(${TARGET} STATIC
     ${HEADERS}
