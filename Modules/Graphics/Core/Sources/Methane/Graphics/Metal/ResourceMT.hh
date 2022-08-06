@@ -78,9 +78,10 @@ protected:
         if (!mtl_upload_subresource_buffer || mtl_upload_subresource_buffer.length != sub_resource.GetDataSize())
         {
             const id<MTLDevice>& mtl_device = GetContextMT().GetDeviceMT().GetNativeDevice();
-            m_upload_subresource_buffers[sub_resource_raw_index] = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
-                                                                                           length:sub_resource.GetDataSize()
-                                                                                          options:MTLResourceStorageModeShared];
+            mtl_upload_subresource_buffer = [mtl_device newBufferWithBytes:sub_resource.GetDataPtr()
+                                                                    length:sub_resource.GetDataSize()
+                                                                   options:MTLResourceStorageModeShared];
+            m_upload_subresource_buffers[sub_resource_raw_index] = mtl_upload_subresource_buffer;
         }
         else
         {
