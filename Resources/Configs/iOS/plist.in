@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>${METHANE_APP_NAME}</string>
+	<key>CFBundleExecutable</key>
+	<string>${METHANE_APP_EXECUTABLE}</string>
+	<key>CFBundleIconFile</key>
+	<string>${METHANE_APP_BUNDLE_ICON}</string>
+	<key>CFBundleIdentifier</key>
+	<string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
+	<key>CFBundleVersion</key>
+	<string>${METHANE_APP_BUNDLE_VERSION}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${METHANE_APP_SHORT_VERSION}</string>
+	<key>NSHumanReadableCopyright</key>
+    <string>${METHANE_APP_COPYRIGHT}</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>${IOS_DEPLOYMENT_TARGET}</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en-US</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>NSMainStoryboardFile</key>
+	<string>Main</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

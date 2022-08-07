@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE
-    plist
-    PUBLIC
-    "-//Apple//DTD PLIST 1.0//EN"
-    "http://www.apple.com/DTDs/PropertyList-1.0.dtd"
->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
@@ -18,13 +13,17 @@
     <key>CFBundleGetInfoString</key>
     <string>${METHANE_APP_DESCRIPTION}</string>
     <key>CFBundleIdentifier</key>
-    <string>${METHANE_APP_BUNDLE_GUI_IDENTIFIER}</string>
+    <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
     <key>CFBundleVersion</key>
     <string>${METHANE_APP_BUNDLE_VERSION}</string>
     <key>CFBundleShortVersionString</key>
     <string>${METHANE_APP_SHORT_VERSION}</string>
     <key>CFBundleLongVersionString</key>
     <string>${METHANE_APP_LONG_VERSION}</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>${METHANE_APP_COPYRIGHT}</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>${MACOSX_DEPLOYMENT_TARGET}</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -35,10 +34,6 @@
     <string>????</string>
     <key>CSResourcesFileMapped</key>
     <true/>
-    <key>NSHumanReadableCopyright</key>
-    <string>${METHANE_APP_COPYRIGHT}</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>${MACOSX_DEPLOYMENT_TARGET}</string>
     <key>NSMainNibFile</key>
     <string>MainMenu</string>
     <key>NSPrincipalClass</key>

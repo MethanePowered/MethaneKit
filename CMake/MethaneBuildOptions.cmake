@@ -68,12 +68,15 @@ elseif(APPLE)
 
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(APPLE_IOS 1)
+        set(APPLE_CODESIGN_IDENTITY "Apple Development")
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS APPLE_UI_KIT)
     elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         set(APPLE_TVOS 1)
+        set(APPLE_CODESIGN_IDENTITY "Apple Development")
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS APPLE_UI_KIT)
     else() # Darwin
         set(APPLE_MACOS 1)
+        set(APPLE_CODESIGN_IDENTITY "iOS Developer")
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
     endif()
 

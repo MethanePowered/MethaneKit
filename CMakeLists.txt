@@ -42,6 +42,12 @@ if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
 
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin") # Detect MacOS
+    set(DEFAULT_CODE_SIGNING_ENABLED OFF)
+else()
+    set(DEFAULT_CODE_SIGNING_ENABLED ON)
+endif()
+
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${IS_ROOT_PROJECT})
@@ -53,6 +59,7 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_CODE_SIGNING_ENABLED})
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -197,6 +204,13 @@ endif()
 
 if(METHANE_LOGGING_ENABLED)
     message(STATUS "Methane debug logging is enabled")
+endif()
+
+if(METHANE_APPLE_CODE_SIGNING_ENABLED)
+    if (NOT DEFINED DEVELOPMENT_TEAM)
+        set(DEVELOPMENT_TEAM "Evgeny Gorodetskiy (Personal Team)")
+    endif()
+    message(STATUS "Methane code signing on Apple platforms is enabled for DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}")
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")

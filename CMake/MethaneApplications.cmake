@@ -60,11 +60,11 @@ function(add_methane_application)
         set(METHANE_APP_SHORT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
     endif()
 
-    if (DEFINED APP_BUILD_NUMBER)
-        get_full_file_version(${METHANE_APP_SHORT_VERSION} ${APP_BUILD_NUMBER} METHANE_APP_LONG_VERSION)
-    else()
-        get_full_file_version(${METHANE_APP_SHORT_VERSION} ${PROJECT_VERSION_PATCH} METHANE_APP_LONG_VERSION)
+    if (NOT DEFINED APP_BUILD_NUMBER)
+        set(APP_BUILD_NUMBER ${PROJECT_VERSION_TWEAK})
     endif()
+
+    get_full_file_version(${METHANE_APP_SHORT_VERSION} ${APP_BUILD_NUMBER} METHANE_APP_LONG_VERSION)
 
     if (WIN32)
 
@@ -96,17 +96,26 @@ function(add_methane_application)
 
     elseif(APPLE)
 
+        if(APPLE_MACOS)
+            set(APPLE_PLATFORM_NAME "MacOS")
+            set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        else()
+            set(APPLE_PLATFORM_NAME "iOS")
+            set(IOS_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}") # Deployment target from iOS-Toolchain.cmake
+        endif()
+
         set(ICON_FILE Methane.icns)
         set(ICON_FILE_PATH ${METHANE_KIT_SOURCE_DIR}/Resources/Icons/MacOS/${ICON_FILE})
         set(PLIST_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${APP_TARGET}/Info.plist)
+        string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWERCASE)
+        string(REPLACE "_" "-" PROJECT_NAME_URI ${PROJECT_NAME_LOWERCASE})
 
         # Configure bundle plist
         set(METHANE_APP_EXECUTABLE ${APP_TARGET})
-        set(METHANE_APP_BUNDLE_VERSION "${BUILD_NUMBER}")
+        set(METHANE_APP_BUNDLE_VERSION ${APP_BUILD_NUMBER})
         set(METHANE_APP_BUNDLE_ICON ${ICON_FILE})
-        set(METHANE_APP_BUNDLE_GUI_IDENTIFIER "")
-        set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
-        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/MacOS/plist.in ${PLIST_FILE_PATH})
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.${PROJECT_NAME_URI}.${APP_TARGET}")
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/${APPLE_PLATFORM_NAME}/plist.in ${PLIST_FILE_PATH})
 
         add_executable(${APP_TARGET} MACOSX_BUNDLE
             ${APP_SOURCES}
@@ -121,9 +130,12 @@ function(add_methane_application)
 
         set_target_properties(${APP_TARGET}
             PROPERTIES
-            MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
-            XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
-            XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
+                MACOSX_BUNDLE_INFO_PLIST ${PLIST_FILE_PATH}
+                XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_BUNDLE_GUI_IDENTIFIER}"
+                XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${APPLE_CODESIGN_IDENTITY}"
+                XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${DEVELOPMENT_TEAM}"
+                XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "${METHANE_APPLE_CODE_SIGNING_ENABLED}"
+                XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
         )
 
         set(BINARY_DIR ${BINARY_DIR}/${APP_TARGET}.app/Contents/Resources)

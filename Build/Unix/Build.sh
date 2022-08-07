@@ -1,6 +1,7 @@
 #!/bin/bash
 # Run Build.sh with optional arguments:
 #   --apple_platform PLATFOTM - Apple platform name (OS64 - iOS, SIMULATORARM64 - iOS Sim, MAC_ARM64 - Apple Silicon Mac, MAC - x86_64 Mac, ...)
+#   --apple_dev_team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
 #   --debug                   - Debug build instead of Release build by default
 #   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
 #   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
@@ -39,8 +40,11 @@ do
             shift
             ;;
         --apple_platform)
-            IS_APPLE_PLATFORM_BUILD=true
             APPLE_PLATFORM="$2"
+            shift
+            ;;
+        --apple_dev_team)
+            APPLE_DEVELOPMENT_TEAM="$2"
             shift
             ;;
         *)
@@ -57,12 +61,11 @@ case "${OS_NAME}" in
     Linux*)
         CMAKE_GENERATOR=Unix\ Makefiles
         PLATFORM_NAME=Linux
-        IS_APPLE_PLATFORM_BUILD=false
         ;;
     Darwin*)
         CMAKE_GENERATOR=Xcode
         PLATFORM_NAME=MacOS
-        if [ "$IS_APPLE_PLATFORM_BUILD" == true ]; then
+        if [ "$APPLE_PLATFORM" != "" ]; then
             CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
                          -DPLATFORM=$APPLE_PLATFORM \
                          -DDEPLOYMENT_TARGET=14.0 \
@@ -71,8 +74,10 @@ case "${OS_NAME}" in
                          -DENABLE_VISIBILITY:BOOL=ON \
                          -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
             TESTS_BUILD_ENABLED="OFF" # Disable tests cause unbundled console executables can not be built with iOS toolchain
+            if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
+                CMAKE_FLAGS="$CMAKE_FLAGS -DDEVELOPMENT_TEAM='${APPLE_DEVELOPMENT_TEAM}'"
+            fi
         else
-            IS_APPLE_PLATFORM_BUILD=true
             APPLE_PLATFORM=MacOS_$ARCH_NAME
         fi
         ;;
@@ -101,7 +106,7 @@ else
 fi
 
 CONFIG_DIR=$OUTPUT_DIR/$CMAKE_GENERATOR
-if [ "$IS_APPLE_PLATFORM_BUILD" == true ]; then
+if [ "$APPLE_PLATFORM" != "" ]; then
     CONFIG_DIR=$CONFIG_DIR/$APPLE_PLATFORM
 fi
 CONFIG_DIR=$CONFIG_DIR/$GFX_API-$BUILD_TYPE
