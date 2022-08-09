@@ -51,13 +51,13 @@ constexpr float    g_model_scale = 6.F;
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         []() {
-            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Cube Map Array", Samples::g_default_app_options_color_with_depth_and_anim);
+            Graphics::AppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", g_default_app_options_color_with_depth_and_anim);
             settings.render_context
                 .SetClearDepthStencil(gfx::DepthStencil(0.F, {})) // Clear depth with 0.F to support reversed depth rendering
                 .SetClearColor({}); // Disable color clearing, use sky-box instead
             return settings;
         }(),
-        { HeadsUpDisplayMode::WindowTitle },
+        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
         "Methane tutorial of cube-map array texturing")
     , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi))) // NOSONAR
 {

@@ -86,11 +86,10 @@ uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noex
     return parallel_rendering_enabled ? render_thread_count : 1U;
 }
 
-
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Parallel Rendering", Samples::g_default_app_options_color_with_depth_and_anim),
-        { HeadsUpDisplayMode::WindowTitle },
+        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", g_default_app_options_color_with_depth_and_anim),
+        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
         "Methane tutorial of parallel rendering")
 {
     META_FUNCTION_TASK();

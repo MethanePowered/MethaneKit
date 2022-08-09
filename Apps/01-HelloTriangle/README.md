@@ -23,7 +23,7 @@ which implements base platform and graphics application infrastructure with supp
 Application frame class `HelloTriangleFrame` is derived from the base class `Graphics::AppFrame` and extends it 
 with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
 for rendering to frame buffer `index`. Application is initialized with default settings using `Graphics::AppSettings` structure,
-which is initialized with helper function `Samples::GetGraphicsAppSettings(...)`. 
+which is initialized with helper function `Tutorials::GetGraphicsTutorialAppSettings(...)`. 
 Destroying of application along with its resources is delayed until all rendering is completed on GPU.
 
 ```cpp
@@ -48,7 +48,7 @@ public:
     HelloTriangleApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
+                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
             }())

@@ -93,7 +93,7 @@ public:
     HelloCubeApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings(g_app_name, Samples::g_default_app_options_color_only_and_anim);
+                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::g_default_app_options_color_only_and_anim);
 #ifdef UNIFORMS_BUFFER_ENABLED
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::ShaderResources);
 #else

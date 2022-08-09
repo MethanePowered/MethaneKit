@@ -72,7 +72,7 @@ private:
 ```
 
 `HelloCubeApp` constructor calls base constructor `GraphicsApp` with `Graphics::AppSettings` initialized
-using helper function `GetGraphicsAppSettings` which is called with predefined flags to enable color buffer 
+using helper function `Tutorials::GetGraphicsTutorialAppSettings` which is called with predefined flags to enable color buffer 
 without depth and enable animations. `m_proj_vertices` is initialized with vertices data taken from cube mesh generator.
 
 Initial camera orientation is set with `Camera::ResetOrientation` via `Camera::Orientation` struct with
@@ -84,7 +84,7 @@ lamda function taking `delta_seconds` argument used to calculate the rotation de
 HelloCubeApp()
     : GraphicsApp(
         []() {
-            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Cube", Samples::g_default_app_options_color_only_and_anim);
+            Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Cube", Tutorials::g_default_app_options_color_only_and_anim);
             settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
             return settings;
         }())

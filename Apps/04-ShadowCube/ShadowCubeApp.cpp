@@ -49,7 +49,8 @@ static const gfx::FrameSize g_shadow_map_size(1024, 1024);
 
 ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Shadow Cube", Samples::g_default_app_options_color_with_depth_and_anim), {},
+        GetGraphicsTutorialAppSettings("Methane Shadow Cube", g_default_app_options_color_with_depth_and_anim),
+        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
         "Methane tutorial of shadow pass rendering")
 {
     m_view_camera.ResetOrientation({ { 15.0F, 22.5F, -15.0F }, { 0.0F, 7.5F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
