@@ -52,10 +52,18 @@ function(get_apple_sdk OUT_SDK_NAME)
         return()
     endif()
 
+    # SDK_NAME variable is defined by iOS-Toolchain.cmake
+    if(DEFINED SDK_NAME)
+        set(${OUT_SDK_NAME} "${SDK_NAME}" PARENT_SCOPE)
+        return()
+    endif()
+
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(${OUT_SDK_NAME} "iphoneos" PARENT_SCOPE)
-    elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         set(${OUT_SDK_NAME} "appletvos" PARENT_SCOPE)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(${OUT_SDK_NAME} "iphonesimulator" PARENT_SCOPE)
     else() # Darwin
         set(${OUT_SDK_NAME} "macosx" PARENT_SCOPE)
     endif()

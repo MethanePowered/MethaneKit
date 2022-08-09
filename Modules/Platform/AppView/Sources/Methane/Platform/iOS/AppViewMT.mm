@@ -250,7 +250,7 @@ iOS application view implementation for Metal rendering.
     self.redrawing = YES;
 }
 
-- (void) redraw
+- (void) render
 {
     META_FUNCTION_TASK();
     if (!self.redrawing)

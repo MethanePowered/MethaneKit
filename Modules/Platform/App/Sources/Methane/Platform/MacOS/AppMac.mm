@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -26,10 +26,15 @@ MacOS application implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-using namespace Methane::Platform;
+
 using namespace Methane::MacOS;
 
-NativeAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
+namespace Methane::Platform
+{
+
+AppMac* AppMac::s_instance_ptr = nullptr;
+
+static NativeAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 {
     META_FUNCTION_TASK();
     switch(msg_type)
@@ -49,22 +54,31 @@ NativeAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_typ
     }
 }
 
-AppMac::AppMac(const AppBase::Settings& settings)
-    : AppBase(settings)
-    , m_ns_app([NativeApplication sharedApplication])
+AppMac* AppMac::GetInstance()
 {
     META_FUNCTION_TASK();
+    return s_instance_ptr;
+}
+
+AppMac::AppMac(const AppBase::Settings& settings)
+    : AppBase(settings)
+#ifdef APPLE_MACOS
+    , m_ns_app([NativeApplication sharedApplication])
+#endif
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
+    s_instance_ptr = this;
 }
 
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
 {
     META_FUNCTION_TASK();
-
+#ifdef APPLE_MACOS
     AppView app_view = GetView();
     META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
     META_CHECK_ARG_NOT_NULL(m_ns_window);
 
-#ifdef APPLE_MACOS
     [m_ns_window.contentView addSubview: app_view.p_native_view];
 #endif
 }
@@ -76,15 +90,16 @@ int AppMac::Run(const RunArgs& args)
     if (base_return_code)
         return base_return_code;
 
+#ifdef APPLE_MACOS
     m_ns_app_delegate = [[AppDelegate alloc] initWithApp:this andSettings: &GetPlatformAppSettings()];
     [m_ns_app setDelegate: m_ns_app_delegate];
     [m_ns_app_delegate run];
-
-#ifdef APPLE_MACOS
     [m_ns_app run];
-#endif
-
     return 0;
+#else
+    return UIApplicationMain(args.cmd_arg_count, const_cast<char* *>(args.cmd_arg_values), nil,
+                             NSStringFromClass([AppDelegate class]));
+#endif
 }
 
 void AppMac::Alert(const Message& msg, bool deferred)
@@ -163,3 +178,5 @@ void AppMac::Close()
     [m_ns_window close];
 #endif
 }
+
+} // namespace Methane::Platform

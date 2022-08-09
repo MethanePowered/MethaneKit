@@ -34,8 +34,6 @@
     <string>????</string>
     <key>CSResourcesFileMapped</key>
     <true/>
-    <key>NSMainNibFile</key>
-    <string>MainMenu</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
 </dict>

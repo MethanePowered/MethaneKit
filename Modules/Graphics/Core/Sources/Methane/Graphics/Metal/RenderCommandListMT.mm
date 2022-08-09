@@ -165,8 +165,14 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, uint32_t index_count,
                                indexBuffer: mtl_index_buffer
                          indexBufferOffset: start_index * mtl_index_stride
                              instanceCount: instance_count
+#ifdef APPLE_MACOS
                                 baseVertex: start_vertex
                               baseInstance: start_instance];
+#else
+    ];
+    META_CHECK_ARG_EQUAL_DESCR(start_vertex, 0U, "DrawIndexed 'start_vertex' argument is not supported on iOS devices");
+    META_CHECK_ARG_EQUAL_DESCR(start_instance, 0U, "DrawIndexed 'start_instance' argument is not supported on iOS devices");
+#endif
 }
 
 void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -184,7 +190,12 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
                         vertexStart: start_vertex
                         vertexCount: vertex_count
                       instanceCount: instance_count
+#ifdef APPLE_MACOS
                        baseInstance: start_instance];
+#else
+    ];
+    META_CHECK_ARG_EQUAL_DESCR(start_instance, 0U, "DrawIndexed 'start_instance' argument is not supported on iOS devices");
+#endif
 }
 
 RenderPassMT& RenderCommandListMT::GetRenderPassMT()

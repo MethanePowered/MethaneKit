@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -44,31 +44,56 @@ using namespace Methane::Platform;
 
 @synthesize window = m_window;
 
+- (id) init
+{
+    META_FUNCTION_TASK();
+    self = [super init];
+    if (!self)
+        return nil;
+
+#ifndef APPLE_MACOS // iOS
+    AppMac* p_app = AppMac::GetInstance();
+    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
+    const auto& ns_frame_size = ns_main_screen.bounds.size;
+    const CGRect backing_frame = CGRectMake(0.f, 0.f,
+                                            ns_frame_size.width * ns_main_screen.nativeScale,
+                                            ns_frame_size.height * ns_main_screen.nativeScale);
+    
+    m_window = [[UIWindow alloc] initWithFrame:ns_main_screen.bounds];
+    
+    self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
+    
+    UINavigationController* navigation_controller = [[UINavigationController alloc] initWithRootViewController:self.viewController];
+    navigation_controller.navigationBarHidden = YES;
+    self.window.rootViewController = navigation_controller;
+
+    p_app->SetWindow(m_window);
+#endif
+
+    return self;
+}
+
+
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
     META_FUNCTION_TASK();
-
     self = [super init];
     if (!self || !p_settings)
         return nil;
 
-    const Methane::Data::FloatSize& frame_size = p_settings->size;
-
-    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
 #ifdef APPLE_MACOS
+    
+    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
+    const Methane::Data::FloatSize& frame_size = p_settings->size;
     const auto& ns_frame_size = ns_main_screen.frame.size;
-#else
-    const auto& ns_frame_size = ns_main_screen.bounds.size;
-#endif
-
+    
     CGFloat frame_width = frame_size.GetWidth() < 1.0
                           ? ns_frame_size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
                           : static_cast<CGFloat>(frame_size.GetWidth());
     CGFloat frame_height = frame_size.GetHeight() < 1.0
                            ? ns_frame_size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
                            : static_cast<CGFloat>(frame_size.GetHeight());
-
-#ifdef APPLE_MACOS
+    
     const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
@@ -89,16 +114,11 @@ using namespace Methane::Platform;
     [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
-#else
-    const CGRect backing_frame = CGRectMake(0, 0,
-                                            frame_width * ns_main_screen.nativeScale,
-                                            frame_height * ns_main_screen.nativeScale);
-#endif
-
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
-    p_app->SetWindow(m_window);
+#endif // APPLE_MACOS
     
+    p_app->SetWindow(m_window);
     return self;
 }
 
@@ -180,6 +200,16 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     #pragma unused(sender)
+    return YES;
+}
+
+#else // APPLE_MACOS
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)launch_otions
+{
+    META_FUNCTION_TASK();
+    #pragma unused(launch_otions)
+    [self.window makeKeyAndVisible];
     return YES;
 }
 

@@ -399,13 +399,12 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
 void AppBase::UpdateWindowTitle()
 {
     META_FUNCTION_TASK();
-    if (!m_settings.show_hud_in_window_title)
+    if (!m_settings.show_hud_in_window_title || !m_context_ptr)
     {
         SetWindowTitle(GetPlatformAppSettings().name);
         return;
     }
 
-    META_CHECK_ARG_NOT_NULL(m_context_ptr);
     const RenderContext::Settings& context_settings      = m_context_ptr->GetSettings();
     const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
     const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();

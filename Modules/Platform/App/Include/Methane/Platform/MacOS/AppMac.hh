@@ -43,6 +43,8 @@ namespace Methane::Platform
 class AppMac : public AppBase
 {
 public:
+    static AppMac* GetInstance();
+    
     explicit AppMac(const AppBase::Settings& settings);
 
     // AppBase interface
@@ -62,9 +64,13 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
+#ifdef APPLE_MACOS
     NativeApplication* m_ns_app          = nullptr;
+#endif
     AppDelegateType*   m_ns_app_delegate = nullptr;
     NativeWindow*      m_ns_window       = nullptr;
+    
+    static AppMac* s_instance_ptr;
 };
 
 } // namespace Methane::Platform
