@@ -66,29 +66,64 @@ if(WIN32)
 
 elseif(APPLE)
 
+    # Apple platform specific definitions
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(APPLE_IOS 1)
-        set(APPLE_CODESIGN_IDENTITY "Apple Development")
-        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS APPLE_UI_KIT)
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS)
     elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         set(APPLE_TVOS 1)
-        set(APPLE_CODESIGN_IDENTITY "Apple Development")
-        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS APPLE_UI_KIT)
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS)
     else() # Darwin
         set(APPLE_MACOS 1)
-        set(APPLE_CODESIGN_IDENTITY "iOS Developer")
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
+
+        if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
+        endif()
     endif()
+
+    # Common code-signing options
+    if (METHANE_APPLE_CODE_SIGNING_ENABLED)
+        set(APPLE_CODE_SIGNING_FLAG "YES")
+        set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic")
+        if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY)
+            set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development")
+        endif()
+    else()
+        set(APPLE_CODE_SIGNING_FLAG "NO")
+    endif()
+
+    # Enable Obj-C automatic reference counting and Apple app options
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
+    set(CMAKE_INSTALL_RPATH "@executable_path")
+    set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
 
 else(UNIX)
 
     set(LINUX 1)
+
+    find_package(X11 REQUIRED)
+    if (NOT X11_xcb_FOUND OR
+        NOT X11_X11_xcb_FOUND)
+        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
+        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
+    endif()
 
 endif()
 
 if (MSVC)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+
+        # Use /MT Static runtime linking
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+        # Remove default warning level 3 if exists to replaced with higher level 4 (see below)
+        string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+        # Enable multi-threaded build with MSVC
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
         target_compile_options(MethaneBuildOptions INTERFACE
             # Exception handling mode

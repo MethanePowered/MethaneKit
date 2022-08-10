@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run Build.sh with optional arguments:
-#   --apple_platform PLATFOTM - Apple platform name (OS64 - iOS, SIMULATORARM64 - iOS Sim, MAC_ARM64 - Apple Silicon Mac, MAC - x86_64 Mac, ...)
-#   --apple_dev_team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
+#   --apple-platform PLATFOTM - Apple platform name (OS64 - iOS, SIMULATORARM64 - iOS Sim, MAC_ARM64 - Apple Silicon Mac, MAC - x86_64 Mac, ...)
+#   --apple-dev-team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
 #   --debug                   - Debug build instead of Release build by default
 #   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
 #   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
@@ -39,11 +39,11 @@ do
             SONAR_TOKEN="$2"
             shift
             ;;
-        --apple_platform)
+        --apple-platform)
             APPLE_PLATFORM="$2"
             shift
             ;;
-        --apple_dev_team)
+        --apple-dev-team)
             APPLE_DEVELOPMENT_TEAM="$2"
             shift
             ;;
@@ -69,13 +69,14 @@ case "${OS_NAME}" in
             CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$SOURCE_DIR/Externals/iOS-Toolchain.cmake \
                          -DPLATFORM=$APPLE_PLATFORM \
                          -DDEPLOYMENT_TARGET=14.0 \
-                         -DENABLE_BITCODE:BOOL=OFF \
                          -DENABLE_ARC:BOOL=ON \
                          -DENABLE_VISIBILITY:BOOL=ON \
+                         -DENABLE_BITCODE:BOOL=OFF \
                          -DENABLE_STRICT_TRY_COMPILE:BOOL=OFF"
             TESTS_BUILD_ENABLED="OFF" # Disable tests cause unbundled console executables can not be built with iOS toolchain
             if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
-                CMAKE_FLAGS="$CMAKE_FLAGS -DDEVELOPMENT_TEAM='${APPLE_DEVELOPMENT_TEAM}'"
+                CMAKE_FLAGS="$CMAKE_FLAGS \
+                         -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
             fi
         else
             APPLE_PLATFORM=MacOS_$ARCH_NAME

@@ -42,10 +42,10 @@ if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
 
-if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin") # Detect MacOS
-    set(DEFAULT_CODE_SIGNING_ENABLED OFF)
+if(APPLE AND DEFINED APPLE_DEVELOPMENT_TEAM)
+    set(APPLE_CODE_SIGNING_AVAILABLE ON)
 else()
-    set(DEFAULT_CODE_SIGNING_ENABLED ON)
+    set(APPLE_CODE_SIGNING_AVAILABLE OFF)
 endif()
 
 # Build configuration
@@ -59,7 +59,7 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_CODE_SIGNING_ENABLED})
+option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${APPLE_CODE_SIGNING_AVAILABLE})
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -88,7 +88,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
 set(CMAKE_DISABLE_PRECOMPILE_HEADERS OFF)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -99,32 +98,8 @@ if (NOT CPM_SOURCE_CACHE AND NOT DEFINED ENV{CLION_IDE})
     set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/ExternalsCache" CACHE STRING "Set default CPM source cache path for External repositories")
 endif()
 
-if(WIN32)
-
-    set(VS_STARTUP_PROJECT MethaneShadowCube)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # Enable multi-threaded build with MSVC
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    endif()
-
-elseif(APPLE) # MacOS or iOS
-
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
-    set(CMAKE_INSTALL_RPATH "@executable_path")
-
-else(UNIX) # Linux
-
-    find_package(X11 REQUIRED)
-    if (NOT X11_xcb_FOUND OR
-        NOT X11_X11_xcb_FOUND)
-        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
-    endif()
-
+if(MSVC)
+    set(VS_STARTUP_PROJECT "MethaneShadowCube")
 endif()
 
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
@@ -207,10 +182,12 @@ if(METHANE_LOGGING_ENABLED)
 endif()
 
 if(METHANE_APPLE_CODE_SIGNING_ENABLED)
-    if (NOT DEFINED DEVELOPMENT_TEAM)
-        set(DEVELOPMENT_TEAM "Evgeny Gorodetskiy (Personal Team)")
+    if (DEFINED APPLE_DEVELOPMENT_TEAM)
+        message(STATUS "Methane code signing on Apple platforms is enabled for APPLE_DEVELOPMENT_TEAM: ${APPLE_DEVELOPMENT_TEAM}")
+    else()
+        message(WARNING "Methane code signing on Apple platform is enabled, but APPLE_DEVELOPMENT_TEAM is not defined!")
     endif()
-    message(STATUS "Methane code signing on Apple platforms is enabled for DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}")
+
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")
