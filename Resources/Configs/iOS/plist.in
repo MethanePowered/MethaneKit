@@ -18,6 +18,11 @@
     <string>${METHANE_APP_COPYRIGHT}</string>
     <key>LSMinimumSystemVersion</key>
     <string>${IOS_DEPLOYMENT_TARGET}</string>
+    <key>UILaunchScreen</key>
+    <dict>
+        <key>UIColorName</key>
+        <string>launchScreenBackground</string>
+    </dict>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleInfoDictionaryVersion</key>
