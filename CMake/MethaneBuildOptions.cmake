@@ -116,9 +116,6 @@ if (MSVC)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
-        # Use /MT Static runtime linking
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
         # Remove default warning level 3 if exists to replaced with higher level 4 (see below)
         string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 

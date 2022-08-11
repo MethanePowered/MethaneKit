@@ -100,6 +100,7 @@ endif()
 
 if(MSVC)
     set(VS_STARTUP_PROJECT "MethaneShadowCube")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # Use /MT Static runtime linking
 endif()
 
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
