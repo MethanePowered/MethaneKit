@@ -97,6 +97,7 @@ private:
     IApp::Settings                 m_app_settings;
     UnitSize                       m_frame_size;
     UnitPoint                      m_text_margins;
+    UnitPoint                      m_window_padding;
     Ptr<Badge>                     m_logo_badge_ptr;
     Ptr<HeadsUpDisplay>            m_hud_ptr;
     Ptr<Font>                      m_main_font_ptr;
