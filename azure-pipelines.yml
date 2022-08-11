@@ -35,8 +35,8 @@ resources:
 variables:
 
   product.Version.Major: 0
-  product.Version.Minor: 6
-  product.Version.Patch: 5
+  product.Version.Minor: 7
+  product.Version.Patch: 0
   product.Version.Build: $(Build.BuildId)
   product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(product.Version.Patch).$(product.Version.Build)'
 

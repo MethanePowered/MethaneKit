@@ -9,7 +9,7 @@
 #   --analyze SONAR_TOKEN     - run local build with Sonar Scanner static analysis and submit results to the server using token login
 
 BUILD_VERSION_MAJOR=0
-BUILD_VERSION_MINOR=6
+BUILD_VERSION_MINOR=7
 BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
