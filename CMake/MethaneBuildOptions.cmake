@@ -73,13 +73,18 @@ elseif(APPLE)
     elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         set(APPLE_TVOS 1)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS)
-    else() # Darwin
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(APPLE_MACOS 1)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
-
         if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
-            set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
+            if (DEFINED DEPLOYMENT_TARGET)
+                set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
+            else()
+                set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
+            endif()
         endif()
+    else()
+        message(FATAL_ERROR "Methane Kit does not support Apple system: ${CMAKE_SYSTEM_NAME}")
     endif()
 
     # Common code-signing options

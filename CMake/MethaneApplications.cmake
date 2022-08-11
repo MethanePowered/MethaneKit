@@ -97,11 +97,11 @@ function(add_methane_application)
     elseif(APPLE)
 
         if(APPLE_MACOS)
-            set(APPLE_PLATFORM_NAME "MacOS")
-            set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            set(CONFIG_DIR_NAME "MacOS")
+            set(MACOSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}") # Variable from plist.in
         else()
-            set(APPLE_PLATFORM_NAME "iOS")
-            set(IOS_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}") # Deployment target from iOS-Toolchain.cmake
+            set(CONFIG_DIR_NAME "iOS")
+            set(IOS_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}") # Variable from plist.in, Deployment target from iOS-Toolchain.cmake
         endif()
 
         set(ICON_FILE Methane.icns)
@@ -115,7 +115,7 @@ function(add_methane_application)
         set(METHANE_APP_BUNDLE_VERSION ${APP_BUILD_NUMBER})
         set(METHANE_APP_BUNDLE_ICON ${ICON_FILE})
         set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.${PROJECT_NAME_URI}.${APP_TARGET}")
-        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/${APPLE_PLATFORM_NAME}/plist.in ${PLIST_FILE_PATH})
+        configure_file(${METHANE_KIT_SOURCE_DIR}/Resources/Configs/${CONFIG_DIR_NAME}/plist.in ${PLIST_FILE_PATH})
 
         add_executable(${APP_TARGET} MACOSX_BUNDLE
             ${APP_SOURCES}
