@@ -355,7 +355,7 @@ jobs:
             workingDirectory: '$(installDir)/Tests'
             displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
 
-- job: iOS-Sim_MTL_Release
+- job: iOS_Sim_MTL_Release
 
   pool:
     vmImage: 'macos-11'
@@ -370,7 +370,7 @@ jobs:
       parameters:
         runTests: false
 
-- job: tvOS-Sim_MTL_Release
+- job: tvOS_Sim_MTL_Release
 
   pool:
     vmImage: 'macos-11'
