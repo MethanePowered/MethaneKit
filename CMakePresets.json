@@ -87,6 +87,10 @@
                 "METHANE_TRACY_PROFILING_ON_DEMAND": {
                     "type": "BOOL",
                     "value": "OFF"
+                },
+                "METHANE_APPLE_CODE_SIGNING_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
                 }
             }
         },
@@ -616,6 +620,91 @@
                 "Ninja-Scan",
                 "Ninja-Mac-Default"
             ]
+        },
+
+        {
+            "name": "Xcode-iOS-Sim-MTL-Default",
+            "displayName": "Default - Xcode - iOS Simulator (Metal)",
+            "description": "Default configuration using Xcode generator for iOS Simulator (Metal)",
+            "inherits": [
+                "Xcode-Mac-MTL-Default"
+            ],
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "type": "STRING",
+                    "value": "Externals/iOS-Toolchain.cmake"
+                },
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "SIMULATORARM64"
+                },
+                "DEPLOYMENT_TARGET": {
+                    "type": "STRING",
+                    "value": "15.0"
+                },
+                "ENABLE_ARC": {
+                    "type": "BOOL",
+                    "value": "ON"
+                },
+                "ENABLE_VISIBILITY": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "ENABLE_STRICT_TRY_COMPILE": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "METHANE_TESTS_BUILD_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "Xcode-iOS-MTL-Default",
+            "displayName": "Default - Xcode - iOS (Metal)",
+            "description": "Default configuration using Xcode generator for iOS (Metal)",
+            "inherits": [
+                "Xcode-iOS-Sim-MTL-Default"
+            ],
+            "cacheVariables": {
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "OS64"
+                },
+                "METHANE_APPLE_CODE_SIGNING_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Xcode-tvOS-Sim-MTL-Default",
+            "displayName": "Default - Xcode - tvOS Simulator (Metal)",
+            "description": "Default configuration using Xcode generator for tvOS Simulator (Metal)",
+            "inherits": [
+                "Xcode-iOS-Sim-MTL-Default"
+            ],
+            "cacheVariables": {
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "SIMULATOR_TVOS"
+                }
+            }
+        },
+        {
+            "name": "Xcode-tvOS-MTL-Default",
+            "displayName": "Default - Xcode - tvOS (Metal)",
+            "description": "Default configuration using Xcode generator for tvOS (Metal)",
+            "inherits": [
+                "Xcode-iOS-MTL-Default"
+            ],
+            "cacheVariables": {
+                "PLATFORM": {
+                    "type": "STRING",
+                    "value": "TVOS"
+                }
+            }
         }
     ],
 
@@ -1043,6 +1132,74 @@
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Xcode-Mac-MTL-Scan",
             "configuration": "Debug"
+        },
+
+        {
+            "name": "Xcode-iOS-MTL-Debug",
+            "displayName": "Debug - Xcode - iOS (Metal)",
+            "description": "Debug build with Xcode for iOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-iOS-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-iOS-MTL-Release",
+            "displayName": "Release - Xcode - iOS (Metal)",
+            "description": "Release build with Xcode for iOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-iOS-MTL-Default",
+            "configuration": "Release"
+        },
+
+        {
+            "name": "Xcode-iOS-Sim-MTL-Debug",
+            "displayName": "Debug - Xcode - iOS Simulator (Metal)",
+            "description": "Debug build with Xcode for iOS Simulator (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-iOS-Sim-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-iOS-Sim-MTL-Release",
+            "displayName": "Release - Xcode - iOS Simulator (Metal)",
+            "description": "Release build with Xcode for iOS Simulator (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-iOS-Sim-MTL-Default",
+            "configuration": "Release"
+        },
+
+        {
+            "name": "Xcode-tvOS-MTL-Debug",
+            "displayName": "Debug - Xcode - tvOS (Metal)",
+            "description": "Debug build with Xcode for tvOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-tvOS-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-tvOS-MTL-Release",
+            "displayName": "Release - Xcode - tvOS (Metal)",
+            "description": "Release build with Xcode for tvOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-tvOS-MTL-Default",
+            "configuration": "Release"
+        },
+
+        {
+            "name": "Xcode-tvOS-Sim-MTL-Debug",
+            "displayName": "Debug - Xcode - tvOS Simulator (Metal)",
+            "description": "Debug build with Xcode for tvOS Simulator (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-tvOS-Sim-MTL-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-tvOS-Sim-MTL-Release",
+            "displayName": "Release - Xcode - tvOS Simulator (Metal)",
+            "description": "Release build with Xcode for tvOS Simulator (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-tvOS-Sim-MTL-Default",
+            "configuration": "Release"
         }
     ]
 }
