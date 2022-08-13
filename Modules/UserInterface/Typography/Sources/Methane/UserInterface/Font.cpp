@@ -413,7 +413,16 @@ Font::Font(const Data::Provider& data_provider, const Settings& settings)
 Font::~Font()
 {
     META_FUNCTION_TASK();
-    ClearAtlasTextures();
+    try
+    {
+        ClearAtlasTextures();
+    }
+    catch(const std::exception& e)
+    {
+        META_UNUSED(e);
+        META_LOG("WARNING: Unexpected error during Font destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 void Font::ResetChars(const std::string& utf8_characters)

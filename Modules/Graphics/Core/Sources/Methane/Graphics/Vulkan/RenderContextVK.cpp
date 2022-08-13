@@ -63,7 +63,16 @@ RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, Device
 RenderContextVK::~RenderContextVK()
 {
     META_FUNCTION_TASK();
-    RenderContextVK::Release();
+    try
+    {
+        RenderContextVK::Release();
+    }
+    catch(const std::exception& e)
+    {
+        META_UNUSED(e);
+        META_LOG("WARNING: Unexpected error during Query destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 void RenderContextVK::Release()

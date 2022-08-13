@@ -61,7 +61,7 @@ public:
     const FrameSize& GetFrameSize() const noexcept              { return GetRenderContext().GetSettings().frame_size; }
 
     template<Units units>
-    [[nodiscard]] UnitSize  GetFrameSizeIn() const noexcept
+    [[nodiscard]] UnitSize  GetFrameSizeIn() const
     {
         META_FUNCTION_TASK();
         if constexpr (units == Units::Pixels)

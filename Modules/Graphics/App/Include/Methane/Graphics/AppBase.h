@@ -120,7 +120,7 @@ protected:
     RenderPattern&                  GetScreenRenderPattern() const                { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
     const Ptr<ViewState>&           GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
     ViewState&                      GetViewState()                                { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
-    FrameSize                       GetFrameSizeInDots() const noexcept           { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
+    FrameSize                       GetFrameSizeInDots() const                    { return m_context_ptr->GetSettings().frame_size / m_context_ptr->GetContentScalingFactor(); }
     ImageLoader&                    GetImageLoader() noexcept                     { return m_image_loader; }
     Data::AnimationsPool&           GetAnimations() noexcept                      { return m_animations; }
     const Ptr<Texture>&             GetDepthTexturePtr() const noexcept           { return m_depth_texture_ptr; }

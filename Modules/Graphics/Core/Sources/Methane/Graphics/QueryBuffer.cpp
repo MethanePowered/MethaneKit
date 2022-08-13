@@ -47,7 +47,16 @@ Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index ind
 Query::~Query()
 {
     META_FUNCTION_TASK();
-    m_buffer_ptr->ReleaseQuery(*this);
+    try
+    {
+        m_buffer_ptr->ReleaseQuery(*this);
+    }
+    catch(const std::exception& e)
+    {
+        META_UNUSED(e);
+        META_LOG("WARNING: Unexpected error during Query destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 void Query::Begin()
