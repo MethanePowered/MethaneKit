@@ -54,9 +54,9 @@ static const std::string g_vk_validation_extension    = VK_EXT_VALIDATION_FEATUR
 
 // Google extensions are used to reflect HLSL semantic names from shader input decorations,
 // and it works fine, but is not listed by Windows NVidia drivers, who knows why?
-#ifdef __linux__
-#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
-#endif
+//#ifdef __linux__
+//#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
+//#endif
 
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
