@@ -66,7 +66,11 @@ endif()
 
 # Pre-built binary tools
 include(DirectXShaderCompilerBinary)
-include(SPIRVCrossBinary)
+
+# SPIRV-Cross tool is only used to convert SPIRV bytecode (compiled by DXC) to Metal shaders on MacOS
+if (METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    include(SPIRVCrossBinary)
+endif()
 
 if (METHANE_OPEN_IMAGE_IO_ENABLED)
     include(OpenImageIOBinary)

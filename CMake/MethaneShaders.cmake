@@ -84,7 +84,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SH
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
 
     set(DXC_EXE "${DXC_BINARY_DIR}/dxc")
-    set(SPIRV_GEN_EXE   "${SPIRV_BINARY_DIR}/glslangValidator")
+    #set(SPIRV_GEN_EXE   "${SPIRV_BINARY_DIR}/glslangValidator")
     set(SPIRV_CROSS_EXE "${SPIRV_BINARY_DIR}/spirv-cross")
 
     foreach(KEY_VALUE_STRING ${SHADER_TYPES})
