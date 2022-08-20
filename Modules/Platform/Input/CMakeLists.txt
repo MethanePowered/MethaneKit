@@ -27,6 +27,12 @@ if (NOT (APPLE_IOS OR APPLE_TVOS))
     list(APPEND SOURCES ${SOURCES_PLATFORM_OS_DIR}/Keyboard.${CPP_EXT})
 endif()
 
+if(APPLE_MACOS)
+    list(APPEND PLATFORM_LIBRARIES
+        "-framework AppKit"
+    )
+endif()
+
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
@@ -42,7 +48,7 @@ target_link_libraries(${TARGET}
         MethanePrimitives
         MethanePlatformUtils
         magic_enum
-        $<$<BOOL:${APPLE_MACOS}>:"-framework AppKit">
+        ${PLATFORM_LIBRARIES}
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
