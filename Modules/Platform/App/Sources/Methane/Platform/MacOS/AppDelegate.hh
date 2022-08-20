@@ -25,28 +25,17 @@ MacOS application delegate implementation.
 
 #include <Methane/Platform/AppBase.h>
 
-#ifdef APPLE_MACOS
 #import <Cocoa/Cocoa.h>
-using NativeScreen = NSScreen;
-using NativeAppDelegate = NSObject<NSApplicationDelegate>;
-using NativeAlertStyle = NSAlertStyle;
-#else
-#import <UIKit/UIKit.h>
-using NativeScreen = UIScreen;
-using NativeAppDelegate = UIResponder<UIApplicationDelegate>;
-using NativeAlertStyle = UIAlertActionStyle;
-#endif
 
 namespace Methane::Platform { class AppMac; }
 
-@interface AppDelegate : NativeAppDelegate
+@interface AppDelegate : NSObject<NSApplicationDelegate>
 
 @property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
-@property (nonatomic, readwrite, nullable, retain) NativeWindow* window;
+@property (nonatomic, readwrite, nullable, retain) NSWindow* window;
 
-- (id _Nullable) init;
 - (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (const Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
 - (void) run;
-- (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NativeAlertStyle) ns_alert_style;
+- (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style;
 
 @end

@@ -11,7 +11,7 @@ if (APPLE_MACOS)
 endif()
 
 list(APPEND HEADERS
-    ${INCLUDE_PLATFORM_DIR}/Keyboard.h
+    $<$<BOOL:${APPLE_MACOS}>:${INCLUDE_PLATFORM_OS_DIR}/Keyboard.h>
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
@@ -23,7 +23,7 @@ list(APPEND HEADERS
 )
 
 list(APPEND SOURCES
-    $<$<BOOL:${APPLE_MACOS}>:${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}>
+    $<$<BOOL:${APPLE_MACOS}>:${SOURCES_PLATFORM_OS_DIR}/Keyboard.${CPP_EXT}>
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp
@@ -31,7 +31,7 @@ list(APPEND SOURCES
 )
 
 if (NOT (APPLE_IOS OR APPLE_TVOS))
-    list(APPEND SOURCES ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT})
+    list(APPEND SOURCES ${SOURCES_PLATFORM_OS_DIR}/Keyboard.${CPP_EXT})
 endif()
 
 add_library(${TARGET} STATIC
@@ -73,7 +73,7 @@ set_target_properties(${TARGET}
 if (APPLE)
     # Disable precompiled headers on MacOS for Objective-C files:
     set_source_files_properties(
-        ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
+        ${SOURCES_PLATFORM_OS_DIR}/Keyboard.${CPP_EXT}
         PROPERTIES
             SKIP_PRECOMPILE_HEADERS ON
     )

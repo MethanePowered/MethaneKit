@@ -1,8 +1,12 @@
 CPMAddPackage(
     NAME SPIRVCrossBinary
     GITHUB_REPOSITORY MethanePowered/SPIRVCrossBinary
-    GIT_TAG b440a00005bf0225b4a815fd3dd2d98bba84d4df # 2020-01-16
+    GIT_TAG 0de2aa43453675b493952ff8544969965f5d9114 # 2020-01-16
 )
 
 get_platform_dir(PLATFORM_DIR CPP_EXT)
+if(APPLE)
+    set(PLATFORM_DIR MacOS)
+endif()
+
 set(SPIRV_BINARY_DIR "${SPIRVCrossBinary_SOURCE_DIR}/binaries/${PLATFORM_DIR}" PARENT_SCOPE)

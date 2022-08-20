@@ -28,7 +28,7 @@ Metal implementation of the program interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,26 +16,25 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppMac.h
-MacOS application implementation.
+FILE: Methane/Platform/iOS/AppIOS.h
+iOS application implementation.
 
 ******************************************************************************/
 
 #pragma once
 
 #include <Methane/Platform/AppBase.h>
-#include <Methane/Platform/MacOS/AppEnvironment.hh>
+#include <Methane/Platform/iOS/AppEnvironment.hh>
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
-#import <Methane/Platform/MacOS/AppDelegate.hh>
+#import <Methane/Platform/iOS/AppDelegate.hh>
 using AppDelegateType = AppDelegate;
 
 #else
 
 using AppDelegateType = void;
-using NSApplication = void;
-using NSWindow = void;
+using UIWindow = void;
 
 #endif
 
@@ -57,20 +56,19 @@ public:
     bool SetFullScreen(bool is_full_screen) override;
     void Close() override;
 
-    void SetWindow(NSWindow* ns_window);
+    void SetWindow(UIWindow* ns_window);
     bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
-    NSWindow* GetWindow()                           { return m_ns_window; }
+    UIWindow* GetWindow()                       { return m_ns_window; }
 
 protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
 private:
-    NSApplication*   m_ns_app          = nullptr;
     AppDelegateType* m_ns_app_delegate = nullptr;
-    NSWindow*        m_ns_window       = nullptr;
-    
-    static AppMac*     s_instance_ptr;
+    UIWindow*        m_ns_window       = nullptr;
+
+    static AppMac* s_instance_ptr;
 };
 
 } // namespace Methane::Platform

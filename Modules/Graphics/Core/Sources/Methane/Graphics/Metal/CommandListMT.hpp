@@ -27,7 +27,7 @@ Metal base template implementation of the command list interface.
 #include "CommandListMT.hh"
 
 #include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

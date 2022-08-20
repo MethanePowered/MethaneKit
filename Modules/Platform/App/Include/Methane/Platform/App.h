@@ -29,7 +29,11 @@ Methane platform application alias.
 
 #elif defined __APPLE__
 
+#ifdef APPLE_MACOS
 #include <Methane/Platform/MacOS/AppMac.hh>
+#else
+#include <Methane/Platform/iOS/AppIOS.hh>
+#endif
 
 #elif defined __linux__
 

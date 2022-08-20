@@ -7,25 +7,19 @@ get_module_dirs("Methane/Platform")
 if (WIN32)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
+        ${INCLUDE_PLATFORM_OS_DIR}/AppEnvironment.h
     )
 
 elseif(APPLE)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppViewMT.hh
-        ${INCLUDE_PLATFORM_DIR}/AppEnvironment.hh
+        ${INCLUDE_PLATFORM_OS_DIR}/AppViewMT.hh
+        ${INCLUDE_PLATFORM_OS_DIR}/AppEnvironment.hh
     )
 
-    if(APPLE_MACOS)
-        list(APPEND PLATFORM_SOURCES
-            Sources/Methane/Platform/MacOS/AppViewMT.mm
-        )
-    else()
-        list(APPEND PLATFORM_SOURCES
-            Sources/Methane/Platform/iOS/AppViewMT.mm
-        )
-    endif()
+    list(APPEND PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewMT.mm
+    )
 
     list(APPEND PLATFORM_LIBRARIES
         "-framework $<IF:$<BOOL:${APPLE_MACOS}>,AppKit,UIKit>"
@@ -43,7 +37,7 @@ elseif(APPLE)
 elseif() # Linux
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppEnvironment.h
+        ${INCLUDE_PLATFORM_OS_DIR}/AppEnvironment.h
     )
 
 endif()

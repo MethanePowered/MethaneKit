@@ -29,7 +29,11 @@ Methane application environment.
 
 #elif defined(__APPLE__)
 
+#ifdef APPLE_MACOS
 #include "MacOS/AppEnvironment.hh"
+#else
+#include "iOS/AppEnvironment.hh"
+#endif
 
 #elif defined __linux__
 

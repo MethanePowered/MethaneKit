@@ -28,8 +28,13 @@ Metal application view creation by render context settings (shared logic with Vu
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
+#ifdef APPLE_MACOS
 #import <Methane/Platform/MacOS/AppViewMT.hh>
-#import <Methane/Platform/MacOS/Types.hh>
+#else
+#import <Methane/Platform/iOS/AppViewMT.hh>
+#endif
+
+#import <Methane/Platform/Apple/Types.hh>
 
 namespace Methane::Graphics
 {
@@ -42,7 +47,10 @@ inline AppViewMT* CreateRenderContextAppView(const Platform::AppEnvironment& env
                                                pixelFormat: TypeConverterMT::DataFormatToMetalPixelType(settings.color_format)
                                              drawableCount: settings.frame_buffers_count
                                               vsyncEnabled: Methane::MacOS::ConvertToNsType<bool, BOOL>(settings.vsync_enabled)
-                                     unsyncRefreshInterval: 1.0 / settings.unsync_max_fps];
+#ifdef APPLE_MACOS
+                                     unsyncRefreshInterval: 1.0 / settings.unsync_max_fps
+#endif
+    ];
 
     // bind Metal view with application delegate
     app_view.delegate = env.ns_app_delegate;
@@ -59,7 +67,10 @@ inline AppViewMT* CreateTemporaryAppView(const Platform::AppEnvironment& env)
                                                pixelFormat: MTLPixelFormatBGRA8Unorm
                                              drawableCount: 3
                                               vsyncEnabled: YES
-                                     unsyncRefreshInterval: 0.01];
+#ifdef APPLE_MACOS
+                                     unsyncRefreshInterval: 0.01
+#endif
+    ];
 
     // bind Metal view with application delegate
     app_view.delegate = env.ns_app_delegate;

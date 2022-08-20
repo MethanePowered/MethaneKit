@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppViewMT.hh
-MacOS application view implementation.
+FILE: Methane/Platform/iOS/AppViewMT.hh
+iOS/tvOS Metal rendering application view implementation.
 
 ******************************************************************************/
 
@@ -28,18 +28,16 @@ MacOS application view implementation.
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-@interface AppViewMT : NSView
+@interface AppViewMT : UIView<CALayerDelegate>
 {
     IBOutlet NativeViewController* viewController;
 }
 
-@property (nonatomic, readonly, nullable) NSWindow* appWindow;
-@property (nonatomic, readonly, nullable) NSScreen* currentScreen;
+@property (nonatomic, readonly, nullable) UIWindow* appWindow;
+@property (nonatomic, readonly, nullable) UIView<CALayerDelegate>* currentScreen;
 @property (nonatomic, readonly) MTLPixelFormat pixelFormat;
 @property (nonatomic, readwrite) NSUInteger drawableCount;
 @property (nonatomic, readwrite) BOOL vsyncEnabled;
-
-@property (nonatomic, readwrite) NSTimeInterval unsyncRefreshInterval;
 @property (nonatomic, readwrite) BOOL redrawing;
 
 @property (nonatomic, weak, nullable) id<MetalAppViewDelegate> delegate;
@@ -47,11 +45,10 @@ MacOS application view implementation.
 @property (nonatomic, readonly, nonnull) id<CAMetalDrawable> currentDrawable;
 
 - (nonnull instancetype)initWithCoder:(nonnull NSCoder*) aDecoder;
-- (nonnull instancetype)initWithFrame:(NSRect) backing_frame
-                            appWindow:(nullable NSWindow*) app_window
+- (nonnull instancetype)initWithFrame:(CGRect) backing_frame
+                            appWindow:(nullable UIWindow*) app_window
                           pixelFormat:(MTLPixelFormat) pixelFormat
                         drawableCount:(NSUInteger) drawable_count
-                         vsyncEnabled:(BOOL) vsync_enabled
-                unsyncRefreshInterval:(double) refresh_interval_sec;
+                         vsyncEnabled:(BOOL) vsync_enabled;
 
 @end

@@ -21,7 +21,7 @@ iOS application view implementation for Metal rendering.
 
 ******************************************************************************/
 
-#import <Methane/Platform/MacOS/AppViewMT.hh>
+#import <Methane/Platform/iOS/AppViewMT.hh>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -40,7 +40,6 @@ iOS application view implementation for Metal rendering.
 @synthesize pixelFormat = m_pixel_format;
 @synthesize drawableCount = m_drawable_count;
 @synthesize vsyncEnabled = m_vsync_enabled;
-@synthesize unsyncRefreshInterval = m_unsync_refresh_interval;
 @synthesize redrawing = m_redrawing;
 
 + (Class) layerClass
@@ -68,7 +67,6 @@ iOS application view implementation for Metal rendering.
                    pixelFormat:(MTLPixelFormat) pixel_format
                  drawableCount:(NSUInteger) drawable_count
                   vsyncEnabled:(BOOL) vsync_enabled
-         unsyncRefreshInterval:(double) refresh_interval_sec
 {
     META_FUNCTION_TASK();
     if (self = [super initWithFrame:frame])
@@ -77,7 +75,6 @@ iOS application view implementation for Metal rendering.
         m_pixel_format = pixel_format;
         m_drawable_count = drawable_count;
         m_vsync_enabled = vsync_enabled;
-        m_unsync_refresh_interval = refresh_interval_sec;
         m_current_drawable = nil;
         [self commonInit];
     }

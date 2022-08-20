@@ -23,12 +23,10 @@ MacOS application delegate implementation.
 
 #import "AppDelegate.hh"
 
-#ifdef APPLE_MACOS
 #import "WindowDelegate.hh"
-#endif
 
 #include <Methane/Platform/MacOS/AppMac.hh>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -37,42 +35,10 @@ using namespace Methane::Platform;
 
 @implementation AppDelegate
 {
-#ifdef APPLE_MACOS
     WindowDelegate* m_window_delegate;
-#endif
 }
 
 @synthesize window = m_window;
-
-- (id) init
-{
-    META_FUNCTION_TASK();
-    self = [super init];
-    if (!self)
-        return nil;
-
-#ifndef APPLE_MACOS // iOS
-    AppMac* p_app = AppMac::GetInstance();
-    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
-    const auto& ns_frame_size = ns_main_screen.bounds.size;
-    const CGRect backing_frame = CGRectMake(0.f, 0.f,
-                                            ns_frame_size.width * ns_main_screen.nativeScale,
-                                            ns_frame_size.height * ns_main_screen.nativeScale);
-    
-    m_window = [[UIWindow alloc] initWithFrame:ns_main_screen.bounds];
-    
-    self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
-    
-    UINavigationController* navigation_controller = [[UINavigationController alloc] initWithRootViewController:self.viewController];
-    navigation_controller.navigationBarHidden = YES;
-    self.window.rootViewController = navigation_controller;
-
-    p_app->SetWindow(m_window);
-#endif
-
-    return self;
-}
-
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
@@ -81,9 +47,7 @@ using namespace Methane::Platform;
     if (!self || !p_settings)
         return nil;
 
-#ifdef APPLE_MACOS
-    
-    NativeScreen* ns_main_screen = [NativeScreen mainScreen];
+    NSScreen* ns_main_screen = [NSScreen mainScreen];
     const Methane::Data::FloatSize& frame_size = p_settings->size;
     const auto& ns_frame_size = ns_main_screen.frame.size;
     
@@ -115,9 +79,7 @@ using namespace Methane::Platform;
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
-    
-#endif // APPLE_MACOS
-    
+
     p_app->SetWindow(m_window);
     return self;
 }
@@ -125,16 +87,13 @@ using namespace Methane::Platform;
 - (void) run
 {
     META_FUNCTION_TASK();
-#ifdef APPLE_MACOS
     [m_window setContentViewController: self.viewController];
     [m_window setAcceptsMouseMovedEvents:YES];
-#endif
 }
 
-- (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NativeAlertStyle) ns_alert_style
+- (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style
 {
     META_FUNCTION_TASK();
-#ifdef APPLE_MACOS
     META_CHECK_ARG_NOT_NULL(ns_title);
     META_CHECK_ARG_NOT_NULL(ns_info);
     
@@ -149,12 +108,7 @@ using namespace Methane::Platform;
     {
         [NSApp terminate:self];
     }
-#else
-    // TODO: iOS implementation missing
-#endif
 }
-
-#ifdef APPLE_MACOS
 
 - (void) applicationWillFinishLaunching:(NSNotification *)notification
 {
@@ -202,17 +156,5 @@ using namespace Methane::Platform;
     #pragma unused(sender)
     return YES;
 }
-
-#else // APPLE_MACOS
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)launch_otions
-{
-    META_FUNCTION_TASK();
-    #pragma unused(launch_otions)
-    [self.window makeKeyAndVisible];
-    return YES;
-}
-
-#endif // APPLE_MACOS
 
 @end

@@ -25,7 +25,7 @@ Metal implementation of the command queue interface.
 #include "DeviceMT.hh"
 #include "RenderContextMT.hh"
 
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

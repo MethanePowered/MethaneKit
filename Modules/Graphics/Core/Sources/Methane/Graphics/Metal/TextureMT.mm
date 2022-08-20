@@ -27,7 +27,7 @@ Metal implementation of the texture interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/CommandKit.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

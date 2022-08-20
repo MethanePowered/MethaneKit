@@ -28,7 +28,7 @@ Metal implementation of the render state interface.
 #include "ShaderMT.hh"
 #include "TypesMT.hh"
 
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

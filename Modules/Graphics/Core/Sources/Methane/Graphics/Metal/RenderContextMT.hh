@@ -28,7 +28,12 @@ Metal implementation of the render context interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/TracyGpu.hpp>
 
+#ifdef APPLE_MACOS
 #import <Methane/Platform/MacOS/AppViewMT.hh>
+#else
+#import <Methane/Platform/iOS/AppViewMT.hh>
+#endif
+
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics

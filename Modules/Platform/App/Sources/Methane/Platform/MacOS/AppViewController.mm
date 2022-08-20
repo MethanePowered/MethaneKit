@@ -36,12 +36,12 @@ using namespace Methane::Platform;
 @implementation AppViewController
 {
     AppMac*     m_p_app;
-    NativeRect  m_frame_rect;
+    NSRect  m_frame_rect;
     bool        m_is_initialized;
     std::string m_error;
 }
 
-- (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NativeRect) frame_rect
+- (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (NSRect) frame_rect
 {
     META_FUNCTION_TASK();
 
@@ -56,7 +56,7 @@ using namespace Methane::Platform;
     return self;
 }
 
--(NativeWindow*) window
+-(NSWindow*) window
 {
     META_FUNCTION_TASK();
     return m_p_app ? m_p_app->GetWindow() : nil;
@@ -78,9 +78,7 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     [super viewDidLoad];
-#ifdef APPLE_MACOS
     [self.view.window makeFirstResponder:self];
-#endif
 }
 
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
@@ -108,8 +106,6 @@ using namespace Methane::Platform;
     }
     m_p_app->UpdateAndRenderWithErrorHandling();
 }
-
-#ifdef APPLE_MACOS
 
 // ====== Keyboard event handlers ======
 
@@ -252,7 +248,5 @@ using namespace Methane::Platform;
 
     m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, scroll);
 }
-
-#endif // APPLE_MACOS
 
 @end

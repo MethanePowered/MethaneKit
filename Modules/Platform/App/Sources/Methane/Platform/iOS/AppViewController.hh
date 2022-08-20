@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,42 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppEnvironment.h
-MacOS application environment.
+FILE: Methane/Platform/iOS/AppViewController.h
+iOS application view controller implementation.
 
 ******************************************************************************/
 
-#pragma once
+#import <Methane/Platform/iOS/AppEnvironment.hh>
 
-#ifdef __OBJC__
+#import <UIKit/UIKit.h>
 
-#import <AppKit/AppKit.h>
+namespace Methane::Platform { class AppMac; }
 
-@class AppViewMT;
+@interface AppViewController : NativeViewController
 
-@protocol MetalAppViewDelegate<NSObject>
+@property (nonatomic, readonly, nullable) UIWindow* window;
 
-@property (nonatomic, readonly, nullable) NSWindow* window;
-
-- (void)drawInView:(nonnull AppViewMT *) view;
-- (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andFrameRect : (CGRect) frame;
+- (Methane::Platform::AppMac* _Nonnull) getApp;
 
 @end
-
-using NativeViewController = NSViewController<MetalAppViewDelegate>;
-
-#else // __OBJC__
-
-using NativeViewController = void;
-
-#endif
-
-namespace Methane::Platform
-{
-
-struct AppEnvironment
-{
-    NativeViewController* _Nonnull ns_app_delegate;
-};
-
-} // namespace Methane::Platform

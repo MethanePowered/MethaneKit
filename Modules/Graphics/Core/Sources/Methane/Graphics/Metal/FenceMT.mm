@@ -26,7 +26,7 @@ Metal fence implementation.
 #include "DeviceMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/ScopeTimer.h>
 

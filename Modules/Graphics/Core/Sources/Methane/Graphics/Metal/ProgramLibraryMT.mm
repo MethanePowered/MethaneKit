@@ -25,7 +25,7 @@ Wrapper of the Metal program library.
 #include "DeviceMT.hh"
 
 #include <Methane/Platform/Utils.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

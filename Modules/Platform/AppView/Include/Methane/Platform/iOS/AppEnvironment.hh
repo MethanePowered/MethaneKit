@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppEnvironment.h
-MacOS application environment.
+FILE: Methane/Platform/iOS/AppEnvironment.h
+iOS/tvOS application environment.
 
 ******************************************************************************/
 
@@ -25,20 +25,20 @@ MacOS application environment.
 
 #ifdef __OBJC__
 
-#import <AppKit/AppKit.h>
+#import <UIKit/UIKit.h>
 
 @class AppViewMT;
 
 @protocol MetalAppViewDelegate<NSObject>
 
-@property (nonatomic, readonly, nullable) NSWindow* window;
+@property (nonatomic, readonly, nullable) UIWindow* window;
 
 - (void)drawInView:(nonnull AppViewMT *) view;
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size;
 
 @end
 
-using NativeViewController = NSViewController<MetalAppViewDelegate>;
+using NativeViewController = UIViewController<MetalAppViewDelegate>;
 
 #else // __OBJC__
 

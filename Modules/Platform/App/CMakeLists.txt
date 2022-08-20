@@ -7,49 +7,58 @@ get_module_dirs("Methane/Platform")
 if (WIN32)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppWin.h
+        ${INCLUDE_PLATFORM_OS_DIR}/AppWin.h
     )
 
     list(APPEND PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppWin.cpp
-        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.h
-        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/AppWin.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/ConsoleStreams.h
+        ${SOURCES_PLATFORM_OS_DIR}/ConsoleStreams.cpp
     )
 
 elseif(APPLE)
 
-    list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppMac.hh
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
-        ${SOURCES_PLATFORM_DIR}/AppViewController.hh
-    )
-
-    list(APPEND PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppMac.mm
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
-        ${SOURCES_PLATFORM_DIR}/AppViewController.mm
-    )
-
     if (APPLE_MACOS)
-        list(APPEND PLATFORM_HEADERS ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh)
-        list(APPEND PLATFORM_SOURCES ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm)
+        list(APPEND PLATFORM_HEADERS
+            ${INCLUDE_PLATFORM_OS_DIR}/AppMac.hh
+            ${SOURCES_PLATFORM_OS_DIR}/WindowDelegate.hh
+        )
+        list(APPEND PLATFORM_SOURCES
+            ${SOURCES_PLATFORM_OS_DIR}/AppMac.mm
+            ${SOURCES_PLATFORM_OS_DIR}/WindowDelegate.mm
+        )
         list(APPEND PLATFORM_LIBRARIES "-framework AppKit")
-    else()
+    else() # iOS
+        list(APPEND PLATFORM_HEADERS
+            ${INCLUDE_PLATFORM_OS_DIR}/AppIOS.hh
+        )
+        list(APPEND PLATFORM_SOURCES
+            ${SOURCES_PLATFORM_OS_DIR}/AppIOS.mm
+        )
         list(APPEND PLATFORM_LIBRARIES "-framework UIKit")
-    endif()
+    endif() # APPLE_MACOS
+
+    list(APPEND PLATFORM_HEADERS
+        ${SOURCES_PLATFORM_OS_DIR}/AppDelegate.hh
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewController.hh
+    )
+    list(APPEND PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_OS_DIR}/AppDelegate.mm
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewController.mm
+    )
 
 else(LINUX)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppLin.h
+        ${INCLUDE_PLATFORM_OS_DIR}/AppLin.h
     )
 
     list(APPEND PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppLin.cpp
-        ${SOURCES_PLATFORM_DIR}/MessageBox.h
-        ${SOURCES_PLATFORM_DIR}/MessageBox.cpp
-        ${SOURCES_PLATFORM_DIR}/XcbUtils.h
-        ${SOURCES_PLATFORM_DIR}/XcbUtils.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/AppLin.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/MessageBox.h
+        ${SOURCES_PLATFORM_OS_DIR}/MessageBox.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/XcbUtils.h
+        ${SOURCES_PLATFORM_OS_DIR}/XcbUtils.cpp
     )
 
     # TODO: replace "xcb-randr" with "X11::xcb_randr" when supported by CMake 3.24

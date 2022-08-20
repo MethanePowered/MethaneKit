@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2022 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/MacOS/AppMac.mm
-MacOS application implementation.
+FILE: Methane/Platform/iOS/AppMac.mm
+iOS application implementation.
 
 ******************************************************************************/
 
-#include <Methane/Platform/MacOS/AppMac.hh>
+#include <Methane/Platform/iOS/AppIOS.hh>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -31,15 +31,15 @@ namespace Methane::Platform
 
 AppMac* AppMac::s_instance_ptr = nullptr;
 
-static NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
+static UIAlertActionStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_type)
 {
     META_FUNCTION_TASK();
     switch(msg_type)
     {
-        case AppBase::Message::Type::Information: return NSAlertStyleInformational;
-        case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
-        case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
-        default: META_UNEXPECTED_ARG_RETURN(msg_type, NSAlertStyleInformational);
+        case AppBase::Message::Type::Information: return UIAlertActionStyleDefault;
+        case AppBase::Message::Type::Warning:     return UIAlertActionStyleCancel;
+        case AppBase::Message::Type::Error:       return UIAlertActionStyleDestructive;
+        default: META_UNEXPECTED_ARG_RETURN(msg_type, UIAlertActionStyleDestructive);
     }
 }
 
@@ -51,7 +51,6 @@ AppMac* AppMac::GetInstance()
 
 AppMac::AppMac(const AppBase::Settings& settings)
     : AppBase(settings)
-    , m_ns_app([NSApplication sharedApplication])
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
@@ -61,11 +60,6 @@ AppMac::AppMac(const AppBase::Settings& settings)
 void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
 {
     META_FUNCTION_TASK();
-    AppView app_view = GetView();
-    META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
-    META_CHECK_ARG_NOT_NULL(m_ns_window);
-
-    [m_ns_window.contentView addSubview: app_view.p_native_view];
 }
 
 int AppMac::Run(const RunArgs& args)
@@ -75,11 +69,8 @@ int AppMac::Run(const RunArgs& args)
     if (base_return_code)
         return base_return_code;
 
-    m_ns_app_delegate = [[AppDelegate alloc] initWithApp:this andSettings: &GetPlatformAppSettings()];
-    [m_ns_app setDelegate: m_ns_app_delegate];
-    [m_ns_app_delegate run];
-    [m_ns_app run];
-    return 0;
+    return UIApplicationMain(args.cmd_arg_count, const_cast<char* *>(args.cmd_arg_values), nil,
+                             NSStringFromClass([AppDelegate class]));
 }
 
 void AppMac::Alert(const Message& msg, bool deferred)
@@ -106,13 +97,10 @@ void AppMac::Alert(const Message& msg, bool deferred)
 void AppMac::SetWindowTitle(const std::string& title_text)
 {
     META_FUNCTION_TASK();
-    NSString* ns_title_text = MacOS::ConvertToNsType<std::string, NSString*>(title_text);
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        m_ns_window.title = ns_title_text;
-    });
+    META_UNUSED(title_text);
 }
 
-void AppMac::SetWindow(NSWindow* ns_window)
+void AppMac::SetWindow(UIWindow* ns_window)
 {
     META_FUNCTION_TASK();
     m_ns_window = ns_window;
@@ -136,19 +124,12 @@ bool AppMac::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
-    const NSApplicationPresentationOptions app_options = [m_ns_app presentationOptions];
-    const bool is_app_fullscreen = (app_options & NSApplicationPresentationFullScreen);
-    if (is_app_fullscreen != is_full_screen)
-    {
-        [m_ns_window toggleFullScreen:nil];
-    }
     return true;
 }
 
 void AppMac::Close()
 {
     META_FUNCTION_TASK();
-    [m_ns_window close];
 }
 
 } // namespace Methane::Platform

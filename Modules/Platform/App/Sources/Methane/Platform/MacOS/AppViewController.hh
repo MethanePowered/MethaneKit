@@ -27,9 +27,9 @@ namespace Methane::Platform { class AppMac; }
 
 @interface AppViewController : NativeViewController
 
-@property (nonatomic, readonly, nullable) NativeWindow* window;
+@property (nonatomic, readonly, nullable) NSWindow* window;
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andFrameRect : (NativeRect) frame;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andFrameRect : (NSRect) frame;
 - (Methane::Platform::AppMac* _Nonnull) getApp;
 
 @end
