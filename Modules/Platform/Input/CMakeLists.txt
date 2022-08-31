@@ -15,6 +15,12 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Input/State.h
 )
 
+if (APPLE_MACOS)
+    list(APPEND HEADERS
+        ${INCLUDE_PLATFORM_OS_DIR}/Keyboard.h
+    )
+endif()
+
 list(APPEND SOURCES
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
