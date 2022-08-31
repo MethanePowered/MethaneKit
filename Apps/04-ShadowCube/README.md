@@ -1,8 +1,8 @@
 # Shadow Cube Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                               |
-| -------------------- | ------------- |--------------------------------------------------------------|
-| ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) | ![Shadow Cube on Linux](Screenshots/ShadowCubeLinVulkan.jpg) |
+| Windows (DirectX 12)                                              | Linux (Vulkan)                                               | MacOS (Metal)                                               | iOS (Metal)                                               |
+|-------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------|
+| ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on Linux](Screenshots/ShadowCubeLinVulkan.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) | ![Shadow Cube on iOS](Screenshots/ShadowCubeIOSMetal.jpg) |
 
 This tutorial demonstrates rendering shadow of the textured cube on the floor plane in two render passes using Methane Kit:
 - [ShadowCubeApp.h](ShadowCubeApp.h)

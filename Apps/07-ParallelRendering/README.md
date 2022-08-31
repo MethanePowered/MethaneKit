@@ -1,8 +1,8 @@
 # Parallel Rendering Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                                  |
-| -------------------- | ------------- |-----------------------------------------------------------------|
-| ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) |
+| Windows (DirectX 12)                                                           | Linux (Vulkan)                                                            | MacOS (Metal)                                                            | iOS (Metal)                                                            |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
+| ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on iOS](Screenshots/ParallelRenderingIOSMetal.jpg) | 
 
 This tutorial demonstrates multi-threaded rendering with `ParallelRenderCommandList` using Methane Kit:
   - [ParallelRenderingApp.h](ParallelRenderingApp.h)

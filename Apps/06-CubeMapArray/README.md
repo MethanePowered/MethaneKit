@@ -1,8 +1,8 @@
 # Cube Map Array Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                                  |
-| -------------------- | ------------- |-----------------------------------------------------------------|
-| ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) |
+| Windows (DirectX 12)                                                 | Linux (Vulkan)                                                  | MacOS (Metal)                                                  | iOS (Metal)                                                                         |
+|----------------------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on iOS](Screenshots/CubeMapArrayIOSMetal.jpg) * No simulator support |
 
 This tutorial demonstrates cube-map array texturing and sky-box rendering with Methane Kit:
   - [CubeMapArrayApp.h](CubeMapArrayApp.h)

@@ -1,8 +1,8 @@
 # Hello Cube Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan) |
-| -------------------- | ------------- | -------------- |
-| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) |
+| Windows (DirectX 12)                                            | Linux (Vulkan)                                             | MacOS (Metal)                                             | iOS (Metal)                                             |
+|-----------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------------|---------------------------------------------------------|
+| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on iOS](Screenshots/HelloCubeIOSMetal.jpg) |
 
 This tutorial demonstrates colored cube rendering implemented in just 220 lines of code using Methane Kit:
 - [HelloCubeApp.cpp](HelloCubeApp.cpp)

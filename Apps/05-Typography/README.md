@@ -1,8 +1,8 @@
 # Typography Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                              |
-| -------------------- | ------------- |-------------------------------------------------------------|
-| ![Typography on Windows](Screenshots/TypographyWinDirectX12.jpg) | ![Typography on MacOS](Screenshots/TypographyMacMetal.jpg) | ![Typography on Linux](Screenshots/TypographyLinVulkan.jpg) |
+| Windows (DirectX 12)                                             | Linux (Vulkan)                                              | MacOS (Metal)                                              | iOS (Metal)                                                |
+|------------------------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
+| ![Typography on Windows](Screenshots/TypographyWinDirectX12.jpg) | ![Typography on Linux](Screenshots/TypographyLinVulkan.jpg) | ![Typography on MacOS](Screenshots/TypographyMacMetal.jpg) | ![Typography on MacOS](Screenshots/TypographyIOSMetal.jpg) |
 
 This tutorial demonstrates animated text rendering with dynamic font atlas updates using Methane UI.
 Three colored text blocks are animated with continuous characters typing. Each text block is rendered as a single mesh
