@@ -1,6 +1,6 @@
 # Hello Cube Tutorial
 
-| Windows (DirectX 12)                                            | Linux (Vulkan)                                             | MacOS (Metal)                                             | iOS (Metal)                                             |
+| <pre><b>Windows (DirectX 12)       </pre></b>                   | <pre><b>Linux (Vulkan)             </pre></b>              | <pre><b>MacOS (Metal)              </pre></b>             | <pre><b>iOS (Metal)</pre></b>                           |
 |-----------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------------|---------------------------------------------------------|
 | ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on iOS](Screenshots/HelloCubeIOSMetal.jpg) |
 
@@ -19,6 +19,12 @@ Tutorial demonstrates the following Methane Kit features and techniques addition
 - **Uniforms version** (when macros `UNIFORMS_BUFFER_ENABLED` is defined):
   - Use uniform buffer to upload MVP matrix to GPU and transform vertices on GPU in vertex shader.
   - Use program bindings to bind uniform buffer to the graphics pipeline and make it available to shaders.
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform` and `Graphics` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
 
 ## Simple Cube Vertices Transformation on CPU
 

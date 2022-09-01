@@ -1,6 +1,6 @@
 # Textured Cube Tutorial
 
-| Windows (DirectX 12)                                                  | Linux (Vulkan)                                                   | MacOS (Metal)                                                   | iOS (Metal)                                                   |
+| <pre><b>Windows (DirectX 12)       </pre></b>                         | <pre><b>Linux (Vulkan)             </pre></b>                    | <pre><b>MacOS (Metal)              </pre></b>                   | <pre><b>iOS (Metal)</pre></b>                                 |
 |-----------------------------------------------------------------------|------------------------------------------------------------------|-----------------------------------------------------------------|---------------------------------------------------------------|
 | ![Textured Cube on Windows](Screenshots/TexturedCubeWinDirectX12.jpg) | ![Textured Cube on Linux](Screenshots/TexturedCubeLinVulkan.jpg) | ![Textured Cube on MacOS](Screenshots/TexturedCubeMacMetal.jpg) | ![Textured Cube on iOS](Screenshots/TexturedCubeIOSMetal.jpg) |
 
@@ -15,6 +15,13 @@ Tutorial demonstrates the following Methane Kit features additionally to demonst
 - Create 2D textures with data loaded data from images and creating samplers
 - Bind buffers and textures to program arguments and configure argument access modifiers
 - SRGB gamma-correction support in textures loader and color transformation in pixel shaders
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInterface` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+- [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)
 
 ## Application and Frame Class Definitions
 

@@ -1,6 +1,6 @@
 # Hello Triangle Tutorial
 
-| Windows (DirectX 12)                                                    | Linux (Vulkan)                                                     | MacOS (Metal)                                                     | iOS (Metal)                                                     |
+| <pre><b>Windows (DirectX 12)       </pre></b>                           | <pre><b>Linux (Vulkan)             </pre></b>                      | <pre><b>MacOS (Metal)              </pre></b>                     | <pre><b>iOS (Metal)</pre></b>                                   |
 |-------------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------|-----------------------------------------------------------------|
 | ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on Linux](Screenshots/HelloTriangleLinVulkan.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) | ![Hello Triangle on iOS](Screenshots/HelloTriangleIOSMetal.jpg) | 
 
@@ -14,6 +14,12 @@ Tutorial demonstrates the following Methane Kit features and techniques:
 - Use render command lists for encoding draw commands.
 - Execute command lists on GPU and presenting frame buffers on screen.
 - Configure cross-platform application build with shaders compilation to embedded resources.
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform` and `Graphics` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
 
 ## Application and Frame Class Definitions
 

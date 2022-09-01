@@ -1,6 +1,6 @@
 # Cube Map Array Tutorial
 
-| Windows (DirectX 12)                                                 | Linux (Vulkan)                                                  | MacOS (Metal)                                                  | iOS (Metal)                                                                         |
+| <pre><b>Windows (DirectX 12)       </pre></b>                        | <pre><b>Linux (Vulkan)             </pre></b>                   | <pre><b>MacOS (Metal)              </pre></b>                  | <pre><b>iOS (Metal)</pre></b>                                                       |
 |----------------------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------|
 | ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on iOS](Screenshots/CubeMapArrayIOSMetal.jpg) * No simulator support |
 
@@ -17,6 +17,13 @@ Tutorial demonstrates the following techniques:
     using helper class [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
   - Instanced rendering of multiple cubes displaying all faces of the pre-rendered cube-map array texture;
   - Using Sky-box rendering extension with panoramic cube-map texture loaded from image files.
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInterface` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+- [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)
 
 ## Continue learning
 
