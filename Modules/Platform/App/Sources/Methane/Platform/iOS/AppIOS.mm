@@ -26,6 +26,8 @@ iOS application implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#import "AppDelegate.hh"
+
 namespace Methane::Platform
 {
 
@@ -109,11 +111,13 @@ void AppMac::SetWindow(UIWindow* ns_window)
 void AppMac::ShowAlert(const Message& msg)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_ns_app_delegate);
+    
+    AppDelegate* app_delegate = static_cast<AppDelegate*>([UIApplication sharedApplication].delegate);
+    META_CHECK_ARG_NOT_NULL(app_delegate);
 
-    [m_ns_app_delegate alert: MacOS::ConvertToNsType<std::string, NSString*>(msg.title)
-             withInformation: MacOS::ConvertToNsType<std::string, NSString*>(msg.information)
-                    andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
+    [app_delegate alert: MacOS::ConvertToNsType<std::string, NSString*>(msg.title)
+        withInformation: MacOS::ConvertToNsType<std::string, NSString*>(msg.information)
+               andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);
 }

@@ -71,7 +71,29 @@ using namespace Methane::Platform;
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (UIAlertActionStyle) ns_alert_style
 {
     META_FUNCTION_TASK();
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("iOS alert is not implemented");
+    
+    UIAlertController* alert = [UIAlertController
+                                    alertControllerWithTitle: ns_title
+                                    message                 : ns_info
+                                    preferredStyle          : UIAlertControllerStyleAlert];
+
+    UIAlertAction* ok_button = [UIAlertAction
+                                    actionWithTitle : ns_alert_style == UIAlertActionStyleDestructive ? @"Exit" : @"Ok"
+                                    style           : ns_alert_style
+                                    handler         : ^(UIAlertAction*)
+                                    {
+                                        if (ns_alert_style != UIAlertActionStyleDestructive)
+                                            return;
+        
+                                        // Suspend and then terminate the application
+                                        [[UIApplication sharedApplication] performSelector:@selector(suspend)];
+                                        [NSThread sleepForTimeInterval:2.0];
+                                        exit(0);
+                                    }];
+    
+    [alert addAction:ok_button];
+
+    [self.viewController presentViewController:alert animated:YES completion:nil];
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey, id> *)launch_otions

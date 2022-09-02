@@ -27,7 +27,7 @@ iOS application view controller implementation.
 
 namespace Methane::Platform { class AppMac; }
 
-@interface AppViewController : NativeViewController
+@interface AppViewController : UIViewController<MetalAppViewDelegate>
 
 @property (nonatomic, readonly, nullable) UIWindow* window;
 

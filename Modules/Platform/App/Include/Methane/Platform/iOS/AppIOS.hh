@@ -28,12 +28,8 @@ iOS application implementation.
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
-#import <Methane/Platform/iOS/AppDelegate.hh>
-using AppDelegateType = AppDelegate;
-
 #else
 
-using AppDelegateType = void;
 using UIWindow = void;
 
 #endif
@@ -65,8 +61,7 @@ protected:
     void ShowAlert(const Message& msg) override;
 
 private:
-    AppDelegateType* m_ns_app_delegate = nullptr;
-    UIWindow*        m_ns_window       = nullptr;
+    UIWindow* m_ns_window = nullptr;
 
     static AppMac* s_instance_ptr;
 };
