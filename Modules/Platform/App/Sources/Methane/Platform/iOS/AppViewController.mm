@@ -33,6 +33,23 @@ iOS application view controller implementation.
 using namespace Methane;
 using namespace Methane::Platform;
 
+namespace Methane::Platform
+{
+
+static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
+{
+    META_FUNCTION_TASK();
+    switch(touches_cout)
+    {
+        case 1U: return Mouse::Button::Left;
+        case 2U: return Mouse::Button::Right;
+        case 3U: return Mouse::Button::Middle;
+        default: META_UNEXPECTED_ARG_DESCR(touches_cout, "Methane iOS application supports from 1 to 3 touches handling only");
+    }
+}
+
+} // namespace Methane::Platform
+
 @implementation AppViewController
 {
     AppMac*     m_p_app;
@@ -104,6 +121,63 @@ using namespace Methane::Platform;
         m_is_initialized = m_p_app->InitWithErrorHandling();
     }
     m_p_app->UpdateAndRenderWithErrorHandling();
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches
+           withEvent:(UIEvent *)event
+{
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
+    if (touches.count < 0 || touches.count > 3)
+        return;
+    
+    META_CHECK_ARG_NOT_NULL(m_p_app);
+    const Mouse::Button mouse_button = GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, mouse_button, Mouse::ButtonState::Pressed);
+    
+    [self handleTouchPosition:[touches anyObject]];
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches
+           withEvent:(UIEvent *)event
+{
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
+    if (touches.count < 0 || touches.count > 3)
+        return;
+    
+    META_CHECK_ARG_NOT_NULL(m_p_app);
+    const Mouse::Button mouse_button = GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, mouse_button, Mouse::ButtonState::Released);
+    
+    [self handleTouchPosition:[touches anyObject]];
+}
+
+- (void)touchesMoved:(NSSet<UITouch *> *)touches
+           withEvent:(UIEvent *)event
+{
+    META_FUNCTION_TASK();
+    #pragma unused(event)
+    
+    if (touches.count < 0 || touches.count > 3)
+        return;
+    
+    [self handleTouchPosition:[touches anyObject]];
+}
+
+- (void)handleTouchPosition:(UITouch *) touch
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_p_app);
+    
+    CGPoint pos = [touch locationInView:self.view];
+    UIScreen* ns_main_screen = [UIScreen mainScreen];
+    pos.x *= ns_main_screen.nativeScale;
+    pos.y *= ns_main_screen.nativeScale;
+    
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 @end
