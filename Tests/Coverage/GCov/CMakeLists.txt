@@ -1,15 +1,31 @@
 include(CodeCoverage)
 
-set(TEST_TARGETS
+list(APPEND TEST_TARGETS
     MethaneDataEventsTest
     MethaneDataRangeSetTest
+    MethaneDataTypesTest
     MethanePlatformInputTest
     MethaneGraphicsCameraTest
+    MethaneGraphicsTypesTest
+    MethaneUserInterfaceTypesTest
 )
+
+list(APPEND EXCLUDE_DIRS
+    /usr/include/*
+    /usr/lib/*
+    Externals/*
+    Build/*
+)
+
+if (CPM_SOURCE_CACHE)
+    list(APPEND EXCLUDE_DIRS
+        "${CPM_SOURCE_CACHE}/*"
+    )
+endif()
 
 setup_target_for_coverage_lcov(
     NAME MethaneTestCoverage
     EXECUTABLE ctest -j 4
     DEPENDENCIES ${TEST_TARGETS}
-    EXCLUDE "/usr/include/*" "/usr/lib/*" "Externals/*" "Build/*"
+    EXCLUDE ${EXCLUDE_DIRS}
 )
