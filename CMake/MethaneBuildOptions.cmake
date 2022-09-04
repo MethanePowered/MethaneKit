@@ -21,6 +21,11 @@ Methane compilation and build options interface target.
 
 *****************************************************************************]]
 
+if(TARGET MethaneBuildOptions)
+    # MethaneBuildOptions target is already defined, global build options are set
+    return()
+endif()
+
 add_library(MethaneBuildOptions INTERFACE)
 
 target_compile_definitions(MethaneBuildOptions INTERFACE
