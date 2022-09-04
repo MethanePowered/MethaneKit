@@ -196,10 +196,14 @@ else()
     set(CTEST_EXE "ctest")
 endif()
 
+# Global options are included before Externals to be applied globally
 include(MethaneGlobalOptions)
-include(MethaneBuildOptions)
 
 add_subdirectory(Externals)
+
+# Build options are included after Externals due to dependency from External CMake modules
+include(MethaneBuildOptions)
+
 add_subdirectory(Modules)
 
 if (METHANE_APPS_BUILD_ENABLED)
