@@ -21,8 +21,8 @@ Metal implementation of the render command list interface.
 
 ******************************************************************************/
 
+#include "CommandQueueMT.hh"
 #include "RenderCommandListMT.hh"
-#include "CommandListMT.hh"
 #include "ParallelRenderCommandListMT.hh"
 #include "RenderPassMT.hh"
 #include "RenderContextMT.hh"
@@ -39,7 +39,6 @@ namespace Methane::Graphics
 static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
 {
     META_FUNCTION_TASK();
-
     switch (primitive)
     {
         case RenderCommandList::Primitive::Point:          return MTLPrimitiveTypePoint;
@@ -51,16 +50,24 @@ static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primit
     return MTLPrimitiveTypeTriangleStrip;
 }
 
+static bool GetDeviceSupportOfGpuFamilyApple3(CommandQueueMT& command_queue)
+{
+    META_FUNCTION_TASK();
+    const id<MTLDevice> mtl_device = command_queue.GetContextMT().GetDeviceMT().GetNativeDevice();
+    return [mtl_device supportsFamily:MTLGPUFamilyApple3] ||
+           [mtl_device supportsFamily:MTLGPUFamilyMac2];
+}
+
 Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
 Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListMT>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+    return std::make_shared<RenderCommandListMT>(dynamic_cast<ParallelRenderCommandListMT&>(parallel_render_command_list));
 }
 
 Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue&)
@@ -69,15 +76,17 @@ Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQu
     return nullptr;
 }
 
-RenderCommandListMT::RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
+RenderCommandListMT::RenderCommandListMT(CommandQueueMT& command_queue, RenderPassBase& render_pass)
     : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(true, command_queue, render_pass)
+    , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(command_queue))
 {
     META_FUNCTION_TASK();
 }
 
-RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list)
+RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListMT& parallel_render_command_list)
     : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(false, parallel_render_command_list)
-    , m_parallel_render_command_list_ptr(&static_cast<ParallelRenderCommandListMT&>(parallel_render_command_list))
+    , m_parallel_render_command_list_ptr(&parallel_render_command_list)
+    , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(parallel_render_command_list.GetCommandQueueMT()))
 {
     META_FUNCTION_TASK();
 }
@@ -150,29 +159,40 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, uint32_t index_count,
 
     RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
-    const BufferMT&        metal_index_buffer   = static_cast<const BufferMT&>(*drawing_state.index_buffer_ptr);
-    const MTLPrimitiveType mtl_primitive_type   = PrimitiveTypeToMetal(primitive);
-    const MTLIndexType     mtl_index_type       = metal_index_buffer.GetNativeIndexType();
-    const id<MTLBuffer>&   mtl_index_buffer     = metal_index_buffer.GetNativeBuffer();
-    const uint32_t         mtl_index_stride     = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
+    const BufferMT& metal_index_buffer = static_cast<const BufferMT&>(*drawing_state.index_buffer_ptr);
+    const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
+    const MTLIndexType     mtl_index_type     = metal_index_buffer.GetNativeIndexType();
+    const id <MTLBuffer>& mtl_index_buffer = metal_index_buffer.GetNativeBuffer();
+    const uint32_t mtl_index_stride = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
 
-    [mtl_cmd_encoder drawIndexedPrimitives: mtl_primitive_type
-                                indexCount: index_count
-                                 indexType: mtl_index_type
-                               indexBuffer: mtl_index_buffer
-                         indexBufferOffset: start_index * mtl_index_stride
-                             instanceCount: instance_count
-#ifdef APPLE_MACOS
-                                baseVertex: start_vertex
-                              baseInstance: start_instance];
-#else
-    ];
-    META_CHECK_ARG_EQUAL_DESCR(start_vertex, 0U, "DrawIndexed 'start_vertex' argument is not supported on iOS devices");
-    META_CHECK_ARG_EQUAL_DESCR(start_instance, 0U, "DrawIndexed 'start_instance' argument is not supported on iOS devices");
-#endif
+    if (m_device_supports_gpu_family_apple_3)
+    {
+        [mtl_cmd_encoder drawIndexedPrimitives:mtl_primitive_type
+                                    indexCount:index_count
+                                     indexType:mtl_index_type
+                                   indexBuffer:mtl_index_buffer
+                             indexBufferOffset:start_index * mtl_index_stride
+                                 instanceCount:instance_count
+                                    baseVertex:start_vertex
+                                  baseInstance:start_instance];
+    }
+    else
+    {
+        [mtl_cmd_encoder drawIndexedPrimitives:mtl_primitive_type
+                                    indexCount:index_count
+                                     indexType:mtl_index_type
+                                   indexBuffer:mtl_index_buffer
+                             indexBufferOffset:start_index * mtl_index_stride
+                                 instanceCount:instance_count];
+
+        if (start_vertex > 0U || start_instance > 0U)
+        {
+            NSLog(@"DrawIndexed 'start_vertex' and 'start_instance' arguments are not supported on iOS devices with GPU Family < Apple-3");
+        }
+    }
 }
 
 void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -186,16 +206,26 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
 
-    [mtl_cmd_encoder drawPrimitives: mtl_primitive_type
-                        vertexStart: start_vertex
-                        vertexCount: vertex_count
-                      instanceCount: instance_count
-#ifdef APPLE_MACOS
-                       baseInstance: start_instance];
-#else
-    ];
-    META_CHECK_ARG_EQUAL_DESCR(start_instance, 0U, "DrawIndexed 'start_instance' argument is not supported on iOS devices");
-#endif
+    if (m_device_supports_gpu_family_apple_3)
+    {
+        [mtl_cmd_encoder drawPrimitives:mtl_primitive_type
+                            vertexStart:start_vertex
+                            vertexCount:vertex_count
+                          instanceCount:instance_count
+                           baseInstance:start_instance];
+    }
+    else
+    {
+        [mtl_cmd_encoder drawPrimitives:mtl_primitive_type
+                            vertexStart:start_vertex
+                            vertexCount:vertex_count
+                          instanceCount:instance_count];
+
+        if (start_instance > 0U)
+        {
+            NSLog(@"Draw 'start_instance' argument is not supported on iOS devices with GPU Family < Apple-3");
+        }
+    }
 }
 
 RenderPassMT& RenderCommandListMT::GetRenderPassMT()

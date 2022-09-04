@@ -41,8 +41,8 @@ class RenderCommandListMT final
     : public CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>
 {
 public:
-    RenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
-    explicit RenderCommandListMT(ParallelRenderCommandListBase& parallel_render_command_list);
+    RenderCommandListMT(CommandQueueMT& command_queue, RenderPassBase& render_pass);
+    explicit RenderCommandListMT(ParallelRenderCommandListMT& parallel_render_command_list);
 
     // RenderCommandList interface
     void Reset(DebugGroup* p_debug_group = nullptr) override;
@@ -58,6 +58,7 @@ private:
     void ResetCommandEncoder();
 
     const ParallelRenderCommandListMT* m_parallel_render_command_list_ptr = nullptr;
+    const bool m_device_supports_gpu_family_apple_3;
 };
 
 } // namespace Methane::Graphics
