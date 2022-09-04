@@ -22,7 +22,7 @@ Methane compilation and build options interface target.
 *****************************************************************************]]
 
 if(TARGET MethaneBuildOptions)
-    # MethaneBuildOptions target is already defined, global build options are set
+    # MethaneBuildOptions target is already defined
     return()
 endif()
 
@@ -73,13 +73,10 @@ elseif(APPLE)
 
     # Apple platform specific definitions
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
-        set(APPLE_IOS 1)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS)
     elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
-        set(APPLE_TVOS 1)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-        set(APPLE_MACOS 1)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
         if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
             if (DEFINED DEPLOYMENT_TARGET)
@@ -111,26 +108,11 @@ elseif(APPLE)
 
 else(UNIX)
 
-    set(LINUX 1)
-
-    find_package(X11 REQUIRED)
-    if (NOT X11_xcb_FOUND OR
-        NOT X11_X11_xcb_FOUND)
-        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
-    endif()
-
 endif()
 
 if (MSVC)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-
-        # Remove default warning level 3 if exists to replaced with higher level 4 (see below)
-        string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-        # Enable multi-threaded build with MSVC
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
         target_compile_options(MethaneBuildOptions INTERFACE
             # Exception handling mode
