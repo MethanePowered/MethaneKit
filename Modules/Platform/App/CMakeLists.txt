@@ -16,6 +16,10 @@ if (WIN32)
         ${SOURCES_PLATFORM_OS_DIR}/ConsoleStreams.cpp
     )
 
+    list(APPEND PLATFORM_LIBRARIES
+        Shcore
+    )
+
 elseif(APPLE)
 
     if (APPLE_MACOS)
