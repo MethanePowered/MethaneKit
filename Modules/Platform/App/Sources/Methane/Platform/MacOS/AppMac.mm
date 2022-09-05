@@ -145,6 +145,18 @@ bool AppMac::SetFullScreen(bool is_full_screen)
     return true;
 }
 
+float AppMac::GetContentScalingFactor() const
+{
+    META_FUNCTION_TASK();
+    return static_cast<float>(m_ns_window.backingScaleFactor);
+}
+
+uint32_t AppMac::GetFontResolutionDpi() const
+{
+    META_FUNCTION_TASK();
+    return 72U * GetContentScalingFactor();
+}
+
 void AppMac::Close()
 {
     META_FUNCTION_TASK();

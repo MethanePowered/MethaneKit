@@ -146,26 +146,22 @@ class FakeRenderContext
     , public std::enable_shared_from_this<FakeRenderContext>
 {
 public:
-    FakeRenderContext(const Settings& settings, float content_scale, uint32_t font_dpi)
+    FakeRenderContext(const Settings& settings)
         : m_settings(settings)
-        , m_content_scale(content_scale)
-        , m_font_dpi(font_dpi)
     { }
 
     // RenderContext interface
-    [[nodiscard]] bool ReadyToRender() const override                                   { return false; }
-    void Resize(const FrameSize&) override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Present() override                                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Platform::AppView GetAppView() const override                         { return { }; }
-    [[nodiscard]] const Settings&   GetSettings() const noexcept override               { return m_settings; }
-    [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override       { return 0U; }
-    [[nodiscard]] uint32_t          GetFrameIndex() const noexcept override             { return 0U; }
-    [[nodiscard]] float             GetContentScalingFactor() const override            { return m_content_scale; }
-    [[nodiscard]] uint32_t          GetFontResolutionDpi() const override               { return m_font_dpi; }
-    [[nodiscard]] const FpsCounter& GetFpsCounter() const noexcept override             { return m_fps_counter; }
-    bool SetVSyncEnabled(bool vsync_enabled) override                                   { m_settings.vsync_enabled = vsync_enabled; return true; }
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override                    { m_settings.frame_buffers_count = frame_buffers_count; return true; }
-    bool SetFullScreen(bool is_full_screen) override                                    { m_settings.is_full_screen = is_full_screen; return true; }
+    [[nodiscard]] bool ReadyToRender() const override                             { return false; }
+    void Resize(const FrameSize&) override                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Present() override                                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Platform::AppView GetAppView() const override                   { return { }; }
+    [[nodiscard]] const Settings&   GetSettings() const noexcept override         { return m_settings; }
+    [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override { return 0U; }
+    [[nodiscard]] uint32_t          GetFrameIndex() const noexcept override       { return 0U; }
+    [[nodiscard]] const FpsCounter& GetFpsCounter() const noexcept override       { return m_fps_counter; }
+    bool SetVSyncEnabled(bool vsync_enabled) override                             { m_settings.vsync_enabled = vsync_enabled; return true; }
+    bool SetFrameBuffersCount(uint32_t frame_buffers_count) override              { m_settings.frame_buffers_count = frame_buffers_count; return true; }
+    bool SetFullScreen(bool is_full_screen) override                              { m_settings.is_full_screen = is_full_screen; return true; }
 
     // Context interface
     [[nodiscard]] Type GetType() const noexcept override                                { return Type::Render; }
@@ -191,8 +187,6 @@ public:
 
 private:
     Settings               m_settings;
-    float                  m_content_scale;
-    uint32_t               m_font_dpi;
     FakeDevice             m_fake_device;
     FpsCounter             m_fps_counter;
     FakeObjectRegistry     m_object_registry;

@@ -12,6 +12,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneUserInterfaceTypes
+        MethanePlatformApp
         MethaneGraphicsPrimitives
         MethaneGraphicsCore
         MethaneBuildOptions

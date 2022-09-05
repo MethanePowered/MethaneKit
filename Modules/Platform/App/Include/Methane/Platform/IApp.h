@@ -75,23 +75,25 @@ public:
     };
 
     // IApp interface
-    virtual int  Run(const RunArgs& args) = 0;
-    virtual void InitContext(const AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
-    virtual void Init() = 0;
-    virtual void ChangeWindowBounds(const Data::FrameRect& window_bounds) = 0;
-    virtual void StartResizing() = 0;
-    virtual void EndResizing() = 0;
-    virtual bool Resize(const Data::FrameSize& frame_size, bool is_minimized) = 0;
-    virtual bool Update() = 0;
-    virtual bool Render() = 0;
-    virtual void Alert(const Message& msg, bool deferred = false) = 0;
-    virtual void SetWindowTitle(const std::string& title_text) = 0;
-    virtual bool SetFullScreen(bool is_full_screen) = 0;
-    virtual bool SetKeyboardFocus(bool has_keyboard_focus) = 0;
-    virtual void ShowControlsHelp() = 0;
-    virtual void ShowCommandLineHelp() = 0;
-    virtual void ShowParameters() = 0;
-    virtual void Close() = 0;
+    virtual int      Run(const RunArgs& args) = 0;
+    virtual void     InitContext(const AppEnvironment& env, const Data::FrameSize& frame_size) = 0;
+    virtual void     Init() = 0;
+    virtual void     ChangeWindowBounds(const Data::FrameRect& window_bounds) = 0;
+    virtual void     StartResizing() = 0;
+    virtual void     EndResizing() = 0;
+    virtual bool     Resize(const Data::FrameSize& frame_size, bool is_minimized) = 0;
+    virtual bool     Update() = 0;
+    virtual bool     Render() = 0;
+    virtual void     Alert(const Message& msg, bool deferred = false) = 0;
+    virtual void     SetWindowTitle(const std::string& title_text) = 0;
+    virtual bool     SetFullScreen(bool is_full_screen) = 0;
+    virtual bool     SetKeyboardFocus(bool has_keyboard_focus) = 0;
+    virtual void     ShowControlsHelp() = 0;
+    virtual void     ShowCommandLineHelp() = 0;
+    virtual void     ShowParameters() = 0;
+    virtual float    GetContentScalingFactor() const = 0;
+    virtual uint32_t GetFontResolutionDpi() const = 0;
+    virtual void     Close() = 0;
 
     virtual ~IApp() = default;
 

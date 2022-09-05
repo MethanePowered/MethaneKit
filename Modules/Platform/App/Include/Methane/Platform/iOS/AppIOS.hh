@@ -50,11 +50,13 @@ public:
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
     bool SetFullScreen(bool is_full_screen) override;
+    float GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
     void Close() override;
 
     void SetWindow(UIWindow* ns_window);
     bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
-    UIWindow* GetWindow()                       { return m_ns_window; }
+    UIWindow* GetWindow() { return m_ns_window; }
 
 protected:
     // AppBase interface

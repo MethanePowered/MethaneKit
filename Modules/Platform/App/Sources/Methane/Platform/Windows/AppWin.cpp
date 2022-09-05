@@ -28,6 +28,7 @@ Windows application implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <ShellScalingApi.h>
 #include <windowsx.h>
 #include <nowide/convert.hpp>
 
@@ -529,6 +530,26 @@ bool AppWin::SetFullScreen(bool is_full_screen)
 
     ShowWindow(m_env.window_handle, window_mode);
     return true;
+}
+
+float AppWin::GetContentScalingFactor() const
+{
+    META_FUNCTION_TASK();
+    DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
+    HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
+    ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
+    return GetDeviceScaleRatio(device_scale_factor);
+}
+
+uint32_t AppWin::GetFontResolutionDpi() const
+{
+    META_FUNCTION_TASK();
+    const HDC window_device_context = GetDC(m_platform_env.window_handle);
+    const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
+    META_CHECK_ARG_GREATER_OR_EQUAL(dpi_y, 1);
+    META_CHECK_ARG_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
+                               "we assume that horizontal and vertical font resolutions are equal");
+    return dpi_y;
 }
 
 void AppWin::Close()

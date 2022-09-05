@@ -48,8 +48,6 @@ public:
     void Resize(const FrameSize& frame_size) override;
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
-    float GetContentScalingFactor() const override;
-    uint32_t GetFontResolutionDpi() const override;
 
     // ContextBase interface
     void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;

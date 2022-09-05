@@ -175,6 +175,18 @@ bool AppLin::SetFullScreen(bool is_full_screen)
     return true;
 }
 
+float AppLin::GetContentScalingFactor() const
+{
+    // TODO: Get from OS
+    return 1.F;
+}
+
+uint32_t AppLin::GetFontResolutionDpi() const
+{
+    // TODO: get font resolution DPI from OS
+    return 96U;
+}
+
 void AppLin::Close()
 {
     META_FUNCTION_TASK();

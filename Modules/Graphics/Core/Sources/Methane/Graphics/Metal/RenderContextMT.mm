@@ -193,23 +193,6 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
     return false;
 }
 
-float RenderContextMT::GetContentScalingFactor() const
-{
-    META_FUNCTION_TASK();
-#ifdef APPLE_MACOS
-    return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
-#else
-    return static_cast<float>(m_app_view.appWindow.screen.nativeScale);
-#endif
-}
-
-uint32_t RenderContextMT::GetFontResolutionDpi() const
-{
-    META_FUNCTION_TASK();
-    // TODO: use real font DPI, get it from OS
-    return 72U * GetContentScalingFactor();
-}
-
 void RenderContextMT::BeginFrameCaptureScope()
 {
     META_FUNCTION_TASK();

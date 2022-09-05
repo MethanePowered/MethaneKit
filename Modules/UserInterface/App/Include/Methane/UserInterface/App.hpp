@@ -62,7 +62,8 @@ public:
         // Update parameters since they could change after parsing command line arguments
         UpdateParametersText();
         GraphicsApp::Init();
-        AppBase::InitUI(GraphicsApp::GetRenderContext().GetRenderCommandKit().GetQueue(),
+        AppBase::InitUI(*this,
+                        GraphicsApp::GetRenderContext().GetRenderCommandKit().GetQueue(),
                         GraphicsApp::GetScreenRenderPattern(),
                         GraphicsApp::GetFrameSize());
     }

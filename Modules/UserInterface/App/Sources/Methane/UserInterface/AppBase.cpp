@@ -136,10 +136,10 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(render_cmd_queue, render_pattern);
+    m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);
     m_frame_size     = UnitSize(Units::Pixels, frame_size);
     m_text_margins   = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
     m_window_padding = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.window_padding);
