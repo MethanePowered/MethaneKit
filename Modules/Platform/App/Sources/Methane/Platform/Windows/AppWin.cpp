@@ -52,6 +52,34 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     }
 }
 
+
+static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
+{
+    META_FUNCTION_TASK();
+
+    switch (device_scale_factor)
+    {
+    case DEVICE_SCALE_FACTOR_INVALID: return 1.0F;
+    case SCALE_100_PERCENT:           return 1.0F;
+    case SCALE_120_PERCENT:           return 1.2F;
+    case SCALE_125_PERCENT:           return 1.25F;
+    case SCALE_140_PERCENT:           return 1.4F;
+    case SCALE_150_PERCENT:           return 1.5F;
+    case SCALE_160_PERCENT:           return 1.6F;
+    case SCALE_175_PERCENT:           return 1.75F;
+    case SCALE_180_PERCENT:           return 1.8F;
+    case SCALE_200_PERCENT:           return 2.F;
+    case SCALE_225_PERCENT:           return 2.25F;
+    case SCALE_250_PERCENT:           return 2.5F;
+    case SCALE_300_PERCENT:           return 3.F;
+    case SCALE_350_PERCENT:           return 3.5F;
+    case SCALE_400_PERCENT:           return 4.F;
+    case SCALE_450_PERCENT:           return 4.5F;
+    case SCALE_500_PERCENT:           return 5.F;
+    default: META_UNEXPECTED_ARG_RETURN(device_scale_factor, 1.F);
+    }
+}
+
 AppWin::AppWin(const AppBase::Settings& settings)
     : AppBase(settings)
     , m_console_streams_ptr(std::make_unique<ConsoleStreams>()) // NOSONAR
@@ -536,15 +564,15 @@ float AppWin::GetContentScalingFactor() const
 {
     META_FUNCTION_TASK();
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
-    HMONITOR monitor_handle = MonitorFromWindow(m_platform_env.window_handle, MONITOR_DEFAULTTONEAREST);
-    ThrowIfFailed(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor));
+    HMONITOR monitor_handle = MonitorFromWindow(m_env.window_handle, MONITOR_DEFAULTTONEAREST);
+    META_CHECK_ARG_FALSE(FAILED(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor)));
     return GetDeviceScaleRatio(device_scale_factor);
 }
 
 uint32_t AppWin::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
-    const HDC window_device_context = GetDC(m_platform_env.window_handle);
+    const HDC window_device_context = GetDC(m_env.window_handle);
     const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
     META_CHECK_ARG_GREATER_OR_EQUAL(dpi_y, 1);
     META_CHECK_ARG_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
