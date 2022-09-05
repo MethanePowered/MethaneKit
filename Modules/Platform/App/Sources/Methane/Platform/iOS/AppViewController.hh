@@ -25,13 +25,13 @@ iOS application view controller implementation.
 
 #import <UIKit/UIKit.h>
 
-namespace Methane::Platform { class AppMac; }
+namespace Methane::Platform { class AppIOS; }
 
 @interface AppViewController : UIViewController<MetalAppViewDelegate>
 
 @property (nonatomic, readonly, nullable) UIWindow* window;
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andFrameRect : (CGRect) frame;
-- (Methane::Platform::AppMac* _Nonnull) getApp;
+- (id _Nullable)initWithApp : (Methane::Platform::AppIOS* _Nonnull) p_app andFrameRect : (CGRect) frame;
+- (Methane::Platform::AppIOS* _Nonnull) getApp;
 
 @end

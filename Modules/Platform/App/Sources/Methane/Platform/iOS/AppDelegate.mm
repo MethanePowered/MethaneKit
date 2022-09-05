@@ -44,7 +44,7 @@ using namespace Methane::Platform;
     if (!self)
         return nil;
 
-    AppMac* p_app = AppMac::GetInstance();
+    AppIOS  * p_app          = AppIOS::GetInstance();
     UIScreen* ns_main_screen = [UIScreen mainScreen];
     const auto& ns_frame_size = ns_main_screen.bounds.size;
     const CGRect backing_frame = CGRectMake(0.f, 0.f,

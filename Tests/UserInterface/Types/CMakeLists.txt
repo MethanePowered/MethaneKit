@@ -4,6 +4,7 @@ add_executable(${TARGET}
     UnitTypeCatchHelpers.hpp
     UnitTypesTest.cpp
     FakeRenderContext.hpp
+    FakePlatformApp.hpp
     ContextTest.cpp
 )
 

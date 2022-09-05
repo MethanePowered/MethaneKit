@@ -52,13 +52,13 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 
 @implementation AppViewController
 {
-    AppMac*     m_p_app;
+    AppIOS*     m_p_app;
     CGRect      m_frame_rect;
     bool        m_is_initialized;
     std::string m_error;
 }
 
-- (id) initWithApp : (Methane::Platform::AppMac*) p_app andFrameRect : (CGRect) frame_rect
+- (id)initWithApp : (Methane::Platform::AppIOS*) p_app andFrameRect : (CGRect) frame_rect
 {
     META_FUNCTION_TASK();
 
@@ -79,7 +79,7 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     return m_p_app ? m_p_app->GetWindow() : nil;
 }
 
-- (Methane::Platform::AppMac*) getApp
+- (Methane::Platform::AppIOS*) getApp
 {
     return m_p_app;
 }

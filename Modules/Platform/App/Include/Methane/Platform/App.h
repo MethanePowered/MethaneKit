@@ -50,7 +50,11 @@ using App = AppWin;
 
 #elif defined __APPLE__
 
+#ifdef APPLE_MACOS
 using App = AppMac;
+#else
+using App = AppIOS;
+#endif
 
 #elif defined __linux__
 

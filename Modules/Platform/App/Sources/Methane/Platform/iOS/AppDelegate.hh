@@ -27,7 +27,7 @@ iOS application delegate implementation.
 
 #import <UIKit/UIKit.h>
 
-namespace Methane::Platform { class AppMac; }
+namespace Methane::Platform { class AppIOS; }
 
 @interface AppDelegate : UIResponder<UIApplicationDelegate>
 

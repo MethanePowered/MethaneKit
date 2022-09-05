@@ -37,12 +37,12 @@ using UIWindow = void;
 namespace Methane::Platform
 {
 
-class AppMac : public AppBase
+class AppIOS : public AppBase
 {
 public:
-    static AppMac* GetInstance();
+    static AppIOS* GetInstance();
     
-    explicit AppMac(const AppBase::Settings& settings);
+    explicit AppIOS(const AppBase::Settings& settings);
 
     // AppBase interface
     void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
@@ -65,7 +65,7 @@ protected:
 private:
     UIWindow* m_ns_window = nullptr;
 
-    static AppMac* s_instance_ptr;
+    static AppIOS* s_instance_ptr;
 };
 
 } // namespace Methane::Platform
