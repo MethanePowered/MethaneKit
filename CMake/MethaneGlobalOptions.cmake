@@ -45,15 +45,17 @@ elseif(APPLE)
         set(APPLE_TVOS 1)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(APPLE_MACOS 1)
-        if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
-            if (DEFINED DEPLOYMENT_TARGET)
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
-            else()
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
-            endif()
+        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET AND DEPLOYMENT_TARGET)
+            set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
         endif()
     else()
         message(FATAL_ERROR "Methane Kit does not support Apple system: ${CMAKE_SYSTEM_NAME}")
+    endif()
+
+    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        # MacOS-only applicable deployment target minimum version
+        # It's also set in info.plist for iOS apps since they can run natively on MacOS with Apple Silicon
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
     endif()
 
     # Common code-signing options

@@ -78,33 +78,9 @@ elseif(APPLE)
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
-        if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
-            if (DEFINED DEPLOYMENT_TARGET)
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
-            else()
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
-            endif()
-        endif()
     else()
         message(FATAL_ERROR "Methane Kit does not support Apple system: ${CMAKE_SYSTEM_NAME}")
     endif()
-
-    # Common code-signing options
-    if (METHANE_APPLE_CODE_SIGNING_ENABLED)
-        set(APPLE_CODE_SIGNING_FLAG "YES")
-        set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic")
-        if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY)
-            set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development")
-        endif()
-    else()
-        set(APPLE_CODE_SIGNING_FLAG "NO")
-    endif()
-
-    # Enable Obj-C automatic reference counting and Apple app options
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
-    set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
 
 else(UNIX)
 

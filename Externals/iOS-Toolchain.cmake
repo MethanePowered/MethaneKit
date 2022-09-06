@@ -741,9 +741,10 @@ if(${CMAKE_VERSION} VERSION_LESS "3.11")
     set(SDK_NAME_VERSION_FLAGS
             "-mios-simulator-version-min=${DEPLOYMENT_TARGET}")
   endif()
-elseif(NOT PLATFORM_INT MATCHES "^MAC_CATALYST")
-  # Newer versions of CMake sets the version min flags correctly, skip this for Mac Catalyst targets
-  set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET})
+elseif(PLATFORM_INT STREQUAL "MAC" OR
+       PLATFORM_INT STREQUAL "MAC_ARM64")
+  # Set deployment target only for Mac targets, but not for Mac Catalyst
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
 endif()
 
 if(DEFINED APPLE_TARGET_TRIPLE_INT)
