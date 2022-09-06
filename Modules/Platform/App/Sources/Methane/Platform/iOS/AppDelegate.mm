@@ -33,6 +33,7 @@ using namespace Methane::Platform;
 
 @implementation AppDelegate
 {
+    UIWindow* m_window;
 }
 
 @synthesize window = m_window;
@@ -43,23 +44,16 @@ using namespace Methane::Platform;
     self = [super init];
     if (!self)
         return nil;
-
+    
     AppIOS  * p_app          = AppIOS::GetInstance();
     UIScreen* ns_main_screen = [UIScreen mainScreen];
     const auto& ns_frame_size = ns_main_screen.bounds.size;
     const CGRect backing_frame = CGRectMake(0.f, 0.f,
                                             ns_frame_size.width * ns_main_screen.nativeScale,
                                             ns_frame_size.height * ns_main_screen.nativeScale);
-    
-    m_window = [[UIWindow alloc] initWithFrame:ns_main_screen.bounds];
-    
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
     
-    UINavigationController* navigation_controller = [[UINavigationController alloc] initWithRootViewController:self.viewController];
-    navigation_controller.navigationBarHidden = YES;
-    self.window.rootViewController = navigation_controller;
-
-    p_app->SetWindow(m_window);
+    m_window = nil;
     return self;
 }
 
@@ -102,6 +96,23 @@ using namespace Methane::Platform;
     #pragma unused(launch_otions)
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+- (UIWindow*) window
+{
+    META_FUNCTION_TASK();
+    if (!m_window)
+    {
+        UIScreen* ns_main_screen = [UIScreen mainScreen];
+        m_window = [[UIWindow alloc] initWithFrame:ns_main_screen.bounds];
+        
+        UINavigationController* navigation_controller = [[UINavigationController alloc] initWithRootViewController:self.viewController];
+        navigation_controller.navigationBarHidden = YES;
+        m_window.rootViewController = navigation_controller;
+        
+        AppIOS::GetInstance()->SetWindow(m_window);
+    }
+    return m_window;
 }
 
 @end
