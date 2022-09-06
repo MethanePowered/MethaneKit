@@ -100,6 +100,7 @@ function(add_methane_application)
             set(CONFIG_DIR_NAME "MacOS")
         else()
             set(CONFIG_DIR_NAME "iOS")
+            set(IOS_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
         endif()
 
         set(ICON_FILE Methane.icns)
@@ -135,6 +136,13 @@ function(add_methane_application)
                 XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "${APPLE_CODE_SIGNING_FLAG}"
                 XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "${APPLE_CODE_SIGNING_FLAG}"
         )
+
+        if(APPLE_IOS)
+            set_target_properties(${APP_TARGET}
+                PROPERTIES
+                    XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2" # iPhone, iPad
+            )
+        endif()
 
         set(BINARY_DIR ${BINARY_DIR}/${APP_TARGET}.app/Contents/Resources)
 
