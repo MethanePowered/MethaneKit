@@ -185,8 +185,8 @@ float AppLin::GetContentScalingFactor() const
 uint32_t AppLin::GetFontResolutionDpi() const
 {
     META_FUNCTION_TASK();
-    const char* display_res_str = XResourceManagerString(m_env.display);
-    if (display_res_str)
+    if (const char* display_res_str = XResourceManagerString(m_env.display);
+        display_res_str)
     {
         XrmInitialize();
         XrmDatabase db = XrmGetStringDatabase(display_res_str);
@@ -197,8 +197,8 @@ uint32_t AppLin::GetFontResolutionDpi() const
     }
 
     const auto* screen_info = ScreenOfDisplay(m_env.display, 0); // 0 for default screen
-    const uint32_t dpi_hor = static_cast<uint32_t>(static_cast<double>(screen_info->width)  / static_cast<double>(screen_info->mwidth)  * 25.4);
-    const uint32_t dpi_ver = static_cast<uint32_t>(static_cast<double>(screen_info->height) / static_cast<double>(screen_info->mheight) * 25.4);
+    const auto dpi_hor = static_cast<uint32_t>(static_cast<double>(screen_info->width)  / static_cast<double>(screen_info->mwidth)  * 25.4);
+    const auto dpi_ver = static_cast<uint32_t>(static_cast<double>(screen_info->height) / static_cast<double>(screen_info->mheight) * 25.4);
     return std::max(dpi_hor, dpi_ver);
 }
 

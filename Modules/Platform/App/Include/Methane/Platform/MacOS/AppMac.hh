@@ -61,18 +61,18 @@ public:
 
     void SetWindow(NSWindow* ns_window);
     bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
-    NSWindow* GetWindow()                           { return m_ns_window; }
+    NSWindow* GetWindow()                           { return m_ns_window; } // NOSONAR
 
 protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
 private:
-    NSApplication*   m_ns_app          = nullptr;
-    AppDelegateType* m_ns_app_delegate = nullptr;
-    NSWindow*        m_ns_window       = nullptr;
+    NSApplication*   m_ns_app          = nullptr; // NOSONAR
+    AppDelegateType* m_ns_app_delegate = nullptr; // NOSONAR
+    NSWindow*        m_ns_window       = nullptr; // NOSONAR
     
-    static AppMac*     s_instance_ptr;
+    static AppMac* s_instance_ptr;
 };
 
 } // namespace Methane::Platform
