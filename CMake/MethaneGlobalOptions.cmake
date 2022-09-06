@@ -41,6 +41,8 @@ elseif(APPLE)
     # Apple platform specific definitions
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(APPLE_IOS 1)
+        # MacOS-only deployment target is set for iOS apps to allow running them natively on Macs with Apple Silicon
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
     elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         set(APPLE_TVOS 1)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -53,8 +55,7 @@ elseif(APPLE)
     endif()
 
     if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-        # MacOS-only applicable deployment target minimum version
-        # It's also set in info.plist for iOS apps since they can run natively on MacOS with Apple Silicon
+        # Set default MacOS deployment target minimum version
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
     endif()
 
