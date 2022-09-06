@@ -15,13 +15,13 @@
 	<key>CFBundleShortVersionString</key>
 	<string>${METHANE_APP_SHORT_VERSION}</string>
 	<key>NSHumanReadableCopyright</key>
-    <string>${METHANE_APP_COPYRIGHT}</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>${MACOSX_DEPLOYMENT_TARGET}</string>
-    <key>LSRequiresIPhoneOS</key>
-    <false/>
-    <key>MinimumOSVersion</key>
-    <string>${IOS_DEPLOYMENT_TARGET}</string>
+	<string>${METHANE_APP_COPYRIGHT}</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
+	<key>LSRequiresIPhoneOS</key>
+	<false/>
+	<key>MinimumOSVersion</key>
+	<string>${IOS_DEPLOYMENT_TARGET}</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -31,22 +31,22 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>UILaunchScreen</key>
-    <dict>
-        <key>UIColorName</key>
-        <string>launchScreenBackground</string>
-    </dict>
+	<dict>
+		<key>UIColorName</key>
+		<string>launchScreenBackground</string>
+	</dict>
 	<key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 </dict>
 </plist>
