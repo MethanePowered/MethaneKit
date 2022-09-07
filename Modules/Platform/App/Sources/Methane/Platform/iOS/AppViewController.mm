@@ -95,7 +95,9 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 {
     META_FUNCTION_TASK();
     [super viewDidLoad];
+#ifdef APPLE_IOS
     self.view.multipleTouchEnabled = YES;
+#endif
 }
 
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
@@ -115,7 +117,7 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-#pragma unused(view)
+    #pragma unused(view)
 
     if (!m_is_initialized)
     {
@@ -125,10 +127,10 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches
-    withEvent:(UIEvent *)event
+           withEvent:(UIEvent *)event
 {
     META_FUNCTION_TASK();
-#pragma unused(event)
+    #pragma unused(event)
 
     if (touches.count < 1 || touches.count > 3)
     {
@@ -141,10 +143,10 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches
-    withEvent:(UIEvent *)event
+           withEvent:(UIEvent *)event
 {
     META_FUNCTION_TASK();
-#pragma unused(event)
+    #pragma unused(event)
 
     if (touches.count < 1 || touches.count > 3)
     {
@@ -157,10 +159,10 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches
-    withEvent:(UIEvent *)event
+               withEvent:(UIEvent *)event
 {
     META_FUNCTION_TASK();
-#pragma unused(event)
+    #pragma unused(event)
 
     if (touches.count < 1 || touches.count > 3)
     {
@@ -172,10 +174,10 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches
-    withEvent:(UIEvent *)event
+           withEvent:(UIEvent *)event
 {
     META_FUNCTION_TASK();
-#pragma unused(event)
+    #pragma unused(event)
 
     if (touches.count < 1 || touches.count > 3)
     {
@@ -199,8 +201,7 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
-- (void) handeTouches:(NSSet<UITouch *> *)touches
-withMouseButtonChange:(Mouse::ButtonState) mouse_button_state
+- (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(Mouse::ButtonState) mouse_button_state
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
