@@ -28,7 +28,7 @@ Metal implementation of the program interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -68,27 +68,23 @@ ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     
     NSError* ns_error = nil;
     const id<MTLDevice>& mtl_device = metal_context.GetDeviceMT().GetNativeDevice();
+
+    MTLRenderPipelineReflection* mtl_render_pipeline_reflection = nil;
     m_mtl_dummy_pipeline_state_for_reflection = [mtl_device newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc
                                                                                          options:MTLPipelineOptionArgumentInfo
-                                                                                      reflection:&m_mtl_render_pipeline_reflection
+                                                                                      reflection:&mtl_render_pipeline_reflection
                                                                                            error:&ns_error];
 
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_dummy_pipeline_state_for_reflection,
                                   "Failed to create dummy pipeline state for program reflection: {}",
                                   MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
 
-    if (m_mtl_render_pipeline_reflection)
+    if (mtl_render_pipeline_reflection)
     {
-        SetNativeShaderArguments(Shader::Type::Vertex, m_mtl_render_pipeline_reflection.vertexArguments);
-        SetNativeShaderArguments(Shader::Type::Pixel,  m_mtl_render_pipeline_reflection.fragmentArguments);
+        SetNativeShaderArguments(Shader::Type::Vertex, mtl_render_pipeline_reflection.vertexArguments);
+        SetNativeShaderArguments(Shader::Type::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
         InitArgumentBindings(settings.argument_accessors);
     }
-}
-
-ProgramMT::~ProgramMT()
-{
-    META_FUNCTION_TASK();
-    [m_mtl_vertex_desc release];
 }
 
 const IContextMT& ProgramMT::GetContextMT() const noexcept

@@ -25,13 +25,12 @@ MacOS application view implementation.
 
 #import "AppEnvironment.hh"
 
-#import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 @interface AppViewMT : NSView
 {
-    IBOutlet NSViewController* viewController;
+    IBOutlet NativeViewController* viewController;
 }
 
 @property (nonatomic, readonly, nullable) NSWindow* appWindow;

@@ -22,6 +22,7 @@ Methane user interface context used by all widgets for rendering.
 ******************************************************************************/
 
 #include <Methane/UserInterface/Context.h>
+#include <Methane/Platform/IApp.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/RenderPass.h>
@@ -30,12 +31,12 @@ Methane user interface context used by all widgets for rendering.
 namespace Methane::UserInterface
 {
 
-Context::Context(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern)
+Context::Context(const pal::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern)
     : m_render_context(render_pattern.GetRenderContext())
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<gfx::CommandQueue>(render_cmd_queue.GetPtr()))
     , m_render_pattern_ptr(std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr()))
-    , m_dots_to_pixels_factor(render_pattern.GetRenderContext().GetContentScalingFactor())
-    , m_font_resolution_dpi(render_pattern.GetRenderContext().GetFontResolutionDpi())
+    , m_dots_to_pixels_factor(app.GetContentScalingFactor())
+    , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), gfx::CommandList::Type::Render);

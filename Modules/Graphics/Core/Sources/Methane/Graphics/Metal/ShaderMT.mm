@@ -29,7 +29,7 @@ Metal implementation of the shader interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -106,16 +106,10 @@ Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, con
 
 ShaderMT::ShaderMT(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
-    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->Get() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+    , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->GetNativeLibrary() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
-}
-
-ShaderMT::~ShaderMT()
-{
-    META_FUNCTION_TASK();
-    [m_mtl_function release];
 }
 
 ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const

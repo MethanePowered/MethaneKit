@@ -40,7 +40,6 @@ class FenceMT final : public FenceBase
 {
 public:
     explicit FenceMT(CommandQueueBase& command_queue);
-    ~FenceMT() override;
 
     // Fence overrides
     void Signal() override;
@@ -53,7 +52,7 @@ public:
 private:
     CommandQueueMT& GetCommandQueueMT();
     
-    static dispatch_queue_t& GetDispatchQueue();
+    static const dispatch_queue_t& GetDispatchQueue();
 
     id<MTLSharedEvent>          m_mtl_event;
     MTLSharedEventListener*     m_mtl_event_listener;

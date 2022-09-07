@@ -1,8 +1,8 @@
 # Hello Triangle Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan) |
-| -------------------- | ------------- | -------------- |
-| ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) | ![Hello Triangle on Linux](Screenshots/HelloTriangleLinVulkan.jpg) |
+| <pre><b>Windows (DirectX 12)       </pre></b>                           | <pre><b>Linux (Vulkan)             </pre></b>                      | <pre><b>MacOS (Metal)              </pre></b>                     | <pre><b>iOS (Metal)</pre></b>                                   |
+|-------------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------|-----------------------------------------------------------------|
+| ![Hello Triangle on Windows](Screenshots/HelloTriangleWinDirectX12.jpg) | ![Hello Triangle on Linux](Screenshots/HelloTriangleLinVulkan.jpg) | ![Hello Triangle on MacOS](Screenshots/HelloTriangleMacMetal.jpg) | ![Hello Triangle on iOS](Screenshots/HelloTriangleIOSMetal.jpg) | 
 
 This tutorial demonstrates colored triangle rendering implemented in just 130 lines of code using Methane Kit:
 - [HelloTriangleApp.cpp](HelloTriangleApp.cpp)
@@ -15,6 +15,12 @@ Tutorial demonstrates the following Methane Kit features and techniques:
 - Execute command lists on GPU and presenting frame buffers on screen.
 - Configure cross-platform application build with shaders compilation to embedded resources.
 
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform` and `Graphics` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+
 ## Application and Frame Class Definitions
 
 Application class `HelloTriangleApp` is derived from the base template class [Graphics::App<HelloTriangleFrame>](/Modules/Graphics/App) 
@@ -23,7 +29,7 @@ which implements base platform and graphics application infrastructure with supp
 Application frame class `HelloTriangleFrame` is derived from the base class `Graphics::AppFrame` and extends it 
 with render command list `render_cmd_list_ptr` and command list set `execute_cmd_list_set_ptr` submitted 
 for rendering to frame buffer `index`. Application is initialized with default settings using `Graphics::AppSettings` structure,
-which is initialized with helper function `Samples::GetGraphicsAppSettings(...)`. 
+which is initialized with helper function `Tutorials::GetGraphicsTutorialAppSettings(...)`. 
 Destroying of application along with its resources is delayed until all rendering is completed on GPU.
 
 ```cpp
@@ -48,7 +54,7 @@ public:
     HelloTriangleApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
+                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
             }())

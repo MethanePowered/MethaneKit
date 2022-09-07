@@ -1,10 +1,10 @@
 # Parallel Rendering Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                                  |
-| -------------------- | ------------- |-----------------------------------------------------------------|
-| ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) |
+| <pre><b>Windows (DirectX 12)       </pre></b>                                  | <pre><b>Linux (Vulkan)             </pre></b>                             | <pre><b>MacOS (Metal)              </pre></b>                            | <pre><b>iOS (Metal)</pre></b>                                          |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
+| ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on iOS](Screenshots/ParallelRenderingIOSMetal.jpg) | 
 
-This tutorial demonstrates multi-threaded rendering with `ParallelRenderCommandList` using Methane Kit:
+This tutorial demonstrates multithreaded rendering with `ParallelRenderCommandList` using Methane Kit:
   - [ParallelRenderingApp.h](ParallelRenderingApp.h)
   - [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
   - [ParallelRenderingAppController.h](ParallelRenderingAppController.h)
@@ -27,7 +27,7 @@ Tutorial demonstrates the following techniques:
   - Use Methane instrumentation to profile application execution on CPU and GPU 
     using [Tracy](https://github.com/wolfpld/tracy) or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
 
-## Application Controller
+## Application Controls
 
 Keyboard actions are enabled with [ParallelRenderingAppController](ParallelRenderingAppController.h) class
 derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
@@ -39,3 +39,8 @@ derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/
 | Decrease Cubes Grid Size      | `-`               |
 | Increase Render Threads Count | `]`               |
 | Decrease Render Threads Count | `[`               |
+
+Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInterface` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+- [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)

@@ -26,8 +26,8 @@ Methane short check macroses throwing exceptions on negative check result
   - META_CHECK_ARG[_NOT]_EQUAL[_DESCR](argument, value, description, ...)
   - META_CHECK_ARG_RANGE[_DESCR](argument, range_begin, range_end[, description]) - check in range [begin, end) - end exclusive
   - META_CHECK_ARG_RANGE_INC_[_DESCR](argument, range_begin, range_end[, description]) - check in range [begin, end] - end inclusive
-  - META_CHECK_ARG_LESS[_DESCR](argument, upper_limit[, description])
-  - META_CHECK_ARG_GREATER_OR_EQUAL[_DESCR](argument, min_value[, description])
+  - META_CHECK_ARG_LESS[_OR_EQUAL][_DESCR](argument, upper_limit[, description])  - check value <[=] upper_limit
+  - META_CHECK_ARG_GREATER[_OR_EQUAL][_DESCR](argument, min_value[, description]) - check value >[=] min_value
   - META_CHECK_ARG_NOT_EMPTY[_DESCR](argument[, description])
   - META_CHECK_ARG_NOT_NULL[_DESCR](argument[, description])
   - META_UNEXPECTED_ARG[_DESCR](argument[, description])
@@ -101,6 +101,13 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_ARG_LESS_OR_EQUAL(argument, upper_limit) META_CHECK_ARG_LESS_OR_EQUAL_DESCR(argument, upper_limit, "")
 
+#define META_CHECK_ARG_GREATER_DESCR(argument, min_value, description, ...) \
+    if (argument <= static_cast<std::decay_t<decltype(argument)>>(min_value)) \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(__FUNCTION_NAME__, #argument, argument, \
+                    { min_value, std::numeric_limits<std::decay_t<decltype(min_value)>>::max() }, false, fmt::format(description, ## __VA_ARGS__))
+
+#define META_CHECK_ARG_GREATER(argument, upper_limit) META_CHECK_ARG_GREATER_DESCR(argument, upper_limit, "")
+
 #define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) \
     if (argument < static_cast<std::decay_t<decltype(argument)>>(min_value)) \
         throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(__FUNCTION_NAME__, #argument, argument, \
@@ -165,6 +172,8 @@ Methane short check macroses throwing exceptions on negative check result
 #define META_CHECK_ARG_LESS(argument, upper_limit) (void)(argument)
 #define META_CHECK_ARG_LESS_OR_EQUAL_DESCR(argument, upper_limit, description, ...) (void)(argument)
 #define META_CHECK_ARG_LESS_OR_EQUAL(argument, upper_limit) (void)(argument)
+#define META_CHECK_ARG_GREATER_DESCR(argument, min_value, description, ...) (void)(argument)
+#define META_CHECK_ARG_GREATER(argument, min_value, description, ...) (void)(argument)
 #define META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) (void)(argument)
 #define META_CHECK_ARG_GREATER_OR_EQUAL(argument, min_value) (void)(argument)
 #define META_CHECK_ARG_NOT_EMPTY_DESCR(argument, description, ...) (void)(argument)

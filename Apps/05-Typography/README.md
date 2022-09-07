@@ -1,8 +1,8 @@
 # Typography Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                              |
-| -------------------- | ------------- |-------------------------------------------------------------|
-| ![Typography on Windows](Screenshots/TypographyWinDirectX12.jpg) | ![Typography on MacOS](Screenshots/TypographyMacMetal.jpg) | ![Typography on Linux](Screenshots/TypographyLinVulkan.jpg) |
+| <pre><b>Windows (DirectX 12)       </pre></b>                    | <pre><b>Linux (Vulkan)             </pre></b>               | <pre><b>MacOS (Metal)              </pre></b>              | <pre><b>iOS (Metal)</pre></b>                              |
+|------------------------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
+| ![Typography on Windows](Screenshots/TypographyWinDirectX12.jpg) | ![Typography on Linux](Screenshots/TypographyLinVulkan.jpg) | ![Typography on MacOS](Screenshots/TypographyMacMetal.jpg) | ![Typography on MacOS](Screenshots/TypographyIOSMetal.jpg) |
 
 This tutorial demonstrates animated text rendering with dynamic font atlas updates using Methane UI.
 Three colored text blocks are animated with continuous characters typing. Each text block is rendered as a single mesh
@@ -13,6 +13,26 @@ Font atlas texture can be updated dynamically by adding new character glyphs on 
 as the user types text including any non-Ascii character sets. Text characters layout and mesh generation is done on CPU
 using Methane implementation, without using 3rd-party libraries and supports horizontal and vertical text alignment in 
 rectangular areas with wrapping by characters and words. Right-to-left and Arabic language characters layout is not supported yet.
+
+## Application Controls
+
+Keyboard actions are enabled with [TypographyAppController](TypographyAppController.h) class
+derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
+
+| Typography App Action                                           | Keyboard Shortcut |
+|-----------------------------------------------------------------|-------------------|
+| Switch Text Wrap Mode (None, Anywhere, Word)                    | `W`               |
+| Switch Text Horizontal Alignment (Left, Right, Center, Justify) | `H`               |
+| Switch Text Vertical Alignment (Top, Bottom, Center)            | `V`               |
+| Switch Incremental Text Update                                  | `U`               |
+| Switch Typing Direction (Forward, Backward)                     | `D`               |
+| Speedup Typing                                                  | `+`               |
+| Slowdown Typing                                                 | `-`               |
+
+Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInterface` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+- [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)
 
 ## Application and Frame Class Definitions
 

@@ -26,24 +26,28 @@ and by Methane App implementations.
 
 #ifdef __OBJC__
 
+#ifdef APPLE_MACOS
 #import "MacOS/AppViewMT.hh"
-
+#else
+#import "iOS/AppViewMT.hh"
 #endif
+
+#endif // __OBJC__
 
 namespace Methane::Platform
 {
 
-#if defined(__OBJC__)
+#ifdef __OBJC__
 
 using NativeAppView = AppViewMT;
 using NativeAppViewPtr = NativeAppView* _Nonnull;
 
-#else
+#else // __OBJC__
 
 using NativeAppView = uint8_t;
 using NativeAppViewPtr = NativeAppView*;
 
-#endif
+#endif // __OBJC__
 
 struct AppView
 {

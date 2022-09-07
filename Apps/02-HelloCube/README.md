@@ -1,8 +1,8 @@
 # Hello Cube Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan) |
-| -------------------- | ------------- | -------------- |
-| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) |
+| <pre><b>Windows (DirectX 12)       </pre></b>                   | <pre><b>Linux (Vulkan)             </pre></b>              | <pre><b>MacOS (Metal)              </pre></b>             | <pre><b>iOS (Metal)</pre></b>                           |
+|-----------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------------|---------------------------------------------------------|
+| ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on iOS](Screenshots/HelloCubeIOSMetal.jpg) |
 
 This tutorial demonstrates colored cube rendering implemented in just 220 lines of code using Methane Kit:
 - [HelloCubeApp.cpp](HelloCubeApp.cpp)
@@ -19,6 +19,12 @@ Tutorial demonstrates the following Methane Kit features and techniques addition
 - **Uniforms version** (when macros `UNIFORMS_BUFFER_ENABLED` is defined):
   - Use uniform buffer to upload MVP matrix to GPU and transform vertices on GPU in vertex shader.
   - Use program bindings to bind uniform buffer to the graphics pipeline and make it available to shaders.
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform` and `Graphics` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
 
 ## Simple Cube Vertices Transformation on CPU
 
@@ -72,7 +78,7 @@ private:
 ```
 
 `HelloCubeApp` constructor calls base constructor `GraphicsApp` with `Graphics::AppSettings` initialized
-using helper function `GetGraphicsAppSettings` which is called with predefined flags to enable color buffer 
+using helper function `Tutorials::GetGraphicsTutorialAppSettings` which is called with predefined flags to enable color buffer 
 without depth and enable animations. `m_proj_vertices` is initialized with vertices data taken from cube mesh generator.
 
 Initial camera orientation is set with `Camera::ResetOrientation` via `Camera::Orientation` struct with
@@ -84,7 +90,7 @@ lamda function taking `delta_seconds` argument used to calculate the rotation de
 HelloCubeApp()
     : GraphicsApp(
         []() {
-            Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Cube", Samples::g_default_app_options_color_only_and_anim);
+            Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Cube", Tutorials::g_default_app_options_color_only_and_anim);
             settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
             return settings;
         }())

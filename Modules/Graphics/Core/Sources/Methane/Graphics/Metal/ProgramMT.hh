@@ -37,7 +37,6 @@ class ProgramMT final : public ProgramBase
 {
 public:
     ProgramMT(const ContextBase& context, const Settings& settings);
-    ~ProgramMT() override;
 
     ShaderMT& GetShaderMT(Shader::Type shader_type) noexcept;
     
@@ -50,7 +49,6 @@ private:
     
     MTLVertexDescriptor*         m_mtl_vertex_desc = nil;
     id<MTLRenderPipelineState>   m_mtl_dummy_pipeline_state_for_reflection;
-    MTLRenderPipelineReflection* m_mtl_render_pipeline_reflection = nil;
 };
 
 } // namespace Methane::Graphics

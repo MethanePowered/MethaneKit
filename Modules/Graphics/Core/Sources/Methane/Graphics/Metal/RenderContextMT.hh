@@ -28,7 +28,12 @@ Metal implementation of the render context interface.
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/TracyGpu.hpp>
 
+#ifdef APPLE_MACOS
 #import <Methane/Platform/MacOS/AppViewMT.hh>
+#else
+#import <Methane/Platform/iOS/AppViewMT.hh>
+#endif
+
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics
@@ -49,8 +54,6 @@ public:
     void     Present() override;
     bool     SetVSyncEnabled(bool vsync_enabled) override;
     bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    float    GetContentScalingFactor() const override;
-    uint32_t GetFontResolutionDpi() const override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
     // ContextBase overrides

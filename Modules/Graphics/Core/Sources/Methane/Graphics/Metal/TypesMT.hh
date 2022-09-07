@@ -31,6 +31,20 @@ Methane graphics types converters to Metal native types.
 
 #include <vector>
 
+#ifdef APPLE_MACOS
+
+#import <Foundation/Foundation.h>
+using NativeRect = NSRect;
+#define MakeNativeRect NSMakeRect
+
+#else // APPLE_MACOS
+
+#include <CoreGraphics/CGGeometry.h>
+using NativeRect = CGRect;
+#define MakeNativeRect CGRectMake
+
+#endif // APPLE_MACOS
+
 namespace Methane::Graphics
 {
 
@@ -42,9 +56,9 @@ public:
     static MTLVertexFormat MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized = false);
     static uint32_t ByteSizeOfVertexFormat(MTLVertexFormat vertex_format);
     static MTLClearColor ColorToMetalClearColor(const Color4F& color) noexcept;
-    static NSRect RectToNS(const FrameRect& rect) noexcept;
-    static NSRect CreateNSRect(const FrameSize& size, const Point2I& origin = Point2I(0, 0)) noexcept;
-    static FrameRect RectFromNS(const NSRect& rect) noexcept;
+    static NativeRect RectToNS(const FrameRect& rect) noexcept;
+    static NativeRect CreateNSRect(const FrameSize& size, const Point2I& origin = Point2I(0, 0)) noexcept;
+    static FrameRect RectFromNS(const NativeRect& rect) noexcept;
     static MTLCompareFunction CompareFunctionToMetal(Compare compare_func);
 
 private:

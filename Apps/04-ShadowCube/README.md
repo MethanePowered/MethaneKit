@@ -1,8 +1,8 @@
 # Shadow Cube Tutorial
 
-| Windows (DirectX 12) | MacOS (Metal) | Linux (Vulkan)                                               |
-| -------------------- | ------------- |--------------------------------------------------------------|
-| ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) | ![Shadow Cube on Linux](Screenshots/ShadowCubeLinVulkan.jpg) |
+| <pre><b>Windows (DirectX 12)       </pre></b>                     | <pre><b>Linux (Vulkan)             </pre></b>                | <pre><b>MacOS (Metal)              </pre></b>               | <pre><b>iOS (Metal)</pre></b>                             |
+|-------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------|-----------------------------------------------------------|
+| ![Shadow Cube on Windows](Screenshots/ShadowCubeWinDirectX12.jpg) | ![Shadow Cube on Linux](Screenshots/ShadowCubeLinVulkan.jpg) | ![Shadow Cube on MacOS](Screenshots/ShadowCubeMacMetal.jpg) | ![Shadow Cube on iOS](Screenshots/ShadowCubeIOSMetal.jpg) |
 
 This tutorial demonstrates rendering shadow of the textured cube on the floor plane in two render passes using Methane Kit:
 - [ShadowCubeApp.h](ShadowCubeApp.h)
@@ -16,6 +16,13 @@ Tutorial demonstrates using of the following Methane Kit features additionally t
 - Compile and loading shaders code with macro-definitions to render state programs;
 - Use graphics extension `MeshBuffers` and `TexturedMeshBuffers` classes to simplify mesh rendering code;
 - Simple shadows rendering technique. See detailed [technique description here](http://www.opengl-tutorial.org/ru/intermediate-tutorials/tutorial-16-shadow-mapping/)
+
+## Application Controls
+
+Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInterface` application controllers:
+- [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
+- [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
+- [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)
 
 ## Application and Frame Class Definitions
 

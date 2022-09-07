@@ -24,22 +24,18 @@ MacOS application implementation.
 #pragma once
 
 #include <Methane/Platform/AppBase.h>
-#include <Methane/Platform/AppEnvironment.h>
+#include <Methane/Platform/MacOS/AppEnvironment.hh>
 
 #if defined(__OBJC__) && defined(METHANE_RENDER_APP)
 
 #import <Methane/Platform/MacOS/AppDelegate.hh>
-#import <AppKit/AppKit.h>
-
-using NSApplicationType = NSApplication;
 using AppDelegateType = AppDelegate;
-using NSWindowType = NSWindow;
 
 #else
 
-using NSApplicationType = uint8_t;
-using AppDelegateType = uint8_t;
-using NSWindowType = uint8_t;
+using AppDelegateType = void;
+using NSApplication = void;
+using NSWindow = void;
 
 #endif
 
@@ -49,8 +45,9 @@ namespace Methane::Platform
 class AppMac : public AppBase
 {
 public:
+    static AppMac* GetInstance();
+    
     explicit AppMac(const AppBase::Settings& settings);
-    ~AppMac() override;
 
     // AppBase interface
     void InitContext(const Platform::AppEnvironment& env, const Data::FrameSize& frame_size) override;
@@ -58,20 +55,24 @@ public:
     void Alert(const Message& msg, bool deferred = false) override;
     void SetWindowTitle(const std::string& title_text) override;
     bool SetFullScreen(bool is_full_screen) override;
+    float GetContentScalingFactor() const override;
+    uint32_t GetFontResolutionDpi() const override;
     void Close() override;
 
-    void SetWindow(NSWindowType* ns_window);
+    void SetWindow(NSWindow* ns_window);
     bool SetFullScreenInternal(bool is_full_screen) { return AppBase::SetFullScreen(is_full_screen); }
-    NSWindowType* GetWindow()                       { return m_ns_window; }
+    NSWindow* GetWindow()                           { return m_ns_window; } // NOSONAR
 
 protected:
     // AppBase interface
     void ShowAlert(const Message& msg) override;
 
 private:
-    NSApplicationType*  m_ns_app          = nullptr;
-    AppDelegateType*    m_ns_app_delegate = nullptr;
-    NSWindowType*       m_ns_window       = nullptr;
+    NSApplication*   m_ns_app          = nullptr; // NOSONAR
+    AppDelegateType* m_ns_app_delegate = nullptr; // NOSONAR
+    NSWindow*        m_ns_window       = nullptr; // NOSONAR
+    
+    static AppMac* s_instance_ptr;
 };
 
 } // namespace Methane::Platform

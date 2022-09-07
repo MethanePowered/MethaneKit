@@ -46,6 +46,7 @@ struct IApp : Graphics::IApp
         Color4F                  logo_badge_color      { 1.F, 1.F, 1.F, 0.15F };
         Color4F                  text_color            { 1.F, 1.F, 1.F, 1.F };
         UnitPoint                text_margins          { Units::Dots, 20, 20 };
+        UnitPoint                window_padding        { Units::Dots, 30, 30 };
         Font::Description        main_font             { "Main",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", 11U };
         HeadsUpDisplay::Settings hud_settings;
 
@@ -53,7 +54,8 @@ struct IApp : Graphics::IApp
         Settings& SetLogoBadgeVisible(bool new_logo_badge_visible) noexcept;
         Settings& SetLogoBadgeColor(const Color4F& new_logo_badge_color) noexcept;
         Settings& SetTextColor(const Color4F& new_text_color) noexcept;
-        Settings& SetTextMargings(const UnitPoint& new_text_margings) noexcept;
+        Settings& SetTextMargins(const UnitPoint& new_text_margings) noexcept;
+        Settings& SetWindowPadding(const UnitPoint& new_window_padding) noexcept;
         Settings& SetMainFont(const Font::Description& new_main_font) noexcept;
         Settings& SetHudSettings(const HeadsUpDisplay::Settings& new_hud_settings) noexcept;
     };

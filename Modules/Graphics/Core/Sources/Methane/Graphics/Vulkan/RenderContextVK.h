@@ -68,8 +68,6 @@ public:
     void     Present() override;
     bool     SetVSyncEnabled(bool vsync_enabled) override;
     bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    float    GetContentScalingFactor() const override;
-    uint32_t GetFontResolutionDpi() const override;
     Platform::AppView GetAppView() const override { return { }; }
 
     // ContextBase overrides

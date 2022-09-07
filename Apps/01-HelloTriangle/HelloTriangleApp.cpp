@@ -45,7 +45,7 @@ public:
     HelloTriangleApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Samples::GetGraphicsAppSettings("Methane Hello Triangle", Samples::g_default_app_options_color_only);
+                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
                 settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
                 return settings;
             }(),

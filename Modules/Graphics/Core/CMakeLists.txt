@@ -88,7 +88,6 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         d3d12
         dxgi
         dxguid
-        Shcore
     )
 
 elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)

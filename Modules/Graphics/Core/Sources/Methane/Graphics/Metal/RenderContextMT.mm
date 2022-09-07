@@ -29,7 +29,7 @@ Metal implementation of the render context interface.
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 
 // Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
 // NOTE: when fences are used for frames synchronization,
@@ -79,8 +79,6 @@ RenderContextMT::~RenderContextMT()
 {
     META_FUNCTION_TASK();
 
-    [m_app_view release];
-    
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_release(m_dispatch_semaphore);
 #endif
@@ -193,19 +191,6 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
         return true;
     }
     return false;
-}
-
-float RenderContextMT::GetContentScalingFactor() const
-{
-    META_FUNCTION_TASK();
-    return static_cast<float>(m_app_view.appWindow.backingScaleFactor);
-}
-
-uint32_t RenderContextMT::GetFontResolutionDpi() const
-{
-    META_FUNCTION_TASK();
-    // TODO: use real font DPI, get it from OS
-    return 72U * GetContentScalingFactor();
 }
 
 void RenderContextMT::BeginFrameCaptureScope()

@@ -3,17 +3,17 @@ cmake_minimum_required(VERSION 3.18.0)
 set(METHANE_LANGUAGES CXX C)
 
 if(APPLE)
-
     list(APPEND METHANE_LANGUAGES OBJCXX)
 
-    # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
-    # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-    EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
-    string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
-    if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0 AND NOT CMAKE_OSX_ARCHITECTURES)
-        message(AUTHOR_WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+    if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
+        # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
+        string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
+        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0 AND NOT CMAKE_OSX_ARCHITECTURES)
+            message(AUTHOR_WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+        endif()
     endif()
-
 endif()
 
 if(NOT DEFINED PROJECT_NAME)
@@ -24,8 +24,8 @@ endif()
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 6 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 5 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_MINOR 7 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 project(METHANE_KIT
@@ -42,6 +42,12 @@ if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
 
+if(APPLE AND DEFINED APPLE_DEVELOPMENT_TEAM)
+    set(APPLE_CODE_SIGNING_AVAILABLE ON)
+else()
+    set(APPLE_CODE_SIGNING_AVAILABLE OFF)
+endif()
+
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${IS_ROOT_PROJECT})
@@ -53,6 +59,7 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
+option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${APPLE_CODE_SIGNING_AVAILABLE})
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -81,7 +88,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
 set(CMAKE_DISABLE_PRECOMPILE_HEADERS OFF)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -92,33 +98,8 @@ if (NOT CPM_SOURCE_CACHE AND NOT DEFINED ENV{CLION_IDE})
     set(CPM_SOURCE_CACHE "${CMAKE_SOURCE_DIR}/Build/Output/ExternalsCache" CACHE STRING "Set default CPM source cache path for External repositories")
 endif()
 
-if(WIN32)
-
-    set(VS_STARTUP_PROJECT MethaneShadowCube)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # use /MT static runtime linking
-    string(REPLACE "/W3 " "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # Enable multi-threaded build with MSVC
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    endif()
-
-elseif(APPLE) # MacOS
-
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
-
-else(UNIX) # Linux
-
-    set(LINUX 1)
-
-    find_package(X11 REQUIRED)
-    if (NOT X11_xcb_FOUND OR
-        NOT X11_X11_xcb_FOUND)
-        # NOT X11_xcb_randr_FOUND) - TODO: uncomment "xcb_randr" check when supported by CMake 3.24
-        message(FATAL_ERROR "Failed to find X11-XCB libraries, try `sudo apt-get install xcb libx11-dev libxcb-randr0-dev`")
-    endif()
-
+if(MSVC)
+    set(VS_STARTUP_PROJECT "MethaneShadowCube")
 endif()
 
 message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
@@ -200,14 +181,27 @@ if(METHANE_LOGGING_ENABLED)
     message(STATUS "Methane debug logging is enabled")
 endif()
 
+if(METHANE_APPLE_CODE_SIGNING_ENABLED)
+    if (DEFINED APPLE_DEVELOPMENT_TEAM)
+        message(STATUS "Methane code signing on Apple platforms is enabled for APPLE_DEVELOPMENT_TEAM: ${APPLE_DEVELOPMENT_TEAM}")
+    else()
+        message(WARNING "Methane code signing on Apple platform is enabled, but APPLE_DEVELOPMENT_TEAM is not defined!")
+    endif()
+
+endif()
+
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")
     set(CTEST_EXE "${CMAKE_INSTALL_PREFIX}/bin/ctest")
 else()
     set(CTEST_EXE "ctest")
 endif()
 
+# Global options are included before Externals to be applied globally
+include(MethaneGlobalOptions)
+
 add_subdirectory(Externals)
 
+# Build options are included after Externals due to dependency from External CMake modules
 include(MethaneBuildOptions)
 
 add_subdirectory(Modules)

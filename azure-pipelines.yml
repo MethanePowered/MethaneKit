@@ -35,8 +35,8 @@ resources:
 variables:
 
   product.Version.Major: 0
-  product.Version.Minor: 6
-  product.Version.Patch: 5
+  product.Version.Minor: 7
+  product.Version.Patch: 0
   product.Version.Build: $(Build.BuildId)
   product.Version.Full: '$(product.Version.Major).$(product.Version.Minor).$(product.Version.Patch).$(product.Version.Build)'
 
@@ -197,81 +197,6 @@ jobs:
   steps:
     - template: Build/Windows/AzureSonarScan.yml
 
-- job: MacOS_MTL_Release
-
-  pool:
-    vmImage: 'macos-11'
-
-  variables:
-    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
-    cmake.BuildPreset: 'Xcode-Mac-MTL-Release'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
-
-  steps:
-  - template: Build/Unix/AzureBuild.yml
-
-- job: MacOS_MTL_Profiling
-
-  pool:
-    vmImage: 'macos-11'
-
-  variables:
-    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
-    cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
-    TRACY_NO_INVARIANT_CHECK: 1
-
-  steps:
-  - template: Build/Unix/AzureBuild.yml
-    parameters:
-      runTests: false
-
-- job: MacOS_MTL_SonarScan
-  continueOnError: true
-
-  pool:
-    vmImage: 'macos-11'
-
-  variables:
-    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
-    cmake.BuildPreset: 'Xcode-Mac-MTL-Scan'
-    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
-    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
-    coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
-    sonar.ProjectKey: 'methane-powered-kit-macos'
-    sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
-    sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
-    sonar.Verbose: false
-
-  steps:
-    - template: Build/Unix/AzureSonarScan.yml
-      parameters:
-        extraScanSteps:
-          - bash: |
-              result_ext='.xml'
-              prof_data_ext='.profdata'
-              prof_raw_ext='.profraw'
-              lcov_ext='.lcov'
-              echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
-              mkdir Results
-              mkdir Coverage
-              for test_exe in *Test
-              do
-                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-                echo  - $test_exe - completed with $? exit status
-                if [ ! -f default.profraw ]; then
-                  continue
-                fi
-                mv default.profraw "$test_exe$prof_raw_ext"
-                xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
-                echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
-              done
-              echo List of generated coverage files in directory $PWD/Coverage
-              ls -la ./Coverage
-            workingDirectory: '$(installDir)/Tests'
-            displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
-
 - job: Ubuntu_VK_Release
 
   pool:
@@ -353,3 +278,109 @@ jobs:
               make MethaneTestCoverage
             workingDirectory: '$(buildDir)'
             displayName: 'Collect tests code coverage using ctest and gcov/lcov on Linux'
+
+
+- job: MacOS_MTL_Release
+
+  pool:
+    vmImage: 'macos-11'
+
+  variables:
+    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Default'
+    cmake.BuildPreset: 'Xcode-Mac-MTL-Release'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+
+  steps:
+    - template: Build/Unix/AzureBuild.yml
+
+- job: MacOS_MTL_Profiling
+
+  pool:
+    vmImage: 'macos-11'
+
+  variables:
+    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Profile'
+    cmake.BuildPreset: 'Xcode-Mac-MTL-Profile'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    TRACY_NO_INVARIANT_CHECK: 1
+
+  steps:
+    - template: Build/Unix/AzureBuild.yml
+      parameters:
+        runTests: false
+
+- job: MacOS_MTL_SonarScan
+  continueOnError: true
+
+  pool:
+    vmImage: 'macos-11'
+
+  variables:
+    cmake.ConfigurePreset: 'Xcode-Mac-MTL-Scan'
+    cmake.BuildPreset: 'Xcode-Mac-MTL-Scan'
+    buildDir: 'Build/Output/$(cmake.ConfigurePreset)/Build'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+    coverageReports: '$(installDir)/Tests/Coverage/*.lcov'
+    sonar.ProjectKey: 'methane-powered-kit-macos'
+    sonar.BuildWrapperUrl: 'https://sonarcloud.io/static/cpp/build-wrapper-macosx-x86.zip'
+    sonar.BuildWrapperExe: build-wrapper-macosx-x86/build-wrapper-macosx-x86
+    sonar.Verbose: false
+
+  steps:
+    - template: Build/Unix/AzureSonarScan.yml
+      parameters:
+        extraScanSteps:
+          - bash: |
+              result_ext='.xml'
+              prof_data_ext='.profdata'
+              prof_raw_ext='.profraw'
+              lcov_ext='.lcov'
+              echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
+              mkdir Results
+              mkdir Coverage
+              for test_exe in *Test
+              do
+                ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+                echo  - $test_exe - completed with $? exit status
+                if [ ! -f default.profraw ]; then
+                  continue
+                fi
+                mv default.profraw "$test_exe$prof_raw_ext"
+                xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
+                xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+                echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
+              done
+              echo List of generated coverage files in directory $PWD/Coverage
+              ls -la ./Coverage
+            workingDirectory: '$(installDir)/Tests'
+            displayName: 'Collect code coverage from all unit-tests in install directory on MacOS'
+
+- job: iOS_Sim_MTL_Release
+
+  pool:
+    vmImage: 'macos-11'
+
+  variables:
+    cmake.ConfigurePreset: 'Xcode-iOS-Sim-MTL-Default'
+    cmake.BuildPreset: 'Xcode-iOS-Sim-MTL-Release'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+
+  steps:
+    - template: Build/Unix/AzureBuild.yml
+      parameters:
+        runTests: false
+
+- job: tvOS_Sim_MTL_Release
+
+  pool:
+    vmImage: 'macos-11'
+
+  variables:
+    cmake.ConfigurePreset: 'Xcode-tvOS-Sim-MTL-Default'
+    cmake.BuildPreset: 'Xcode-tvOS-Sim-MTL-Release'
+    installDir: 'Build/Output/$(cmake.ConfigurePreset)/Install'
+
+  steps:
+    - template: Build/Unix/AzureBuild.yml
+      parameters:
+        runTests: false

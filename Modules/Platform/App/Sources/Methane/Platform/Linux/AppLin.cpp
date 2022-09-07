@@ -36,6 +36,7 @@ Linux application implementation.
 #include <stb_image.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
+#include <X11/Xresource.h>
 
 namespace Methane::Platform
 {
@@ -173,6 +174,32 @@ bool AppLin::SetFullScreen(bool is_full_screen)
     EndResizing();
 
     return true;
+}
+
+float AppLin::GetContentScalingFactor() const
+{
+    META_FUNCTION_TASK();
+    return static_cast<float>(GetFontResolutionDpi()) / 96.F;
+}
+
+uint32_t AppLin::GetFontResolutionDpi() const
+{
+    META_FUNCTION_TASK();
+    if (const char* display_res_str = XResourceManagerString(m_env.display);
+        display_res_str)
+    {
+        XrmInitialize();
+        XrmDatabase db = XrmGetStringDatabase(display_res_str);
+        XrmValue    value{};
+        char* type = nullptr;
+        if (XrmGetResource(db, "Xft.dpi", "String", &type, &value) == True && value.addr)
+            return static_cast<uint32_t>(atof(value.addr));
+    }
+
+    const auto* screen_info = ScreenOfDisplay(m_env.display, 0); // 0 for default screen
+    const auto dpi_hor = static_cast<uint32_t>(static_cast<double>(screen_info->width)  / static_cast<double>(screen_info->mwidth)  * 25.4);
+    const auto dpi_ver = static_cast<uint32_t>(static_cast<double>(screen_info->height) / static_cast<double>(screen_info->mheight) * 25.4);
+    return std::max(dpi_hor, dpi_ver);
 }
 
 void AppLin::Close()

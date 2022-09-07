@@ -47,6 +47,28 @@ function(get_metal_library FOR_TARGET SHADERS_HLSL METAL_LIBRARY)
     set(${METAL_LIBRARY} "${TARGET_SHADERS_DIR}/${SHADERS_NAME}.metallib" PARENT_SCOPE)
 endfunction()
 
+function(get_apple_sdk OUT_SDK_NAME)
+    if(NOT APPLE)
+        return()
+    endif()
+
+    # SDK_NAME variable is defined by iOS-Toolchain.cmake
+    if(DEFINED SDK_NAME)
+        set(${OUT_SDK_NAME} "${SDK_NAME}" PARENT_SCOPE)
+        return()
+    endif()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(${OUT_SDK_NAME} "iphoneos" PARENT_SCOPE)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "tvOS")
+        set(${OUT_SDK_NAME} "appletvos" PARENT_SCOPE)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(${OUT_SDK_NAME} "iphonesimulator" PARENT_SCOPE)
+    else() # Darwin
+        set(${OUT_SDK_NAME} "macosx" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(get_generated_shader_extension OUT_SHADER_EXT)
     if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         set(${OUT_SHADER_EXT} "obj" PARENT_SCOPE)
@@ -62,7 +84,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SH
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
 
     set(DXC_EXE "${DXC_BINARY_DIR}/dxc")
-    set(SPIRV_GEN_EXE   "${SPIRV_BINARY_DIR}/glslangValidator")
+    #set(SPIRV_GEN_EXE   "${SPIRV_BINARY_DIR}/glslangValidator")
     set(SPIRV_CROSS_EXE "${SPIRV_BINARY_DIR}/spirv-cross")
 
     foreach(KEY_VALUE_STRING ${SHADER_TYPES})
@@ -281,8 +303,9 @@ function(add_methane_shaders_source)
 
         set(SHADERS_METAL) # init with empty list
         get_metal_library(${SHADERS_TARGET} ${SHADERS_SOURCE_PATH} METAL_LIBRARY)
+        get_apple_sdk(SDK_NAME)
         generate_metal_shaders_from_hlsl(${SHADERS_TARGET} "${SHADERS_SOURCE_PATH}" "${SHADERS_VERSION}" "${SHADERS_TYPES}" SHADERS_METAL GENERATE_METAL_TARGETS)
-        compile_metal_shaders_to_library(${SHADERS_TARGET} "macosx" "${SHADERS_METAL}" "${METAL_LIBRARY}")
+        compile_metal_shaders_to_library(${SHADERS_TARGET} "${SDK_NAME}" "${SHADERS_METAL}" "${METAL_LIBRARY}")
         set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY METAL_SOURCES ${SHADERS_METAL})
         set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY METAL_LIBRARIES ${METAL_LIBRARY})
         set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY GENERATE_METAL_TARGETS ${GENERATE_METAL_TARGETS})

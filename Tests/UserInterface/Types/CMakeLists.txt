@@ -4,6 +4,7 @@ add_executable(${TARGET}
     UnitTypeCatchHelpers.hpp
     UnitTypesTest.cpp
     FakeRenderContext.hpp
+    FakePlatformApp.hpp
     ContextTest.cpp
 )
 
@@ -12,6 +13,7 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneUserInterfaceTypes
+        MethanePlatformApp
         MethaneGraphicsPrimitives
         MethaneGraphicsCore
         MethaneBuildOptions

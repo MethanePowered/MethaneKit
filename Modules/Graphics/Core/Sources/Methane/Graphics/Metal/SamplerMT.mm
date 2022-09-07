@@ -27,13 +27,13 @@ Metal implementation of the sampler interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode) noexcept
+static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode)
 {
     META_FUNCTION_TASK();
     using AddressMode = SamplerBase::Address::Mode;
@@ -42,14 +42,16 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Addres
     {
         case AddressMode::ClampToEdge:          return MTLSamplerAddressModeClampToEdge;
         case AddressMode::ClampToZero:          return MTLSamplerAddressModeClampToZero;
+#ifndef APPLE_TVOS
         case AddressMode::ClampToBorderColor:   return MTLSamplerAddressModeClampToBorderColor;
+#endif
         case AddressMode::Repeat:               return MTLSamplerAddressModeRepeat;
         case AddressMode::RepeatMirror:         return MTLSamplerAddressModeMirrorRepeat;
         default:                                META_UNEXPECTED_ARG_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
     }
 }
 
-static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter) noexcept
+static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter)
 {
     META_FUNCTION_TASK();
     using MinMagFilter = SamplerBase::Filter::MinMag;
@@ -62,7 +64,7 @@ static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filt
     }
 }
 
-static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter) noexcept
+static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter)
 {
     META_FUNCTION_TASK();
     using MipFilter = SamplerBase::Filter::Mip;
@@ -76,7 +78,8 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mi
     }
 }
 
-static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color) noexcept
+#ifndef APPLE_TVOS // MTLSamplerBorderColor is not supported on tvOS
+static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color)
 {
     META_FUNCTION_TASK();
     using BorderColor = SamplerBase::BorderColor;
@@ -89,6 +92,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
         default:                                META_UNEXPECTED_ARG_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
     }
 }
+#endif
 
 Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)
 {
@@ -115,17 +119,12 @@ SamplerMT::SamplerMT(const ContextBase& context, const Settings& settings)
     
     m_mtl_sampler_desc.maxAnisotropy   = settings.max_anisotropy;
     m_mtl_sampler_desc.compareFunction = TypeConverterMT::CompareFunctionToMetal(settings.compare_function);
+    
+#ifndef APPLE_TVOS
     m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
-
+#endif
+    
     ResetSamplerState();
-}
-
-SamplerMT::~SamplerMT()
-{
-    META_FUNCTION_TASK();
-
-    [m_mtl_sampler_state release];
-    [m_mtl_sampler_desc release];
 }
 
 bool SamplerMT::SetName(const std::string& name)
@@ -144,11 +143,6 @@ bool SamplerMT::SetName(const std::string& name)
 void SamplerMT::ResetSamplerState()
 {
     META_FUNCTION_TASK();
-    if (m_mtl_sampler_state)
-    {
-        [m_mtl_sampler_state release];
-    }
-
     META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetContextMT().GetDeviceMT().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }

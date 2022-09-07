@@ -29,18 +29,18 @@ MacOS application environment.
 
 @class AppViewMT;
 
-@protocol MetalAppViewDelegate <NSObject>
+@protocol MetalAppViewDelegate<NSObject>
 
 @property (nonatomic, readonly, nullable) NSWindow* window;
 
-- (void)drawInView:(nonnull AppViewMT *)view;
+- (void)drawInView:(nonnull AppViewMT *) view;
 - (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size;
 
 @end
 
 using NativeViewController = NSViewController<MetalAppViewDelegate>;
 
-#else
+#else // __OBJC__
 
 using NativeViewController = void;
 

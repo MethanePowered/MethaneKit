@@ -56,8 +56,7 @@ class RenderStateMT final : public RenderStateBase
 {
 public:
     RenderStateMT(const RenderContextBase& context, const Settings& settings);
-    ~RenderStateMT() override;
-    
+
     // RenderState interface
     void Reset(const Settings& settings) override;
 
@@ -71,10 +70,10 @@ public:
     void InitializeNativePipelineState();
     void InitializeNativeDepthStencilState();
     
-    id<MTLRenderPipelineState>& GetNativePipelineState();
-    id<MTLDepthStencilState>&   GetNativeDepthStencilState();
-    MTLCullMode                 GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
-    MTLWinding                  GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
+    id<MTLRenderPipelineState> GetNativePipelineState();
+    id<MTLDepthStencilState>   GetNativeDepthStencilState();
+    MTLCullMode                GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
+    MTLWinding                 GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
 
 private:
     const RenderContextMT& GetRenderContextMT() const;

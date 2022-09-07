@@ -4,19 +4,19 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Graphics")
 
-set(HEADERS
+list(APPEND HEADERS
     ${INCLUDE_DIR}/FpsCounter.h
 )
 
-set(SOURCES
+list(APPEND SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
 )
 
 if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-    set(HEADERS ${HEADERS}
+    list(APPEND HEADERS
         ${INCLUDE_PLATFORM_DIR}/DirectXErrorHandling.h
     )
-    set(SOURCES ${SOURCES}
+    list(APPEND SOURCES
         ${SOURCES_PLATFORM_DIR}/DirectXErrorHandling.cpp
     )
 endif()

@@ -129,7 +129,7 @@ inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& dis
 
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
-        Samples::GetGraphicsAppSettings("Methane Typography", Samples::g_default_app_options_color_only_and_anim),
+        GetGraphicsTutorialAppSettings("Methane Typography", g_default_app_options_color_only_and_anim),
         { gui::IApp::HeadsUpDisplayMode::UserInterface },
         "Dynamic text rendering and fonts management tutorial.")
 {

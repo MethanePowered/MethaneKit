@@ -39,15 +39,21 @@ struct RenderPattern;
 
 } // namespace Methane::Graphics
 
+namespace Methane::Platform
+{
+struct IApp;
+}
+
 namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace pal = Methane::Platform;
 
 class Context
 {
 public:
-    Context(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern);
+    Context(const pal::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern);
 
     const gfx::RenderContext& GetRenderContext() const noexcept { return m_render_context; }
     gfx::RenderContext&       GetRenderContext() noexcept       { return m_render_context; }

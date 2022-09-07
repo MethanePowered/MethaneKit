@@ -21,13 +21,11 @@ MacOS application view controller implementation.
 
 ******************************************************************************/
 
-#import <Methane/Platform/AppEnvironment.h>
+#import <Methane/Platform/MacOS/AppEnvironment.hh>
 
-#import <Cocoa/Cocoa.h>
+namespace Methane::Platform { class AppMac; }
 
-namespace Methane { namespace Platform { class AppMac; } }
-
-@interface AppViewController : NSViewController<MetalAppViewDelegate>
+@interface AppViewController : NativeViewController
 
 @property (nonatomic, readonly, nullable) NSWindow* window;
 

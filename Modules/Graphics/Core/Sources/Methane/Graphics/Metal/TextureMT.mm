@@ -27,7 +27,7 @@ Metal implementation of the texture interface.
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/CommandKit.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -127,7 +127,7 @@ bool TextureMT::SetName(const std::string& name)
     if (!ResourceMT::SetName(name))
         return false;
 
-    m_mtl_texture.label = [[[NSString alloc] initWithUTF8String:name.data()] autorelease];
+    m_mtl_texture.label = [[NSString alloc] initWithUTF8String:name.data()];
     return true;
 }
 

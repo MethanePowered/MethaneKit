@@ -25,7 +25,7 @@ Metal command lists sequence implementation.
 
 #include <Methane/Graphics/CommandListBase.h>
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/NSString.h>
 
 namespace Methane::Graphics
 {

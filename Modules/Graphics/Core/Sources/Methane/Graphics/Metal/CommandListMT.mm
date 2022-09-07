@@ -24,7 +24,7 @@ Metal command lists sequence implementation
 #include "CommandListMT.hh"
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 
 namespace Methane::Graphics
 {

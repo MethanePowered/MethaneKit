@@ -39,7 +39,7 @@ void Camera::Resize(const Data::FloatSize& screen_size)
 {
     META_FUNCTION_TASK();
     m_screen_size = screen_size;
-    m_aspect_ratio = screen_size.GetWidth() / screen_size.GetHeight();
+    m_aspect_ratio = screen_size.GetWidth()  / screen_size.GetHeight();
     m_is_current_proj_matrix_dirty = true;
     UpdateProjectionSettings();
 }
@@ -182,7 +182,7 @@ float Camera::GetFovAngleY() const noexcept
     float fov_angle_y = m_parameters.fov_deg * ConstFloat::RadPerDeg;
     if (m_aspect_ratio != 0.F && m_aspect_ratio < 1.0F)
     {
-        fov_angle_y /= m_aspect_ratio;
+        fov_angle_y /= (0.5F + m_aspect_ratio / 2.F);
     }
     return fov_angle_y;
 }

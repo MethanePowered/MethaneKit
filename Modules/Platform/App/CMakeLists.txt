@@ -6,48 +6,63 @@ get_module_dirs("Methane/Platform")
 
 if (WIN32)
 
-    set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppWin.h
+    list(APPEND PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_OS_DIR}/AppWin.h
     )
 
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppWin.cpp
-        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.h
-        ${SOURCES_PLATFORM_DIR}/ConsoleStreams.cpp
+    list(APPEND PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_OS_DIR}/AppWin.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/ConsoleStreams.h
+        ${SOURCES_PLATFORM_OS_DIR}/ConsoleStreams.cpp
+    )
+
+    list(APPEND PLATFORM_LIBRARIES
+        Shcore
     )
 
 elseif(APPLE)
 
-    set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppMac.hh
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.hh
-        ${SOURCES_PLATFORM_DIR}/WindowDelegate.hh
-        ${SOURCES_PLATFORM_DIR}/AppViewController.hh
-    )
+    if (APPLE_MACOS)
+        list(APPEND PLATFORM_HEADERS
+            ${INCLUDE_PLATFORM_OS_DIR}/AppMac.hh
+            ${SOURCES_PLATFORM_OS_DIR}/WindowDelegate.hh
+        )
+        list(APPEND PLATFORM_SOURCES
+            ${SOURCES_PLATFORM_OS_DIR}/AppMac.mm
+            ${SOURCES_PLATFORM_OS_DIR}/WindowDelegate.mm
+        )
+        list(APPEND PLATFORM_LIBRARIES "-framework AppKit")
+    else() # iOS
+        list(APPEND PLATFORM_HEADERS
+            ${INCLUDE_PLATFORM_OS_DIR}/AppIOS.hh
+        )
+        list(APPEND PLATFORM_SOURCES
+            ${SOURCES_PLATFORM_OS_DIR}/AppIOS.mm
+        )
+        list(APPEND PLATFORM_LIBRARIES "-framework UIKit")
+    endif() # APPLE_MACOS
 
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppMac.mm
-        ${SOURCES_PLATFORM_DIR}/AppDelegate.mm
-        ${SOURCES_PLATFORM_DIR}/WindowDelegate.mm
-        ${SOURCES_PLATFORM_DIR}/AppViewController.mm
+    list(APPEND PLATFORM_HEADERS
+        ${SOURCES_PLATFORM_OS_DIR}/AppDelegate.hh
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewController.hh
     )
-
-    set(PLATFORM_LIBRARIES
-        "-framework AppKit"
+    list(APPEND PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_OS_DIR}/AppDelegate.mm
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewController.mm
     )
 
 else(LINUX)
 
-    set(PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_DIR}/AppLin.h
+    list(APPEND PLATFORM_HEADERS
+        ${INCLUDE_PLATFORM_OS_DIR}/AppLin.h
     )
 
-    set(PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_DIR}/AppLin.cpp
-        ${SOURCES_PLATFORM_DIR}/MessageBox.h
-        ${SOURCES_PLATFORM_DIR}/MessageBox.cpp
-        ${SOURCES_PLATFORM_DIR}/XcbUtils.h
-        ${SOURCES_PLATFORM_DIR}/XcbUtils.cpp
+    list(APPEND PLATFORM_SOURCES
+        ${SOURCES_PLATFORM_OS_DIR}/AppLin.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/MessageBox.h
+        ${SOURCES_PLATFORM_OS_DIR}/MessageBox.cpp
+        ${SOURCES_PLATFORM_OS_DIR}/XcbUtils.h
+        ${SOURCES_PLATFORM_OS_DIR}/XcbUtils.cpp
     )
 
     # TODO: replace "xcb-randr" with "X11::xcb_randr" when supported by CMake 3.24
@@ -55,14 +70,14 @@ else(LINUX)
 
 endif()
 
-set(HEADERS ${PLATFORM_HEADERS}
+list(APPEND HEADERS ${PLATFORM_HEADERS}
     ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.h
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
 )
 
-set(SOURCES ${PLATFORM_SOURCES}
+list(APPEND SOURCES ${PLATFORM_SOURCES}
     ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
 )
@@ -93,7 +108,7 @@ target_link_libraries(${TARGET}
 
 target_compile_definitions(${TARGET}
     PRIVATE
-    METHANE_RENDER_APP
+        METHANE_RENDER_APP
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)

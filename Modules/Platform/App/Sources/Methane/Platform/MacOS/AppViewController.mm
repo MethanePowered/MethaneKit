@@ -36,7 +36,7 @@ using namespace Methane::Platform;
 @implementation AppViewController
 {
     AppMac*     m_p_app;
-    NSRect      m_frame_rect;
+    NSRect  m_frame_rect;
     bool        m_is_initialized;
     std::string m_error;
 }

@@ -26,7 +26,7 @@ MacOS platform type converters.
 #include <string>
 #include <vector>
 
-#import <Cocoa/Cocoa.h>
+#include <Foundation/NSString.h>
 
 namespace Methane::MacOS
 {

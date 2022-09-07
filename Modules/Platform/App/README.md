@@ -7,8 +7,9 @@ Graphics rendering infrastructure itself is split into derived class defined in 
 
 Defines alias type `Platform::App` pointing to one of platform-specific implementations of the `AppBase` abstract class:
 - [Platform::AppWin](Include/Methane/Platform/Windows/AppWin.h) - Windows app implementation
+- [Platform::AppLin](Include/Methane/Platform/Linux/AppLin.h) - Linux app implementation
 - [Platform::AppMac](Include/Methane/Platform/MacOS/AppMac.hh) - MacOS app implementation
-- [Platform::AppLin](Include/Methane/Platform/Linux/AppLin.h) - Linux app implementation (stub)
+- [Platform::AppIOS](Include/Methane/Platform/iOS/AppIOS.hh) - iOS app implementation
 
 `Platform::App` should be used as a base class for any windowed Methane application.
 

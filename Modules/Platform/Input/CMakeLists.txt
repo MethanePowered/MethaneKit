@@ -4,16 +4,7 @@ include(MethaneModules)
 
 get_module_dirs("Methane/Platform")
 
-if(APPLE)
-
-    set(PLATFORM_LIBRARIES
-        "-framework AppKit"
-    )
-
-endif()
-
-set(HEADERS
-    ${INCLUDE_PLATFORM_DIR}/Keyboard.h
+list(APPEND HEADERS
     ${INCLUDE_DIR}/Keyboard.h
     ${INCLUDE_DIR}/Mouse.h
     ${INCLUDE_DIR}/KeyboardActionControllerBase.hpp
@@ -24,13 +15,29 @@ set(HEADERS
     ${INCLUDE_DIR}/Input/State.h
 )
 
-set(SOURCES
-    ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
+if (APPLE_MACOS)
+    list(APPEND HEADERS
+        ${INCLUDE_PLATFORM_OS_DIR}/Keyboard.h
+    )
+endif()
+
+list(APPEND SOURCES
     ${SOURCES_DIR}/Keyboard.cpp
     ${SOURCES_DIR}/Mouse.cpp
     ${SOURCES_DIR}/Input/ControllersPool.cpp
     ${SOURCES_DIR}/Input/State.cpp
 )
+
+if (NOT (APPLE_IOS OR APPLE_TVOS))
+    list(APPEND HEADERS ${INCLUDE_PLATFORM_OS_DIR}/Keyboard.h)
+    list(APPEND SOURCES ${SOURCES_PLATFORM_OS_DIR}/Keyboard.${CPP_EXT})
+endif()
+
+if(APPLE_MACOS)
+    list(APPEND PLATFORM_LIBRARIES
+        "-framework AppKit"
+    )
+endif()
 
 add_library(${TARGET} STATIC
     ${HEADERS}
@@ -71,7 +78,7 @@ set_target_properties(${TARGET}
 if (APPLE)
     # Disable precompiled headers on MacOS for Objective-C files:
     set_source_files_properties(
-        ${SOURCES_PLATFORM_DIR}/Keyboard.${CPP_EXT}
+        ${SOURCES_PLATFORM_OS_DIR}/Keyboard.mm
         PROPERTIES
             SKIP_PRECOMPILE_HEADERS ON
     )

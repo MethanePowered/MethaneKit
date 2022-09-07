@@ -147,9 +147,7 @@ private:
 - (void) dealloc
 {
     META_FUNCTION_TASK();
-
     self.redrawing = NO;
-    [super dealloc];
 }
 
 - (void) commonInit
@@ -457,7 +455,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     }
 }
 
-- (void)setViewController:(NSViewController *)newController
+- (void)setViewController:(NativeViewController*) newController
 {
     META_FUNCTION_TASK();
     if (viewController)
@@ -483,7 +481,6 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     if (m_tracking_area != nil)
     {
         [self removeTrackingArea:m_tracking_area];
-        [m_tracking_area release];
     }
     
     const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -22,10 +22,11 @@ MacOS application delegate implementation.
 ******************************************************************************/
 
 #import "AppDelegate.hh"
+
 #import "WindowDelegate.hh"
 
 #include <Methane/Platform/MacOS/AppMac.hh>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -33,27 +34,31 @@ using namespace Methane;
 using namespace Methane::Platform;
 
 @implementation AppDelegate
+{
+    WindowDelegate* m_window_delegate;
+}
 
 @synthesize window = m_window;
 
 - (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
 {
     META_FUNCTION_TASK();
-
     self = [super init];
     if (!self || !p_settings)
         return nil;
 
-    const Methane::Data::FloatSize& frame_size = p_settings->size;
-    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
-
     NSScreen* ns_main_screen = [NSScreen mainScreen];
+    const Methane::Data::FloatSize& frame_size = p_settings->size;
+    const auto& ns_frame_size = ns_main_screen.frame.size;
+    
     CGFloat frame_width = frame_size.GetWidth() < 1.0
-                        ? ns_main_screen.frame.size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
-                        : static_cast<CGFloat>(frame_size.GetWidth());
+                          ? ns_frame_size.width * (frame_size.GetWidth() > 0.0 ? frame_size.GetWidth() : 0.7)
+                          : static_cast<CGFloat>(frame_size.GetWidth());
     CGFloat frame_height = frame_size.GetHeight() < 1.0
-                         ? ns_main_screen.frame.size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
-                         : static_cast<CGFloat>(frame_size.GetHeight());
+                           ? ns_frame_size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
+                           : static_cast<CGFloat>(frame_size.GetHeight());
+    
+    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
     NSUInteger style_mask = NSWindowStyleMaskTitled |
@@ -66,14 +71,16 @@ using namespace Methane::Platform;
     m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
     m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(min_frame_size.GetWidth()), static_cast<CGFloat>(min_frame_size.GetHeight()));
     m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
-    m_window.delegate = [[WindowDelegate alloc] initWithApp:p_app];
+
+    m_window_delegate = [[WindowDelegate alloc] initWithApp:p_app];
+    m_window.delegate = m_window_delegate;
+
     [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
     self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
-    
+
     p_app->SetWindow(m_window);
-    
     return self;
 }
 

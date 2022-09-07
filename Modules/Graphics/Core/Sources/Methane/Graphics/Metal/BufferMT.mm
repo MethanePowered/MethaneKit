@@ -30,7 +30,7 @@ Metal implementation of the buffer interface.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/BufferFactory.hpp>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -39,11 +39,19 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
+#ifdef APPLE_MACOS
+#define NativeResourceStorageModeManaged MTLResourceStorageModeManaged
+#define NativeStorageModeManaged MTLStorageModeManaged
+#else
+#define NativeResourceStorageModeManaged MTLResourceStorageModeShared
+#define NativeStorageModeManaged MTLStorageModeShared
+#endif
+
 static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_mode)
 {
     switch(storage_mode)
     {
-    case Buffer::StorageMode::Managed: return MTLResourceStorageModeManaged;
+    case Buffer::StorageMode::Managed: return NativeResourceStorageModeManaged;
     case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
     default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
@@ -109,7 +117,7 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Managed);
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
-    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModeManaged);
+    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, NativeStorageModeManaged);
 
     Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
     META_CHECK_ARG_NOT_NULL(p_resource_data);
@@ -122,7 +130,9 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 
         std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data + data_offset);
 
+#ifdef APPLE_MACOS // storage_mode == MTLStorageModeManaged
         [m_mtl_buffer didModifyRange:NSMakeRange(data_offset, data_offset + sub_resource.GetDataSize())];
+#endif
         data_offset += sub_resource.GetDataSize();
     }
 }

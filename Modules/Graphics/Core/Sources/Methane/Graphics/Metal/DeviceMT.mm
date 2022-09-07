@@ -23,7 +23,7 @@ Metal implementation of the device interface.
 
 #include "DeviceMT.hh"
 
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -47,13 +47,6 @@ DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabili
     META_FUNCTION_TASK();
 }
 
-DeviceMT::~DeviceMT()
-{
-    META_FUNCTION_TASK();
-
-    [m_mtl_device release];
-}
-
 System& System::Get()
 {
     META_FUNCTION_TASK();
@@ -64,10 +57,10 @@ System& System::Get()
 SystemMT::~SystemMT()
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     if (m_device_observer != nil)
-    {
         MTLRemoveDeviceObserver(m_device_observer);
-    }
+#endif
 }
 
 const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Platform::AppEnvironment&, const Device::Capabilities& required_device_caps)
@@ -79,28 +72,33 @@ const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Platform::AppEnvironment&, 
 const Ptrs<Device>& SystemMT::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
 {
     META_FUNCTION_TASK();
+#ifdef APPLE_MACOS
     if (m_device_observer != nil)
-    {
         MTLRemoveDeviceObserver(m_device_observer);
-    }
+#endif
 
     SetDeviceCapabilities(required_device_caps);
     ClearDevices();
-    
+
+#ifdef APPLE_MACOS
     NSArray<id<MTLDevice>>* mtl_devices = MTLCopyAllDevicesWithObserver(&m_device_observer,
-                                                                        ^(id<MTLDevice> device, MTLDeviceNotificationName device_notification)
-                                                                        {
-                                                                            OnDeviceNotification(device, device_notification);
-                                                                        });
-    
+        ^(id<MTLDevice> device, MTLDeviceNotificationName device_notification)
+        {
+            OnDeviceNotification(device, device_notification);
+        });
     for(id<MTLDevice> mtl_device in mtl_devices)
     {
         AddDevice(mtl_device);
     }
+#else
+    const id<MTLDevice> mtl_device = MTLCreateSystemDefaultDevice();
+    AddDevice(mtl_device);
+#endif
     
     return GetGpuDevices();
 }
 
+#ifdef APPLE_MACOS
 void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification)
 {
     META_FUNCTION_TASK();
@@ -119,6 +117,7 @@ void SystemMT::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificat
             RemoveDevice(*device_ptr);
     }
 }
+#endif
 
 void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
 {
@@ -137,7 +136,7 @@ const Ptr<Device>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) co
     META_FUNCTION_TASK();
     const Ptrs<Device>& devices = GetGpuDevices();
     const auto device_it = std::find_if(devices.begin(), devices.end(),
-                                        [mtl_device](const Ptr<Device>& device_ptr)
+                                        [&mtl_device](const Ptr<Device>& device_ptr)
                                         {
                                             META_CHECK_ARG_NOT_NULL(device_ptr);
                                             DeviceMT& metal_device = static_cast<DeviceMT&>(*device_ptr);

@@ -21,6 +21,11 @@ Methane compilation and build options interface target.
 
 *****************************************************************************]]
 
+if(TARGET MethaneBuildOptions)
+    # MethaneBuildOptions target is already defined
+    return()
+endif()
+
 add_library(MethaneBuildOptions INTERFACE)
 
 target_compile_definitions(MethaneBuildOptions INTERFACE
@@ -63,6 +68,21 @@ if(WIN32)
         UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN USE_PIX
         _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING # silence warning C4996 about std::wstring_convert deprecation
     )
+
+elseif(APPLE)
+
+    # Apple platform specific definitions
+    if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_IOS)
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_TVOS)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        target_compile_definitions(MethaneBuildOptions INTERFACE APPLE_MACOS)
+    else()
+        message(FATAL_ERROR "Methane Kit does not support Apple system: ${CMAKE_SYSTEM_NAME}")
+    endif()
+
+else(UNIX)
 
 endif()
 
@@ -119,6 +139,13 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
+        )
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # Enable automatic reference counting in Objective-C
+            "-fobjc-arc"
         )
 
     endif()

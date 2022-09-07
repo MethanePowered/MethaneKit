@@ -30,7 +30,7 @@ Metal template implementation of the base context interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
-#include <Methane/Platform/MacOS/Types.hh>
+#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
 #import <Metal/Metal.h>
@@ -50,11 +50,6 @@ public:
         : ContextBaseT(device, std::make_unique<DescriptorManagerMT>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
-    }
-
-    ~ContextMT() override
-    {
-        [m_ns_name release];
     }
 
     // IContextMT overrides

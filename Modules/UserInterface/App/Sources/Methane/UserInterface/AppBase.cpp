@@ -91,10 +91,17 @@ IApp::Settings& IApp::Settings::SetTextColor(const Color4F& new_text_color) noex
     return *this;
 }
 
-IApp::Settings& IApp::Settings::SetTextMargings(const UnitPoint& new_text_margings) noexcept
+IApp::Settings& IApp::Settings::SetTextMargins(const UnitPoint& new_text_margings) noexcept
 {
     META_FUNCTION_TASK();
     text_margins = new_text_margings;
+    return *this;
+}
+
+IApp::Settings& IApp::Settings::SetWindowPadding(const UnitPoint& new_window_padding) noexcept
+{
+    META_FUNCTION_TASK();
+    window_padding = new_window_padding;
     return *this;
 }
 
@@ -129,12 +136,13 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(render_cmd_queue, render_pattern);
-    m_frame_size    = UnitSize(Units::Pixels, frame_size);
-    m_text_margins  = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
+    m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);
+    m_frame_size     = UnitSize(Units::Pixels, frame_size);
+    m_text_margins   = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
+    m_window_padding = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.window_padding);
 
     // Create Methane logo badge
     if (m_app_settings.logo_badge_visible)
@@ -147,7 +155,7 @@ void AppBase::InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& re
     }
 
     // Create heads-up-display (HUD)
-    m_app_settings.hud_settings.position = m_app_settings.text_margins;
+    m_app_settings.hud_settings.position = m_app_settings.window_padding;
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
     {
         m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
@@ -303,7 +311,7 @@ bool AppBase::SetHelpText(std::string_view help_str)
     // when single column does not fit into half of window height
     // and estimated width of two columns first in 2/3 of window width
     if (const gfx::FrameSize single_column_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
-        single_column_size.GetHeight() + m_text_margins.GetY() > m_frame_size.GetHeight() / 2 &&
+        single_column_size.GetHeight() + m_window_padding.GetY() > m_frame_size.GetHeight() / 2 &&
         single_column_size.GetWidth() < m_frame_size.GetWidth() / 2)
     {
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
@@ -407,8 +415,8 @@ void AppBase::UpdateHelpTextPosition() const
     const FrameSize& first_text_size = m_help_columns.first.text_ptr->GetRectInPixels().size;
     m_help_columns.first.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
-        FramePoint(m_text_margins.GetX(), m_frame_size.GetHeight() - first_text_size.GetHeight() - m_text_margins.GetY() * 3),
-        first_text_size + static_cast<FrameSize>(m_text_margins * 2)
+        FramePoint(m_window_padding.GetX(), m_frame_size.GetHeight() - first_text_size.GetHeight() - m_window_padding.GetY() * 3),
+        first_text_size + static_cast<FrameSize>(m_window_padding * 2)
     ));
 
     if (!m_help_columns.second.panel_ptr)
@@ -418,8 +426,8 @@ void AppBase::UpdateHelpTextPosition() const
     const UnitRect&  first_panel_rect = m_help_columns.first.panel_ptr->GetRectInPixels();
     m_help_columns.second.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
-        FramePoint(first_panel_rect.GetRight() + m_text_margins.GetX(), first_panel_rect.GetTop()),
-        second_text_size + static_cast<FrameSize>(m_text_margins * 2)
+        FramePoint(first_panel_rect.GetRight() + m_window_padding.GetX(), first_panel_rect.GetTop()),
+        second_text_size + static_cast<FrameSize>(m_window_padding * 2)
     ));
 }
 
@@ -430,13 +438,13 @@ void AppBase::UpdateParametersTextPosition() const
         return;
 
     // Parameters text is located in bottom-right corner
-    const FrameSize  text_margins_size(m_text_margins);
+    const FrameSize  window_padding_size(m_window_padding);
     const FrameSize& parameters_text_size = m_parameters.text_ptr->GetRectInPixels().size;
     m_parameters.panel_ptr->SetRect(UnitRect(
         Units::Pixels,
-        FramePoint(m_frame_size.GetWidth()  - parameters_text_size.GetWidth()  - text_margins_size.GetWidth()  * 3,
-                   m_frame_size.GetHeight() - parameters_text_size.GetHeight() - text_margins_size.GetHeight() * 3),
-        parameters_text_size + text_margins_size * 2U
+        FramePoint(m_frame_size.GetWidth()  - parameters_text_size.GetWidth()  - window_padding_size.GetWidth()  * 3,
+                   m_frame_size.GetHeight() - parameters_text_size.GetHeight() - window_padding_size.GetHeight() * 3),
+        parameters_text_size + window_padding_size * 2U
     ));
 }
 

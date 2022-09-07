@@ -27,12 +27,12 @@ MacOS application delegate implementation.
 
 #import <Cocoa/Cocoa.h>
 
-namespace Methane { namespace Platform { class AppMac; } }
+namespace Methane::Platform { class AppMac; }
 
 @interface AppDelegate : NSObject<NSApplicationDelegate>
 
 @property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
-@property (nonatomic, readonly, nullable) NSWindow* window;
+@property (nonatomic, readwrite, nullable, retain) NSWindow* window;
 
 - (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (const Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
 - (void) run;

@@ -262,19 +262,19 @@ MTLClearColor TypeConverterMT::ColorToMetalClearColor(const Color4F& color) noex
     return MTLClearColorMake(color.GetRed(), color.GetGreen(), color.GetBlue(), color.GetAlpha());
 }
 
-NSRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
+NativeRect TypeConverterMT::RectToNS(const FrameRect& rect) noexcept
 {
     META_FUNCTION_TASK();
     return CreateNSRect(rect.size, rect.origin);
 }
 
-NSRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2I& origin) noexcept
+NativeRect TypeConverterMT::CreateNSRect(const FrameSize& size, const Point2I& origin) noexcept
 {
     META_FUNCTION_TASK();
-    return NSMakeRect(origin.GetX(), origin.GetY(), size.GetWidth(), size.GetHeight());
+    return MakeNativeRect(origin.GetX(), origin.GetY(), size.GetWidth(), size.GetHeight());
 }
 
-FrameRect TypeConverterMT::RectFromNS(const NSRect& rect) noexcept
+FrameRect TypeConverterMT::RectFromNS(const NativeRect& rect) noexcept
 {
     META_FUNCTION_TASK();
     return FrameRect {

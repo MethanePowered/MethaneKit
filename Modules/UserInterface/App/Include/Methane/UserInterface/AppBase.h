@@ -30,6 +30,13 @@ Base implementation of the Methane user interface application.
 
 #include <string_view>
 
+namespace Methane::Platform
+{
+
+struct IApp;
+
+} // namespace Methane::Platform
+
 namespace Methane::UserInterface
 {
 
@@ -52,7 +59,7 @@ public:
     AppBase& operator=(AppBase&&) = delete;
 
 protected:
-    void InitUI(gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size);
+    void InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size);
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
     bool UpdateUI() const;
@@ -97,6 +104,7 @@ private:
     IApp::Settings                 m_app_settings;
     UnitSize                       m_frame_size;
     UnitPoint                      m_text_margins;
+    UnitPoint                      m_window_padding;
     Ptr<Badge>                     m_logo_badge_ptr;
     Ptr<HeadsUpDisplay>            m_hud_ptr;
     Ptr<Font>                      m_main_font_ptr;
