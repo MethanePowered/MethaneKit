@@ -84,6 +84,7 @@ case "${OS_NAME}" in
             if [ "$APPLE_DEVELOPMENT_TEAM" != "" ]; then
                 CMAKE_FLAGS="$CMAKE_FLAGS \
                          -DAPPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM}"
+                CMAKE_BUID_OPTIONS="-- -allowProvisioningUpdates"
             fi
         else
             APPLE_PLATFORM=MacOS_$ARCH_NAME
@@ -285,7 +286,7 @@ else
 
     echo ----------
     echo Build with $CMAKE_GENERATOR...
-    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8; then
+    if ! cmake --build "$BUILD_DIR" --config $BUILD_TYPE --target install --parallel 8 $CMAKE_BUID_OPTIONS ; then
         echo "Methane build failed."
         exit 1
     fi

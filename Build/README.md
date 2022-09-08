@@ -150,7 +150,7 @@ Start Terminal, go to `MethaneKit` root directory, generate XCode workspace and 
 ```console
 OUTPUT_DIR=Build/Output/XCode/iOS
 cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_TOOLCHAIN_FILE="Externals/iOS-Toolchain.cmake" -DPLATFORM=[SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] -DDEPLOYMENT_TARGET=15.0 -DENABLE_ARC:BOOL=ON [-DAPPLE_DEVELOPMENT_TEAM=12345X6ABC] -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
-cmake --build $OUTPUT_DIR/Build --config Release --target install
+cmake --build $OUTPUT_DIR/Build --config Release --target install -- -allowProvisioningUpdates
 ```
 
 Please pay attention to correctly setting the following options:
@@ -161,10 +161,14 @@ Please pay attention to correctly setting the following options:
   - `SIMULATORARM64` or `SIMULATOR64` - build for iOS simulator with Arm64 or x64 architecture (depending on your Mac CPU)
   - `SIMULATOR_TVOS` - build for tvOS simulator
 - `DEPLOYMENT_TARGET` defines minimum version of the target platform
-- `ENABLE_ARC` set to `ON` to enable automatic reference counting in Apple Clang build
 - `APPLE_DEVELOPMENT_TEAM` defines development team identifier used for code signing,
 which is required to build for running on physical device (not required for simulator build).
 This identifier depends on your signing preferences in Xcode and should look like this `12345X6ABC`.
+It can be found inside the pre-configured for signing `.xcodeproj` file contents (which can be opened with VSCode)
+by searching for the value of parameter named `DEVELOPMENT_TEAM`.
+- `ENABLE_ARC` set to `ON` to enable automatic reference counting in Apple Clang build.
+- Note that `cmake --build` command contains extra argument `-allowProvisioningUpdates` passed to the underlying 
+`xcodebuild` command line tool, which allows Xcode to update or add missing provisioning profiles for code signing.
 
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
