@@ -17,9 +17,9 @@ if(APPLE)
 endif()
 
 if(NOT DEFINED PROJECT_NAME)
-    set(IS_ROOT_PROJECT ON)
+    set(IS_TOP_LEVEL_PROJECT ON)
 else()
-    set(IS_ROOT_PROJECT OFF)
+    set(IS_TOP_LEVEL_PROJECT OFF)
 endif()
 
 # Methane version, build & product info
@@ -42,16 +42,26 @@ if (POLICY CMP0110)
     cmake_policy(SET CMP0110 NEW) # allow whitespace and special characters in add_test() names
 endif()
 
-if(APPLE AND DEFINED APPLE_DEVELOPMENT_TEAM)
-    set(APPLE_CODE_SIGNING_AVAILABLE ON)
-else()
-    set(APPLE_CODE_SIGNING_AVAILABLE OFF)
+set(DEFAULT_APPS_BUILD_ENABLED ${IS_TOP_LEVEL_PROJECT})
+set(DEFAULT_TESTS_BUILD_ENABLED ON)
+
+if(APPLE)
+    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        # Disable tests build on Apple mobile systems, because they do not support running unbundled executables
+        set(DEFAULT_TESTS_BUILD_ENABLED OFF)
+    endif()
+
+    if (DEFINED APPLE_DEVELOPMENT_TEAM)
+        set(DEFAULT_APPLE_CODE_SIGNING_ENABLED ON)
+    else()
+        set(DEFAULT_APPLE_CODE_SIGNING_ENABLED OFF)
+    endif()
 endif()
 
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
-option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${IS_ROOT_PROJECT})
-option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ${IS_ROOT_PROJECT})
+option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${DEFAULT_APPS_BUILD_ENABLED})
+option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ${DEFAULT_TESTS_BUILD_ENABLED})
 option(METHANE_CHECKS_ENABLED               "Enable runtime checks of input arguments" ON)
 option(METHANE_RUN_TESTS_DURING_BUILD       "Enable test auto-run after module build" ON)
 option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some modules" ON)
@@ -59,7 +69,7 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${APPLE_CODE_SIGNING_AVAILABLE})
+option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -214,6 +224,6 @@ if (METHANE_TESTS_BUILD_ENABLED)
     add_subdirectory(Tests)
 endif()
 
-if (NOT IS_ROOT_PROJECT)
+if (NOT IS_TOP_LEVEL_PROJECT)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif()
