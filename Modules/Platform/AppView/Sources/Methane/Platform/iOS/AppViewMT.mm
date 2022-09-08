@@ -93,6 +93,7 @@ iOS application view implementation for Metal rendering.
     m_metal_layer = static_cast<CAMetalLayer*>(self.layer);
     self.layer.delegate = self;
     self.metalLayer.pixelFormat = self.pixelFormat;
+    self.metalLayer.device = MTLCreateSystemDefaultDevice();
 }
 
 - (UIScreen*) currentScreen
