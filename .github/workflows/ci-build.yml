@@ -45,58 +45,72 @@ jobs:
             name: "Win64_DX_Release"
             config_preset: "VS2019-Win64-DX-Default"
             build_preset: "VS2019-Win64-DX-Release"
+            run_tests: true
           - os: windows-2019
             name: "Win64_VK_Release"
             config_preset: "VS2019-Win64-VK-Default"
             build_preset: "VS2019-Win64-VK-Release"
+            run_tests: true
           - os: windows-2019
             name: "Win64_DX_Profile"
             config_preset: "VS2019-Win64-DX-Profile"
             build_preset: "VS2019-Win64-DX-Profile"
+            run_tests: false
           - os: windows-2019
             name: "Win64_VK_Profile"
             config_preset: "VS2019-Win64-VK-Profile"
             build_preset: "VS2019-Win64-VK-Profile"
+            run_tests: false
           - os: windows-2019
             name: "Win32_DX_Release"
             config_preset: "VS2019-Win32-DX-Default"
             build_preset: "VS2019-Win32-DX-Release"
+            run_tests: true
           - os: windows-2019
             name: "Win32_VK_Release"
             config_preset: "VS2019-Win32-VK-Default"
             build_preset: "VS2019-Win32-VK-Release"
+            run_tests: true
           - os: windows-2019
             name: "Win32_DX_Profile"
             config_preset: "VS2019-Win32-DX-Profile"
             build_preset: "VS2019-Win32-DX-Profile"
+            run_tests: false
           - os: windows-2019
             name: "Win32_VK_Profile"
             config_preset: "VS2019-Win32-VK-Profile"
             build_preset: "VS2019-Win32-VK-Profile"
+            run_tests: false
           - os: ubuntu-latest
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
+            run_tests: true
           - os: ubuntu-latest
             name: "Ubuntu_VK_Profile"
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
+            run_tests: false
           - os: macos-latest
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
+            run_tests: true
           - os: macos-latest
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
+            run_tests: false
           - os: macos-latest
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
+            run_tests: false
           - os: macos-latest
             name: "tvOS_Sim_MTL_Release"
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
+            run_tests: false
 
     runs-on: ${{ matrix.os }}
 
@@ -123,6 +137,26 @@ jobs:
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
+
+    - name: Run Unit-Tests
+      if: ${{ matrix.run_tests }}
+      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
+      shell: bash
+      run: |
+        result_ext='_result.xml'
+        echo Running all unit-tests in directory $PWD
+        for test_exe in *Test
+        do
+          ./$test_exe -r junit -o "$test_exe$result_ext"
+          echo  - $test_exe - completed with $? exit code
+        done
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v2
+      if: ${{ matrix.run_tests }} && (success() || failure())
+      with:
+        name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+        path: Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml
 
     - name: Archive Build Artifacts
       shell: bash
