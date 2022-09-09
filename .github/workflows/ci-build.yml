@@ -104,7 +104,7 @@ jobs:
 
     - name: Install Linux prerequisites
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev p7zip
 
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -124,20 +124,12 @@ jobs:
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
 
-    - name: Tar Installation Files
-      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
-      run: tar -cvf 'Build/Output/MethaneKit_${{ matrix.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
+    - name: Archive Build Artifacts
+      shell: bash
+      run: 7z a -t7z -mx=9 'Build/Output/MethaneKit_${{ matrix.name }}.7z' 'Build/Output/${{ matrix.config_preset }}/Install'
 
-    - name: Upload Unix Build Artifacts
-      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+    - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/MethaneKit_${{ matrix.name }}.tar
-
-    - name: Upload Windows Build Artifacts
-      if: ${{ matrix.os == 'windows-2019' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/${{ matrix.config_preset }}/Install
+        path: Build/Output/MethaneKit_${{ matrix.name }}.7z
