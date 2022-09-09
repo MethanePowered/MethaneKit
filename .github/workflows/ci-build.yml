@@ -126,10 +126,11 @@ jobs:
 
     - name: Archive Build Artifacts
       shell: bash
-      run: 7z a -t7z -mx=9 'Build/Output/MethaneKit_${{ matrix.name }}.7z' 'Build/Output/${{ matrix.config_preset }}/Install'
+      working-directory: Build/Output/${{ matrix.config_preset }}/Install
+      run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
     - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/MethaneKit_${{ matrix.name }}.7z
+        path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
