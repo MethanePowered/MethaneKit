@@ -5,12 +5,12 @@ set(METHANE_LANGUAGES CXX C)
 if(APPLE)
     list(APPEND METHANE_LANGUAGES OBJCXX)
 
-    if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if (NOT CMAKE_OSX_ARCHITECTURES)
         # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
         # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
         string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
-        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0 AND NOT CMAKE_OSX_ARCHITECTURES)
+        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0)
             message(AUTHOR_WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
         endif()
     endif()
