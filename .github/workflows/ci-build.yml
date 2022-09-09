@@ -1,0 +1,142 @@
+# Cross-platform and multi-configuration build of the Methane Kit
+
+name: "CI Build"
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+    - '.github/**/*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Externals/**'
+    - 'CMake/**'
+    - 'CMakeLists.txt'
+    - 'CMakePresets.json'
+  pull_request:
+    branches: [ main ]
+    paths:
+    - '.github/**/*.yml'
+    - 'Apps/**'
+    - 'Modules/**'
+    - 'Externals/**'
+    - 'CMake/**'
+    - 'CMakeLists.txt'
+    - 'CMakePresets.json'
+  schedule:
+    - cron: '20 23 * * 3'
+
+env:
+  product_ver_major: 0
+  product_ver_minor: 7
+  product_ver_patch: 0
+  product_ver_build: ${{ github.run_number }}
+
+jobs:
+  build-asteroids:
+    name: Build ${{ matrix.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2019
+            name: "Win64_DX_Release"
+            config_preset: "VS2019-Win64-DX-Default"
+            build_preset: "VS2019-Win64-DX-Release"
+          - os: windows-2019
+            name: "Win64_VK_Release"
+            config_preset: "VS2019-Win64-VK-Default"
+            build_preset: "VS2019-Win64-VK-Release"
+          - os: windows-2019
+            name: "Win64_DX_Profile"
+            config_preset: "VS2019-Win64-DX-Profile"
+            build_preset: "VS2019-Win64-DX-Profile"
+          - os: windows-2019
+            name: "Win64_VK_Profile"
+            config_preset: "VS2019-Win64-VK-Profile"
+            build_preset: "VS2019-Win64-VK-Profile"
+          - os: windows-2019
+            name: "Win32_DX_Release"
+            config_preset: "VS2019-Win32-DX-Default"
+            build_preset: "VS2019-Win32-DX-Release"
+          - os: windows-2019
+            name: "Win32_VK_Release"
+            config_preset: "VS2019-Win32-VK-Default"
+            build_preset: "VS2019-Win32-VK-Release"
+          - os: windows-2019
+            name: "Win32_DX_Profile"
+            config_preset: "VS2019-Win32-DX-Profile"
+            build_preset: "VS2019-Win32-DX-Profile"
+          - os: windows-2019
+            name: "Win32_VK_Profile"
+            config_preset: "VS2019-Win32-VK-Profile"
+            build_preset: "VS2019-Win32-VK-Profile"
+          - os: ubuntu-latest
+            name: "Ubuntu_VK_Release"
+            config_preset: "Make-Lin-VK-Release"
+            build_preset: "Make-Lin-VK-Release"
+          - os: ubuntu-latest
+            name: "Ubuntu_VK_Profile"
+            config_preset: "Make-Lin-VK-Profile"
+            build_preset: "Make-Lin-VK-Profile"
+          - os: macos-latest
+            name: "MacOS_MTL_Release"
+            config_preset: "Xcode-Mac-MTL-Default"
+            build_preset: "Xcode-Mac-MTL-Release"
+          - os: macos-latest
+            name: "MacOS_MTL_Profile"
+            config_preset: "Xcode-Mac-MTL-Profile"
+            build_preset: "Xcode-Mac-MTL-Profile"
+          - os: macos-latest
+            name: "iOS_Sim_MTL_Release"
+            config_preset: "Xcode-iOS-Sim-MTL-Default"
+            build_preset: "Xcode-iOS-Sim-MTL-Release"
+          - os: macos-latest
+            name: "tvOS_Sim_MTL_Release"
+            config_preset: "Xcode-tvOS-Sim-MTL-Default"
+            build_preset: "Xcode-tvOS-Sim-MTL-Release"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    - name: Install Linux prerequisites
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize Externals Cache
+      id: cache-externals
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-externals
+      with:
+        path: Build/Output/ExternalsCache
+        key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+
+    - name: CMake Configure Preset ${{ matrix.config_preset }}
+      run: cmake --preset ${{ matrix.config_preset }} -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
+
+    - name: CMake Build Preset ${{ matrix.build_preset }}
+      run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
+
+    - name: Tar Installation Files
+      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+      run: tar -cvf 'Build/Output/MethaneKit_${{ matrix.name }}.tar' 'Build/Output/${{ matrix.config_preset }}/Install'
+
+    - name: Upload Unix Build Artifacts
+      if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+        path: Build/Output/MethaneKit_${{ matrix.name }}.tar
+
+    - name: Upload Windows Build Artifacts
+      if: ${{ matrix.os == 'windows-2019' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+        path: Build/Output/${{ matrix.config_preset }}/Install

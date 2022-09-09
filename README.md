@@ -3,6 +3,7 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 [![Build Status](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=methane-powered-kit-windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=methane-powered-kit-windows)
+[![CI Build](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml)
 [![CodeQL](https://github.com/MethanePowered/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/codeql-analysis.yml)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
@@ -24,8 +25,8 @@ See [Build Instructions](/Build/README.md) topic for manual build instructions a
 | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> **Windows x86** | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan        | [![Windows x86 Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=Win32_VK_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master) | [![Windows x86 Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=Win32_VK_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop) |
 | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Linux.png" width=24 valign="middle"> **Linux**         | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/VulkanSmall.png" width=24 valign="middle"> Vulkan        | [![Ubuntu Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=Ubuntu_VK_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)     | [![Ubuntu Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=Ubuntu_VK_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)     |
 | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/MacOS.png" width=24 valign="middle"> **MacOS**         | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | [![MacOS Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=MacOS_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)      | [![MacOS Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=MacOS_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)      |
-| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/iOS.png" width=24 valign="middle"> **iOS (Sim)**       | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | [![MacOS Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=iOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)    | [![MacOS Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=iOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)    |
-| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/iOS.png" width=24 valign="middle"> **tvOS (Sim)**      | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | [![MacOS Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=tvOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)   | [![MacOS Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=tvOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)   |
+| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/iOS.png" width=24 valign="middle"> **iOS** (Sim)       | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | [![MacOS Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=iOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)    | [![MacOS Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=iOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)    |
+| <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/iOS.png" width=24 valign="middle"> **tvOS** (Sim)      | <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/GraphicsApi/MetalSmall.png" width=24 valign="middle"> Metal          | [![MacOS Master Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master&jobName=tvOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)   | [![MacOS Develop Build](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=develop&jobName=tvOS_Sim_MTL_Release)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=develop)   |
 
 [Static code analysis](#static-code-analysis) scans are performed as a part of automated CI build process on master and develop branches
 with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organizations/methane-powered).
@@ -47,6 +48,22 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 
 ![Asteroids Sample on Windows](/../../../MethaneAsteroids/blob/main/Screenshots/AsteroidsWinDirectX12.jpg)
 <p align="center"><i><a href="https://github.com/MethanePowered/MethaneAsteroids">Asteroids sample</a> demonstrating multi-threaded rendering with Methane Kit</i></p>
+
+## [Build Instructions](/Build/README.md)
+
+- [Prerequisites](/Build/README.md#prerequisites)
+- [Fetch Sources](/Build/README.md#fetch-sources)
+- - [Notes](/Build/README.md#notes)
+- [First time initialization](/Build/README.md#first-time-initialization)
+- [Update sources to latest revision](/Build/README.md#update-sources-to-latest-revision)
+- [Building from Sources](/Build/README.md#building-from-sources)
+  - [Windows Build with Visual Studio](/Build/README.md#windows-build-with-visual-studio)
+  - [Linux Build with Unix Makefiles](/Build/README.md#linux-build-with-unix-makefiles)
+  - [MacOS Build with XCode](/Build/README.md#macos-build-with-xcode)
+  - [iOS and tvOS Build with XCode](/Build/README.md#ios-and-tvos-build-with-xcode)
+- [CMake Generator](/Build/README.md#cmake-generator)
+  - [CMake Options](/Build/README.md#cmake-options)
+  - [CMake Presets](/Build/README.md#cmake-presets)
 
 ## Getting Started
 
@@ -125,22 +142,6 @@ Samples are distributes in form of separate repositories.
   in [Azure Pipelines](https://dev.azure.com/MethanePowered/MethaneKit/)
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
-
-## [Build Instructions](/Build/README.md)
-
-- [Prerequisites](/Build/README.md#prerequisites)
-- [Fetch Sources](/Build/README.md#fetch-sources)
-- - [Notes](/Build/README.md#notes)
-  - [First time initialization](/Build/README.md#first-time-initialization)
-  - [Update sources to latest revision](/Build/README.md#update-sources-to-latest-revision)
-- [Building from Sources](/Build/README.md#building-from-sources)
-  - [Windows Build with Visual Studio](/Build/README.md#windows-build-with-visual-studio)
-  - [Linux Build with Unix Makefiles](/Build/README.md#linux-build-with-unix-makefiles)
-  - [MacOS Build with XCode](/Build/README.md#macos-build-with-xcode)
-  - [iOS and tvOS Build with XCode](#ios-and-tvos-build-with-xcode)
-- [CMake Generator](/Build/README.md#cmake-generator)
-  - [CMake Options](/Build/README.md#cmake-options)
-  - [CMake Presets](/Build/README.md#cmake-presets)
 
 ## Supported Development Tools
 
