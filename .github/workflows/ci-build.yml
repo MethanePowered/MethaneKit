@@ -31,6 +31,7 @@ env:
   product_ver_minor: 7
   product_ver_patch: 0
   product_ver_build: ${{ github.run_number }}
+  TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
   build-asteroids:
