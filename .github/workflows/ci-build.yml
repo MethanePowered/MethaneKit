@@ -1,10 +1,10 @@
 # Cross-platform and multi-configuration build of the Methane Kit
 
-name: "CI Build"
+name: 'CI Build'
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
     paths:
     - '.github/**/*.yml'
     - 'Apps/**'
@@ -14,7 +14,7 @@ on:
     - 'CMakeLists.txt'
     - 'CMakePresets.json'
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
     paths:
     - '.github/**/*.yml'
     - 'Apps/**'
@@ -152,7 +152,7 @@ jobs:
         done
 
     - name: Run Unit-Tests on Windows
-      if: ${{ matrix.run_tests && matrix.os == 'windows-2019'}}
+      if: ${{ matrix.run_tests && matrix.os == 'windows-2019' }}
       working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
       shell: cmd
       run: |
@@ -166,7 +166,7 @@ jobs:
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v2
-      if: ${{ matrix.run_tests }} && (success() || failure())
+      if: ${{ matrix.run_tests && (success() || failure()) }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml
