@@ -56,6 +56,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: List Windows Kit DLLs
+      if: ${{ matrix.os == 'windows-2019' }}
+      run: dir "C:/Program Files (x86)/Windows Kits/10/Redist/D3D/x64" /b /a-d
+
     # NOTE: CodeQL is temporary DISABLED on Windows (see reason description next to Analysis step below)
     - name: Initialize CodeQL
       if: ${{ matrix.os != 'windows-2019' }}
