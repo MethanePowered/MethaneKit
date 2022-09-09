@@ -4,6 +4,7 @@
 [![Build Status](https://dev.azure.com/MethanePowered/MethaneKit/_apis/build/status/MethanePowered.MethaneKit?branchName=master)](https://dev.azure.com/MethanePowered/MethaneKit/_build/latest?definitionId=5&branchName=master)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=methane-powered-kit-windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=methane-powered-kit-windows)
 [![CI Build](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml)
+[![CI Tests](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-tests.yml)
 [![CodeQL](https://github.com/MethanePowered/MethaneKit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/codeql-analysis.yml)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**

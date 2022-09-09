@@ -34,7 +34,7 @@ env:
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
-  build-asteroids:
+  build-methane-kit:
     name: Build ${{ matrix.name }}
 
     strategy:
@@ -138,8 +138,8 @@ jobs:
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
 
-    - name: Run Unit-Tests
-      if: ${{ matrix.run_tests }}
+    - name: Run Unit-Tests on Unix
+      if: ${{ matrix.run_tests && matrix.os != 'windows-2019'}}
       working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
       shell: bash
       run: |
@@ -150,6 +150,19 @@ jobs:
           ./$test_exe -r junit -o "$test_exe$result_ext"
           echo  - $test_exe - completed with $? exit code
         done
+
+    - name: Run Unit-Tests on Windows
+      if: ${{ matrix.run_tests && matrix.os == 'windows-2019'}}
+      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
+      shell: cmd
+      run: |
+        setlocal enabledelayedexpansion
+        echo Running unit-tests in directory "%cd%"
+        for /r "." %%a in (*Test.exe) do (
+          "%%~fa" -r junit -o "%%~fa_result.xml"
+          echo  - %%~na - completed with !errorlevel! exit status
+        )
+        exit 0
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v2
