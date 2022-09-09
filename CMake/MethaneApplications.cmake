@@ -64,7 +64,7 @@ function(add_methane_application)
         set(APP_BUILD_NUMBER ${PROJECT_VERSION_TWEAK})
     endif()
 
-    get_full_file_version(${METHANE_APP_SHORT_VERSION} ${APP_BUILD_NUMBER} METHANE_APP_LONG_VERSION)
+    set(METHANE_APP_LONG_VERSION "${METHANE_APP_SHORT_VERSION}.${PROJECT_VERSION_PATCH}.${APP_BUILD_NUMBER}"
 
     if (WIN32)
 

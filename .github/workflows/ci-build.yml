@@ -119,7 +119,7 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }} -DASTEROIDS_VERSION_MAJOR=${{ env.product_ver_major }} -DASTEROIDS_VERSION_MINOR=${{ env.product_ver_minor }} -DASTEROIDS_VERSION_PATCH=${{ env.product_ver_patch }} -DASTEROIDS_VERSION_BUILD=${{ env.product_ver_build }}
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
