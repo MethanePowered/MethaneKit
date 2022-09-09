@@ -58,11 +58,12 @@ jobs:
 
     - name: List Windows Kit DLLs
       if: ${{ matrix.os == 'windows-2019' }}
+      shell: cmd
       run: dir "C:/Program Files (x86)/Windows Kits/10/Redist/D3D/x64" /b /a-d
 
     # NOTE: CodeQL is temporary DISABLED on Windows (see reason description next to Analysis step below)
     - name: Initialize CodeQL
-      if: ${{ matrix.os != 'windows-2019' }}
+      #if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/init@v2
       with:
         languages: cpp
@@ -85,14 +86,14 @@ jobs:
 
     # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
     - name: Perform CodeQL Analysis
-      if: ${{ matrix.os != 'windows-2019' }}
+      #if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/analyze@v2
       with:
         upload: false
         output: results
 
     - name: Filter CodeQL Results
-      if: ${{ matrix.os != 'windows-2019' }}
+      #if: ${{ matrix.os != 'windows-2019' }}
       uses: MethanePowered/FilterSarif@master
       with:
         patterns: |
@@ -103,7 +104,7 @@ jobs:
         output: results/cpp-filtered.sarif
 
     - name: Upload Filtered CodeQL Results
-      if: ${{ matrix.os != 'windows-2019' }}
+      #if: ${{ matrix.os != 'windows-2019' }}
       uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: results/cpp-filtered.sarif
