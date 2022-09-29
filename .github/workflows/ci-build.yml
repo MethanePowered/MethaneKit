@@ -124,10 +124,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Initialize Externals Cache
-      id: cache-externals
       uses: actions/cache@v3
-      env:
-        cache-name: cache-externals
       with:
         path: Build/Output/ExternalsCache
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}

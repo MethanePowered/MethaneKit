@@ -69,25 +69,35 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: CMake Configure Preset ${{ matrix.config_preset }}
-        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
+      - name: Install Linux prerequisites
+        if: ${{ matrix.os_name == 'linux' }}
+        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
 
-      - name: Set up JDK 11
+      - name: Install JDK 11
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: 'zulu'
 
-      - name: Cache SonarCloud packages
+      - name: Initialize Externals Cache
+        uses: actions/cache@v3
+        with:
+          path: Build/Output/ExternalsCache
+          key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+
+      - name: Initialize Sonar Cache
         uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
+          key: SonarCache-${{ runner.os }}
+
+      - name: CMake Configure Preset ${{ matrix.config_preset }}
+        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
 
       - name: Download and set up sonar-scanner
         shell: bash
@@ -100,16 +110,15 @@ jobs:
           echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-${{ matrix.os_name }}/bin" >> $GITHUB_PATH
 
       - name: Download and set up build-wrapper
-        if: ${{ matrix.os_name == 'windows' }}
+        shell: bash
         env:
           BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
         run: |
           curl -sSLo $HOME\.sonar\build-wrapper.zip ${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}
           unzip -o $HOME\.sonar\build-wrapper.zip -d $HOME\.sonar\
-          echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" >> $GITHUB_PATH
 
-      - name: Build project
-        if: ${{ matrix.os_name == 'windows' }}
+      - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
         run: |
           ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build --preset ${{ matrix.build_preset }} --target install
 
