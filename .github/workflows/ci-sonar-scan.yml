@@ -189,7 +189,7 @@ jobs:
           make MethaneTestCoverage
 
       - name: Run all unit-tests from install directory with LCov code coverage on MacOS
-        if: ${{ matrix.os_name == 'macos' }}
+        if: ${{ matrix.os_name == 'macosx' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           result_ext='.xml'
@@ -235,7 +235,7 @@ jobs:
           tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
 
       - name: Generate SonarCube Code Coverage Reports on MacOS
-        if: ${{ matrix.os_name == 'macos' }}
+        if: ${{ matrix.os_name == 'macosx' }}
         uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
         with:
           reports: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/*.lcov'
@@ -244,7 +244,7 @@ jobs:
           title: 'Methane Tests Code Coverage on MacOS'
           tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
 
-      - name: Upload Code Coverage Results
+      - name: Upload Code Coverage Cobertura Report
         uses: actions/upload-artifact@v2
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
