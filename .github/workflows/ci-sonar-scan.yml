@@ -153,10 +153,10 @@ jobs:
       - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
         shell: cmd
-        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
+        working-directory: 'Build\\Output\\${{ matrix.config_preset }}\\Install\\Tests'
         run: |
           setlocal enabledelayedexpansion
-          set open_cpp_coverage_exe=OpenCppCoverage/OpenCppCoverage.exe
+          set open_cpp_coverage_exe=OpenCppCoverage\\OpenCppCoverage.exe
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -249,7 +249,7 @@ jobs:
           SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
           chmod a+x "$SONAR_SCANNER_PATH"
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD="/"$SONAR_SCANNER_PATH/" --define sonar.host.url=${{ env.sonar_server_url }}"
+          SONAR_SCAN_CMD="$SONAR_SCANNER_PATH --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
