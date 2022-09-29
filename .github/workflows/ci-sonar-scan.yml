@@ -1,0 +1,130 @@
+name: 'CI Sonar Scan'
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - '.github/**/*.yml'
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/**/*.yml'
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+
+env:
+  product_ver_major: 0
+  product_ver_minor: 7
+  product_ver_patch: 0
+  product_ver_build: ${{ github.run_number }}
+  SONAR_SCANNER_VERSION: 4.7.0.2747 # Find the latest version on this page: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
+  SONAR_SERVER_URL: "https://sonarcloud.io"
+  BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+  TRACY_NO_INVARIANT_CHECK: 1
+
+jobs:
+  sonar_scan:
+    name: Scan ${{ matrix.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2019
+            os_name: windows
+            name: "Win64_DX_SonarScan"
+            config_preset: "VS2019-Win64-DX-Scan"
+            build_preset: "VS2019-Win64-DX-Scan"
+            build_wrapper_zip: build-wrapper-win-x86
+            build_wrapper_exe: build-wrapper-win-x86-64
+          - os: ubuntu-latest
+            os_name: linux
+            os_short: linux
+            name: "Ubuntu_VK_SonarScan"
+            config_preset: "Make-Lin-VK-Scan"
+            build_preset: "Make-Lin-VK-Scan"
+            build_wrapper_zip: build-wrapper-linux-x86
+            build_wrapper_exe: build-wrapper-linux-x86-64
+          - os: macos-latest
+            os_name: macosx
+            os_short: macosx
+            name: "MacOS_MTL_SonarScan"
+            config_preset: "Xcode-Mac-MTL-Scan"
+            build_preset: "Xcode-Mac-MTL-Scan"
+            build_wrapper_zip: build-wrapper-macosx-x86
+            build_wrapper_exe: build-wrapper-macosx-x86
+
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: CMake Configure Preset ${{ matrix.config_preset }}
+        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'zulu'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Download and set up sonar-scanner
+        shell: bash
+        env:
+          SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-${{ matrix.os_name }}.zip
+        run: |
+          mkdir -p $HOME/.sonar
+          curl -sSLo $HOME/.sonar/sonar-scanner.zip ${{ env.SONAR_SCANNER_DOWNLOAD_URL }} 
+          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-${{ matrix.os_name }}/bin" >> $GITHUB_PATH
+
+      - name: Download and set up build-wrapper
+        if: ${{ matrix.os_name == 'windows' }}
+        env:
+          BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
+        run: |
+          curl -sSLo $HOME\.sonar\build-wrapper.zip ${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}
+          unzip -o $HOME\.sonar\build-wrapper.zip -d $HOME\.sonar\
+          echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+      - name: Build project
+        if: ${{ matrix.os_name == 'windows' }}
+        run: |
+          ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build --preset ${{ matrix.build_preset }} --target install
+
+      - name: Run sonar-scanner on PUSH
+        if: github.event.workflow_run.event == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --sonar.tests=Tests
+
+      - name: Run sonar-scanner on PULL-Request
+        if: github.event.workflow_run.event != 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}

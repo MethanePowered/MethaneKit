@@ -34,7 +34,7 @@ env:
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
-  build-methane-kit:
+  build:
     name: Build ${{ matrix.name }}
 
     strategy:
