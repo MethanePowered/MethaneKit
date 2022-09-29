@@ -53,31 +53,26 @@ jobs:
             config_preset: "VS2019-Win64-DX-Scan"
             build_preset: "VS2019-Win64-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
-            sonar_project_token: ${{ secrets.WINDOWS_SONAR_TOKEN }}
             build_wrapper_zip: "build-wrapper-win-x86"
             build_wrapper_exe: "build-wrapper-win-x86-64"
 
           - os: ubuntu-latest
             os_name: linux
-            os_short: linux
             name: "Ubuntu_VK_SonarScan"
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            sonar_project_token: ${{ secrets.LINUX_SONAR_TOKEN }}
-            build_wrapper_zip: build-wrapper-linux-x86
-            build_wrapper_exe: build-wrapper-linux-x86-64
+            build_wrapper_zip: "build-wrapper-linux-x86"
+            build_wrapper_exe: "build-wrapper-linux-x86-64"
 
           - os: macos-latest
             os_name: macosx
-            os_short: macosx
             name: "MacOS_MTL_SonarScan"
             config_preset: "Xcode-Mac-MTL-Scan"
             build_preset: "Xcode-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            sonar_project_token: ${{ secrets.MACOS_SONAR_TOKEN }}
-            build_wrapper_zip: build-wrapper-macosx-x86
-            build_wrapper_exe: build-wrapper-macosx-x86
+            build_wrapper_zip: "build-wrapper-macosx-x86"
+            build_wrapper_exe: "build-wrapper-macosx-x86"
 
     runs-on: ${{ matrix.os }}
 
@@ -138,17 +133,27 @@ jobs:
           ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.build_wrapper_out_dir }} cmake --build --preset ${{ matrix.build_preset }} --target install
 
       - name: Run sonar-scanner on PUSH
-        if: github.event.workflow_run.event == 'push'
+        if: ${{ github.event.workflow_run.event == 'push' }}
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ matrix.sonar_project_token }}
         run: |
-          sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.projectKey="${{ matrix.sonar_project_key }}" --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}
-
-      - name: Run sonar-scanner on PULL-Request
-        if: github.event.workflow_run.event != 'push'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ matrix.sonar_project_token }}
-        run: |
-          sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.projectKey="${{ matrix.sonar_project_key }}" --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
+          case "${{ matrix.os_name }}" in
+            "windows")
+              SONAR_TOKEN=${{ secrets.WINDOWS_SONAR_TOKEN }}
+              ;;
+            "linux")
+              SONAR_TOKEN=${{ secrets.LINUX_SONAR_TOKEN }}
+              ;;
+            "macosx")
+              SONAR_TOKEN=${{ secrets.MACOS_SONAR_TOKEN }}
+              ;;
+            *)
+              ;;
+          esac
+          SONAR_SCAN_CMD='sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.projectKey="${{ matrix.sonar_project_key }}" --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}'
+          if [ "${{ github.event.workflow_run.event }}" == "push" ]; then
+            eval ${SONAR_SCAN_CMD}
+          else
+            eval ${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
+          fi
