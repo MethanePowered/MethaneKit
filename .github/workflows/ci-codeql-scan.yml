@@ -30,7 +30,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: CodeQL Scan ${{ matrix.name }}
 
     strategy:
       fail-fast: false
