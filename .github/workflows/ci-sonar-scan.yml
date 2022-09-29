@@ -36,6 +36,7 @@ env:
   # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
   sonar_scanner_version: 4.7.0.2747
   sonar_server_url: "https://sonarcloud.io"
+  sonar_organization: methane-powered
   build_wrapper_out_dir: Build/Output/BuildWrapperOutput
   TRACY_NO_INVARIANT_CHECK: 1
 
@@ -61,7 +62,7 @@ jobs:
             name: "Ubuntu_VK_SonarScan"
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
-            sonar_project_key: "methane-powered-kit-macos"
+            sonar_project_key: "methane-powered-kit-linux"
             build_wrapper_zip: "build-wrapper-linux-x86"
             build_wrapper_exe: "build-wrapper-linux-x86-64"
 
@@ -118,9 +119,11 @@ jobs:
           key: SonarCache-${{ runner.os }}
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
+        shell: bash
         run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
 
       - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
+        shell: bash
         run: |
           "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install
 
@@ -128,27 +131,16 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          case "${{ matrix.os_name }}" in
-            "windows")
-              SONAR_TOKEN=${{ secrets.WINDOWS_SONAR_TOKEN }}
+          if [ "${{ matrix.os_name }}" == "windows" ]; then
               SONAR_SCANNER_EXE=sonar-scanner.bat
-              ;;
-            "linux")
-              SONAR_TOKEN=${{ secrets.LINUX_SONAR_TOKEN }}
+          else
               SONAR_SCANNER_EXE=sonar-scanner
-              ;;
-            "macosx")
-              SONAR_TOKEN=${{ secrets.MACOS_SONAR_TOKEN }}
-              SONAR_SCANNER_EXE=sonar-scanner
-              ;;
-            *)
-              echo "Unknown OS name: ${{ matrix.os_name }}" && exit 1
-              ;;
-          esac
+          fi
           SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/${SONAR_SCANNER_EXE}
-          SONAR_SCAN_CMD='"${SONAR_SCANNER_PATH}" --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.projectKey="${{ matrix.sonar_project_key }}" --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}'
           chmod a+x "${SONAR_SCANNER_PATH}"
+          SONAR_SCAN_CMD='"${SONAR_SCANNER_PATH}" --define sonar.host.url=${{ env.sonar_server_url }} --define sonar.organization=${{ env.sonar_organization }} --define sonar.projectKey=${{ matrix.sonar_project_key }} --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}'
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             eval ${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
           else
