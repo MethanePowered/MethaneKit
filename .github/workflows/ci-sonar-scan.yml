@@ -140,9 +140,9 @@ jobs:
           fi
           SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/${SONAR_SCANNER_EXE}
           chmod a+x "${SONAR_SCANNER_PATH}"
-          SONAR_SCAN_CMD='"${SONAR_SCANNER_PATH}" --define sonar.host.url=${{ env.sonar_server_url }} --define sonar.organization=${{ env.sonar_organization }} --define sonar.projectKey=${{ matrix.sonar_project_key }} --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}'
+          SONAR_SCAN_CMD='"${SONAR_SCANNER_PATH}" --define sonar.host.url=${{ env.sonar_server_url }} --define sonar.organization=${{ env.sonar_organization }} --define sonar.projectKey=${{ matrix.sonar_project_key }} --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.sha }}'
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            eval ${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
+            eval ${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ github.event.pull_request.number }} --define sonar.pullrequest.branch=${{ github.ref }} --define sonar.pullrequest.base=${{ github.base_ref }}
           else
             eval ${SONAR_SCAN_CMD}
           fi
