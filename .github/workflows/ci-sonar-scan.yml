@@ -28,9 +28,10 @@ env:
   product_ver_minor: 7
   product_ver_patch: 0
   product_ver_build: ${{ github.run_number }}
-  SONAR_SCANNER_VERSION: 4.7.0.2747 # Find the latest version on this page: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
-  SONAR_SERVER_URL: "https://sonarcloud.io"
-  BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+  # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
+  sonar_scanner_version: 4.7.0.2747
+  sonar_server_url: "https://sonarcloud.io"
+  build_wrapper_out_dir: build_wrapper_output_directory
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
@@ -101,26 +102,22 @@ jobs:
 
       - name: Download and set up sonar-scanner
         shell: bash
-        env:
-          SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-${{ matrix.os_name }}.zip
         run: |
           mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/sonar-scanner.zip ${{ env.SONAR_SCANNER_DOWNLOAD_URL }} 
+          curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}.zip
           unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-${{ matrix.os_name }}/bin" >> $GITHUB_PATH
+          echo "$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin" >> $GITHUB_PATH
 
       - name: Download and set up build-wrapper
         shell: bash
-        env:
-          BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
         run: |
-          curl -sSLo $HOME\.sonar\build-wrapper.zip ${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}
-          unzip -o $HOME\.sonar\build-wrapper.zip -d $HOME\.sonar\
-          echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" >> $GITHUB_PATH
+          curl -sSLo $HOME/.sonar/build-wrapper.zip ${{ env.sonar_server_url }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
+          unzip -o $HOME/.sonar/build-wrapper.zip -d $HOME/.sonar/
+          echo "$HOME/.sonar/${{ matrix.build_wrapper_zip }}" >> $GITHUB_PATH
 
       - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
         run: |
-          ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build --preset ${{ matrix.build_preset }} --target install
+          ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.build_wrapper_out_dir }} cmake --build --preset ${{ matrix.build_preset }} --target install
 
       - name: Run sonar-scanner on PUSH
         if: github.event.workflow_run.event == 'push'
@@ -128,7 +125,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --sonar.tests=Tests
+          sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --sonar.tests=Tests
 
       - name: Run sonar-scanner on PULL-Request
         if: github.event.workflow_run.event != 'push'
@@ -136,4 +133,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
+          sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
