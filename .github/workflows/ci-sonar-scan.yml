@@ -261,20 +261,21 @@ jobs:
           else
               SONAR_SCANNER_EXE=sonar-scanner
           fi
-          SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/${SONAR_SCANNER_EXE}
-          chmod a+x "${SONAR_SCANNER_PATH}"
+          SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
+          chmod a+x "$SONAR_SCANNER_PATH"
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD='"${SONAR_SCANNER_PATH}" --define sonar.host.url=${{ env.sonar_server_url }}'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.organization=${{ env.sonar_organization }}'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.projectKey=${{ matrix.sonar_project_key }}'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml'
-          SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.scm.revision=${{ github.sha }}'
+          SONAR_SCAN_CMD='"$SONAR_SCANNER_PATH" --define sonar.host.url=${{ env.sonar_server_url }}'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml'
+          SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}'
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ github.event.pull_request.number }}'
-            SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.pullrequest.branch=${{ github.ref }}'
-            SONAR_SCAN_CMD='${SONAR_SCAN_CMD} --define sonar.pullrequest.base=${{ github.base_ref }}'
+            SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.pullrequest.key=${{ github.event.pull_request.number }}'
+            SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.ref }}'
+            SONAR_SCAN_CMD='$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.base_ref }}'
           fi
-          eval ${SONAR_SCAN_CMD}
+          echo '$SONAR_SCAN_CMD'
+          eval '$SONAR_SCAN_CMD'
