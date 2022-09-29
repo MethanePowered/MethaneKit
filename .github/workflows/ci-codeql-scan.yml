@@ -30,7 +30,7 @@ on:
 
 jobs:
   analyze:
-    name: CodeQL Scan ${{ matrix.name }}
+    name: ${{ matrix.name }}
 
     strategy:
       fail-fast: false
@@ -38,12 +38,15 @@ jobs:
         include:
          # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
          #- os: windows-2019
+         #  name: "Win64_DX_CodeQL-Scan"
          #  config_preset: "VS2019-Win64-DX-Scan"
          #  build_preset: "VS2019-Win64-DX-Scan"
           - os: ubuntu-latest
+            name: "Ubuntu_VK_CodeQL-Scan"
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
           - os: macos-latest
+            name: "MacOS_MTL_CodeQL-Scan"
             config_preset: "Xcode-Mac-MTL-Scan"
             build_preset: "Xcode-Mac-MTL-Scan"
 
