@@ -31,7 +31,7 @@ env:
   # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
   sonar_scanner_version: 4.7.0.2747
   sonar_server_url: "https://sonarcloud.io"
-  build_wrapper_out_dir: build_wrapper_output_directory
+  build_wrapper_out_dir: Build/Output/BuildWrapperOutput
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
@@ -77,28 +77,13 @@ jobs:
 
       - name: Install Linux prerequisites
         if: ${{ matrix.os_name == 'linux' }}
-        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev lcov
 
       - name: Install JDK 11
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: 'zulu'
-
-      - name: Initialize Externals Cache
-        uses: actions/cache@v3
-        with:
-          path: Build/Output/ExternalsCache
-          key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
-
-      - name: Initialize Sonar Cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: SonarCache-${{ runner.os }}
-
-      - name: CMake Configure Preset ${{ matrix.config_preset }}
-        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
 
       - name: Download and set up sonar-scanner
         shell: bash
@@ -114,6 +99,27 @@ jobs:
           curl -sSLo $HOME/.sonar/build-wrapper.zip ${{ env.sonar_server_url }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
           unzip -o $HOME/.sonar/build-wrapper.zip -d $HOME/.sonar/
           echo "$HOME/.sonar/${{ matrix.build_wrapper_zip }}" >> $GITHUB_PATH
+
+      - name: Add sonar-scanner and build-wrapper to PATH on Windows
+        if: ${{ matrix.os_name == 'windows' }}
+        run:
+          echo "$HOME\.sonar\sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+          echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+
+      - name: Initialize Externals Cache
+        uses: actions/cache@v3
+        with:
+          path: Build/Output/ExternalsCache
+          key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+
+      - name: Initialize Sonar Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: SonarCache-${{ runner.os }}
+
+      - name: CMake Configure Preset ${{ matrix.config_preset }}
+        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
 
       - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
         run: |
