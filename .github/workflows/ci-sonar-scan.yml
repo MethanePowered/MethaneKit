@@ -69,7 +69,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-linux"
             build_wrapper_zip: "build-wrapper-linux-x86"
             build_wrapper_exe: "build-wrapper-linux-x86-64"
-            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Install/Tests/Coverage/Report"
+            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
           - os: macos-latest
             os_name: macosx
@@ -156,7 +156,7 @@ jobs:
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           setlocal enabledelayedexpansion
-          set open_cpp_coverage_exe="OpenCppCoverage/OpenCppCoverage.exe"
+          set open_cpp_coverage_exe=OpenCppCoverage/OpenCppCoverage.exe
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -166,8 +166,8 @@ jobs:
           mkdir Coverage
           set /A result_error_level=0
           for /r "." %%a in (*Test.exe) do (
-            echo "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
-            "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
+            echo %open_cpp_coverage_exe% --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
+            %open_cpp_coverage_exe% --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
             echo  - %%~na - completed with !errorlevel! exit status
             if not !errorlevel!==0 (
               set /A result_error_level=!errorlevel!
