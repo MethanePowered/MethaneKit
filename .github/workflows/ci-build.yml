@@ -6,7 +6,7 @@ on:
   push:
     branches: [ master, develop ]
     paths:
-    - '.github/**/*.yml'
+    - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'
@@ -16,7 +16,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-    - '.github/**/*.yml'
+    - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'

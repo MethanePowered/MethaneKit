@@ -1,12 +1,12 @@
 # Static code analysis workflow with CodeQL
 
-name: "CodeQL"
+name: "CI CodeQL Scan"
 
 on:
   push:
     branches: [ master, develop ]
     paths:
-    - '.github/**/codeql-*.yml'
+    - '.github/**/*codeql*.yml'
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'
@@ -17,7 +17,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-    - '.github/**/codeql-*.yml'
+    - '.github/**/*codeql*.yml'
     - 'Apps/**'
     - 'Modules/**'
     - 'Externals/**'

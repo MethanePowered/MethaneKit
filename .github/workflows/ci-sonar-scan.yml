@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, develop ]
     paths:
-      - '.github/**/*.yml'
+      - '.github/**/*sonar*.yml'
       - 'Apps/**'
       - 'Modules/**'
       - 'Externals/**'
@@ -15,7 +15,7 @@ on:
     branches: [ master ]
     types: [opened, synchronize, reopened]
     paths:
-      - '.github/**/*.yml'
+      - '.github/**/*sonar*.yml'
       - 'Apps/**'
       - 'Modules/**'
       - 'Externals/**'
@@ -102,7 +102,7 @@ jobs:
 
       - name: Add sonar-scanner and build-wrapper to PATH on Windows
         if: ${{ matrix.os_name == 'windows' }}
-        run:
+        run: |
           echo "$HOME\.sonar\sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
           echo "$HOME\.sonar\${{ matrix.build_wrapper_zip }}" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
