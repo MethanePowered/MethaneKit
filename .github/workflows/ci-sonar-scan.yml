@@ -59,7 +59,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-windows"
             build_wrapper_zip: "build-wrapper-win-x86"
             build_wrapper_exe: "build-wrapper-win-x86-64"
-            tests_coverage_reports: "Build\Output\VS2019-Win64-DX-Scan\Install\Tests\Coverage\*.xml"
+            tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
 
           - os: ubuntu-latest
             os_name: linux
@@ -141,22 +141,22 @@ jobs:
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
         shell: powershell
-        working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           Invoke-WebRequest -Uri 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip' -OutFile 'OpenCppCoverage.zip'
           Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
-          if (-not(Test-Path -Path 'OpenCppCoverage\OpenCppCoverage.exe' -PathType Leaf)) {
+          if (-not(Test-Path -Path 'OpenCppCoverage/OpenCppCoverage.exe' -PathType Leaf)) {
             Get-ChildItem 'OpenCppCoverage'
-            throw 'OpenCppCoverage\OpenCppCoverage.exe executable was not found in unpacked content!'
+            throw 'OpenCppCoverage/OpenCppCoverage.exe executable was not found in unpacked content!'
           }
 
       - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
         shell: cmd
-        working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           setlocal enabledelayedexpansion
-          set open_cpp_coverage_exe="OpenCppCoverage\OpenCppCoverage.exe"
+          set open_cpp_coverage_exe="OpenCppCoverage/OpenCppCoverage.exe"
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -166,8 +166,8 @@ jobs:
           mkdir Coverage
           set /A result_error_level=0
           for /r "." %%a in (*Test.exe) do (
-            echo "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
-            "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+            echo "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
+            "%open_cpp_coverage_exe%" --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
             echo  - %%~na - completed with !errorlevel! exit status
             if not !errorlevel!==0 (
               set /A result_error_level=!errorlevel!
@@ -249,7 +249,7 @@ jobs:
           SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
           chmod a+x "$SONAR_SCANNER_PATH"
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD="\"$SONAR_SCANNER_PATH\" --define sonar.host.url=${{ env.sonar_server_url }}"
+          SONAR_SCAN_CMD="/"$SONAR_SCANNER_PATH/" --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
