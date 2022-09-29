@@ -10,17 +10,20 @@ on:
     branches: [ master, develop ]
     paths:
       - '.github/**/*sonar*.yml'
+      - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
       - 'Externals/**'
       - 'CMake/**'
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
+
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
     paths:
       - '.github/**/*sonar*.yml'
+      - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
       - 'Externals/**'
@@ -56,6 +59,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-windows"
             build_wrapper_zip: "build-wrapper-win-x86"
             build_wrapper_exe: "build-wrapper-win-x86-64"
+            tests_coverage_reports: "Build\Output\VS2019-Win64-DX-Scan\Install\Tests\Coverage\*.xml"
 
           - os: ubuntu-latest
             os_name: linux
@@ -65,6 +69,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-linux"
             build_wrapper_zip: "build-wrapper-linux-x86"
             build_wrapper_exe: "build-wrapper-linux-x86-64"
+            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Install/Tests/Coverage/Report"
 
           - os: macos-latest
             os_name: macosx
@@ -74,6 +79,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-macos"
             build_wrapper_zip: "build-wrapper-macosx-x86"
             build_wrapper_exe: "build-wrapper-macosx-x86"
+            tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
 
     runs-on: ${{ matrix.os }}
 
@@ -214,34 +220,13 @@ jobs:
           echo List of generated coverage files in directory $PWD/Coverage
           ls -la ./Coverage
 
-      - name: Generate SonarCube Code Coverage Reports on Windows
-        if: ${{ matrix.os_name == 'windows' }}
+      - name: Generate Code Coverage Reports
         uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
         with:
-          reports: 'Build\Output\${{ matrix.config_preset }}\Install\Tests\Coverage\*.xml'
-          targetdir: 'Build\Output\${{ matrix.config_preset }}\Install\Tests\Coverage\Report'
-          reporttypes: 'Cobertura;SonarQube'
-          title: 'Methane Tests Code Coverage on Windows'
-          tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
-
-      - name: Generate SonarCube Code Coverage Reports on Linux
-        if: ${{ matrix.os_name == 'linux' }}
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
-        with:
-          reports: 'Build/Output/${{ matrix.config_preset }}/Build/MethaneTestCoverage.info'
+          reports: ${{ matrix.tests_coverage_reports }}
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
           reporttypes: 'Cobertura;SonarQube'
-          title: 'Methane Tests Code Coverage on Linux'
-          tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
-
-      - name: Generate SonarCube Code Coverage Reports on MacOS
-        if: ${{ matrix.os_name == 'macosx' }}
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
-        with:
-          reports: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/*.lcov'
-          targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
-          reporttypes: 'Cobertura;SonarQube'
-          title: 'Methane Tests Code Coverage on MacOS'
+          title: 'Methane Tests Code Coverage for ${{ matrix.build_preset }}'
           tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
 
       - name: Upload Code Coverage Cobertura Report
