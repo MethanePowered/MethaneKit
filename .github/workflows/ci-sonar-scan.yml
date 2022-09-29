@@ -132,8 +132,7 @@ jobs:
         run: |
           ${{ matrix.build_wrapper_exe }} --out-dir ${{ env.build_wrapper_out_dir }} cmake --build --preset ${{ matrix.build_preset }} --target install
 
-      - name: Run sonar-scanner on PUSH
-        if: ${{ github.event.workflow_run.event == 'push' }}
+      - name: Run Sonar Scanner
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -149,11 +148,12 @@ jobs:
               SONAR_TOKEN=${{ secrets.MACOS_SONAR_TOKEN }}
               ;;
             *)
+              echo "Unknown OS name: ${{ matrix.os_name }}" && exit 1
               ;;
           esac
           SONAR_SCAN_CMD='sonar-scanner --define sonar.host.url="${{ env.sonar_server_url }}" --define sonar.projectKey="${{ matrix.sonar_project_key }}" --define sonar.projectVersion="${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}" --define sonar.cfamily.build-wrapper-output="${{ env.build_wrapper_out_dir }}" --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }}'
-          if [ "${{ github.event.workflow_run.event }}" == "push" ]; then
-            eval ${SONAR_SCAN_CMD}
-          else
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
             eval ${SONAR_SCAN_CMD} --define sonar.pullrequest.key=${{ steps.source-run-info.outputs.pullRequestNumber }} --define sonar.pullrequest.branch=${{ steps.source-run-info.outputs.sourceHeadBranch }} --define sonar.pullrequest.base=${{ steps.source-run-info.outputs.targetBranch }}
+          else
+            eval ${SONAR_SCAN_CMD}
           fi
