@@ -143,7 +143,10 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
-    const auto image_data_size = static_cast<Data::Size>(sizeof(stbi_uc) * image_width * image_height * channels_count);
+    const auto image_data_size = static_cast<Data::Size>(sizeof(stbi_uc)) *
+                                 static_cast<Data::Size>(image_width) *
+                                 static_cast<Data::Size>(image_height) *
+                                 channels_count;
 
     if (create_copy)
     {

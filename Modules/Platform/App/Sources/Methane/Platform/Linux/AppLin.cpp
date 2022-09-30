@@ -312,9 +312,9 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 2, "invalid image height");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 3, "invalid image channels count");
 
-    combined_icons_data.reserve(combined_icons_data.size() + 2 + image_width * image_height);
-    combined_icons_data.push_back(image_width);
-    combined_icons_data.push_back(image_height);
+    combined_icons_data.reserve(combined_icons_data.size() + 2 + static_cast<size_t>(image_width) * static_cast<size_t>(image_height));
+    combined_icons_data.push_back(static_cast<uint32_t>(image_width));
+    combined_icons_data.push_back(static_cast<uint32_t>(image_height));
 
     for(size_t y = 0; y < static_cast<size_t>(image_height); y++)
         for(size_t x = 0; x < static_cast<size_t>(image_width); x++)
