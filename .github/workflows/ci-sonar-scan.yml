@@ -242,8 +242,7 @@ jobs:
 
       - name: Publish test results to Testspace server
         if: ${{ always() }}
-        run: |
-          testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/*.xml" "Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" ${{ matrix.name }}
+        run: testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/*.xml" "Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
 
       - name: Run Sonar Scanner
         shell: bash

@@ -175,8 +175,7 @@ jobs:
 
     - name: Publish test results to Testspace server
       if: ${{ matrix.run_tests && (success() || failure()) }}
-      run: |
-        testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" ${{ matrix.name }}
+      run: testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml"
 
     - name: Archive Build Artifacts
       shell: bash
