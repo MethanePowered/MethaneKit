@@ -243,9 +243,16 @@ jobs:
           name: MethaneKit_${{ matrix.name }}_CoverageResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
-      - name: Publish Code Coverage to Testspace server
+      - name: Upload Code Coverage to Testspace server
         if: ${{ always() }}
         run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
+
+      - name: Upload Code Coverage to CodeCov server
+        uses: codecov/codecov-action@v3
+        with:
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
+          flags: unittests,${{ matrix.os_name }}
+          name: ${{ matrix.name }}
 
       - name: Run Sonar Scanner
         shell: bash
@@ -284,11 +291,11 @@ jobs:
         run: |
           case "${{ job.status }}" in
             "success")
-              echo "::set-output name=message::passing"
+              echo "::set-output name=message::passed"
               echo "::set-output name=color::#56a93c"
               ;;
             "failure")
-              echo "::set-output name=message::failing"
+              echo "::set-output name=message::failed"
               echo "::set-output name=color::#cd6e57"
               ;;
             "cancelled")

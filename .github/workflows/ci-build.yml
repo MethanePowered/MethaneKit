@@ -239,11 +239,11 @@ jobs:
       run: |
         case "${{ job.status }}" in
           "success")
-            echo "::set-output name=message::passing"
+            echo "::set-output name=message::passed"
             echo "::set-output name=color::#56a93c"
             ;;
           "failure")
-            echo "::set-output name=message::failing"
+            echo "::set-output name=message::failed"
             echo "::set-output name=color::#cd6e57"
             ;;
           "cancelled")
