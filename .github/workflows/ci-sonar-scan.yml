@@ -313,4 +313,3 @@ jobs:
           labelColor: gray
           message: ${{ steps.badge-params.outputs.message }}
           color: ${{ steps.badge-params.outputs.color }}
-          isError: ${{ failure() }}
