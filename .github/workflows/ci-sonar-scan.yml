@@ -240,9 +240,9 @@ jobs:
           name: MethaneKit_${{ matrix.name }}_CoverageResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
-      - name: Publish test results to Testspace server
+      - name: Publish Code Coverage to Testspace server
         if: ${{ always() }}
-        run: testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/*.xml" "Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
 
       - name: Run Sonar Scanner
         shell: bash
