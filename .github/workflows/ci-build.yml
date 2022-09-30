@@ -204,6 +204,23 @@ jobs:
       if: ${{ matrix.run_tests && (success() || failure()) }}
       run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml"
 
+    - name: Add README and BUILD files
+      shell: bash
+      run: |
+        INSTALL_DIR=Build/Output/${{ matrix.config_preset }}/Install
+        cp README.md $INSTALL_DIR/README.md
+        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}, GitHub repository: ${{ github.repositoryUrl }}, GitHub build number: ${{ github.run_id }}, git branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} > $INSTALL_DIR/BUILD.txt
+        echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/BUILD.txt
+        echo   - Built on agent ${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}: >> $INSTALL_DIR/BUILD.txt
+
+    - name: Add Windows System Information to BUILD file
+      if: ${{ matrix.os == 'windows-2019' }}
+      run: systeminfo >> Build\Output\${{ matrix.config_preset }}\Install\Build.txt
+
+    - name: Add Unix System Information to BUILD file
+      if: ${{ matrix.os != 'windows-2019' }}
+      run: uname -a >>Build/Output/${{ matrix.config_preset }}/Install/Build.txt
+
     - name: Archive Build Artifacts
       shell: bash
       working-directory: Build/Output/${{ matrix.config_preset }}/Install
