@@ -1,0 +1,37 @@
+# Tests report generator using test results published by CI Build workflow
+# https://github.com/marketplace/actions/test-reporter
+
+name: 'CI Tests Report'
+
+on:
+  workflow_run:
+    workflows: [ 'CI Build' ]
+    types:
+      - completed
+
+jobs:
+  test-report:
+    name: Test Report ${{ matrix.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Win64_DX_Release"
+          - name: "Win64_VK_Release"
+          - name: "Win32_DX_Release"
+          - name: "Win32_VK_Release"
+          - name: "Ubuntu_VK_Release"
+          - name: "MacOS_MTL_Release"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate Test Results Report
+        uses: dorny/test-reporter@v1
+        with:
+          artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
+          name: Tests ${{ matrix.name }} v$1
+          path: '*_result.xml'
+          reporter: java-junit
+          fail-on-error: 'true'

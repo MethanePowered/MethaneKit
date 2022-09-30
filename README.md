@@ -1,10 +1,10 @@
 # Methane Kit <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Logo/MethaneLogoNameSmall.png" width=200 align="right" valign="middle">
 
 [![CI Build](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-build.yml)
-[![CI Tests](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-tests.yml)
 [![CI CodeQL Scan](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-codeql-scan.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-codeql-scan.yml)
 [![CI Sonar Scan](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-sonar-scan.yml/badge.svg)](https://github.com/MethanePowered/MethaneKit/actions/workflows/ci-sonar-scan.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=methane-powered-kit-windows&metric=alert_status)](https://sonarcloud.io/dashboard?id=methane-powered-kit-windows)
+[![Test Space Metric](https://methanepowered.testspace.com/spaces/190760/badge?token=196ea878d56f2b034a8d29a9b4ba6a94c968643c)](https://methanepowered.testspace.com/spaces/190760?utm_campaign=badge&utm_medium=referral&utm_source=test "Test Cases")
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**

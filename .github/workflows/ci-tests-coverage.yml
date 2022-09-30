@@ -1,41 +1,15 @@
-# Tests report generator using test results published by CI Build workflow
-# https://github.com/marketplace/actions/test-reporter
+# Tests coverage report generator using test results published by CI Sonar Scan workflow
+# https://github.com/irongut/CodeCoverageSummary
 
-name: 'CI Tests'
+name: 'CI Tests Coverage'
 
 on:
   workflow_run:
-    workflows: [ 'CI Build', 'CI Sonar Scan' ]
+    workflows: [ 'CI Sonar Scan' ]
     types:
       - completed
 
 jobs:
-  test-report:
-    name: Test Report ${{ matrix.name }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "Win64_DX_Release"
-          - name: "Win64_VK_Release"
-          - name: "Win32_DX_Release"
-          - name: "Win32_VK_Release"
-          - name: "Ubuntu_VK_Release"
-          - name: "MacOS_MTL_Release"
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Generate Test Results Report
-        uses: dorny/test-reporter@v1
-        with:
-          artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
-          name: Tests ${{ matrix.name }} v$1
-          path: '*_result.xml'
-          reporter: java-junit
-          fail-on-error: 'true'
-
   coverage-report:
     name: Coverage Report ${{ matrix.name }}
 
@@ -58,12 +32,12 @@ jobs:
       - name: Generate Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: CoverageResults/**/Cobertura.xml
+          filename: CoverageResults/Cobertura.xml
           badge: true
           fail_below_min: false
           format: markdown
           hide_branch_rate: false
-          hide_complexity: false
+          hide_complexity: true
           indicators: true
           output: both
           thresholds: '10 80'
@@ -74,3 +48,19 @@ jobs:
         with:
           recreate: true
           path: code-coverage-results.md
+
+      - name: Read Code Coverage file contents
+        if: ${{ github.event_name == 'push' }}
+        id: read_coverage_file
+        uses: andstor/file-reader-action@v1
+        with:
+          path: code-coverage-results.md
+
+      - name: Add commit comment with coverage report
+        if: ${{ github.event_name == 'push' }}
+        uses: peter-evans/commit-comment@v2
+        with:
+          body: |
+            # ${{ matrix.name }} Tests Code Coverage
+            
+            ${{ steps.read_coverage_file.outputs.contents }}
