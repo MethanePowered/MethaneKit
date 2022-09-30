@@ -123,6 +123,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Install Testspace
+      uses: testspace-com/setup-testspace@v1
+      with:
+        domain: ${{ github.repository_owner }}
+
     - name: Initialize Externals Cache
       uses: actions/cache@v3
       with:
@@ -167,6 +172,11 @@ jobs:
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml
+
+    - name: Publish test results to Testspace server
+      if: ${{ matrix.run_tests && (success() || failure()) }}
+      run: |
+        testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" ${{ matrix.name }}
 
     - name: Archive Build Artifacts
       shell: bash

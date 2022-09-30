@@ -93,6 +93,11 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev lcov
 
+      - name: Install Testspace
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{ github.repository_owner }}
+
       - name: Install JDK 11 # Required to use Sonar Scanner
         uses: actions/setup-java@v3
         with:
@@ -234,6 +239,11 @@ jobs:
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
+
+      - name: Publish test results to Testspace server
+        if: ${{ always() }}
+        run: |
+          testspace "Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/*.xml" "Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" ${{ matrix.name }}
 
       - name: Run Sonar Scanner
         shell: bash
