@@ -115,7 +115,7 @@ jobs:
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
-            named_logo: Linux
+            named_logo: Apple
             run_tests: true
 
           - os: macos-latest
@@ -240,15 +240,15 @@ jobs:
         case "${{ job.status }}" in
           "success")
             echo "::set-output name=message::passing"
-            echo "::set-output name=color::green"
+            echo "::set-output name=color::#56a93c"
             ;;
           "failure")
             echo "::set-output name=message::failing"
-            echo "::set-output name=color::red"
+            echo "::set-output name=color::#cd6e57"
             ;;
           "cancelled")
             echo "::set-output name=message::cancelled"
-            echo "::set-output name=color::lightgray"
+            echo "::set-output name=color::#9b9b9c"
             ;;
           *)
             echo "::set-output name=message::undefined"
@@ -265,6 +265,7 @@ jobs:
         filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
         namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
         label: ${{ matrix.name }}
-        labelColor: gray
+        labelColor: #f5f5f5
+        logoColor: #f5f5f5
         message: ${{ steps.badge-params.outputs.message }}
         color: ${{ steps.badge-params.outputs.color }}
