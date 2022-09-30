@@ -153,10 +153,10 @@ jobs:
       - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
         shell: cmd
-        working-directory: 'Build\\Output\\${{ matrix.config_preset }}\\Install\\Tests'
+        working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
           setlocal enabledelayedexpansion
-          set open_cpp_coverage_exe=OpenCppCoverage\\OpenCppCoverage.exe
+          set open_cpp_coverage_exe=OpenCppCoverage\OpenCppCoverage.exe
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -166,8 +166,8 @@ jobs:
           mkdir Coverage
           set /A result_error_level=0
           for /r "." %%a in (*Test.exe) do (
-            echo %open_cpp_coverage_exe% --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
-            %open_cpp_coverage_exe% --sources "${{ github.workspace }}/Modules" --export_type=cobertura:Coverage/%%~na.xml -- "%%~fa" -r sonarqube -o "Results/%%~na.xml"
+            echo %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+            %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
             echo  - %%~na - completed with !errorlevel! exit status
             if not !errorlevel!==0 (
               set /A result_error_level=!errorlevel!
