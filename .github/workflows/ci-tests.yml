@@ -5,12 +5,14 @@ name: 'CI Tests'
 
 on:
   workflow_run:
-    workflows: [ 'CI Build' ]
+    workflows: [ 'CI Build', 'CI Sonar Scan' ]
     types:
       - completed
 
 jobs:
   test-report:
+    name: Test Report ${{ matrix.name }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -25,10 +27,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: dorny/test-reporter@v1
+      - name: Generate Test Results Report
+        uses: dorny/test-reporter@v1
         with:
           artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
           name: Tests ${{ matrix.name }} v$1
           path: '*_result.xml'
           reporter: java-junit
           fail-on-error: 'true'
+
+  coverage-report:
+    name: Coverage Report ${{ matrix.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Win64_DX_SonarScan"
+          - name: "Ubuntu_VK_SonarScan"
+          - name: "MacOS_MTL_SonarScan"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: /MethaneKit_${{ matrix.name }}_CoverageResults_(.*)/
+          path: CoverageResults
+
+      - name: Generate Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: CoverageResults/**/Cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: '10 80'
+
+      - name: Add Code Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          recreate: true
+          path: code-coverage-results.md

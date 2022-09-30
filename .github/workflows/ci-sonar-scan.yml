@@ -1,0 +1,316 @@
+# Static code analysis workflow for Sonar Cloud, results are published to projects:
+#   - Windows: https://sonarcloud.io/project/overview?id=methane-powered-kit-windows
+#   - Linux:   https://sonarcloud.io/project/overview?id=methane-powered-kit-linux
+#   - MacOS:   https://sonarcloud.io/project/overview?id=methane-powered-kit-macos
+
+name: 'CI Sonar Scan'
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - '.github/**/*sonar*.yml'
+      - 'sonar-project.properties'
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/**/*sonar*.yml'
+      - 'sonar-project.properties'
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+
+env:
+  product_ver_major: 0
+  product_ver_minor: 7
+  product_ver_patch: 0
+  product_ver_build: ${{ github.run_number }}
+  # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
+  sonar_scanner_version: 4.7.0.2747
+  sonar_server_url: "https://sonarcloud.io"
+  sonar_organization: methane-powered
+  build_wrapper_out_dir: Build/Output/BuildWrapperOutput
+  TRACY_NO_INVARIANT_CHECK: 1
+
+jobs:
+  sonar_scan:
+    name: ${{ matrix.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2019
+            os_name: windows
+            name: "Win64_DX_SonarScan"
+            named_logo: Windows
+            config_preset: "VS2019-Win64-DX-Scan"
+            build_preset: "VS2019-Win64-DX-Scan"
+            sonar_project_key: "methane-powered-kit-windows"
+            build_wrapper_zip: "build-wrapper-win-x86"
+            build_wrapper_exe: "build-wrapper-win-x86-64"
+            tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
+
+          - os: ubuntu-latest
+            os_name: linux
+            name: "Ubuntu_VK_SonarScan"
+            named_logo: Linux
+            config_preset: "Make-Lin-VK-Scan"
+            build_preset: "Make-Lin-VK-Scan"
+            sonar_project_key: "methane-powered-kit-linux"
+            build_wrapper_zip: "build-wrapper-linux-x86"
+            build_wrapper_exe: "build-wrapper-linux-x86-64"
+            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
+
+          - os: macos-latest
+            os_name: macosx
+            name: "MacOS_MTL_SonarScan"
+            named_logo: Apple
+            config_preset: "Xcode-Mac-MTL-Scan"
+            build_preset: "Xcode-Mac-MTL-Scan"
+            sonar_project_key: "methane-powered-kit-macos"
+            build_wrapper_zip: "build-wrapper-macosx-x86"
+            build_wrapper_exe: "build-wrapper-macosx-x86"
+            tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install Linux prerequisites
+        if: ${{ matrix.os_name == 'linux' }}
+        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev lcov
+
+      - name: Install Testspace
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{ github.repository_owner }}
+
+      - name: Install JDK 11 # Required to use Sonar Scanner
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: 'zulu'
+
+      - name: Install .NET Core # Required to use ReportGenerator
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.400
+
+      - name: Download sonar-scanner
+        shell: bash
+        run: |
+          mkdir -p $HOME/.sonar
+          curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}.zip
+          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+
+      - name: Download build-wrapper
+        shell: bash
+        run: |
+          curl -sSLo $HOME/.sonar/build-wrapper.zip ${{ env.sonar_server_url }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
+          unzip -o $HOME/.sonar/build-wrapper.zip -d $HOME/.sonar/
+
+      - name: Initialize Externals Cache
+        uses: actions/cache@v3
+        with:
+          path: Build/Output/ExternalsCache
+          key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+
+      - name: Initialize Sonar Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: SonarCache-${{ runner.os }}
+
+      - name: CMake Configure Preset ${{ matrix.config_preset }}
+        shell: bash
+        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
+
+      - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
+        shell: bash
+        run: |
+          "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install
+
+      - name: Download OpenCppCoverage
+        if: ${{ matrix.os_name == 'windows' }}
+        shell: powershell
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
+        run: |
+          Invoke-WebRequest -Uri 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip' -OutFile 'OpenCppCoverage.zip'
+          Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
+          if (-not(Test-Path -Path 'OpenCppCoverage/OpenCppCoverage.exe' -PathType Leaf)) {
+            Get-ChildItem 'OpenCppCoverage'
+            throw 'OpenCppCoverage/OpenCppCoverage.exe executable was not found in unpacked content!'
+          }
+
+      - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
+        if: ${{ matrix.os_name == 'windows' }}
+        shell: cmd
+        working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
+        run: |
+          setlocal enabledelayedexpansion
+          set open_cpp_coverage_exe=OpenCppCoverage\OpenCppCoverage.exe
+          if not exist "%open_cpp_coverage_exe%" (
+            echo File path "%open_cpp_coverage_exe%" does not exist!
+            exit 101
+          )
+          echo Running unit-tests in directory "%cd%"
+          mkdir Results
+          mkdir Coverage
+          set /A result_error_level=0
+          for /r "." %%a in (*Test.exe) do (
+            echo %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+            %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
+            echo  - %%~na - completed with !errorlevel! exit status
+            if not !errorlevel!==0 (
+              set /A result_error_level=!errorlevel!
+            )
+          )
+          exit !result_error_level!
+
+      - name: Run unit-tests from install directory on Linux
+        if: ${{ matrix.os_name == 'linux' }}
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
+        run: |
+          result_ext='.xml'
+          echo Running unit-tests in directory $PWD
+          mkdir Results
+          for test_exe in *Test
+          do
+            ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+            echo  - $test_exe - completed with $? exit status
+          done
+
+      - name: Collect tests code coverage using ctest and gcov/lcov on Linux
+        if: ${{ matrix.os_name == 'linux' }}
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Build'
+        run: |
+          make MethaneTestCoverage
+
+      - name: Run all unit-tests from install directory with LCov code coverage on MacOS
+        if: ${{ matrix.os_name == 'macosx' }}
+        working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
+        run: |
+          result_ext='.xml'
+          prof_data_ext='.profdata'
+          prof_raw_ext='.profraw'
+          lcov_ext='.lcov'
+          echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
+          mkdir Results
+          mkdir Coverage
+          for test_exe in *Test
+          do
+            ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
+            echo  - $test_exe - completed with $? exit status
+            if [ ! -f default.profraw ]; then
+              continue
+            fi
+            mv default.profraw "$test_exe$prof_raw_ext"
+            xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
+            xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
+            echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
+          done
+          echo List of generated coverage files in directory $PWD/Coverage
+          ls -la ./Coverage
+
+      - name: Generate Code Coverage Reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
+        with:
+          reports: ${{ matrix.tests_coverage_reports }}
+          targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
+          reporttypes: 'Cobertura;SonarQube'
+          title: 'Methane Tests Code Coverage for ${{ matrix.build_preset }}'
+          tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
+
+      - name: Upload Code Coverage Cobertura Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: MethaneKit_${{ matrix.name }}_CoverageResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+          path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
+
+      - name: Publish Code Coverage to Testspace server
+        if: ${{ always() }}
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
+
+      - name: Run Sonar Scanner
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ "${{ matrix.os_name }}" == "windows" ]; then
+              SONAR_SCANNER_EXE=sonar-scanner.bat
+          else
+              SONAR_SCANNER_EXE=sonar-scanner
+          fi
+          SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
+          chmod a+x "$SONAR_SCANNER_PATH"
+          TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
+          SONAR_SCAN_CMD="$SONAR_SCANNER_PATH --define sonar.host.url=${{ env.sonar_server_url }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.build-wrapper-output=${{ env.build_wrapper_out_dir }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.key=${{ github.event.pull_request.number }}"
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.ref }}"
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.base_ref }}"
+          fi
+          echo "$SONAR_SCAN_CMD"
+          eval "$SONAR_SCAN_CMD"
+
+      - name: Update Badge Parameters
+        id: badge-params
+        if: ${{ github.event_name == 'push' && always() }}
+        shell: bash
+        run: |
+          case "${{ job.status }}" in
+            "success")
+              echo "::set-output name=message::passing"
+              echo "::set-output name=color::#56a93c"
+              ;;
+            "failure")
+              echo "::set-output name=message::failing"
+              echo "::set-output name=color::#cd6e57"
+              ;;
+            "cancelled")
+              echo "::set-output name=message::cancelled"
+              echo "::set-output name=color::#9b9b9c"
+              ;;
+            *)
+              echo "::set-output name=message::undefined"
+              echo "::set-output name=color::purple"
+              ;;
+          esac
+
+      - name: Update Badge JSON
+        if: ${{ github.event_name == 'push' && always() }}
+        uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 96d788046ccd52b45b3354a99f8569c3
+          filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
+          namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
+          label: ${{ matrix.name }}
+          labelColor: #f5f5f5
+          logoColor: #f5f5f5
+          message: ${{ steps.badge-params.outputs.message }}
+          color: ${{ steps.badge-params.outputs.color }}
