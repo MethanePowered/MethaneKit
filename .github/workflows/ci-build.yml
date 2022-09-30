@@ -45,84 +45,98 @@ jobs:
             name: "Win64_DX_Release"
             config_preset: "VS2019-Win64-DX-Default"
             build_preset: "VS2019-Win64-DX-Release"
+            named_logo: Windows
             run_tests: true
 
           - os: windows-2019
             name: "Win64_VK_Release"
             config_preset: "VS2019-Win64-VK-Default"
             build_preset: "VS2019-Win64-VK-Release"
+            named_logo: Windows
             run_tests: true
 
           - os: windows-2019
             name: "Win64_DX_Profile"
             config_preset: "VS2019-Win64-DX-Profile"
             build_preset: "VS2019-Win64-DX-Profile"
+            named_logo: Windows
             run_tests: false
 
           - os: windows-2019
             name: "Win64_VK_Profile"
             config_preset: "VS2019-Win64-VK-Profile"
             build_preset: "VS2019-Win64-VK-Profile"
+            named_logo: Windows
             run_tests: false
 
           - os: windows-2019
             name: "Win32_DX_Release"
             config_preset: "VS2019-Win32-DX-Default"
             build_preset: "VS2019-Win32-DX-Release"
+            named_logo: Windows
             run_tests: true
 
           - os: windows-2019
             name: "Win32_VK_Release"
             config_preset: "VS2019-Win32-VK-Default"
             build_preset: "VS2019-Win32-VK-Release"
+            named_logo: Windows
             run_tests: true
 
           - os: windows-2019
             name: "Win32_DX_Profile"
             config_preset: "VS2019-Win32-DX-Profile"
             build_preset: "VS2019-Win32-DX-Profile"
+            named_logo: Windows
             run_tests: false
 
           - os: windows-2019
             name: "Win32_VK_Profile"
             config_preset: "VS2019-Win32-VK-Profile"
             build_preset: "VS2019-Win32-VK-Profile"
+            named_logo: Windows
             run_tests: false
 
           - os: ubuntu-latest
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
+            named_logo: Linux
             run_tests: true
 
           - os: ubuntu-latest
             name: "Ubuntu_VK_Profile"
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
+            named_logo: Linux
             run_tests: false
 
           - os: macos-latest
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
+            named_logo: Linux
             run_tests: true
 
           - os: macos-latest
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
+            named_logo: Apple
             run_tests: false
 
           - os: macos-latest
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
+            named_logo: Apple
             run_tests: false
 
           - os: macos-latest
             name: "tvOS_Sim_MTL_Release"
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
+            named_logo: Apple
             run_tests: false
 
     runs-on: ${{ matrix.os }}
@@ -200,3 +214,33 @@ jobs:
       with:
         name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
+
+    - name: Update Badge Parameters
+      id: badge-params
+      if: ${{ github.event_name == 'push' && always() }}
+      shell: bash
+      run: |
+        if [ ${{ success() }} ]; then
+          echo "::set-output name=message::passing"
+          echo "::set-output name=color::green"
+        elif [ ${{ failure() }} ]; then
+          echo "::set-output name=message::failing"
+          echo "::set-output name=color::red"
+        else
+          echo "::set-output name=message::canceled"
+          echo "::set-output name=color::lightgray"
+        fi
+
+    - name: Update Badge JSON
+      if: ${{ github.event_name == 'push' && always() }}
+      uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+      with:
+        auth: ${{ secrets.GIST_TOKEN }}
+        gistID: 96d788046ccd52b45b3354a99f8569c3
+        filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
+        namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
+        label: ${{ matrix.name }}
+        labelColor: gray
+        message: ${{ steps.badge-params.outputs.message }}
+        color: ${{ steps.badge-params.outputs.color }}
+        isError: ${{ failure() }}

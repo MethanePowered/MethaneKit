@@ -54,6 +54,7 @@ jobs:
           - os: windows-2019
             os_name: windows
             name: "Win64_DX_SonarScan"
+            named_logo: Windows
             config_preset: "VS2019-Win64-DX-Scan"
             build_preset: "VS2019-Win64-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
@@ -64,6 +65,7 @@ jobs:
           - os: ubuntu-latest
             os_name: linux
             name: "Ubuntu_VK_SonarScan"
+            named_logo: Linux
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-linux"
@@ -74,6 +76,7 @@ jobs:
           - os: macos-latest
             os_name: macosx
             name: "MacOS_MTL_SonarScan"
+            named_logo: Apple
             config_preset: "Xcode-Mac-MTL-Scan"
             build_preset: "Xcode-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
@@ -273,3 +276,33 @@ jobs:
           fi
           echo "$SONAR_SCAN_CMD"
           eval "$SONAR_SCAN_CMD"
+
+      - name: Update Badge Parameters
+        id: badge-params
+        if: ${{ github.event_name == 'push' && always() }}
+        shell: bash
+        run: |
+          if [ ${{ success() }} ]; then
+            echo "::set-output name=message::passing"
+            echo "::set-output name=color::green"
+          elif [ ${{ failure() }} ]; then
+            echo "::set-output name=message::failing"
+            echo "::set-output name=color::red"
+          else
+            echo "::set-output name=message::canceled"
+            echo "::set-output name=color::lightgray"
+          fi
+
+      - name: Update Badge JSON
+        if: ${{ github.event_name == 'push' && always() }}
+        uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 96d788046ccd52b45b3354a99f8569c3
+          filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
+          namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
+          label: ${{ matrix.name }}
+          labelColor: gray
+          message: ${{ steps.badge-params.outputs.message }}
+          color: ${{ steps.badge-params.outputs.color }}
+          isError: ${{ failure() }}
