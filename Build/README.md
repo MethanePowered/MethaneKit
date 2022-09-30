@@ -236,6 +236,6 @@ Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-pre
 Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
 "x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or directly from Visual Studio.
 
-[Azure Pipelines](https://dev.azure.com/MethanePowered/MethaneKit/_build?view=runs) CI builds are configured with these CMake presets.
+[GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI builds are configured with these CMake presets.
 CMake presets can be also used in [VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
 to reproduce CI builds on the development system with a few configuration options in IDE UI.
