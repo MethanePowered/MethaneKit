@@ -282,16 +282,24 @@ jobs:
         if: ${{ github.event_name == 'push' && always() }}
         shell: bash
         run: |
-          if [ ${{ success() }} ]; then
-            echo "::set-output name=message::passing"
-            echo "::set-output name=color::green"
-          elif [ ${{ failure() }} ]; then
-            echo "::set-output name=message::failing"
-            echo "::set-output name=color::red"
-          else
-            echo "::set-output name=message::canceled"
-            echo "::set-output name=color::lightgray"
-          fi
+          case "${{ job.status }}" in
+            "success")
+              echo "::set-output name=message::passing"
+              echo "::set-output name=color::green"
+              ;;
+            "failure")
+              echo "::set-output name=message::failing"
+              echo "::set-output name=color::red"
+              ;;
+            "cancelled")
+              echo "::set-output name=message::cancelled"
+              echo "::set-output name=color::lightgray"
+              ;;
+            *)
+              echo "::set-output name=message::undefined"
+              echo "::set-output name=color::purple"
+              ;;
+          esac
 
       - name: Update Badge JSON
         if: ${{ github.event_name == 'push' && always() }}
