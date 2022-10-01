@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: /MethaneKit_${{ matrix.name }}_CoverageResults_(.*)/
+          name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: CoverageResults
 
       - name: Generate Code Coverage Report
