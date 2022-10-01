@@ -162,10 +162,12 @@ jobs:
         key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
     - name: CMake Configure Preset ${{ matrix.config_preset }}
-      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
+      shell: bash
+      run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
-      run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4
+      shell: bash
+      run: cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
 
     - name: Run Unit-Tests on Unix
       if: ${{ matrix.run_tests && matrix.os != 'windows-2019'}}
@@ -193,16 +195,16 @@ jobs:
         )
         exit 0
 
-    - name: Upload Test Results
+    - name: Upload Test Results Artifact
       uses: actions/upload-artifact@v2
       if: ${{ matrix.run_tests && (success() || failure()) }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml
 
-    - name: Publish test results to Testspace server
+    - name: Upload Build Log and Test Tesults to Testspace server
       if: ${{ matrix.run_tests && (success() || failure()) }}
-      run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml"
+      run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
 
     - name: Add README and BUILD files
       shell: bash

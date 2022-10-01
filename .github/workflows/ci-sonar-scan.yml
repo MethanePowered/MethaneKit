@@ -139,12 +139,12 @@ jobs:
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
-        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }}
+        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
         shell: bash
         run: |
-          "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install
+          "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
@@ -243,9 +243,9 @@ jobs:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
-      - name: Upload Code Coverage to Testspace server
+      - name: Upload Build Log and Code Coverage to Testspace server
         if: ${{ always() }}
-        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml"
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
 
       - name: Upload Code Coverage to CodeCov server
         uses: codecov/codecov-action@v3
