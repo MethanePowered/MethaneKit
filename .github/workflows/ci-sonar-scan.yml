@@ -139,11 +139,15 @@ jobs:
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
-        run: cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
+        run: |
+          set -o pipefail
+          mkdir -p "Build/Output/${{ matrix.config_preset }}"
+          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
         shell: bash
         run: |
+          set -o pipefail
           "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: Download OpenCppCoverage
