@@ -278,8 +278,8 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.key=${{ github.event.pull_request.number }}"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.ref }}"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.base_ref }}"
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
           fi
           echo "$SONAR_SCAN_CMD"
           eval "$SONAR_SCAN_CMD"
