@@ -245,8 +245,9 @@ jobs:
       run: |
         INSTALL_DIR=Build/Output/${{ matrix.config_preset }}/Install
         cp README.md $INSTALL_DIR/README.md
-        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} (GitHub build number: ${{ github.run_id }}) > $INSTALL_DIR/Build-Info.txt
-        echo   - GitHub repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
+        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
+        echo   - Git repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
+        echo   - GitHub Actions build url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} >> $INSTALL_DIR/Build-Info.txt
         echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/Build-Info.txt
         echo   - Built on agent ${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}: >> $INSTALL_DIR/Build-Info.txt
         echo   - Builder agent ${{ matrix.os }} system information: >> $INSTALL_DIR/Build-Info.txt
