@@ -23,7 +23,7 @@ set(HEADERS
     ${INCLUDE_DIR}/CommandKit.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
-    ${INCLUDE_DIR}/BlitCommandList.h
+    ${INCLUDE_DIR}/TransferCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
@@ -73,8 +73,8 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListDX.h
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
@@ -131,8 +131,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/CommandListMT.hpp
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.hh
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListMT.mm
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListMT.hh
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
@@ -192,8 +192,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/CommandListVK.hpp
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.h
-        ${SOURCES_GRAPHICS_DIR}/BlitCommandListVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListVK.h
+        ${SOURCES_GRAPHICS_DIR}/TransferCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.h
         ${SOURCES_GRAPHICS_DIR}/RenderCommandListVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListVK.h

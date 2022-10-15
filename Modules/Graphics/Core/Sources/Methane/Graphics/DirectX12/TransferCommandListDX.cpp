@@ -16,42 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/BlitCommandListMT.mm
-Metal implementation of the blit command list interface.
+FILE: Methane/Graphics/DirectX12/TransferCommandListDX.cpp
+DirectX 12 implementation of the transfer command list interface.
 
 ******************************************************************************/
 
-#include "BlitCommandListMT.hh"
+#include "TransferCommandListDX.h"
 
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
 #include <Methane/Instrumentation.h>
+
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics
 {
 
-Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
+static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Context::Options options)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<BlitCommandListMT>(static_cast<CommandQueueBase&>(command_queue));
+    using namespace magic_enum::bitwise_operators;
+    return static_cast<bool>(options & Context::Options::TransferWithDirectQueueOnWindows)
+         ? D3D12_COMMAND_LIST_TYPE_DIRECT
+         : D3D12_COMMAND_LIST_TYPE_COPY;
 }
 
-BlitCommandListMT::BlitCommandListMT(CommandQueueBase& command_queue)
-    : CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>(true, command_queue, CommandList::Type::Blit)
+Ptr<TransferCommandList> TransferCommandList::Create(CommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
 }
 
-void BlitCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
+TransferCommandListDX::TransferCommandListDX(CommandQueueBase& cmd_queue)
+    : CommandListDX<CommandListBase>(GetTransferCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Transfer)
 {
     META_FUNCTION_TASK();
-    if (IsCommandEncoderInitialized())
-    {
-        CommandListBase::Reset(p_debug_group);
-        return;
-    }
-
-    const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
-    InitializeCommandEncoder([mtl_cmd_buffer blitCommandEncoder]);
-    CommandListBase::Reset(p_debug_group);
 }
 
 } // namespace Methane::Graphics

@@ -23,7 +23,7 @@ Metal implementation of the texture interface.
 
 #include "TextureMT.hh"
 #include "RenderContextMT.hh"
-#include "BlitCommandListMT.hh"
+#include "TransferCommandListMT.hh"
 #include "TypesMT.hh"
 
 #include <Methane/Graphics/CommandKit.h>
@@ -139,10 +139,10 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue& target_
 
     ResourceMT::SetData(sub_resources, target_cmd_queue);
 
-    BlitCommandListMT& blit_command_list = dynamic_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
-    blit_command_list.RetainResource(*this);
+    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
+    transfer_command_list.RetainResource(*this);
 
-    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
@@ -182,7 +182,7 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue& target_
 
     if (settings.mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        GenerateMipLevels(blit_command_list);
+        GenerateMipLevels(transfer_command_list);
     }
 
     GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
@@ -195,13 +195,13 @@ void TextureMT::UpdateFrameBuffer()
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
-void TextureMT::GenerateMipLevels(BlitCommandListMT& blit_command_list)
+void TextureMT::GenerateMipLevels(TransferCommandListMT& transfer_command_list)
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Texture MIPs Generation");
-    blit_command_list.Reset(s_debug_group.get());
+    transfer_command_list.Reset(s_debug_group.get());
 
-    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
 

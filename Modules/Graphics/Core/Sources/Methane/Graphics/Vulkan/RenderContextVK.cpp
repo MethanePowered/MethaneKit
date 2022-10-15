@@ -112,7 +112,7 @@ void RenderContextVK::WaitForGpu(WaitFor wait_for)
     {
     case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
     case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
-    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Blit; break;
+    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Transfer; break;
     default: META_UNEXPECTED_ARG(wait_for);
     }
 

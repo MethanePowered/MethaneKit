@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,34 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/BlitCommandListMT.hh
-Metal implementation of the blit command list interface.
+FILE: Methane/Graphics/Vulkan/TransferCommandListVK.cpp
+Vulkan implementation of the transfer command list interface.
 
 ******************************************************************************/
 
-#pragma once
+#include "TransferCommandListVK.h"
+#include "CommandQueueVK.h"
 
-#include "CommandListMT.hpp"
-
-#include <Methane/Graphics/BlitCommandList.h>
-#include <Methane/Graphics/CommandListBase.h>
-
-#import <Metal/Metal.h>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-class CommandQueueMT;
-
-class BlitCommandListMT final
-    : public CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>
-    , public BlitCommandList
+Ptr<TransferCommandList> TransferCommandList::Create(CommandQueue& command_queue)
 {
-public:
-    BlitCommandListMT(CommandQueueBase& command_queue);
+    META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandListVK>(static_cast<CommandQueueVK&>(command_queue));
+}
 
-    // CommandList interface
-    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) override;
-};
+TransferCommandListVK::TransferCommandListVK(CommandQueueVK& command_queue)
+    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandList::Type::Transfer)
+{
+    META_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

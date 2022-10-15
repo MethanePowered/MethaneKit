@@ -18,7 +18,7 @@ which make modern graphics programming easy and convenient in a platform and API
 - [CommandList, CommandListSet](Include/Methane/Graphics/CommandList.h)
 - [RenderCommandList](Include/Methane/Graphics/RenderCommandList.h)
 - [ParallelRenderCommandList](Include/Methane/Graphics/ParallelRenderCommandList.h)
-- [BlitCommandList](Include/Methane/Graphics/BlitCommandList.h) (work in progress)
+- [TransferCommandList](Include/Methane/Graphics/TransferCommandList.h) (work in progress)
 - [Fence](Include/Methane/Graphics/Fence.h)
 - [CommandKit](Include/Methane/Graphics/CommandKit.h)
 

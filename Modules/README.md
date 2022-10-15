@@ -43,7 +43,7 @@ Diagram generated with CMake using integrated GraphViz support shows detailed re
     - [ProgramBindings](/Modules/Graphics/Core/Include/Methane/Graphics/ProgramBindings.h) simplifies binding resources to programs by uniform variable names, enabling fast bindings switching at runtime.
     - [RenderState](/Modules/Graphics/Core/Include/Methane/Graphics/RenderState.h) and [RenderPass](/Modules/Graphics/Core/Include/Methane/Graphics/RenderPass.h) used for inputs and outputs configuration of the graphics pipeline.
     - [RenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/RenderCommandList.h) and [ParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ParallelRenderCommandList.h) for render commands encoding in one thread or in parallel contributing into single render pass.
-    - [BlitCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/BlitCommandList.h) for BLIT operations with GPU memory textures and buffers (WIP).
+    - [TransferCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/TransferCommandList.h) for data transfer operations with GPU memory textures and buffers (WIP).
     - [CommandQueue](/Modules/Graphics/Core/Include/Methane/Graphics/CommandQueue.h) for execution of render commands encoded with command lists on graphics device. 
   - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics):
     - [ImageLoader](/Modules/Graphics/Extensions/Include/Methane/Graphics/ImageLoader.h) class for loading images from image files or application resources into graphics textures.

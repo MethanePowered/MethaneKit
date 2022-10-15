@@ -442,8 +442,8 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, CommandQueue& ta
     }
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
-    BlitCommandListVK& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
-    const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
+    TransferCommandListVK  & upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    const vk::CommandBuffer& vk_cmd_buffer   = upload_cmd_list.GetNativeCommandBufferDefault();
     vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                     vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
 

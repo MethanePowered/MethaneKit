@@ -26,7 +26,7 @@ DirectX 12 implementation of the resource interface.
 #include "ResourceDX.h"
 #include "DescriptorHeapDX.h"
 #include "RenderContextDX.h"
-#include "BlitCommandListDX.h"
+#include "TransferCommandListDX.h"
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/TextureBase.h>
@@ -163,10 +163,10 @@ protected:
         );
     }
 
-    BlitCommandListDX& PrepareResourceUpload(CommandQueue& target_cmd_queue)
+    TransferCommandListDX& PrepareResourceUpload(CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
-        auto& upload_cmd_list = dynamic_cast<BlitCommandListDX&>(GetContext().GetUploadCommandKit().GetListForEncoding());
+        auto& upload_cmd_list = dynamic_cast<TransferCommandListDX&>(GetContext().GetUploadCommandKit().GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         // When upload command list has COPY type, before transitioning resource to CopyDest state prior copying,

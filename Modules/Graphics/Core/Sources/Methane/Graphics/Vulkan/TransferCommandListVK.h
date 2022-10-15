@@ -16,30 +16,31 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/BlitCommandListVK.cpp
-Vulkan implementation of the blit command list interface.
+FILE: Methane/Graphics/Vulkan/TransferCommandListVK.h
+Vulkan implementation of the transfer command list interface.
 
 ******************************************************************************/
 
-#include "BlitCommandListVK.h"
-#include "CommandQueueVK.h"
+#pragma once
 
-#include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
+#include "CommandListVK.hpp"
+
+#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/CommandListBase.h>
+
+#include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics
 {
 
-Ptr<BlitCommandList> BlitCommandList::Create(CommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<BlitCommandListVK>(static_cast<CommandQueueVK&>(command_queue));
-}
+class CommandQueueVK;
 
-BlitCommandListVK::BlitCommandListVK(CommandQueueVK& command_queue)
-    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandList::Type::Blit)
+class TransferCommandListVK final
+    : public CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>
+    , public TransferCommandList
 {
-    META_FUNCTION_TASK();
-}
+public:
+    explicit TransferCommandListVK(CommandQueueVK& command_queue);
+};
 
 } // namespace Methane::Graphics

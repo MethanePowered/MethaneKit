@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,31 +16,26 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/BlitCommandListVK.h
-Vulkan implementation of the blit command list interface.
+FILE: Methane/Graphics/DirectX12/TransferCommandListDX.h
+DirectX 12 implementation of the transfer command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandListVK.hpp"
+#include "CommandListDX.hpp"
 
-#include <Methane/Graphics/BlitCommandList.h>
-#include <Methane/Graphics/CommandListBase.h>
-
-#include <vulkan/vulkan.hpp>
+#include <Methane/Graphics/TransferCommandList.h>
 
 namespace Methane::Graphics
 {
 
-class CommandQueueVK;
-
-class BlitCommandListVK final
-    : public CommandListVK<CommandListBase, vk::PipelineBindPoint::eGraphics>
-    , public BlitCommandList
+class TransferCommandListDX final
+    : public CommandListDX<CommandListBase>
+    , public TransferCommandList
 {
 public:
-    explicit BlitCommandListVK(CommandQueueVK& command_queue);
+    explicit TransferCommandListDX(CommandQueueBase& cmd_buffer);
 };
 
 } // namespace Methane::Graphics

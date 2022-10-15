@@ -26,7 +26,7 @@ DirectX 12 implementation of the texture interface.
 #include "DeviceDX.h"
 #include "DescriptorHeapDX.h"
 #include "CommandQueueDX.h"
-#include "BlitCommandListDX.h"
+#include "TransferCommandListDX.h"
 #include "TypesDX.h"
 
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
@@ -504,7 +504,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue& ta
     }
 
     // Upload texture subresources data to GPU via intermediate upload resource
-    const BlitCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    const TransferCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());

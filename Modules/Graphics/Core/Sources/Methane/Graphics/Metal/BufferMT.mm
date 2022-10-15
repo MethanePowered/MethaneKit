@@ -25,7 +25,7 @@ Metal implementation of the buffer interface.
 #include "DeviceMT.hh"
 #include "ContextMT.h"
 #include "TypesMT.hh"
-#include "BlitCommandListMT.hh"
+#include "TransferCommandListMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -144,10 +144,10 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
-    BlitCommandListMT& blit_command_list = dynamic_cast<BlitCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
-    blit_command_list.RetainResource(*this);
+    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
+    transfer_command_list.RetainResource(*this);
 
-    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = blit_command_list.GetNativeCommandEncoder();
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
 
     Data::Size data_offset = 0;

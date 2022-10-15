@@ -52,10 +52,10 @@ Device::Capabilities& Device::Capabilities::SetRenderQueuesCount(uint32_t new_re
     return *this;
 }
 
-Device::Capabilities& Device::Capabilities::SetBlitQueuesCount(uint32_t new_blit_queues_count) noexcept
+Device::Capabilities& Device::Capabilities::SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept
 {
     META_FUNCTION_TASK();
-    blit_queues_count = new_blit_queues_count;
+    transfer_queues_count = new_transfer_queues_count;
     return *this;
 }
 

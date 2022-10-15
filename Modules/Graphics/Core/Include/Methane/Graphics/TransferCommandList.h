@@ -16,26 +16,29 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/BlitCommandListDX.h
-DirectX 12 implementation of the blit command list interface.
+FILE: Methane/Graphics/TransferCommandList.h
+Methane data transfer command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandListDX.hpp"
+#include "CommandList.h"
 
-#include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-class BlitCommandListDX final
-    : public CommandListDX<CommandListBase>
-    , public BlitCommandList
+struct TransferCommandList : virtual CommandList // NOSONAR
 {
-public:
-    explicit BlitCommandListDX(CommandQueueBase& cmd_buffer);
+    static constexpr Type type = Type::Transfer;
+
+    // Create TransferCommandList instance
+    [[nodiscard]] static Ptr<TransferCommandList> Create(CommandQueue& command_queue);
+
+    // No public functions here for now, transfer command lists are used internally only
+    // Later it will include memory copy operations and mip-map generation for textures on GPU
 };
 
 } // namespace Methane::Graphics

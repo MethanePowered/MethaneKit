@@ -24,7 +24,7 @@ DirectX 12 implementation of the command queue interface.
 #include "CommandQueueDX.h"
 #include "CommandListDX.h"
 #include "DeviceDX.h"
-#include "BlitCommandListDX.h"
+#include "TransferCommandListDX.h"
 #include "RenderCommandListDX.h"
 #include "ParallelRenderCommandListDX.h"
 
@@ -59,8 +59,8 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
 
     switch(command_list_type)
     {
-    case CommandList::Type::Blit:
-        return static_cast<bool>(options & Context::Options::BlitWithDirectQueueOnWindows)
+    case CommandList::Type::Transfer:
+        return static_cast<bool>(options & Context::Options::TransferWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 

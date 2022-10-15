@@ -80,9 +80,9 @@ struct Context
 
     enum class Options : uint32_t
     {
-        None                         = 0U,
-        BlitWithDirectQueueOnWindows = 1U << 0U, // Blit command lists and queues in DX API are created with DIRECT type instead of COPY type
-        EmulatedRenderPassOnWindows  = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+        None                             = 0U,
+        TransferWithDirectQueueOnWindows = 1U << 0U, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+        EmulatedRenderPassOnWindows      = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
     };
 
     class IncompatibleException: public std::runtime_error
@@ -106,7 +106,7 @@ struct Context
     [[nodiscard]] virtual const Device& GetDevice() const = 0;
     [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandList::Type type) const = 0;
     [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandQueue& cmd_queue) const = 0;
-    [[nodiscard]] inline  CommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Blit); }
+    [[nodiscard]] inline  CommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Transfer); }
 };
 
 } // namespace Methane::Graphics

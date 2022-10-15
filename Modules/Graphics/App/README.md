@@ -24,7 +24,7 @@ The following settings are available:
 | features                 | Features             | All           | Required device features mask |
 | present_to_window        | bool                 | true          | Flag of device is going to be used for presenting to window |
 | render_queues_count      | uint32_t             | 1             | Count of render command queues used by application |  
-| blit_queues_count        | uint32_t             | 1             | Count of BLIT command queues used by application |
+| transfer_queues_count        | uint32_t             | 1             | Count of Transfer command queues used by application |
 
 ### [Graphics::App](Include/Methane/Graphics/App.hpp)
 
@@ -54,7 +54,7 @@ Some parameters of the render context settings can be also changed with command 
 | vsync_enabled                                        | bool     | true          | -v,--vsync                  | Vertical synchronization |
 | frame_buffers_count                                  | uint32_t | 3             | -b,--frame-buffers          | Frame buffers count in swap-chain |
 | options_mask & Options::EmulatedRenderPassOnWindows  | bool     | false         | -e,--emulated-render-pass   | Render pass emulation on Windows |
-| options_mask & Options::BlitWithDirectQueueOnWindows | bool     | false         | -q,--blit-with-direct-queue | BLIT command lists and queues use DIRECT instead of COPY type in DX API |
+| options_mask & Options::TransferWithDirectQueueOnWindows | bool     | false         | -q,--transfer-with-direct-queue | Transfer command lists and queues use DIRECT instead of COPY type in DX API |
 
 ## Graphics Application Controllers
 

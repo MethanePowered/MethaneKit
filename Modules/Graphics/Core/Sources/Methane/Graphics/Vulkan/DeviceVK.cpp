@@ -365,7 +365,7 @@ static vk::QueueFlags GetQueueFlagsByType(CommandList::Type cmd_list_type)
     META_FUNCTION_TASK();
     switch(cmd_list_type)
     {
-    case CommandList::Type::Blit:   return vk::QueueFlagBits::eTransfer;
+    case CommandList::Type::Transfer:   return vk::QueueFlagBits::eTransfer;
     case CommandList::Type::Render: return vk::QueueFlagBits::eGraphics;
     default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
     }
@@ -460,7 +460,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     ReserveQueueFamily(CommandList::Type::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandList::Type::Blit, capabilities.blit_queues_count, reserved_queues_count_per_family);
+    ReserveQueueFamily(CommandList::Type::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservationVK*> unique_family_reservation_ptrs;

@@ -54,7 +54,7 @@ struct CommandList
 {
     enum class Type
     {
-        Blit,
+        Transfer,
         Render,
         ParallelRender,
     };

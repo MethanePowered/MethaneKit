@@ -37,6 +37,6 @@ Methane graphics core interfaces: all headers under one umbrella.
 #include "Sampler.h"
 #include "CommandKit.h"
 #include "CommandQueue.h"
-#include "BlitCommandList.h"
+#include "TransferCommandList.h"
 #include "RenderCommandList.h"
 #include "ParallelRenderCommandList.h"

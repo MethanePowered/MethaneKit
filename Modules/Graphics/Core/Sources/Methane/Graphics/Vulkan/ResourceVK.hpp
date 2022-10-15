@@ -26,7 +26,7 @@ Vulkan implementation of the resource interface.
 #include "ResourceVK.h"
 #include "ContextVK.h"
 #include "DeviceVK.h"
-#include "BlitCommandListVK.h"
+#include "TransferCommandListVK.h"
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
@@ -207,11 +207,11 @@ protected:
         m_vk_resource = std::forward<T>(vk_resource);
     }
 
-    BlitCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
+    TransferCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
-        auto& upload_cmd_list = dynamic_cast<BlitCommandListVK&>(upload_cmd_kit.GetListForEncoding());
+        auto& upload_cmd_list = dynamic_cast<TransferCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
@@ -233,7 +233,7 @@ protected:
         return upload_cmd_list;
     }
 
-    void CompleteResourceUpload(BlitCommandListVK& upload_cmd_list, State final_resource_state, CommandQueue& target_cmd_queue)
+    void CompleteResourceUpload(TransferCommandListVK& upload_cmd_list, State final_resource_state, CommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const bool owner_changed = SetOwnerQueueFamily(target_cmd_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);

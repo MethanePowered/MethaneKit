@@ -16,29 +16,34 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/BlitCommandList.h
-Methane BLIT command list interface.
+FILE: Methane/Graphics/Metal/TransferCommandListMT.hh
+Metal implementation of the transfer command list interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandList.h"
+#include "CommandListMT.hpp"
 
-#include <Methane/Memory.hpp>
+#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/CommandListBase.h>
+
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
 
-struct BlitCommandList : virtual CommandList // NOSONAR
+class CommandQueueMT;
+
+class TransferCommandListMT final
+    : public CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>
+    , public TransferCommandList
 {
-    static constexpr Type type = Type::Blit;
+public:
+    TransferCommandListMT(CommandQueueBase& command_queue);
 
-    // Create BlitCommandList instance
-    [[nodiscard]] static Ptr<BlitCommandList> Create(CommandQueue& command_queue);
-
-    // No public functions here for now, BLIT command lists are used internally only
-    // Later it will include memory copy operations and mip-map generation for textures on GPU
+    // CommandList interface
+    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) override;
 };
 
 } // namespace Methane::Graphics

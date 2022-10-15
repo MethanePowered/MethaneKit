@@ -89,7 +89,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
         break;
 
     case WaitFor::ResourcesUploaded:
-        cl_type = CommandList::Type::Blit;
+        cl_type = CommandList::Type::Transfer;
         break;
 
     default: META_UNEXPECTED_ARG(wait_for);

@@ -27,7 +27,7 @@ Methane command kit implementation.
 
 #include <Methane/Graphics/Fence.h>
 #include <Methane/Graphics/CommandKit.h>
-#include <Methane/Graphics/BlitCommandList.h>
+#include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -131,9 +131,9 @@ CommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
 
     switch (m_cmd_list_type)
     {
-    case CommandList::Type::Blit:   cmd_list_ptr = BlitCommandList::Create(GetQueue()); break;
-    case CommandList::Type::Render: cmd_list_ptr = RenderCommandListBase::CreateForSynchronization(GetQueue()); break;
-    default:                        META_UNEXPECTED_ARG(m_cmd_list_type);
+    case CommandList::Type::Transfer: cmd_list_ptr = TransferCommandList::Create(GetQueue()); break;
+    case CommandList::Type::Render:   cmd_list_ptr = RenderCommandListBase::CreateForSynchronization(GetQueue()); break;
+    default:                          META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
     cmd_list_ptr->SetName(fmt::format("{} Utility Command List {}", GetName(), cmd_list_id));
