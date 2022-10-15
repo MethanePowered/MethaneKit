@@ -294,23 +294,23 @@ jobs:
         shell: bash
         run: |
           case "${{ job.status }}" in
-            "success")
-              echo "::set-output name=message::passed"
-              echo "::set-output name=color::#56a93c"
-              ;;
-            "failure")
-              echo "::set-output name=message::failed"
-              echo "::set-output name=color::#cd6e57"
-              ;;
-            "cancelled")
-              echo "::set-output name=message::cancelled"
-              echo "::set-output name=color::#9b9b9c"
-              ;;
-            *)
-              echo "::set-output name=message::undefined"
-              echo "::set-output name=color::purple"
-              ;;
-          esac
+          "success")
+            echo "badge_message=passed" >> $GITHUB_ENV
+            echo "badge_color=#56a93c"  >> $GITHUB_ENV
+            ;;
+          "failure")
+            echo "badge_message=failed" >> $GITHUB_ENV
+            echo "badge_color=#cd6e57"  >> $GITHUB_ENV
+            ;;
+          "cancelled")
+            echo "badge_message=cancelled" >> $GITHUB_ENV
+            echo "badge_color=#9b9b9c"     >> $GITHUB_ENV
+            ;;
+          *)
+            echo "badge_message=undefined" >> $GITHUB_ENV
+            echo "badge_color=purple"      >> $GITHUB_ENV
+            ;;
+        esac
 
       - name: Update Badge JSON
         if: ${{ github.event_name == 'push' && always() }}
@@ -323,5 +323,5 @@ jobs:
           label: ${{ matrix.name }}
           labelColor: #f5f5f5
           logoColor: #f5f5f5
-          message: ${{ steps.badge-params.outputs.message }}
-          color: ${{ steps.badge-params.outputs.color }}
+          message: ${{ env.badge_message }}
+          color: ${{ env.badge_color }}
