@@ -35,7 +35,7 @@ Ptr<TransferCommandList> TransferCommandList::Create(CommandQueue& command_queue
 }
 
 TransferCommandListMT::TransferCommandListMT(CommandQueueBase& command_queue)
-    : CommandListMT<id<MTLTransferCommandEncoder>, CommandListBase>(true, command_queue, CommandList::Type::Transfer)
+    : CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>(true, command_queue, CommandList::Type::Transfer)
 {
     META_FUNCTION_TASK();
 }
