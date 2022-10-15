@@ -62,7 +62,7 @@ jobs:
       run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2

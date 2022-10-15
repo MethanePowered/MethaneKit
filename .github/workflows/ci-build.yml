@@ -177,7 +177,7 @@ jobs:
       run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev p7zip
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Testspace
       uses: testspace-com/setup-testspace@v1
@@ -230,7 +230,7 @@ jobs:
         exit 0
 
     - name: Upload Test Results Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.run_tests && (success() || failure()) }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
@@ -304,7 +304,7 @@ jobs:
 
     - name: Update Badge JSON
       if: ${{ github.event_name == 'push' && always() }}
-      uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+      uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
       with:
         auth: ${{ secrets.GIST_TOKEN }}
         gistID: 96d788046ccd52b45b3354a99f8569c3
