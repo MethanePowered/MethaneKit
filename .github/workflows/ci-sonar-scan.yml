@@ -108,7 +108,7 @@ jobs:
           distribution: 'zulu'
 
       - name: Install .NET Core # Required to use ReportGenerator
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.400
 
