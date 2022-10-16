@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/QueryBuffer.cpp
-GPU data query buffer base implementation.
+FILE: Methane/Graphics/QueryPoolBase.cpp
+GPU data query pool base implementation.
 
 ******************************************************************************/
 
-#include "QueryBuffer.h"
+#include "QueryPoolBase.h"
 #include "CommandQueueBase.h"
 
 #include <Methane/Graphics/ContextBase.h>
@@ -35,8 +35,8 @@ GPU data query buffer base implementation.
 namespace Methane::Graphics
 {
 
-Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
-    : m_buffer_ptr(buffer.GetPtr())
+QueryBase::QueryBase(QueryPoolBase& buffer, CommandListBase& command_list, Data::Index index, Range data_range)
+    : m_query_pool_ptr(std::dynamic_pointer_cast<QueryPoolBase>(buffer.GetPtr()))
     , m_command_list(command_list)
     , m_index(index)
     , m_data_range(data_range)
@@ -44,52 +44,64 @@ Query::Query(QueryBuffer& buffer, CommandListBase& command_list, Data::Index ind
     META_FUNCTION_TASK();
 }
 
-Query::~Query()
+QueryBase::~QueryBase()
 {
     META_FUNCTION_TASK();
     try
     {
-        m_buffer_ptr->ReleaseQuery(*this);
+        m_query_pool_ptr->ReleaseQuery(*this);
     }
     catch(const std::exception& e)
     {
         META_UNUSED(e);
-        META_LOG("WARNING: Unexpected error during Query destruction: {}", e.what());
+        META_LOG("WARNING: Unexpected error during query destruction: {}", e.what());
         assert(false);
     }
 }
 
-void Query::Begin()
+void QueryBase::Begin()
 {
     META_FUNCTION_TASK();
-    const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(query_buffer_type, QueryBuffer::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
+    const IQueryPool::Type query_pool_type = GetQueryPool().GetType();
+    META_CHECK_ARG_NOT_EQUAL_DESCR(query_pool_type, IQueryPool::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_state, State::Begun, "can not begin unresolved or not ended query");
     m_state = State::Begun;
 }
 
-void Query::End()
+void QueryBase::End()
 {
     META_FUNCTION_TASK();
-    const QueryBuffer::Type query_buffer_type = GetQueryBuffer().GetType();
-    META_UNUSED(query_buffer_type);
-    META_CHECK_ARG_DESCR(m_state, query_buffer_type == QueryBuffer::Type::Timestamp || m_state == State::Begun,
-                         "can not end {} query that was not begun", magic_enum::enum_name(query_buffer_type));
+    const IQueryPool::Type query_pool_type = GetQueryPool().GetType();
+    META_UNUSED(query_pool_type);
+    META_CHECK_ARG_DESCR(m_state, query_pool_type == IQueryPool::Type::Timestamp || m_state == State::Begun,
+                         "can not end {} query that was not begun", magic_enum::enum_name(query_pool_type));
     m_state = State::Ended;
 }
 
-void Query::ResolveData()
+void QueryBase::ResolveData()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");
     m_state = State::Resolved;
 }
 
-QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
-                         Query::Count max_query_count, Query::Count slots_count_per_query,
-                         Data::Size buffer_size, Data::Size query_size)
+IQueryPool& QueryBase::GetQueryPool() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<IQueryPool&>(*m_query_pool_ptr);
+}
+
+CommandList& QueryBase::GetCommandList() const noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<CommandList&>(m_command_list);
+}
+
+QueryPoolBase::QueryPoolBase(CommandQueueBase& command_queue, Type type,
+                             IQuery::Count max_query_count, IQuery::Count slots_count_per_query,
+                             Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
-    , m_buffer_size(buffer_size)
+    , m_pool_size(buffer_size)
     , m_query_size(query_size)
     , m_slots_count_per_query(slots_count_per_query)
     , m_free_indices({ { 0U, max_query_count * slots_count_per_query } })
@@ -100,38 +112,44 @@ QueryBuffer::QueryBuffer(CommandQueueBase& command_queue, Type type,
     META_FUNCTION_TASK();
 }
 
-void QueryBuffer::ReleaseQuery(const Query& query)
+CommandQueue& QueryPoolBase::GetCommandQueue() noexcept
+{
+    META_FUNCTION_TASK();
+    return static_cast<CommandQueue&>(m_command_queue);
+}
+
+void QueryPoolBase::ReleaseQuery(const QueryBase& query)
 {
     META_FUNCTION_TASK();
     m_free_indices.Add({ query.GetIndex(), query.GetIndex() + 1 });
     m_free_data_ranges.Add(query.GetDataRange());
 }
 
-QueryBuffer::CreateQueryArgs QueryBuffer::GetCreateQueryArguments()
+QueryPoolBase::CreateQueryArgs QueryPoolBase::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
     const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, m_slots_count_per_query);
     META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
-    const Query::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
+    const IQuery::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
     META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };
 }
 
-TimeDelta TimestampQueryBuffer::GetGpuTimeOffset() const noexcept
+TimeDelta TimestampQueryPoolBase::GetGpuTimeOffset() const noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<TimeDelta>(m_calibrated_timestamps.gpu_ts) - static_cast<TimeDelta>(m_calibrated_timestamps.cpu_ts);
 }
 
-void TimestampQueryBuffer::SetGpuFrequency(Frequency gpu_frequency)
+void TimestampQueryPoolBase::SetGpuFrequency(Frequency gpu_frequency)
 {
     META_FUNCTION_TASK();
     m_gpu_frequency = gpu_frequency;
 }
 
-void TimestampQueryBuffer::SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps)
+void TimestampQueryPoolBase::SetCalibratedTimestamps(const CalibratedTimestamps& calibrated_timestamps)
 {
     META_FUNCTION_TASK();
     m_calibrated_timestamps = calibrated_timestamps;

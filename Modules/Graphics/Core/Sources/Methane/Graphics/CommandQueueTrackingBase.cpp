@@ -22,7 +22,7 @@ Base implementation of the command queue with execution tracking.
 ******************************************************************************/
 
 #include "CommandQueueTrackingBase.h"
-#include "QueryBuffer.h"
+#include "QueryPool.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/Device.h>
@@ -64,21 +64,21 @@ CommandQueueTrackingBase::~CommandQueueTrackingBase()
     ShutdownQueueExecution();
 }
 
-void CommandQueueTrackingBase::InitializeTimestampQueryBuffer()
+void CommandQueueTrackingBase::InitializeTimestampQueryPool()
 {
     META_FUNCTION_TASK();
     constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
-    m_timestamp_query_buffer_ptr = TimestampQueryBuffer::Create(*this, g_max_timestamp_queries_count_per_frame);
-    if (!m_timestamp_query_buffer_ptr)
+    m_timestamp_query_pool_ptr = ITimestampQueryPool::Create(*this, g_max_timestamp_queries_count_per_frame);
+    if (!m_timestamp_query_pool_ptr)
         return;
 
-    const TimestampQueryBuffer::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_buffer_ptr->GetCalibratedTimestamps();
+    const ITimestampQueryPool::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_pool_ptr->GetCalibratedTimestamps();
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
             ConvertSystemGraphicsApiToTracyGpuContextType(System::GetGraphicsApi()),
             calibrated_timestamps.cpu_ts,
             calibrated_timestamps.gpu_ts,
-            Data::ConvertFrequencyToTickPeriod(m_timestamp_query_buffer_ptr->GetGpuFrequency())
+            Data::ConvertFrequencyToTickPeriod(m_timestamp_query_pool_ptr->GetGpuFrequency())
         )
     );
 }
@@ -153,9 +153,9 @@ void CommandQueueTrackingBase::WaitForExecution() noexcept
                 CompleteCommandListSetExecution(*command_list_set_ptr);
             }
 
-            if (m_timestamp_query_buffer_ptr)
+            if (m_timestamp_query_pool_ptr)
             {
-                const TimestampQueryBuffer::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_buffer_ptr->Calibrate();
+                const ITimestampQueryPool::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_pool_ptr->Calibrate();
                 GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
         }
@@ -215,7 +215,7 @@ void CommandQueueTrackingBase::CompleteExecutionSafely()
 {
     META_FUNCTION_TASK();
     std::unique_lock lock(m_execution_waiting_mutex);
-    m_timestamp_query_buffer_ptr.reset();
+    m_timestamp_query_pool_ptr.reset();
 
     try
     {

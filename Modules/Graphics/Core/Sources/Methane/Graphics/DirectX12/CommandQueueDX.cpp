@@ -46,8 +46,8 @@ Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type
     META_FUNCTION_TASK();
     auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // TimestampQueryBuffer construction uses command queue and requires it to be fully constructed
-    command_queue_ptr->InitializeTimestampQueryBuffer();
+    // TimestampQueryPoolBase construction uses command queue and requires it to be fully constructed
+    command_queue_ptr->InitializeTimestampQueryPool();
 #endif
     return command_queue_ptr;
 }

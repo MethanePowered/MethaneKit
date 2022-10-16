@@ -316,12 +316,12 @@ void CommandListBase::InitializeTimestampQueries() // NOSONAR - function is not 
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
-    TimestampQueryBuffer* query_buffer_ptr = GetCommandQueueBase().GetTimestampQueryBuffer();
-    if (!query_buffer_ptr)
+    ITimestampQueryPool* query_pool_ptr = GetCommandQueueBase().GetTimestampQueryPool();
+    if (!query_pool_ptr)
         return;
 
-    m_begin_timestamp_query_ptr = query_buffer_ptr->CreateTimestampQuery(*this);
-    m_end_timestamp_query_ptr   = query_buffer_ptr->CreateTimestampQuery(*this);
+    m_begin_timestamp_query_ptr = query_pool_ptr->CreateTimestampQuery(*this);
+    m_end_timestamp_query_ptr   = query_pool_ptr->CreateTimestampQuery(*this);
 #endif
 }
 

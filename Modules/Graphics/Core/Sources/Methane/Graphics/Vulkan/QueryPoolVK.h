@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/QueryBufferVK.hpp
-Vulkan GPU query results buffer.
+FILE: Methane/Graphics/Vulkan/QueryPoolVK.hpp
+Vulkan GPU query pool implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/QueryBuffer.h>
+#include <Methane/Graphics/QueryPoolBase.h>
 #include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -34,21 +34,21 @@ namespace Methane::Graphics
 struct IContextVK;
 struct ICommandListVK;
 class  CommandQueueVK;
-class  QueryBufferVK;
-class  TimestampQueryBufferVK;
+class  QueryPoolVK;
+class  TimestampQueryPoolVK;
 
-class QueryVK : public Query
+class QueryVK : public QueryBase
 {
 public:
-    QueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    QueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
 
     // Query overrides
-    void Begin() override;
-    void End() override;
-    [[nodiscard]] Resource::SubResource GetData() const override;
+    void Begin() final;
+    void End() final;
+    [[nodiscard]] Resource::SubResource GetData() const final;
 
 protected:
-    [[nodiscard]] QueryBufferVK& GetQueryBufferVK() const noexcept;
+    [[nodiscard]] QueryPoolVK& GetQueryPoolVK() const noexcept;
     [[nodiscard]] const vk::CommandBuffer& GetCommandBufferVK() const noexcept { return m_vk_command_buffer; }
 
 private:
@@ -60,12 +60,12 @@ private:
     size_t                  m_query_results_byte_size;
 };
 
-class QueryBufferVK : public QueryBuffer
+class QueryPoolVK : public QueryPoolBase
 {
 public:
-    QueryBufferVK(CommandQueueVK& command_queue, Type type,
-                  Data::Size max_query_count, Query::Count slots_count_per_query,
-                  Data::Size buffer_size, Data::Size query_size);
+    QueryPoolVK(CommandQueueVK& command_queue, Type type,
+                Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                Data::Size buffer_size, Data::Size query_size);
 
     CommandQueueVK&      GetCommandQueueVK() noexcept;
     const IContextVK&    GetContextVK() const noexcept       { return m_context_vk; }
@@ -78,10 +78,10 @@ private:
 
 class TimestampQueryVK final
     : protected QueryVK
-    , public TimestampQuery
+    , public ITimestampQuery
 {
 public:
-    TimestampQueryVK(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    TimestampQueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
 
     // TimestampQuery overrides
     void InsertTimestamp() override;
@@ -90,18 +90,18 @@ public:
     Timestamp GetCpuNanoseconds() const override;
 
 private:
-    [[nodiscard]] TimestampQueryBufferVK& GetTimestampQueryBufferVK() const noexcept;
+    [[nodiscard]] TimestampQueryPoolVK& GetTimestampQueryPoolVK() const noexcept;
 };
 
-class TimestampQueryBufferVK final
-    : public QueryBufferVK
-    , public TimestampQueryBuffer
+class TimestampQueryPoolVK final
+    : public QueryPoolVK
+    , public TimestampQueryPoolBase
 {
 public:
-    TimestampQueryBufferVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame);
+    TimestampQueryPoolVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame);
 
-    // ITimestampQueryBuffer interface
-    Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
+    // ITimestampQueryPool interface
+    Ptr<ITimestampQuery> CreateTimestampQuery(CommandList& command_list) override;
     CalibratedTimestamps Calibrate() override;
 
 private:

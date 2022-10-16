@@ -16,20 +16,18 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/QueryBufferDX.hpp
-DirectX 12 GPU query results buffer.
+FILE: Methane/Graphics/DirectX12/QueryPoolDX.hpp
+DirectX 12 GPU query pool implementation.
 
 ******************************************************************************/
 
-#include "QueryBufferDX.h"
+#include "QueryPoolDX.h"
 #include "CommandQueueDX.h"
 #include "CommandListDX.h"
 #include "BufferDX.h"
 #include "ContextDX.h"
-#include "DeviceDX.h"
 
-#include <Methane/Graphics/QueryBuffer.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/QueryPoolBase.h>
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -43,32 +41,32 @@ namespace wrl = Microsoft::WRL;
 namespace Methane::Graphics
 {
 
-static D3D12_QUERY_TYPE GetQueryTypeDx(QueryBuffer::Type query_buffer_type)
+static D3D12_QUERY_TYPE GetQueryTypeDx(IQueryPool::Type query_pool_type)
 {
     META_FUNCTION_TASK();
-    switch(query_buffer_type) // NOSONAR - do not use if instead of switch
+    switch(query_pool_type) // NOSONAR - do not use if instead of switch
     {
-    case QueryBuffer::Type::Timestamp: return D3D12_QUERY_TYPE_TIMESTAMP;
+    case IQueryPool::Type::Timestamp: return D3D12_QUERY_TYPE_TIMESTAMP;
     //D3D12_QUERY_TYPE_OCCLUSION
     //D3D12_QUERY_TYPE_BINARY_OCCLUSION
     //D3D12_QUERY_TYPE_PIPELINE_STATISTICS
-    default: META_UNEXPECTED_ARG_RETURN(query_buffer_type, D3D12_QUERY_TYPE_TIMESTAMP);
+    default: META_UNEXPECTED_ARG_RETURN(query_pool_type, D3D12_QUERY_TYPE_TIMESTAMP);
     }
 }
 
-static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(QueryBuffer::Type query_buffer_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
+static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(IQueryPool::Type query_pool_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
 {
     META_FUNCTION_TASK();
-    switch (query_buffer_type) // NOSONAR - do not use if instead of switch
+    switch (query_pool_type) // NOSONAR - do not use if instead of switch
     {
-    case QueryBuffer::Type::Timestamp:
+    case IQueryPool::Type::Timestamp:
         return d3d_command_list_type == D3D12_COMMAND_LIST_TYPE_COPY
              ? D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
              : D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     //D3D12_QUERY_HEAP_TYPE_OCCLUSION
     //D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS
     default:
-        META_UNEXPECTED_ARG_RETURN(query_buffer_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
+        META_UNEXPECTED_ARG_RETURN(query_pool_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
     }
 }
 
@@ -102,8 +100,8 @@ static bool CheckCommandQueueSupportsTimestampQueries(CommandQueueDX& command_qu
     return true;
 }
 
-QueryDX::QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
-    : Query(buffer, command_list, index, data_range)
+QueryDX::QueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
+    : QueryBase(buffer, command_list, index, data_range)
     , m_native_command_list(dynamic_cast<ICommandListDX&>(command_list).GetNativeCommandList())
     , m_native_query_type(GetQueryTypeDx(buffer.GetType()))
 {
@@ -113,27 +111,27 @@ QueryDX::QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index
 void QueryDX::Begin()
 {
     META_FUNCTION_TASK();
-    Query::Begin();
-    m_native_command_list.BeginQuery(&GetQueryBufferDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
+    QueryBase::Begin();
+    m_native_command_list.BeginQuery(&GetQueryPoolDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
 }
 
 void QueryDX::End()
 {
     META_FUNCTION_TASK();
-    Query::End();
-    m_native_command_list.EndQuery(&GetQueryBufferDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
+    QueryBase::End();
+    m_native_command_list.EndQuery(&GetQueryPoolDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
 }
 
 void QueryDX::ResolveData()
 {
     META_FUNCTION_TASK();
-    Query::ResolveData();
-    QueryBufferDX& query_buffer_dx = GetQueryBufferDX();
+    QueryBase::ResolveData();
+    QueryPoolDX& query_pool_dx = GetQueryPoolDX();
     m_native_command_list.ResolveQueryData(
-        &query_buffer_dx.GetNativeQueryHeap(),
+        &query_pool_dx.GetNativeQueryHeap(),
         m_native_query_type,
-        GetIndex(), query_buffer_dx.GetSlotsCountPerQuery(),
-        query_buffer_dx.GetResultResourceDX().GetNativeResource(),
+        GetIndex(), query_pool_dx.GetSlotsCountPerQuery(),
+        query_pool_dx.GetResultResourceDX().GetNativeResource(),
         GetDataRange().GetStart()
     );
 }
@@ -142,28 +140,28 @@ Resource::SubResource QueryDX::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), Query::State::Resolved, "query data can not be retrieved for unresolved query");
-    return GetQueryBufferDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
+    META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
+    return GetQueryPoolDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
 }
 
-QueryBufferDX& QueryDX::GetQueryBufferDX() const noexcept
+QueryPoolDX& QueryDX::GetQueryPoolDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<QueryBufferDX&>(GetQueryBuffer());
+    return static_cast<QueryPoolDX&>(GetQueryPool());
 }
 
-Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     return CheckCommandQueueSupportsTimestampQueries(static_cast<CommandQueueDX&>(command_queue))
-         ? std::make_shared<TimestampQueryBufferDX>(static_cast<CommandQueueDX&>(command_queue), max_timestamps_per_frame)
+         ? std::make_shared<TimestampQueryPoolDX>(static_cast<CommandQueueDX&>(command_queue), max_timestamps_per_frame)
          : nullptr;
 }
 
-QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type,
-                             Data::Size max_query_count, Query::Count slots_count_per_query,
-                             Data::Size buffer_size, Data::Size query_size)
-    : QueryBuffer(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
+QueryPoolDX::QueryPoolDX(CommandQueueDX& command_queue, Type type,
+                         Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                         Data::Size buffer_size, Data::Size query_size)
+    : QueryPoolBase(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_result_buffer_ptr(Buffer::CreateReadBackBuffer(GetContext(), buffer_size))
     , m_context_dx(dynamic_cast<const IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
@@ -173,29 +171,29 @@ QueryBufferDX::QueryBufferDX(CommandQueueDX& command_queue, Type type,
     META_FUNCTION_TASK();
 }
 
-CommandQueueDX& QueryBufferDX::GetCommandQueueDX() noexcept
+CommandQueueDX& QueryPoolDX::GetCommandQueueDX() noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<CommandQueueDX&>(GetCommandQueueBase());
 }
 
-TimestampQueryBufferDX::TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
-    : QueryBufferDX(command_queue, Type::Timestamp, 1U << 15U, 1U,
-                    GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
-                    sizeof(Timestamp))
+TimestampQueryPoolDX::TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame)
+    : QueryPoolDX(command_queue, Type::Timestamp, 1U << 15U, 1U,
+                  GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
+                  sizeof(Timestamp))
 {
     META_FUNCTION_TASK();
     SetGpuFrequency(Graphics::GetGpuFrequency(GetCommandQueueDX().GetNativeCommandQueue(), *GetContextDX().GetDeviceDX().GetNativeDevice().Get()));
     Calibrate();
 }
 
-Ptr<TimestampQuery> TimestampQueryBufferDX::CreateTimestampQuery(CommandListBase& command_list)
+Ptr<ITimestampQuery> TimestampQueryPoolDX::CreateTimestampQuery(CommandList& command_list)
 {
     META_FUNCTION_TASK();
-    return QueryBuffer::CreateQuery<TimestampQueryDX>(command_list);
+    return QueryPoolBase::CreateQuery<TimestampQueryDX>(dynamic_cast<CommandListBase&>(command_list));
 }
 
-TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferDX::Calibrate()
+ITimestampQueryPool::CalibratedTimestamps TimestampQueryPoolDX::Calibrate()
 {
     META_FUNCTION_TASK();
     CalibratedTimestamps calibrated_timestamps{ 0U, 0U };
@@ -206,7 +204,7 @@ TimestampQueryBuffer::CalibratedTimestamps TimestampQueryBufferDX::Calibrate()
     return calibrated_timestamps;
 }
 
-TimestampQueryDX::TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range)
+TimestampQueryDX::TimestampQueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
     : QueryDX(buffer, command_list, index, data_range)
 {
     META_FUNCTION_TASK();
@@ -236,15 +234,15 @@ Timestamp TimestampQueryDX::GetGpuTimestamp() const
 Timestamp TimestampQueryDX::GetCpuNanoseconds() const
 {
     META_FUNCTION_TASK();
-    const TimestampQueryBufferDX& timestamp_query_buffer_dx = GetTimestampQueryBufferDX();
+    const TimestampQueryPoolDX& timestamp_query_pool_dx = GetTimestampQueryPoolDX();
     const Timestamp gpu_timestamp = TimestampQueryDX::GetGpuTimestamp();
-    return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_buffer_dx.GetGpuTimeOffset(), timestamp_query_buffer_dx.GetGpuFrequency());
+    return Data::ConvertTicksToNanoseconds(gpu_timestamp - timestamp_query_pool_dx.GetGpuTimeOffset(), timestamp_query_pool_dx.GetGpuFrequency());
 }
 
-TimestampQueryBufferDX& TimestampQueryDX::GetTimestampQueryBufferDX() const noexcept
+TimestampQueryPoolDX& TimestampQueryDX::GetTimestampQueryPoolDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<TimestampQueryBufferDX&>(GetQueryBuffer());
+    return static_cast<TimestampQueryPoolDX&>(GetQueryPool());
 }
 
 } // namespace Methane::Graphics

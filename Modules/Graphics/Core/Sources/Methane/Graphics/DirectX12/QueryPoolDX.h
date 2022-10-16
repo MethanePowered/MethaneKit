@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/QueryBufferDX.hpp
-DirectX 12 GPU query results buffer.
+FILE: Methane/Graphics/DirectX12/QueryPoolDX.hpp
+DirectX 12 GPU query pool implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/QueryBuffer.h>
+#include <Methane/Graphics/QueryPoolBase.h>
 #include <Methane/Memory.hpp>
 
 #include <directx/d3d12.h>
@@ -36,13 +36,13 @@ struct IContextDX;
 struct ICommandListDX;
 struct IResourceDX;
 class  CommandQueueDX;
-class  QueryBufferDX;
-class  TimestampQueryBufferDX;
+class  QueryPoolDX;
+class  TimestampQueryPoolDX;
 
-class QueryDX : public Query
+class QueryDX : public QueryBase
 {
 public:
-    QueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    QueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
 
     // Query overrides
     void Begin() override;
@@ -51,19 +51,19 @@ public:
     Resource::SubResource GetData() const override;
 
 protected:
-    [[nodiscard]] QueryBufferDX& GetQueryBufferDX() const noexcept;
+    [[nodiscard]] QueryPoolDX& GetQueryPoolDX() const noexcept;
 
 private:
     ID3D12GraphicsCommandList&  m_native_command_list;
     const D3D12_QUERY_TYPE      m_native_query_type;
 };
 
-class QueryBufferDX : public QueryBuffer
+class QueryPoolDX : public QueryPoolBase
 {
 public:
-    QueryBufferDX(CommandQueueDX& command_queue, Type type,
-                  Data::Size max_query_count, Query::Count slots_count_per_query,
-                  Data::Size buffer_size, Data::Size query_size);
+    QueryPoolDX(CommandQueueDX& command_queue, Type type,
+                Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                Data::Size buffer_size, Data::Size query_size);
 
     CommandQueueDX&   GetCommandQueueDX() noexcept;
     const IContextDX& GetContextDX() const noexcept          { return m_context_dx; }
@@ -84,10 +84,10 @@ private:
 
 class TimestampQueryDX final
     : protected QueryDX
-    , public TimestampQuery
+    , public ITimestampQuery
 {
 public:
-    TimestampQueryDX(QueryBuffer& buffer, CommandListBase& command_list, Index index, Range data_range);
+    TimestampQueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
 
     // TimestampQuery overrides
     void InsertTimestamp() override;
@@ -96,18 +96,18 @@ public:
     Timestamp GetCpuNanoseconds() const override;
 
 private:
-    [[nodiscard]] TimestampQueryBufferDX& GetTimestampQueryBufferDX() const noexcept;
+    [[nodiscard]] TimestampQueryPoolDX& GetTimestampQueryPoolDX() const noexcept;
 };
 
-class TimestampQueryBufferDX final
-    : public QueryBufferDX
-    , public TimestampQueryBuffer
+class TimestampQueryPoolDX final
+    : public QueryPoolDX
+    , public TimestampQueryPoolBase
 {
 public:
-    TimestampQueryBufferDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
+    TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
-    // ITimestampQueryBuffer interface
-    Ptr<TimestampQuery> CreateTimestampQuery(CommandListBase& command_list) override;
+    // ITimestampQueryPool interface
+    Ptr<ITimestampQuery> CreateTimestampQuery(CommandList& command_list) override;
     CalibratedTimestamps Calibrate() override;
 };
 

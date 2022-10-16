@@ -58,8 +58,8 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.h
-        ${SOURCES_GRAPHICS_DIR}/QueryBufferDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/QueryPoolDX.h
+        ${SOURCES_GRAPHICS_DIR}/QueryPoolDX.cpp
         ${SOURCES_GRAPHICS_DIR}/BufferDX.h
         ${SOURCES_GRAPHICS_DIR}/BufferDX.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureDX.h
@@ -117,7 +117,7 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
         ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
         ${SOURCES_GRAPHICS_DIR}/DescriptorManagerMT.h
-        ${SOURCES_GRAPHICS_DIR}/QueryBufferMT.mm
+        ${SOURCES_GRAPHICS_DIR}/QueryPoolMT.mm
         ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
         ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
         ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
@@ -177,8 +177,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/ResourceBarriersVK.cpp
         ${SOURCES_GRAPHICS_DIR}/DescriptorManagerVK.h
         ${SOURCES_GRAPHICS_DIR}/DescriptorManagerVK.cpp
-        ${SOURCES_GRAPHICS_DIR}/QueryBufferVK.h
-        ${SOURCES_GRAPHICS_DIR}/QueryBufferVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/QueryPoolVK.h
+        ${SOURCES_GRAPHICS_DIR}/QueryPoolVK.cpp
         ${SOURCES_GRAPHICS_DIR}/BufferVK.h
         ${SOURCES_GRAPHICS_DIR}/BufferVK.cpp
         ${SOURCES_GRAPHICS_DIR}/TextureVK.h
@@ -273,13 +273,14 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/DescriptorManager.h
     ${SOURCES_DIR}/DescriptorManagerBase.h
     ${SOURCES_DIR}/DescriptorManagerBase.cpp
+    ${SOURCES_DIR}/QueryPool.h
+    ${SOURCES_DIR}/QueryPoolBase.h
+    ${SOURCES_DIR}/QueryPoolBase.cpp
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
 
     # Other sources
-    ${SOURCES_DIR}/QueryBuffer.h
-    ${SOURCES_DIR}/QueryBuffer.cpp
     ${SOURCES_DIR}/CoreFormatters.hpp
 )
 

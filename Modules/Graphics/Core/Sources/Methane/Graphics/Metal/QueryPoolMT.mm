@@ -16,17 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/QueryBufferMT.mm
-Metal stub implementation of the TimestampQueryBuffer factory function
+FILE: Methane/Graphics/Metal/QueryPoolMT.mm
+Metal stub implementation of the TimestampQueryPoolBase factory function
 
 ******************************************************************************/
 
-#include <Methane/Graphics/QueryBuffer.h>
+#include <Methane/Graphics/QueryPool.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<TimestampQueryBuffer> TimestampQueryBuffer::Create(CommandQueueBase& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_UNUSED(command_queue);
     META_UNUSED(max_timestamps_per_frame);

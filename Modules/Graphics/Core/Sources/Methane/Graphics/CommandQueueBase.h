@@ -58,7 +58,7 @@ public:
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // CommandQueueBase interface
-    virtual TimestampQueryBuffer* GetTimestampQueryBuffer() const noexcept { return nullptr; }
+    virtual ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }
 
     const ContextBase& GetContextBase() const noexcept     { return m_context; }
     DeviceBase&        GetDeviceBase() const noexcept      { return *m_device_ptr; }
