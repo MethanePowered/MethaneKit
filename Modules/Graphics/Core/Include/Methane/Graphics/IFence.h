@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Fence.h
-Methane fence interface used for CPU-GPU synchronization.
+FILE: Methane/Graphics/IFence.h
+Methane Fence interface used for CPU-GPU synchronization.
 
 ******************************************************************************/
 
@@ -32,11 +32,11 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 
-struct Fence : virtual IObject // NOSONAR
+struct IFence : virtual IObject // NOSONAR
 {
-    [[nodiscard]] static Ptr<Fence> Create(CommandQueue& command_queue);
+    [[nodiscard]] static Ptr<IFence> Create(CommandQueue& command_queue);
 
-    // Fence interface
+    // IFence interface
     virtual void Signal() = 0;
     virtual void WaitOnCpu() = 0;
     virtual void WaitOnGpu(CommandQueue& wait_on_command_queue) = 0;

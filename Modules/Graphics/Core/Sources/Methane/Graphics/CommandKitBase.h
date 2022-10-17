@@ -52,7 +52,7 @@ public:
     [[nodiscard]] CommandList&      GetList(CommandListId cmd_list_id) const override;
     [[nodiscard]] CommandList&      GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const override;
     [[nodiscard]] CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
-    [[nodiscard]] Fence&            GetFence(CommandListId fence_id) const override;
+    [[nodiscard]] IFence&           GetFence(CommandListId fence_id) const override;
 
 private:
     using CommandListIndex = uint32_t;
@@ -69,7 +69,7 @@ private:
     mutable Ptrs<CommandList>    m_cmd_list_ptrs;
     mutable CommandListIndexById m_cmd_list_index_by_id;
     mutable CommandListSetById   m_cmd_list_set_by_id;
-    mutable Ptrs<Fence>          m_fence_ptrs;
+    mutable Ptrs<IFence>         m_fence_ptrs;
 };
 
 } // namespace Methane::Graphics

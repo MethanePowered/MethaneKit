@@ -41,7 +41,7 @@ static vk::UniqueSemaphore CreateTimelineSemaphore(const vk::Device& vk_device, 
     return vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo().setPNext(&semaphore_type_create_info));
 }
 
-Ptr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<IFence> IFence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<FenceVK>(static_cast<CommandQueueVK&>(command_queue));

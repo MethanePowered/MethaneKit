@@ -25,7 +25,7 @@ Methane command kit implementation.
 #include "RenderCommandListBase.h"
 #include "CommandQueueBase.h"
 
-#include <Methane/Graphics/Fence.h>
+#include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Instrumentation.h>
@@ -84,7 +84,7 @@ bool CommandKitBase::SetName(const std::string& name)
 
     for(size_t fence_index = 0; fence_index < m_fence_ptrs.size(); ++fence_index)
     {
-        const Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_index];
+        const Ptr<IFence>& fence_ptr = m_fence_ptrs[fence_index];
         if (fence_ptr)
             fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_index));
     }
@@ -186,19 +186,19 @@ CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd
     return *cmd_list_set_ptr;
 }
 
-Fence& CommandKitBase::GetFence(CommandListId fence_id) const
+IFence& CommandKitBase::GetFence(CommandListId fence_id) const
 {
     META_FUNCTION_TASK();
     const uint32_t fence_index = GetCommandListIndexById(fence_id);
     if (fence_index >= m_fence_ptrs.size())
         m_fence_ptrs.resize(fence_index + 1);
 
-    Ptr<Fence>& fence_ptr = m_fence_ptrs[fence_index];
+    Ptr<IFence>& fence_ptr = m_fence_ptrs[fence_index];
 
     if (fence_ptr)
         return *fence_ptr;
 
-    fence_ptr = Fence::Create(GetQueue());
+    fence_ptr = IFence::Create(GetQueue());
     fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
 }

@@ -70,8 +70,8 @@ protected:
     // so it may be changed from RenderContextXX::Initialize() method
     void InvalidateFrameBuffersCount(uint32_t frame_buffers_count);
 
-    Fence& GetCurrentFrameFence() const;
-    Fence& GetRenderFence() const;
+    IFence& GetCurrentFrameFence() const;
+    IFence& GetRenderFence() const;
 
     // ContextBase overrides
     bool UploadResources() override;

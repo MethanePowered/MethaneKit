@@ -41,7 +41,7 @@ class FenceMT final : public FenceBase
 public:
     explicit FenceMT(CommandQueueBase& command_queue);
 
-    // Fence overrides
+    // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;

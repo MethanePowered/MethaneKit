@@ -24,7 +24,7 @@ Methane fence base implementation.
 #pragma once
 
 #include <Methane/Memory.hpp>
-#include <Methane/Graphics/Fence.h>
+#include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/ObjectBase.h>
 
 namespace Methane::Graphics
@@ -33,13 +33,13 @@ namespace Methane::Graphics
 class CommandQueueBase;
 
 class FenceBase
-    : public Fence
+    : public IFence
     , public ObjectBase
 {
 public:
     explicit FenceBase(CommandQueueBase& command_queue);
 
-    // Fence overrides
+    // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;

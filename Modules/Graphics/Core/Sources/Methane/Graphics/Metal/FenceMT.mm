@@ -33,7 +33,7 @@ Metal fence implementation.
 namespace Methane::Graphics
 {
 
-Ptr<Fence> Fence::Create(CommandQueue& command_queue)
+Ptr<IFence> IFence::Create(CommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<FenceMT>(static_cast<CommandQueueBase&>(command_queue));

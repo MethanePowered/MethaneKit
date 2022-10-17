@@ -37,7 +37,7 @@ class FenceVK final : public FenceBase
 public:
     explicit FenceVK(CommandQueueVK& command_queue);
 
-    // Fence overrides
+    // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;

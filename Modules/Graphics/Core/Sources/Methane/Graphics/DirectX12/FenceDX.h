@@ -47,7 +47,7 @@ public:
     FenceDX& operator=(const FenceDX&) = delete;
     FenceDX& operator=(FenceDX&&) noexcept = default;
 
-    // Fence overrides
+    // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;

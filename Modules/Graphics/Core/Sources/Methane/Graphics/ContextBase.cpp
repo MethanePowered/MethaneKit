@@ -261,14 +261,14 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
         {
             // Execute pre-upload synchronization on other queue and wait for sync completion on upload queue
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
-            Fence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
+            IFence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
             cmd_kit_fence.Signal();
             cmd_kit_fence.WaitOnGpu(upload_cmd_kit.GetQueue());
         }
         if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PostUploadSync)
         {
             // Wait for upload execution on other queue and execute post-upload synchronization commands on that queue
-            Fence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
+            IFence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
             upload_fence.Signal();
             upload_fence.WaitOnGpu(cmd_queue);
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));

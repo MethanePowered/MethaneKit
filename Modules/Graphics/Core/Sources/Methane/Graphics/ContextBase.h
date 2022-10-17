@@ -25,7 +25,7 @@ Base implementation of the context interface.
 
 #include "ObjectBase.h"
 
-#include <Methane/Graphics/Fence.h>
+#include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/Context.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Native/ContextNT.h>
@@ -66,8 +66,8 @@ public:
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
     tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    IObjectRegistry& GetObjectRegistry() noexcept override                  { return m_objects_cache; }
-    const IObjectRegistry& GetObjectRegistry() const noexcept override      { return m_objects_cache; }
+    IObjectRegistry&  GetObjectRegistry() noexcept override                   { return m_objects_cache; }
+    const IObjectRegistry& GetObjectRegistry() const noexcept override        { return m_objects_cache; }
     void              RequestDeferredAction(DeferredAction action) const noexcept override;
     void              CompleteInitialization() override;
     bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
