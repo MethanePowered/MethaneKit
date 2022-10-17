@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Object.h
+FILE: Methane/Graphics/IObject.h
 Methane object interface: represents any named object.
 
 ******************************************************************************/
@@ -32,39 +32,42 @@ Methane object interface: represents any named object.
 namespace Methane::Graphics
 {
 
-struct Object;
+struct IObject;
+
+class NameConflictException : public std::invalid_argument
+{
+public:
+    explicit NameConflictException(const std::string& name);
+};
+
+struct IObjectRegistry
+{
+    using NameConflictException = Methane::Graphics::NameConflictException;
+
+    virtual void AddGraphicsObject(IObject& object) = 0;
+    virtual void RemoveGraphicsObject(IObject& object) = 0;
+    [[nodiscard]] virtual Ptr<IObject> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
+    [[nodiscard]] virtual bool         HasGraphicsObject(const std::string& object_name) const noexcept = 0;
+
+    virtual ~IObjectRegistry() = default;
+};
 
 struct IObjectCallback
 {
-    virtual void OnObjectNameChanged(Object&, const std::string& /*old_name*/) { /* does nothing by default */ }
-    virtual void OnObjectDestroyed(Object&)                                    { /* does nothing by default */ }
+    virtual void OnObjectNameChanged(IObject&, const std::string& /*old_name*/) { /* does nothing by default */ }
+    virtual void OnObjectDestroyed(IObject&)                                    { /* does nothing by default */ }
 
     virtual ~IObjectCallback() = default;
 };
 
-struct Object
+struct IObject
     : virtual Data::IEmitter<IObjectCallback> // NOSONAR
 {
-    struct Registry
-    {
-        class NameConflictException : public std::invalid_argument
-        {
-        public:
-            explicit NameConflictException(const std::string& name);
-        };
+    using IRegistry = IObjectRegistry;
 
-        virtual void AddGraphicsObject(Object& object) = 0;
-        virtual void RemoveGraphicsObject(Object& object) = 0;
-        [[nodiscard]] virtual Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept = 0;
-        [[nodiscard]] virtual bool        HasGraphicsObject(const std::string& object_name) const noexcept = 0;
-
-        virtual ~Registry() = default;
-    };
-
-    // Object interface
     virtual bool SetName(const std::string& name) = 0;
     [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
-    [[nodiscard]] virtual Ptr<Object>        GetPtr() = 0;
+    [[nodiscard]] virtual Ptr<IObject>        GetPtr() = 0;
 };
 
 } // namespace Methane::Graphics

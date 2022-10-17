@@ -37,13 +37,13 @@ namespace Methane::Graphics
 {
 
 class FakeObjectRegistry
-    : public Object::Registry
+    : public IObjectRegistry
 {
 public:
-    void                      AddGraphicsObject(Object&) override                           { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void                      RemoveGraphicsObject(Object&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Ptr<Object> GetGraphicsObject(const std::string&) const noexcept override { return nullptr; }
-    [[nodiscard]] bool        HasGraphicsObject(const std::string&) const noexcept override { return false; }
+    void                       AddGraphicsObject(IObject&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void                       RemoveGraphicsObject(IObject&) override                       { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Ptr<IObject> GetGraphicsObject(const std::string&) const noexcept override { return nullptr; }
+    [[nodiscard]] bool         HasGraphicsObject(const std::string&) const noexcept override { return false; }
 };
 
 class FakeDevice
@@ -59,10 +59,10 @@ public:
     [[nodiscard]] const Capabilities& GetCapabilities() const noexcept override { static const Capabilities s_caps; return s_caps; }
     [[nodiscard]] std::string ToString() const override { return { }; }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 };
 
 class FakeCommandQueue
@@ -82,10 +82,10 @@ public:
     [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 
 private:
     const Context&    m_context;
@@ -128,10 +128,10 @@ public:
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                  { throw Data::TimeRange{ }; }
     [[nodiscard]] CommandQueue& GetCommandQueue() override                              { return m_command_queue; }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
 
 private:
     CommandQueue& m_command_queue;
@@ -167,8 +167,8 @@ public:
     [[nodiscard]] Type GetType() const noexcept override                                { return Type::Render; }
     [[nodiscard]] Options GetOptions() const noexcept override                          { return Options::None; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override           { return m_executor; }
-    [[nodiscard]] Object::Registry& GetObjectsRegistry() noexcept override              { return m_object_registry; }
-    [[nodiscard]] const Object::Registry& GetObjectsRegistry() const noexcept override  { return m_object_registry; }
+    [[nodiscard]] IObjectRegistry& GetObjectRegistry() noexcept override                { return m_object_registry; }
+    [[nodiscard]] const IObjectRegistry& GetObjectRegistry() const noexcept override    { return m_object_registry; }
     void RequestDeferredAction(DeferredAction) const noexcept override                  { }
     void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
@@ -180,10 +180,10 @@ public:
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override                  { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                                  { return shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                                  { return shared_from_this(); }
 
 private:
     Settings               m_settings;
@@ -208,10 +208,10 @@ public:
     Data::Size           GetAttachmentCount() const noexcept override   { return 0U; }
     AttachmentFormats    GetAttachmentFormats() const noexcept override { return {}; }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Object>        GetPtr() override                 { return shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 
 private:
     RenderContext& m_render_context;

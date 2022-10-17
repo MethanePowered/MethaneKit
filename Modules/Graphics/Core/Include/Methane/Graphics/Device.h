@@ -24,7 +24,7 @@ is used to create graphics context for rendering.
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 
 #include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
@@ -51,7 +51,7 @@ struct IDeviceCallback
 };
 
 struct Device
-    : virtual Object // NOSONAR
+    : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IDeviceCallback> // NOSONAR
 {
     enum class Features : uint32_t

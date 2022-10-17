@@ -24,7 +24,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 #pragma once
 
 #include "Texture.h"
-#include "Object.h"
+#include "IObject.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/IEmitter.h>
@@ -38,7 +38,7 @@ namespace Methane::Graphics
 
 struct RenderContext;
 
-struct RenderPattern : virtual Object // NOSONAR
+struct RenderPattern : virtual IObject // NOSONAR
 {
     struct Attachment
     {
@@ -185,7 +185,7 @@ struct IRenderPassCallback
 };
 
 struct RenderPass
-    : virtual Object // NOSONAR
+    : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IRenderPassCallback> // NOSONAR
 {
     using Pattern           = RenderPattern;

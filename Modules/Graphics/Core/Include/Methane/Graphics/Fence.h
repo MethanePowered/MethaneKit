@@ -23,7 +23,7 @@ Methane fence interface used for CPU-GPU synchronization.
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 
 #include <Methane/Memory.hpp>
 
@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 
-struct Fence : virtual Object // NOSONAR
+struct Fence : virtual IObject // NOSONAR
 {
     [[nodiscard]] static Ptr<Fence> Create(CommandQueue& command_queue);
 

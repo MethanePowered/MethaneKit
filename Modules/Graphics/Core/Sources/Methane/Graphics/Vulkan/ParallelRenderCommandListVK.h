@@ -54,7 +54,7 @@ public:
     void Execute(const CompletedCallback& completed_callback = {}) override;
     void Complete() override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& label) override;
 
     const ICommandListVK& GetPrimaryCommandListVK() const noexcept { return m_beginning_command_list; }

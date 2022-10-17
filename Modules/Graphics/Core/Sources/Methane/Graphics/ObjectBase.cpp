@@ -31,13 +31,13 @@ Base implementation of the named object interface.
 namespace Methane::Graphics
 {
 
-ObjectBase::RegistryBase::NameConflictException::NameConflictException(const std::string& name)
+NameConflictException::NameConflictException(const std::string& name)
     : std::invalid_argument(fmt::format("Can not add graphics object with name {} to the registry because another object with the same name is already registered.", name))
 {
     META_FUNCTION_TASK();
 }
 
-void ObjectBase::RegistryBase::AddGraphicsObject(Object& object)
+void ObjectRegistryBase::AddGraphicsObject(IObject& object)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
@@ -52,7 +52,7 @@ void ObjectBase::RegistryBase::AddGraphicsObject(Object& object)
     object.Connect(*this);
 }
 
-void ObjectBase::RegistryBase::RemoveGraphicsObject(Object& object)
+void ObjectRegistryBase::RemoveGraphicsObject(IObject& object)
 {
     META_FUNCTION_TASK();
 
@@ -65,21 +65,21 @@ void ObjectBase::RegistryBase::RemoveGraphicsObject(Object& object)
     }
 }
 
-Ptr<Object> ObjectBase::RegistryBase::GetGraphicsObject(const std::string& object_name) const noexcept
+Ptr<IObject> ObjectRegistryBase::GetGraphicsObject(const std::string& object_name) const noexcept
 {
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(object_name);
     return object_by_name_it == m_object_by_name.end() ? nullptr : object_by_name_it->second.lock();
 }
 
-bool ObjectBase::RegistryBase::HasGraphicsObject(const std::string& object_name) const noexcept
+bool ObjectRegistryBase::HasGraphicsObject(const std::string& object_name) const noexcept
 {
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(object_name);
     return object_by_name_it != m_object_by_name.end() && !object_by_name_it->second.expired();
 }
 
-void ObjectBase::RegistryBase::OnObjectNameChanged(Object& object, const std::string& old_name)
+void ObjectRegistryBase::OnObjectNameChanged(IObject& object, const std::string& old_name)
 {
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(old_name);
@@ -103,7 +103,7 @@ void ObjectBase::RegistryBase::OnObjectNameChanged(Object& object, const std::st
     m_object_by_name.insert(std::move(object_node));
 }
 
-void ObjectBase::RegistryBase::OnObjectDestroyed(Object& object)
+void ObjectRegistryBase::OnObjectDestroyed(IObject& object)
 {
     META_FUNCTION_TASK();
     RemoveGraphicsObject(object);
@@ -130,10 +130,10 @@ ObjectBase::~ObjectBase()
     }
 }
 
-Ptr<Object> ObjectBase::GetPtr()
+Ptr<IObject> ObjectBase::GetPtr()
 {
     META_FUNCTION_TASK();
-    return std::dynamic_pointer_cast<Object>(shared_from_this());
+    return std::dynamic_pointer_cast<IObject>(shared_from_this());
 }
 
 bool ObjectBase::SetName(const std::string& name)

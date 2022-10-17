@@ -25,7 +25,7 @@ pipeline via state object and used to create resource binding objects.
 #pragma once
 
 #include "Shader.h"
-#include "Object.h"
+#include "IObject.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -41,7 +41,7 @@ namespace Methane::Graphics
 struct Context;
 struct CommandList;
 
-struct Program : virtual Object // NOSONAR
+struct Program : virtual IObject // NOSONAR
 {
     struct InputBufferLayout
     {

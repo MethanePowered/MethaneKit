@@ -103,7 +103,7 @@ public:
 
 private:
     // IObjectCallback interface
-    void OnObjectNameChanged(Object&, const std::string&) override; // Program name changed
+    void OnObjectNameChanged(IObject&, const std::string&) override; // Program name changed
 
     void SetResourcesForArgumentsVK(const ResourceViewsByArgument& resource_views_by_argument);
 

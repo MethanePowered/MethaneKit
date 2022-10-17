@@ -385,7 +385,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const CommandQueu
                                          m_dynamic_offsets.data() + first_dynamic_offset_index);
 }
 
-void ProgramBindingsVK::OnObjectNameChanged(Object&, const std::string&)
+void ProgramBindingsVK::OnObjectNameChanged(IObject&, const std::string&)
 {
     META_FUNCTION_TASK();
     UpdateMutableDescriptorSetName();

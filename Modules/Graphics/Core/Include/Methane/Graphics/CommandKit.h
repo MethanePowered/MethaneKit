@@ -24,7 +24,7 @@ and synchronization within a stored command queue.
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 #include "CommandList.h"
 
 #include <limits>
@@ -38,7 +38,7 @@ struct Context;
 struct CommandQueue;
 struct Fence;
 
-struct CommandKit : virtual Object // NOSONAR
+struct CommandKit : virtual IObject // NOSONAR
 {
     using CommandListId = uint32_t;
 

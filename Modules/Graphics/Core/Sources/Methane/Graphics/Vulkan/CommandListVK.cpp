@@ -198,7 +198,7 @@ const std::vector<uint64_t>& CommandListSetVK::GetWaitValues()
     return m_vk_wait_values;
 }
 
-void CommandListSetVK::OnObjectNameChanged(Object& object, const std::string& old_name)
+void CommandListSetVK::OnObjectNameChanged(IObject& object, const std::string& old_name)
 {
     META_FUNCTION_TASK();
     CommandListSetBase::OnObjectNameChanged(object, old_name);

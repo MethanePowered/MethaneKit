@@ -40,7 +40,7 @@ which make modern graphics programming easy and convenient in a platform and API
 - [RenderPattern, RenderPass](Include/Methane/Graphics/RenderPass.h)
 
 ### Other
-- [Object, Object::Registry](Include/Methane/Graphics/Object.h)
+- [IObject, IObjectRegistry](Include/Methane/Graphics/IObject.h)
 
 ## Native Graphics API implementations
 

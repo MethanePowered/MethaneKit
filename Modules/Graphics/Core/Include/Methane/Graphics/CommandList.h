@@ -24,7 +24,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 #include "ProgramBindings.h"
 #include "Resource.h"
 
@@ -49,7 +49,7 @@ struct ICommandListCallback
 };
 
 struct CommandList
-    : virtual Object // NOSONAR
+    : virtual IObject // NOSONAR
     , virtual Data::IEmitter<ICommandListCallback> // NOSONAR
 {
     enum class Type
@@ -67,7 +67,7 @@ struct CommandList
         Executing,
     };
 
-    struct DebugGroup : virtual Object // NOSONAR
+    struct DebugGroup : virtual IObject // NOSONAR
     {
         [[nodiscard]] static Ptr<DebugGroup> Create(const std::string& name);
 

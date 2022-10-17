@@ -69,7 +69,7 @@ public:
     public:
         explicit DebugGroupBase(const std::string& name);
 
-        // Object overrides
+        // IObject overrides
         bool SetName(const std::string&) override;
 
         // DebugGroup interface
@@ -198,7 +198,7 @@ public:
 
 protected:
     // IObjectCallback interface
-    void OnObjectNameChanged(Object&, const std::string&) override;
+    void OnObjectNameChanged(IObject&, const std::string&) override;
 
 private:
     Refs<CommandList>     m_refs;

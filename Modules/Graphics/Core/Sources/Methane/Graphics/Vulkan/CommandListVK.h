@@ -83,7 +83,7 @@ public:
 
 protected:
     // IObjectCallback interface
-    void OnObjectNameChanged(Object& object, const std::string& old_name) override;
+    void OnObjectNameChanged(IObject& object, const std::string& old_name) override;
 
 private:
     const std::vector<vk::Semaphore>&          GetWaitSemaphores();

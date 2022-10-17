@@ -42,7 +42,7 @@ public:
     void WaitOnCpu() override;
     void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
 
-    // Object override
+    // IObject override
     bool SetName(const std::string& name) override;
 
     const vk::Semaphore& GetNativeSemaphore() const noexcept { return m_vk_unique_semaphore.get(); }

@@ -108,7 +108,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
     const std::string state_name = fmt::format("{} Render State", quad_name);
-    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(render_context.GetObjectsRegistry().GetGraphicsObject(state_name));
+    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(render_context.GetObjectRegistry().GetGraphicsObject(state_name));
     if (!m_render_state_ptr)
     {
         RenderState::Settings state_settings;
@@ -145,7 +145,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         m_render_state_ptr = RenderState::Create(render_context, state_settings);
         m_render_state_ptr->SetName(state_name);
 
-        render_context.GetObjectsRegistry().AddGraphicsObject(*m_render_state_ptr);
+        render_context.GetObjectRegistry().AddGraphicsObject(*m_render_state_ptr);
     }
 
     m_view_state_ptr = ViewState::Create({
@@ -156,7 +156,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
         static const std::string s_sampler_name = "Screen-Quad Sampler";
-        m_texture_sampler_ptr = std::dynamic_pointer_cast<Sampler>(render_context.GetObjectsRegistry().GetGraphicsObject(s_sampler_name));
+        m_texture_sampler_ptr = std::dynamic_pointer_cast<Sampler>(render_context.GetObjectRegistry().GetGraphicsObject(s_sampler_name));
         if (!m_texture_sampler_ptr)
         {
             m_texture_sampler_ptr = Sampler::Create(render_context, {
@@ -164,14 +164,14 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
                 Sampler::Address(Sampler::Address::Mode::ClampToZero),
             });
             m_texture_sampler_ptr->SetName(s_sampler_name);
-            render_context.GetObjectsRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
+            render_context.GetObjectRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
         }
 
         m_texture_ptr->SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
     }
 
     static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
-    Ptr<Buffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectsRegistry().GetGraphicsObject(s_vertex_buffer_name));
+    Ptr<Buffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_vertex_buffer_name));
     if (!vertex_buffer_ptr)
     {
         vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
@@ -183,13 +183,13 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
                 }
             },
             *m_render_cmd_queue_ptr);
-        render_context.GetObjectsRegistry().AddGraphicsObject(*vertex_buffer_ptr);
+        render_context.GetObjectRegistry().AddGraphicsObject(*vertex_buffer_ptr);
     }
 
     m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
-    m_index_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectsRegistry().GetGraphicsObject(s_index_buffer_name));
+    m_index_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_index_buffer_name));
     if (!m_index_buffer_ptr)
     {
         m_index_buffer_ptr = Buffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
@@ -201,7 +201,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
                 }
             },
             *m_render_cmd_queue_ptr);
-        render_context.GetObjectsRegistry().AddGraphicsObject(*m_index_buffer_ptr);
+        render_context.GetObjectRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
     m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));

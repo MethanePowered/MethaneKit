@@ -23,7 +23,7 @@ Methane resource interface: base class of all GPU resources.
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 #include "ResourceView.h"
 #include "ResourceBarriers.h"
 
@@ -49,7 +49,7 @@ struct IResourceCallback
 };
 
 struct Resource
-    : virtual Object // NOSONAR
+    : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IResourceCallback> // NOSONAR
 {
     using Usage = ResourceUsage;

@@ -63,7 +63,7 @@ public:
     // RenderStateBase interface
     void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
     
     void InitializeNativeStates();

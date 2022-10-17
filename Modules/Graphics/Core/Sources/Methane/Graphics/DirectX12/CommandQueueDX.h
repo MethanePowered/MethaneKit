@@ -51,7 +51,7 @@ public:
     // CommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2

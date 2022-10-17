@@ -23,7 +23,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 #include "Program.h"
 
 #include <Methane/Memory.hpp>
@@ -62,7 +62,7 @@ struct ViewState
     virtual ~ViewState() = default;
 };
 
-struct RenderState : virtual Object // NOSONAR
+struct RenderState : virtual IObject // NOSONAR
 {
 public:
     struct Rasterizer

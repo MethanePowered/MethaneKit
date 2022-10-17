@@ -40,7 +40,7 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
     
     const id<MTLBuffer>& GetNativeBuffer() const noexcept { return m_mtl_buffer; }

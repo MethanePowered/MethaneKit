@@ -96,7 +96,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
 
-    gfx::Object::Registry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectsRegistry();
+    gfx::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
     m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
     if (m_render_state_ptr)
     {

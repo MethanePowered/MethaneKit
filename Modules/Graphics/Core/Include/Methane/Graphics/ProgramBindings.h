@@ -25,7 +25,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #include "Program.h"
 #include "Resource.h"
-#include "Object.h"
+#include "IObject.h"
 
 #include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
@@ -37,7 +37,7 @@ Methane program bindings interface for resources binding to program arguments.
 namespace Methane::Graphics
 {
 
-struct ProgramBindings : virtual Object // NOSONAR
+struct ProgramBindings : virtual IObject // NOSONAR
 {
     struct ArgumentBinding;
 

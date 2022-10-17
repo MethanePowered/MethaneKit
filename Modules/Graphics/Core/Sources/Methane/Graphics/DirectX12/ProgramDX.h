@@ -49,7 +49,7 @@ public:
     ProgramDX(const ContextBase& context, const Settings& settings);
     ~ProgramDX() override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     ShaderDX& GetVertexShaderDX() const;

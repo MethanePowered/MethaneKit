@@ -40,7 +40,7 @@ public:
     CommandKitBase(const Context& context, CommandList::Type cmd_list_type);
     explicit CommandKitBase(CommandQueue& cmd_queue);
 
-    // Object overrides
+    // IObject overrides
     bool SetName(const std::string& name) override;
 
     // CommandKit interface

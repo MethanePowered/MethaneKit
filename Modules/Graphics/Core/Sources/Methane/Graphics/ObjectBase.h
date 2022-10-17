@@ -23,7 +23,7 @@ Base implementation of the named object interface.
 
 #pragma once
 
-#include <Methane/Graphics/Object.h>
+#include <Methane/Graphics/IObject.h>
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Emitter.hpp>
 
@@ -32,29 +32,31 @@ Base implementation of the named object interface.
 namespace Methane::Graphics
 {
 
+class ObjectRegistryBase
+    : public IObjectRegistry
+    , private Data::Receiver<IObjectCallback>
+{
+public:
+    void         AddGraphicsObject(IObject& object) override;
+    void         RemoveGraphicsObject(IObject& object) override;
+    Ptr<IObject> GetGraphicsObject(const std::string& object_name) const noexcept override;
+    bool         HasGraphicsObject(const std::string& object_name) const noexcept override;
+
+private:
+    // IObjectCallback callback
+    void OnObjectNameChanged(IObject& object, const std::string& old_name) override;
+    void OnObjectDestroyed(IObject& object) override;
+
+    std::map<std::string, WeakPtr<IObject>, std::less<>> m_object_by_name;
+};
+
 class ObjectBase // NOSONAR - destructor is required
-    : public virtual Object // NOSONAR
+    : public virtual IObject // NOSONAR
     , public std::enable_shared_from_this<ObjectBase>
     , public Data::Emitter<IObjectCallback>
 {
 public:
-    class RegistryBase
-        : public Registry
-        , private Data::Receiver<IObjectCallback>
-    {
-    public:
-        void        AddGraphicsObject(Object& object) override;
-        void        RemoveGraphicsObject(Object& object) override;
-        Ptr<Object> GetGraphicsObject(const std::string& object_name) const noexcept override;
-        bool        HasGraphicsObject(const std::string& object_name) const noexcept override;
-
-    private:
-        // IObjectCallback callback
-        void OnObjectNameChanged(Object& object, const std::string& old_name) override;
-        void OnObjectDestroyed(Object& object) override;
-
-        std::map<std::string, WeakPtr<Object>, std::less<>> m_object_by_name;
-    };
+    using RegistryBase = ObjectRegistryBase;
 
     ObjectBase() = default;
     explicit ObjectBase(const std::string& name);
@@ -66,10 +68,10 @@ public:
     ObjectBase& operator=(const ObjectBase&) = default;
     ObjectBase& operator=(ObjectBase&&) noexcept = default;
 
-    // Object interface
+    // IObject interface
     bool               SetName(const std::string& name) override;
     const std::string& GetName() const noexcept override  { return m_name; }
-    Ptr<Object>        GetPtr() override;
+    Ptr<IObject>       GetPtr() override;
 
     Ptr<ObjectBase> GetBasePtr() { return shared_from_this(); }
 

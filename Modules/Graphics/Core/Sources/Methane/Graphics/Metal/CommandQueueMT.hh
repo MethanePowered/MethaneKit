@@ -41,7 +41,7 @@ public:
     // CommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
     
     const IContextMT& GetContextMT() const noexcept;

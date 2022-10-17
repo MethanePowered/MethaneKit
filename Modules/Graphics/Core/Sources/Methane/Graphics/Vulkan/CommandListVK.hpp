@@ -220,7 +220,7 @@ public:
         CommandListBase::Reset(p_debug_group);
     }
 
-    // Object interface
+    // IObject interface
 
     bool SetName(const std::string& name) final
     {

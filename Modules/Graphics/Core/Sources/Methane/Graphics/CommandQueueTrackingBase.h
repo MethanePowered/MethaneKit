@@ -49,7 +49,7 @@ public:
     // CommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });

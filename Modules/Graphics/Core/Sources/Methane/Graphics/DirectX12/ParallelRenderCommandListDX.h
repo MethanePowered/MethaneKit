@@ -50,7 +50,7 @@ public:
     void Execute(const CompletedCallback& completed_callback = {}) override;
     void Complete() override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;

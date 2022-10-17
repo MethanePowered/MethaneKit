@@ -65,7 +65,7 @@ public:
     void PopDebugGroup() override               { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     RenderPassBase& GetPass();

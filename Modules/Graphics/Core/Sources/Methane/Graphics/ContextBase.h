@@ -66,8 +66,8 @@ public:
     // Context interface
     Type              GetType() const noexcept override                       { return m_type; }
     tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    Object::Registry& GetObjectsRegistry() noexcept override                  { return m_objects_cache; }
-    const Object::Registry& GetObjectsRegistry() const noexcept override      { return m_objects_cache; }
+    IObjectRegistry& GetObjectRegistry() noexcept override                  { return m_objects_cache; }
+    const IObjectRegistry& GetObjectRegistry() const noexcept override      { return m_objects_cache; }
     void              RequestDeferredAction(DeferredAction action) const noexcept override;
     void              CompleteInitialization() override;
     bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
@@ -82,7 +82,7 @@ public:
     virtual void Initialize(DeviceBase& device, bool is_callback_emitted = true);
     virtual void Release();
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     DeferredAction     GetRequestedAction() const noexcept { return m_requested_action; }
@@ -107,15 +107,15 @@ private:
     template<CommandKit::CommandListPurpose cmd_list_purpose>
     void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const;
 
-    const Type                       m_type;
-    Ptr<DeviceBase>                  m_device_ptr;
-    UniquePtr<DescriptorManager>     m_descriptor_manager_ptr;
-    tf::Executor&                    m_parallel_executor;
-    ObjectBase::RegistryBase         m_objects_cache;
-    mutable CommandKitPtrByType      m_default_command_kit_ptrs;
-    mutable CommandKitByQueue        m_default_command_kit_ptr_by_queue;
-    mutable DeferredAction           m_requested_action = DeferredAction::None;
-    mutable bool                     m_is_completing_initialization = false;
+    const Type                   m_type;
+    Ptr<DeviceBase>              m_device_ptr;
+    UniquePtr<DescriptorManager> m_descriptor_manager_ptr;
+    tf::Executor&                m_parallel_executor;
+    ObjectRegistryBase           m_objects_cache;
+    mutable CommandKitPtrByType  m_default_command_kit_ptrs;
+    mutable CommandKitByQueue    m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction       m_requested_action = DeferredAction::None;
+    mutable bool                 m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics

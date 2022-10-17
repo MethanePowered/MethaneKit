@@ -125,7 +125,7 @@ public:
     // Resource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
-    // Object overide
+    // IObject overide
     bool SetName(const std::string& name) override;
 
     // ITextureVK overrides

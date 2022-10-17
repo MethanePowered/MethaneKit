@@ -47,7 +47,7 @@ public:
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     using NativeFeatureOptions5 = std::optional<D3D12_FEATURE_DATA_D3D12_OPTIONS5>;

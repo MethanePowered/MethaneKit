@@ -76,7 +76,7 @@ public:
         return m_library_by_name.try_emplace(library_name, std::make_shared<ProgramLibraryMT>(GetDeviceMT(), library_name)).first->second;
     }
 
-    // Object overrides
+    // IObject overrides
 
     bool SetName(const std::string& name) override
     {

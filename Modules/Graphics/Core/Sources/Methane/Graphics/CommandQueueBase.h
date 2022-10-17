@@ -49,7 +49,7 @@ class CommandQueueBase
 public:
     CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type);
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     // CommandQueue overrides

@@ -497,7 +497,7 @@ const std::string& CommandListSetBase::GetCombinedName()
     return m_combined_name;
 }
 
-void CommandListSetBase::OnObjectNameChanged(Object&, const std::string&)
+void CommandListSetBase::OnObjectNameChanged(IObject&, const std::string&)
 {
     META_FUNCTION_TASK();
     m_combined_name.clear();

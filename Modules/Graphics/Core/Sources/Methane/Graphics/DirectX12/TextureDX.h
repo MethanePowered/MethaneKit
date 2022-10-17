@@ -110,7 +110,7 @@ template<> class TextureDX<ImageTokenDX> final // NOSONAR - inheritance hierarch
 public:
     TextureDX(const ContextBase& context, const Settings& settings, ImageTokenDX);
 
-    // Object overrides
+    // IObject overrides
     bool SetName(const std::string& name) override;
 
     // Resource overrides

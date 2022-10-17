@@ -23,7 +23,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 
 #pragma once
 
-#include "Object.h"
+#include "IObject.h"
 #include "CommandList.h"
 
 #include <Methane/Memory.hpp>
@@ -56,7 +56,7 @@ struct IContextCallback
 };
 
 struct Context
-    : virtual Object // NOSONAR
+    : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IContextCallback> // NOSONAR
 {
     enum class Type
@@ -95,8 +95,8 @@ struct Context
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
     [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
-    [[nodiscard]] virtual Object::Registry& GetObjectsRegistry() noexcept = 0;
-    [[nodiscard]] virtual const Object::Registry& GetObjectsRegistry() const noexcept = 0;
+    [[nodiscard]] virtual IObjectRegistry& GetObjectRegistry() noexcept = 0;
+    [[nodiscard]] virtual const IObjectRegistry& GetObjectRegistry() const noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;

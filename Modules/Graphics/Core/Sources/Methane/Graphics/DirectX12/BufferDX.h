@@ -71,7 +71,7 @@ public:
         SetStateChangeUpdatesBarriers(is_private_storage);
     }
 
-    // Object overrides
+    // IObject overrides
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();

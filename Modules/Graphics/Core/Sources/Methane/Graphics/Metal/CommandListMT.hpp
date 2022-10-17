@@ -140,7 +140,7 @@ public:
         [m_mtl_cmd_buffer commit];
     }
 
-    // Object interface
+    // IObject interface
 
     bool SetName(const std::string& name) override
     {

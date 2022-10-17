@@ -85,7 +85,7 @@ public:
     bool operator=(const ResourceDX&) = delete;
     bool operator=(ResourceDX&&) = delete;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();

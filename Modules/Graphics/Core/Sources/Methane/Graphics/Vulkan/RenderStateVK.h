@@ -66,7 +66,7 @@ public:
     // RenderStateBase interface
     void Apply(RenderCommandListBase& render_command_list, Groups state_groups) override;
 
-    // Object interface
+    // IObject interface
     bool SetName(const std::string& name) override;
 
     const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
