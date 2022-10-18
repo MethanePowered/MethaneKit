@@ -5,10 +5,11 @@ include(MethaneModules)
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
+    ${INCLUDE_DIR}/IObject.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
-    ${INCLUDE_DIR}/Fence.h
+    ${INCLUDE_DIR}/IFence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
     ${INCLUDE_DIR}/ProgramBindings.h
