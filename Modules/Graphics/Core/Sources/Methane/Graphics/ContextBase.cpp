@@ -97,7 +97,7 @@ void ContextBase::WaitForGpu(WaitFor wait_for)
     }
 }
 
-void ContextBase::Reset(Device& device)
+void ContextBase::Reset(IDevice& device)
 {
     META_FUNCTION_TASK();
     META_LOG("Context '{}' RESET with device adapter '{}'", GetName(), device.GetAdapterName());
@@ -190,7 +190,7 @@ CommandKit& ContextBase::GetDefaultCommandKit(CommandQueue& cmd_queue) const
     return *cmd_kit_ptr;
 }
 
-const Device& ContextBase::GetDevice() const
+const IDevice& ContextBase::GetDevice() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);

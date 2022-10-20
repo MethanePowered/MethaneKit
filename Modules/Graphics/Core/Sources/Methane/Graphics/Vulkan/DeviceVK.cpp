@@ -425,16 +425,16 @@ void QueueFamilyReservationVK::IncrementQueuesCount(uint32_t extra_queues_count)
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-Device::Features DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
+DeviceFeatures DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
-    Device::Features device_features = Device::Features::BasicRendering;
+    DeviceFeatures             device_features    = DeviceFeatures::BasicRendering;
     if (vk_device_features.samplerAnisotropy)
-        device_features |= Device::Features::AnisotropicFiltering;
+        device_features |= DeviceFeatures::AnisotropicFiltering;
     if (vk_device_features.imageCubeArray)
-        device_features |= Device::Features::ImageCubeArray;
+        device_features |= DeviceFeatures::ImageCubeArray;
     return device_features;
 }
 
@@ -448,7 +448,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     META_FUNCTION_TASK();
 
     using namespace magic_enum::bitwise_operators;
-    if (const Device::Features device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
+    if (const DeviceFeatures device_supported_features = DeviceVK::GetSupportedFeatures(vk_physical_device);
         !static_cast<bool>(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
@@ -478,7 +478,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-    if (static_cast<bool>(capabilities.features & Device::Features::BasicRendering))
+    if (static_cast<bool>(capabilities.features & DeviceFeatures::BasicRendering))
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
@@ -616,7 +616,7 @@ void DeviceVK::ReserveQueueFamily(CommandList::Type cmd_list_type, uint32_t queu
              *vk_queue_family_index, queues_count, magic_enum::enum_name(cmd_list_type));
 }
 
-System& System::Get()
+ISystem& ISystem::Get()
 {
     META_FUNCTION_TASK();
     static const auto s_system_ptr = std::make_shared<SystemVK>();
@@ -645,7 +645,7 @@ void SystemVK::CheckForChanges()
     META_FUNCTION_TASK();
 }
 
-const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps)
+const Ptrs<IDevice>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     if (required_device_caps.present_to_window && !m_vk_unique_surface)
@@ -654,7 +654,7 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& a
         m_vk_unique_surface = PlatformVK::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);
     }
 
-    const Ptrs<Device>& gpu_devices = UpdateGpuDevices(required_device_caps);
+    const Ptrs<IDevice>& gpu_devices = UpdateGpuDevices(required_device_caps);
 
     if (m_vk_unique_surface)
     {
@@ -664,7 +664,7 @@ const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Platform::AppEnvironment& a
     return gpu_devices;
 }
 
-const Ptrs<Device>& SystemVK::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
+const Ptrs<IDevice>& SystemVK::UpdateGpuDevices(const DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     SetDeviceCapabilities(required_device_caps);

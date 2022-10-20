@@ -130,10 +130,10 @@ static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_
 
 #endif
 
-Device::Features DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+DeviceFeatures DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
-    return Device::Features::BasicRendering;
+    return DeviceFeatures::BasicRendering;
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
@@ -203,7 +203,7 @@ void DeviceDX::ReleaseNativeDevice()
     m_cp_device.Reset();
 }
 
-System& System::Get()
+ISystem& ISystem::Get()
 {
     META_FUNCTION_TASK();
     static const auto s_system_ptr = std::make_shared<SystemDX>();
@@ -325,13 +325,13 @@ void SystemDX::CheckForChanges()
 #endif
 }
 
-const Ptrs<Device>& SystemDX::UpdateGpuDevices(const Platform::AppEnvironment&, const Device::Capabilities& required_device_caps)
+const Ptrs<IDevice>& SystemDX::UpdateGpuDevices(const Platform::AppEnvironment&, const DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     return UpdateGpuDevices(required_device_caps);
 }
 
-const Ptrs<Device>& SystemDX::UpdateGpuDevices(const Device::Capabilities& required_device_caps)
+const Ptrs<IDevice>& SystemDX::UpdateGpuDevices(const DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
@@ -368,7 +368,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    Device::Features device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
+    DeviceFeatures device_supported_features = DeviceDX::GetSupportedFeatures(cp_adapter, feature_level);
 
     using namespace magic_enum::bitwise_operators;
     if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))

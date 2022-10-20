@@ -24,7 +24,7 @@ Fake render context used for UI types testing
 #pragma once
 
 #include <Methane/Exceptions.hpp>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
@@ -47,13 +47,13 @@ public:
 };
 
 class FakeDevice
-    : public Device
+    : public IDevice
     , public Data::Emitter<IDeviceCallback>
     , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeDevice>
 {
 public:
-    // Device interface
+    // IDevice interface
     [[nodiscard]] const std::string& GetAdapterName() const noexcept override { static std::string s_name; return s_name; }
     [[nodiscard]] bool IsSoftwareAdapter() const noexcept override { return true; }
     [[nodiscard]] const Capabilities& GetCapabilities() const noexcept override { static const Capabilities s_caps; return s_caps; }
@@ -173,10 +173,10 @@ public:
     void CompleteInitialization() override                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] bool IsCompletingInitialization() const noexcept override             { return false; }
     void WaitForGpu(WaitFor) override                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(Device&) override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(IDevice&) override                                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
 
-    [[nodiscard]] const Device& GetDevice() const override                              { return m_fake_device; }
+    [[nodiscard]] const IDevice& GetDevice() const override                             { return m_fake_device; }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 

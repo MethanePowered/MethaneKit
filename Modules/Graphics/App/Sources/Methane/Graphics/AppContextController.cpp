@@ -24,7 +24,7 @@ Graphics context controller for switching parameters in runtime.
 #include <Methane/Graphics/AppContextController.h>
 
 #include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -95,7 +95,7 @@ Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 void AppContextController::ResetContextWithNextDevice()
 {
     META_FUNCTION_TASK();
-    const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+    const Ptr<IDevice> next_device_ptr = ISystem::Get().GetNextGpuDevice(m_context.GetDevice());
     if (!next_device_ptr)
         return;
 

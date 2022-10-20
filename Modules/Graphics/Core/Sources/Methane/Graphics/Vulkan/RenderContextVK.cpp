@@ -39,7 +39,7 @@ Vulkan implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
     auto& device_vk = static_cast<DeviceVK&>(device);
@@ -53,7 +53,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, De
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
-    , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(System::Get()).GetNativeInstance(), app_env))
+    , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(ISystem::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
 }

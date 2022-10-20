@@ -50,7 +50,7 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
     auto& device_base = static_cast<DeviceBase&>(device);

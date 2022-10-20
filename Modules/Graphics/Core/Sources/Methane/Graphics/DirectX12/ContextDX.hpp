@@ -88,7 +88,7 @@ public:
         // to check that all descriptor ranges have been properly released by resources
         GetDescriptorManager().Release();
 
-        static_cast<SystemDX&>(System::Get()).ReportLiveObjects();
+        static_cast<SystemDX&>(ISystem::Get()).ReportLiveObjects();
     }
 
     // IContextDX interface

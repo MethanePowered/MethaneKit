@@ -25,7 +25,7 @@ Base implementation of the command queue with execution tracking.
 #include "QueryPool.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -38,15 +38,15 @@ Base implementation of the command queue with execution tracking.
 namespace Methane::Graphics
 {
 
-static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(System::GraphicsApi graphics_api)
+static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(NativeApi graphics_api)
 {
     META_FUNCTION_TASK();
     switch(graphics_api)
     {
-    case System::GraphicsApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
-    case System::GraphicsApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
-    case System::GraphicsApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
-    case System::GraphicsApi::Metal:        return Tracy::GpuContext::Type::Metal;
+    case NativeApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
+    case NativeApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
+    case NativeApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
+    case NativeApi::Metal:        return Tracy::GpuContext::Type::Metal;
     default: META_UNEXPECTED_ARG_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
     }
 };
@@ -75,7 +75,7 @@ void CommandQueueTrackingBase::InitializeTimestampQueryPool()
     const ITimestampQueryPool::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_pool_ptr->GetCalibratedTimestamps();
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
-            ConvertSystemGraphicsApiToTracyGpuContextType(System::GetGraphicsApi()),
+            ConvertSystemGraphicsApiToTracyGpuContextType(ISystem::GetNativeApi()),
             calibrated_timestamps.cpu_ts,
             calibrated_timestamps.gpu_ts,
             Data::ConvertFrequencyToTickPeriod(m_timestamp_query_pool_ptr->GetGpuFrequency())

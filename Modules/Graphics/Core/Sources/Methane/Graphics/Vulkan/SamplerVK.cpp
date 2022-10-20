@@ -86,7 +86,7 @@ static bool IsAnisotropicFilteringSupported(const Context& context) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(context.GetDevice().GetCapabilities().features & Device::Features::AnisotropicFiltering);
+    return static_cast<bool>(context.GetDevice().GetCapabilities().features & DeviceFeatures::AnisotropicFiltering);
 }
 
 Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)

@@ -8,7 +8,7 @@ which make modern graphics programming easy and convenient in a platform and API
 
 ### Graphics Devices and Contexts
 
-- [System, Device](Include/Methane/Graphics/Device.h)
+- [ISystem, IDevice](Include/Methane/Graphics/IDevice.h)
 - [Context](Include/Methane/Graphics/Context.h)
 - [RenderContext](Include/Methane/Graphics/RenderContext.h)
 

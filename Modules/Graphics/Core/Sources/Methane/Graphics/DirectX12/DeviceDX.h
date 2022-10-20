@@ -43,7 +43,7 @@ namespace wrl = Microsoft::WRL;
 class DeviceDX final : public DeviceBase
 {
 public:
-    static Device::Features GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    static DeviceFeatures GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 
@@ -67,7 +67,7 @@ class SystemDX final // NOSONAR - custom destructor is required
     : public SystemBase
 {
 public:
-    [[nodiscard]] static SystemDX& Get() { return static_cast<SystemDX&>(System::Get()); }
+    [[nodiscard]] static SystemDX& Get() { return static_cast<SystemDX&>(ISystem::Get()); }
 
     SystemDX();
     SystemDX(const SystemDX&) = delete;
@@ -77,10 +77,10 @@ public:
     SystemDX& operator=(const SystemDX&) = delete;
     SystemDX& operator=(SystemDX&&) = delete;
 
-    // System interface
+    // ISystem interface
     void  CheckForChanges() override;
-    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
-    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
+    const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps) override;
+    const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps) override;
 
     [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const noexcept;

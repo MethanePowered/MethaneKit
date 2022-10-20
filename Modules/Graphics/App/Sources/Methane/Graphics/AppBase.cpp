@@ -24,7 +24,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/AppBase.h>
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Graphics/AppContextController.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/RenderPass.h>
@@ -69,7 +69,7 @@ IApp::Settings& IApp::Settings::SetDefaultDeviceIndex(int32_t new_default_device
     return *this;
 }
 
-IApp::Settings& IApp::Settings::SetDeviceCapabilities(Device::Capabilities&& new_device_capabilities) noexcept
+IApp::Settings& IApp::Settings::SetDeviceCapabilities(DeviceCaps&& new_device_capabilities) noexcept
 {
     META_FUNCTION_TASK();
     device_capabilities = std::move(new_device_capabilities);
@@ -141,12 +141,12 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     META_FUNCTION_TASK();
     META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
 
-    const Ptrs<Device>& devices = System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
+    const Ptrs<IDevice>& devices = ISystem::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
     META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
 
-    Ptr<Device> device_ptr;
+    Ptr<IDevice> device_ptr;
     if (m_settings.default_device_index < 0)
-        device_ptr = System::Get().GetSoftwareGpuDevice();
+        device_ptr = ISystem::Get().GetSoftwareGpuDevice();
     else
         device_ptr = static_cast<size_t>(m_settings.default_device_index) < devices.size()
                    ? devices[m_settings.default_device_index]
@@ -270,7 +270,7 @@ bool AppBase::Update()
 
     META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context_ptr->GetFrameIndex() : 0U);
 
-    System::Get().CheckForChanges();
+    ISystem::Get().CheckForChanges();
 
     // Update HUD info in window title
     if (m_settings.show_hud_in_window_title &&
@@ -415,7 +415,7 @@ void AppBase::UpdateWindowTitle()
                                           context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(),
                                           context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
                                           m_context_ptr->GetDevice().GetAdapterName(),
-                                          magic_enum::enum_name(System::GetGraphicsApi()));
+                                          magic_enum::enum_name(ISystem::GetNativeApi()));
 
     SetWindowTitle(title);
 }

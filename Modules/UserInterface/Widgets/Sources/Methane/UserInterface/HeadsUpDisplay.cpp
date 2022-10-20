@@ -37,7 +37,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 
 #include <Methane/Graphics/RenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -288,7 +288,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,
-                                                                    magic_enum::enum_name(Graphics::System::GetGraphicsApi())));
+                                                                    magic_enum::enum_name(Graphics::ISystem::GetNativeApi())));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 

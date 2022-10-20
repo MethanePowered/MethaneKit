@@ -22,7 +22,7 @@ Renders text labels to the faces of cube-map texture array
 ******************************************************************************/
 
 #include <Methane/Samples/TextureLabeler.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/RenderPass.h>
@@ -168,7 +168,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     }
 
     if (rt_texture_final_state != gfx::Resource::State::Undefined &&
-        gfx::System::GetGraphicsApi() != gfx::System::GraphicsApi::Metal) // No need in resource state transition barriers in Metal
+        gfx::ISystem::GetNativeApi() != gfx::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
         m_ending_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), {
             gfx::RenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::RenderPass::Access::ShaderResources, false

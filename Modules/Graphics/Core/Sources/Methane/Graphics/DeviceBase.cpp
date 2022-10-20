@@ -31,28 +31,28 @@ Base implementation of the device interface.
 namespace Methane::Graphics
 {
 
-Device::Capabilities& Device::Capabilities::SetFeatures(Features new_features) noexcept
+DeviceCaps& DeviceCaps::SetFeatures(DeviceFeatures new_features) noexcept
 {
     META_FUNCTION_TASK();
     features = new_features;
     return *this;
 }
 
-Device::Capabilities& Device::Capabilities::SetPresentToWindow(bool new_present_to_window) noexcept
+DeviceCaps& DeviceCaps::SetPresentToWindow(bool new_present_to_window) noexcept
 {
     META_FUNCTION_TASK();
     present_to_window = new_present_to_window;
     return *this;
 }
 
-Device::Capabilities& Device::Capabilities::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
+DeviceCaps& DeviceCaps::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
 {
     META_FUNCTION_TASK();
     render_queues_count = new_render_queues_count;
     return *this;
 }
 
-Device::Capabilities& Device::Capabilities::SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept
+DeviceCaps& DeviceCaps::SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept
 {
     META_FUNCTION_TASK();
     transfer_queues_count = new_transfer_queues_count;
@@ -60,7 +60,7 @@ Device::Capabilities& Device::Capabilities::SetTransferQueuesCount(uint32_t new_
 }
 
 DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
-    : m_system_ptr(static_cast<SystemBase&>(System::Get()).GetBasePtr()) // NOSONAR
+    : m_system_ptr(static_cast<SystemBase&>(ISystem::Get()).GetBasePtr()) // NOSONAR
     , m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
     , m_capabilities(capabilities)
@@ -86,50 +86,50 @@ void DeviceBase::OnRemoved()
     Data::Emitter<IDeviceCallback>::Emit(&IDeviceCallback::OnDeviceRemoved, std::ref(*this));
 }
 
-System::GraphicsApi System::GetGraphicsApi() noexcept
+NativeApi ISystem::GetNativeApi() noexcept
 {
 #if defined METHANE_GFX_METAL
-    return GraphicsApi::Metal;
+    return NativeApi::Metal;
 #elif defined METHANE_GFX_DIRECTX
-    return GraphicsApi::DirectX;
+    return NativeApi::DirectX;
 #elif defined METHANE_GFX_VULKAN
-    return GraphicsApi::Vulkan;
+    return NativeApi::Vulkan;
 #else
-    return GraphicsApi::Undefined;
+    return NativeApi::Undefined;
 #endif
 }
 
-void SystemBase::RequestRemoveDevice(Device& device) const
+void SystemBase::RequestRemoveDevice(IDevice& device) const
 {
     META_FUNCTION_TASK();
     static_cast<DeviceBase&>(device).OnRemovalRequested();
 }
 
-void SystemBase::RemoveDevice(Device& device)
+void SystemBase::RemoveDevice(IDevice& device)
 {
     META_FUNCTION_TASK();
     const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-        [&device](const Ptr<Device>& device_ptr)
+        [&device](const Ptr<IDevice>& device_ptr)
         { return std::addressof(device) == std::addressof(*device_ptr); }
     );
     if (device_it == m_devices.end())
         return;
 
-    Ptr<Device> device_ptr = *device_it;
+    Ptr<IDevice> device_ptr = *device_it;
     m_devices.erase(device_it);
     static_cast<DeviceBase&>(device).OnRemoved();
 }
 
-Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const noexcept
+Ptr<IDevice> SystemBase::GetNextGpuDevice(const IDevice& device) const noexcept
 {
     META_FUNCTION_TASK();
-    Ptr<Device> next_device_ptr;
+    Ptr<IDevice> next_device_ptr;
     
     if (m_devices.empty())
         return next_device_ptr;
     
     auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                  [&device](const Ptr<Device>& system_device_ptr)
+                                  [&device](const Ptr<IDevice>& system_device_ptr)
                                   { return std::addressof(device) == system_device_ptr.get(); });
     if (device_it == m_devices.end())
         return next_device_ptr;
@@ -137,14 +137,14 @@ Ptr<Device> SystemBase::GetNextGpuDevice(const Device& device) const noexcept
     return device_it == m_devices.end() - 1 ? m_devices.front() : *(device_it + 1);
 }
 
-Ptr<Device> SystemBase::GetSoftwareGpuDevice() const noexcept
+Ptr<IDevice> SystemBase::GetSoftwareGpuDevice() const noexcept
 {
     META_FUNCTION_TASK();
     auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
-        [](const Ptr<Device>& system_device_ptr)
+        [](const Ptr<IDevice>& system_device_ptr)
         { return system_device_ptr && system_device_ptr->IsSoftwareAdapter(); });
 
-    return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Device>();
+    return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<IDevice>();
 }
 
 std::string SystemBase::ToString() const
@@ -152,7 +152,7 @@ std::string SystemBase::ToString() const
     META_FUNCTION_TASK();
     std::stringstream ss;
     ss << "Available graphics devices:" << std::endl;
-    for(const Ptr<Device>& device_ptr : m_devices)
+    for(const Ptr<IDevice>& device_ptr : m_devices)
     {
         META_CHECK_ARG_NOT_NULL(device_ptr);
         ss << "  - " << device_ptr->ToString() << ";" << std::endl;

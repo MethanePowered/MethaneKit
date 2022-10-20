@@ -69,7 +69,7 @@ struct RenderContext : virtual Context // NOSONAR
     };
 
     // Create RenderContext instance
-    [[nodiscard]] static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // RenderContext interface
     [[nodiscard]] virtual bool ReadyToRender() const = 0;

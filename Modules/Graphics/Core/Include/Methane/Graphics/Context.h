@@ -42,7 +42,7 @@ class Executor;
 namespace Methane::Graphics
 {
 
-struct Device;
+struct IDevice;
 struct CommandKit;
 struct Context;
 
@@ -101,9 +101,9 @@ struct Context
     virtual void CompleteInitialization() = 0;
     [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;
     virtual void WaitForGpu(WaitFor wait_for) = 0;
-    virtual void Reset(Device& device) = 0;
+    virtual void Reset(IDevice& device) = 0;
     virtual void Reset() = 0;
-    [[nodiscard]] virtual const Device& GetDevice() const = 0;
+    [[nodiscard]] virtual const IDevice& GetDevice() const = 0;
     [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandList::Type type) const = 0;
     [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandQueue& cmd_queue) const = 0;
     [[nodiscard]] inline  CommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Transfer); }

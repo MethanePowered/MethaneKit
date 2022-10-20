@@ -72,11 +72,11 @@ public:
     void              CompleteInitialization() override;
     bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
     void              WaitForGpu(WaitFor wait_for) override;
-    void              Reset(Device& device) override;
+    void              Reset(IDevice& device) override;
     void              Reset() override;
     CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
     CommandKit&       GetDefaultCommandKit(CommandQueue& cmd_queue) const final;
-    const Device&     GetDevice() const final;
+    const IDevice&    GetDevice() const final;
 
     // ContextBase interface
     virtual void Initialize(DeviceBase& device, bool is_callback_emitted = true);

@@ -6,7 +6,7 @@ get_module_dirs("Methane/Graphics")
 
 set(HEADERS
     ${INCLUDE_DIR}/IObject.h
-    ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/IDevice.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/IFence.h

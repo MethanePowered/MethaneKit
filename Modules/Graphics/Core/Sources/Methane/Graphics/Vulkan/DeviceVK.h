@@ -78,7 +78,7 @@ public:
         std::vector<vk::PresentModeKHR> present_modes;
     };
 
-    static Device::Features GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
+    static DeviceFeatures GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
 
@@ -115,10 +115,10 @@ public:
     SystemVK();
     ~SystemVK() override;
 
-    // System interface
+    // ISystem interface
     void CheckForChanges() override;
-    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
-    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
+    const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps) override;
+    const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps) override;
 
     vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
     const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }
