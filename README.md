@@ -15,7 +15,7 @@
 
 Download [release builds](https://github.com/MethanePowered/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
 Check latest build status, tests, code coverage and analysis results or get build artifacts from [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI and [Sonar Cloud](https://sonarcloud.io/organizations/methane-powered).
-See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/01-HelloTriangle) and other tutorials' documentation.
+See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/01-HelloTriangle) and other tutorials' documentation.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 
@@ -81,7 +81,7 @@ which make modern graphics programming easy and convenient in a platform and API
 
 ### Tutorials
 
-Start learning Methane Graphics API with [Hello Triangle](/01-HelloTriangle) tutorial documentation
+Start learning Methane Graphics API with [Hello Triangle](/Apps/01-HelloTriangle) tutorial documentation
 and continue with others.
 
 | <pre><b>Name / Link</b></pre>                       | <pre><b>Screenshot</b></pre>                                                                               | <pre><b>Description</b>                                         </pre>                            |
