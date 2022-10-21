@@ -42,7 +42,7 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, Device& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
 {
     META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);

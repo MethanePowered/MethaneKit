@@ -33,7 +33,7 @@ namespace Methane::Graphics
 class DeviceMT final : public DeviceBase
 {
 public:
-    static Device::Features GetSupportedFeatures(const id<MTLDevice>& mtl_device);
+    static DeviceFeatures GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
     DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
 
@@ -48,13 +48,13 @@ class SystemMT final : public SystemBase
 public:
     ~SystemMT() override;
     
-    void                CheckForChanges() override {}
-    const Ptrs<Device>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Device::Capabilities& required_device_caps) override;
-    const Ptrs<Device>& UpdateGpuDevices(const Device::Capabilities& required_device_caps) override;
+    void                 CheckForChanges() override {}
+    const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps) override;
+    const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps) override;
     
 private:
     void AddDevice(const id<MTLDevice>& mtl_device);
-    const Ptr<Device>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
+    const Ptr<IDevice>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
 
 #ifdef APPLE_MACOS
     void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);

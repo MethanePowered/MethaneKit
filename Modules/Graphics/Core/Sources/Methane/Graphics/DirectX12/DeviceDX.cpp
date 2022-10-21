@@ -302,16 +302,16 @@ void SystemDX::CheckForChanges()
 
     Initialize();
 
-    const Ptrs<Device>& devices = GetGpuDevices();
-    Ptrs<Device>   prev_devices = devices;
+    const Ptrs<IDevice>& devices = GetGpuDevices();
+    Ptrs<IDevice>   prev_devices = devices;
     UpdateGpuDevices(GetDeviceCapabilities());
 
-    for (const Ptr<Device>& prev_device_ptr : prev_devices)
+    for (const Ptr<IDevice>& prev_device_ptr : prev_devices)
     {
         META_CHECK_ARG_NOT_NULL(prev_device_ptr);
         DeviceDX& prev_device = static_cast<DeviceDX&>(*prev_device_ptr);
         auto device_it = std::find_if(devices.begin(), devices.end(),
-                                      [prev_device](const Ptr<Device>& device_ptr)
+                                      [prev_device](const Ptr<IDevice>& device_ptr)
                                       {
                                           DeviceDX& device = static_cast<DeviceDX&>(*device_ptr);
                                           return prev_device.GetNativeAdapter().GetAddressOf() == device.GetNativeAdapter().GetAddressOf();
