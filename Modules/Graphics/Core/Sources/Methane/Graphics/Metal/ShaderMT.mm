@@ -98,7 +98,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 
 #endif // ifndef NDEBUG
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, const Context& context, const Settings& settings)
+Ptr<Shader> Shader::Create(Shader::Type shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ShaderMT>(shader_type, dynamic_cast<const ContextBase&>(context), settings);

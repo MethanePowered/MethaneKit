@@ -57,19 +57,19 @@ static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_m
     }
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<BufferMT>(context, size, stride, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<BufferMT>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile);
@@ -165,7 +165,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
         data_offset += sub_resource.GetDataSize();
     }
     
-    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
+    GetContextBase().RequestDeferredAction(ContextDeferredAction::UploadResources);
 }
 
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept

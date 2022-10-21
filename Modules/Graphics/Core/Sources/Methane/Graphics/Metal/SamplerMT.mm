@@ -94,7 +94,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
 }
 #endif
 
-Ptr<Sampler> Sampler::Create(const Context& context, const Sampler::Settings& settings)
+Ptr<Sampler> Sampler::Create(const IContext& context, const Sampler::Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<SamplerMT>(dynamic_cast<const ContextBase&>(context), settings);

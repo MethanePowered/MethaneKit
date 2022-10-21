@@ -98,14 +98,14 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context)
     return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
@@ -185,7 +185,7 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue& target_
         GenerateMipLevels(transfer_command_list);
     }
 
-    GetContextBase().RequestDeferredAction(Context::DeferredAction::UploadResources);
+    GetContextBase().RequestDeferredAction(IContext::DeferredAction::UploadResources);
 }
 
 void TextureMT::UpdateFrameBuffer()
@@ -211,7 +211,7 @@ void TextureMT::GenerateMipLevels(TransferCommandListMT& transfer_command_list)
 const RenderContextMT& TextureMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), Context::Type::Render, "incompatible context type");
+    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), ContextType::Render, "incompatible context type");
     return static_cast<const RenderContextMT&>(GetContextMT());
 }
 

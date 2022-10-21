@@ -34,7 +34,7 @@ Metal implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
+Ptr<CommandQueue> CommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandQueueMT>(dynamic_cast<const ContextBase&>(context), command_lists_type);
@@ -75,7 +75,7 @@ const RenderContextMT& CommandQueueMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
     const ContextBase& context = GetContextBase();
-    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Context::Type::Render, "incompatible context type");
+    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), ContextType::Render, "incompatible context type");
     return static_cast<const RenderContextMT&>(context);
 }
 
