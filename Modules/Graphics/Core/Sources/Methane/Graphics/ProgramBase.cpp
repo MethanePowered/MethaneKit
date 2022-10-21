@@ -191,7 +191,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
         m_binding_by_argument.try_emplace( Argument{ Shader::Type::All, argument_name }, argument_binding_ptr);
     }
 
-    if (m_context.GetType() != Context::Type::Render)
+    if (m_context.GetType() != IContext::Type::Render)
         return;
 
     // Create frame-constant argument bindings only when program is created in render context

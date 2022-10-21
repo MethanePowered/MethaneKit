@@ -105,7 +105,7 @@ public:
     
     virtual ~MeshBuffers() = default;
 
-    [[nodiscard]] const Context& GetContext() const noexcept { return m_context; }
+    [[nodiscard]] const IContext& GetContext() const noexcept { return m_context; }
 
     Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
     {
@@ -313,7 +313,7 @@ protected:
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
-    const Context&          m_context;
+    const IContext&         m_context;
     const std::string       m_mesh_name;
     const Mesh::Subsets     m_mesh_subsets;
     Ptr<BufferSet>          m_vertex_ptr;

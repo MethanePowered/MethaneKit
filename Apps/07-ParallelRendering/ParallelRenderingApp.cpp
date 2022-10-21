@@ -257,7 +257,7 @@ void ParallelRenderingApp::Init()
     // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
     m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();   
 
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::IContext::WaitFor::RenderComplete);
 }
 
 ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters() const
@@ -495,7 +495,7 @@ void ParallelRenderingApp::SetSettings(const Settings& settings)
     GetRenderContext().Reset();
 }
 
-void ParallelRenderingApp::OnContextReleased(gfx::Context& context)
+void ParallelRenderingApp::OnContextReleased(gfx::IContext& context)
 {
     META_FUNCTION_TASK();
     m_cube_array_buffers_ptr.reset();

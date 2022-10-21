@@ -36,7 +36,7 @@ Methane resource interface: base class of all GPU resources.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct IContext;
 struct CommandQueue;
 struct Resource;
 class DescriptorHeapDX;
@@ -111,7 +111,7 @@ struct Resource
     [[nodiscard]] virtual State                     GetState() const noexcept = 0;
     [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
     [[nodiscard]] virtual const DescriptorByViewId& GetDescriptorByViewId() const noexcept = 0;
-    [[nodiscard]] virtual const Context&            GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&            GetContext() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
 };
 

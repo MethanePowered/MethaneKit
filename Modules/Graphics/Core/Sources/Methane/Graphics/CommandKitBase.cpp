@@ -38,7 +38,7 @@ namespace Methane::Graphics
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
-Ptr<CommandKit> CommandKit::Create(const Context& context, CommandList::Type cmd_list_type)
+Ptr<CommandKit> CommandKit::Create(const IContext& context, CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(context, cmd_list_type);
@@ -50,7 +50,7 @@ Ptr<CommandKit> CommandKit::Create(CommandQueue& cmd_queue)
     return std::make_shared<CommandKitBase>(cmd_queue);
 }
 
-CommandKitBase::CommandKitBase(const Context& context, CommandList::Type cmd_list_type)
+CommandKitBase::CommandKitBase(const IContext& context, CommandList::Type cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
 {

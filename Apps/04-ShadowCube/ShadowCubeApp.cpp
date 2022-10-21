@@ -427,7 +427,7 @@ void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const Shadow
     cmd_list.Commit();
 }
 
-void ShadowCubeApp::OnContextReleased(gfx::Context& context)
+void ShadowCubeApp::OnContextReleased(gfx::IContext& context)
 {
     m_final_pass.Release();
     m_shadow_pass.Release();

@@ -53,7 +53,7 @@ public:
     [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
     [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }
     [[nodiscard]] Usage                     GetUsage() const noexcept final            { return m_usage_mask; }
-    [[nodiscard]] const Context&            GetContext() const noexcept final;
+    [[nodiscard]] const IContext&           GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),

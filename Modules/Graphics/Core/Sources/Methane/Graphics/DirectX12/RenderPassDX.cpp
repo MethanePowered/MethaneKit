@@ -204,7 +204,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
                    { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & Context::Options::EmulatedRenderPassOnWindows))
+    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & IContext::Options::EmulatedRenderPassOnWindows))
     {
         m_is_native_render_pass_available = false;
     }

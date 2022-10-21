@@ -45,7 +45,7 @@ public:
     RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContextMT() override;
 
-    // Context interface
+    // IContext interface
     void  WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface

@@ -284,14 +284,14 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& render_conte
     return std::make_shared<DepthStencilTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<Texture> Texture::CreateImage(const Context& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateImage(const IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<ImageTextureDX>(dynamic_cast<const ContextBase&>(render_context), texture_settings, ImageTokenDX());
 }
 
-Ptr<Texture> Texture::CreateCube(const Context& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<Texture> Texture::CreateCube(const IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
@@ -508,7 +508,7 @@ void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue& ta
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
-    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
+    GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
 }
 
 void ImageTextureDX::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, DirectX::ScratchImage& scratch_image) const

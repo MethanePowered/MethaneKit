@@ -240,7 +240,7 @@ bool TexturedCubeApp::Render()
     return true;
 }
 
-void TexturedCubeApp::OnContextReleased(gfx::Context& context)
+void TexturedCubeApp::OnContextReleased(gfx::IContext& context)
 {
     m_texture_sampler_ptr.reset();
     m_cube_texture_ptr.reset();

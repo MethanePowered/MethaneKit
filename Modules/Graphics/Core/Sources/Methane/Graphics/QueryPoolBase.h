@@ -83,7 +83,7 @@ public:
     [[nodiscard]] Data::Size      GetPoolSize() const noexcept final           { return m_pool_size; }
     [[nodiscard]] Data::Size      GetQuerySize() const noexcept final          { return m_query_size; }
     [[nodiscard]] IQuery::Count   GetSlotsCountPerQuery() const noexcept final { return m_slots_count_per_query; }
-    [[nodiscard]] const Context&  GetContext() const noexcept final            { return m_context; }
+    [[nodiscard]] const IContext&  GetContext() const noexcept final            { return m_context; }
     [[nodiscard]] CommandQueue&   GetCommandQueue() noexcept final;
 
 protected:
@@ -109,7 +109,7 @@ private:
     RangeSet            m_free_indices;
     RangeSet            m_free_data_ranges;
     CommandQueueBase&   m_command_queue;
-    const Context&      m_context;
+    const IContext&     m_context;
 };
 
 class TimestampQueryPoolBase

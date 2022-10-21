@@ -146,7 +146,7 @@ bool ProgramBindingsDX::ArgumentBindingDX::SetResourceViews(const Resource::View
         resource_index++;
     }
 
-    GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+    GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
     return true;
 }
 
@@ -235,7 +235,7 @@ void ProgramBindingsDX::Initialize()
 
     if (descriptor_manager.IsDeferredHeapAllocation())
     {
-        context.RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+        context.RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
     }
     else
     {
@@ -310,7 +310,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
 {
     META_FUNCTION_TASK();
     const auto& program = static_cast<const ProgramDX&>(GetProgram());
-    const uint32_t frames_count = program.GetContext().GetType() == Context::Type::Render
+    const uint32_t frames_count = program.GetContext().GetType() == IContext::Type::Render
                                 ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
                                 : 1U;
 

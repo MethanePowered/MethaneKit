@@ -100,7 +100,7 @@ Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(Resource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
-const Context& ResourceBase::GetContext() const noexcept
+const IContext& ResourceBase::GetContext() const noexcept
 {
     META_FUNCTION_TASK();
     return m_context;

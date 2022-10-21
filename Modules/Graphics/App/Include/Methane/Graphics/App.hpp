@@ -145,7 +145,7 @@ public:
     bool  SetAnimationsEnabled(bool animations_enabled) override                     { return SetBaseAnimationsEnabled(animations_enabled); }
 
 protected:
-    void OnContextReleased(Context& context) override
+    void OnContextReleased(IContext& context) override
     {
         META_FUNCTION_TASK();
         AppBase::OnContextReleased(context);

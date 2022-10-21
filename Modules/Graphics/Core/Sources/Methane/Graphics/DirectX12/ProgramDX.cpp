@@ -119,7 +119,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     descriptor_offset += bind_settings.resource_count;
 }
 
-Ptr<Program> Program::Create(const Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramDX>(dynamic_cast<const ContextBase&>(context), settings);

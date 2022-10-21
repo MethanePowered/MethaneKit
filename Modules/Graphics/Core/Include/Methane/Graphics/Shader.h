@@ -38,7 +38,7 @@ struct Provider;
 namespace Methane::Graphics
 {
 
-struct Context;
+struct IContext;
 
 struct Shader
 {
@@ -79,9 +79,9 @@ struct Shader
     };
 
     // Create Shader instance
-    [[nodiscard]] static Ptr<Shader> Create(Type type, const Context& context, const Settings& settings);
-    [[nodiscard]] static Ptr<Shader> CreateVertex(const Context& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
-    [[nodiscard]] static Ptr<Shader> CreatePixel(const Context& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
+    [[nodiscard]] static Ptr<Shader> Create(Type type, const IContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Shader> CreateVertex(const IContext& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
+    [[nodiscard]] static Ptr<Shader> CreatePixel(const IContext& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
     [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter = ", ") noexcept;

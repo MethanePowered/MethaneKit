@@ -107,7 +107,7 @@ QueryPoolBase::QueryPoolBase(CommandQueueBase& command_queue, Type type,
     , m_free_indices({ { 0U, max_query_count * slots_count_per_query } })
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
-    , m_context(dynamic_cast<const Context&>(command_queue.GetContext()))
+    , m_context(dynamic_cast<const IContext&>(command_queue.GetContext()))
 {
     META_FUNCTION_TASK();
 }

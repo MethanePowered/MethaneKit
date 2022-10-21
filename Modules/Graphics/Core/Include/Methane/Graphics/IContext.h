@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Context.h
+FILE: Methane/Graphics/IContext.h
 Methane base context interface: wraps graphics device used for GPU interaction.
 
 ******************************************************************************/
@@ -42,56 +42,63 @@ class Executor;
 namespace Methane::Graphics
 {
 
+enum class ContextType
+{
+    Render,
+};
+
+enum class ContextWaitFor
+{
+    RenderComplete,
+    FramePresented,
+    ResourcesUploaded
+};
+
+enum class ContextDeferredAction : uint32_t
+{
+    None = 0U,
+    UploadResources,
+    CompleteInitialization
+};
+
+enum class ContextOptions : uint32_t
+{
+    None                             = 0U,
+    TransferWithDirectQueueOnWindows = 1U << 0U, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+    EmulatedRenderPassOnWindows      = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+};
+
+class ContextIncompatibleException
+    : public std::runtime_error
+{
+public:
+    using runtime_error::runtime_error;
+};
+
 struct IDevice;
 struct CommandKit;
-struct Context;
+struct IContext;
 
 struct IContextCallback
 {
-    virtual void OnContextReleased(Context& context) = 0;
-    virtual void OnContextCompletingInitialization(Context& context) = 0;
-    virtual void OnContextInitialized(Context& context) = 0;
+    virtual void OnContextReleased(IContext& context) = 0;
+    virtual void OnContextCompletingInitialization(IContext& context) = 0;
+    virtual void OnContextInitialized(IContext& context) = 0;
 
     virtual ~IContextCallback() = default;
 };
 
-struct Context
+struct IContext
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IContextCallback> // NOSONAR
 {
-    enum class Type
-    {
-        Render,
-    };
+    using Type = ContextType;
+    using WaitFor = ContextWaitFor;
+    using DeferredAction = ContextDeferredAction;
+    using Options = ContextOptions;
+    using IncompatibleException = ContextIncompatibleException;
 
-    enum class WaitFor
-    {
-        RenderComplete,
-        FramePresented,
-        ResourcesUploaded
-    };
-
-    enum class DeferredAction : uint32_t
-    {
-        None = 0U,
-        UploadResources,
-        CompleteInitialization
-    };
-
-    enum class Options : uint32_t
-    {
-        None                             = 0U,
-        TransferWithDirectQueueOnWindows = 1U << 0U, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-        EmulatedRenderPassOnWindows      = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
-    };
-
-    class IncompatibleException: public std::runtime_error
-    {
-    public:
-        using runtime_error::runtime_error;
-    };
-
-    // Context interface
+    // IContext interface
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
     [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;

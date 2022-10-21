@@ -39,7 +39,7 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program> Program::Create(const Context& context, const Settings& settings)
+Ptr<Program> Program::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramVK>(dynamic_cast<const ContextBase&>(context), settings);
@@ -156,7 +156,7 @@ const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index fr
         return m_vk_frame_constant_descriptor_sets[frame_index];
     }
 
-    const Data::Size frames_count = GetContext().GetType() == Context::Type::Render
+    const Data::Size frames_count = GetContext().GetType() == IContext::Type::Render
                                   ? dynamic_cast<const RenderContextBase&>(GetContext()).GetSettings().frame_buffers_count
                                   : 1U;
     m_vk_frame_constant_descriptor_sets.resize(frames_count);

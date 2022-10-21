@@ -28,7 +28,7 @@ DirectX 12 specialization of the resource interface.
 #include "ContextDX.h"
 #include "DescriptorManagerDX.h"
 
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/IContext.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Instrumentation.h>

@@ -523,7 +523,7 @@ void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
     UpdateParametersText();
 }
 
-void TypographyApp::OnContextReleased(gfx::Context& context)
+void TypographyApp::OnContextReleased(gfx::IContext& context)
 {
     gui::Font::Library::Get().Clear();
 

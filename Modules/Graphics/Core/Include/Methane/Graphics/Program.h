@@ -38,7 +38,7 @@ pipeline via state object and used to create resource binding objects.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct IContext;
 struct CommandList;
 
 struct Program : virtual IObject // NOSONAR
@@ -139,7 +139,7 @@ struct Program : virtual IObject // NOSONAR
     };
 
     // Create Program instance
-    [[nodiscard]] static Ptr<Program> Create(const Context& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Program> Create(const IContext& context, const Settings& settings);
 
     // Program interface
     [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;

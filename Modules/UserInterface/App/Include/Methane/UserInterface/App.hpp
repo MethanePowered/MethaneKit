@@ -149,7 +149,7 @@ protected:
     }
 
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override
+    void OnContextReleased(gfx::IContext& context) override
     {
         META_FUNCTION_TASK();
         AppBase::ReleaseUI();

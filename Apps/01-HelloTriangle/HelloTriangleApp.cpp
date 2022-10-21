@@ -109,7 +109,7 @@ public:
         return true;
     }
 
-    void OnContextReleased(Context& context) override
+    void OnContextReleased(Graphics::IContext& context) override
     {
         m_render_state_ptr.reset();
 

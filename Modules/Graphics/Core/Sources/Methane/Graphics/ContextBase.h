@@ -26,7 +26,7 @@ Base implementation of the context interface.
 #include "ObjectBase.h"
 
 #include <Methane/Graphics/IFence.h>
-#include <Methane/Graphics/Context.h>
+#include <Methane/Graphics/IContext.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
@@ -54,7 +54,7 @@ struct DescriptorManager;
 
 class ContextBase
     : public ObjectBase
-    , public virtual Context // NOSONAR
+    , public virtual IContext // NOSONAR
     , public IContextNT
     , public Data::Emitter<IContextCallback>
 {
@@ -63,7 +63,7 @@ public:
                 tf::Executor& parallel_executor, Type type);
     ~ContextBase() override;
 
-    // Context interface
+    // IContext interface
     Type              GetType() const noexcept override                       { return m_type; }
     tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
     IObjectRegistry&  GetObjectRegistry() noexcept override                   { return m_objects_cache; }

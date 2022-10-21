@@ -216,9 +216,9 @@ protected:
     bool PackCharsToAtlas(float pixels_reserve_multiplier);
 
     // IContextCallback interface
-    void OnContextReleased(gfx::Context& context) override;
-    void OnContextCompletingInitialization(gfx::Context& context) override;
-    void OnContextInitialized(gfx::Context&) override { /* callback not handled in this class */}
+    void OnContextReleased(gfx::IContext& context) override;
+    void OnContextCompletingInitialization(gfx::IContext& context) override;
+    void OnContextInitialized(gfx::IContext&) override { /* callback not handled in this class */}
 
 private:
     struct AtlasTexture

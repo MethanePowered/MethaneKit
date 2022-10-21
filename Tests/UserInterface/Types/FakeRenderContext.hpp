@@ -71,13 +71,13 @@ class FakeCommandQueue
     , public std::enable_shared_from_this<FakeCommandQueue>
 {
 public:
-    FakeCommandQueue(const Context& context, CommandList::Type type)
+    FakeCommandQueue(const IContext& context, CommandList::Type type)
         : m_context(context)
         , m_type(type)
     { }
 
     // CommandQueue interface
-    [[nodiscard]] const Context&    GetContext() const noexcept override          { return m_context; }
+    [[nodiscard]] const IContext&   GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
     [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
     void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
@@ -88,7 +88,7 @@ public:
     [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 
 private:
-    const Context&    m_context;
+    const IContext&   m_context;
     CommandList::Type m_type;
 };
 
@@ -163,7 +163,7 @@ public:
     bool SetFrameBuffersCount(uint32_t frame_buffers_count) override              { m_settings.frame_buffers_count = frame_buffers_count; return true; }
     bool SetFullScreen(bool is_full_screen) override                              { m_settings.is_full_screen = is_full_screen; return true; }
 
-    // Context interface
+    // IContext interface
     [[nodiscard]] Type GetType() const noexcept override                                { return Type::Render; }
     [[nodiscard]] Options GetOptions() const noexcept override                          { return Options::None; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override           { return m_executor; }

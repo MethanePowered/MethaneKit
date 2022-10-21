@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/UserInterface/Context.h
+FILE: Methane/UserInterface/IContext.h
 Methane user interface context used by all widgets for rendering.
 
 ******************************************************************************/

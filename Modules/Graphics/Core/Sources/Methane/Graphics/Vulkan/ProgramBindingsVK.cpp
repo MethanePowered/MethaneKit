@@ -144,7 +144,7 @@ bool ProgramBindingsVK::ArgumentBindingVK::SetResourceViews(const Resource::View
 
     // Descriptions are updated on GPU during context initialization complete
 #ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
-    GetContext().RequestDeferredAction(Context::DeferredAction::CompleteInitialization);
+    GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
 #else
     UpdateDescriptorSetsOnGpu();
 #endif

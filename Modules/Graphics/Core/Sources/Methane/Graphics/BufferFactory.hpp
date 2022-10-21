@@ -38,7 +38,7 @@ inline Buffer::StorageMode GetBufferStorageMode(bool is_volatile_data) noexcept
 
 template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
-CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
     const Buffer::Settings settings{
         Buffer::Type::Vertex,
@@ -53,7 +53,7 @@ CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, b
 
 template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
-CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
     const Buffer::Settings settings{
         Buffer::Type::Index,
@@ -68,7 +68,7 @@ CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, b
 
 template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
-CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
     using namespace magic_enum::bitwise_operators;
     const Resource::Usage  usage_mask = Resource::Usage::ShaderRead
@@ -86,7 +86,7 @@ CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, 
 
 template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
-CreateReadBackBuffer(const Context& context, Data::Size size, ExtraConstructorArgTypes... extra_construct_args)
+CreateReadBackBuffer(const IContext& context, Data::Size size, ExtraConstructorArgTypes... extra_construct_args)
 {
     META_FUNCTION_TASK();
     const Buffer::Settings settings{

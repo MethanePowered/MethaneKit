@@ -40,7 +40,7 @@ public:
     RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
     ~RenderContextDX() override;
 
-    // Context interface
+    // IContext interface
     void WaitForGpu(WaitFor wait_for) override;
 
     // RenderContext interface

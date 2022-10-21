@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Tests/UserInterface/Types/ContextTest.cpp
-Unit-tests of the User Interface Context
+Unit-tests of the User Interface IContext
 
 ******************************************************************************/
 

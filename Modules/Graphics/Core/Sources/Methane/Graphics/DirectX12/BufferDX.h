@@ -128,7 +128,7 @@ public:
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
         const TransferCommandListDX& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
-        GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
+        GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
     }
 
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override

@@ -107,9 +107,9 @@ protected:
     Platform::AppView GetView() const override { return m_context_ptr->GetAppView(); }
 
     // IContextCallback implementation
-    void OnContextReleased(Context&) override;
-    void OnContextCompletingInitialization(Context&) override { /* no event handling logic is needed here */ }
-    void OnContextInitialized(Context&) override;
+    void OnContextReleased(IContext&) override;
+    void OnContextCompletingInitialization(IContext&) override { /* no event handling logic is needed here */ }
+    void OnContextInitialized(IContext&) override;
 
     const RenderContext::Settings&  GetInitialContextSettings() const noexcept    { return m_initial_context_settings; }
     RenderPattern::Settings&        GetScreenRenderPatternSettings() noexcept     { return m_screen_pass_pattern_settings; }

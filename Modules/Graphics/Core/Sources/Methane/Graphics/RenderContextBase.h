@@ -40,7 +40,7 @@ public:
     RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
                       tf::Executor& parallel_executor, const Settings& settings);
 
-    // Context interface
+    // IContext interface
     [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
     void WaitForGpu(WaitFor wait_for) override;
 

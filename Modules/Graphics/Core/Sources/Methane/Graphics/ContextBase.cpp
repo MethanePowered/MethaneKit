@@ -41,7 +41,7 @@ static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()
 } };
 
 #ifdef METHANE_LOGGING_ENABLED
-static const std::array<std::string, magic_enum::enum_count<Context::WaitFor>()> g_wait_for_names = {{
+static const std::array<std::string, magic_enum::enum_count<IContext::WaitFor>()> g_wait_for_names = {{
     "Render Complete",
     "Frame Present",
     "Resources Upload"

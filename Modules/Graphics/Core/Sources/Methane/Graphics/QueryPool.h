@@ -31,7 +31,7 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 struct CommandList;
-struct Context;
+struct IContext;
 struct IQueryPool;
 struct ITimestampQuery;
 
@@ -76,7 +76,7 @@ struct IQueryPool
     [[nodiscard]] virtual Data::Size           GetQuerySize() const noexcept = 0;
     [[nodiscard]] virtual IQuery::Count        GetSlotsCountPerQuery() const = 0;
     [[nodiscard]] virtual CommandQueue&        GetCommandQueue() noexcept = 0;
-    [[nodiscard]] virtual const Context&       GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&       GetContext() const noexcept = 0;
 
     virtual ~IQueryPool() = default;
 };

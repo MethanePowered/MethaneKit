@@ -64,7 +64,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override;
+    void OnContextReleased(gfx::IContext& context) override;
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);

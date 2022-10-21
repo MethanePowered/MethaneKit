@@ -203,7 +203,7 @@ void CubeMapArrayApp::Init()
     // Encode and execute texture labels rendering commands when all resources are uploaded and ready on GPU
     cube_texture_labeler.Render();
 
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(gfx::IContext::WaitFor::RenderComplete);
 }
 
 bool CubeMapArrayApp::Animate(double, double delta_seconds)
@@ -282,7 +282,7 @@ bool CubeMapArrayApp::Render()
     return true;
 }
 
-void CubeMapArrayApp::OnContextReleased(gfx::Context& context)
+void CubeMapArrayApp::OnContextReleased(gfx::IContext& context)
 {
     m_sky_box_ptr.reset();
     m_cube_buffers_ptr.reset();

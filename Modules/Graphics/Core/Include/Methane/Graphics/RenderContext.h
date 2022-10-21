@@ -24,7 +24,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #pragma once
 
-#include "Context.h"
+#include "IContext.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Rect.hpp>
@@ -41,7 +41,7 @@ namespace Methane::Graphics
 class FpsCounter;
 struct RenderCommandList;
 
-struct RenderContext : virtual Context // NOSONAR
+struct RenderContext : virtual IContext // NOSONAR
 {
     struct Settings
     {

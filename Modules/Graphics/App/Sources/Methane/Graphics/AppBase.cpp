@@ -118,10 +118,10 @@ AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
 
 #ifdef _WIN32
     add_flag("-e,--emulated-render-pass",
-             [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= Context::Options::EmulatedRenderPassOnWindows; },
+             [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= IContext::Options::EmulatedRenderPassOnWindows; },
              "Render pass emulation with traditional DX API");
     add_flag("-q,--transfer-with-direct-queue",
-             [this](int64_t is_direct) { if (is_direct) m_initial_context_settings.options_mask |= Context::Options::TransferWithDirectQueueOnWindows; },
+             [this](int64_t is_direct) { if (is_direct) m_initial_context_settings.options_mask |= IContext::Options::TransferWithDirectQueueOnWindows; },
              "Transfer command lists and queues use DIRECT instead of COPY type in DX API");
 #endif
 }
@@ -302,7 +302,7 @@ bool AppBase::Render()
     META_LOG("\n========================= FRAME {} RENDERING =========================", m_context_ptr->GetFrameIndex());
 
     // Wait for previous frame rendering is completed and switch to next frame
-    m_context_ptr->WaitForGpu(Context::WaitFor::FramePresented);
+    m_context_ptr->WaitForGpu(IContext::WaitFor::FramePresented);
     return true;
 }
 
@@ -434,11 +434,11 @@ void AppBase::WaitForRenderComplete() const
     META_FUNCTION_TASK();
     if (m_context_ptr)
     {
-        m_context_ptr->WaitForGpu(Context::WaitFor::RenderComplete);
+        m_context_ptr->WaitForGpu(IContext::WaitFor::RenderComplete);
     }
 }
 
-void AppBase::OnContextReleased(Context&)
+void AppBase::OnContextReleased(IContext&)
 {
     META_FUNCTION_TASK();
 
@@ -452,7 +452,7 @@ void AppBase::OnContextReleased(Context&)
     Deinitialize();
 }
 
-void AppBase::OnContextInitialized(Context&)
+void AppBase::OnContextInitialized(IContext&)
 {
     META_FUNCTION_TASK();
     Init();

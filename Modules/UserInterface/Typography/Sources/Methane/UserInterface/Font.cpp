@@ -666,7 +666,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(const gfx::RenderContext& render_con
     atlas_texture_ptr->SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {
-        render_context.RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
+        render_context.RequestDeferredAction(gfx::IContext::DeferredAction::CompleteInitialization);
     }
     else
     {
@@ -722,7 +722,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
             // Texture will be updated on GPU context completing initialization,
             // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
             atlas_texture.is_update_required = true;
-            context_ptr->RequestDeferredAction(gfx::Context::DeferredAction::CompleteInitialization);
+            context_ptr->RequestDeferredAction(gfx::IContext::DeferredAction::CompleteInitialization);
         }
         else
         {
@@ -774,17 +774,17 @@ void Font::ClearAtlasTextures()
     m_atlas_textures.clear();
 }
 
-void Font::OnContextReleased(gfx::Context& context)
+void Font::OnContextReleased(gfx::IContext& context)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(context.GetType(), gfx::Context::Type::Render);
+    META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
     RemoveAtlasTexture(dynamic_cast<gfx::RenderContext&>(context));
 }
 
-void Font::OnContextCompletingInitialization(gfx::Context& context)
+void Font::OnContextCompletingInitialization(gfx::IContext& context)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(context.GetType(), gfx::Context::Type::Render);
+    META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
     auto& render_context = dynamic_cast<gfx::RenderContext&>(context);
     if (const auto atlas_texture_it = m_atlas_textures.find(&render_context);
         atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)

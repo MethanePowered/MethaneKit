@@ -78,7 +78,7 @@ public:
 
 private:
     // IContextCallback overrides
-    void OnContextReleased(gfx::Context& context) override;
+    void OnContextReleased(gfx::IContext& context) override;
 
     // IFontLibraryCallback implementation
     void OnFontAdded(gui::Font& font) override;

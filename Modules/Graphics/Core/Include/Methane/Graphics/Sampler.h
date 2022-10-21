@@ -34,7 +34,7 @@ Methane sampler interface: GPU resource for texture sampling.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct IContext;
 
 struct Sampler : virtual Resource // NOSONAR
 {
@@ -115,7 +115,7 @@ struct Sampler : virtual Resource // NOSONAR
     };
 
     // Create Sampler instance
-    [[nodiscard]] static Ptr<Sampler> Create(const Context& context, const Settings& state_settings);
+    [[nodiscard]] static Ptr<Sampler> Create(const IContext& context, const Settings& state_settings);
 
     // Sampler interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

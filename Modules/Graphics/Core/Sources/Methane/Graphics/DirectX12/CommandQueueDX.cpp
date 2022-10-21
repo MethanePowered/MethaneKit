@@ -41,7 +41,7 @@ DirectX 12 implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type command_lists_type)
+Ptr<CommandQueue> CommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
     auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
@@ -52,7 +52,7 @@ Ptr<CommandQueue> CommandQueue::Create(const Context& context, CommandList::Type
     return command_queue_ptr;
 }
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, Context::Options options)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, IContext::Options options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -60,7 +60,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type comman
     switch(command_list_type)
     {
     case CommandList::Type::Transfer:
-        return static_cast<bool>(options & Context::Options::TransferWithDirectQueueOnWindows)
+        return static_cast<bool>(options & IContext::Options::TransferWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 

@@ -53,7 +53,7 @@ public:
     bool SetName(const std::string& name) override;
 
     // CommandQueue overrides
-    [[nodiscard]] const Context& GetContext() const noexcept final;
+    [[nodiscard]] const IContext& GetContext() const noexcept final;
     CommandList::Type GetCommandListType() const noexcept final { return m_command_lists_type; }
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 

@@ -34,7 +34,7 @@ and synchronization within a stored command queue.
 namespace Methane::Graphics
 {
 
-struct Context;
+struct IContext;
 struct CommandQueue;
 struct IFence;
 
@@ -50,11 +50,11 @@ struct CommandKit : virtual IObject // NOSONAR
     };
 
     // Create CommandKit instance
-    [[nodiscard]] static Ptr<CommandKit> Create(const Context& context, CommandList::Type command_lists_type);
+    [[nodiscard]] static Ptr<CommandKit> Create(const IContext& context, CommandList::Type command_lists_type);
     [[nodiscard]] static Ptr<CommandKit> Create(CommandQueue& cmd_queue);
 
     // CommandKit interface
-    [[nodiscard]] virtual const Context&    GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&    GetContext() const noexcept = 0;
     [[nodiscard]] virtual CommandQueue&     GetQueue() const = 0;
     [[nodiscard]] virtual CommandList::Type GetListType() const noexcept = 0;
     [[nodiscard]] virtual bool              HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;

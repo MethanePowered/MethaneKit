@@ -50,10 +50,10 @@ bool CommandQueueBase::SetName(const std::string& name)
     return true;
 }
 
-const Context& CommandQueueBase::GetContext() const noexcept
+const IContext& CommandQueueBase::GetContext() const noexcept
 {
     META_FUNCTION_TASK();
-    return dynamic_cast<const Context&>(m_context);
+    return dynamic_cast<const IContext&>(m_context);
 }
 
 void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)

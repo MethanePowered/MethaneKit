@@ -32,11 +32,11 @@ DirectX 12 implementation of the transfer command list interface.
 namespace Methane::Graphics
 {
 
-static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Context::Options options)
+static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(IContext::Options options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(options & Context::Options::TransferWithDirectQueueOnWindows)
+    return static_cast<bool>(options & IContext::Options::TransferWithDirectQueueOnWindows)
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/UserInterface/Context.cpp
+FILE: Methane/UserInterface/IContext.cpp
 Methane user interface context used by all widgets for rendering.
 
 ******************************************************************************/

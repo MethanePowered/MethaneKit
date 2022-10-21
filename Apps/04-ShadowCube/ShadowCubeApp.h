@@ -80,7 +80,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override;
+    void OnContextReleased(gfx::IContext& context) override;
 
 private:
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;

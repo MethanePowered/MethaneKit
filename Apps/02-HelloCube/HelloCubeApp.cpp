@@ -294,7 +294,7 @@ public:
         return true;
     }
 
-    void OnContextReleased(Context& context) override
+    void OnContextReleased(Graphics::IContext& context) override
     {
 #ifdef UNIFORMS_BUFFER_EANBLED
         m_vertex_buffer_set_ptr.reset();

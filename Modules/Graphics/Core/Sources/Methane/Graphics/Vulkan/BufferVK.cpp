@@ -83,19 +83,19 @@ static Resource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_ty
     }
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<BufferVK>(context, size, stride, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
@@ -183,7 +183,7 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_c
     TransferCommandListVK& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
     CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
-    GetContext().RequestDeferredAction(Context::DeferredAction::UploadResources);
+    GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
 }
 
 bool BufferVK::SetName(const std::string& name)

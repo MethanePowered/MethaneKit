@@ -78,10 +78,10 @@ static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D1
     return gpu_frequency;
 }
 
-static Data::Size GetMaxTimestampsCount(const Context& context, uint32_t max_timestamps_per_frame)
+static Data::Size GetMaxTimestampsCount(const IContext& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
-    const uint32_t frames_count = context.GetType() == Context::Type::Render
+    const uint32_t frames_count = context.GetType() == IContext::Type::Render
                                   ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
                                   : 1U;
     return frames_count * max_timestamps_per_frame;

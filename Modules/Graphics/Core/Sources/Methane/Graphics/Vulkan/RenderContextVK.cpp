@@ -229,7 +229,7 @@ vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<
                                         { return format.format == required_color_format &&
                                                  format.colorSpace == s_required_color_space; });
     if (format_it == available_formats.end())
-        throw Context::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
+        throw IContext::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
                                                          magic_enum::enum_name(GetSettings().color_format), magic_enum::enum_name(s_required_color_space)));
 
     return *format_it;
@@ -263,7 +263,7 @@ vk::PresentModeKHR RenderContextVK::ChooseSwapPresentMode(const std::vector<vk::
         {
             ss << " " << magic_enum::enum_name(required_present_mode);
         }
-        throw Context::IncompatibleException(fmt::format("None of required present modes ({}) is available for window surface.", ss.str()));
+        throw IContext::IncompatibleException(fmt::format("None of required present modes ({}) is available for window surface.", ss.str()));
     }
 
     return *present_mode_opt;
@@ -289,7 +289,7 @@ void RenderContextVK::InitializeNativeSwapchain()
     if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
         !GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
-        throw Context::IncompatibleException("Device does not support presentation to the window surface.");
+        throw IContext::IncompatibleException("Device does not support presentation to the window surface.");
     }
 
     const DeviceVK::SwapChainSupport swap_chain_support  = GetDeviceVK().GetSwapChainSupportForSurface(GetNativeSurface());

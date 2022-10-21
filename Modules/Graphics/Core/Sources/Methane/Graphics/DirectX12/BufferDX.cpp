@@ -50,25 +50,25 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
     return vertex_buffer_views;
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const Context& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, stride);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const Context& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, format);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const Context& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateReadBackBuffer(const Context& context, Data::Size size)
+Ptr<Buffer> Buffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateReadBackBuffer<ReadBackBufferDX>(context, size);
