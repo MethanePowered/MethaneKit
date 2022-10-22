@@ -36,7 +36,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 namespace Methane::Graphics
 {
 
-struct RenderContext;
+struct IRenderContext;
 
 struct RenderPattern : virtual IObject // NOSONAR
 {
@@ -165,11 +165,11 @@ struct RenderPattern : virtual IObject // NOSONAR
     };
 
     // Create RenderPattern instance
-    [[nodiscard]] static Ptr<RenderPattern> Create(RenderContext& render_context, const Settings& settings);
+    [[nodiscard]] static Ptr<RenderPattern> Create(IRenderContext& render_context, const Settings& settings);
 
     // RenderPattern interface
-    [[nodiscard]] virtual const RenderContext& GetRenderContext() const noexcept = 0;
-    [[nodiscard]] virtual RenderContext&       GetRenderContext() noexcept = 0;
+    [[nodiscard]] virtual const IRenderContext& GetRenderContext() const noexcept = 0;
+    [[nodiscard]] virtual IRenderContext&       GetRenderContext() noexcept = 0;
     [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
     [[nodiscard]] virtual Data::Size           GetAttachmentCount() const noexcept = 0;
     [[nodiscard]] virtual AttachmentFormats    GetAttachmentFormats() const noexcept = 0;

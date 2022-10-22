@@ -37,13 +37,14 @@ class RenderContextDX final // NOSONAR - manual destructor is required, inherita
     : public ContextDX<RenderContextBase>
 {
 public:
-    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
+    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor,
+                    const RenderContextSettings& settings);
     ~RenderContextDX() override;
 
     // IContext interface
     void WaitForGpu(WaitFor wait_for) override;
 
-    // RenderContext interface
+    // IRenderContext interface
     bool ReadyToRender() const override { return true; }
     void Resize(const FrameSize& frame_size) override;
     void Present() override;

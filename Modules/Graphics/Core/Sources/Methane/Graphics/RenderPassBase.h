@@ -43,11 +43,11 @@ public:
     RenderPatternBase(RenderContextBase& render_context, const Settings& settings);
 
     // RenderPattern overrides
-    [[nodiscard]] const RenderContext& GetRenderContext() const noexcept final;
-    [[nodiscard]] RenderContext&       GetRenderContext() noexcept final;
-    [[nodiscard]] const Settings&      GetSettings() const noexcept final { return m_settings; }
-    [[nodiscard]] Data::Size           GetAttachmentCount() const noexcept final;
-    [[nodiscard]] AttachmentFormats    GetAttachmentFormats() const noexcept final;
+    [[nodiscard]] const IRenderContext& GetRenderContext() const noexcept final;
+    [[nodiscard]] IRenderContext&       GetRenderContext() noexcept final;
+    [[nodiscard]] const Settings&       GetSettings() const noexcept final { return m_settings; }
+    [[nodiscard]] Data::Size            GetAttachmentCount() const noexcept final;
+    [[nodiscard]] AttachmentFormats     GetAttachmentFormats() const noexcept final;
 
     [[nodiscard]] const RenderContextBase& GetRenderContextBase() const noexcept { return *m_render_context_ptr; }
     [[nodiscard]] RenderContextBase&       GetRenderContextBase() noexcept       { return *m_render_context_ptr; }

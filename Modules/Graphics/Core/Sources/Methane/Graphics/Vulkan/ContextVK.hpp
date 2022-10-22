@@ -28,7 +28,7 @@ Vulkan template implementation of the base context interface.
 #include "CommandQueueVK.h"
 #include "DescriptorManagerVK.h"
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Instrumentation.h>
 

@@ -34,7 +34,7 @@ namespace Methane::Graphics
 {
 
 struct CommandQueue;
-struct RenderContext;
+struct IRenderContext;
 struct RenderCommandList;
 struct RenderPattern;
 struct RenderState;
@@ -80,7 +80,7 @@ public:
 
 protected:
     RenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }
-    const RenderContext& GetRenderContext() const noexcept;
+    const IRenderContext& GetRenderContext() const noexcept;
 
 private:
     void UpdateConstantsBuffer() const;

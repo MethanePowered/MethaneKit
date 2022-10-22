@@ -171,13 +171,13 @@ RenderPatternBase::RenderPatternBase(RenderContextBase& render_context, const Se
     META_FUNCTION_TASK();
 }
 
-const RenderContext& RenderPatternBase::GetRenderContext() const noexcept
+const IRenderContext& RenderPatternBase::GetRenderContext() const noexcept
 {
     META_FUNCTION_TASK();
     return *m_render_context_ptr;
 }
 
-RenderContext& RenderPatternBase::GetRenderContext() noexcept
+IRenderContext& RenderPatternBase::GetRenderContext() noexcept
 {
     META_FUNCTION_TASK();
     return *m_render_context_ptr;

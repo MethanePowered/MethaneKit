@@ -26,7 +26,7 @@ Methane graphics interface: graphics texture.
 #include "Resource.h"
 
 #include <Methane/Graphics/Volume.hpp>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
@@ -83,9 +83,9 @@ struct Texture : virtual Resource // NOSONAR
     using FrameBufferIndex = uint32_t;
 
     // Create Texture instance
-    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const RenderContext& context, const Settings& settings);
-    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const RenderContext& context, FrameBufferIndex frame_buffer_index);
-    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const RenderContext& context);
+    [[nodiscard]] static Ptr<Texture> CreateRenderTarget(const IRenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<Texture> CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_buffer_index);
+    [[nodiscard]] static Ptr<Texture> CreateDepthStencilBuffer(const IRenderContext& context);
     [[nodiscard]] static Ptr<Texture> CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
     [[nodiscard]] static Ptr<Texture> CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
 

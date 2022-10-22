@@ -23,7 +23,7 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/UserInterface/Font.h>
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Data/RectBinPack.hpp>
@@ -621,7 +621,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
     return true;
 }
 
-const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::RenderContext& context)
+const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::IRenderContext& context)
 {
     META_FUNCTION_TASK();
     if (const auto atlas_texture_it = m_atlas_textures.find(&context);
@@ -651,7 +651,7 @@ const Ptr<gfx::Texture>& Font::GetAtlasTexturePtr(gfx::RenderContext& context)
     return atlas_texture_ptr;
 }
 
-gfx::Texture& Font::GetAtlasTexture(gfx::RenderContext& context)
+gfx::Texture& Font::GetAtlasTexture(gfx::IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const Ptr<gfx::Texture>& texture_ptr = GetAtlasTexturePtr(context);
@@ -659,7 +659,7 @@ gfx::Texture& Font::GetAtlasTexture(gfx::RenderContext& context)
     return *texture_ptr;
 }
 
-Font::AtlasTexture Font::CreateAtlasTexture(const gfx::RenderContext& render_context, bool deferred_data_init)
+Font::AtlasTexture Font::CreateAtlasTexture(const gfx::IRenderContext& render_context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
     const Ptr<gfx::Texture> atlas_texture_ptr = gfx::Texture::CreateImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), std::nullopt, gfx::PixelFormat::R8Unorm, false);
@@ -678,7 +678,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(const gfx::RenderContext& render_con
     return { atlas_texture_ptr, deferred_data_init };
 }
 
-void Font::RemoveAtlasTexture(gfx::RenderContext& render_context)
+void Font::RemoveAtlasTexture(gfx::IRenderContext& render_context)
 {
     META_FUNCTION_TASK();
     m_atlas_textures.erase(&render_context);
@@ -734,7 +734,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     Emit(&IFontCallback::OnFontAtlasUpdated, *this);
 }
 
-void Font::UpdateAtlasTexture(const gfx::RenderContext& render_context, AtlasTexture& atlas_texture)
+void Font::UpdateAtlasTexture(const gfx::IRenderContext& render_context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");
@@ -778,14 +778,14 @@ void Font::OnContextReleased(gfx::IContext& context)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
-    RemoveAtlasTexture(dynamic_cast<gfx::RenderContext&>(context));
+    RemoveAtlasTexture(dynamic_cast<gfx::IRenderContext&>(context));
 }
 
 void Font::OnContextCompletingInitialization(gfx::IContext& context)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
-    auto& render_context = dynamic_cast<gfx::RenderContext&>(context);
+    auto& render_context = dynamic_cast<gfx::IRenderContext&>(context);
     if (const auto atlas_texture_it = m_atlas_textures.find(&render_context);
         atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
     {

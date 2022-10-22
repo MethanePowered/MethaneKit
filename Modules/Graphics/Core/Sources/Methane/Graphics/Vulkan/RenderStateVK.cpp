@@ -273,7 +273,7 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
     vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }
 
-Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(const IRenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderStateVK>(dynamic_cast<const RenderContextBase&>(context), state_settings);

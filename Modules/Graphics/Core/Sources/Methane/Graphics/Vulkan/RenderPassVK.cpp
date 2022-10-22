@@ -178,7 +178,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     );
 }
 
-Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)
+Ptr<RenderPattern> RenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPatternVK>(dynamic_cast<RenderContextVK&>(render_context), settings);

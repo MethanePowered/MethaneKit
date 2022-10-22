@@ -50,7 +50,8 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
                  SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device,
+                                           tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
     auto& device_base = static_cast<DeviceBase&>(device);
@@ -59,7 +60,8 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, ID
     return render_context_ptr;
 }
 
-RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device,
+                                 tf::Executor& parallel_executor, const RenderContextSettings& settings)
     : ContextDX<RenderContextBase>(device, parallel_executor, settings)
     , m_platform_env(env)
 {

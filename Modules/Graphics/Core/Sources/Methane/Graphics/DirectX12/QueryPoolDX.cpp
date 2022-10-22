@@ -28,7 +28,7 @@ DirectX 12 GPU query pool implementation.
 #include "ContextDX.h"
 
 #include <Methane/Graphics/QueryPoolBase.h>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -82,7 +82,7 @@ static Data::Size GetMaxTimestampsCount(const IContext& context, uint32_t max_ti
 {
     META_FUNCTION_TASK();
     const uint32_t frames_count = context.GetType() == IContext::Type::Render
-                                  ? dynamic_cast<const RenderContext&>(context).GetSettings().frame_buffers_count
+                                  ? dynamic_cast<const IRenderContext&>(context).GetSettings().frame_buffers_count
                                   : 1U;
     return frames_count * max_timestamps_per_frame;
 }

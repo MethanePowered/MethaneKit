@@ -29,7 +29,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Platform/App.h>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Checks.hpp>
 
@@ -44,11 +44,11 @@ struct AppSettings
 {
     Platform::IApp::Settings platform_app;
     Graphics::IApp::Settings graphics_app;
-    RenderContext::Settings  render_context;
+    RenderContextSettings render_context;
 
     AppSettings& SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept;
     AppSettings& SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept;
-    AppSettings& SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept;
+    AppSettings& SetRenderContextSettings(RenderContextSettings&& new_render_context_settings) noexcept;
 };
 
 class AppBase // NOSONAR
@@ -111,11 +111,11 @@ protected:
     void OnContextCompletingInitialization(IContext&) override { /* no event handling logic is needed here */ }
     void OnContextInitialized(IContext&) override;
 
-    const RenderContext::Settings&  GetInitialContextSettings() const noexcept    { return m_initial_context_settings; }
+    const RenderContextSettings&  GetInitialContextSettings() const noexcept    { return m_initial_context_settings; }
     RenderPattern::Settings&        GetScreenRenderPatternSettings() noexcept     { return m_screen_pass_pattern_settings; }
     bool                            IsRenderContextInitialized() const noexcept   { return !!m_context_ptr; }
-    const Ptr<RenderContext>&       GetRenderContextPtr() const noexcept          { return m_context_ptr; }
-    RenderContext&                  GetRenderContext() const                      { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
+    const Ptr<IRenderContext>&       GetRenderContextPtr() const noexcept          { return m_context_ptr; }
+    IRenderContext&                  GetRenderContext() const                      { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
     const Ptr<RenderPattern>&       GetScreenRenderPatternPtr() const noexcept    { return m_screen_render_pattern_ptr; }
     RenderPattern&                  GetScreenRenderPattern() const                { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
     const Ptr<ViewState>&           GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
@@ -130,12 +130,12 @@ protected:
 
 private:
     Graphics::IApp::Settings m_settings;
-    RenderContext::Settings  m_initial_context_settings;
+    RenderContextSettings m_initial_context_settings;
     RenderPattern::Settings  m_screen_pass_pattern_settings;
     Timer                    m_title_update_timer;
     ImageLoader              m_image_loader;
     Data::AnimationsPool     m_animations;
-    Ptr<RenderContext>       m_context_ptr;
+    Ptr<IRenderContext>      m_context_ptr;
     Ptr<Texture>             m_depth_texture_ptr;
     Ptr<RenderPattern>       m_screen_render_pattern_ptr;
     Ptr<ViewState>           m_view_state_ptr;

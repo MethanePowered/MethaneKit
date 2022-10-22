@@ -75,7 +75,7 @@ void ShadowCubeApp::Init()
     UserInterfaceApp::Init();
 
     gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    const gfx::RenderContext::Settings& context_settings = GetRenderContext().GetSettings();
+    const gfx::RenderContextSettings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);

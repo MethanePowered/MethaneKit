@@ -44,7 +44,7 @@ namespace Methane::Graphics
 {
 
 struct CommandQueue;
-struct RenderContext;
+struct IRenderContext;
 struct RenderState;
 struct Sampler;
 class Camera;
@@ -96,7 +96,7 @@ private:
 
     Settings                m_settings;
     const Ptr<CommandQueue> m_render_cmd_queue_ptr;
-    RenderContext&          m_context;
+    IRenderContext&         m_context;
     TexMeshBuffers          m_mesh_buffers;
     Ptr<Sampler>            m_texture_sampler_ptr;
     Ptr<RenderState>        m_render_state_ptr;

@@ -26,7 +26,7 @@ Methane text rendering primitive.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
@@ -482,7 +482,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     return true;
 }
 
-void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh,
+void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh,
                                              std::string_view text_name, Data::Size reservation_multiplier)
 {
     META_FUNCTION_TASK();
@@ -527,7 +527,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::RenderContext& render_co
     m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
-void Text::FrameResources::UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
+void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
 {
     META_FUNCTION_TASK();
 
@@ -573,7 +573,7 @@ void Text::InitializeFrameResources()
     META_CHECK_ARG_NOT_NULL_DESCR(m_render_state_ptr, "text render state is not initialized");
     META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
-    gfx::RenderContext& render_context = GetUIContext().GetRenderContext();
+    gfx::IRenderContext& render_context = GetUIContext().GetRenderContext();
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     m_frame_resources.reserve(frame_buffers_count);
 

@@ -120,7 +120,7 @@ static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.
             !hud_ui_enabled,                                    //   - show_hud_in_window_title
             0                                                   //   - default_device_index
         },                                                      // =========================
-        Graphics::RenderContext::Settings {                     // render_context:
+        Graphics::RenderContextSettings {                       // render_context:
             Graphics::FrameSize(),                              //   - frame_size
             Graphics::PixelFormat::BGRA8Unorm,                  //   - color_format
             depth_enabled                                       //   - depth_stencil_format

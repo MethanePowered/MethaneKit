@@ -25,7 +25,7 @@ GPU data query pool base implementation.
 #include "CommandQueueBase.h"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

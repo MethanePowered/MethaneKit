@@ -90,7 +90,7 @@ AppSettings& AppSettings::SetGraphicsAppSettings(Graphics::IApp::Settings&& new_
     return *this;
 }
 
-AppSettings& AppSettings::SetRenderContextSettings(RenderContext::Settings&& new_render_context_settings) noexcept
+AppSettings& AppSettings::SetRenderContextSettings(RenderContextSettings&& new_render_context_settings) noexcept
 {
     META_FUNCTION_TASK();
     render_context = std::move(new_render_context_settings);
@@ -155,7 +155,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
-    m_context_ptr = RenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
+    m_context_ptr = IRenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
     m_context_ptr->SetName("Graphics Context");
     static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Connect(*this);
 
@@ -209,7 +209,7 @@ void AppBase::Init()
     }
 
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    const RenderContext::Settings& context_settings = m_context_ptr->GetSettings();
+    const RenderContextSettings& context_settings = m_context_ptr->GetSettings();
 
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
@@ -405,8 +405,8 @@ void AppBase::UpdateWindowTitle()
         return;
     }
 
-    const RenderContext::Settings& context_settings      = m_context_ptr->GetSettings();
-    const FpsCounter&              fps_counter           = m_context_ptr->GetFpsCounter();
+    const RenderContextSettings& context_settings         = m_context_ptr->GetSettings();
+    const FpsCounter              &              fps_counter = m_context_ptr->GetFpsCounter();
     const uint32_t                 average_fps           = fps_counter.GetFramesPerSecond();
     const FpsCounter::FrameTiming  average_frame_timing  = fps_counter.GetAverageFrameTiming();
     const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",

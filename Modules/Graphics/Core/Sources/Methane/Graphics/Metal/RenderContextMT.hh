@@ -48,7 +48,7 @@ public:
     // IContext interface
     void  WaitForGpu(WaitFor wait_for) override;
 
-    // RenderContext interface
+    // IRenderContext interface
     bool     ReadyToRender() const override;
     void     Resize(const FrameSize& frame_size) override;
     void     Present() override;

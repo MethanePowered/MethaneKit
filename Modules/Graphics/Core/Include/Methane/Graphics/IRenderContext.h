@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RenderContext.h
+FILE: Methane/Graphics/IRenderContext.h
 Methane render context interface: represents graphics device and swap chain,
 provides basic multi-frame rendering synchronization and frame presenting APIs.
 
@@ -41,37 +41,39 @@ namespace Methane::Graphics
 class FpsCounter;
 struct RenderCommandList;
 
-struct RenderContext : virtual IContext // NOSONAR
+struct RenderContextSettings
 {
-    struct Settings
-    {
-        FrameSize         frame_size;
-        PixelFormat       color_format         = PixelFormat::BGRA8Unorm;
-        PixelFormat       depth_stencil_format = PixelFormat::Unknown;
-        Opt<Color4F>      clear_color;
-        Opt<DepthStencil> clear_depth_stencil;
-        uint32_t          frame_buffers_count  = 3U;
-        bool              vsync_enabled        = true;
-        bool              is_full_screen       = false;
-        Options           options_mask         = Options::None;
-        uint32_t          unsync_max_fps       = 1000U; // MacOS only
+    FrameSize         frame_size;
+    PixelFormat       color_format         = PixelFormat::BGRA8Unorm;
+    PixelFormat       depth_stencil_format = PixelFormat::Unknown;
+    Opt<Color4F>      clear_color;
+    Opt<DepthStencil> clear_depth_stencil;
+    uint32_t          frame_buffers_count  = 3U;
+    bool              vsync_enabled        = true;
+    bool              is_full_screen       = false;
+    ContextOptions    options_mask         = ContextOptions::None;
+    uint32_t          unsync_max_fps       = 1000U; // MacOS only
 
-        Settings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
-        Settings& SetColorFormat(PixelFormat new_color_format) noexcept;
-        Settings& SetDepthStencilFormat(PixelFormat new_ds_format) noexcept;
-        Settings& SetClearColor(Opt<Color4F>&& new_clear_color) noexcept;
-        Settings& SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept;
-        Settings& SetFrameBuffersCount(uint32_t new_fb_count) noexcept;
-        Settings& SetVSyncEnabled(bool new_vsync_enabled) noexcept;
-        Settings& SetFullscreen(bool new_full_screen) noexcept;
-        Settings& SetOptionsMask(Options new_options_mask) noexcept;
-        Settings& SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept;
-    };
+    RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
+    RenderContextSettings& SetColorFormat(PixelFormat new_color_format) noexcept;
+    RenderContextSettings& SetDepthStencilFormat(PixelFormat new_ds_format) noexcept;
+    RenderContextSettings& SetClearColor(Opt<Color4F>&& new_clear_color) noexcept;
+    RenderContextSettings& SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept;
+    RenderContextSettings& SetFrameBuffersCount(uint32_t new_fb_count) noexcept;
+    RenderContextSettings& SetVSyncEnabled(bool new_vsync_enabled) noexcept;
+    RenderContextSettings& SetFullscreen(bool new_full_screen) noexcept;
+    RenderContextSettings& SetOptionsMask(ContextOptions new_options_mask) noexcept;
+    RenderContextSettings& SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept;
+};
 
-    // Create RenderContext instance
-    [[nodiscard]] static Ptr<RenderContext> Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings);
+struct IRenderContext : virtual IContext // NOSONAR
+{
+    using Settings = RenderContextSettings;
 
-    // RenderContext interface
+    // Create IRenderContext instance
+    [[nodiscard]] static Ptr<IRenderContext> Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings);
+
+    // IRenderContext interface
     [[nodiscard]] virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;

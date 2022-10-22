@@ -26,7 +26,7 @@ Base implementation of the render context interface.
 #include "ContextBase.h"
 #include "FenceBase.h"
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
 
 namespace Methane::Graphics
@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 class RenderContextBase
     : public ContextBase
-    , public RenderContext
+    , public IRenderContext
 {
 public:
     RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
     void WaitForGpu(WaitFor wait_for) override;
 
-    // RenderContext interface
+    // IRenderContext interface
     void              Resize(const FrameSize& frame_size) override;
     void              Present() override;
     const Settings&   GetSettings() const noexcept final            { return m_settings; }

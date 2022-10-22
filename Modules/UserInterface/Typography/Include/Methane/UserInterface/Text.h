@@ -34,7 +34,7 @@ Methane text rendering primitive.
 
 namespace Methane::Graphics
 {
-struct RenderContext;
+struct IRenderContext;
 struct RenderCommandList;
 struct RenderState;
 struct RenderPattern;
@@ -160,7 +160,7 @@ protected:
 private:
     struct CommonResourceRefs
     {
-        gfx::RenderContext&      render_context;
+        gfx::IRenderContext&     render_context;
         const gfx::RenderState&  render_state;
         const Ptr<gfx::Buffer>&  const_buffer_ptr;
         const Ptr<gfx::Texture>& atlas_texture_ptr;
@@ -194,8 +194,8 @@ private:
         [[nodiscard]] gfx::ProgramBindings& GetProgramBindings() const;
 
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(const gfx::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
+        void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
         void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
                                        const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name);
 

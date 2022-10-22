@@ -56,13 +56,14 @@ class RenderContextVK final // NOSONAR - this class requires destructor
     , public Data::Emitter<IRenderContextVKCallback>
 {
 public:
-    RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings);
+    RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device,
+                    tf::Executor& parallel_executor, const RenderContextSettings& settings);
     ~RenderContextVK() override;
 
     // IContext interface
     void WaitForGpu(WaitFor wait_for) override;
 
-    // RenderContext interface
+    // IRenderContext interface
     bool     ReadyToRender() const override;
     void     Resize(const FrameSize& frame_size) override;
     void     Present() override;

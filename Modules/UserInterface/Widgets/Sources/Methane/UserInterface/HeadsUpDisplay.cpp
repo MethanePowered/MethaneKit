@@ -35,7 +35,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Font.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -277,8 +277,8 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
         return;
     }
 
-    const gfx::FpsCounter& fps_counter = GetUIContext().GetRenderContext().GetFpsCounter();
-    const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
+    const gfx::FpsCounter&            fps_counter      = GetUIContext().GetRenderContext().GetFpsCounter();
+    const gfx::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));

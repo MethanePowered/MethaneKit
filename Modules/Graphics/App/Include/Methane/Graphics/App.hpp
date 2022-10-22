@@ -75,7 +75,7 @@ public:
     }
 
     // WARNING: Don't forget to wait for GPU rendering completion in the derived class destructor to release resources properly
-    // m_context_ptr->WaitForGpu(RenderContext::WaitFor::RenderComplete)
+    // m_context_ptr->WaitForGpu(IRenderContext::WaitFor::RenderComplete)
 
     // Platform::App interface
 
@@ -85,8 +85,8 @@ public:
         AppBase::Init();
 
         // Create frame resources
-        RenderContext& render_context = GetRenderContext();
-        const RenderContext::Settings& context_settings = render_context.GetSettings();
+        IRenderContext& render_context = GetRenderContext();
+        const RenderContextSettings& context_settings = render_context.GetSettings();
         for (uint32_t frame_index = 0; frame_index < context_settings.frame_buffers_count; ++frame_index)
         {
             FrameT frame(frame_index);

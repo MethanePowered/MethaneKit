@@ -25,7 +25,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/CommandQueue.h>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>

@@ -28,7 +28,7 @@ Fake render context used for UI types testing
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/Emitter.hpp>
@@ -140,7 +140,7 @@ private:
 using FakeTransferCommandList = FakeCommandList<TransferCommandList, CommandList::Type::Transfer>;
 
 class FakeRenderContext
-    : public RenderContext
+    : public IRenderContext
     , public Data::Emitter<IContextCallback>
     , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeRenderContext>
@@ -150,7 +150,7 @@ public:
         : m_settings(settings)
     { }
 
-    // RenderContext interface
+    // IRenderContext interface
     [[nodiscard]] bool ReadyToRender() const override                             { return false; }
     void Resize(const FrameSize&) override                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Present() override                                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
@@ -199,14 +199,14 @@ class FakeRenderPattern
     , public std::enable_shared_from_this<FakeRenderPattern>
 {
 public:
-    FakeRenderPattern(RenderContext& render_context) : m_render_context(render_context) { }
+    FakeRenderPattern(IRenderContext& render_context) : m_render_context(render_context) { }
 
     // RenderPattern interface
-    const RenderContext& GetRenderContext() const noexcept override     { return m_render_context; }
-    RenderContext&       GetRenderContext() noexcept override           { return m_render_context; }
-    const Settings&      GetSettings() const noexcept override          { return m_settings; }
-    Data::Size           GetAttachmentCount() const noexcept override   { return 0U; }
-    AttachmentFormats    GetAttachmentFormats() const noexcept override { return {}; }
+    const IRenderContext& GetRenderContext() const noexcept override     { return m_render_context; }
+    IRenderContext&       GetRenderContext() noexcept override           { return m_render_context; }
+    const Settings&       GetSettings() const noexcept override          { return m_settings; }
+    Data::Size            GetAttachmentCount() const noexcept override   { return 0U; }
+    AttachmentFormats     GetAttachmentFormats() const noexcept override { return {}; }
 
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
@@ -214,8 +214,8 @@ public:
     [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 
 private:
-    RenderContext& m_render_context;
-    Settings m_settings;
+    IRenderContext& m_render_context;
+    Settings        m_settings;
 };
 
 } // namespace Methane::Graphics

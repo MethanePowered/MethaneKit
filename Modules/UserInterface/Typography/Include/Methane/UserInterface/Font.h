@@ -23,7 +23,7 @@ Font atlas textures generation and fonts library management classes.
 
 #pragma once
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/Provider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -205,8 +205,8 @@ public:
     [[nodiscard]] uint32_t                 GetLineHeight() const;
     [[nodiscard]] const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     [[nodiscard]] const gfx::FrameSize&    GetAtlasSize() const noexcept;
-    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::RenderContext& context);
-    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::RenderContext& context);
+    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::IRenderContext& context);
+    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::IRenderContext& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -227,16 +227,16 @@ private:
         bool              is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(const gfx::RenderContext& context, bool deferred_data_init);
-    void RemoveAtlasTexture(gfx::RenderContext& context);
+    AtlasTexture CreateAtlasTexture(const gfx::IRenderContext& context, bool deferred_data_init);
+    void RemoveAtlasTexture(gfx::IRenderContext& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(const gfx::RenderContext& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const gfx::IRenderContext& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<gfx::RenderContext*, AtlasTexture>;
+    using TextureByContext = std::map<gfx::IRenderContext*, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

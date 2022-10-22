@@ -256,7 +256,7 @@ static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Text
     return rtv_desc;
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, const Settings& settings)
+Ptr<Texture> Texture::CreateRenderTarget(const IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     switch (settings.type)
@@ -268,18 +268,18 @@ Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& render_context, co
     }
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& render_context, FrameBufferIndex frame_buffer_index)
+Ptr<Texture> Texture::CreateFrameBuffer(const IRenderContext& render_context, FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    const RenderContext::Settings& context_settings = render_context.GetSettings();
+    const RenderContextSettings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
     return std::make_shared<FrameBufferTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, frame_buffer_index);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& render_context)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const IRenderContext& render_context)
 {
     META_FUNCTION_TASK();
-    const RenderContext::Settings& context_settings = render_context.GetSettings();
+    const RenderContextSettings& context_settings = render_context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<DepthStencilTextureDX>(static_cast<const RenderContextBase&>(render_context), texture_settings, context_settings.clear_depth_stencil);
 }

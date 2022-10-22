@@ -23,7 +23,7 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/Texture.h>
@@ -93,7 +93,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "screen-quad texture can not be empty when quad texturing is enabled");
     }
 
-    RenderContext& render_context = render_pattern.GetRenderContext();
+    IRenderContext& render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const Shader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Program::ArgumentAccessors     program_argument_accessors = {
@@ -290,7 +290,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_de
     cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle);
 }
 
-const RenderContext& ScreenQuad::GetRenderContext() const noexcept
+const IRenderContext& ScreenQuad::GetRenderContext() const noexcept
 {
     META_FUNCTION_TASK();
     return GetRenderPattern().GetRenderContext();
