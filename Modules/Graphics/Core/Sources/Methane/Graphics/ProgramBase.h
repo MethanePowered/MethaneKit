@@ -23,7 +23,7 @@ Base implementation of the program interface.
 
 #pragma once
 
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Instrumentation.h>
 
 #include "ShaderBase.h"
@@ -42,7 +42,7 @@ class ContextBase;
 class CommandListBase;
 
 class ProgramBase
-    : public Program
+    : public IProgram
     , public ObjectBase
 {
     friend class ShaderBase;
@@ -51,7 +51,7 @@ class ProgramBase
 public:
     ProgramBase(const ContextBase& context, const Settings& settings);
 
-    // Program interface
+    // IProgram interface
     const Settings&     GetSettings() const noexcept final            { return m_settings; }
     const ShaderTypes&  GetShaderTypes() const noexcept final         { return m_shader_types; }
     const Ptr<IShader>& GetShader(ShaderType shader_type) const final { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
@@ -63,12 +63,12 @@ public:
 protected:
     using ArgumentBindings      = ProgramBindingsBase::ArgumentBindings;
     using ArgumentBindingBase   = ProgramBindingsBase::ArgumentBindingBase;
-    using FrameArgumentBindings = std::unordered_map<Program::Argument, Ptrs<ProgramBindingsBase::ArgumentBindingBase>, Program::Argument::Hash>;
+    using FrameArgumentBindings = std::unordered_map<IProgram::Argument, Ptrs < ProgramBindingsBase::ArgumentBindingBase>, IProgram::Argument::Hash>;
 
     void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
     const ArgumentBindings&         GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
     const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
-    const Ptr<ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const;
+    const Ptr<ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const IProgram::ArgumentAccessor& argument_accessor) const;
     Ptr<ArgumentBindingBase>        CreateArgumentBindingInstance(const Ptr<ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
 
     IShader& GetShaderRef(ShaderType shader_type) const;

@@ -253,7 +253,7 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
     
     for(const auto& binding_by_argument : GetArgumentBindings())
     {
-        const Program::Argument& program_argument = binding_by_argument.first;
+        const IProgram::Argument& program_argument = binding_by_argument.first;
         const ArgumentBindingMT& metal_argument_binding = static_cast<const ArgumentBindingMT&>(*binding_by_argument.second);
 
         if ((static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) ||

@@ -24,7 +24,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #pragma once
 
 #include "IObject.h"
-#include "Program.h"
+#include "IProgram.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -225,7 +225,7 @@ public:
         // NOTE: members are ordered by the usage frequency,
         //       for convenient setup with initializer lists
         //       (default states may be skipped at initialization)
-        Ptr<Program>       program_ptr;
+        Ptr<IProgram>      program_ptr;
         Ptr<RenderPattern> render_pattern_ptr;
         Rasterizer         rasterizer;
         Depth              depth;

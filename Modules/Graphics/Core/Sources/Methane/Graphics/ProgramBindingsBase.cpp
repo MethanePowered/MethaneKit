@@ -38,10 +38,10 @@ Base implementation of the program bindings interface.
 #include <array>
 
 template<>
-struct fmt::formatter<Methane::Graphics::Program::ArgumentAccessor>
+struct fmt::formatter<Methane::Graphics::IProgram::ArgumentAccessor>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Program::ArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] auto format(const Methane::Graphics::IProgram::ArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -88,14 +88,14 @@ ProgramBindingsBase::ResourceAndState::ResourceAndState(Ptr<ResourceBase> resour
     META_FUNCTION_TASK();
 }
 
-ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const Program::Argument& argument)
+ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const IProgram::Argument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
                                    argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindings::UnboundArgumentsException::UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments)
+ProgramBindings::UnboundArgumentsException::UnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments)
     : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
     , m_program(program)
     , m_unbound_arguments(unbound_arguments)
@@ -162,7 +162,7 @@ ProgramBindingsBase::ArgumentBindingBase::operator std::string() const
     return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
 }
 
-bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& program,
+bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const IProgram& program,
                                                                 const ProgramBindingsBase& applied_program_bindings,
                                                                 bool check_binding_value_changes) const
 {
@@ -187,7 +187,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const Program& p
     return false;
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : ProgramBindingsBase(program_ptr, frame_index)
 {
     META_FUNCTION_TASK();
@@ -203,7 +203,7 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     VerifyAllArgumentsAreBoundToResources();
 }
 
-ProgramBindingsBase::ProgramBindingsBase(const Ptr<Program>& program_ptr, Data::Index frame_index)
+ProgramBindingsBase::ProgramBindingsBase(const Ptr<IProgram>& program_ptr, Data::Index frame_index)
     : m_program_ptr(program_ptr)
     , m_frame_index(frame_index)
     , m_bindings_index(static_cast<ProgramBase&>(*m_program_ptr).GetBindingsCountAndIncrement())
@@ -225,14 +225,14 @@ ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_progra
     InitializeArgumentBindings(&other_program_bindings);
 }
 
-Program& ProgramBindingsBase::GetProgram() const
+IProgram& ProgramBindingsBase::GetProgram() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
-Program& ProgramBindingsBase::GetProgram()
+IProgram& ProgramBindingsBase::GetProgram()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_program_ptr);
@@ -292,7 +292,7 @@ void ProgramBindingsBase::InitializeArgumentBindings(const ProgramBindingsBase* 
             continue;
 
         Ptr<ProgramBindingsBase::ArgumentBindingBase> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
-        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Program::ArgumentAccessor::Type::Mutable)
+        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == IProgram::ArgumentAccessor::Type::Mutable)
             argument_binding_instance_ptr->Connect(*this);
 
         m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
@@ -332,12 +332,12 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceViewsByArgument
     InitResourceRefsByAccess();
 }
 
-ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const Program::Argument& shader_argument) const
+ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const IProgram::Argument& shader_argument) const
 {
     META_FUNCTION_TASK();
     const auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
     if (binding_by_argument_it == m_binding_by_argument.end())
-        throw Program::Argument::NotFoundException(*m_program_ptr, shader_argument);
+        throw IProgram::Argument::NotFoundException(*m_program_ptr, shader_argument);
 
     return *binding_by_argument_it->second;
 }
@@ -361,10 +361,10 @@ ProgramBindingsBase::operator std::string() const
     return ss.str();
 }
 
-Program::Arguments ProgramBindingsBase::GetUnboundArguments() const
+IProgram::Arguments ProgramBindingsBase::GetUnboundArguments() const
 {
     META_FUNCTION_TASK();
-    Program::Arguments unbound_arguments;
+    IProgram::Arguments unbound_arguments;
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -381,7 +381,7 @@ void ProgramBindingsBase::VerifyAllArgumentsAreBoundToResources() const
 {
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
-    if (Program::Arguments unbound_arguments = GetUnboundArguments();
+    if (IProgram::Arguments unbound_arguments = GetUnboundArguments();
         !unbound_arguments.empty())
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);
@@ -444,13 +444,13 @@ void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::Arg
     }
 }
 
-bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr) const
+bool ProgramBindingsBase::ApplyResourceStates(IProgram::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    bool resource_states_changed = false;
-    for(Program::ArgumentAccessor::Type access_type : magic_enum::enum_values<Program::ArgumentAccessor::Type>())
+    bool                                 resource_states_changed = false;
+    for(IProgram::ArgumentAccessor::Type access_type : magic_enum::enum_values<IProgram::ArgumentAccessor::Type>())
     {
         if (!static_cast<bool>(access_types_mask & access_type))
             continue;
@@ -472,7 +472,7 @@ bool ProgramBindingsBase::ApplyResourceStates(Program::ArgumentAccessor::Type ac
 void ProgramBindingsBase::InitResourceRefsByAccess()
 {
     META_FUNCTION_TASK();
-    constexpr size_t access_count = magic_enum::enum_count<Program::ArgumentAccessor::Type>();
+    constexpr size_t access_count = magic_enum::enum_count<IProgram::ArgumentAccessor::Type>();
     std::array<std::set<Resource*>, access_count> unique_resources_by_access;
 
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
@@ -495,7 +495,7 @@ void ProgramBindingsBase::InitResourceRefsByAccess()
     }
 }
 
-const Refs<Resource>& ProgramBindingsBase::GetResourceRefsByAccess(Program::ArgumentAccessor::Type access_type) const
+const Refs<Resource>& ProgramBindingsBase::GetResourceRefsByAccess(IProgram::ArgumentAccessor::Type access_type) const
 {
     META_FUNCTION_TASK();
     return m_resource_refs_by_access[magic_enum::enum_index(access_type).value()];

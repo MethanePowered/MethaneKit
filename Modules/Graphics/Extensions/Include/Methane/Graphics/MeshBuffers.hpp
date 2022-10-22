@@ -27,7 +27,7 @@ Mesh buffers with texture extension structure.
 
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>

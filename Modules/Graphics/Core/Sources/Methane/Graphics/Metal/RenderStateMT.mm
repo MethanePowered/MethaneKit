@@ -288,7 +288,7 @@ void RenderStateMT::Reset(const Settings& settings)
 
     ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.program_ptr);
 
-    // Program state
+    // IProgram state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
     m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(ShaderType::Vertex);
     m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(ShaderType::Pixel);

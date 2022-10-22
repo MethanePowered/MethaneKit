@@ -23,7 +23,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #pragma once
 
-#include "Program.h"
+#include "IProgram.h"
 #include "Resource.h"
 #include "IObject.h"
 
@@ -53,15 +53,15 @@ struct ProgramBindings : virtual IObject // NOSONAR
     {
         struct Settings
         {
-            Program::ArgumentAccessor argument;
-            Resource::Type            resource_type;
-            uint32_t                  resource_count = 1;
+            IProgram::ArgumentAccessor argument;
+            Resource::Type             resource_type;
+            uint32_t                   resource_count = 1;
         };
 
         class ConstantModificationException : public std::logic_error
         {
         public:
-            explicit ConstantModificationException(const Program::Argument& argument);
+            explicit ConstantModificationException(const IProgram::Argument& argument);
         };
 
         // ArgumentBinding interface
@@ -81,32 +81,32 @@ struct ProgramBindings : virtual IObject // NOSONAR
         AllIncremental  = ~0U        // All binding values will be applied incrementally along with resource state barriers
     };
 
-    using ResourceViewsByArgument = std::unordered_map<Program::Argument, Resource::Views, Program::Argument::Hash>;
+    using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, Resource::Views, IProgram::Argument::Hash>;
 
     class UnboundArgumentsException: public std::runtime_error
     {
     public:
-        UnboundArgumentsException(const Program& program, const Program::Arguments& unbound_arguments);
+        UnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments);
 
-        [[nodiscard]] const Program&            GetProgram() const noexcept { return m_program; }
-        [[nodiscard]] const Program::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+        [[nodiscard]] const IProgram&            GetProgram() const noexcept { return m_program; }
+        [[nodiscard]] const IProgram::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
     private:
-        const Program& m_program;
-        const Program::Arguments m_unbound_arguments;
+        const IProgram& m_program;
+        const IProgram::Arguments m_unbound_arguments;
     };
 
     // Create ProgramBindings instance
-    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<ProgramBindings> Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
     [[nodiscard]] static Ptr<ProgramBindings> CreateCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // ProgramBindings interface
-    [[nodiscard]] virtual Program&                  GetProgram() const = 0;
-    [[nodiscard]] virtual ArgumentBinding&          Get(const Program::Argument& shader_argument) const = 0;
-    [[nodiscard]] virtual const Program::Arguments& GetArguments() const noexcept = 0;
-    [[nodiscard]] virtual Data::Index               GetFrameIndex() const noexcept = 0;
-    [[nodiscard]] virtual Data::Index               GetBindingsIndex() const noexcept = 0;
-    [[nodiscard]] virtual explicit operator         std::string() const = 0;
+    [[nodiscard]] virtual IProgram&               GetProgram() const = 0;
+    [[nodiscard]] virtual ArgumentBinding&        Get(const ProgramArgument& shader_argument) const = 0;
+    [[nodiscard]] virtual const ProgramArguments& GetArguments() const noexcept = 0;
+    [[nodiscard]] virtual Data::Index             GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual Data::Index             GetBindingsIndex() const noexcept = 0;
+    [[nodiscard]] virtual explicit operator       std::string() const = 0;
 };
 
 } // namespace Methane::Graphics

@@ -24,7 +24,7 @@ Methane Graphics Core objects formatters for use with fmt::format(...)
 #pragma once
 
 #include <Methane/Graphics/Resource.h>
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 
 #include <fmt/format.h>
 
@@ -53,12 +53,12 @@ struct fmt::formatter<Methane::Graphics::Resource::SubResource::Count>
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::Program::Argument>
+struct fmt::formatter<Methane::Graphics::IProgram::Argument>
 {
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Program::Argument& program_argument, FormatContext& ctx)
+    auto format(const Methane::Graphics::IProgram::Argument& program_argument, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(program_argument));
     }

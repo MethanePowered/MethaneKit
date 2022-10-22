@@ -37,10 +37,10 @@ Vulkan implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(Program::InputBufferLayout::StepType step_type)
+static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(IProgram::InputBufferLayout::StepType step_type)
 {
     META_FUNCTION_TASK();
-    using StepType = Program::InputBufferLayout::StepType;
+    using StepType = IProgram::InputBufferLayout::StepType;
     switch(step_type)
     {
     case StepType::PerVertex:   return vk::VertexInputRate::eVertex;
@@ -132,7 +132,7 @@ static Resource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_
     }
 }
 
-static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const Program::ArgumentAccessor& argument_accessor)
+static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const IProgram::ArgumentAccessor& argument_accessor)
 {
     META_FUNCTION_TASK();
     if (!argument_accessor.IsAddressable())
@@ -150,7 +150,7 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
 static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spirv_compiler,
                                                 const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                 const vk::DescriptorType vk_descriptor_type,
-                                                const Program::ArgumentAccessors& argument_accessors,
+                                                const IProgram::ArgumentAccessors& argument_accessors,
                                                 const ShaderVK& shader,
                                                 ShaderBase::ArgumentBindings& argument_bindings)
 {
@@ -163,10 +163,10 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 
     for (const spirv_cross::Resource& resource : spirv_resources)
     {
-        const Program::Argument         shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
-        const auto                      argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Program::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
-                                                        ? Program::ArgumentAccessor(shader_argument)
+        const IProgram::Argument         shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
+        const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const IProgram::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
+                                                        ? IProgram::ArgumentAccessor(shader_argument)
                                                         : *argument_acc_it;
 
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
@@ -211,7 +211,7 @@ ShaderVK::ShaderVK(ShaderType shader_type, const ContextBase& context, const Set
     META_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     const IShader::Settings& shader_settings = GetSettings();
@@ -320,7 +320,7 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     m_vertex_input_binding_descriptions.reserve(input_buffer_layouts.size());
 
     uint32_t input_buffer_index = 0U;
-    for(const Program::InputBufferLayout& input_buffer_layout : input_buffer_layouts)
+    for(const IProgram::InputBufferLayout& input_buffer_layout : input_buffer_layouts)
     {
         m_vertex_input_binding_descriptions.emplace_back(
             input_buffer_index,

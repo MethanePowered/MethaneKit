@@ -70,7 +70,7 @@ public:
     const RenderContextBase& GetRenderContext() const noexcept { return m_context; }
 
 protected:
-    Program& GetProgram();
+    IProgram& GetProgram();
 
 private:
     const RenderContextBase& m_context;

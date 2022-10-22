@@ -39,7 +39,7 @@ public:
     ShaderMT(ShaderType shader_type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const final;
+    ArgumentBindings GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const final;
     
     id<MTLFunction> GetNativeFunction() noexcept                            { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const ProgramMT& program) const;

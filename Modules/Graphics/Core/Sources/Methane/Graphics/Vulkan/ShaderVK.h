@@ -53,7 +53,7 @@ public:
     ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase interface
-    ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
+    ArgumentBindings GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk&                     GetNativeByteCode() const noexcept { return m_byte_code_chunk.AsConstChunk(); }
     const vk::ShaderModule&                GetNativeModule() const;

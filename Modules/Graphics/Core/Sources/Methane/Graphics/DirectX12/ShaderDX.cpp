@@ -129,7 +129,7 @@ ShaderDX::ShaderDX(Type type, const ContextBase& context, const Settings& settin
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
+ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_reflection);
@@ -151,10 +151,10 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const Program::Argume
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Program::Argument         shader_argument(GetType(), ShaderBase::GetCachedArgName(binding_desc.Name));
-        const auto                      argument_acc_it = Program::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Program::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
-                                                         ? Program::ArgumentAccessor(shader_argument)
+        const IProgram::Argument         shader_argument(GetType(), ShaderBase::GetCachedArgName(binding_desc.Name));
+        const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const IProgram::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
+                                                         ? IProgram::ArgumentAccessor(shader_argument)
                                                          : *argument_acc_it;
 
         const ProgramBindingsDX::ArgumentBindingDX::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER

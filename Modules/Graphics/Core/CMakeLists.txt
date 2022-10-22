@@ -11,7 +11,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IRenderContext.h
     ${INCLUDE_DIR}/IFence.h
     ${INCLUDE_DIR}/IShader.h
-    ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/IProgram.h
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h

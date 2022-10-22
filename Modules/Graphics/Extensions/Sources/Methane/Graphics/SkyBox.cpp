@@ -29,7 +29,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -56,26 +56,26 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Texture>(cube_map_texture.GetPtr()));
 
     RenderState::Settings state_settings;
-    state_settings.program_ptr = Program::Create(m_context,
-        Program::Settings
+    state_settings.program_ptr = IProgram::Create(m_context,
+        IProgram::Settings
         {
-            Program::Shaders
+            IProgram::Shaders
             {
                 IShader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
                 IShader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
             },
-            Program::InputBufferLayouts
+            IProgram::InputBufferLayouts
             {
-                Program::InputBufferLayout
+                IProgram::InputBufferLayout
                 {
-                    Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
+                    IProgram::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            Program::ArgumentAccessors
+            IProgram::ArgumentAccessors
             {
-                { { ShaderType::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant },
-                { { ShaderType::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
-                { { ShaderType::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
+                { { ShaderType::Vertex, "g_skybox_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant },
+                { { ShaderType::Pixel,  "g_skybox_texture"  }, IProgram::ArgumentAccessor::Type::Constant      },
+                { { ShaderType::Pixel,  "g_texture_sampler" }, IProgram::ArgumentAccessor::Type::Constant      },
             },
             render_pattern.GetAttachmentFormats()
         }

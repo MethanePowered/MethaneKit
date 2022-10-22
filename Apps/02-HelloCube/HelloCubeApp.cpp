@@ -139,28 +139,28 @@ public:
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                IProgram::Create(GetRenderContext(),
+                    IProgram::Settings
                     {
-                        Program::Shaders
+                        IProgram::Shaders
                         {
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
                             IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
-                        Program::InputBufferLayouts
+                        IProgram::InputBufferLayouts
                         {
-                            Program::InputBufferLayout
+                            IProgram::InputBufferLayout
                             {
-                                Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                                IProgram::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                             }
                         },
 #ifdef UNIFORMS_BUFFER_ENABLED
-                        Program::ArgumentAccessors
+                        IProgram::ArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant }
                         },
 #else
-                        Program::ArgumentAccessors{ },
+                        IProgram::ArgumentAccessors{ },
 #endif
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }

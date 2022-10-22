@@ -64,16 +64,16 @@ public:
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                IProgram::Create(GetRenderContext(),
+                    IProgram::Settings
                     {
-                        Program::Shaders
+                        IProgram::Shaders
                         {
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
                             IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
-                        Program::InputBufferLayouts{ },
-                        Program::ArgumentAccessors{ },
+                        IProgram::InputBufferLayouts{ },
+                        IProgram::ArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

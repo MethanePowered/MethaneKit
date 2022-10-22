@@ -133,30 +133,30 @@ void ShadowCubeApp::Init()
 
     // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
-    final_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    final_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
+        gfx::IProgram::Settings
         {
-            gfx::Program::Shaders
+            gfx::IProgram::Shaders
             {
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
                 gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
-            gfx::Program::InputBufferLayouts
+            gfx::IProgram::InputBufferLayouts
             {
-                gfx::Program::InputBufferLayout
+                gfx::IProgram::InputBufferLayout
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentAccessors
+            gfx::IProgram::ArgumentAccessors
             {
-                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::IProgram::ArgumentAccessor::Type::Constant      },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -188,17 +188,17 @@ void ShadowCubeApp::Init()
     // Create shadow-pass rendering state with program
     const gfx::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
     gfx::RenderState::Settings           shadow_state_settings;
-    shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    shadow_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
+        gfx::IProgram::Settings
         {
-            gfx::Program::Shaders
+            gfx::IProgram::Shaders
             {
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::Program::ArgumentAccessors
+            gfx::IProgram::ArgumentAccessors
             {
-                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
+                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable },
             },
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }

@@ -74,7 +74,7 @@ public:
 Application class `HelloTriangleApp` keeps frame independent resources in private class members.
 In this tutorial it is only render state `m_render_state_ptr` which is initialized in `HelloTriangleApp::Init` method.
 Render state is created with `RenderState::Create(...)` factory by passing render context and setting, which encapsulate 
-program created inline with `Program::Create(...)`. Program is created with a set of vertex and pixel shaders
+program created inline with `IProgram::Create(...)`. Program is created with a set of vertex and pixel shaders
 created with `IShader::CreateVertex` and `IShader::CreatePixel` factory methods taking `Data::Provider` and 
 `IShader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
 and is accessed via shader data provider singleton available with `Data::ShaderProvider::Get()`.
@@ -107,16 +107,16 @@ public:
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                IProgram::Create(GetRenderContext(),
+                    IProgram::Settings
                     {
-                        Program::Shaders
+                        IProgram::Shaders
                         {
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
                             IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
-                        Program::InputBufferLayouts{ },
-                        Program::ArgumentAccessors{ },
+                        IProgram::InputBufferLayouts{ },
+                        IProgram::ArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

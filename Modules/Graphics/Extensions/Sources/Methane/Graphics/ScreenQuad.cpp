@@ -29,7 +29,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
@@ -95,15 +95,15 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     IRenderContext& render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
-    const IShader::MacroDefinitions         ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-    Program::ArgumentAccessors              program_argument_accessors = {
-        { { ShaderType::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
+    const IShader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
+    IProgram::ArgumentAccessors     program_argument_accessors = {
+        { { ShaderType::Pixel, "g_constants" }, IProgram::ArgumentAccessor::Type::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_accessors.emplace(ShaderType::Pixel, "g_texture", Program::ArgumentAccessor::Type::Mutable);
-        program_argument_accessors.emplace(ShaderType::Pixel, "g_sampler", Program::ArgumentAccessor::Type::Constant);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_texture", IProgram::ArgumentAccessor::Type::Mutable);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_sampler", IProgram::ArgumentAccessor::Type::Constant);
     }
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
@@ -112,19 +112,19 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     if (!m_render_state_ptr)
     {
         RenderState::Settings state_settings;
-        state_settings.program_ptr = Program::Create(render_context,
-            Program::Settings
+        state_settings.program_ptr = IProgram::Create(render_context,
+            IProgram::Settings
             {
-                Program::Shaders
+                IProgram::Shaders
                 {
                     IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
                     IShader::CreatePixel(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
                 },
-                Program::InputBufferLayouts
+                IProgram::InputBufferLayouts
                 {
-                    Program::InputBufferLayout
+                    IProgram::InputBufferLayout
                     {
-                        Program::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
+                        IProgram::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
                 program_argument_accessors,
@@ -213,8 +213,8 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_views.try_emplace(Program::Argument(ShaderType::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
-        program_binding_resource_views.try_emplace(Program::Argument(ShaderType::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
+        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
+        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
     }
 
     m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);

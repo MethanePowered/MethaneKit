@@ -115,9 +115,9 @@ set of vertex buffers used for triangle rendering `m_index_buffer_ptr` - they ar
 But first of all, camera view is resized according to render context size to maintain the correct aspect ratio of the projection. 
 
 Render state is created with `RenderState::Create(...)` function similarly as in [HelloTriangle](../01-HelloTriangle) tutorial.
-Program is created as a part of the state with `Program::Create(...)` function which takes `Program::Settings`, which differ
-from program settings in [HelloTriangle](../01-HelloTriangle) with configuration of `Program::InputBufferLayouts`. In this tutorial
-we use single input vertex buffer with interleaved positions and colors, which is described by `Program::InputBufferLayout` with
+Program is created as a part of the state with `IProgram::Create(...)` function which takes `IProgram::Settings`, which differ
+from program settings in [HelloTriangle](../01-HelloTriangle) with configuration of `IProgram::InputBufferLayouts`. In this tutorial
+we use single input vertex buffer with interleaved positions and colors, which is described by `IProgram::InputBufferLayout` with
 an array of HLSL vertex shader input semantics, which correspond to `CubeVertex` struct layout.
 
 ```cpp
@@ -142,22 +142,22 @@ public:
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                IProgram::Create(GetRenderContext(),
+                    IProgram::Settings
                     {
-                        Program::Shaders
+                        IProgram::Shaders
                         {
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
                             IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
-                        Program::InputBufferLayouts
+                        IProgram::InputBufferLayouts
                         {
-                            Program::InputBufferLayout
+                            IProgram::InputBufferLayout
                             {
-                                Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                                IProgram::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                             }
                         },
-                        Program::ArgumentAccessors{ },
+                        IProgram::ArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
@@ -337,8 +337,8 @@ class HelloCubeApp final : public GraphicsApp
 
 This tutorial uses simple HLSL shader [Shaders/HelloCube.hlsl](Shaders/HelloCube.hlsl).
 Note that semantic names of `VSInput` structure members, passed as argument to vertex shader function `CubeVS(VSInput input)`,
-are matching to input buffer layout arguments `Program::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" }`
-passed in Settings of `Program::Create(...)` call and also correpong to `CubeVertex` struct layout.
+are matching to input buffer layout arguments `IProgram::InputBufferLayout::ArgumentSemantics { "POSITION", "COLOR" }`
+passed in Settings of `IProgram::Create(...)` call and also correpong to `CubeVertex` struct layout.
 
 ```cpp
 struct VSInput
@@ -471,8 +471,8 @@ private:
 
 The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_BUFFER_ENABLED`,
 which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
-Also `Program::ArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
-and type of access to the argument `Program::ArgumentAccessor::Type::FrameConstant`, which means that only one buffer
+Also `IProgram::ArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
+and type of access to the argument `IProgram::ArgumentAccessor::Type::FrameConstant`, which means that only one buffer
 is bound to this program argument at each frame (argument is constant per frame). Other argument accessor types include 
 `Constant` (bound to single resource all the time) and `Mutable` (can be bound to different resources).
 
@@ -489,18 +489,18 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                IProgram::Create(GetRenderContext(),
+                    IProgram::Settings
                     {
-                        Program::Shaders
+                        IProgram::Shaders
                         {
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
                             IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         ...
-                        Program::ArgumentAccessors
+                        IProgram::ArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant }
                         },
                         ...
                     }

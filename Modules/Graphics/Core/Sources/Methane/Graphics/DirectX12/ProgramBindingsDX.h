@@ -101,7 +101,7 @@ public:
         ResourceViewsDX                      m_resource_views_dx;
     };
     
-    ProgramBindingsDX(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsDX(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
     ~ProgramBindingsDX() override;
 
@@ -125,10 +125,10 @@ private:
     template<typename FuncType> // function void(ArgumentBindingDX&, const DescriptorHeapDX::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void ReserveDescriptorHeapRanges();
-    void AddRootParameterBinding(const Program::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
+    void AddRootParameterBinding(const IProgram::ArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
-    void ApplyRootParameterBindings(Program::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+    void ApplyRootParameterBindings(IProgram::ArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
@@ -136,7 +136,7 @@ private:
                                          const DescriptorHeapDX::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
-    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()>;
     RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
 
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeapDX::Reservation>, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
@@ -148,11 +148,11 @@ class DescriptorsCountByAccess
 public:
     DescriptorsCountByAccess();
 
-    uint32_t& operator[](Program::ArgumentAccessor::Type access_type);
-    uint32_t  operator[](Program::ArgumentAccessor::Type access_type) const;
+    uint32_t& operator[](IProgram::ArgumentAccessor::Type access_type);
+    uint32_t  operator[](IProgram::ArgumentAccessor::Type access_type) const;
 
 private:
-    std::array<uint32_t, magic_enum::enum_count<Program::ArgumentAccessor::Type>()> m_count_by_access_type;
+    std::array<uint32_t, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()> m_count_by_access_type;
 };
 
 } // namespace Methane::Graphics

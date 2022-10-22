@@ -33,7 +33,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/ProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
@@ -106,27 +106,27 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     else
     {
         gfx::RenderState::Settings state_settings;
-        state_settings.program_ptr = gfx::Program::Create(GetUIContext().GetRenderContext(),
-            gfx::Program::Settings
+        state_settings.program_ptr = gfx::IProgram::Create(GetUIContext().GetRenderContext(),
+            gfx::IProgram::Settings
             {
-                gfx::Program::Shaders
+                gfx::IProgram::Shaders
                 {
                     gfx::IShader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
                     gfx::IShader::CreatePixel(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
                 },
-                gfx::Program::InputBufferLayouts
+                gfx::IProgram::InputBufferLayouts
                 {
-                    gfx::Program::InputBufferLayout
+                    gfx::IProgram::InputBufferLayout
                     {
-                        gfx::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
+                        gfx::IProgram::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                     }
                 },
-                gfx::Program::ArgumentAccessors
+                gfx::IProgram::ArgumentAccessors
                 {
-                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::IProgram::ArgumentAccessor::Type::Constant },
                 },
                 render_pattern.GetAttachmentFormats()
             }

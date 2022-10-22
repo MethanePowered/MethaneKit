@@ -26,7 +26,7 @@ Base implementation of the command list interface.
 #include "ObjectBase.h"
 #include "QueryPool.h"
 
-#include <Methane/Graphics/Program.h>
+#include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Data/Emitter.hpp>

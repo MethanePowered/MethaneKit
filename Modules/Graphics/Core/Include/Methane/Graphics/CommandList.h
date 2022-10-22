@@ -39,6 +39,7 @@ namespace Methane::Graphics
 {
 
 struct CommandQueue;
+struct CommandList;
 
 struct ICommandListCallback
 {

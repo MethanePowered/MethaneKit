@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 static const std::hash<std::string_view> g_argument_name_hash;
 
-Program::Argument::Argument(ShaderType shader_type, std::string_view argument_name) noexcept
+ProgramArgument::ProgramArgument(ShaderType shader_type, std::string_view argument_name) noexcept
     : m_shader_type(shader_type)
     , m_name(argument_name)
     , m_hash(g_argument_name_hash(m_name) ^ (magic_enum::enum_index(shader_type).value() << 1))
@@ -44,47 +44,47 @@ Program::Argument::Argument(ShaderType shader_type, std::string_view argument_na
     META_FUNCTION_TASK();
 }
 
-bool Program::Argument::operator==(const Argument& other) const noexcept
+bool ProgramArgument::operator==(const ProgramArgument& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_hash, m_shader_type, m_name) ==
            std::tie(other.m_hash, other.m_shader_type, other.m_name);
 }
 
-Program::Argument::operator std::string() const noexcept
+ProgramArgument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
 }
 
-Program::ArgumentAccessor::ArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
-    : Argument(shader_type, argument_name)
+ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
+    : ProgramArgument(shader_type, argument_name)
     , m_accessor_type(accessor_type)
     , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-Program::ArgumentAccessor::ArgumentAccessor(const Argument& argument, Type accessor_type, bool addressable) noexcept
-    : Argument(argument)
+ProgramArgumentAccessor::ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type, bool addressable) noexcept
+    : ProgramArgument(argument)
     , m_accessor_type(accessor_type)
     , m_addressable(addressable)
 {
     META_FUNCTION_TASK();
 }
 
-size_t Program::ArgumentAccessor::GetAccessorIndex() const noexcept
+size_t ProgramArgumentAccessor::GetAccessorIndex() const noexcept
 {
     return magic_enum::enum_index(m_accessor_type).value();
 }
 
-Program::ArgumentAccessor::operator std::string() const noexcept
+ProgramArgumentAccessor::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} ({}{})", Argument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
+    return fmt::format("{} ({}{})", ProgramArgument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
 }
 
-Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument)
+ProgramArgumentAccessors::const_iterator IProgram::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const ProgramArgument& argument)
 {
     META_FUNCTION_TASK();
     if (const auto argument_desc_it = argument_accessors.find(argument);
@@ -95,11 +95,11 @@ Program::ArgumentAccessors::const_iterator Program::FindArgumentAccessor(const A
     return argument_accessors.find(all_shaders_argument);
 }
 
-Program::Argument::NotFoundException::NotFoundException(const Program& program, const Argument& argument)
+ProgramArgumentNotFoundException::ProgramArgumentNotFoundException(const IProgram& program, const ProgramArgument& argument)
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
                                         program.GetName(), argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
     , m_program(program)
-    , m_argument_ptr(std::make_unique<Program::Argument>(argument))
+    , m_argument_ptr(std::make_unique<IProgram::Argument>(argument))
 {
     META_FUNCTION_TASK();
 }
@@ -215,7 +215,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
     }
 }
 
-const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const Program::ArgumentAccessor& argument_accessor) const
+const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const IProgram::ArgumentAccessor& argument_accessor) const
 {
     META_FUNCTION_TASK();
     const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
@@ -228,7 +228,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBinding
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-    const Program::ArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
+    const IProgram::ArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
     switch(argument_accessor.GetAccessorType())
     {
     case ArgumentAccessor::Type::Mutable:       return ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);

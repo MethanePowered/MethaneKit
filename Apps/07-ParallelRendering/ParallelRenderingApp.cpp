@@ -131,26 +131,26 @@ void ParallelRenderingApp::Init()
 
     // Create render state with program
     gfx::RenderState::Settings render_state_settings;
-    render_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    render_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
+        gfx::IProgram::Settings
         {
-            gfx::Program::Shaders
+            gfx::IProgram::Shaders
             {
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } }),
                 gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } }),
             },
-            gfx::Program::InputBufferLayouts
+            gfx::IProgram::InputBufferLayouts
             {
-                gfx::Program::InputBufferLayout
+                gfx::IProgram::InputBufferLayout
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentAccessors
+            gfx::IProgram::ArgumentAccessors
             {
-                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::IProgram::ArgumentAccessor::Type::Mutable, true },
+                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::IProgram::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::IProgram::ArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }

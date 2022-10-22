@@ -64,14 +64,14 @@ public:
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(Program::ArgumentAccessor::Type argument_access_type);
-    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(Program::ArgumentAccessor::Type argument_access_type);
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(IProgram::ArgumentAccessor::Type argument_access_type);
+    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(IProgram::ArgumentAccessor::Type argument_access_type);
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
-    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<Program::ArgumentAccessor::Type>()>;
+    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()>;
 
     void InitializeDescriptorSetLayouts();
     void UpdatePipelineName();

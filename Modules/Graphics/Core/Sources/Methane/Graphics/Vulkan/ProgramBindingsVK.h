@@ -87,7 +87,7 @@ public:
         std::vector<vk::BufferView>           m_vk_buffer_views;
     };
 
-    ProgramBindingsVK(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindingsVK(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     void Initialize();
@@ -103,11 +103,11 @@ public:
 
 private:
     // IObjectCallback interface
-    void OnObjectNameChanged(IObject&, const std::string&) override; // Program name changed
+    void OnObjectNameChanged(IObject&, const std::string&) override; // IProgram name changed
 
     void SetResourcesForArgumentsVK(const ResourceViewsByArgument& resource_views_by_argument);
 
-    template<typename FuncType> // function void(const Program::Argument&, ArgumentBindingVK&)
+    template<typename FuncType> // function void(const IProgram::Argument&, ArgumentBindingVK&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void UpdateMutableDescriptorSetName();
 

@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 class ContextBase;
 class ProgramBase;
-struct Program;
+struct IProgram;
 
 class ShaderBase
     : public IShader
@@ -51,7 +51,7 @@ public:
 
     // ShaderBase interface
     using ArgumentBindings = Ptrs<ProgramBindingsBase::ArgumentBindingBase>;
-    virtual ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const = 0;
+    virtual ArgumentBindings GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const = 0;
 
     const ContextBase& GetContext() const noexcept { return m_context; }
     std::string_view   GetCachedArgName(std::string_view arg_name) const;

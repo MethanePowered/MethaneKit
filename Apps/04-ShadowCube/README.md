@@ -213,7 +213,7 @@ description here.
 - Pixel and vertex shaders are loaded for specific combination of macro definitions enabled during compilation done in build time.
   This macro definitions set is described in `gfx::IShader::MacroDefinitions` variable `textured_shadows_definitions` which
   is passed to `gfx::IShader::CreateVertex/CreatePixel` functions.
-- Configuration of `gfx::Program::ArgumentAccessors` is more complex than for simple cube mesh and mostly describes
+- Configuration of `gfx::IProgram::ArgumentAccessors` is more complex than for simple cube mesh and mostly describes
   Pixel-shader specific argument modifiers, except `g_mesh_uniforms` for Vertex-shader.
   `g_constants`, `g_shadow_sampler`, `g_texture_sampler` arguments are described with `Constant` modifier, while
   other arguments have no modifiers meaning that that can change during frames rendering.
@@ -227,30 +227,30 @@ description here.
 
     // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
-    final_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    final_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
+        gfx::IProgram::Settings
         {
-            gfx::Program::Shaders
+            gfx::IProgram::Shaders
             {
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
                 gfx::IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
-            gfx::Program::InputBufferLayouts
+            gfx::IProgram::InputBufferLayouts
             {
-                gfx::Program::InputBufferLayout
+                gfx::IProgram::InputBufferLayout
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::Program::ArgumentAccessors
+            gfx::IProgram::ArgumentAccessors
             {
-                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::IProgram::ArgumentAccessor::Type::Constant      },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -295,17 +295,17 @@ Vertex shader since it will be used for rendering to depth buffer only without c
     // Create shadow-pass rendering state with program
     const gfx::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
     gfx::RenderState::Settings shadow_state_settings;
-    shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
+    shadow_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
+        gfx::IProgram::Settings
         {
-            gfx::Program::Shaders
+            gfx::IProgram::Shaders
             {
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::Program::ArgumentAccessors
+            gfx::IProgram::ArgumentAccessors
             {
-                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
+                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable },
             },
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
