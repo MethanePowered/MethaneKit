@@ -30,7 +30,7 @@ Vulkan implementation of the render context interface specific to MacOS.
 namespace Methane::Graphics
 {
 
-RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
     : ContextVK<RenderContextBase>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
     , m_metal_view(CreateRenderContextAppView(app_env, settings))

@@ -45,7 +45,7 @@ and extended with other frame-dependent resources in final applications.
 `Graphics::AppSettings` structure aggregates 3 setting structures passed all together to the `Graphics::App` constructor:
 - [Graphics::IApp::Settings](#graphicsiappincludemethanegraphicsapph) - graphics app settings described above
 - [Platform::AppBase::Settings](../../Platform/App/README.md#platformappbaseincludemethaneplatformappbaseh) - platform app settings
-- [Graphics::RenderContext::Settings](../Core) - render context settings
+- [Graphics::RenderContextSettings](../Core) - render context settings
 
 Some parameters of the render context settings can be also changed with command line flags:
 

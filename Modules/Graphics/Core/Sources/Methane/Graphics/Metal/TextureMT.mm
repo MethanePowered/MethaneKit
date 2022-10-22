@@ -76,24 +76,24 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::Dimensi
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const RenderContext& context, const Settings& settings)
+Ptr<Texture> Texture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const RenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
+Ptr<Texture> Texture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
 {
     META_FUNCTION_TASK();
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    const RenderContextSettings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
     return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const RenderContext& context)
+Ptr<Texture> Texture::CreateDepthStencilBuffer(const IRenderContext& context)
 {
     META_FUNCTION_TASK();
-    const RenderContext::Settings& context_settings = context.GetSettings();
+    const RenderContextSettings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }

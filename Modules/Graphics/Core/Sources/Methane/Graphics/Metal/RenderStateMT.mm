@@ -268,7 +268,7 @@ void ViewStateMT::Apply(RenderCommandListBase& command_list)
     [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
 }
 
-Ptr<RenderState> RenderState::Create(const RenderContext& context, const RenderState::Settings& state_settings)
+Ptr<RenderState> RenderState::Create(const IRenderContext& context, const RenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderStateMT>(dynamic_cast<const RenderContextBase&>(context), state_settings);

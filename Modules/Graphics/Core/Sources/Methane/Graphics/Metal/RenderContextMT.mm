@@ -42,7 +42,7 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
     DeviceBase& device_base = static_cast<DeviceBase&>(device);
@@ -51,7 +51,7 @@ Ptr<RenderContext> RenderContext::Create(const Platform::AppEnvironment& env, ID
     return render_context_ptr;
 }
 
-RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContext::Settings& settings)
+RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
     : ContextMT<RenderContextBase>(device, parallel_executor, settings)
     , m_app_view(CreateRenderContextAppView(env, settings))
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()])

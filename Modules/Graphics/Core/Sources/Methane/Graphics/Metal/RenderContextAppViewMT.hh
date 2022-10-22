@@ -25,7 +25,7 @@ Metal application view creation by render context settings (shared logic with Vu
 
 #include "TypesMT.hh"
 
-#include <Methane/Graphics/RenderContext.h>
+#include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Instrumentation.h>
 
 #ifdef APPLE_MACOS
@@ -39,7 +39,7 @@ Metal application view creation by render context settings (shared logic with Vu
 namespace Methane::Graphics
 {
 
-inline AppViewMT* CreateRenderContextAppView(const Platform::AppEnvironment& env, const RenderContext::Settings& settings)
+inline AppViewMT* CreateRenderContextAppView(const Platform::AppEnvironment& env, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
     AppViewMT* app_view = [[AppViewMT alloc] initWithFrame: TypeConverterMT::CreateNSRect(settings.frame_size)

@@ -8,7 +8,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IObject.h
     ${INCLUDE_DIR}/IDevice.h
     ${INCLUDE_DIR}/IContext.h
-    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/IRenderContext.h
     ${INCLUDE_DIR}/IFence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h

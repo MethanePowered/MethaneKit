@@ -85,7 +85,7 @@ static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass
     }
 }
 
-Ptr<RenderPattern> RenderPattern::Create(RenderContext& render_context, const Settings& settings)
+Ptr<RenderPattern> RenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
