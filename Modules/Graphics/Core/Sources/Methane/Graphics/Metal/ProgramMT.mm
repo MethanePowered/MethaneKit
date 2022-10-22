@@ -35,7 +35,7 @@ Metal implementation of the program interface.
 namespace Methane::Graphics
 {
 
-Ptr<Program> IProgram::Create(const IContext& context, const Settings& settings)
+Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramMT>(dynamic_cast<const ContextBase&>(context), settings);

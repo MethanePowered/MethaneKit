@@ -125,7 +125,7 @@ void SetMetalResources(ShaderType shader_type, const id<MTLRenderCommandEncoder>
 }
 
 template<typename TMetalResource>
-void SetMetalResourcesForAll(ShaderType shader_type, const Program& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+void SetMetalResourcesForAll(ShaderType shader_type, const IProgram& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                                    const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
                                    const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {
@@ -164,7 +164,7 @@ void SetMetalResourcesForAll(ShaderType shader_type, const Program& program, con
     }
 }
 
-Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<ProgramBindings> ProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramBindingsMT>(program_ptr, resource_views_by_argument, frame_index);
@@ -231,7 +231,7 @@ bool ProgramBindingsMT::ArgumentBindingMT::SetResourceViews(const Resource::View
     return true;
 }
 
-ProgramBindingsMT::ProgramBindingsMT(const Ptr<Program>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+ProgramBindingsMT::ProgramBindingsMT(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : ProgramBindingsBase(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
