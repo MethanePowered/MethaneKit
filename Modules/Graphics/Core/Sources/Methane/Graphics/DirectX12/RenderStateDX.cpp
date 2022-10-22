@@ -48,7 +48,7 @@ namespace Methane::Graphics
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
 [[nodiscard]]
-inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Shader>& shader_ptr)
+inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<IShader>& shader_ptr)
 {
     META_FUNCTION_TASK();
     const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const ShaderDX&>(*shader_ptr).GetNativeByteCode() : nullptr;
@@ -348,8 +348,8 @@ void RenderStateDX::Reset(const Settings& settings)
     const ProgramDX& dx_program                 = RenderStateDX::GetProgramDX();
     m_pipeline_state_desc.InputLayout           = dx_program.GetNativeInputLayoutDesc();
     m_pipeline_state_desc.pRootSignature        = dx_program.GetNativeRootSignature().Get();
-    m_pipeline_state_desc.VS                    = GetShaderByteCode(dx_program.GetShader(Shader::Type::Vertex));
-    m_pipeline_state_desc.PS                    = GetShaderByteCode(dx_program.GetShader(Shader::Type::Pixel));
+    m_pipeline_state_desc.VS                    = GetShaderByteCode(dx_program.GetShader(ShaderType::Vertex));
+    m_pipeline_state_desc.PS                    = GetShaderByteCode(dx_program.GetShader(ShaderType::Pixel));
     m_pipeline_state_desc.DepthStencilState     = depth_stencil_desc;
     m_pipeline_state_desc.BlendState            = blend_desc;
     m_pipeline_state_desc.RasterizerState       = rasterizer_desc;

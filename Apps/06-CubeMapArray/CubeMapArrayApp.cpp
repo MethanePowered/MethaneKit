@@ -95,8 +95,8 @@ void CubeMapArrayApp::Init()
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } }),
+                gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } }),
+                gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -107,9 +107,9 @@ void CubeMapArrayApp::Init()
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -174,9 +174,9 @@ void CubeMapArrayApp::Init()
 
         // Configure program resource bindings
         frame.cube.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cube.uniforms_buffer_ptr  } } },
-            { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture() } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr           } } },
+            { { gfx::ShaderType::All,   "g_uniforms"      }, { { *frame.cube.uniforms_buffer_ptr  } } },
+            { { gfx::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture() } } },
+            { { gfx::ShaderType::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr           } } },
         }, frame.index);
         frame.cube.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
 

@@ -111,8 +111,8 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
             {
                 gfx::Program::Shaders
                 {
-                    gfx::Shader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
-                    gfx::Shader::CreatePixel( GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
+                    gfx::IShader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
+                    gfx::IShader::CreatePixel(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
                 },
                 gfx::Program::InputBufferLayouts
                 {
@@ -123,10 +123,10 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
                 },
                 gfx::Program::ArgumentAccessors
                 {
-                    { { gfx::Shader::Type::Vertex, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::Shader::Type::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                 },
                 render_pattern.GetAttachmentFormats()
             }
@@ -429,10 +429,10 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
     m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
-        { { gfx::Shader::Type::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
-        { { gfx::Shader::Type::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
-        { { gfx::Shader::Type::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
-        { { gfx::Shader::Type::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
+        { { gfx::ShaderType::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
+        { { gfx::ShaderType::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
+        { { gfx::ShaderType::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
+        { { gfx::ShaderType::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
     m_program_bindings_ptr->SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 }
@@ -478,7 +478,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::Shader::Type::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ gfx::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
     return true;
 }
 
@@ -551,7 +551,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& rende
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::Shader::Type::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ gfx::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(

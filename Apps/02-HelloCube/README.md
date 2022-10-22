@@ -147,8 +147,8 @@ public:
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
-                            Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
+                            IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         Program::InputBufferLayouts
                         {
@@ -485,7 +485,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
     {
         ...
 
-        const Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+        const IShader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
         m_render_state_ptr = RenderState::Create(GetRenderContext(),
             RenderState::Settings
             {
@@ -494,13 +494,13 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
-                            Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
+                            IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         ...
                         Program::ArgumentAccessors
                         {
-                            { { Shader::Type::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
                         },
                         ...
                     }
@@ -547,7 +547,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
 
             // Configure program resource bindings
             frame.program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-                { { Shader::Type::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
+                { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
             }, frame.index);
             
             ...

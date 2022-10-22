@@ -50,7 +50,7 @@ class ProgramVK;
 class ShaderVK final : public ShaderBase
 {
 public:
-    ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings);
+    ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const override;
@@ -63,7 +63,7 @@ public:
 
     Data::MutableChunk& GetMutableByteCode() noexcept;
 
-    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(Shader::Type shader_type);
+    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(ShaderType shader_type);
 
 private:
     void InitializeVertexInputDescriptions(const ProgramVK& program);

@@ -25,7 +25,7 @@ Methane graphics core interfaces: all headers under one umbrella.
 
 #include "IDevice.h"
 #include "IRenderContext.h"
-#include "Shader.h"
+#include "IShader.h"
 #include "Program.h"
 #include "ProgramBindings.h"
 #include "RenderState.h"

@@ -58,7 +58,7 @@ public:
     // ObjectBase overrides
     bool SetName(const std::string& name) override;
 
-    ShaderVK& GetShaderVK(Shader::Type shader_type) const;
+    ShaderVK& GetShaderVK(ShaderType shader_type) const;
     const IContextVK& GetContextVK() const noexcept;
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;

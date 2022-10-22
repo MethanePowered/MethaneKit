@@ -43,15 +43,15 @@ Ptr<Program> Program::Create(const IContext& context, const Settings& settings)
 
 ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
-    , m_mtl_vertex_desc(GetShaderMT(Shader::Type::Vertex).GetNativeVertexDescriptor(*this))
+    , m_mtl_vertex_desc(GetShaderMT(ShaderType::Vertex).GetNativeVertexDescriptor(*this))
 {
     META_FUNCTION_TASK();
 
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
     mtl_reflection_state_desc.vertexDescriptor = m_mtl_vertex_desc;
-    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(Shader::Type::Vertex);
-    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(Shader::Type::Pixel);
+    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(ShaderType::Vertex);
+    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(ShaderType::Pixel);
 
     // Fill state color attachment descriptors matching program's pixel shader output
     // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
@@ -81,8 +81,8 @@ ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
 
     if (mtl_render_pipeline_reflection)
     {
-        SetNativeShaderArguments(Shader::Type::Vertex, mtl_render_pipeline_reflection.vertexArguments);
-        SetNativeShaderArguments(Shader::Type::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
+        SetNativeShaderArguments(ShaderType::Vertex, mtl_render_pipeline_reflection.vertexArguments);
+        SetNativeShaderArguments(ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
         InitArgumentBindings(settings.argument_accessors);
     }
 }
@@ -93,19 +93,19 @@ const IContextMT& ProgramMT::GetContextMT() const noexcept
     return static_cast<const IContextMT&>(GetContext());
 }
 
-ShaderMT& ProgramMT::GetShaderMT(Shader::Type shader_type) noexcept
+ShaderMT& ProgramMT::GetShaderMT(ShaderType shader_type) noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderMT&>(GetShaderRef(shader_type));
 }
 
-id<MTLFunction> ProgramMT::GetNativeShaderFunction(Shader::Type shader_type) noexcept
+id<MTLFunction> ProgramMT::GetNativeShaderFunction(ShaderType shader_type) noexcept
 {
     META_FUNCTION_TASK();
     return HasShader(shader_type) ? static_cast<ShaderMT&>(GetShaderRef(shader_type)).GetNativeFunction() : nil;
 }
 
-void ProgramMT::SetNativeShaderArguments(Shader::Type shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
+void ProgramMT::SetNativeShaderArguments(ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
 {
     META_FUNCTION_TASK();
     if (HasShader(shader_type))

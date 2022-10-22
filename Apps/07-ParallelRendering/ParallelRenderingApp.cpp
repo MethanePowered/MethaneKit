@@ -136,8 +136,8 @@ void ParallelRenderingApp::Init()
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } }),
+                gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } }),
+                gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -148,9 +148,9 @@ void ParallelRenderingApp::Init()
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::Shader::Type::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
+                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -198,9 +198,9 @@ void ParallelRenderingApp::Init()
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = gfx::ProgramBindings::Create(render_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
-            { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },
+            { { gfx::ShaderType::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
+            { { gfx::ShaderType::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
+            { { gfx::ShaderType::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },
         }, frame.index);
         frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
@@ -209,7 +209,7 @@ void ParallelRenderingApp::Init()
             {
                 Ptr<gfx::ProgramBindings> cube_program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
                         {
-                          { gfx::Shader::Type::All, "g_uniforms" },
+                          { gfx::ShaderType::All, "g_uniforms" },
                           { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
                         }
                     }, frame.index);

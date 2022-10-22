@@ -73,7 +73,7 @@ const IContextVK& ProgramVK::GetContextVK() const noexcept
     return static_cast<const IContextVK&>(GetContext());
 }
 
-ShaderVK& ProgramVK::GetShaderVK(Shader::Type shader_type) const
+ShaderVK& ProgramVK::GetShaderVK(ShaderType shader_type) const
 {
     META_FUNCTION_TASK();
     return static_cast<ShaderVK&>(GetShaderRef(shader_type));
@@ -83,7 +83,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> ProgramVK::GetNativeShaderStageCr
 {
     META_FUNCTION_TASK();
     std::vector<vk::PipelineShaderStageCreateInfo> vk_stage_create_infos;
-    for(Shader::Type shader_type : GetShaderTypes())
+    for(ShaderType shader_type : GetShaderTypes())
     {
         vk_stage_create_infos.emplace_back(GetShaderVK(shader_type).GetNativeStageCreateInfo());
     }
@@ -93,7 +93,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> ProgramVK::GetNativeShaderStageCr
 vk::PipelineVertexInputStateCreateInfo ProgramVK::GetNativeVertexInputStateCreateInfo() const
 {
     META_FUNCTION_TASK();
-    auto& vertex_shader = static_cast<ShaderVK&>(GetShaderRef(Shader::Type::Vertex));
+    auto& vertex_shader = static_cast<ShaderVK&>(GetShaderRef(ShaderType::Vertex));
     return vertex_shader.GetNativeVertexInputStateCreateInfo(*this);
 }
 

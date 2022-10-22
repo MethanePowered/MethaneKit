@@ -112,8 +112,8 @@ void TexturedCubeApp::Init()
                 {
                     gfx::Program::Shaders
                     {
-                        gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
-                        gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
+                        gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
+                        gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
                     },
                     gfx::Program::InputBufferLayouts
                     {
@@ -124,10 +124,10 @@ void TexturedCubeApp::Init()
                     },
                     gfx::Program::ArgumentAccessors
                     {
-                        { { gfx::Shader::Type::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                        { { gfx::Shader::Type::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                        { { gfx::Shader::Type::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
-                        { { gfx::Shader::Type::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::All,   "g_uniforms"  }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                        { { gfx::ShaderType::Pixel, "g_constants" }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::Pixel, "g_texture"   }, gfx::Program::ArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::Pixel, "g_sampler"   }, gfx::Program::ArgumentAccessor::Type::Constant },
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
@@ -163,10 +163,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
-            { { gfx::Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
-            { { gfx::Shader::Type::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr     } } },
+            { { gfx::ShaderType::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
+            { { gfx::ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
+            { { gfx::ShaderType::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },
+            { { gfx::ShaderType::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr     } } },
         }, frame.index);
         frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
         

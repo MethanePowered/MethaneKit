@@ -127,9 +127,9 @@ void ShadowCubeApp::Init()
 
     // ========= Final Pass Render & View States =========
 
-    const gfx::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
-    const gfx::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
-    const gfx::Shader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
+    const gfx::IShader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
+    const gfx::IShader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
+    const gfx::IShader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
     // Create final pass rendering state with program
     gfx::RenderState::Settings final_state_settings;
@@ -138,8 +138,8 @@ void ShadowCubeApp::Init()
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
-                gfx::Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
+                gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
+                gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
             gfx::Program::InputBufferLayouts
             {
@@ -150,13 +150,13 @@ void ShadowCubeApp::Init()
             },
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant      },
-                { { gfx::Shader::Type::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
-                { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::Program::ArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::Program::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::Program::ArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::Program::ArgumentAccessor::Type::Constant      },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -186,19 +186,19 @@ void ShadowCubeApp::Init()
     });
 
     // Create shadow-pass rendering state with program
-    const gfx::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
-    gfx::RenderState::Settings shadow_state_settings;
+    const gfx::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
+    gfx::RenderState::Settings           shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
         gfx::Program::Settings
         {
             gfx::Program::Shaders
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+                gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
             gfx::Program::ArgumentAccessors
             {
-                { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
+                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::Program::ArgumentAccessor::Type::Mutable },
             },
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
@@ -242,13 +242,13 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
+            { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
         }, frame.index);
         frame.shadow_pass.cube.program_bindings_ptr->SetName(IndexedName("Cube Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
+            { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         }, frame.index);
         frame.shadow_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
 
@@ -278,20 +278,20 @@ void ShadowCubeApp::Init()
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(final_state_settings.program_ptr, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
-            { { gfx::Shader::Type::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
-            { { gfx::Shader::Type::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_map"     }, { { *frame.shadow_pass.rt_texture_ptr           } } },
-            { { gfx::Shader::Type::Pixel,  "g_shadow_sampler" }, { { *m_shadow_sampler_ptr                       } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture()            } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr                      } } },
+            { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
+            { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
+            { { gfx::ShaderType::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
+            { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, { { *frame.shadow_pass.rt_texture_ptr           } } },
+            { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, { { *m_shadow_sampler_ptr                       } } },
+            { { gfx::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture()            } } },
+            { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr                      } } },
         }, frame.index);
         frame.final_pass.cube.program_bindings_ptr->SetName(IndexedName("Cube Final-Pass Bindings {}", frame.index));
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
-            { { gfx::Shader::Type::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
-            { { gfx::Shader::Type::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
+            { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
+            { { gfx::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
         }, frame.index);
         frame.final_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Final-Pass Bindings {}", frame.index));
 

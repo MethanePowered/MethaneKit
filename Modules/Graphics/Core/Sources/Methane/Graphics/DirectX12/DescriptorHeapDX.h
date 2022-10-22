@@ -60,7 +60,7 @@ class DescriptorHeapDX : public Data::Emitter<IDescriptorHeapCallback> // NOSONA
 public:
     enum class Type : uint32_t
     {
-        // Shader visible heap types
+        // IShader visible heap types
         ShaderResources = 0U,
         Samplers,
 

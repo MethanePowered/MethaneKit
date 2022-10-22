@@ -36,7 +36,7 @@ class ProgramMT;
 class ShaderMT final : public ShaderBase
 {
 public:
-    ShaderMT(Shader::Type shader_type, const ContextBase& context, const Settings& settings);
+    ShaderMT(ShaderType shader_type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase interface
     ArgumentBindings GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const final;

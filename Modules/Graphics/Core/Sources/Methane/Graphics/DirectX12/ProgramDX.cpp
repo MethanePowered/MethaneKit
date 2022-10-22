@@ -82,15 +82,15 @@ static DescriptorHeapDX::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_
 }
 
 [[nodiscard]]
-static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Shader::Type shader_type)
+static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(ShaderType shader_type)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-    case Shader::Type::All:    return D3D12_SHADER_VISIBILITY_ALL;
-    case Shader::Type::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
-    case Shader::Type::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                   META_UNEXPECTED_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
+    case ShaderType::All:    return D3D12_SHADER_VISIBILITY_ALL;
+    case ShaderType::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
+    case ShaderType::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
+    default:                 META_UNEXPECTED_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
 };
 
@@ -272,13 +272,13 @@ const IContextDX& ProgramDX::GetContextDX() const noexcept
 ShaderDX& ProgramDX::GetVertexShaderDX() const
 {
     META_FUNCTION_TASK();
-    return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Vertex));
+    return static_cast<ShaderDX&>(GetShaderRef(ShaderType::Vertex));
 }
 
 ShaderDX& ProgramDX::GetPixelShaderDX() const
 {
     META_FUNCTION_TASK();
-    return static_cast<ShaderDX&>(GetShaderRef(Shader::Type::Pixel));
+    return static_cast<ShaderDX&>(GetShaderRef(ShaderType::Pixel));
 }
 
 D3D12_INPUT_LAYOUT_DESC ProgramDX::GetNativeInputLayoutDesc() const noexcept

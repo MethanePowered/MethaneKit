@@ -130,9 +130,9 @@ public:
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-        const Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+        const IShader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
 #else
-        const Shader::MacroDefinitions vertex_shader_definitions;
+        const IShader::MacroDefinitions vertex_shader_definitions;
 #endif
 
         // Create render state with program
@@ -144,8 +144,8 @@ public:
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
-                            Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
+                            IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         Program::InputBufferLayouts
                         {
@@ -157,7 +157,7 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
                         Program::ArgumentAccessors
                         {
-                            { { Shader::Type::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
                         },
 #else
                         Program::ArgumentAccessors{ },
@@ -202,7 +202,7 @@ public:
 
             // Configure program resource bindings
             frame.program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-                { { Shader::Type::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
+                { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
             }, frame.index);
             frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings {}", frame.index));
 #else

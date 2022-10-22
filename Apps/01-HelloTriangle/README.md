@@ -75,8 +75,8 @@ Application class `HelloTriangleApp` keeps frame independent resources in privat
 In this tutorial it is only render state `m_render_state_ptr` which is initialized in `HelloTriangleApp::Init` method.
 Render state is created with `RenderState::Create(...)` factory by passing render context and setting, which encapsulate 
 program created inline with `Program::Create(...)`. Program is created with a set of vertex and pixel shaders
-created with `Shader::CreateVertex` and `Shader::CreatePixel` factory methods taking `Data::Provider` and 
-`Shader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
+created with `IShader::CreateVertex` and `IShader::CreatePixel` factory methods taking `Data::Provider` and 
+`IShader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
 and is accessed via shader data provider singleton available with `Data::ShaderProvider::Get()`.
 Program also defines input buffer layout using argument semantic names from HLSL shaders. Methane graphics abstraction 
 uses shader reflection to automatically identify argument types and offset sizes to build underlying DirectX, Metal or Vulkan
@@ -112,8 +112,8 @@ public:
                     {
                         Program::Shaders
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
-                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
+                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
+                            IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
                         Program::InputBufferLayouts{ },
                         Program::ArgumentAccessors{ },

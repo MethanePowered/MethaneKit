@@ -47,9 +47,9 @@ public:
     public:
         struct ByteCodeMap
         {
-            Shader::Type shader_type;
-            uint32_t     descriptor_set_offset;
-            uint32_t     binding_offset;
+            ShaderType shader_type;
+            uint32_t   descriptor_set_offset;
+            uint32_t   binding_offset;
         };
 
         using ByteCodeMaps = std::vector<ByteCodeMap>;

@@ -27,7 +27,7 @@ ScreenQuad rendering primitive.
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Graphics/CommandList.h>
-#include <Methane/Graphics/Shader.h>
+#include <Methane/Graphics/IShader.h>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
@@ -85,7 +85,7 @@ protected:
 private:
     void UpdateConstantsBuffer() const;
 
-    [[nodiscard]] static Shader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
+    [[nodiscard]] static IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings                 m_settings;
     const Ptr<CommandQueue>  m_render_cmd_queue_ptr;

@@ -76,7 +76,7 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     }
 }
 
-Ptr<Shader> Shader::Create(Type type, const IContext& context, const Settings& settings)
+Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ShaderDX>(type, dynamic_cast<const ContextBase&>(context), settings);

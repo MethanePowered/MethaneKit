@@ -24,7 +24,7 @@ pipeline via state object and used to create resource binding objects.
 
 #pragma once
 
-#include "Shader.h"
+#include "IShader.h"
 #include "IObject.h"
 
 #include <Methane/Memory.hpp>
@@ -82,10 +82,10 @@ struct Program : virtual IObject // NOSONAR
             [[nodiscard]] size_t operator()(const Argument& arg) const { return arg.m_hash; }
         };
 
-        Argument(Shader::Type shader_type, std::string_view argument_name) noexcept;
+        Argument(ShaderType shader_type, std::string_view argument_name) noexcept;
         virtual ~Argument() = default;
 
-        [[nodiscard]] Shader::Type     GetShaderType() const noexcept { return m_shader_type; }
+        [[nodiscard]] ShaderType       GetShaderType() const noexcept { return m_shader_type; }
         [[nodiscard]] std::string_view GetName() const noexcept       { return m_name; }
         [[nodiscard]] size_t           GetHash() const noexcept       { return m_hash; }
 
@@ -93,7 +93,7 @@ struct Program : virtual IObject // NOSONAR
         [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
     private:
-        Shader::Type     m_shader_type;
+        ShaderType       m_shader_type;
         std::string_view m_name;
         size_t           m_hash;
     };
@@ -110,7 +110,7 @@ struct Program : virtual IObject // NOSONAR
             Mutable       = 1U << 2U,
         };
 
-        ArgumentAccessor(Shader::Type shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+        ArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
         ArgumentAccessor(const Argument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
         [[nodiscard]] size_t GetAccessorIndex() const noexcept;
@@ -127,7 +127,7 @@ struct Program : virtual IObject // NOSONAR
 
     using ArgumentAccessors = std::unordered_set<ArgumentAccessor, ArgumentAccessor::Hash>;
     static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
-    using Shaders = Ptrs<Shader>;
+    using Shaders = Ptrs<IShader>;
 
     // Program settings
     struct Settings
@@ -143,8 +143,8 @@ struct Program : virtual IObject // NOSONAR
 
     // Program interface
     [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual const Shader::Types& GetShaderTypes() const noexcept = 0;
-    [[nodiscard]] virtual const Ptr<Shader>&   GetShader(Shader::Type shader_type) const = 0;
+    [[nodiscard]] virtual const ShaderTypes&   GetShaderTypes() const noexcept = 0;
+    [[nodiscard]] virtual const Ptr<IShader>&  GetShader(ShaderType shader_type) const = 0;
     [[nodiscard]] virtual Data::Size           GetBindingsCount() const noexcept = 0;
 };
 

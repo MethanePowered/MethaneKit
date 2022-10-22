@@ -61,8 +61,8 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
         {
             Program::Shaders
             {
-                Shader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
-                Shader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
+                IShader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+                IShader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
             },
             Program::InputBufferLayouts
             {
@@ -73,9 +73,9 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
             },
             Program::ArgumentAccessors
             {
-                { { Shader::Type::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant },
-                { { Shader::Type::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
-                { { Shader::Type::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
+                { { ShaderType::Vertex, "g_skybox_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant },
+                { { ShaderType::Pixel,  "g_skybox_texture"  }, Program::ArgumentAccessor::Type::Constant      },
+                { { ShaderType::Pixel,  "g_texture_sampler" }, Program::ArgumentAccessor::Type::Constant      },
             },
             render_pattern.GetAttachmentFormats()
         }
@@ -108,9 +108,9 @@ Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_b
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
     return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { Shader::Type::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
-        { { Shader::Type::Pixel,  "g_skybox_texture"  }, { {  m_mesh_buffers.GetTexture() } } },
-        { { Shader::Type::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },
+        { { ShaderType::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
+        { { ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture() } } },
+        { { ShaderType::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },
     }, frame_index);
 }
 

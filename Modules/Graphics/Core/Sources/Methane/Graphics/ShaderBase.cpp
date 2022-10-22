@@ -30,7 +30,7 @@ Base implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-std::string Shader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
+std::string IShader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;

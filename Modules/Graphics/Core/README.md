@@ -33,7 +33,7 @@ which make modern graphics programming easy and convenient in a platform and API
 
 ### Graphics Pipeline
 
-- [Shader](Include/Methane/Graphics/Shader.h)
+- [Shader](Include/Methane/Graphics/IShader.h)
 - [Program](Include/Methane/Graphics/Program.h)
 - [ProgramBindings](Include/Methane/Graphics/ProgramBindings.h)
 - [RenderState](Include/Methane/Graphics/RenderState.h)

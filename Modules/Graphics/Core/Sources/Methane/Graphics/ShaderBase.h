@@ -26,7 +26,7 @@ Base implementation of the shader interface.
 #include "CommandListBase.h"
 #include "ProgramBindingsBase.h"
 
-#include <Methane/Graphics/Shader.h>
+#include <Methane/Graphics/IShader.h>
 
 #include <set>
 #include <string_view>
@@ -39,13 +39,13 @@ class ProgramBase;
 struct Program;
 
 class ShaderBase
-    : public Shader
+    : public IShader
     , public std::enable_shared_from_this<ShaderBase>
 {
 public:
     ShaderBase(Type type, const ContextBase& context, const Settings& settings);
 
-    // Shader interface
+    // IShader interface
     Type             GetType() const noexcept final     { return m_type; }
     const Settings&  GetSettings() const noexcept final { return m_settings; }
 

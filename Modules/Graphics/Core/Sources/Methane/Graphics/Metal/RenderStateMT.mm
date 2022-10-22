@@ -290,8 +290,8 @@ void RenderStateMT::Reset(const Settings& settings)
 
     // Program state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
-    m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(Shader::Type::Vertex);
-    m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(Shader::Type::Pixel);
+    m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(ShaderType::Vertex);
+    m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(ShaderType::Pixel);
     m_mtl_pipeline_state_desc.vertexDescriptor          = metal_program.GetNativeVertexDescriptor();
     
     // Rasterizer state

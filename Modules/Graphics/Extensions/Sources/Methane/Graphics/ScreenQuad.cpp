@@ -64,7 +64,7 @@ struct ScreenQuadVertex
     };
 };
 
-static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shader::MacroDefinitions& macro_definitions)
+static std::string GetQuadName(const ScreenQuad::Settings& settings, const IShader::MacroDefinitions& macro_definitions)
 {
     META_FUNCTION_TASK();
     std::stringstream quad_name_ss;
@@ -72,7 +72,7 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Shade
     if (settings.alpha_blending_enabled)
         quad_name_ss << " with Alpha-Blending";
     if (!macro_definitions.empty())
-        quad_name_ss << " " << Shader::ConvertMacroDefinitionsToString(macro_definitions);
+        quad_name_ss << " " << IShader::ConvertMacroDefinitionsToString(macro_definitions);
     return quad_name_ss.str();
 }
 
@@ -95,15 +95,15 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     IRenderContext& render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
-    const Shader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-    Program::ArgumentAccessors     program_argument_accessors = {
-        { { Shader::Type::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
+    const IShader::MacroDefinitions         ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
+    Program::ArgumentAccessors              program_argument_accessors = {
+        { { ShaderType::Pixel, "g_constants" }, Program::ArgumentAccessor::Type::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_accessors.emplace(Shader::Type::Pixel, "g_texture", Program::ArgumentAccessor::Type::Mutable);
-        program_argument_accessors.emplace(Shader::Type::Pixel, "g_sampler", Program::ArgumentAccessor::Type::Constant);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_texture", Program::ArgumentAccessor::Type::Mutable);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_sampler", Program::ArgumentAccessor::Type::Constant);
     }
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
@@ -117,8 +117,8 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
             {
                 Program::Shaders
                 {
-                    Shader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
-                    Shader::CreatePixel( render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
+                    IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
+                    IShader::CreatePixel(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
                 },
                 Program::InputBufferLayouts
                 {
@@ -208,13 +208,13 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
-        { { Shader::Type::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
+        { { ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_views.try_emplace(Program::Argument(Shader::Type::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
-        program_binding_resource_views.try_emplace(Program::Argument(Shader::Type::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
+        program_binding_resource_views.try_emplace(Program::Argument(ShaderType::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
+        program_binding_resource_views.try_emplace(Program::Argument(ShaderType::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
     }
 
     m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
@@ -269,7 +269,7 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
         return;
 
     m_texture_ptr = texture_ptr;
-    m_const_program_bindings_ptr->Get({ Shader::Type::Pixel, "g_texture" }).SetResourceViews({ { *m_texture_ptr } });
+    m_const_program_bindings_ptr->Get({ ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_texture_ptr } });
 }
 
 const Texture& ScreenQuad::GetTexture() const
@@ -315,10 +315,10 @@ void ScreenQuad::UpdateConstantsBuffer() const
     );
 }
 
-Shader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
+IShader::MacroDefinitions ScreenQuad::GetPixelShaderMacroDefinitions(TextureMode texture_mode)
 {
     META_FUNCTION_TASK();
-    Shader::MacroDefinitions macro_definitions;
+    IShader::MacroDefinitions macro_definitions;
 
     switch(texture_mode)
     {

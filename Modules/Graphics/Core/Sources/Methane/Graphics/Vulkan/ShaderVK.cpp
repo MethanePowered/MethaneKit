@@ -159,7 +159,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
         return;
 
     const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
-    const Shader::Type shader_type = shader.GetType();
+    const ShaderType shader_type = shader.GetType();
 
     for (const spirv_cross::Resource& resource : spirv_resources)
     {
@@ -198,13 +198,13 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
     }
 }
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, const IContext& context, const Settings& settings)
+Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
+ShaderVK::ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
 {
@@ -214,13 +214,13 @@ ShaderVK::ShaderVK(Shader::Type shader_type, const ContextBase& context, const S
 ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const Program::ArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    const Shader::Settings& shader_settings = GetSettings();
+    const IShader::Settings& shader_settings = GetSettings();
     META_UNUSED(shader_settings);
 
     META_LOG("{} shader '{}' ({}) with argument bindings:",
              magic_enum::enum_name(GetType()),
              shader_settings.entry_function.function_name,
-             Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+             IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
 
     ArgumentBindings argument_bindings;
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
@@ -290,7 +290,7 @@ vk::PipelineShaderStageCreateInfo ShaderVK::GetNativeStageCreateInfo() const
 vk::PipelineVertexInputStateCreateInfo ShaderVK::GetNativeVertexInputStateCreateInfo(const ProgramVK& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), Shader::Type::Vertex);
+    META_CHECK_ARG_EQUAL(GetType(), ShaderType::Vertex);
     if (!m_vertex_input_initialized)
         InitializeVertexInputDescriptions(program);
 
@@ -312,10 +312,10 @@ Data::MutableChunk& ShaderVK::GetMutableByteCode() noexcept
 void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), Shader::Type::Vertex);
+    META_CHECK_ARG_EQUAL(GetType(), ShaderType::Vertex);
     META_CHECK_ARG_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
 
-    const Shader::Settings& shader_settings = GetSettings();
+    const IShader::Settings              & shader_settings      = GetSettings();
     const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
     m_vertex_input_binding_descriptions.reserve(input_buffer_layouts.size());
 
@@ -337,7 +337,7 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     std::stringstream log_ss;
     log_ss << magic_enum::enum_name(GetType())
            << " shader '" << shader_settings.entry_function.function_name
-           << "' (" << Shader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
+           << "' (" << IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
            << ") input layout:" << std::endl;
     if (shader_resources.stage_inputs.empty())
         log_ss << " - No stage inputs." << std::endl;
@@ -392,14 +392,14 @@ const IContextVK& ShaderVK::GetContextVK() const noexcept
     return static_cast<const IContextVK&>(GetContext());
 }
 
-vk::ShaderStageFlagBits ShaderVK::ConvertTypeToStageFlagBits(Shader::Type shader_type)
+vk::ShaderStageFlagBits ShaderVK::ConvertTypeToStageFlagBits(ShaderType shader_type)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-    case Shader::Type::All:    return vk::ShaderStageFlagBits::eAll;
-    case Shader::Type::Vertex: return vk::ShaderStageFlagBits::eVertex;
-    case Shader::Type::Pixel:  return vk::ShaderStageFlagBits::eFragment;
+    case ShaderType::All:    return vk::ShaderStageFlagBits::eAll;
+    case ShaderType::Vertex: return vk::ShaderStageFlagBits::eVertex;
+    case ShaderType::Pixel:  return vk::ShaderStageFlagBits::eFragment;
     default:                   META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
     }
 }

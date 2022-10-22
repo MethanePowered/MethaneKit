@@ -98,13 +98,13 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 
 #endif // ifndef NDEBUG
 
-Ptr<Shader> Shader::Create(Shader::Type shader_type, const IContext& context, const Settings& settings)
+Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ShaderMT>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
 }
 
-ShaderMT::ShaderMT(Shader::Type shader_type, const ContextBase& context, const Settings& settings)
+ShaderMT::ShaderMT(ShaderType shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
     , m_mtl_function([context.GetLibraryMT(settings.entry_function.file_name)->GetNativeLibrary() newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
