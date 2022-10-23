@@ -35,10 +35,10 @@ Metal implementation of the program bindings interface.
 namespace Methane::Graphics
 {
 
-using NativeBuffers       = ProgramBindingsMT::ArgumentBindingMT::NativeBuffers;
-using NativeTextures      = ProgramBindingsMT::ArgumentBindingMT::NativeTextures;
-using NativeSamplerStates = ProgramBindingsMT::ArgumentBindingMT::NativeSamplerStates;
-using NativeOffsets       = ProgramBindingsMT::ArgumentBindingMT::NativeOffsets;
+using NativeBuffers       = ProgramArgumentBindingMT::NativeBuffers;
+using NativeTextures      = ProgramArgumentBindingMT::NativeTextures;
+using NativeSamplerStates = ProgramArgumentBindingMT::NativeSamplerStates;
+using NativeOffsets       = ProgramArgumentBindingMT::NativeOffsets;
 
 template<typename TMetalResource>
 void SetMetalResource(ShaderType shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, TMetalResource mtl_buffer, uint32_t arg_index, NSUInteger buffer_offset);
@@ -52,15 +52,15 @@ void SetMetalResource(ShaderType shader_type, const id<MTLRenderCommandEncoder>&
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-        case ShaderType::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
-        case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ARG(shader_type);
+    case ShaderType::Vertex: [mtl_cmd_encoder setVertexBuffer:mtl_buffer   offset:buffer_offset atIndex:arg_index]; break;
+    case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentBuffer:mtl_buffer offset:buffer_offset atIndex:arg_index]; break;
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
 template<>
 void SetMetalResources(ShaderType shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const NativeBuffers& mtl_buffers,
-                      uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets)
+                       uint32_t arg_index, const std::vector<NSUInteger>& buffer_offsets)
 {
     META_FUNCTION_TASK();
     const NSRange args_range = NSMakeRange(arg_index, mtl_buffers.size());
@@ -78,9 +78,9 @@ void SetMetalResource(ShaderType shader_type, const id<MTLRenderCommandEncoder>&
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-        case ShaderType::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture   atIndex:arg_index]; break;
-        case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ARG(shader_type);
+    case ShaderType::Vertex: [mtl_cmd_encoder setVertexTexture:mtl_texture   atIndex:arg_index]; break;
+    case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index]; break;
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
@@ -104,15 +104,15 @@ void SetMetalResource(ShaderType shader_type, const id<MTLRenderCommandEncoder>&
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-        case ShaderType::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler   atIndex:arg_index]; break;
-        case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentSamplerState:mtl_sampler atIndex:arg_index]; break;
-        default:                   META_UNEXPECTED_ARG(shader_type);
+    case ShaderType::Vertex: [mtl_cmd_encoder setVertexSamplerState:mtl_sampler   atIndex:arg_index]; break;
+    case ShaderType::Pixel:  [mtl_cmd_encoder setFragmentSamplerState:mtl_sampler atIndex:arg_index]; break;
+    default:                   META_UNEXPECTED_ARG(shader_type);
     }
 }
 
 template<>
 void SetMetalResources(ShaderType shader_type, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder, const NativeSamplerStates& mtl_samplers,
-                      uint32_t arg_index, const std::vector<NSUInteger>&)
+                       uint32_t arg_index, const std::vector<NSUInteger>&)
 {
     META_FUNCTION_TASK();
     const NSRange args_range = NSMakeRange(arg_index, mtl_samplers.size());
@@ -126,8 +126,8 @@ void SetMetalResources(ShaderType shader_type, const id<MTLRenderCommandEncoder>
 
 template<typename TMetalResource>
 void SetMetalResourcesForAll(ShaderType shader_type, const IProgram& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                                   const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
-                                   const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
+                             const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
+                             const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(mtl_resources);
@@ -174,61 +174,6 @@ Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramBindingsMT>(static_cast<const ProgramBindingsMT&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
-}
-
-Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(static_cast<const ProgramBindingsMT::ArgumentBindingMT&>(other_argument_binding));
-}
-
-ProgramBindingsMT::ArgumentBindingMT::ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings)
-    : ArgumentBindingBase(context, settings)
-    , m_settings_mt(settings)
-{
-    META_FUNCTION_TASK();
-}
-
-bool ProgramBindingsMT::ArgumentBindingMT::SetResourceViews(const Resource::Views& resource_views)
-{
-    META_FUNCTION_TASK();
-    if (!ArgumentBindingBase::SetResourceViews(resource_views))
-        return false;
-
-    m_mtl_sampler_states.clear();
-    m_mtl_textures.clear();
-    m_mtl_buffers.clear();
-    m_mtl_buffer_offsets.clear();
-
-    switch(m_settings_mt.resource_type)
-    {
-    case Resource::Type::Sampler:
-        m_mtl_sampler_states.reserve(resource_views.size());
-        std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const Resource::View& resource_view)
-                       { return dynamic_cast<const SamplerMT&>(resource_view.GetResource()).GetNativeSamplerState(); });
-        break;
-
-    case Resource::Type::Texture:
-        m_mtl_textures.reserve(resource_views.size());
-        std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_textures),
-                       [](const Resource::View& resource_view)
-                       { return dynamic_cast<const TextureMT&>(resource_view.GetResource()).GetNativeTexture(); });
-        break;
-
-    case Resource::Type::Buffer:
-        m_mtl_buffers.reserve(resource_views.size());
-        m_mtl_buffer_offsets.reserve(resource_views.size());
-        for (const Resource::View& resource_view : resource_views)
-        {
-            m_mtl_buffers.push_back(dynamic_cast<const BufferMT&>(resource_view.GetResource()).GetNativeBuffer());
-            m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_view.GetOffset()));
-        }
-        break;
-
-    default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
-    }
-    return true;
 }
 
 ProgramBindingsMT::ProgramBindingsMT(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
