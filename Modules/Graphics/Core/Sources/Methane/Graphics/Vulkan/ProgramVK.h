@@ -38,18 +38,19 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class ProgramVK final : public ProgramBase
+class ProgramVK final
+    : public ProgramBase
 {
 public:
-    using ByteCodeMap = ProgramBindingsVK::ArgumentBindingVK::ByteCodeMap;
-    using ByteCodeMaps = ProgramBindingsVK::ArgumentBindingVK::ByteCodeMaps;
+    using ByteCodeMap = ProgramArgumentBindingSettingsVK::ByteCodeMap;
+    using ByteCodeMaps = ProgramArgumentBindingSettingsVK::ByteCodeMaps;
 
     struct DescriptorSetLayoutInfo
     {
         Opt<uint32_t>                               index_opt;
         uint32_t                                    descriptors_count = 0U;
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        std::vector<Argument>                       arguments;                    // related arguments for each layout binding
+        std::vector<ProgramArgument>                arguments;                    // related arguments for each layout binding
         std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
@@ -64,14 +65,14 @@ public:
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(IProgram::ArgumentAccessor::Type argument_access_type);
-    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(IProgram::ArgumentAccessor::Type argument_access_type);
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ProgramArgumentAccessor::Type argument_access_type);
+    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ProgramArgumentAccessor::Type argument_access_type);
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
-    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()>;
+    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
 
     void InitializeDescriptorSetLayouts();
     void UpdatePipelineName();

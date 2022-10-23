@@ -72,8 +72,8 @@ public:
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
                             IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
-                        IProgram::InputBufferLayouts{ },
-                        IProgram::ArgumentAccessors{ },
+                        ProgramInputBufferLayouts{ },
+                        ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

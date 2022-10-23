@@ -68,7 +68,7 @@ protected:
     void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
     const ArgumentBindings&         GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
     const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
-    const Ptr<ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const IProgram::ArgumentAccessor& argument_accessor) const;
+    const Ptr<ArgumentBindingBase>& GetFrameArgumentBinding(Data::Index frame_index, const ProgramArgumentAccessor& argument_accessor) const;
     Ptr<ArgumentBindingBase>        CreateArgumentBindingInstance(const Ptr<ArgumentBindingBase>& argument_binding_ptr, Data::Index frame_index) const;
 
     IShader& GetShaderRef(ShaderType shader_type) const;

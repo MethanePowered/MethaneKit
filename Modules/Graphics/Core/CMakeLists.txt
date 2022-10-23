@@ -44,6 +44,8 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingDX.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingDX.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextDX.h
@@ -111,6 +113,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.mm
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingMT.hh
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingMT.mm
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.hh
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.mm
         ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
@@ -165,6 +169,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         ${SOURCES_GRAPHICS_DIR}/ShaderVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramVK.cpp
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingVK.h
+        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingVK.cpp
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.h
         ${SOURCES_GRAPHICS_DIR}/ProgramBindingsVK.cpp
         ${SOURCES_GRAPHICS_DIR}/RenderContextVK.h
@@ -243,6 +249,8 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ShaderBase.cpp
     ${SOURCES_DIR}/ProgramBase.h
     ${SOURCES_DIR}/ProgramBase.cpp
+    ${SOURCES_DIR}/ProgramArgumentBindingBase.h
+    ${SOURCES_DIR}/ProgramArgumentBindingBase.cpp
     ${SOURCES_DIR}/ProgramBindingsBase.h
     ${SOURCES_DIR}/ProgramBindingsBase.cpp
     ${SOURCES_DIR}/RenderStateBase.h

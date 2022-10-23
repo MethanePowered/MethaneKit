@@ -147,7 +147,7 @@ public:
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
                             IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
-                        IProgram::InputBufferLayouts
+                        ProgramInputBufferLayouts
                         {
                             IProgram::InputBufferLayout
                             {
@@ -155,12 +155,12 @@ public:
                             }
                         },
 #ifdef UNIFORMS_BUFFER_ENABLED
-                        IProgram::ArgumentAccessors
+                        ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant }
                         },
 #else
-                        IProgram::ArgumentAccessors{ },
+                        ProgramArgumentAccessors{ },
 #endif
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }

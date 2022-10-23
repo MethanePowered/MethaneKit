@@ -114,19 +114,19 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
                     gfx::IShader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
                     gfx::IShader::CreatePixel(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
                 },
-                gfx::IProgram::InputBufferLayouts
+                gfx::ProgramInputBufferLayouts
                 {
                     gfx::IProgram::InputBufferLayout
                     {
                         gfx::IProgram::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                     }
                 },
-                gfx::IProgram::ArgumentAccessors
+                gfx::ProgramArgumentAccessors
                 {
-                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::IProgram::ArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::IProgram::ArgumentAccessor::Type::Constant },
+                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::ProgramArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::ProgramArgumentAccessor::Type::Mutable  },
+                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::ProgramArgumentAccessor::Type::Constant },
                 },
                 render_pattern.GetAttachmentFormats()
             }

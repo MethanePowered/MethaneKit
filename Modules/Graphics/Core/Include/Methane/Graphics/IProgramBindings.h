@@ -55,9 +55,9 @@ public:
 
 struct ProgramArgumentBindingSettings
 {
-    IProgram::ArgumentAccessor argument;
-    Resource::Type             resource_type;
-    uint32_t                   resource_count = 1;
+    ProgramArgumentAccessor argument;
+    Resource::Type          resource_type;
+    uint32_t                resource_count = 1;
 };
 
 struct IProgramArgumentBinding

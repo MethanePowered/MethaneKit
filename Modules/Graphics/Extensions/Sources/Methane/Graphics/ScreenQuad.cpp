@@ -96,14 +96,14 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     IRenderContext& render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const IShader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-    IProgram::ArgumentAccessors     program_argument_accessors = {
-        { { ShaderType::Pixel, "g_constants" }, IProgram::ArgumentAccessor::Type::Mutable }
+    ProgramArgumentAccessors     program_argument_accessors = {
+        { { ShaderType::Pixel, "g_constants" }, ProgramArgumentAccessor::Type::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_accessors.emplace(ShaderType::Pixel, "g_texture", IProgram::ArgumentAccessor::Type::Mutable);
-        program_argument_accessors.emplace(ShaderType::Pixel, "g_sampler", IProgram::ArgumentAccessor::Type::Constant);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_texture", ProgramArgumentAccessor::Type::Mutable);
+        program_argument_accessors.emplace(ShaderType::Pixel, "g_sampler", ProgramArgumentAccessor::Type::Constant);
     }
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
@@ -120,7 +120,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
                     IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
                     IShader::CreatePixel(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
                 },
-                IProgram::InputBufferLayouts
+                ProgramInputBufferLayouts
                 {
                     IProgram::InputBufferLayout
                     {

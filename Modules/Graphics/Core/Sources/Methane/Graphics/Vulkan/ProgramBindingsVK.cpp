@@ -56,115 +56,6 @@ Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other
     return program_bindings_ptr;
 }
 
-Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBindingsBase::ArgumentBindingBase::CreateCopy(const ArgumentBindingBase& other_argument_binding)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindingsVK::ArgumentBindingVK>(static_cast<const ProgramBindingsVK::ArgumentBindingVK&>(other_argument_binding));
-}
-
-ProgramBindingsVK::ArgumentBindingVK::ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings)
-    : ArgumentBindingBase(context, settings)
-    , m_settings_vk(settings)
-{
-    META_FUNCTION_TASK();
-}
-
-void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
-{
-    META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr = &descriptor_set;
-    m_vk_binding_value      = binding_value;
-}
-
-void ProgramBindingsVK::ArgumentBindingVK::SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept
-{
-    META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr = &descriptor_set;
-}
-
-void ProgramBindingsVK::ArgumentBindingVK::MergeSettings(const ArgumentBindingBase& other)
-{
-    META_FUNCTION_TASK();
-    ArgumentBindingBase::MergeSettings(other);
-
-    const SettingsVK& settings_vk = dynamic_cast<const ArgumentBindingVK&>(other).GetSettingsVK();
-    META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
-    m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
-}
-
-template<typename VkDescriptorType>
-bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_descriptors_count, const VkDescriptorType* descriptor_ptr)
-{
-    META_FUNCTION_TASK();
-    if (!descriptor_ptr)
-        return false;
-
-    if (descriptors.empty())
-        descriptors.reserve(total_descriptors_count);
-
-    descriptors.push_back(*descriptor_ptr);
-    return true;
-}
-
-bool ProgramBindingsVK::ArgumentBindingVK::SetResourceViews(const Resource::Views& resource_views)
-{
-    META_FUNCTION_TASK();
-    if (!ArgumentBindingBase::SetResourceViews(resource_views))
-        return false;
-
-    META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
-
-    m_vk_descriptor_images.clear();
-    m_vk_descriptor_buffers.clear();
-    m_vk_buffer_views.clear();
-
-    const size_t total_resources_count = resource_views.size();
-    for(const Resource::View& resource_view : resource_views)
-    {
-        const IResourceVK::ViewVK resource_view_vk(resource_view, Resource::Usage::ShaderRead);
-
-        if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
-            continue;
-
-        if (AddDescriptor(m_vk_descriptor_buffers, total_resources_count, resource_view_vk.GetNativeDescriptorBufferInfoPtr()))
-            continue;
-
-        AddDescriptor(m_vk_buffer_views, total_resources_count, resource_view_vk.GetNativeBufferViewPtr());
-    }
-
-    m_vk_write_descriptor_set = vk::WriteDescriptorSet(
-        *m_vk_descriptor_set_ptr,
-        m_vk_binding_value,
-        0U,
-        m_settings_vk.descriptor_type,
-        m_vk_descriptor_images,
-        m_vk_descriptor_buffers,
-        m_vk_buffer_views
-    );
-
-    // Descriptions are updated on GPU during context initialization complete
-#ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
-    GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
-#else
-    UpdateDescriptorSetsOnGpu();
-#endif
-    return true;
-}
-
-void ProgramBindingsVK::ArgumentBindingVK::UpdateDescriptorSetsOnGpu()
-{
-    META_FUNCTION_TASK();
-    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
-        return;
-
-    const auto& vulkan_context = dynamic_cast<const IContextVK&>(GetContext());
-    vulkan_context.GetDeviceVK().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
-
-    m_vk_descriptor_images.clear();
-    m_vk_descriptor_buffers.clear();
-    m_vk_buffer_views.clear();
-}
-
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
                                      const ResourceViewsByArgument& resource_views_by_argument,
                                      Data::Index frame_index)
@@ -182,7 +73,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
     if (vk_frame_constant_descriptor_set)
         m_descriptor_sets.emplace_back(vk_frame_constant_descriptor_set);
 
-    if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(IProgram::ArgumentAccessor::Type::Mutable);
+    if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(ProgramArgumentAccessor::Type::Mutable);
         vk_mutable_descriptor_set_layout)
     {
         DescriptorManagerVK& descriptor_manager = program.GetContextVK().GetDescriptorManagerVK();
@@ -191,20 +82,20 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
     }
 
     const auto destrictor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
-                                         (const IProgram::ArgumentAccessor::Type access_type) -> const vk::DescriptorSet&
+                                         (const ProgramArgumentAccessor::Type access_type) -> const vk::DescriptorSet&
     {
         static const vk::DescriptorSet s_empty_set;
         switch (access_type)
         {
-        case IProgram::ArgumentAccessor::Type::Constant:
+        case ProgramArgumentAccessor::Type::Constant:
             META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
             return vk_constant_descriptor_set;
 
-        case IProgram::ArgumentAccessor::Type::FrameConstant:
+        case ProgramArgumentAccessor::Type::FrameConstant:
             META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
             return vk_frame_constant_descriptor_set;
 
-        case IProgram::ArgumentAccessor::Type::Mutable:
+        case ProgramArgumentAccessor::Type::Mutable:
             META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
             return m_descriptor_sets.back();
 
@@ -217,7 +108,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
     ForEachArgumentBinding([&program, &destrictor_set_selector](const IProgram::Argument& program_argument, ArgumentBindingVK& argument_binding)
     {
         const ArgumentBindingVK::SettingsVK& argument_binding_settings = argument_binding.GetSettingsVK();
-        const IProgram::ArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
+        const ProgramArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
         const ProgramVK::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
@@ -248,13 +139,13 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
     {
         // Allocate new mutable descriptor set
         auto& program = static_cast<ProgramVK&>(GetProgram());
-        const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(IProgram::ArgumentAccessor::Type::Mutable);
+        const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(ProgramArgumentAccessor::Type::Mutable);
         META_CHECK_ARG_NOT_NULL(vk_mutable_desc_set_layout);
         vk::DescriptorSet copy_mutable_descriptor_set = program.GetContextVK().GetDescriptorManagerVK().AllocDescriptorSet(vk_mutable_desc_set_layout);
 
         // Copy descriptors from original to new mutable descriptor set
         const vk::Device& vk_device = program.GetContextVK().GetDeviceVK().GetNativeDevice();
-        const ProgramVK::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetDescriptorSetLayoutInfo(IProgram::ArgumentAccessor::Type::Mutable);
+        const ProgramVK::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetDescriptorSetLayoutInfo(ProgramArgumentAccessor::Type::Mutable);
         vk_device.updateDescriptorSets({}, {
             vk::CopyDescriptorSet(other_program_bindings.m_descriptor_sets.back(), {}, {}, copy_mutable_descriptor_set, {}, mutable_desc_set_layout_info.descriptors_count)
         });
@@ -265,7 +156,7 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
         // Update mutable argument bindings with a pointer to the copied descriptor set
         ForEachArgumentBinding([&vk_mutable_descriptor_set](const IProgram::Argument&, ArgumentBindingVK& argument_binding)
         {
-            if (argument_binding.GetSettingsVK().argument.GetAccessorType() != IProgram::ArgumentAccessor::Type::Mutable)
+            if (argument_binding.GetSettingsVK().argument.GetAccessorType() != ProgramArgumentAccessor::Type::Mutable)
                 return;
 
             argument_binding.SetDescriptorSet(vk_mutable_descriptor_set);
@@ -283,7 +174,7 @@ void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument
     ProgramBindingsBase::SetResourcesForArguments(resource_views_by_argument);
 
     auto                             & program                    = static_cast<ProgramVK&>(GetProgram());
-    const IProgram::ArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
+    const ProgramArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
     std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
     dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
 
@@ -292,7 +183,7 @@ void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument
         {
             const auto program_accessor_it = IProgram::FindArgumentAccessor(program_argument_accessors, program_argument);
             META_CHECK_ARG(program_argument, program_accessor_it != program_argument_accessors.end());
-            const IProgram::ArgumentAccessor& program_argument_accessor = *program_accessor_it;
+            const ProgramArgumentAccessor& program_argument_accessor = *program_accessor_it;
             if (!program_argument_accessor.IsAddressable())
                 return;
 
@@ -349,7 +240,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const CommandQueu
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
     using namespace magic_enum::bitwise_operators;
 
-    IProgram::ArgumentAccessor::Type apply_access_mask                 = IProgram::ArgumentAccessor::Type::Mutable;
+    ProgramArgumentAccessor::Type apply_access_mask = ProgramArgumentAccessor::Type::Mutable;
     uint32_t                         first_descriptor_set_layout_index = 0U;
     if (apply_behavior == ApplyBehavior::ConstantOnce && p_applied_program_bindings)
     {
@@ -360,8 +251,8 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const CommandQueu
     }
     else
     {
-        apply_access_mask |= IProgram::ArgumentAccessor::Type::Constant;
-        apply_access_mask |= IProgram::ArgumentAccessor::Type::FrameConstant;
+        apply_access_mask |= ProgramArgumentAccessor::Type::Constant;
+        apply_access_mask |= ProgramArgumentAccessor::Type::FrameConstant;
     }
 
     // Set resource transition barriers before applying resource bindings

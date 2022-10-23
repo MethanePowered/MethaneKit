@@ -289,7 +289,7 @@ void TexturedCubeApp::Init()
 
 `Graphics::Program` object is created in `Graphics::RenderState::Settings` structure using `Graphics::IProgram::Create(...)` factory function.
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
-Program settings also includes additional description `Graphics::IProgram::ArgumentAccessors` of program arguments bound to graphics resources.
+Program settings also includes additional description `Graphics::ProgramArgumentAccessors` of program arguments bound to graphics resources.
 Argument description define specific access modifiers for program arguments used in `Graphics::IProgramBindings` object.
 Also it is important to note that render state settings enables depth testing for correct rendering of cube faces.
 Finally, render state is created using filled settings structure with `Graphics::RenderState::Create(...)` factory function.
@@ -311,19 +311,19 @@ void TexturedCubeApp::Init()
                         gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
                         gfx::IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
                     },
-                    gfx::IProgram::InputBufferLayouts
+                    gfx::ProgramInputBufferLayouts
                     {
                         gfx::IProgram::InputBufferLayout
                         {
                             gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    gfx::IProgram::ArgumentAccessors
+                    gfx::ProgramArgumentAccessors
                     {
-                        { { gfx::ShaderType::All,   "g_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
-                        { { gfx::ShaderType::Pixel, "g_constants" }, gfx::IProgram::ArgumentAccessor::Type::Constant },
-                        { { gfx::ShaderType::Pixel, "g_texture"   }, gfx::IProgram::ArgumentAccessor::Type::Constant },
-                        { { gfx::ShaderType::Pixel, "g_sampler"   }, gfx::IProgram::ArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::All,   "g_uniforms"  }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
+                        { { gfx::ShaderType::Pixel, "g_constants" }, gfx::ProgramArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::Pixel, "g_texture"   }, gfx::ProgramArgumentAccessor::Type::Constant },
+                        { { gfx::ShaderType::Pixel, "g_sampler"   }, gfx::ProgramArgumentAccessor::Type::Constant },
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }

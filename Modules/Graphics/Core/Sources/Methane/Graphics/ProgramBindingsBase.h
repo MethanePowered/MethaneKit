@@ -23,20 +23,18 @@ Base implementation of the program bindings interface.
 
 #pragma once
 
+#include "ObjectBase.h"
+#include "ProgramArgumentBindingBase.h"
+
 #include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include "CommandListBase.h"
-#include "ObjectBase.h"
-
 #include <magic_enum.hpp>
-#include <optional>
 
 namespace Methane::Graphics
 {
 
-class ContextBase;
 class CommandListBase;
 class ResourceBase;
 
@@ -46,40 +44,8 @@ class ProgramBindingsBase
     , public Data::Receiver<IProgramBindings::IArgumentBindingCallback>
 {
 public:
-    class ArgumentBindingBase
-        : public IArgumentBinding
-        , public Data::Emitter<IProgramBindings::IArgumentBindingCallback>
-        , public std::enable_shared_from_this<ArgumentBindingBase>
-    {
-    public:
-        static Ptr<ArgumentBindingBase> CreateCopy(const ArgumentBindingBase& other_argument_binding);
-
-        ArgumentBindingBase(const ContextBase& context, const Settings& settings);
-
-        virtual void MergeSettings(const ArgumentBindingBase& other);
-
-        // IArgumentBinding interface
-        const Settings&        GetSettings() const noexcept override     { return m_settings; }
-        const Resource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
-        bool                   SetResourceViews(const Resource::Views& resource_views) override;
-        explicit operator std::string() const final;
-
-        Ptr<ArgumentBindingBase>   GetPtr() { return shared_from_this(); }
-
-        bool IsAlreadyApplied(const IProgram& program,
-                              const ProgramBindingsBase& applied_program_bindings,
-                              bool check_binding_value_changes = true) const;
-
-    protected:
-        const ContextBase& GetContext() const noexcept { return m_context; }
-
-    private:
-        const ContextBase& m_context;
-        const Settings     m_settings;
-        Resource::Views    m_resource_views;
-    };
-
-    using ArgumentBindings = std::unordered_map<IProgram::Argument, Ptr < ArgumentBindingBase>, IProgram::Argument::Hash>;
+    using ArgumentBindingBase = ProgramArgumentBindingBase;
+    using ArgumentBindings = std::unordered_map<IProgram::Argument, Ptr<ArgumentBindingBase>, IProgram::Argument::Hash>;
 
     ProgramBindingsBase(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
@@ -93,8 +59,8 @@ public:
     // IProgramBindings interface
     IProgram&                  GetProgram() const final;
     const IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
-    Data::Index               GetFrameIndex() const noexcept final    { return m_frame_index; }
-    Data::Index               GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    Data::Index                GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index                GetBindingsIndex() const noexcept final { return m_bindings_index; }
     IArgumentBinding&          Get(const IProgram::Argument& shader_argument) const final;
     explicit operator std::string() const final;
 
@@ -106,7 +72,7 @@ public:
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
-                                         IProgram::ArgumentAccessor::Type apply_access_mask = static_cast<IProgram::ArgumentAccessor::Type>(~0U),
+                                         ProgramArgumentAccessor::Type apply_access_mask = static_cast<ProgramArgumentAccessor::Type>(~0U),
                                          const CommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
@@ -128,7 +94,7 @@ protected:
                                                  const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const Refs<Resource>& GetResourceRefsByAccess(IProgram::ArgumentAccessor::Type access_type) const;
+    const Refs<Resource>& GetResourceRefsByAccess(ProgramArgumentAccessor::Type access_type) const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const Resource& resource);
@@ -145,10 +111,10 @@ private:
     };
 
     using ResourceStates = std::vector<ResourceAndState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()>;
-    using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<IProgram::ArgumentAccessor::Type>()>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
 
-    bool ApplyResourceStates(IProgram::ArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<IProgram>             m_program_ptr;

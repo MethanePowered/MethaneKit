@@ -116,7 +116,7 @@ But first of all, camera view is resized according to render context size to mai
 
 Render state is created with `RenderState::Create(...)` function similarly as in [HelloTriangle](../01-HelloTriangle) tutorial.
 Program is created as a part of the state with `IProgram::Create(...)` function which takes `IProgram::Settings`, which differ
-from program settings in [HelloTriangle](../01-HelloTriangle) with configuration of `IProgram::InputBufferLayouts`. In this tutorial
+from program settings in [HelloTriangle](../01-HelloTriangle) with configuration of `ProgramInputBufferLayouts`. In this tutorial
 we use single input vertex buffer with interleaved positions and colors, which is described by `IProgram::InputBufferLayout` with
 an array of HLSL vertex shader input semantics, which correspond to `CubeVertex` struct layout.
 
@@ -150,14 +150,14 @@ public:
                             IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } }),
                             IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
-                        IProgram::InputBufferLayouts
+                        ProgramInputBufferLayouts
                         {
                             IProgram::InputBufferLayout
                             {
                                 IProgram::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                             }
                         },
-                        IProgram::ArgumentAccessors{ },
+                        ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
@@ -471,8 +471,8 @@ private:
 
 The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_BUFFER_ENABLED`,
 which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
-Also `IProgram::ArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
-and type of access to the argument `IProgram::ArgumentAccessor::Type::FrameConstant`, which means that only one buffer
+Also `ProgramArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
+and type of access to the argument `ProgramArgumentAccessor::Type::FrameConstant`, which means that only one buffer
 is bound to this program argument at each frame (argument is constant per frame). Other argument accessor types include 
 `Constant` (bound to single resource all the time) and `Mutable` (can be bound to different resources).
 
@@ -498,9 +498,9 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
                             IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         ...
-                        IProgram::ArgumentAccessors
+                        ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant }
                         },
                         ...
                     }

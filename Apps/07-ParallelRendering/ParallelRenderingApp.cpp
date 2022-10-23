@@ -139,18 +139,18 @@ void ParallelRenderingApp::Init()
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } }),
                 gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } }),
             },
-            gfx::IProgram::InputBufferLayouts
+            gfx::ProgramInputBufferLayouts
             {
                 gfx::IProgram::InputBufferLayout
                 {
                     gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::IProgram::ArgumentAccessors
+            gfx::ProgramArgumentAccessors
             {
-                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::IProgram::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::IProgram::ArgumentAccessor::Type::Constant },
-                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::IProgram::ArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::All,   "g_uniforms"      }, gfx::ProgramArgumentAccessor::Type::Mutable, true },
+                { { gfx::ShaderType::Pixel, "g_texture_array" }, gfx::ProgramArgumentAccessor::Type::Constant },
+                { { gfx::ShaderType::Pixel, "g_sampler"       }, gfx::ProgramArgumentAccessor::Type::Constant },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }

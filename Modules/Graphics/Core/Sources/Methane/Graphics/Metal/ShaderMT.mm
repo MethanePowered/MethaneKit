@@ -112,7 +112,7 @@ ShaderMT::ShaderMT(ShaderType shader_type, const ContextBase& context, const Set
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
-ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const
+ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
@@ -137,9 +137,9 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const IProgram::Argum
         
         const IProgram::Argument shader_argument(GetType(), ShaderBase::GetCachedArgName(argument_name));
         const auto argument_desc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const IProgram::ArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
-                                                  ? IProgram::ArgumentAccessor(shader_argument)
-                                                  : *argument_desc_it;
+        const ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
+                                                    ? ProgramArgumentAccessor(shader_argument)
+                                                    : *argument_desc_it;
         
         argument_bindings.emplace_back(std::make_shared<ProgramBindingsMT::ArgumentBindingMT>(
             GetContext(),

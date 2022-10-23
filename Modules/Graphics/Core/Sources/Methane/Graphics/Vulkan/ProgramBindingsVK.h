@@ -23,7 +23,7 @@ Vulkan implementation of the program interface.
 
 #pragma once
 
-#include "ResourceVK.h"
+#include "ProgramArgumentBindingVK.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
 #include <Methane/Data/Receiver.hpp>
@@ -41,51 +41,7 @@ class ProgramBindingsVK final
     , private Data::Receiver<IObjectCallback>
 {
 public:
-    class ArgumentBindingVK final
-        : public ArgumentBindingBase
-    {
-    public:
-        struct ByteCodeMap
-        {
-            ShaderType shader_type;
-            uint32_t   descriptor_set_offset;
-            uint32_t   binding_offset;
-        };
-
-        using ByteCodeMaps = std::vector<ByteCodeMap>;
-
-        struct SettingsVK : Settings
-        {
-            vk::DescriptorType descriptor_type;
-            ByteCodeMaps       byte_code_maps;
-        };
-
-        ArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
-        ArgumentBindingVK(const ArgumentBindingVK& other) = default;
-
-        const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
-
-        void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
-        void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
-
-        // ArgumentBindingBase interface
-        void MergeSettings(const ArgumentBindingBase& other) override;
-
-        // IArgumentBinding interface
-        const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-        bool SetResourceViews(const Resource::Views& resource_views) override;
-
-        void UpdateDescriptorSetsOnGpu();
-
-    private:
-        SettingsVK                            m_settings_vk;
-        const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;
-        uint32_t                              m_vk_binding_value      = 0U;
-        vk::WriteDescriptorSet                m_vk_write_descriptor_set;
-        std::vector<vk::DescriptorImageInfo>  m_vk_descriptor_images;
-        std::vector<vk::DescriptorBufferInfo> m_vk_descriptor_buffers;
-        std::vector<vk::BufferView>           m_vk_buffer_views;
-    };
+    using ArgumentBindingVK = ProgramArgumentBindingVK;
 
     ProgramBindingsVK(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
@@ -116,7 +72,6 @@ private:
     bool                            m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
     std::vector<uint32_t>           m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset
     std::vector<uint32_t>           m_dynamic_offset_index_by_set_index; // beginning index in dynamic buffer offsets corresponding to the particular descriptor set or access type
-
 };
 
 } // namespace Methane::Graphics

@@ -49,7 +49,7 @@ public:
     ShaderDX(Type type, const ContextBase& context, const Settings& settings);
 
     // ShaderBase overrides
-    ArgumentBindings GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const override;
+    ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_byte_code_chunk_ptr.get(); }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;

@@ -215,7 +215,7 @@ void ProgramBase::InitArgumentBindings(const ArgumentAccessors& argument_accesso
     }
 }
 
-const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const IProgram::ArgumentAccessor& argument_accessor) const
+const Ptr<ProgramBindingsBase::ArgumentBindingBase>& ProgramBase::GetFrameArgumentBinding(Data::Index frame_index, const ProgramArgumentAccessor& argument_accessor) const
 {
     META_FUNCTION_TASK();
     const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
@@ -228,7 +228,7 @@ Ptr<ProgramBindingsBase::ArgumentBindingBase> ProgramBase::CreateArgumentBinding
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-    const IProgram::ArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
+    const ProgramArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
     switch(argument_accessor.GetAccessorType())
     {
     case ArgumentAccessor::Type::Mutable:       return ProgramBindingsBase::ArgumentBindingBase::CreateCopy(*argument_binding_ptr);

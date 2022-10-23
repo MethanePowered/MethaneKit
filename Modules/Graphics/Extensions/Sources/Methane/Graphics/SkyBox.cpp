@@ -64,18 +64,18 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
                 IShader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
                 IShader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
             },
-            IProgram::InputBufferLayouts
+            ProgramInputBufferLayouts
             {
                 IProgram::InputBufferLayout
                 {
                     IProgram::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            IProgram::ArgumentAccessors
+            ProgramArgumentAccessors
             {
-                { { ShaderType::Vertex, "g_skybox_uniforms" }, IProgram::ArgumentAccessor::Type::FrameConstant },
-                { { ShaderType::Pixel,  "g_skybox_texture"  }, IProgram::ArgumentAccessor::Type::Constant      },
-                { { ShaderType::Pixel,  "g_texture_sampler" }, IProgram::ArgumentAccessor::Type::Constant      },
+                { { ShaderType::Vertex, "g_skybox_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant },
+                { { ShaderType::Pixel,  "g_skybox_texture"  }, ProgramArgumentAccessor::Type::Constant      },
+                { { ShaderType::Pixel,  "g_texture_sampler" }, ProgramArgumentAccessor::Type::Constant      },
             },
             render_pattern.GetAttachmentFormats()
         }

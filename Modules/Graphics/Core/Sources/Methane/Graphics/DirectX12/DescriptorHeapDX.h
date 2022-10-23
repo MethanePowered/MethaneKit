@@ -43,10 +43,45 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextBase;
-class ResourceBase;
+enum class DescriptorHeapTypeDX : uint32_t
+{
+    // IShader visible heap types
+    ShaderResources = 0U,
+    Samplers,
+
+    // Other heap types
+    RenderTargets,
+    DepthStencil,
+
+    // Always keep at the end
+    Undefined
+};
+
+struct DescriptorHeapSettingsDX
+{
+    DescriptorHeapTypeDX type;
+    Data::Size           size;
+    bool                 deferred_allocation;
+    bool                 shader_visible;
+};
+
 class DescriptorHeapDX;
-struct IContextDX;
+
+struct DescriptorHeapReservationDX
+{
+    static constexpr size_t ranges_count = 3;
+
+    using Range  = Methane::Data::Range<Data::Index>;
+    using Ranges = std::array<Range, ranges_count>;
+
+    Ref<DescriptorHeapDX> heap;
+    Ranges              ranges;
+
+    explicit DescriptorHeapReservationDX(const Ref<DescriptorHeapDX>& heap);
+    DescriptorHeapReservationDX(const Ref<DescriptorHeapDX>& heap, const Ranges& ranges);
+
+    [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }
+};
 
 struct IDescriptorHeapCallback
 {
@@ -55,46 +90,18 @@ struct IDescriptorHeapCallback
     virtual ~IDescriptorHeapCallback() = default;
 };
 
-class DescriptorHeapDX : public Data::Emitter<IDescriptorHeapCallback> // NOSONAR - this class requires destructor
+class ContextBase;
+class ResourceBase;
+struct IContextDX;
+
+class DescriptorHeapDX // NOSONAR - this class requires destructor
+    : public Data::Emitter<IDescriptorHeapCallback>
 {
 public:
-    enum class Type : uint32_t
-    {
-        // IShader visible heap types
-        ShaderResources = 0U,
-        Samplers,
-
-        // Other heap types
-        RenderTargets,
-        DepthStencil,
-
-        // Always keep at the end
-        Undefined
-    };
-
-    struct Settings
-    {
-        Type       type;
-        Data::Size size;
-        bool       deferred_allocation;
-        bool       shader_visible;
-    };
-
-    using Range    = Methane::Data::Range<Data::Index>;
-
-    struct Reservation
-    {
-        static constexpr size_t ranges_count = 3;
-        using Ranges = std::array<Range, ranges_count>;
-
-        Ref<DescriptorHeapDX> heap;
-        Ranges              ranges;
-
-        explicit Reservation(const Ref<DescriptorHeapDX>& heap);
-        Reservation(const Ref<DescriptorHeapDX>& heap, const Ranges& ranges);
-
-        [[nodiscard]] const Range& GetRange(size_t range_index) const { return ranges.at(range_index); }
-    };
+    using Type        = DescriptorHeapTypeDX;
+    using Settings    = DescriptorHeapSettingsDX;
+    using Range       = DescriptorHeapReservationDX::Range;
+    using Reservation = DescriptorHeapReservationDX;
 
     DescriptorHeapDX(const ContextBase& context, const Settings& settings);
     ~DescriptorHeapDX() override;

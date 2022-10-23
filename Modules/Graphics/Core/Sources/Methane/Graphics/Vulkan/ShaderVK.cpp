@@ -132,7 +132,7 @@ static Resource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_
     }
 }
 
-static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const IProgram::ArgumentAccessor& argument_accessor)
+static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const ProgramArgumentAccessor& argument_accessor)
 {
     META_FUNCTION_TASK();
     if (!argument_accessor.IsAddressable())
@@ -150,7 +150,7 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
 static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spirv_compiler,
                                                 const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                 const vk::DescriptorType vk_descriptor_type,
-                                                const IProgram::ArgumentAccessors& argument_accessors,
+                                                const ProgramArgumentAccessors& argument_accessors,
                                                 const ShaderVK& shader,
                                                 ShaderBase::ArgumentBindings& argument_bindings)
 {
@@ -165,9 +165,9 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
     {
         const IProgram::Argument         shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
         const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const IProgram::ArgumentAccessor argument_acc    = argument_acc_it == argument_accessors.end()
-                                                        ? IProgram::ArgumentAccessor(shader_argument)
-                                                        : *argument_acc_it;
+        const ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
+                                                   ? ProgramArgumentAccessor(shader_argument)
+                                                   : *argument_acc_it;
 
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
         const uint32_t array_size = GetArraySize(spirv_type);
@@ -211,7 +211,7 @@ ShaderVK::ShaderVK(ShaderType shader_type, const ContextBase& context, const Set
     META_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const IProgram::ArgumentAccessors& argument_accessors) const
+ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     const IShader::Settings& shader_settings = GetSettings();

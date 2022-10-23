@@ -34,7 +34,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 namespace Methane::Graphics
 {
 
-static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapDX::Type type)
+static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapTypeDX type)
 {
     META_FUNCTION_TASK();
     switch (type)
@@ -47,14 +47,14 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapDX::Type type)
     }
 }
 
-DescriptorHeapDX::Reservation::Reservation(const Ref<DescriptorHeapDX>& heap)
+DescriptorHeapReservationDX::DescriptorHeapReservationDX(const Ref<DescriptorHeapDX>& heap)
     : heap(heap)
 {
     META_FUNCTION_TASK();
     std::fill(ranges.begin(), ranges.end(), DescriptorHeapDX::Range(0, 0));
 }
 
-DescriptorHeapDX::Reservation::Reservation(const Ref<DescriptorHeapDX>& heap, const Ranges& ranges)
+DescriptorHeapReservationDX::DescriptorHeapReservationDX(const Ref<DescriptorHeapDX>& heap, const Ranges& ranges)
     : heap(heap)
     , ranges(ranges)
 {

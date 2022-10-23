@@ -141,22 +141,22 @@ void ShadowCubeApp::Init()
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
                 gfx::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
-            gfx::IProgram::InputBufferLayouts
+            gfx::ProgramInputBufferLayouts
             {
                 gfx::IProgram::InputBufferLayout
                 {
                     gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::IProgram::ArgumentAccessors
+            gfx::ProgramArgumentAccessors
             {
-                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::IProgram::ArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::IProgram::ArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::IProgram::ArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::IProgram::ArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::ProgramArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
+                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::ProgramArgumentAccessor::Type::Constant      },
+                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::ProgramArgumentAccessor::Type::Mutable       },
+                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::ProgramArgumentAccessor::Type::Constant      },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -196,9 +196,9 @@ void ShadowCubeApp::Init()
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::IProgram::ArgumentAccessors
+            gfx::ProgramArgumentAccessors
             {
-                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::IProgram::ArgumentAccessor::Type::Mutable },
+                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable },
             },
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
