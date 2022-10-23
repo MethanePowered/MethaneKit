@@ -22,6 +22,10 @@ Vulkan implementation of the program argument binding interface.
 ******************************************************************************/
 
 #include "ProgramArgumentBindingVK.h"
+#include "ContextVK.h"
+#include "DeviceVK.h"
+
+#include <Methane/Graphics/ContextBase.h>
 
 namespace Methane::Graphics
 {
