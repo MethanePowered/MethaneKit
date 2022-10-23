@@ -439,13 +439,13 @@ namespace hlslpp
 }
 ```
 
-Uniform `Buffer` is declared inside the frame structure along with `ProgramBindings` required to bind buffer to graphics pipeline.
+Uniform `Buffer` is declared inside the frame structure along with `IProgramBindings` required to bind buffer to graphics pipeline.
 
 ```cpp
 struct HelloCubeFrame final : AppFrame
 {
     Ptr<Buffer>          uniforms_buffer_ptr;
-    Ptr<ProgramBindings> program_bindings_ptr;
+    Ptr<IProgramBindings> program_bindings_ptr;
     
     ...
 }
@@ -518,7 +518,7 @@ We create single vertex buffer `vertex_buffer_ptr`, as it's content will not cha
 fill it with cube vertices data and place it in vertex buffer set `m_vertex_buffer_set_ptr`.
 Separate Uniform buffers are created for each frame `frame.uniforms_buffer_ptr` because their content will be changed 
 on every frame and we want to make these updates fully independent of other frames rendering in flight.
-And finally, we create `ProgramBindings` object to bind `frame.uniforms_buffer_ptr` to vertex buffer argument `g_uniforms`.
+And finally, we create `IProgramBindings` object to bind `frame.uniforms_buffer_ptr` to vertex buffer argument `g_uniforms`.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp // NOSONAR
@@ -546,7 +546,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
             frame.uniforms_buffer_ptr = Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
 
             // Configure program resource bindings
-            frame.program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+            frame.program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
                 { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
             }, frame.index);
             

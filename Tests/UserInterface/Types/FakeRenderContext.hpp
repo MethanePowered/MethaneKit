@@ -121,7 +121,7 @@ public:
     void PushDebugGroup(CommandList::DebugGroup&) override                              { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset(CommandList::DebugGroup*) override                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
     void ResetOnce(CommandList::DebugGroup*) override                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetProgramBindings(ProgramBindings&, ProgramBindings::ApplyBehavior) override  { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetProgramBindings(IProgramBindings&, IProgramBindings::ApplyBehavior) override  { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetResourceBarriers(const Resource::Barriers&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Commit() override                                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
     void WaitUntilCompleted(uint32_t) override                                          { META_FUNCTION_NOT_IMPLEMENTED(); }

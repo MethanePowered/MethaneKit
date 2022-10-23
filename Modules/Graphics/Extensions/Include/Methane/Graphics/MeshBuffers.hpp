@@ -49,14 +49,14 @@ namespace Methane::Graphics
 
 struct MeshBufferBindings
 {
-    Ptr<Buffer>          uniforms_buffer_ptr;
-    Ptr<ProgramBindings> program_bindings_ptr;
+    Ptr<Buffer>           uniforms_buffer_ptr;
+    Ptr<IProgramBindings> program_bindings_ptr;
 };
     
 struct InstancedMeshBufferBindings
 {
-    Ptr<Buffer>           uniforms_buffer_ptr;
-    Ptrs<ProgramBindings> program_bindings_per_instance;
+    Ptr<Buffer>            uniforms_buffer_ptr;
+    Ptrs<IProgramBindings> program_bindings_per_instance;
 };
 
 template<typename UniformsType>
@@ -129,7 +129,7 @@ public:
         return beginning_resource_barriers_ptr;
     }
 
-    void Draw(RenderCommandList& cmd_list, ProgramBindings& program_bindings,
+    void Draw(RenderCommandList& cmd_list, IProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         META_FUNCTION_TASK();
@@ -145,8 +145,8 @@ public:
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
-              ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+    void Draw(RenderCommandList& cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
+              IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(),
@@ -154,20 +154,20 @@ public:
     }
 
     void Draw(RenderCommandList& cmd_list,
-              const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_begin,
-              const Ptrs<ProgramBindings>::const_iterator& instance_program_bindings_end,
-              ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+              const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_begin,
+              const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_end,
+              IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
         cmd_list.SetVertexBuffers(GetVertexBuffers(), set_resource_barriers);
         cmd_list.SetIndexBuffer(GetIndexBuffer(), set_resource_barriers);
 
-        for (Ptrs<ProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
+        for (Ptrs<IProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
              instance_program_bindings_it != instance_program_bindings_end;
              ++instance_program_bindings_it)
         {
-            const Ptr<ProgramBindings>& program_bindings_ptr = *instance_program_bindings_it;
+            const Ptr<IProgramBindings>& program_bindings_ptr = *instance_program_bindings_it;
             META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
 
             const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
@@ -177,11 +177,11 @@ public:
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
             using namespace magic_enum::bitwise_operators;
-            ProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
+            IProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
             if (!retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin)
-                apply_behavior |= ProgramBindings::ApplyBehavior::RetainResources;
+                apply_behavior |= IProgramBindings::ApplyBehavior::RetainResources;
             else
-                apply_behavior &= ~ProgramBindings::ApplyBehavior::RetainResources;
+                apply_behavior &= ~IProgramBindings::ApplyBehavior::RetainResources;
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
             cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle,
@@ -191,8 +191,8 @@ public:
         }
     }
 
-    void DrawParallel(const ParallelRenderCommandList& parallel_cmd_list, const Ptrs<ProgramBindings>& instance_program_bindings,
-                      ProgramBindings::ApplyBehavior bindings_apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental,
+    void DrawParallel(const ParallelRenderCommandList& parallel_cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
+                      IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();

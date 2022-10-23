@@ -48,7 +48,7 @@ public:
 
         ArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
 
-        // ArgumentBinding interface
+        // IArgumentBinding interface
         bool SetResourceViews(const Resource::Views& resource_views) override;
 
         const SettingsMT&          GetSettingsMT() const noexcept { return m_settings_mt; }
@@ -68,7 +68,7 @@ public:
     ProgramBindingsMT(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
-    // ProgramBindings interface
+    // IProgramBindings interface
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
     // ProgramBindingsBase interface

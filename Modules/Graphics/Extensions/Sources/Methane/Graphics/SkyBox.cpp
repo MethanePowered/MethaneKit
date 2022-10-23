@@ -100,14 +100,14 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<ProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
+Ptr<IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(uniforms_buffer_ptr);
     META_CHECK_ARG_NOT_NULL(m_texture_sampler_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
-    return ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+    return IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
         { { ShaderType::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
         { { ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture() } } },
         { { ShaderType::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },

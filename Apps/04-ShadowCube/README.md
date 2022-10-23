@@ -184,8 +184,8 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::Buffer>          uniforms_buffer_ptr;
-            Ptr<gfx::ProgramBindings> program_bindings_ptr;
+            Ptr<gfx::Buffer>           uniforms_buffer_ptr;
+            Ptr<gfx::IProgramBindings> program_bindings_ptr;
         };
 
         MeshResources               cube;
@@ -383,12 +383,12 @@ rendered depth texture content for the next render pass. Render command list is 
         frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
+        frame.shadow_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(shadow_state_settings.program_ptr, {
             { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.program_bindings_ptr = gfx::ProgramBindings::Create(shadow_state_settings.program_ptr, {
+        frame.shadow_pass.floor.program_bindings_ptr = gfx::IProgramBindings::Create(shadow_state_settings.program_ptr, {
             { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         }, frame.index);
 
@@ -423,7 +423,7 @@ application class `Methane::Graphics::App`. Render command list is created bound
         frame.final_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.program_bindings_ptr = gfx::ProgramBindings::Create(final_state_settings.program_ptr, {
+        frame.final_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(final_state_settings.program_ptr, {
             { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
             { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
             { { gfx::ShaderType::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
@@ -434,7 +434,7 @@ application class `Methane::Graphics::App`. Render command list is created bound
         }, frame.index);
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
-        frame.final_pass.floor.program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
+        frame.final_pass.floor.program_bindings_ptr = gfx::IProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
             { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
             { { gfx::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
         }, frame.index);

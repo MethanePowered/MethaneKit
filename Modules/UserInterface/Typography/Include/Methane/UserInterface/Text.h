@@ -39,7 +39,7 @@ struct RenderCommandList;
 struct RenderState;
 struct RenderPattern;
 struct ViewState;
-struct ProgramBindings;
+struct IProgramBindings;
 struct Buffer;
 struct BufferSet;
 struct Texture;
@@ -191,7 +191,7 @@ private:
 
         [[nodiscard]] gfx::BufferSet&       GetVertexBufferSet() const;
         [[nodiscard]] gfx::Buffer&          GetIndexBuffer() const;
-        [[nodiscard]] gfx::ProgramBindings& GetProgramBindings() const;
+        [[nodiscard]] gfx::IProgramBindings& GetProgramBindings() const;
 
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
@@ -205,8 +205,8 @@ private:
         Ptr<gfx::BufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::Buffer>          m_index_buffer_ptr;
         Ptr<gfx::Buffer>          m_uniforms_buffer_ptr;
-        Ptr<gfx::Texture>         m_atlas_texture_ptr;
-        Ptr<gfx::ProgramBindings> m_program_bindings_ptr;
+        Ptr<gfx::Texture>          m_atlas_texture_ptr;
+        Ptr<gfx::IProgramBindings> m_program_bindings_ptr;
     };
 
     void InitializeFrameResources();

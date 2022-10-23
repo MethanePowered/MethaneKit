@@ -25,11 +25,11 @@ Descriptor manager interface.
 
 namespace Methane::Graphics
 {
-struct ProgramBindings;
+struct IProgramBindings;
 
 struct DescriptorManager
 {
-    virtual void AddProgramBindings(ProgramBindings& program_bindings) = 0;
+    virtual void AddProgramBindings(IProgramBindings& program_bindings) = 0;
     virtual void CompleteInitialization() = 0;
     virtual void Release() = 0;
 

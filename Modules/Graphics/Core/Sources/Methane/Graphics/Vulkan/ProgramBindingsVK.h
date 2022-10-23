@@ -71,7 +71,7 @@ public:
         // ArgumentBindingBase interface
         void MergeSettings(const ArgumentBindingBase& other) override;
 
-        // ArgumentBinding interface
+        // IArgumentBinding interface
         const Settings& GetSettings() const noexcept override { return m_settings_vk; }
         bool SetResourceViews(const Resource::Views& resource_views) override;
 
@@ -92,7 +92,7 @@ public:
 
     void Initialize();
 
-    // ProgramBindings interface
+    // IProgramBindings interface
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 
     // ProgramBindingsBase interface

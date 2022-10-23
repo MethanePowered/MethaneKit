@@ -12,7 +12,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IFence.h
     ${INCLUDE_DIR}/IShader.h
     ${INCLUDE_DIR}/IProgram.h
-    ${INCLUDE_DIR}/ProgramBindings.h
+    ${INCLUDE_DIR}/IProgramBindings.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/ResourceBarriers.h

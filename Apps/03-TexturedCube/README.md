@@ -92,7 +92,7 @@ and a set of command lists submitted for execution on GPU via command queue.
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
     Ptr<gfx::Buffer>            uniforms_buffer_ptr;
-    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
+    Ptr<gfx::IProgramBindings>   program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
@@ -290,7 +290,7 @@ void TexturedCubeApp::Init()
 `Graphics::Program` object is created in `Graphics::RenderState::Settings` structure using `Graphics::IProgram::Create(...)` factory function.
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
 Program settings also includes additional description `Graphics::IProgram::ArgumentAccessors` of program arguments bound to graphics resources.
-Argument description define specific access modifiers for program arguments used in `Graphics::ProgramBindings` object.
+Argument description define specific access modifiers for program arguments used in `Graphics::IProgramBindings` object.
 Also it is important to note that render state settings enables depth testing for correct rendering of cube faces.
 Finally, render state is created using filled settings structure with `Graphics::RenderState::Create(...)` factory function.
 
@@ -338,7 +338,7 @@ void TexturedCubeApp::Init()
 
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
 - Create uniforms buffer with `Buffer::CreateConstantBuffer(...)` function.
-- Create program arguments to resources bindings with `ProgramBindings::Create(..)` function.
+- Create program arguments to resources bindings with `IProgramBindings::Create(..)` function.
 - Create rendering command list with `RenderCommandList::Create(...)` and 
 create set of command lists with `CommandListSet::Create(...)` for execution in command queue.
 
@@ -358,7 +358,7 @@ void TexturedCubeApp::Init()
         frame.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
 
         // Configure program resource bindings
-        frame.program_bindings_ptr = gfx::ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+        frame.program_bindings_ptr = gfx::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
             { { gfx::ShaderType::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
             { { gfx::ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
             { { gfx::ShaderType::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },

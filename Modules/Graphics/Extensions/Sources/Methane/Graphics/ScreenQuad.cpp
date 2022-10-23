@@ -30,7 +30,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/ProgramBindings.h>
+#include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
@@ -207,7 +207,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
-    ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
+    IProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
         { { ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
     };
 
@@ -217,7 +217,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
     }
 
-    m_const_program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
+    m_const_program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
     m_const_program_bindings_ptr->SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
     UpdateConstantsBuffer();

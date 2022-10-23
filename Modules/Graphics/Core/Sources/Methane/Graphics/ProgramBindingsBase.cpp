@@ -88,14 +88,14 @@ ProgramBindingsBase::ResourceAndState::ResourceAndState(Ptr<ResourceBase> resour
     META_FUNCTION_TASK();
 }
 
-ProgramBindings::ArgumentBinding::ConstantModificationException::ConstantModificationException(const IProgram::Argument& argument)
+ProgramArgumentConstantModificationException::ProgramArgumentConstantModificationException(const IProgram::Argument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
                                    argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
 {
     META_FUNCTION_TASK();
 }
 
-ProgramBindings::UnboundArgumentsException::UnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments)
+ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments)
     : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
     , m_program(program)
     , m_unbound_arguments(unbound_arguments)
@@ -150,7 +150,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::SetResourceViews(const Resource::
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
-    Data::Emitter<ProgramBindings::IArgumentBindingCallback>::Emit(&ProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
+    Data::Emitter<IProgramBindings::IArgumentBindingCallback>::Emit(&IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
 
     m_resource_views = resource_views;
     return true;
@@ -180,7 +180,7 @@ bool ProgramBindingsBase::ArgumentBindingBase::IsAlreadyApplied(const IProgram& 
 
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (const ProgramBindings::ArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
+    if (const IProgramBindings::IArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
         previous_argument_argument_binding.GetResourceViews() == m_resource_views)
         return true;
 
@@ -215,7 +215,7 @@ ProgramBindingsBase::ProgramBindingsBase(const Ptr<IProgram>& program_ptr, Data:
 
 ProgramBindingsBase::ProgramBindingsBase(const ProgramBindingsBase& other_program_bindings, const Opt<Data::Index>& frame_index)
     : ObjectBase(other_program_bindings)
-    , Data::Receiver<ProgramBindings::IArgumentBindingCallback>()
+    , Data::Receiver<IProgramBindings::IArgumentBindingCallback>()
     , m_program_ptr(other_program_bindings.m_program_ptr)
     , m_frame_index(frame_index.value_or(other_program_bindings.m_frame_index))
     , m_transition_resource_states_by_access(other_program_bindings.m_transition_resource_states_by_access)
@@ -239,7 +239,7 @@ IProgram& ProgramBindingsBase::GetProgram()
     return *m_program_ptr;
 }
 
-void ProgramBindingsBase::OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding& argument_binding,
+void ProgramBindingsBase::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding& argument_binding,
                                                                        const Resource::Views& old_resource_views,
                                                                        const Resource::Views& new_resource_views)
 {
@@ -299,8 +299,8 @@ void ProgramBindingsBase::InitializeArgumentBindings(const ProgramBindingsBase* 
     }
 }
 
-ProgramBindings::ResourceViewsByArgument ProgramBindingsBase::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                                                   const ResourceViewsByArgument& replace_resource_views) const
+IProgramBindings::ResourceViewsByArgument ProgramBindingsBase::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+                                                                                    const ResourceViewsByArgument& replace_resource_views) const
 {
     META_FUNCTION_TASK();
     ResourceViewsByArgument resource_views_by_argument = replace_resource_views;
@@ -325,14 +325,14 @@ void ProgramBindingsBase::SetResourcesForArguments(const ResourceViewsByArgument
     META_FUNCTION_TASK();
     for (const auto& [program_argument, resource_views] : resource_views_by_argument)
     {
-        ProgramBindings::ArgumentBinding& argument_binding = Get(program_argument);
+        IProgramBindings::IArgumentBinding& argument_binding = Get(program_argument);
         argument_binding.SetResourceViews(resource_views);
         AddTransitionResourceStates(argument_binding);
     }
     InitResourceRefsByAccess();
 }
 
-ProgramBindings::ArgumentBinding& ProgramBindingsBase::Get(const IProgram::Argument& shader_argument) const
+IProgramBindings::IArgumentBinding& ProgramBindingsBase::Get(const IProgram::Argument& shader_argument) const
 {
     META_FUNCTION_TASK();
     const auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
@@ -397,14 +397,14 @@ void ProgramBindingsBase::ClearTransitionResourceStates()
     }
 }
 
-void ProgramBindingsBase::RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource)
+void ProgramBindingsBase::RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const Resource& resource)
 {
     META_FUNCTION_TASK();
     if (resource.GetResourceType() == Resource::Type::Sampler)
         return;
 
-    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
-    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
+    const IProgramBindings::IArgumentBinding::Settings& argument_binding_settings  = argument_binding.GetSettings();
+    ResourceStates                                    & transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
     const auto transition_resource_state_it = std::find_if(transition_resource_states.begin(), transition_resource_states.end(),
                                                            [&resource](const ResourceAndState& resource_state)
                                                            { return resource_state.resource_ptr.get() == &resource; });
@@ -412,23 +412,23 @@ void ProgramBindingsBase::RemoveTransitionResourceStates(const ProgramBindings::
         transition_resource_states.erase(transition_resource_state_it);
 }
 
-void ProgramBindingsBase::AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource)
+void ProgramBindingsBase::AddTransitionResourceState(const IProgramBindings::IArgumentBinding& argument_binding, Resource& resource)
 {
     META_FUNCTION_TASK();
     if (resource.GetResourceType() == Resource::Type::Sampler)
         return;
 
-    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
+    const IProgramBindings::IArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
     const Resource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
     transition_resource_states.emplace_back(std::dynamic_pointer_cast<ResourceBase>(resource.GetPtr()), target_resource_state);
 }
 
-void ProgramBindingsBase::AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding)
+void ProgramBindingsBase::AddTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding)
 {
     META_FUNCTION_TASK();
-    const ProgramBindings::ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
-    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
+    const IProgramBindings::IArgumentBinding::Settings& argument_binding_settings  = argument_binding.GetSettings();
+    ResourceStates                                    & transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
 
     for(const ResourceView& resource_view : argument_binding.GetResourceViews())
     {

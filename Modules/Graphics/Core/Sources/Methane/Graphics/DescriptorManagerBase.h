@@ -33,7 +33,7 @@ Base descriptor manager implementation.
 namespace Methane::Graphics
 {
 
-struct ProgramBindings;
+struct IProgramBindings;
 class ContextBase;
 
 class DescriptorManagerBase : public DescriptorManager
@@ -42,7 +42,7 @@ public:
     explicit DescriptorManagerBase(ContextBase& context, bool is_parallel_bindings_processing_enabled = true);
 
     // DescriptorManager interface
-    void AddProgramBindings(ProgramBindings& program_bindings) final;
+    void AddProgramBindings(IProgramBindings& program_bindings) final;
     void CompleteInitialization() override;
     void Release() override;
 
@@ -54,19 +54,19 @@ protected:
     void ForEachProgramBinding(const BindingsFuncType& bindings_functor)
     {
         std::scoped_lock lock_guard(m_program_bindings_mutex);
-        for (const WeakPtr<ProgramBindings>& program_bindings_wptr : m_program_bindings)
+        for (const WeakPtr<IProgramBindings>& program_bindings_wptr : m_program_bindings)
         {
-            const Ptr<ProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+            const Ptr<IProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
             if (program_bindings_ptr)
                 bindings_functor(*program_bindings_ptr);
         }
     }
 
 private:
-    ContextBase&              m_context;
-    const bool                m_is_parallel_bindings_processing_enabled;
-    WeakPtrs<ProgramBindings> m_program_bindings;
-    TracyLockable(std::mutex, m_program_bindings_mutex)
+    ContextBase&               m_context;
+    const bool                 m_is_parallel_bindings_processing_enabled;
+    WeakPtrs<IProgramBindings> m_program_bindings;
+    TracyLockable(std::mutex,  m_program_bindings_mutex)
 };
 
 } // namespace Methane::Graphics

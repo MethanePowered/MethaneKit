@@ -25,7 +25,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 #pragma once
 
 #include "IObject.h"
-#include "ProgramBindings.h"
+#include "IProgramBindings.h"
 #include "Resource.h"
 
 #include <Methane/Graphics/Types.h>
@@ -86,8 +86,8 @@ struct CommandList
     virtual void  PopDebugGroup() = 0;
     virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
     virtual void  ResetOnce(DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void  SetProgramBindings(ProgramBindings& program_bindings,
-                                     ProgramBindings::ApplyBehavior apply_behavior = ProgramBindings::ApplyBehavior::AllIncremental) = 0;
+    virtual void  SetProgramBindings(IProgramBindings& program_bindings,
+                                     IProgramBindings::ApplyBehavior apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  SetResourceBarriers(const Resource::Barriers& resource_barriers) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;

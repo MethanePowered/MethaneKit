@@ -30,7 +30,7 @@ namespace Methane::Graphics
 
 struct DescriptorManagerMT final : DescriptorManager
 {
-    void AddProgramBindings(ProgramBindings&) override {}
+    void AddProgramBindings(IProgramBindings&) override {}
     void CompleteInitialization() override {}
     void Release() override {}
 };

@@ -180,7 +180,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
             shader.GetContext(),
             ProgramBindingsVK::ArgumentBindingVK::SettingsVK
             {
-                ProgramBindings::ArgumentBinding::Settings
+                IProgramBindings::IArgumentBinding::Settings
                 {
                     argument_acc,
                     resource_type,

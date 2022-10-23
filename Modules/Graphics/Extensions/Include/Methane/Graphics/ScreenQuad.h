@@ -43,7 +43,7 @@ struct BufferSet;
 struct Buffer;
 struct Texture;
 struct Sampler;
-struct ProgramBindings;
+struct IProgramBindings;
 
 class ScreenQuad
 {
@@ -97,7 +97,7 @@ private:
     Ptr<Buffer>              m_const_buffer_ptr;
     Ptr<Texture>             m_texture_ptr;
     Ptr<Sampler>             m_texture_sampler_ptr;
-    Ptr<ProgramBindings>     m_const_program_bindings_ptr;
+    Ptr<IProgramBindings>    m_const_program_bindings_ptr;
 };
 
 } // namespace Methane::Graphics

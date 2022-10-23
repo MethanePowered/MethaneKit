@@ -159,7 +159,7 @@ void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
     Reset(p_debug_group);
 }
 
-void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
+void CommandListBase::SetProgramBindings(IProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
     if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
@@ -173,14 +173,14 @@ void CommandListBase::SetProgramBindings(ProgramBindings& program_bindings, Prog
     ApplyProgramBindings(program_bindings_base, apply_behavior);
 
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::ConstantOnce) ||
-        static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::ChangesOnly))
+    if (static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::ConstantOnce) ||
+        static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::ChangesOnly))
     {
         META_SCOPE_TASK("AcquireProgramBindingsPtr");
         m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
     }
 
-    if (static_cast<bool>(apply_behavior & ProgramBindings::ApplyBehavior::RetainResources))
+    if (static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::RetainResources))
     {
         META_SCOPE_TASK("RetainResource");
         RetainResource(program_bindings_base.GetBasePtr());
@@ -383,7 +383,7 @@ void CommandListBase::ResetCommandState()
     m_command_state.program_bindings_ptr = nullptr;
 }
 
-void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings, ProgramBindings::ApplyBehavior apply_behavior)
+void CommandListBase::ApplyProgramBindings(ProgramBindingsBase& program_bindings, IProgramBindings::ApplyBehavior apply_behavior)
 {
     program_bindings.Apply(*this, apply_behavior);
 }

@@ -23,7 +23,7 @@ Base implementation of the program bindings interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramBindings.h>
+#include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/Resource.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -41,14 +41,14 @@ class CommandListBase;
 class ResourceBase;
 
 class ProgramBindingsBase
-    : public ProgramBindings
+    : public IProgramBindings
     , public ObjectBase
-    , public Data::Receiver<ProgramBindings::IArgumentBindingCallback>
+    , public Data::Receiver<IProgramBindings::IArgumentBindingCallback>
 {
 public:
     class ArgumentBindingBase
-        : public ArgumentBinding
-        , public Data::Emitter<ProgramBindings::IArgumentBindingCallback>
+        : public IArgumentBinding
+        , public Data::Emitter<IProgramBindings::IArgumentBindingCallback>
         , public std::enable_shared_from_this<ArgumentBindingBase>
     {
     public:
@@ -58,7 +58,7 @@ public:
 
         virtual void MergeSettings(const ArgumentBindingBase& other);
 
-        // ArgumentBinding interface
+        // IArgumentBinding interface
         const Settings&        GetSettings() const noexcept override     { return m_settings; }
         const Resource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
         bool                   SetResourceViews(const Resource::Views& resource_views) override;
@@ -90,12 +90,12 @@ public:
     ProgramBindingsBase& operator=(const ProgramBindingsBase& other) = delete;
     ProgramBindingsBase& operator=(ProgramBindingsBase&& other) = delete;
 
-    // ProgramBindings interface
+    // IProgramBindings interface
     IProgram&                  GetProgram() const final;
     const IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
     Data::Index               GetFrameIndex() const noexcept final    { return m_frame_index; }
     Data::Index               GetBindingsIndex() const noexcept final { return m_bindings_index; }
-    ArgumentBinding&          Get(const IProgram::Argument& shader_argument) const final;
+    IArgumentBinding&          Get(const IProgram::Argument& shader_argument) const final;
     explicit operator std::string() const final;
 
     // ProgramBindingsBase interface
@@ -117,8 +117,8 @@ public:
     }
 
 protected:
-    // ProgramBindings::IArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const ArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
+    // IProgramBindings::IProgramArgumentBindingCallback
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
 
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
@@ -131,9 +131,9 @@ protected:
     const Refs<Resource>& GetResourceRefsByAccess(IProgram::ArgumentAccessor::Type access_type) const;
 
     void ClearTransitionResourceStates();
-    void RemoveTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding, const Resource& resource);
-    void AddTransitionResourceState(const ProgramBindings::ArgumentBinding& argument_binding, Resource& resource);
-    void AddTransitionResourceStates(const ProgramBindings::ArgumentBinding& argument_binding);
+    void RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const Resource& resource);
+    void AddTransitionResourceState(const IProgramBindings::IArgumentBinding& argument_binding, Resource& resource);
+    void AddTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding);
 
 private:
     struct ResourceAndState

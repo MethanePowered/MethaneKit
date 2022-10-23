@@ -34,7 +34,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RenderState.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/ProgramBindings.h>
+#include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -428,7 +428,7 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& sta
     META_CHECK_ARG_NOT_NULL(m_atlas_texture_ptr);
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
-    m_program_bindings_ptr = gfx::ProgramBindings::Create(state.GetSettings().program_ptr, {
+    m_program_bindings_ptr = gfx::IProgramBindings::Create(state.GetSettings().program_ptr, {
         { { gfx::ShaderType::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
         { { gfx::ShaderType::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
         { { gfx::ShaderType::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
@@ -451,7 +451,7 @@ gfx::Buffer& Text::FrameResources::GetIndexBuffer() const
     return *m_index_buffer_ptr;
 }
 
-gfx::ProgramBindings& Text::FrameResources::GetProgramBindings() const
+gfx::IProgramBindings& Text::FrameResources::GetProgramBindings() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_program_bindings_ptr, "text program bindings are not initialized");

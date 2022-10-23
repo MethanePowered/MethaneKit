@@ -80,7 +80,7 @@ public:
         ArgumentBindingDX& operator=(const ArgumentBindingDX&) = delete;
         ArgumentBindingDX& operator=(ArgumentBindingDX&&) noexcept = default;
 
-        // ArgumentBinding interface
+        // IArgumentBinding interface
         bool SetResourceViews(const Resource::Views& resource_views) override;
 
         const SettingsDX&      GetSettingsDX() const noexcept          { return m_settings_dx; }
@@ -107,7 +107,7 @@ public:
 
     void Initialize();
 
-    // ProgramBindings interface
+    // IProgramBindings interface
     void CompleteInitialization() override;
     void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
 

@@ -168,7 +168,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const IProgram::Argum
             GetContext(),
             ProgramBindingsDX::ArgumentBindingDX::SettingsDX
             {
-                ProgramBindings::ArgumentBinding::Settings
+                IProgramArgumentBinding::Settings
                 {
                     argument_acc,
                     GetResourceTypeByInputType(binding_desc.Type),

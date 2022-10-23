@@ -40,7 +40,7 @@ namespace Methane::Graphics
 {
 
 class ContextBase;
-struct ProgramBindings;
+struct IProgramBindings;
 struct IContextVK;
 
 class DescriptorManagerVK final : public DescriptorManagerBase

@@ -47,7 +47,7 @@ struct HelloCubeFrame final : AppFrame
 {
 #ifdef UNIFORMS_BUFFER_ENABLED
     Ptr<Buffer>            uniforms_buffer_ptr;
-    Ptr<ProgramBindings>   program_bindings_ptr;
+    Ptr<IProgramBindings>  program_bindings_ptr;
 #else
     Ptr<BufferSet>         vertex_buffer_set_ptr;
 #endif
@@ -201,7 +201,7 @@ public:
             frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+            frame.program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
                 { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
             }, frame.index);
             frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings {}", frame.index));
