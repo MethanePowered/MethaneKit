@@ -35,6 +35,14 @@ struct fmt::formatter<Methane::Graphics::Resource::View>
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
+template<>
+struct fmt::formatter<Methane::Graphics::ProgramArgumentAccessor>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::ProgramArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
 namespace Methane::Graphics
 {
 

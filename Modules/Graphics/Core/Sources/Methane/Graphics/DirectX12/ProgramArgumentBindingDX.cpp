@@ -24,8 +24,10 @@ DirectX 12 implementation of the program argument binding interface.
 #pragma once
 
 #include "ProgramArgumentBindingDX.h"
+#include "DeviceDX.h"
 
 #include <Methane/Graphics/IContext.h>
+#include <Methane/Graphics/ContextBase.h>
 
 namespace Methane::Graphics
 {
@@ -80,17 +82,17 @@ bool ProgramArgumentBindingDX::SetResourceViews(const Resource::Views& resource_
     }
 
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
-                                                        ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
-                                                        : std::numeric_limits<uint32_t>::max();
+                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
+                                                      : std::numeric_limits<uint32_t>::max();
     const DescriptorHeapDX*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
-                                                        ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
-                                                        : nullptr;
+                                                      ? static_cast<const DescriptorHeapDX*>(&m_p_descriptor_heap_reservation->heap.get())
+                                                      : nullptr;
     const DescriptorHeapDX::Type descriptor_heap_type = p_dx_descriptor_heap
-                                                        ? p_dx_descriptor_heap->GetSettings().type
-                                                        : DescriptorHeapDX::Type::Undefined;
+                                                      ? p_dx_descriptor_heap->GetSettings().type
+                                                      : DescriptorHeapDX::Type::Undefined;
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
-                                                        ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
-                                                        : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+                                                      ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
+                                                      : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<const IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
     META_CHECK_ARG_NOT_NULL(cp_native_device);
 
