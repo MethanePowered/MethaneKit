@@ -70,7 +70,7 @@ void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
     });
 }
 
-void ParallelRenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
@@ -122,7 +122,7 @@ void ParallelRenderCommandListBase::Commit()
     CommandListBase::Commit();
 }
 
-void ParallelRenderCommandListBase::SetViewState(ViewState& view_state)
+void ParallelRenderCommandListBase::SetViewState(IViewState& view_state)
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)

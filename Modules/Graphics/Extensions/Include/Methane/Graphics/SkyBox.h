@@ -45,7 +45,7 @@ namespace Methane::Graphics
 
 struct CommandQueue;
 struct IRenderContext;
-struct RenderState;
+struct IRenderState;
 struct Sampler;
 class Camera;
 
@@ -77,7 +77,7 @@ public:
 
     Ptr<IProgramBindings> CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, ViewState& view_state);
+    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state);
 
 private:
     struct Vertex
@@ -99,7 +99,7 @@ private:
     IRenderContext&         m_context;
     TexMeshBuffers          m_mesh_buffers;
     Ptr<Sampler>            m_texture_sampler_ptr;
-    Ptr<RenderState>        m_render_state_ptr;
+    Ptr<IRenderState>       m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

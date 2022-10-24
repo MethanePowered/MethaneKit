@@ -86,8 +86,8 @@ private:
     std::vector<CubeVertex>      m_proj_vertices;
 #endif
 
-    Ptr<RenderState> m_render_state_ptr;
-    Ptr<Buffer>      m_index_buffer_ptr;
+    Ptr<IRenderState> m_render_state_ptr;
+    Ptr<Buffer>       m_index_buffer_ptr;
 
 public:
     HelloCubeApp()
@@ -136,8 +136,8 @@ public:
 #endif
 
         // Create render state with program
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
+            IRenderState::Settings
             {
                 IProgram::Create(GetRenderContext(),
                     IProgram::Settings

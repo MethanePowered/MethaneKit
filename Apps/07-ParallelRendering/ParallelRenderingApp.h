@@ -101,13 +101,13 @@ private:
     void RenderCubesRange(gfx::RenderCommandList& remder_cmd_list, const Ptrs<gfx::IProgramBindings>& program_bindings_per_instance,
                           uint32_t begin_instance_index, const uint32_t end_instance_index) const;
 
-    Settings              m_settings;
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::Texture>     m_texture_array_ptr;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
-    Ptr<MeshBuffers>      m_cube_array_buffers_ptr;
-    CubeArrayParameters   m_cube_array_parameters;
+    Settings               m_settings;
+    gfx::Camera            m_camera;
+    Ptr<gfx::IRenderState> m_render_state_ptr;
+    Ptr<gfx::Texture>      m_texture_array_ptr;
+    Ptr<gfx::Sampler>      m_texture_sampler_ptr;
+    Ptr<MeshBuffers>       m_cube_array_buffers_ptr;
+    CubeArrayParameters    m_cube_array_parameters;
 };
 
 } // namespace Methane::Tutorials

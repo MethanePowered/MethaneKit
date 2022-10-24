@@ -56,7 +56,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_q
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 

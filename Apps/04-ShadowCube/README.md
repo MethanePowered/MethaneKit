@@ -134,7 +134,7 @@ private:
         const bool                              is_final_pass;
         const Ptr<gfx::CommandList::DebugGroup> debug_group_ptr;
         Ptr<gfx::RenderState>                   render_state_ptr;
-        Ptr<gfx::ViewState>                     view_state_ptr;
+        Ptr<gfx::IViewState>                    view_state_ptr;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -320,7 +320,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
 The Shadow-pass view state is bound to the size of the Shadow-map texture:
 
 ```cpp
-    m_shadow_pass.view_state_ptr = gfx::ViewState::Create({
+    m_shadow_pass.view_state_ptr = gfx::IViewState::Create({
         { gfx::GetFrameViewport(g_shadow_map_size)    },
         { gfx::GetFrameScissorRect(g_shadow_map_size) }
     });

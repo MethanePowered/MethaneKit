@@ -25,7 +25,7 @@ Methane render command list interface.
 
 #include "CommandList.h"
 #include "Buffer.h"
-#include "RenderState.h"
+#include "IRenderState.h"
 
 #include <Methane/Memory.hpp>
 
@@ -56,10 +56,10 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
     [[nodiscard]] virtual RenderPass& GetRenderPass() const = 0;
-    virtual void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) = 0;
-    virtual void SetViewState(ViewState& view_state) = 0;
+    virtual void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) = 0;
+    virtual void SetViewState(IViewState& view_state) = 0;
     virtual bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers = true) = 0;
     virtual bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers = true) = 0;
     virtual void DrawIndexed(Primitive primitive, uint32_t index_count = 0, uint32_t start_index = 0, uint32_t start_vertex = 0,

@@ -28,7 +28,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/Sampler.h>
@@ -108,10 +108,10 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
     const std::string state_name = fmt::format("{} Render State", quad_name);
-    m_render_state_ptr = std::dynamic_pointer_cast<RenderState>(render_context.GetObjectRegistry().GetGraphicsObject(state_name));
+    m_render_state_ptr = std::dynamic_pointer_cast<IRenderState>(render_context.GetObjectRegistry().GetGraphicsObject(state_name));
     if (!m_render_state_ptr)
     {
-        RenderState::Settings state_settings;
+        IRenderState::Settings state_settings;
         state_settings.program_ptr = IProgram::Create(render_context,
             IProgram::Settings
             {
@@ -137,18 +137,18 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
         state_settings.blending.render_targets[0].blend_enabled             = m_settings.alpha_blending_enabled;
-        state_settings.blending.render_targets[0].source_rgb_blend_factor   = RenderState::Blending::Factor::SourceAlpha;
-        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = RenderState::Blending::Factor::OneMinusSourceAlpha;
-        state_settings.blending.render_targets[0].source_alpha_blend_factor = RenderState::Blending::Factor::Zero;
-        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = RenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].source_rgb_blend_factor   = IRenderState::Blending::Factor::SourceAlpha;
+        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = IRenderState::Blending::Factor::OneMinusSourceAlpha;
+        state_settings.blending.render_targets[0].source_alpha_blend_factor = IRenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = IRenderState::Blending::Factor::Zero;
 
-        m_render_state_ptr = RenderState::Create(render_context, state_settings);
+        m_render_state_ptr = IRenderState::Create(render_context, state_settings);
         m_render_state_ptr->SetName(state_name);
 
         render_context.GetObjectRegistry().AddGraphicsObject(*m_render_state_ptr);
     }
 
-    m_view_state_ptr = ViewState::Create({
+    m_view_state_ptr = IViewState::Create({
         { GetFrameViewport(m_settings.screen_rect)    },
         { GetFrameScissorRect(m_settings.screen_rect) }
     });
@@ -254,7 +254,7 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 
     m_settings.alpha_blending_enabled = alpha_blending_enabled;
 
-    RenderState::Settings state_settings = m_render_state_ptr->GetSettings();
+    IRenderState::Settings state_settings = m_render_state_ptr->GetSettings();
     state_settings.blending.render_targets[0].blend_enabled = alpha_blending_enabled;
     m_render_state_ptr->Reset(state_settings);
 }

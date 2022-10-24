@@ -35,7 +35,7 @@ Base implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-struct RenderState;
+struct IRenderState;
 
 class ParallelRenderCommandListBase
     : public ParallelRenderCommandList
@@ -50,8 +50,8 @@ public:
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
     void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void SetViewState(ViewState& view_state) override;
+    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void SetViewState(IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Refs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
 

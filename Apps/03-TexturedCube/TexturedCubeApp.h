@@ -76,14 +76,14 @@ private:
         0.04F,                     // - light_ambient_factor
         30.F                       // - light_specular_factor
     };
-    hlslpp::Uniforms        m_shader_uniforms { };
-    gfx::Camera             m_camera;
-    Ptr<gfx::RenderState>   m_render_state_ptr;
-    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>        m_index_buffer_ptr;
-    Ptr<gfx::Buffer>        m_const_buffer_ptr;
-    Ptr<gfx::Texture>       m_cube_texture_ptr;
-    Ptr<gfx::Sampler>       m_texture_sampler_ptr;
+    hlslpp::Uniforms       m_shader_uniforms { };
+    gfx::Camera            m_camera;
+    Ptr<gfx::IRenderState> m_render_state_ptr;
+    Ptr<gfx::BufferSet>    m_vertex_buffer_set_ptr;
+    Ptr<gfx::Buffer>       m_index_buffer_ptr;
+    Ptr<gfx::Buffer>       m_const_buffer_ptr;
+    Ptr<gfx::Texture>      m_cube_texture_ptr;
+    Ptr<gfx::Sampler>      m_texture_sampler_ptr;
 
     const gfx::Resource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR

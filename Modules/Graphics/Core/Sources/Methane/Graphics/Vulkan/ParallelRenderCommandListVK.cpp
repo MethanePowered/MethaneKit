@@ -78,7 +78,7 @@ void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
     ParallelRenderCommandListBase::Reset(p_debug_group);
 }
 
-void ParallelRenderCommandListVK::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 

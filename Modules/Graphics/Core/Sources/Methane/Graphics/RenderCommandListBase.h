@@ -35,7 +35,7 @@ Base implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-struct RenderState;
+struct IRenderState;
 class ParallelRenderCommandListBase;
 
 class RenderCommandListBase
@@ -58,7 +58,7 @@ public:
         Ptr<BufferBase>      index_buffer_ptr;
         Opt<Primitive>       primitive_type_opt;
         ViewStateBase*       view_state_ptr      = nullptr;
-        RenderState::Groups  render_state_groups = RenderState::Groups::None;
+        IRenderState::Groups render_state_groups = IRenderState::Groups::None;
         Changes              changes             = Changes::None;
     };
 
@@ -75,10 +75,10 @@ public:
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
     RenderPass& GetRenderPass() const final;
     void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
-    void SetRenderState(RenderState& render_state, RenderState::Groups state_groups = RenderState::Groups::All) override;
-    void SetViewState(ViewState& view_state) override;
+    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
+    void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) override;
+    void SetViewState(IViewState& view_state) override;
     bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive_type, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

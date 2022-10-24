@@ -39,7 +39,7 @@ using GraphicsApp = App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp // NOSONAR
 {
 private:
-    Ptr<RenderState> m_render_state_ptr;
+    Ptr<IRenderState> m_render_state_ptr;
 
 public:
     HelloTriangleApp()
@@ -61,8 +61,8 @@ public:
     {
         GraphicsApp::Init();
 
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
+            IRenderState::Settings
             {
                 IProgram::Create(GetRenderContext(),
                     IProgram::Settings

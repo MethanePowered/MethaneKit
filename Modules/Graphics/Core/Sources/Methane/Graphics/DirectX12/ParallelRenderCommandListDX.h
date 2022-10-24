@@ -39,7 +39,7 @@ public:
     ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void ResetWithState(RenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
     void SetBeginningResourceBarriers(const Resource::Barriers& resource_barriers) override;
     void SetEndingResourceBarriers(const Resource::Barriers& resource_barriers) override;
 

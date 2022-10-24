@@ -37,7 +37,7 @@ namespace Methane::Graphics
 {
 
 struct Texture;
-struct ViewState;
+struct IViewState;
 struct RenderPass;
 
 struct AppSettings
@@ -118,8 +118,8 @@ protected:
     IRenderContext&                  GetRenderContext() const                      { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
     const Ptr<RenderPattern>&       GetScreenRenderPatternPtr() const noexcept    { return m_screen_render_pattern_ptr; }
     RenderPattern&                  GetScreenRenderPattern() const                { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
-    const Ptr<ViewState>&           GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
-    ViewState&                      GetViewState()                                { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
+    const Ptr<IViewState>&          GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
+    IViewState&                     GetViewState()                                { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
     FrameSize                       GetFrameSizeInDots() const                    { return m_context_ptr->GetSettings().frame_size / GetContentScalingFactor(); }
     ImageLoader&                    GetImageLoader() noexcept                     { return m_image_loader; }
     Data::AnimationsPool&           GetAnimations() noexcept                      { return m_animations; }
@@ -137,9 +137,9 @@ private:
     Data::AnimationsPool     m_animations;
     Ptr<IRenderContext>      m_context_ptr;
     Ptr<Texture>             m_depth_texture_ptr;
-    Ptr<RenderPattern>       m_screen_render_pattern_ptr;
-    Ptr<ViewState>           m_view_state_ptr;
-    bool                     m_restore_animations_enabled = true;
+    Ptr<RenderPattern> m_screen_render_pattern_ptr;
+    Ptr<IViewState>    m_view_state_ptr;
+    bool               m_restore_animations_enabled = true;
 };
 
 } // namespace Methane::Graphics

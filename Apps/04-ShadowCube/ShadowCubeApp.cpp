@@ -132,7 +132,7 @@ void ShadowCubeApp::Init()
     const gfx::IShader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
     // Create final pass rendering state with program
-    gfx::RenderState::Settings final_state_settings;
+    gfx::IRenderState::Settings final_state_settings;
     final_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -165,7 +165,7 @@ void ShadowCubeApp::Init()
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
     final_state_settings.depth.enabled = true;
 
-    m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), final_state_settings);
     m_final_pass.render_state_ptr->SetName("Final pass render state");
     m_final_pass.view_state_ptr = GetViewStatePtr();
 
@@ -187,7 +187,7 @@ void ShadowCubeApp::Init()
 
     // Create shadow-pass rendering state with program
     const gfx::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
-    gfx::RenderState::Settings           shadow_state_settings;
+    gfx::IRenderState::Settings          shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -208,9 +208,9 @@ void ShadowCubeApp::Init()
     shadow_state_settings.render_pattern_ptr = m_shadow_pass_pattern_ptr;
     shadow_state_settings.depth.enabled = true;
 
-    m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), shadow_state_settings);
     m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
-    m_shadow_pass.view_state_ptr = gfx::ViewState::Create({
+    m_shadow_pass.view_state_ptr = gfx::IViewState::Create({
         { gfx::GetFrameViewport(g_shadow_map_size)    },
         { gfx::GetFrameScissorRect(g_shadow_map_size) }
     });

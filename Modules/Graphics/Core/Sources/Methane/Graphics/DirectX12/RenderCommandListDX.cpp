@@ -113,9 +113,9 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderStateDX>& render_state_ptr
     using namespace magic_enum::bitwise_operators;
     DrawingState& drawing_state = GetDrawingState();
     drawing_state.render_state_ptr    = render_state_ptr;
-    drawing_state.render_state_groups = RenderState::Groups::Program
-                                      | RenderState::Groups::Rasterizer
-                                      | RenderState::Groups::DepthStencil;
+    drawing_state.render_state_groups = IRenderState::Groups::Program
+                                      | IRenderState::Groups::Rasterizer
+                                      | IRenderState::Groups::DepthStencil;
 }
 
 void RenderCommandListDX::ResetRenderPass()
@@ -145,7 +145,7 @@ void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandListDX::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListDX::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative(static_cast<RenderStateBase&>(render_state).GetPtr<RenderStateDX>());

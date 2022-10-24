@@ -128,22 +128,20 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor
     }
 }
 
-static MTLStencilOperation ConvertStencilOperationToMetal(RenderState::Stencil::Operation operation) noexcept
+static MTLStencilOperation ConvertStencilOperationToMetal(FaceOperation operation) noexcept
 {
     META_FUNCTION_TASK();
-    using StencilOperation = RenderState::Stencil::Operation;
-
     switch(operation)
     {
-        case StencilOperation::Keep:            return MTLStencilOperationKeep;
-        case StencilOperation::Zero:            return MTLStencilOperationZero;
-        case StencilOperation::Replace:         return MTLStencilOperationReplace;
-        case StencilOperation::Invert:          return MTLStencilOperationInvert;
-        case StencilOperation::IncrementClamp:  return MTLStencilOperationIncrementClamp;
-        case StencilOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
-        case StencilOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
-        case StencilOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                                META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
+        case FaceOperation::Keep:            return MTLStencilOperationKeep;
+        case FaceOperation::Zero:            return MTLStencilOperationZero;
+        case FaceOperation::Replace:         return MTLStencilOperationReplace;
+        case FaceOperation::Invert:          return MTLStencilOperationInvert;
+        case FaceOperation::IncrementClamp:  return MTLStencilOperationIncrementClamp;
+        case FaceOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
+        case FaceOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
+        case FaceOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
+        default:                             META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
     }
 }
 
@@ -159,7 +157,7 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::
     if (!stencil.enabled)
         return nil;
     
-    const RenderState::Stencil::FaceOperations& face_operations = for_front_face ? stencil.front_face : stencil.back_face;
+    const FaceOperations& face_operations = for_front_face ? stencil.front_face : stencil.back_face;
     
     MTLStencilDescriptor* mtl_stencil_desc      = [[MTLStencilDescriptor alloc] init];
     mtl_stencil_desc.stencilFailureOperation    = ConvertStencilOperationToMetal(face_operations.stencil_failure);

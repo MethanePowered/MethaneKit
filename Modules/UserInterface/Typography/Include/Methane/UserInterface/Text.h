@@ -36,9 +36,9 @@ namespace Methane::Graphics
 {
 struct IRenderContext;
 struct RenderCommandList;
-struct RenderState;
+struct IRenderState;
 struct RenderPattern;
-struct ViewState;
+struct IViewState;
 struct IProgramBindings;
 struct Buffer;
 struct BufferSet;
@@ -161,8 +161,8 @@ private:
     struct CommonResourceRefs
     {
         gfx::IRenderContext&     render_context;
-        const gfx::RenderState&  render_state;
-        const Ptr<gfx::Buffer>&  const_buffer_ptr;
+        const gfx::IRenderState& render_state;
+        const Ptr<gfx::Buffer> & const_buffer_ptr;
         const Ptr<gfx::Texture>& atlas_texture_ptr;
         const Ptr<gfx::Sampler>& atlas_sampler_ptr;
         const TextMesh&          text_mesh;
@@ -196,7 +196,7 @@ private:
         bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
-        void InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+        void InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
                                        const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name);
 
     private:
@@ -230,10 +230,10 @@ private:
     UnitRect                    m_frame_rect;
     FrameSize                   m_render_attachment_size = FrameSize::Max();
     Ptr<Font>                   m_font_ptr;
-    UniquePtr<TextMesh>         m_text_mesh_ptr;
-    Ptr<gfx::RenderState>       m_render_state_ptr;
-    Ptr<gfx::ViewState>         m_view_state_ptr;
-    Ptr<gfx::Buffer>            m_const_buffer_ptr;
+    UniquePtr<TextMesh>    m_text_mesh_ptr;
+    Ptr<gfx::IRenderState> m_render_state_ptr;
+    Ptr<gfx::IViewState>   m_view_state_ptr;
+    Ptr<gfx::Buffer>       m_const_buffer_ptr;
     Ptr<gfx::Sampler>           m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
     bool                        m_is_viewport_dirty = true;

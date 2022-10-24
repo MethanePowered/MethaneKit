@@ -76,14 +76,14 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandListBase::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     RenderCommandListBase::Reset(p_debug_group);
     SetRenderState(render_state);
 }
 
-void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))
@@ -94,7 +94,7 @@ void RenderCommandListBase::ResetWithStateOnce(RenderState& render_state, DebugG
     ResetWithState(render_state, p_debug_group);
 }
 
-void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderState::Groups state_groups)
+void RenderCommandListBase::SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups)
 {
     META_FUNCTION_TASK();
     META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
@@ -103,13 +103,13 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
 
     VerifyEncodingState();
 
-    const bool    render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    RenderState::Groups changed_states = m_drawing_state.render_state_ptr ? RenderState::Groups::None : RenderState::Groups::All;
+    const bool           render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
+    IRenderState::Groups changed_states       = m_drawing_state.render_state_ptr ? IRenderState::Groups::None : IRenderState::Groups::All;
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
-        changed_states = RenderState::Settings::Compare(render_state.GetSettings(),
-                                                        m_drawing_state.render_state_ptr->GetSettings(),
-                                                        m_drawing_state.render_state_groups);
+        changed_states = IRenderState::Settings::Compare(render_state.GetSettings(),
+                                                         m_drawing_state.render_state_ptr->GetSettings(),
+                                                         m_drawing_state.render_state_groups);
     }
     changed_states |= ~m_drawing_state.render_state_groups;
 
@@ -126,7 +126,7 @@ void RenderCommandListBase::SetRenderState(RenderState& render_state, RenderStat
     }
 }
 
-void RenderCommandListBase::SetViewState(ViewState& view_state)
+void RenderCommandListBase::SetViewState(IViewState& view_state)
 {
     META_FUNCTION_TASK();
     VerifyEncodingState();
@@ -275,7 +275,7 @@ void RenderCommandListBase::ResetCommandState()
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.primitive_type_opt.reset();
     m_drawing_state.view_state_ptr = nullptr;
-    m_drawing_state.render_state_groups = RenderState::Groups::None;
+    m_drawing_state.render_state_groups = IRenderState::Groups::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 

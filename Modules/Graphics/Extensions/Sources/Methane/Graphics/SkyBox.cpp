@@ -27,7 +27,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderPass.h>
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/Buffer.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/Sampler.h>
@@ -55,7 +55,7 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Texture::DimensionType::Cube);
     m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Texture>(cube_map_texture.GetPtr()));
 
-    RenderState::Settings state_settings;
+    IRenderState::Settings state_settings;
     state_settings.program_ptr = IProgram::Create(m_context,
         IProgram::Settings
         {
@@ -89,7 +89,7 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     state_settings.depth.compare        = static_cast<bool>(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_render_state_ptr = RenderState::Create(m_context, state_settings);
+    m_render_state_ptr = IRenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Sky-box render state");
 
     m_texture_sampler_ptr = Sampler::Create(m_context, {
@@ -127,7 +127,7 @@ void SkyBox::Update()
     });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, ViewState& view_state)
+void SkyBox::Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);

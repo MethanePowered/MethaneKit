@@ -23,7 +23,7 @@ Base implementation of the render state interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/IRenderState.h>
 
 #include "ObjectBase.h"
 
@@ -35,12 +35,12 @@ class RenderCommandListBase;
 
 class ViewStateBase
     : public ObjectBase
-    , public ViewState
+    , public IViewState
 {
 public:
     explicit ViewStateBase(const Settings& settings);
 
-    // ViewState overrides
+    // IViewState overrides
     const Settings& GetSettings() const noexcept override   { return m_settings; }
     bool Reset(const Settings& settings) override;
     bool SetViewports(const Viewports& viewports) override;
@@ -55,12 +55,12 @@ private:
 
 class RenderStateBase
     : public ObjectBase
-    , public RenderState
+    , public IRenderState
 {
 public:
     RenderStateBase(const RenderContextBase& context, const Settings& settings);
 
-    // RenderState overrides
+    // IRenderState overrides
     const Settings& GetSettings() const noexcept override { return m_settings; }
     void Reset(const Settings& settings) override;
 

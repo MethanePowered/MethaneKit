@@ -130,7 +130,7 @@ void ParallelRenderingApp::Init()
     gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
-    gfx::RenderState::Settings render_state_settings;
+    gfx::IRenderState::Settings render_state_settings;
     render_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -158,7 +158,7 @@ void ParallelRenderingApp::Init()
     render_state_settings.program_ptr->SetName("Render Pipeline State");
     render_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
     render_state_settings.depth.enabled = true;
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
+    m_render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
     const uint32_t cubes_count = m_settings.GetTotalCubesCount();

@@ -33,10 +33,10 @@ Base implementation of the render state interface.
 #include <fmt/ranges.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::RenderState::Blending::RenderTarget>
+struct fmt::formatter<Methane::Graphics::IRenderState::Blending::RenderTarget>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::RenderState::Blending::RenderTarget& rt, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rt)); }
+    [[nodiscard]] auto format(const Methane::Graphics::IRenderState::Blending::RenderTarget& rt, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rt)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -96,26 +96,39 @@ bool ViewStateBase::SetScissorRects(const ScissorRects& scissor_rects)
     return true;
 }
 
-ViewState::Settings::operator std::string() const
+bool ViewSettings::operator==(const ViewSettings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return viewports == other.viewports &&
+           scissor_rects == other.scissor_rects;
+}
+
+bool ViewSettings::operator!=(const ViewSettings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return !operator==(other);
+}
+
+ViewSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Viewports: {};\n  - Scissor Rects: {}.", fmt::join(viewports, ", "), fmt::join(scissor_rects, ", "));
 }
 
-bool RenderState::Rasterizer::operator==(const Rasterizer& other) const noexcept
+bool RasterizerSettings::operator==(const RasterizerSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(is_front_counter_clockwise, cull_mode, fill_mode, sample_count, alpha_to_coverage_enabled) ==
            std::tie(other.is_front_counter_clockwise, other.cull_mode, other.fill_mode, other.sample_count, other.alpha_to_coverage_enabled);
 }
 
-bool RenderState::Rasterizer::operator!=(const Rasterizer& other) const noexcept
+bool RasterizerSettings::operator!=(const RasterizerSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Rasterizer::operator std::string() const
+RasterizerSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Rasterizer: front={}, cull={}, fill={}, sample_count={}, alpha_to_coverage={}",
@@ -124,22 +137,24 @@ RenderState::Rasterizer::operator std::string() const
                        sample_count, alpha_to_coverage_enabled);
 }
 
-bool RenderState::Blending::RenderTarget::operator==(const RenderTarget& other) const noexcept
+bool RenderTargetSettings::operator==(const RenderTargetSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(blend_enabled, write_mask, rgb_blend_op, alpha_blend_op, 
-                    source_rgb_blend_factor, source_alpha_blend_factor, dest_rgb_blend_factor, dest_alpha_blend_factor) ==
+                    source_rgb_blend_factor, source_alpha_blend_factor,
+                    dest_rgb_blend_factor, dest_alpha_blend_factor) ==
            std::tie(other.blend_enabled, other.write_mask, other.rgb_blend_op, other.alpha_blend_op,
-                    other.source_rgb_blend_factor, other.source_alpha_blend_factor, other.dest_rgb_blend_factor, other.dest_alpha_blend_factor);
+                    other.source_rgb_blend_factor, other.source_alpha_blend_factor,
+                    other.dest_rgb_blend_factor, other.dest_alpha_blend_factor);
 }
 
-bool RenderState::Blending::RenderTarget::operator!=(const RenderTarget& other) const noexcept
+bool RenderTargetSettings::operator!=(const RenderTargetSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Blending::RenderTarget::operator std::string() const
+RenderTargetSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     if (!blend_enabled)
@@ -153,20 +168,20 @@ RenderState::Blending::RenderTarget::operator std::string() const
                        magic_enum::enum_name(dest_rgb_blend_factor), magic_enum::enum_name(dest_alpha_blend_factor));
 }
 
-bool RenderState::Blending::operator==(const Blending& other) const noexcept
+bool BlendingSettings::operator==(const BlendingSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(is_independent, render_targets) ==
            std::tie(other.is_independent, other.render_targets);
 }
 
-bool RenderState::Blending::operator!=(const Blending& other) const noexcept
+bool BlendingSettings::operator!=(const BlendingSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Blending::operator std::string() const
+BlendingSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return is_independent
@@ -174,19 +189,19 @@ RenderState::Blending::operator std::string() const
          : fmt::format("  - Blending is common for all render targets:\n{}.", static_cast<std::string>(render_targets[0]));
 }
 
-bool RenderState::Depth::operator==(const Depth& other) const noexcept
+bool DepthSettings::operator==(const DepthSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(enabled, write_enabled, compare) ==
            std::tie(other.enabled, other.write_enabled, other.compare);
 }
-bool RenderState::Depth::operator!=(const Depth& other) const noexcept
+bool DepthSettings::operator!=(const DepthSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Depth::operator std::string() const
+DepthSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     if (!enabled)
@@ -196,20 +211,20 @@ RenderState::Depth::operator std::string() const
                        write_enabled, magic_enum::enum_name(compare));
 }
 
-bool RenderState::Stencil::FaceOperations::operator==(const FaceOperations& other) const noexcept
+bool FaceOperations::operator==(const FaceOperations& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(stencil_failure, stencil_pass, depth_failure, depth_stencil_pass, compare) ==
            std::tie(other.stencil_failure, other.stencil_pass, other.depth_failure, other.depth_stencil_pass, other.compare);
 }
 
-bool RenderState::Stencil::FaceOperations::operator!=(const FaceOperations& other) const noexcept
+bool FaceOperations::operator!=(const FaceOperations& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Stencil::FaceOperations::operator std::string() const
+FaceOperations::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("face operations: stencil_failure={}, stencil_pass={}, depth_failure={}, depth_stencil_pass={}, compare={}",
@@ -218,20 +233,20 @@ RenderState::Stencil::FaceOperations::operator std::string() const
                        magic_enum::enum_name(compare));
 }
 
-bool RenderState::Stencil::operator==(const Stencil& other) const noexcept
+bool StencilSettings::operator==(const StencilSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(enabled, read_mask, write_mask, front_face, back_face) ==
            std::tie(other.enabled, other.read_mask, other.write_mask, other.front_face, other.back_face);
 }
 
-bool RenderState::Stencil::operator!=(const Stencil& other) const noexcept
+bool StencilSettings::operator!=(const StencilSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator==(other);
 }
 
-RenderState::Stencil::operator std::string() const
+StencilSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     if (!enabled)
@@ -241,7 +256,7 @@ RenderState::Stencil::operator std::string() const
                        read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
-RenderState::Groups RenderState::Settings::Compare(const Settings& left, const Settings& right, Groups compare_groups) noexcept
+RenderStateGroups RenderStateSettings::Compare(const RenderStateSettings& left, const RenderStateSettings& right, Groups compare_groups) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -277,21 +292,21 @@ RenderState::Groups RenderState::Settings::Compare(const Settings& left, const S
     return changed_state_groups;
 }
 
-bool RenderState::Settings::operator==(const Settings& other) const noexcept
+bool RenderStateSettings::operator==(const RenderStateSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) ==
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-bool RenderState::Settings::operator!=(const Settings& other) const noexcept
+bool RenderStateSettings::operator!=(const RenderStateSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) !=
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-RenderState::Settings::operator std::string() const
+RenderStateSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Program '{}';\n{};\n{};\n{}\n{}\n  - Blending color: {}.",

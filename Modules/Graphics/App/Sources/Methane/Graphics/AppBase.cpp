@@ -26,7 +26,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/AppContextController.h>
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/Provider.h>
@@ -222,7 +222,7 @@ void AppBase::Init()
     m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
     m_screen_render_pattern_ptr->SetName("Final Render Pass");
 
-    m_view_state_ptr = ViewState::Create({
+    m_view_state_ptr = IViewState::Create({
         { GetFrameViewport(context_settings.frame_size)    },
         { GetFrameScissorRect(context_settings.frame_size) }
     });

@@ -43,7 +43,7 @@ class ViewStateDX final : public ViewStateBase
 public:
     explicit ViewStateDX(const Settings& settings);
 
-    // ViewState overrides
+    // IViewState overrides
     bool Reset(const Settings& settings) override;
     bool SetViewports(const Viewports& viewports) override;
     bool SetScissorRects(const ScissorRects& scissor_rects) override;
@@ -61,7 +61,7 @@ class RenderStateDX final : public RenderStateBase
 public:
     RenderStateDX(const RenderContextBase& context, const Settings& settings);
 
-    // RenderState interface
+    // IRenderState interface
     void Reset(const Settings& settings) override;
 
     // RenderStateBase interface

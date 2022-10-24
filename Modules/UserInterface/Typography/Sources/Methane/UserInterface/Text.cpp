@@ -31,7 +31,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/Buffer.h>
-#include <Methane/Graphics/RenderState.h>
+#include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
@@ -97,7 +97,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
 
     gfx::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
-    m_render_state_ptr = std::dynamic_pointer_cast<gfx::RenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
+    m_render_state_ptr = std::dynamic_pointer_cast<gfx::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
     if (m_render_state_ptr)
     {
         META_CHECK_ARG_EQUAL_DESCR(m_render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
@@ -105,7 +105,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     }
     else
     {
-        gfx::RenderState::Settings state_settings;
+        gfx::IRenderState::Settings state_settings;
         state_settings.program_ptr = gfx::IProgram::Create(GetUIContext().GetRenderContext(),
             gfx::IProgram::Settings
             {
@@ -137,12 +137,12 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
         state_settings.blending.render_targets[0].blend_enabled             = true;
-        state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::RenderState::Blending::Factor::SourceAlpha;
-        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::RenderState::Blending::Factor::OneMinusSourceAlpha;
-        state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::RenderState::Blending::Factor::Zero;
-        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::RenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::IRenderState::Blending::Factor::SourceAlpha;
+        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::IRenderState::Blending::Factor::OneMinusSourceAlpha;
+        state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::IRenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::IRenderState::Blending::Factor::Zero;
 
-        m_render_state_ptr = gfx::RenderState::Create(GetUIContext().GetRenderContext(), state_settings);
+        m_render_state_ptr = gfx::IRenderState::Create(GetUIContext().GetRenderContext(), state_settings);
         m_render_state_ptr->SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(*m_render_state_ptr);
@@ -151,7 +151,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     UpdateTextMesh();
 
     const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
-    m_view_state_ptr = gfx::ViewState::Create({
+    m_view_state_ptr = gfx::IViewState::Create({
         { gfx::GetFrameViewport(viewport_rect)    },
         { gfx::GetFrameScissorRect(viewport_rect) }
     });
@@ -416,7 +416,7 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
     return static_cast<bool>(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(const gfx::RenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
                                                      const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();

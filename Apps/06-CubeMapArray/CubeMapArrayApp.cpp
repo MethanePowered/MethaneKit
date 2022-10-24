@@ -89,7 +89,7 @@ void CubeMapArrayApp::Init()
     gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
-    gfx::RenderState::Settings render_state_settings;
+    gfx::IRenderState::Settings render_state_settings;
     render_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -118,7 +118,7 @@ void CubeMapArrayApp::Init()
     render_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
     render_state_settings.depth.enabled = true;
     render_state_settings.depth.compare = gfx::Compare::GreaterEqual; // Reversed depth rendering
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
+    m_render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
     m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");

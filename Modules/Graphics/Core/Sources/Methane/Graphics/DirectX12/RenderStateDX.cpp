@@ -58,10 +58,10 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<IShader>& shader_ptr)
 }
 
 [[nodiscard]]
-static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer::FillMode fill_mode)
+static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
-    using RasterizerFillMode = RenderState::Rasterizer::FillMode;
+    using RasterizerFillMode = IRenderState::Rasterizer::FillMode;
     
     switch (fill_mode)
     {
@@ -72,10 +72,10 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(RenderState::Rasterizer:
 }
 
 [[nodiscard]]
-static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer::CullMode cull_mode)
+static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
-    using RasterizerCullMode = RenderState::Rasterizer::CullMode;
+    using RasterizerCullMode = IRenderState::Rasterizer::CullMode;
 
     switch (cull_mode)
     {
@@ -87,11 +87,11 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(RenderState::Rasterizer:
 }
 
 [[nodiscard]]
-static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorChannels rt_write_mask)
+static UINT8 ConvertRenderTargetWriteMaskToD3D12(IRenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = RenderState::Blending::ColorChannels;
+    using ColorChannels = IRenderState::Blending::ColorChannels;
 
     UINT8 d3d12_color_write_mask = 0;
     if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
@@ -106,10 +106,10 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(RenderState::Blending::ColorCha
 };
 
 [[nodiscard]]
-static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Operation blend_operation)
+static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOp = RenderState::Blending::Operation;
+    using BlendOp = IRenderState::Blending::Operation;
 
     switch(blend_operation)
     {
@@ -123,10 +123,10 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(RenderState::Blending::Ope
 }
 
 [[nodiscard]]
-static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor blend_factor)
+static D3D12_BLEND ConvertBlendingFactorToD3D12(IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = RenderState::Blending::Factor;
+    using BlendFactor = IRenderState::Blending::Factor;
     
     switch (blend_factor)
     {
@@ -154,27 +154,26 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(RenderState::Blending::Factor bl
 }
 
 [[nodiscard]]
-static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(RenderState::Stencil::Operation operation)
+static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(FaceOperation operation)
 {
     META_FUNCTION_TASK();
-    using StencilOperation = RenderState::Stencil::Operation;
-    
+
     switch (operation)
     {
-    case StencilOperation::Keep:            return D3D12_STENCIL_OP_KEEP;
-    case StencilOperation::Zero:            return D3D12_STENCIL_OP_ZERO;
-    case StencilOperation::Replace:         return D3D12_STENCIL_OP_REPLACE;
-    case StencilOperation::Invert:          return D3D12_STENCIL_OP_INVERT;
-    case StencilOperation::IncrementClamp:  return D3D12_STENCIL_OP_INCR_SAT;
-    case StencilOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
-    case StencilOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
-    case StencilOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
-    default:                                META_UNEXPECTED_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
+    case FaceOperation::Keep:            return D3D12_STENCIL_OP_KEEP;
+    case FaceOperation::Zero:            return D3D12_STENCIL_OP_ZERO;
+    case FaceOperation::Replace:         return D3D12_STENCIL_OP_REPLACE;
+    case FaceOperation::Invert:          return D3D12_STENCIL_OP_INVERT;
+    case FaceOperation::IncrementClamp:  return D3D12_STENCIL_OP_INCR_SAT;
+    case FaceOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
+    case FaceOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
+    case FaceOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
+    default:                             META_UNEXPECTED_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
 }
 
 [[nodiscard]]
-static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const RenderState::Stencil::FaceOperations& stencil_face_op)
+static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const FaceOperations& stencil_face_op)
 {
     META_FUNCTION_TASK();
     D3D12_DEPTH_STENCILOP_DESC stencil_desc{};
@@ -225,7 +224,7 @@ static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_r
     return d3d_scissor_rects;
 }
 
-Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ViewStateDX>(state_settings);
@@ -280,7 +279,7 @@ void ViewStateDX::Apply(RenderCommandListBase& command_list)
     d3d12_command_list.RSSetScissorRects(static_cast<UINT>(m_dx_scissor_rects.size()), m_dx_scissor_rects.data());
 }
 
-Ptr<RenderState> RenderState::Create(const IRenderContext& context, const RenderState::Settings& state_settings)
+Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderStateDX>(dynamic_cast<const RenderContextBase&>(context), state_settings);

@@ -42,10 +42,10 @@ namespace Methane::Graphics
 {
 
 [[nodiscard]]
-static vk::PolygonMode RasterizerFillModeToVulkan(RenderState::Rasterizer::FillMode fill_mode)
+static vk::PolygonMode RasterizerFillModeToVulkan(IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
-    using FillMode = RenderState::Rasterizer::FillMode;
+    using FillMode = IRenderState::Rasterizer::FillMode;
     switch(fill_mode)
     {
     case FillMode::Solid:     return vk::PolygonMode::eFill;
@@ -56,10 +56,10 @@ static vk::PolygonMode RasterizerFillModeToVulkan(RenderState::Rasterizer::FillM
 }
 
 [[nodiscard]]
-static vk::CullModeFlags RasterizerCullModeToVulkan(RenderState::Rasterizer::CullMode cull_mode)
+static vk::CullModeFlags RasterizerCullModeToVulkan(IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
-    using CullMode = RenderState::Rasterizer::CullMode;
+    using CullMode = IRenderState::Rasterizer::CullMode;
     switch(cull_mode)
     {
     case CullMode::None:  return vk::CullModeFlagBits::eNone;
@@ -89,30 +89,29 @@ static vk::SampleCountFlagBits RasterizerSampleCountToVulkan(uint32_t sample_cou
 }
 
 [[nodiscard]]
-static vk::StencilOp StencilOperationToVulkan(RenderState::Stencil::Operation stencil_operation)
+static vk::StencilOp StencilOperationToVulkan(FaceOperation stencil_operation)
 {
     META_FUNCTION_TASK();
-    using StencilOperation = RenderState::Stencil::Operation;
     switch(stencil_operation)
     {
-    case StencilOperation::Keep:            return vk::StencilOp::eKeep;
-    case StencilOperation::Zero:            return vk::StencilOp::eZero;
-    case StencilOperation::Replace:         return vk::StencilOp::eReplace;
-    case StencilOperation::Invert:          return vk::StencilOp::eInvert;
-    case StencilOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
-    case StencilOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
-    case StencilOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
-    case StencilOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
+    case FaceOperation::Keep:            return vk::StencilOp::eKeep;
+    case FaceOperation::Zero:            return vk::StencilOp::eZero;
+    case FaceOperation::Replace:         return vk::StencilOp::eReplace;
+    case FaceOperation::Invert:          return vk::StencilOp::eInvert;
+    case FaceOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
+    case FaceOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
+    case FaceOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
+    case FaceOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
     default:
         META_UNEXPECTED_ARG_RETURN(stencil_operation, vk::StencilOp::eKeep);
     }
 }
 
 [[nodiscard]]
-static vk::BlendFactor BlendingFactorToVulkan(RenderState::Blending::Factor blend_factor)
+static vk::BlendFactor BlendingFactorToVulkan(IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = RenderState::Blending::Factor;
+    using BlendFactor = IRenderState::Blending::Factor;
     switch(blend_factor)
     {
     case BlendFactor::Zero:                     return vk::BlendFactor::eZero;
@@ -140,10 +139,10 @@ static vk::BlendFactor BlendingFactorToVulkan(RenderState::Blending::Factor blen
 }
 
 [[nodiscard]]
-vk::BlendOp BlendingOperationToVulkan(RenderState::Blending::Operation blend_operation)
+vk::BlendOp BlendingOperationToVulkan(IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOperation = RenderState::Blending::Operation;
+    using BlendOperation = IRenderState::Blending::Operation;
     switch(blend_operation)
     {
     case BlendOperation::Add:               return vk::BlendOp::eAdd;
@@ -157,11 +156,11 @@ vk::BlendOp BlendingOperationToVulkan(RenderState::Blending::Operation blend_ope
 }
 
 [[nodiscard]]
-vk::ColorComponentFlags BlendingColorChannelsToVulkan(RenderState::Blending::ColorChannels color_channels)
+vk::ColorComponentFlags BlendingColorChannelsToVulkan(IRenderState::Blending::ColorChannels color_channels)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = RenderState::Blending::ColorChannels;
+    using ColorChannels = IRenderState::Blending::ColorChannels;
 
     vk::ColorComponentFlags color_component_flags{};
     if (static_cast<bool>(color_channels & ColorChannels::Red))
@@ -220,7 +219,7 @@ static std::vector<vk::Rect2D> ScissorRectsToVulkan(const ScissorRects& scissor_
     return vk_scissor_rects;
 }
 
-Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ViewStateVK>(state_settings);
@@ -273,7 +272,7 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
     vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }
 
-Ptr<RenderState> RenderState::Create(const IRenderContext& context, const RenderState::Settings& state_settings)
+Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderStateVK>(dynamic_cast<const RenderContextBase&>(context), state_settings);

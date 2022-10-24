@@ -104,8 +104,8 @@ void TexturedCubeApp::Init()
     );
 
     // Create render state with program
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
-        gfx::RenderState::Settings
+    m_render_state_ptr = gfx::IRenderState::Create(GetRenderContext(),
+        gfx::IRenderState::Settings
         {
             gfx::IProgram::Create(GetRenderContext(),
                 gfx::IProgram::Settings
