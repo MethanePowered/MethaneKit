@@ -114,7 +114,7 @@ Application class `HelloCubeApp` keeps frame independent resources in class memb
 set of vertex buffers used for triangle rendering `m_index_buffer_ptr` - they are initialized in `HelloCubeApp::Init` method.
 But first of all, camera view is resized according to render context size to maintain the correct aspect ratio of the projection. 
 
-Render state is created with `RenderState::Create(...)` function similarly as in [HelloTriangle](../01-HelloTriangle) tutorial.
+Render state is created with `IRenderState::Create(...)` function similarly as in [HelloTriangle](../01-HelloTriangle) tutorial.
 Program is created as a part of the state with `IProgram::Create(...)` function which takes `IProgram::Settings`, which differ
 from program settings in [HelloTriangle](../01-HelloTriangle) with configuration of `ProgramInputBufferLayouts`. In this tutorial
 we use single input vertex buffer with interleaved positions and colors, which is described by `IProgram::InputBufferLayout` with
@@ -126,7 +126,7 @@ class HelloCubeApp final : public GraphicsApp
 private:
     ...
 
-    Ptr<RenderState> m_render_state_ptr;
+    Ptr<IRenderState> m_render_state_ptr;
     Ptr<Buffer>      m_index_buffer_ptr;
     
 public:
@@ -139,8 +139,8 @@ public:
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
         // Create render state with program
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
+            IRenderState::Settings
             {
                 IProgram::Create(GetRenderContext(),
                     IProgram::Settings
@@ -486,8 +486,8 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
         ...
 
         const IShader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
+            IRenderState::Settings
             {
                 IProgram::Create(GetRenderContext(),
                     IProgram::Settings

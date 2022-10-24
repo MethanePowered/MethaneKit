@@ -145,7 +145,7 @@ private:
     };
     hlslpp::Uniforms        m_shader_uniforms { };
     gfx::Camera             m_camera;
-    Ptr<gfx::RenderState>   m_render_state_ptr;
+    Ptr<gfx::IRenderState>   m_render_state_ptr;
     Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
     Ptr<gfx::Buffer>        m_index_buffer_ptr;
     Ptr<gfx::Buffer>        m_const_buffer_ptr;
@@ -287,12 +287,12 @@ void TexturedCubeApp::Init()
 }
 ```
 
-`Graphics::Program` object is created in `Graphics::RenderState::Settings` structure using `Graphics::IProgram::Create(...)` factory function.
+`Graphics::Program` object is created in `Graphics::IRenderState::Settings` structure using `Graphics::IProgram::Create(...)` factory function.
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
 Program settings also includes additional description `Graphics::ProgramArgumentAccessors` of program arguments bound to graphics resources.
 Argument description define specific access modifiers for program arguments used in `Graphics::IProgramBindings` object.
 Also it is important to note that render state settings enables depth testing for correct rendering of cube faces.
-Finally, render state is created using filled settings structure with `Graphics::RenderState::Create(...)` factory function.
+Finally, render state is created using filled settings structure with `Graphics::IRenderState::Create(...)` factory function.
 
 ```cpp
 void TexturedCubeApp::Init()
@@ -300,8 +300,8 @@ void TexturedCubeApp::Init()
     ...
 
     // Create render state with program
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(),
-        gfx::RenderState::Settings
+    m_render_state_ptr = gfx::IRenderState::Create(GetRenderContext(),
+        gfx::IRenderState::Settings
         {
             gfx::IProgram::Create(GetRenderContext(),
                 gfx::IProgram::Settings

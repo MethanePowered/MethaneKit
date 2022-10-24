@@ -133,7 +133,7 @@ private:
 
         const bool                              is_final_pass;
         const Ptr<gfx::CommandList::DebugGroup> debug_group_ptr;
-        Ptr<gfx::RenderState>                   render_state_ptr;
+        Ptr<gfx::IRenderState>                   render_state_ptr;
         Ptr<gfx::IViewState>                    view_state_ptr;
     };
 
@@ -226,7 +226,7 @@ description here.
     const gfx::IShader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
     // Create final pass rendering state with program
-    gfx::RenderState::Settings final_state_settings;
+    gfx::IRenderState::Settings final_state_settings;
     final_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -258,7 +258,7 @@ description here.
     final_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
     final_state_settings.depth.enabled = true;
 
-    m_final_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), final_state_settings);
     m_final_pass.view_state_ptr = GetViewStatePtr();
 ```
 
@@ -294,7 +294,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
 ```cpp
     // Create shadow-pass rendering state with program
     const gfx::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
-    gfx::RenderState::Settings shadow_state_settings;
+    gfx::IRenderState::Settings shadow_state_settings;
     shadow_state_settings.program_ptr = gfx::IProgram::Create(GetRenderContext(),
         gfx::IProgram::Settings
         {
@@ -314,7 +314,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
     shadow_state_settings.render_pattern_ptr = m_shadow_pass_pattern_ptr;
     shadow_state_settings.depth.enabled = true;
 
-    m_shadow_pass.render_state_ptr = gfx::RenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.render_state_ptr = gfx::IRenderState::Create(GetRenderContext(), shadow_state_settings);
 ```
 
 The Shadow-pass view state is bound to the size of the Shadow-map texture:

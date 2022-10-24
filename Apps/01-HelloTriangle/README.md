@@ -73,7 +73,7 @@ public:
 
 Application class `HelloTriangleApp` keeps frame independent resources in private class members.
 In this tutorial it is only render state `m_render_state_ptr` which is initialized in `HelloTriangleApp::Init` method.
-Render state is created with `RenderState::Create(...)` factory by passing render context and setting, which encapsulate 
+Render state is created with `IRenderState::Create(...)` factory by passing render context and setting, which encapsulate 
 program created inline with `IProgram::Create(...)`. Program is created with a set of vertex and pixel shaders
 created with `IShader::CreateVertex` and `IShader::CreatePixel` factory methods taking `Data::Provider` and 
 `IShader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
@@ -82,7 +82,7 @@ Program also defines input buffer layout using argument semantic names from HLSL
 uses shader reflection to automatically identify argument types and offset sizes to build underlying DirectX, Metal or Vulkan
 layout description. Render target color formats are also required for program creation, these formats are taken from 
 `RenderPattern` object provided by the base class `Graphics::App` and describing general configuration of color/depth/stencil
-attachments used for final drawing to window on screen. `RenderState::Settings` requires a pointer to `RenderPattern`
+attachments used for final drawing to window on screen. `IRenderState::Settings` requires a pointer to `RenderPattern`
 object and also contains settings of rasterizer, depth, stencil, blending states which are left with default values 
 for simplicity of this tutorial.
 
@@ -95,7 +95,7 @@ resources initialization and prepare for rendering.
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    Ptr<RenderState> m_render_state_ptr;
+    Ptr<IRenderState> m_render_state_ptr;
     
 public:
     ...
@@ -104,8 +104,8 @@ public:
     {
         GraphicsApp::Init();
 
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
+            IRenderState::Settings
             {
                 IProgram::Create(GetRenderContext(),
                     IProgram::Settings

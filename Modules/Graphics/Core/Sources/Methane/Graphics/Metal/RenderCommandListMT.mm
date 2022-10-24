@@ -98,7 +98,7 @@ void RenderCommandListMT::Reset(DebugGroup* p_debug_group)
     RenderCommandListBase::Reset(p_debug_group);
 }
 
-void RenderCommandListMT::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListMT::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();

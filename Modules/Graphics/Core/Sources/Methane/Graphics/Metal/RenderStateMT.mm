@@ -37,10 +37,10 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics
 {
 
-static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::CullMode cull_mode) noexcept
+static MTLCullMode ConvertRasterizerCullModeToMetal(IRenderState::Rasterizer::CullMode cull_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerCullMode = RenderState::Rasterizer::CullMode;
+    using RasterizerCullMode = IRenderState::Rasterizer::CullMode;
 
     switch(cull_mode)
     {
@@ -51,10 +51,10 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(RenderState::Rasterizer::Cul
     }
 }
 
-static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasterizer::FillMode fill_mode) noexcept
+static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(IRenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerFillMode = RenderState::Rasterizer::FillMode;
+    using RasterizerFillMode = IRenderState::Rasterizer::FillMode;
 
     switch(fill_mode)
     {
@@ -64,11 +64,11 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(RenderState::Rasteri
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blending::ColorChannels rt_write_mask)
+static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(IRenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = RenderState::Blending::ColorChannels;
+    using ColorChannels = IRenderState::Blending::ColorChannels;
 
     MTLColorWriteMask mtl_color_write_mask = 0U;
     if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
@@ -82,10 +82,10 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(RenderState::Blendi
     return mtl_color_write_mask;
 };
 
-static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::Operation blend_operation)
+static MTLBlendOperation ConvertBlendingOperationToMetal(IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOp = RenderState::Blending::Operation;
+    using BlendOp = IRenderState::Blending::Operation;
 
     switch(blend_operation)
     {
@@ -98,10 +98,10 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(RenderState::Blending::
     }
 }
 
-static MTLBlendFactor ConvertBlendingFactorToMetal(RenderState::Blending::Factor blend_factor)
+static MTLBlendFactor ConvertBlendingFactorToMetal(IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = RenderState::Blending::Factor;
+    using BlendFactor = IRenderState::Blending::Factor;
     
     switch (blend_factor)
     {
@@ -151,7 +151,7 @@ static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clo
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
-static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const RenderState::Stencil& stencil, bool for_front_face)
+static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const IRenderState::Stencil& stencil, bool for_front_face)
 {
     META_FUNCTION_TASK();
     if (!stencil.enabled)
@@ -210,7 +210,7 @@ static std::vector<MTLScissorRect> ConvertScissorRectsToMetal(const ScissorRects
     return mtl_scissor_rects;
 }
 
-Ptr<ViewState> ViewState::Create(const ViewState::Settings& state_settings)
+Ptr<IViewState> IViewState::Create(const ViewSettings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ViewStateMT>(state_settings);
@@ -266,7 +266,7 @@ void ViewStateMT::Apply(RenderCommandListBase& command_list)
     [mtl_cmd_encoder setScissorRects: m_mtl_scissor_rects.data() count:static_cast<uint32_t>(m_mtl_scissor_rects.size())];
 }
 
-Ptr<RenderState> RenderState::Create(const IRenderContext& context, const RenderState::Settings& state_settings)
+Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderStateMT>(dynamic_cast<const RenderContextBase&>(context), state_settings);

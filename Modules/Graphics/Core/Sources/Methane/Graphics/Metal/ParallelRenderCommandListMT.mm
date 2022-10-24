@@ -50,7 +50,7 @@ void ParallelRenderCommandListMT::Reset(DebugGroup* p_debug_group)
     ParallelRenderCommandListBase::Reset(p_debug_group);
 }
 
-void ParallelRenderCommandListMT::ResetWithState(RenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListMT::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (ResetCommandEncoder())

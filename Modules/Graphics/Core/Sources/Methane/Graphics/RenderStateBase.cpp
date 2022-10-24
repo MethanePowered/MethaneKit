@@ -256,7 +256,7 @@ StencilSettings::operator std::string() const
                        read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
-RenderStateGroups RenderStateSettings::Compare(const RenderStateSettings& left, const RenderStateSettings& right, Groups compare_groups) noexcept
+RenderStateGroups RenderSettings::Compare(const RenderSettings& left, const RenderSettings& right, Groups compare_groups) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -292,21 +292,21 @@ RenderStateGroups RenderStateSettings::Compare(const RenderStateSettings& left, 
     return changed_state_groups;
 }
 
-bool RenderStateSettings::operator==(const RenderStateSettings& other) const noexcept
+bool RenderSettings::operator==(const RenderSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) ==
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-bool RenderStateSettings::operator!=(const RenderStateSettings& other) const noexcept
+bool RenderSettings::operator!=(const RenderSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) !=
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-RenderStateSettings::operator std::string() const
+RenderSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Program '{}';\n{};\n{};\n{}\n{}\n  - Blending color: {}.",

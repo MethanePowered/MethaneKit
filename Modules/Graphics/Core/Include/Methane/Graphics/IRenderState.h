@@ -233,7 +233,7 @@ struct IRenderContext;
 struct IProgram;
 struct RenderPattern;
 
-struct RenderStateSettings
+struct RenderSettings
 {
     using Groups = RenderStateGroups;
 
@@ -248,9 +248,9 @@ struct RenderStateSettings
     BlendingSettings   blending;
     Color4F            blending_color;
 
-    [[nodiscard]] static Groups Compare(const RenderStateSettings& left, const RenderStateSettings& right, Groups compare_groups = Groups::All) noexcept;
-    [[nodiscard]] bool operator==(const RenderStateSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const RenderStateSettings& other) const noexcept;
+    [[nodiscard]] static Groups Compare(const RenderSettings& left, const RenderSettings& right, Groups compare_groups = Groups::All) noexcept;
+    [[nodiscard]] bool operator==(const RenderSettings& other) const noexcept;
+    [[nodiscard]] bool operator!=(const RenderSettings& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -263,7 +263,7 @@ public:
     using Depth      = DepthSettings;
     using Stencil    = StencilSettings;
     using Groups     = RenderStateGroups;
-    using Settings   = RenderStateSettings;
+    using Settings   = RenderSettings;
 
     // Create IRenderState instance
     [[nodiscard]] static Ptr<IRenderState> Create(const IRenderContext& context, const Settings& state_settings);
