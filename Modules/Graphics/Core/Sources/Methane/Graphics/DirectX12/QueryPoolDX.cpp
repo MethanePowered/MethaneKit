@@ -136,12 +136,12 @@ void QueryDX::ResolveData()
     );
 }
 
-Resource::SubResource QueryDX::GetData() const
+IResource::SubResource QueryDX::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
     META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
-    return GetQueryPoolDX().GetResultResourceDX().GetData(Resource::SubResource::Index(), GetDataRange());
+    return GetQueryPoolDX().GetResultResourceDX().GetData(IResource::SubResource::Index(), GetDataRange());
 }
 
 QueryPoolDX& QueryDX::GetQueryPoolDX() const noexcept
@@ -225,7 +225,7 @@ void TimestampQueryDX::ResolveTimestamp()
 Timestamp TimestampQueryDX::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
-    Resource::SubResource query_data = GetData();
+    IResource::SubResource query_data = GetData();
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
     META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR

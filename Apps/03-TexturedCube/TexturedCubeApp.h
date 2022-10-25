@@ -85,7 +85,7 @@ private:
     Ptr<gfx::Texture>      m_cube_texture_ptr;
     Ptr<gfx::Sampler>      m_texture_sampler_ptr;
 
-    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+    const gfx::IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
 };

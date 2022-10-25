@@ -41,7 +41,7 @@ class TextureMT final : public ResourceMT<TextureBase>
 public:
     TextureMT(const ContextBase& context, const Settings& settings);
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
     // IObject interface

@@ -212,16 +212,16 @@ void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply
 
         switch(metal_argument_binding.GetSettingsMT().resource_type)
         {
-            case Resource::Type::Buffer:
+            case IResource::Type::Buffer:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
                                        metal_argument_binding.GetBufferOffsets());
                 break;
 
-            case Resource::Type::Texture:
+            case IResource::Type::Texture:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
                 break;
 
-            case Resource::Type::Sampler:
+            case IResource::Type::Sampler:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 

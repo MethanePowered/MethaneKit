@@ -24,7 +24,7 @@ Base implementation of the program argument binding interface.
 #pragma once
 
 #include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics
@@ -47,8 +47,8 @@ public:
 
     // IArgumentBinding interface
     const Settings&        GetSettings() const noexcept override     { return m_settings; }
-    const Resource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
-    bool                   SetResourceViews(const Resource::Views& resource_views) override;
+    const IResource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
+    bool                   SetResourceViews(const IResource::Views& resource_views) override;
     explicit operator std::string() const final;
 
     Ptr<ProgramArgumentBindingBase> GetPtr() { return shared_from_this(); }
@@ -62,8 +62,8 @@ protected:
 
 private:
     const ContextBase& m_context;
-    const Settings     m_settings;
-    Resource::Views    m_resource_views;
+    const Settings   m_settings;
+    IResource::Views m_resource_views;
 };
 
 } // namespace Methane::Graphics

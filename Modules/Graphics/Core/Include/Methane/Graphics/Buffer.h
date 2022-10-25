@@ -23,14 +23,14 @@ Methane buffer interface: GPU memory buffer resource.
 
 #pragma once
 
-#include "Resource.h"
+#include "IResource.h"
 
 namespace Methane::Graphics
 {
 
 struct IContext;
 
-struct Buffer : virtual Resource // NOSONAR
+struct Buffer : virtual IResource // NOSONAR
 {
     enum class Type
     {

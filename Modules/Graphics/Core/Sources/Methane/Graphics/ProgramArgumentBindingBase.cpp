@@ -28,10 +28,10 @@ Base implementation of the program argument binding interface.
 #include <fmt/ranges.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::Resource::View>
+struct fmt::formatter<Methane::Graphics::IResource::View>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Resource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] auto format(const Methane::Graphics::IResource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -69,7 +69,7 @@ void ProgramArgumentBindingBase::MergeSettings(const ProgramArgumentBindingBase&
     META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
 }
 
-bool ProgramArgumentBindingBase::SetResourceViews(const Resource::Views& resource_views)
+bool ProgramArgumentBindingBase::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
     if (m_resource_views == resource_views)
@@ -80,21 +80,21 @@ bool ProgramArgumentBindingBase::SetResourceViews(const Resource::Views& resourc
 
     META_CHECK_ARG_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
 
-    const bool        is_addressable_binding = m_settings.argument.IsAddressable();
-    const Resource::Type bound_resource_type = m_settings.resource_type;
+    const bool            is_addressable_binding = m_settings.argument.IsAddressable();
+    const IResource::Type bound_resource_type    = m_settings.resource_type;
     META_UNUSED(is_addressable_binding);
     META_UNUSED(bound_resource_type);
 
-    for (const Resource::View& resource_view : resource_views)
+    for (const IResource::View& resource_view : resource_views)
     {
         META_CHECK_ARG_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
                                   magic_enum::enum_name(resource_view.GetResource().GetResourceType()),
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
-        const Resource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
+        const IResource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Resource::Usage::Addressable) == is_addressable_binding,
+        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & IResource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");

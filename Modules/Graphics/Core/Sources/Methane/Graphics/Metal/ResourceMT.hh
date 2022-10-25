@@ -53,13 +53,13 @@ public:
         Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
-    const Resource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
+    const IResource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
     {
-        static const Resource::DescriptorByViewId s_dummy_descriptor_by_view_id;
+        static const IResource::DescriptorByViewId s_dummy_descriptor_by_view_id;
         return s_dummy_descriptor_by_view_id;
     }
 
-    void RestoreDescriptorViews(const Resource::DescriptorByViewId&) final { /* intentionally uninitialized */ }
+    void RestoreDescriptorViews(const IResource::DescriptorByViewId&) final { /* intentionally uninitialized */ }
 
 protected:
     const IContextMT& GetContextMT() const noexcept
@@ -68,7 +68,7 @@ protected:
         return static_cast<const IContextMT&>(ResourceBase::GetContextBase());
     }
 
-    id<MTLBuffer> GetUploadSubresourceBuffer(const Resource::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const IResource::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
         const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ResourceBase::GetSubresourceCount());

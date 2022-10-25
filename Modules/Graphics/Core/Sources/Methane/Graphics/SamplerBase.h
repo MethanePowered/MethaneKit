@@ -43,7 +43,7 @@ public:
     // Sampler interface
     const Settings& GetSettings() const override { return m_settings; }
 
-    // Resource interface
+    // IResource interface
     void        SetData(const SubResources& sub_resources, CommandQueue&) override;
     Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 

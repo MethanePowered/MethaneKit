@@ -32,7 +32,7 @@ namespace Methane::Graphics
 {
 
 Texture::View::View(Texture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count, Opt<TextureDimensionType> texture_dimension_type_opt)
-    : Resource::View(texture, subresource_index, subresource_count, texture_dimension_type_opt)
+    : IResource::View(texture, subresource_index, subresource_count, texture_dimension_type_opt)
     , m_texture_ptr(std::dynamic_pointer_cast<Texture>(GetResourcePtr()))
 {
     META_FUNCTION_TASK();
@@ -111,7 +111,7 @@ Texture::Settings Texture::Settings::DepthStencilBuffer(const Dimensions& dimens
 
 TextureBase::TextureBase(const ContextBase& context, const Settings& settings,
                          State initial_state, Opt<State> auto_transition_source_state_opt)
-    : ResourceBase(context, Resource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
+    : ResourceBase(context, IResource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

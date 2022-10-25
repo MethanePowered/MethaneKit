@@ -54,9 +54,9 @@ public:
         const auto is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
-        const D3D12_HEAP_TYPE            heap_type = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-        const Resource::State       resource_state = is_read_back_buffer || is_private_storage ? ResourceState::CopyDest : ResourceState::GenericRead;
-        const CD3DX12_RESOURCE_DESC  resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
+        const D3D12_HEAP_TYPE       heap_type      = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
+        const IResource::State      resource_state = is_read_back_buffer || is_private_storage ? ResourceState::CopyDest : ResourceState::GenericRead;
+        const CD3DX12_RESOURCE_DESC resource_desc  = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
         InitializeCommittedResource(resource_desc, heap_type, resource_state);
         InitializeView(view_args...);
@@ -85,7 +85,7 @@ public:
         return true;
     }
 
-    // Resource overrides
+    // IResource overrides
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override
     {
         META_FUNCTION_TASK();

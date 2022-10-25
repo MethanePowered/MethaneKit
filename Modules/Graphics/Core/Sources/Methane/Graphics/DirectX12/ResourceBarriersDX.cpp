@@ -172,7 +172,7 @@ bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
     return true;
 }
 
-void ResourceBarriersDX::OnResourceReleased(Resource& resource)
+void ResourceBarriersDX::OnResourceReleased(IResource& resource)
 {
     META_FUNCTION_TASK();
     RemoveStateTransition(resource);

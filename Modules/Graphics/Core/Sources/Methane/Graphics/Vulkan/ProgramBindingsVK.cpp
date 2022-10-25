@@ -195,7 +195,7 @@ void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument
 
             const ResourceViews& resource_views = argument_binding.GetResourceViews();
             std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
-                           [](const Resource::View& resource_view)
+                           [](const IResource::View& resource_view)
                            { return resource_view.GetOffset(); });
         });
 

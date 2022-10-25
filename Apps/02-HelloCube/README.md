@@ -452,7 +452,7 @@ struct HelloCubeFrame final : AppFrame
 ```
 
 `Uniforms` field `m_shader_uniforms` is allocated on stack of application class `HelloCubeApp` along with a helper structure
-`Resource::SubResources` with a pointer and size of `m_shader_uniforms` field. It will be used later to set data of the
+`IResource::SubResources` with a pointer and size of `m_shader_uniforms` field. It will be used later to set data of the
 uniform buffer on GPU.
 
 ```cpp
@@ -462,7 +462,7 @@ private:
     ...
     
     hlslpp::Uniforms             m_shader_uniforms { };
-    const Resource::SubResources m_shader_uniforms_subresources{
+    const IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
     Ptr<BufferSet>               m_vertex_buffer_set_ptr;

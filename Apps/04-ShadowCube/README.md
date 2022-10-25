@@ -68,7 +68,7 @@ struct MeshUniforms
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
 
 Supplementary member `m_scene_uniforms_subresources` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
-type `gfx::Resource::SubResources` which is passed to `gfx::Buffer::SetData(...)` method to update the buffer data on GPU.
+type `gfx::IResource::SubResources` which is passed to `gfx::Buffer::SetData(...)` method to update the buffer data on GPU.
 
 Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
 is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
@@ -117,11 +117,11 @@ private:
         void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
 
         [[nodiscard]] const hlslpp::MeshUniforms&        GetShadowPassUniforms() const noexcept               { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const gfx::Resource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
+        [[nodiscard]] const gfx::IResource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
 
     private:
         hlslpp::MeshUniforms        m_shadow_pass_uniforms{};
-        gfx::Resource::SubResources m_shadow_pass_uniforms_subresources{
+        gfx::IResource::SubResources m_shadow_pass_uniforms_subresources{
             { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } 
         };
     };
@@ -148,7 +148,7 @@ private:
         30.F                      // - light_specular_factor
     };
     hlslpp::SceneUniforms       m_scene_uniforms{ };
-    gfx::Resource::SubResources m_scene_uniforms_subresources{
+    gfx::IResource::SubResources m_scene_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) }
     };
     gfx::Camera                 m_view_camera;

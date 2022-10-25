@@ -27,7 +27,7 @@ Base implementation of the program bindings interface.
 #include "ProgramArgumentBindingBase.h"
 
 #include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <magic_enum.hpp>
@@ -84,7 +84,7 @@ public:
 
 protected:
     // IProgramBindings::IProgramArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Resource::Views&, const Resource::Views&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const IResource::Views&, const IResource::Views&) override;
 
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
@@ -94,25 +94,25 @@ protected:
                                                  const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const Refs<Resource>& GetResourceRefsByAccess(ProgramArgumentAccessor::Type access_type) const;
+    const Refs<IResource>& GetResourceRefsByAccess(ProgramArgumentAccessor::Type access_type) const;
 
     void ClearTransitionResourceStates();
-    void RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const Resource& resource);
-    void AddTransitionResourceState(const IProgramBindings::IArgumentBinding& argument_binding, Resource& resource);
+    void RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const IResource& resource);
+    void AddTransitionResourceState(const IProgramBindings::IArgumentBinding& argument_binding, IResource& resource);
     void AddTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding);
 
 private:
     struct ResourceAndState
     {
         Ptr<ResourceBase> resource_ptr;
-        Resource::State   state;
+        IResource::State  state;
 
-        ResourceAndState(Ptr<ResourceBase> resource_ptr, Resource::State);
+        ResourceAndState(Ptr<ResourceBase> resource_ptr, IResource::State);
     };
 
     using ResourceStates = std::vector<ResourceAndState>;
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
-    using ResourceRefsByAccess = std::array<Refs<Resource>, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<IResource>, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
 
     bool ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
@@ -122,9 +122,9 @@ private:
     IProgram::Arguments             m_arguments;
     ArgumentBindings                m_binding_by_argument;
     ResourceStatesByAccess          m_transition_resource_states_by_access;
-    ResourceRefsByAccess            m_resource_refs_by_access;
-    mutable Ptr<Resource::Barriers> m_resource_state_transition_barriers_ptr;
-    Data::Index                     m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
+    ResourceRefsByAccess             m_resource_refs_by_access;
+    mutable Ptr<IResource::Barriers> m_resource_state_transition_barriers_ptr;
+    Data::Index                      m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
 } // namespace Methane::Graphics

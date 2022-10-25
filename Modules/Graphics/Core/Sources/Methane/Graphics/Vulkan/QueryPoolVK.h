@@ -45,7 +45,7 @@ public:
     // Query overrides
     void Begin() final;
     void End() final;
-    [[nodiscard]] Resource::SubResource GetData() const final;
+    [[nodiscard]] IResource::SubResource GetData() const final;
 
 protected:
     [[nodiscard]] QueryPoolVK& GetQueryPoolVK() const noexcept;

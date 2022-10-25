@@ -152,7 +152,7 @@ private:
     Ptr<gfx::Texture>       m_cube_texture_ptr;
     Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
-    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+    const gfx::IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
     };
 };
@@ -211,7 +211,7 @@ using vertex structure with layout description defined above. Vertex and index b
 `Graphics::Buffer::CreateVertexBuffer(...)` and `Graphics::Buffer::CreateIndexBuffer(...)` factory functions and generated data
 is filled to buffers with `Graphics::Buffer::SetData(...)` call, which is taking a collection of sub-resources,
 where every subresource is derived from `Data::Chunk` and describes a continuous memory range 
-as well as `Graphics::Resource::SubResource::Index` which is pointing to related part of resource.
+as well as `Graphics::IResource::SubResource::Index` which is pointing to related part of resource.
 
 Similarly constants buffer is created with `Graphics::Buffer::CreateConstantBuffer(...)` and filled with data from member
 variable `m_shader_constants`.

@@ -23,7 +23,7 @@ GPU data query pool private interface.
 
 #pragma once
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Types.h>
 
 namespace Methane::Graphics
@@ -51,7 +51,7 @@ struct IQuery
     virtual void Begin() = 0;
     virtual void End() = 0;
     virtual void ResolveData() = 0;
-    virtual Resource::SubResource GetData() const = 0;
+    virtual IResource::SubResource GetData() const = 0;
 
     [[nodiscard]] virtual Index        GetIndex() const noexcept = 0;
     [[nodiscard]] virtual const Range& GetDataRange() const noexcept = 0;

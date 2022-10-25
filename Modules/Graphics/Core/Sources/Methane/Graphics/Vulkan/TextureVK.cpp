@@ -66,7 +66,7 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
         break;
 
     case Texture::Type::Texture:
-        if (static_cast<bool>(settings.usage_mask & Resource::Usage::RenderTarget))
+        if (static_cast<bool>(settings.usage_mask & IResource::Usage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
@@ -81,7 +81,7 @@ vk::ImageUsageFlags ITextureVK::GetNativeImageUsageFlags(const Texture::Settings
         usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
     }
 
-    if (static_cast<bool>(settings.usage_mask & Resource::Usage::ShaderRead))
+    if (static_cast<bool>(settings.usage_mask & IResource::Usage::ShaderRead))
         usage_flags |= vk::ImageUsageFlagBits::eSampled;
 
     return usage_flags;
@@ -129,19 +129,19 @@ static vk::UniqueImage CreateNativeImage(const IContextVK& context, const Textur
             vk::SharingMode::eExclusive));
 }
 
-static vk::ImageLayout GetVulkanImageLayoutByUsage(Texture::Type texture_type, Resource::Usage usage) noexcept
+static vk::ImageLayout GetVulkanImageLayoutByUsage(Texture::Type texture_type, IResource::Usage usage) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(usage & Resource::Usage::ShaderRead))
+    if (static_cast<bool>(usage & IResource::Usage::ShaderRead))
     {
         return texture_type == Texture::Type::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
              : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
 
-    if (static_cast<bool>(usage & Resource::Usage::ShaderWrite) ||
-        static_cast<bool>(usage & Resource::Usage::RenderTarget))
+    if (static_cast<bool>(usage & IResource::Usage::ShaderWrite) ||
+        static_cast<bool>(usage & IResource::Usage::RenderTarget))
     {
         return texture_type == Texture::Type::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilAttachmentOptimal

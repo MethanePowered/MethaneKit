@@ -57,7 +57,7 @@ public:
         Initialize(extra_args...);
     }
 
-    // Resource override
+    // IResource override
     void SetData(const SubResources&, CommandQueue&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture data upload is allowed for image textures only");
@@ -113,7 +113,7 @@ public:
     // IObject overrides
     bool SetName(const std::string& name) override;
 
-    // Resource overrides
+    // IResource overrides
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
     // IResourceDX override

@@ -23,7 +23,7 @@ Methane graphics interface: graphics texture.
 
 #pragma once
 
-#include "Resource.h"
+#include "IResource.h"
 
 #include <Methane/Graphics/Volume.hpp>
 #include <Methane/Graphics/IRenderContext.h>
@@ -32,7 +32,7 @@ Methane graphics interface: graphics texture.
 namespace Methane::Graphics
 {
 
-struct Texture : virtual Resource // NOSONAR
+struct Texture : virtual IResource // NOSONAR
 {
     using DimensionType = TextureDimensionType;
 
@@ -43,22 +43,22 @@ struct Texture : virtual Resource // NOSONAR
         DepthStencilBuffer,
     };
 
-    class View : public Resource::View
+    class View : public IResource::View
     {
     public:
         View(Texture& texture, const SubResource::Index& subresource_index = {}, const SubResource::Count& subresource_count = {},
              Opt<TextureDimensionType> texture_dimension_type_opt = {});
 
-        using Resource::View::operator==;
-        using Resource::View::operator!=;
-        using Resource::View::operator std::string;
+        using IResource::View::operator==;
+        using IResource::View::operator!=;
+        using IResource::View::operator std::string;
 
         [[nodiscard]] const Ptr<Texture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
         [[nodiscard]] Texture&            GetTexture() const;
 
     private:
         // Resource::View stores pointer to the base class Resource, but pointer to Texture is explicitly stored in Texture::View too.
-        // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<Resource> because of virtual inheritance
+        // This is done to get rid of dynamic_cast type conversions, which would be required to get Ptr<Texture> from Ptr<IResource> because of virtual inheritance
         Ptr<Texture> m_texture_ptr;
     };
 

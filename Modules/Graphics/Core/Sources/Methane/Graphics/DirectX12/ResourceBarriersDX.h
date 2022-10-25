@@ -23,7 +23,7 @@ DirectX 12 specialization of the resource barriers.
 
 #pragma once
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <wrl.h>
@@ -51,7 +51,7 @@ public:
 
 private:
     // IResourceCallback
-    void OnResourceReleased(Resource& resource) override;
+    void OnResourceReleased(IResource& resource) override;
 
     void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
     void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);

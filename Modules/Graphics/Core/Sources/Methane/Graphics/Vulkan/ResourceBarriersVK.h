@@ -24,7 +24,7 @@ Vulkan implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/ResourceBarriers.h>
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -60,7 +60,7 @@ public:
 
 private:
     // IResourceCallback
-    void OnResourceReleased(Resource& resource) override;
+    void OnResourceReleased(IResource& resource) override;
 
     void SetResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier& barrier, bool is_new_barrier);
     void SetBufferMemoryBarrier(const BufferVK& buffer, const ResourceBarrier& barrier);

@@ -115,18 +115,18 @@ public:
     { }
 
     // CommandList interface
-    [[nodiscard]] CommandList::Type  GetType() const noexcept override                  { return command_list_type; }
-    [[nodiscard]] CommandList::State GetState() const noexcept override                 { return CommandList::State::Pending; }
-    void PopDebugGroup() override                                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void PushDebugGroup(CommandList::DebugGroup&) override                              { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(CommandList::DebugGroup*) override                                       { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void ResetOnce(CommandList::DebugGroup*) override                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetProgramBindings(IProgramBindings&, IProgramBindings::ApplyBehavior) override  { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetResourceBarriers(const Resource::Barriers&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Commit() override                                                              { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void WaitUntilCompleted(uint32_t) override                                          { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                  { throw Data::TimeRange{ }; }
-    [[nodiscard]] CommandQueue& GetCommandQueue() override                              { return m_command_queue; }
+    [[nodiscard]] CommandList::Type  GetType() const noexcept override                   { return command_list_type; }
+    [[nodiscard]] CommandList::State GetState() const noexcept override                  { return CommandList::State::Pending; }
+    void PopDebugGroup() override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void PushDebugGroup(CommandList::DebugGroup&) override                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(CommandList::DebugGroup*) override                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void ResetOnce(CommandList::DebugGroup*) override                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetProgramBindings(IProgramBindings&, IProgramBindings::ApplyBehavior) override { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetResourceBarriers(const IResource::Barriers&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Commit() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void WaitUntilCompleted(uint32_t) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                   { throw Data::TimeRange{ }; }
+    [[nodiscard]] CommandQueue& GetCommandQueue() override                               { return m_command_queue; }
 
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }

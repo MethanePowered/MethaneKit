@@ -105,13 +105,13 @@ bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
     if (!ResourceBarriers::Remove(id))
         return false;
 
-    const Resource& resource = id.GetResource();
-    const ResourceBarrier::Type barrier_type = id.GetType();
-    switch (const Resource::Type resource_type = resource.GetResourceType();
+    const IResource& resource = id.GetResource();
+    const ResourceBarrier::Type   barrier_type  = id.GetType();
+    switch (const IResource::Type resource_type = resource.GetResourceType();
             resource_type)
     {
-    case Resource::Type::Buffer:  RemoveBufferMemoryBarrier(dynamic_cast<const BufferVK&>(resource).GetNativeResource(), barrier_type); break;
-    case Resource::Type::Texture: RemoveImageMemoryBarrier(dynamic_cast<const ITextureVK&>(resource).GetNativeImage(), barrier_type); break;
+    case IResource::Type::Buffer:  RemoveBufferMemoryBarrier(dynamic_cast<const BufferVK&>(resource).GetNativeResource(), barrier_type); break;
+    case IResource::Type::Texture: RemoveImageMemoryBarrier(dynamic_cast<const ITextureVK&>(resource).GetNativeImage(), barrier_type); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
@@ -157,7 +157,7 @@ const ResourceBarriersVK::NativePipelineBarrier& ResourceBarriersVK::GetNativePi
     return native_pipeline_barrier;
 }
 
-void ResourceBarriersVK::OnResourceReleased(Resource& resource)
+void ResourceBarriersVK::OnResourceReleased(IResource& resource)
 {
     META_FUNCTION_TASK();
     RemoveStateTransition(resource);
@@ -166,12 +166,12 @@ void ResourceBarriersVK::OnResourceReleased(Resource& resource)
 void ResourceBarriersVK::SetResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier& barrier, bool is_new_barrier)
 {
     META_FUNCTION_TASK();
-    const Resource& resource = id.GetResource();
-    switch (const Resource::Type resource_type = resource.GetResourceType();
+    const IResource& resource = id.GetResource();
+    switch (const IResource::Type resource_type = resource.GetResourceType();
             resource_type)
     {
-    case Resource::Type::Buffer:  SetBufferMemoryBarrier(dynamic_cast<const BufferVK&>(resource), barrier); break;
-    case Resource::Type::Texture: SetImageMemoryBarrier(dynamic_cast<const ITextureVK&>(resource), barrier); break;
+    case IResource::Type::Buffer:  SetBufferMemoryBarrier(dynamic_cast<const BufferVK&>(resource), barrier); break;
+    case IResource::Type::Texture: SetImageMemoryBarrier(dynamic_cast<const ITextureVK&>(resource), barrier); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 

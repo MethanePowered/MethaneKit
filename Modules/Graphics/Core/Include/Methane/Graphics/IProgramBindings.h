@@ -24,7 +24,7 @@ Methane program bindings interface for resources binding to program arguments.
 #pragma once
 
 #include "IProgram.h"
-#include "Resource.h"
+#include "IResource.h"
 #include "IObject.h"
 
 #include <Methane/Data/IEmitter.h>
@@ -41,7 +41,7 @@ struct IProgramArgumentBinding;
 
 struct IProgramArgumentBindingCallback
 {
-    virtual void OnProgramArgumentBindingResourceViewsChanged(const IProgramArgumentBinding& argument_binding, const Resource::Views& old_resource_views, const Resource::Views& new_resource_views) = 0;
+    virtual void OnProgramArgumentBindingResourceViewsChanged(const IProgramArgumentBinding& argument_binding, const IResource::Views& old_resource_views, const IResource::Views& new_resource_views) = 0;
 
     virtual ~IProgramArgumentBindingCallback() = default;
 };
@@ -56,7 +56,7 @@ public:
 struct ProgramArgumentBindingSettings
 {
     ProgramArgumentAccessor argument;
-    Resource::Type          resource_type;
+    IResource::Type         resource_type;
     uint32_t                resource_count = 1;
 };
 
@@ -69,8 +69,8 @@ struct IProgramArgumentBinding
 
     // IProgramArgumentBinding interface
     [[nodiscard]] virtual const Settings&            GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual const Resource::Views& GetResourceViews() const noexcept = 0;
-    virtual bool SetResourceViews(const Resource::Views& resource_views) = 0;
+    [[nodiscard]] virtual const IResource::Views& GetResourceViews() const noexcept = 0;
+    virtual bool SetResourceViews(const IResource::Views& resource_views) = 0;
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };
 
@@ -104,7 +104,7 @@ struct IProgramBindings
     using IArgumentBinding = IProgramArgumentBinding;
     using ApplyBehavior = ProgramBindingsApplyBehavior;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
-    using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, Resource::Views, IProgram::Argument::Hash>;
+    using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
 
     // Create IProgramBindings instance
     [[nodiscard]] static Ptr<IProgramBindings> Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);

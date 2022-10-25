@@ -48,7 +48,7 @@ public:
     void Begin() override;
     void End() override;
     void ResolveData() override;
-    Resource::SubResource GetData() const override;
+    IResource::SubResource GetData() const override;
 
 protected:
     [[nodiscard]] QueryPoolDX& GetQueryPoolDX() const noexcept;

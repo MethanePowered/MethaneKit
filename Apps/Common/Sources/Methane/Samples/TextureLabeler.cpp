@@ -167,7 +167,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         }
     }
 
-    if (rt_texture_final_state != gfx::Resource::State::Undefined &&
+    if (rt_texture_final_state != gfx::IResource::State::Undefined &&
         gfx::ISystem::GetNativeApi() != gfx::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
         m_ending_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), {
@@ -176,8 +176,8 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         m_ending_render_pass_ptr = gfx::RenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
         m_ending_render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
         m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
-        m_ending_resource_barriers_ptr = gfx::Resource::Barriers::Create({
-            { m_rt_texture, gfx::Resource::State::RenderTarget, rt_texture_final_state }
+        m_ending_resource_barriers_ptr = gfx::IResource::Barriers::Create({
+            { m_rt_texture, gfx::IResource::State::RenderTarget, rt_texture_final_state }
         });
         slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);
     }

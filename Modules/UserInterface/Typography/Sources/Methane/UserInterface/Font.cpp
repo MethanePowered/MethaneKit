@@ -671,7 +671,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(const gfx::IRenderContext& render_co
     else
     {
         atlas_texture_ptr->SetData(
-            { gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
+            { gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
             render_context.GetRenderCommandKit().GetQueue()
         );
     }
@@ -751,8 +751,8 @@ void Font::UpdateAtlasTexture(const gfx::IRenderContext& render_context, AtlasTe
     {
         // TODO: Update only a region of atlas texture containing character bitmap
         atlas_texture.texture_ptr->SetData(
-            gfx::Resource::SubResources
-            { gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
+            gfx::IResource::SubResources
+            { gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
             render_context.GetRenderCommandKit().GetQueue()
         );
     }

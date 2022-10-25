@@ -34,7 +34,7 @@ public:
     { }
 };
 
-Ptr<Resource::Barriers> Resource::Barriers::Create(const Set& barriers)
+Ptr<IResource::Barriers> IResource::Barriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ResourceBarriersMT>(barriers);

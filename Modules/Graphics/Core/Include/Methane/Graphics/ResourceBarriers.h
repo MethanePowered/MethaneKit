@@ -35,7 +35,7 @@ Methane resource barriers for manual or automatic resource state synchronization
 namespace Methane::Graphics
 {
 
-struct Resource;
+struct IResource;
 struct CommandQueue;
 
 enum class ResourceState
@@ -73,18 +73,18 @@ public:
     class Id
     {
     public:
-        Id(Type type, Resource& resource) noexcept;
+        Id(Type type, IResource& resource) noexcept;
 
         [[nodiscard]] bool operator<(const Id& other) const noexcept;
         [[nodiscard]] bool operator==(const Id& other) const noexcept;
         [[nodiscard]] bool operator!=(const Id& other) const noexcept;
 
         [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
-        [[nodiscard]] Resource& GetResource() const noexcept { return m_resource_ref.get(); }
+        [[nodiscard]] IResource& GetResource() const noexcept { return m_resource_ref.get(); }
 
     private:
-        Type          m_type;
-        Ref<Resource> m_resource_ref;
+        Type           m_type;
+        Ref<IResource> m_resource_ref;
     };
 
     class StateChange
@@ -121,10 +121,10 @@ public:
         uint32_t m_queue_family_after;
     };
 
-    ResourceBarrier(Resource& resource, const StateChange& state_change);
-    ResourceBarrier(Resource& resource, const OwnerChange& owner_change);
-    ResourceBarrier(Resource& resource, ResourceState state_before, ResourceState state_after);
-    ResourceBarrier(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
+    ResourceBarrier(IResource& resource, const StateChange& state_change);
+    ResourceBarrier(IResource& resource, const OwnerChange& owner_change);
+    ResourceBarrier(IResource& resource, ResourceState state_before, ResourceState state_after);
+    ResourceBarrier(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
     ResourceBarrier(const ResourceBarrier&) = default;
 
     ResourceBarrier& operator=(const ResourceBarrier& barrier) noexcept = default;
@@ -171,7 +171,7 @@ public:
     };
 
     [[nodiscard]] static Ptr<ResourceBarriers> Create(const Set& barriers = {});
-    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransitions(const Refs<Resource>& resources,
+    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransitions(const Refs<IResource>& resources,
                                                                  const Opt<ResourceBarrier::StateChange>& state_change,
                                                                  const Opt<ResourceBarrier::OwnerChange>& owner_change);
 
@@ -179,15 +179,15 @@ public:
     [[nodiscard]] Set   GetSet() const noexcept;
     [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
     [[nodiscard]] const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept;
-    [[nodiscard]] bool  HasStateTransition(Resource& resource, ResourceState before, ResourceState after);
-    [[nodiscard]] bool  HasOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
+    [[nodiscard]] bool  HasStateTransition(IResource& resource, ResourceState before, ResourceState after);
+    [[nodiscard]] bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
 
-    bool Remove(ResourceBarrier::Type type, Resource& resource);
-    bool RemoveStateTransition(Resource& resource);
-    bool RemoveOwnerTransition(Resource& resource);
+    bool Remove(ResourceBarrier::Type type, IResource& resource);
+    bool RemoveStateTransition(IResource& resource);
+    bool RemoveOwnerTransition(IResource& resource);
 
-    AddResult AddStateTransition(Resource& resource, ResourceState before, ResourceState after);
-    AddResult AddOwnerTransition(Resource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
+    AddResult AddStateTransition(IResource& resource, ResourceState before, ResourceState after);
+    AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
 
     virtual AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
     virtual bool      Remove(const ResourceBarrier::Id& id);

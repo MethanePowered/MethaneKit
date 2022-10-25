@@ -213,8 +213,8 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_texture"), Resource::Views{ { *m_texture_ptr         } });
-        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_sampler"), Resource::Views{ { *m_texture_sampler_ptr } });
+        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_texture"), IResource::Views{ { *m_texture_ptr         } });
+        program_binding_resource_views.try_emplace(IProgram::Argument(ShaderType::Pixel, "g_sampler"), IResource::Views{ { *m_texture_sampler_ptr } });
     }
 
     m_const_program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
@@ -304,7 +304,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
     };
 
     m_const_buffer_ptr->SetData(
-        Resource::SubResources
+        IResource::SubResources
         {
             {
                 reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR

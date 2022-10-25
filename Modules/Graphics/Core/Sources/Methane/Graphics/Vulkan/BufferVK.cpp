@@ -69,17 +69,17 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, 
     return vk_usage_flags;
 }
 
-static Resource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_type)
+static IResource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_type)
 {
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case Buffer::Type::Storage:     return Resource::State::ShaderResource;
-    case Buffer::Type::Constant:    return Resource::State::ConstantBuffer;
-    case Buffer::Type::Index:       return Resource::State::IndexBuffer;
-    case Buffer::Type::Vertex:      return Resource::State::VertexBuffer;
-    case Buffer::Type::ReadBack:    return Resource::State::StreamOut;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Resource::State::Undefined, "Unsupported buffer type");
+    case Buffer::Type::Storage:     return IResource::State::ShaderResource;
+    case Buffer::Type::Constant:    return IResource::State::ConstantBuffer;
+    case Buffer::Type::Index:       return IResource::State::IndexBuffer;
+    case Buffer::Type::Vertex:      return IResource::State::VertexBuffer;
+    case Buffer::Type::ReadBack:    return IResource::State::StreamOut;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, IResource::State::Undefined, "Unsupported buffer type");
     }
 }
 

@@ -80,7 +80,7 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBindingVK::SetResourceViews(const Resource::Views& resource_views)
+bool ProgramArgumentBindingVK::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
     if (!ProgramArgumentBindingBase::SetResourceViews(resource_views))
@@ -93,9 +93,9 @@ bool ProgramArgumentBindingVK::SetResourceViews(const Resource::Views& resource_
     m_vk_buffer_views.clear();
 
     const size_t total_resources_count = resource_views.size();
-    for(const Resource::View& resource_view : resource_views)
+    for(const IResource::View& resource_view : resource_views)
     {
-        const IResourceVK::ViewVK resource_view_vk(resource_view, Resource::Usage::ShaderRead);
+        const IResourceVK::ViewVK resource_view_vk(resource_view, IResource::Usage::ShaderRead);
 
         if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;

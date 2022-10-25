@@ -97,7 +97,7 @@ AppSettings& AppSettings::SetRenderContextSettings(RenderContextSettings&& new_r
     return *this;
 }
 
-AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const Resource& resource)
+AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const IResource& resource)
     : descriptor_by_view_id(resource.GetDescriptorByViewId())
     , name(resource.GetName())
 { }

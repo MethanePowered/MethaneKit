@@ -37,20 +37,20 @@ DirectX 12 specialization of the resource interface.
 namespace Methane::Graphics
 {
 
-DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(const Resource& resource, Resource::Usage resource_usage)
+DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(const IResource& resource, IResource::Usage resource_usage)
 {
     META_FUNCTION_TASK();
-    const Resource::Type resource_type = resource.GetResourceType();
+    const IResource::Type resource_type = resource.GetResourceType();
     switch (resource_usage)
     {
-    case Resource::Usage::ShaderRead:
-        return (resource_type == Resource::Type::Sampler)
+    case IResource::Usage::ShaderRead:
+        return (resource_type == IResource::Type::Sampler)
                ? DescriptorHeapDX::Type::Samplers
                : DescriptorHeapDX::Type::ShaderResources;
 
-    case Resource::Usage::ShaderWrite:
-    case Resource::Usage::RenderTarget:
-        return (resource_type == Resource::Type::Texture &&
+    case IResource::Usage::ShaderWrite:
+    case IResource::Usage::RenderTarget:
+        return (resource_type == IResource::Type::Texture &&
                 dynamic_cast<const Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
                ? DescriptorHeapDX::Type::DepthStencil
                : DescriptorHeapDX::Type::RenderTargets;
@@ -61,7 +61,7 @@ DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(const Resource&
     }
 }
 
-ResourceViewDX::ResourceViewDX(const ResourceView& view_id, Resource::Usage usage)
+ResourceViewDX::ResourceViewDX(const ResourceView& view_id, IResource::Usage usage)
     : ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResourceDX&>(GetResource()))

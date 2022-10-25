@@ -294,7 +294,7 @@ void RenderPassBase::Begin(RenderCommandListBase&)
 
     if (m_update_attachment_states)
     {
-        SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite);
+        SetAttachmentStates(IResource::State::RenderTarget, IResource::State::DepthWrite);
     }
     m_is_begun = true;
 }
@@ -306,7 +306,7 @@ void RenderPassBase::End(RenderCommandListBase&)
 
     if (m_update_attachment_states && GetPatternBase().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(Resource::State::Present, { });
+        SetAttachmentStates(IResource::State::Present, { });
     }
     m_is_begun = false;
 }
@@ -314,18 +314,18 @@ void RenderPassBase::End(RenderCommandListBase&)
 void RenderPassBase::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    const bool is_final_pass = GetPatternBase().GetSettings().is_final_pass;
-    const Resource::State color_attachment_state = is_final_pass ? Resource::State::Present : Resource::State::RenderTarget;
+    const bool             is_final_pass          = GetPatternBase().GetSettings().is_final_pass;
+    const IResource::State color_attachment_state = is_final_pass ? IResource::State::Present : IResource::State::RenderTarget;
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Resource::State::Common ||
-            color_texture_ref.get().GetState() == Resource::State::Undefined)
+        if (color_texture_ref.get().GetState() == IResource::State::Common ||
+            color_texture_ref.get().GetState() == IResource::State::Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }
 
-void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& color_state,
-                                         const std::optional<Resource::State>& depth_state) const
+void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& color_state,
+                                         const std::optional<IResource::State>& depth_state) const
 {
     META_FUNCTION_TASK();
     if (color_state)
@@ -346,9 +346,9 @@ void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& c
     }
 }
 
-void RenderPassBase::SetAttachmentStates(const std::optional<Resource::State>& color_state,
-                                         const std::optional<Resource::State>& depth_state,
-                                         Ptr<Resource::Barriers>& transition_barriers_ptr,
+void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& color_state,
+                                         const std::optional<IResource::State>& depth_state,
+                                         Ptr<IResource::Barriers>& transition_barriers_ptr,
                                          RenderCommandListBase& render_command_list) const
 {
     META_FUNCTION_TASK();

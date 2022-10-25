@@ -24,7 +24,7 @@ Methane sub-resource used for resource data transfers.
 #include "CoreFormatters.hpp"
 
 #include <Methane/Graphics/ResourceView.h>
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -218,20 +218,20 @@ bool ResourceView::Id::operator!=(const Id& other) const noexcept
     return usage != other.usage && ResourceView::Settings::operator!=(other);
 }
 
-ResourceView::ResourceView(Resource& resource, const Settings& settings)
-    : m_resource_ptr(std::dynamic_pointer_cast<Resource>(resource.GetPtr()))
+ResourceView::ResourceView(IResource& resource, const Settings& settings)
+    : m_resource_ptr(std::dynamic_pointer_cast<IResource>(resource.GetPtr()))
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
 }
 
-ResourceView::ResourceView(Resource& resource, Data::Size offset, Data::Size size)
+ResourceView::ResourceView(IResource& resource, Data::Size offset, Data::Size size)
     : ResourceView(resource, SubResource::Index(), resource.GetSubresourceCount(), offset, size)
 {
     META_FUNCTION_TASK();
 }
 
-ResourceView::ResourceView(Resource& resource,
+ResourceView::ResourceView(IResource& resource,
                            const SubResource::Index& subresource_index,
                            const SubResource::Count& subresource_count,
                            Data::Size offset,
@@ -246,7 +246,7 @@ ResourceView::ResourceView(Resource& resource,
     META_FUNCTION_TASK();
 }
 
-ResourceView::ResourceView(Resource& resource,
+ResourceView::ResourceView(IResource& resource,
                            const SubResource::Index& subresource_index,
                            const SubResource::Count& subresource_count,
                            Opt<TextureDimensionType> texture_dimension_type_opt)
@@ -293,7 +293,7 @@ TextureDimensionType ResourceView::GetTextureDimensionType() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_resource_ptr);
-    META_CHECK_ARG_EQUAL(m_resource_ptr->GetResourceType(), Resource::Type::Texture);
+    META_CHECK_ARG_EQUAL(m_resource_ptr->GetResourceType(), IResource::Type::Texture);
     return m_settings.texture_dimension_type_opt.value_or(dynamic_cast<Texture&>(*m_resource_ptr).GetSettings().dimension_type);
 }
 

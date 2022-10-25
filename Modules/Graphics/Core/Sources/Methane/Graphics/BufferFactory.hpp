@@ -42,7 +42,7 @@ CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, 
 {
     const Buffer::Settings settings{
         Buffer::Type::Vertex,
-        Resource::Usage::None,
+        IResource::Usage::None,
         size,
         stride,
         PixelFormat::Unknown,
@@ -57,7 +57,7 @@ CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, 
 {
     const Buffer::Settings settings{
         Buffer::Type::Index,
-        Resource::Usage::None,
+        IResource::Usage::None,
         size,
         GetPixelSize(format),
         format,
@@ -71,8 +71,8 @@ std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBuff
 CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
     using namespace magic_enum::bitwise_operators;
-    const Resource::Usage  usage_mask = Resource::Usage::ShaderRead
-                                      | (addressable ? Resource::Usage::Addressable : Resource::Usage::None);
+    const IResource::Usage usage_mask = IResource::Usage::ShaderRead
+                                        | (addressable ? IResource::Usage::Addressable : IResource::Usage::None);
     const Buffer::Settings settings{
         Buffer::Type::Constant,
         usage_mask,
@@ -91,7 +91,7 @@ CreateReadBackBuffer(const IContext& context, Data::Size size, ExtraConstructorA
     META_FUNCTION_TASK();
     const Buffer::Settings settings{
         Buffer::Type::ReadBack,
-        Resource::Usage::ReadBack,
+        IResource::Usage::ReadBack,
         size,
         0U,
         PixelFormat::Unknown,

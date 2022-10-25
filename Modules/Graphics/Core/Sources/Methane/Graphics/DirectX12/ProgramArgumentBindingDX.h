@@ -74,7 +74,7 @@ public:
     ProgramArgumentBindingDX& operator=(ProgramArgumentBindingDX&&) noexcept = default;
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Resource::Views& resource_views) override;
+    bool SetResourceViews(const IResource::Views& resource_views) override;
 
     const SettingsDX&      GetSettingsDX() const noexcept          { return m_settings_dx; }
     uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }

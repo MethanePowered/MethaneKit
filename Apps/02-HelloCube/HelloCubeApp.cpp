@@ -78,7 +78,7 @@ private:
 
 #ifdef UNIFORMS_BUFFER_ENABLED
     hlslpp::Uniforms             m_shader_uniforms { };
-    const Resource::SubResources m_shader_uniforms_subresources{
+    const IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
     Ptr<BufferSet>               m_vertex_buffer_set_ptr;

@@ -229,7 +229,7 @@ void TimestampQueryVK::ResolveTimestamp()
 Timestamp TimestampQueryVK::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
-    Resource::SubResource query_data = GetData();
+    IResource::SubResource query_data = GetData();
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
     META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR

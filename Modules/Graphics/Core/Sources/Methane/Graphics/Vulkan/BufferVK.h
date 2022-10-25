@@ -39,7 +39,7 @@ class BufferVK final // NOSONAR - inheritance hierarchy is greater than 5
 public:
     BufferVK(const ContextBase& context, const Settings& settings);
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
 
     // IObject interface

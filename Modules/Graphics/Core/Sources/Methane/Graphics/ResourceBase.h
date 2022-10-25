@@ -23,7 +23,7 @@ Base implementation of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include "ObjectBase.h"
@@ -38,7 +38,7 @@ namespace Methane::Graphics
 class ContextBase;
 
 class ResourceBase
-    : public virtual Resource // NOSONAR
+    : public virtual IResource // NOSONAR
     , public ObjectBase
     , public Data::Emitter<IResourceCallback>
 {
@@ -48,7 +48,7 @@ public:
     ResourceBase(const ResourceBase&) = delete;
     ResourceBase(ResourceBase&&) = delete;
 
-    // Resource interface
+    // IResource interface
     [[nodiscard]] Type                      GetResourceType() const noexcept final     { return m_type; }
     [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
     [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }

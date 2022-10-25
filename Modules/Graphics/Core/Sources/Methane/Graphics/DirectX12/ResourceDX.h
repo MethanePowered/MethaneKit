@@ -27,7 +27,7 @@ DirectX 12 specialization of the resource interface.
 #include "DescriptorHeapDX.h"
 #include "ResourceBarriersDX.h"
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -42,13 +42,13 @@ struct IResourceDX;
 class ResourceViewDX final : public ResourceView
 {
 public:
-    ResourceViewDX(const ResourceView& view_id, Resource::Usage usage);
+    ResourceViewDX(const ResourceView& view_id, IResource::Usage usage);
 
     [[nodiscard]] const Id&                        GetId() const noexcept                { return m_id; }
-    [[nodiscard]] Resource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
+    [[nodiscard]] IResource::Usage                  GetUsage() const noexcept             { return m_id.usage; }
     [[nodiscard]] IResourceDX&                     GetResourceDX() const noexcept        { return m_resource_dx; }
     [[nodiscard]] bool                             HasDescriptor() const noexcept        { return m_descriptor_opt.has_value(); }
-    [[nodiscard]] const Opt<Resource::Descriptor>& GetDescriptor() const noexcept        { return m_descriptor_opt; }
+    [[nodiscard]] const Opt<IResource::Descriptor>& GetDescriptor() const noexcept        { return m_descriptor_opt; }
     [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS        GetNativeGpuAddress() const noexcept;
     [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE      GetNativeCpuDescriptorHandle() const noexcept;
     [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE      GetNativeGpuDescriptorHandle() const noexcept;
@@ -56,22 +56,22 @@ public:
 private:
     Id                         m_id;
     IResourceDX&               m_resource_dx;
-    Opt<Resource::Descriptor>  m_descriptor_opt;
+    Opt<IResource::Descriptor> m_descriptor_opt;
 };
 
 using ResourceViewsDX = std::vector<ResourceViewDX>;
 
-struct IResourceDX : virtual Resource // NOSONAR
+struct IResourceDX : virtual IResource // NOSONAR
 {
 public:
-    using Barrier     = Resource::Barrier;
-    using Barriers    = Resource::Barriers;
-    using State       = Resource::State;
+    using Barrier     = IResource::Barrier;
+    using Barriers    = IResource::Barriers;
+    using State       = IResource::State;
     using BarriersDX  = ResourceBarriersDX;
     using ViewDX      = ResourceViewDX;
     using ViewsDX     = ResourceViewsDX;
 
-    [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(const Resource& resource, Resource::Usage resource_usage);
+    [[nodiscard]] static DescriptorHeapDX::Type GetDescriptorHeapTypeByUsage(const IResource& resource, IResource::Usage resource_usage);
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)

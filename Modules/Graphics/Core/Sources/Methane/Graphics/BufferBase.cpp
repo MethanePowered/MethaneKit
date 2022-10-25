@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 BufferBase::BufferBase(const ContextBase& context, const Settings& settings,
                        State initial_state, Opt<State> auto_transition_source_state_opt)
-    : ResourceBase(context, Resource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
+    : ResourceBase(context, IResource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -98,7 +98,7 @@ Buffer& BufferSetBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-bool BufferSetBase::SetState(Resource::State state)
+bool BufferSetBase::SetState(IResource::State state)
 {
     META_FUNCTION_TASK();
     bool state_changed = false;

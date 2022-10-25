@@ -55,15 +55,15 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 }
 
 [[nodiscard]]
-static Resource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
+static IResource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
     switch(mtl_arg_type)
     {
-    case MTLArgumentTypeBuffer:     return Resource::Type::Buffer;
-    case MTLArgumentTypeTexture:    return Resource::Type::Texture;
-    case MTLArgumentTypeSampler:    return Resource::Type::Sampler;
-    default:                        META_UNEXPECTED_ARG_RETURN(mtl_arg_type, Resource::Type::Buffer);
+    case MTLArgumentTypeBuffer:     return IResource::Type::Buffer;
+    case MTLArgumentTypeTexture:    return IResource::Type::Texture;
+    case MTLArgumentTypeSampler:    return IResource::Type::Sampler;
+    default:                        META_UNEXPECTED_ARG_RETURN(mtl_arg_type, IResource::Type::Buffer);
     }
 }
 

@@ -111,24 +111,24 @@ static uint32_t GetArraySize(const spirv_cross::SPIRType& resource_type) noexcep
            : std::numeric_limits<uint32_t>::max();
 }
 
-static Resource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_descriptor_type)
+static IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_descriptor_type)
 {
     META_FUNCTION_TASK();
     switch(vk_descriptor_type)
     {
     case vk::DescriptorType::eUniformBuffer:
     case vk::DescriptorType::eStorageBuffer:
-        return Resource::Type::Buffer;
+        return IResource::Type::Buffer;
 
     case vk::DescriptorType::eStorageImage:
     case vk::DescriptorType::eSampledImage:
-        return Resource::Type::Texture;
+        return IResource::Type::Texture;
 
     case vk::DescriptorType::eSampler:
-        return Resource::Type::Sampler;
+        return IResource::Type::Sampler;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, Resource::Type::Buffer);
+        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, IResource::Type::Buffer);
     }
 }
 
@@ -158,7 +158,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
     if (spirv_resources.begin() == spirv_resources.end())
         return;
 
-    const Resource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
+    const IResource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
     const ShaderType shader_type = shader.GetType();
 
     for (const spirv_cross::Resource& resource : spirv_resources)

@@ -107,23 +107,23 @@ public:
 
     [[nodiscard]] const IContext& GetContext() const noexcept { return m_context; }
 
-    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = Resource::Barriers::Create({
-            { GetIndexBuffer(), GetIndexBuffer().GetState(), Resource::State::IndexBuffer },
+        Ptr<IResource::Barriers> beginning_resource_barriers_ptr = IResource::Barriers::Create({
+            { GetIndexBuffer(), GetIndexBuffer().GetState(), IResource::State::IndexBuffer },
         });
 
         if (constants_buffer_ptr)
         {
-            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), Resource::State::ConstantBuffer);
+            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), IResource::State::ConstantBuffer);
         }
 
         const BufferSet& vertex_buffer_set = GetVertexBuffers();
         for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
         {
             Buffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
-            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), Resource::State::VertexBuffer);
+            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), IResource::State::VertexBuffer);
         }
 
         return beginning_resource_barriers_ptr;
@@ -265,7 +265,7 @@ public:
     }
 
     [[nodiscard]]
-    const Resource::SubResources& GetFinalPassUniformsSubresources() const
+    const IResource::SubResources& GetFinalPassUniformsSubresources() const
     { return m_final_pass_instance_uniforms_subresources; }
 
     [[nodiscard]]
@@ -302,7 +302,7 @@ protected:
     {
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresources = Resource::SubResources{
+        m_final_pass_instance_uniforms_subresources = IResource::SubResources{
             { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
         };
     }
@@ -319,7 +319,7 @@ private:
     Ptr<BufferSet>          m_vertex_ptr;
     Ptr<Buffer>             m_index_ptr;
     InstanceUniforms        m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
-    Resource::SubResources  m_final_pass_instance_uniforms_subresources;
+    IResource::SubResources m_final_pass_instance_uniforms_subresources;
 };
 
 template<typename UniformsType>
@@ -342,14 +342,14 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    Ptr<Resource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<Resource::Barriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
+        Ptr<IResource::Barriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
         for (const Ptr<Texture>& texture_ptr : m_subset_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);
-            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), Resource::State::ShaderResource);
+            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), IResource::State::ShaderResource);
         }
         return beginning_resource_barriers_ptr;
     }

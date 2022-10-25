@@ -181,7 +181,7 @@ protected:
         META_FUNCTION_TASK();
         const Opt<uint32_t> memory_type_opt = GetContextVK().GetDeviceVK().FindMemoryType(memory_requirements.memoryTypeBits, memory_property_flags);
         if (!memory_type_opt)
-            throw Resource::AllocationError(*this, "suitable memory type was not found");
+            throw IResource::AllocationError(*this, "suitable memory type was not found");
 
         try
         {
@@ -189,7 +189,7 @@ protected:
         }
         catch(const vk::SystemError& error)
         {
-            throw Resource::AllocationError(*this, error.what());
+            throw IResource::AllocationError(*this, error.what());
         }
     }
 
@@ -264,9 +264,9 @@ private:
     vk::UniqueDeviceMemory  m_vk_unique_device_memory;
     ResourceStorageType     m_vk_resource;
     ViewDescriptorByViewId  m_view_descriptor_by_view_id;
-    Opt<uint32_t>           m_owner_queue_family_index_opt;
-    Ptr<Resource::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<Resource::Barriers> m_upload_end_transition_barriers_ptr;
+    Opt<uint32_t>            m_owner_queue_family_index_opt;
+    Ptr<IResource::Barriers> m_upload_begin_transition_barriers_ptr;
+    Ptr<IResource::Barriers> m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

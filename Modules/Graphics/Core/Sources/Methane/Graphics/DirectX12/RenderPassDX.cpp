@@ -201,7 +201,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
                    [](const Texture::View& texture_location)
-                   { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
+                   { return ResourceViewDX(texture_location, IResource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
     if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & IContext::Options::EmulatedRenderPassOnWindows))
@@ -232,7 +232,7 @@ bool RenderPassDX::Update(const Settings& settings)
 
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
                        [](const Texture::View& texture_location)
-                       { return ResourceViewDX(texture_location, Resource::Usage::RenderTarget); });
+                       { return ResourceViewDX(texture_location, IResource::Usage::RenderTarget); });
     }
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
@@ -376,7 +376,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
     }
 
     RenderPassBase::Begin(command_list);
-    SetAttachmentStates(Resource::State::RenderTarget, Resource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
+    SetAttachmentStates(IResource::State::RenderTarget, IResource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
 
     const auto& command_list_dx = static_cast<const RenderCommandListDX&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
@@ -430,7 +430,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
 
     if (GetPatternBase().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(Resource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
+        SetAttachmentStates(IResource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
     }
     RenderPassBase::End(command_list);
 }

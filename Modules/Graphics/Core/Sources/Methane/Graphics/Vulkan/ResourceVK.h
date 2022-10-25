@@ -23,7 +23,7 @@ Vulkan specialization of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -50,10 +50,10 @@ public:
     using ImageViewDescriptor   = ViewDescriptor<vk::DescriptorImageInfo, vk::UniqueImageView>;
     using ViewDescriptorVariant = std::variant<BufferViewDescriptor, ImageViewDescriptor>;
 
-    explicit ResourceViewVK(const ResourceView& view_id, Resource::Usage usage);
+    explicit ResourceViewVK(const ResourceView& view_id, IResource::Usage usage);
 
     [[nodiscard]] const Id&       GetId() const noexcept    { return m_id; }
-    [[nodiscard]] Resource::Usage GetUsage() const noexcept { return m_id.usage; }
+    [[nodiscard]] IResource::Usage GetUsage() const noexcept { return m_id.usage; }
     [[nodiscard]] IResourceVK&    GetResourceVK() const;
 
     [[nodiscard]] const BufferViewDescriptor*  GetBufferViewDescriptorPtr() const;
@@ -76,12 +76,12 @@ private:
 
 using ResourceViewsVK = std::vector<ResourceViewVK>;
 
-struct IResourceVK : virtual Resource // NOSONAR
+struct IResourceVK : virtual IResource // NOSONAR
 {
 public:
-    using Barrier  = Resource::Barrier;
-    using Barriers = Resource::Barriers;
-    using State    = Resource::State;
+    using Barrier  = IResource::Barrier;
+    using Barriers = IResource::Barriers;
+    using State    = IResource::State;
     using ViewVK   = ResourceViewVK;
     using ViewsVK  = ResourceViewsVK;
 

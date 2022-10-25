@@ -23,30 +23,30 @@ Methane Graphics Core objects formatters for use with fmt::format(...)
 
 #pragma once
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Graphics/IProgram.h>
 
 #include <fmt/format.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::Resource::SubResource::Index>
+struct fmt::formatter<Methane::Graphics::IResource::SubResource::Index>
 {
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Resource::SubResource::Index& index, FormatContext& ctx)
+    auto format(const Methane::Graphics::IResource::SubResource::Index& index, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(index));
     }
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::Resource::SubResource::Count>
+struct fmt::formatter<Methane::Graphics::IResource::SubResource::Count>
 {
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Resource::SubResource::Count& count, FormatContext& ctx)
+    auto format(const Methane::Graphics::IResource::SubResource::Count& count, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(count));
     }

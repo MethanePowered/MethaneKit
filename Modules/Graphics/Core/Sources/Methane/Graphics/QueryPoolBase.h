@@ -25,7 +25,7 @@ GPU data query pool base implementation.
 
 #include "QueryPool.h"
 
-#include <Methane/Graphics/Resource.h>
+#include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Types.h>
 #include <Methane/Data/TimeRange.hpp>
 #include <Methane/Data/RangeSet.hpp>

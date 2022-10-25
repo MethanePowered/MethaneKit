@@ -86,11 +86,11 @@ public:
 protected:
     RenderPatternBase& GetPatternBase() const noexcept { return *m_pattern_base_ptr; }
 
-    void SetAttachmentStates(const std::optional<Resource::State>& color_state,
-                             const std::optional<Resource::State>& depth_state) const;
-    void SetAttachmentStates(const std::optional<Resource::State>& color_state,
-                             const std::optional<Resource::State>& depth_state,
-                             Ptr<Resource::Barriers>& transition_barriers_ptr,
+    void SetAttachmentStates(const std::optional<IResource::State>& color_state,
+                             const std::optional<IResource::State>& depth_state) const;
+    void SetAttachmentStates(const std::optional<IResource::State>& color_state,
+                             const std::optional<IResource::State>& depth_state,
+                             Ptr<IResource::Barriers>& transition_barriers_ptr,
                              RenderCommandListBase& render_command_list) const;
 
 private:

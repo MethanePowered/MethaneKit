@@ -67,7 +67,7 @@ private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     const RenderContextVK& m_render_context;
@@ -82,7 +82,7 @@ public:
     DepthStencilTextureVK(const RenderContextVK& render_context, const Settings& settings,
                           const Opt<DepthStencil>& depth_stencil_opt);
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // ITextureVK interface
@@ -103,7 +103,7 @@ class RenderTargetTextureVK final // NOSONAR - inheritance hierarchy is greater 
 public:
     RenderTargetTextureVK(const RenderContextVK& context, const Settings& settings);
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // ITextureVK interface
@@ -122,7 +122,7 @@ class ImageTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
 public:
     ImageTextureVK(const ContextBase& context, const Settings& settings);
 
-    // Resource interface
+    // IResource interface
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
     // IObject overide

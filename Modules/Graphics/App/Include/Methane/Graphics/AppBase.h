@@ -80,10 +80,10 @@ public:
 protected:
     struct ResourceRestoreInfo
     {
-        Resource::DescriptorByViewId descriptor_by_view_id;
-        std::string name;
+        IResource::DescriptorByViewId descriptor_by_view_id;
+        std::string                   name;
 
-        explicit ResourceRestoreInfo(const Resource& resource);
+        explicit ResourceRestoreInfo(const IResource& resource);
         ResourceRestoreInfo(const ResourceRestoreInfo& other) = default;
         ResourceRestoreInfo(ResourceRestoreInfo&& other) noexcept = default;
 

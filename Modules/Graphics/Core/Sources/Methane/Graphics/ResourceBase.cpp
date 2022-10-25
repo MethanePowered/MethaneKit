@@ -37,14 +37,14 @@ Base implementation of the resource interface.
 namespace Methane::Graphics
 {
 
-Resource::Descriptor::Descriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
+ResourceDescriptor::ResourceDescriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
 {
     META_FUNCTION_TASK();
 }
 
-Resource::AllocationError::AllocationError(const Resource& resource, std::string_view error_message)
+ResourceAllocationError::ResourceAllocationError(const IResource& resource, std::string_view error_message)
     : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
     , m_resource(resource)
 {
@@ -95,9 +95,9 @@ void ResourceBase::SetData(const SubResources& sub_resources, CommandQueue&)
     }
 }
 
-Resource::SubResource ResourceBase::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
+IResource::SubResource ResourceBase::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
 {
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(Resource::SubResource(), "reading data is not allowed for this type of resource");
+    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(IResource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
 const IContext& ResourceBase::GetContext() const noexcept

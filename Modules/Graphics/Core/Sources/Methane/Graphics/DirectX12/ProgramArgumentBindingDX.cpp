@@ -65,12 +65,12 @@ ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ProgramArgumentBindingD
 DescriptorHeapTypeDX ProgramArgumentBindingDX::GetDescriptorHeapType() const
 {
     META_FUNCTION_TASK();
-    return (GetSettings().resource_type == Resource::Type::Sampler)
+    return (GetSettings().resource_type == IResource::Type::Sampler)
            ? DescriptorHeapTypeDX::Samplers
            : DescriptorHeapTypeDX::ShaderResources;
 }
 
-bool ProgramArgumentBindingDX::SetResourceViews(const Resource::Views& resource_views)
+bool ProgramArgumentBindingDX::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
     if (!ProgramArgumentBindingBase::SetResourceViews(resource_views))
@@ -99,9 +99,9 @@ bool ProgramArgumentBindingDX::SetResourceViews(const Resource::Views& resource_
     uint32_t resource_index = 0;
     m_resource_views_dx.clear();
     m_resource_views_dx.reserve(resource_views.size());
-    for(const Resource::View& resource_view : resource_views)
+    for(const IResource::View& resource_view : resource_views)
     {
-        m_resource_views_dx.emplace_back(resource_view, Resource::Usage::ShaderRead);
+        m_resource_views_dx.emplace_back(resource_view, IResource::Usage::ShaderRead);
         if (!p_dx_descriptor_heap)
             continue;
 

@@ -138,7 +138,7 @@ private:
 
 using SubResources = std::vector<SubResource>;
 
-struct Resource;
+struct IResource;
 
 enum class ResourceUsage : uint32_t
 {
@@ -190,14 +190,14 @@ public:
         [[nodiscard]] bool operator!=(const Id& other) const noexcept;
     };
 
-    ResourceView(Resource& resource, const Settings& settings);
-    ResourceView(Resource& resource, Data::Size offset = 0U, Data::Size size = 0U);
-    ResourceView(Resource& resource,
+    ResourceView(IResource& resource, const Settings& settings);
+    ResourceView(IResource& resource, Data::Size offset = 0U, Data::Size size = 0U);
+    ResourceView(IResource& resource,
                  const SubResource::Index& subresource_index,
                  const SubResource::Count& subresource_count = {},
                  Data::Size offset = 0U,
                  Data::Size size   = 0U);
-    ResourceView(Resource& resource,
+    ResourceView(IResource& resource,
                  const SubResource::Index& subresource_index,
                  const SubResource::Count& subresource_count = {},
                  Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
@@ -206,8 +206,8 @@ public:
     [[nodiscard]] bool operator!=(const ResourceView& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 
-    [[nodiscard]] const Ptr<Resource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
-    [[nodiscard]] Resource&                 GetResource() const noexcept         { return *m_resource_ptr; }
+    [[nodiscard]] const Ptr<IResource>&      GetResourcePtr() const noexcept      { return m_resource_ptr; }
+    [[nodiscard]] IResource&                 GetResource() const noexcept         { return *m_resource_ptr; }
     [[nodiscard]] const Settings&           GetSettings() const noexcept         { return m_settings; }
     [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_settings.subresource_index; }
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_settings.subresource_count; }
@@ -215,8 +215,8 @@ public:
     [[nodiscard]] TextureDimensionType      GetTextureDimensionType() const;
 
 private:
-    Ptr<Resource> m_resource_ptr;
-    Settings      m_settings;
+    Ptr<IResource> m_resource_ptr;
+    Settings       m_settings;
 };
 
 using ResourceViews = std::vector<ResourceView>;

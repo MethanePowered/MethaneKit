@@ -101,7 +101,7 @@ public:
         m_is_native_committed = true;
     }
 
-    void SetResourceBarriers(const Resource::Barriers& resource_barriers) final
+    void SetResourceBarriers(const IResource::Barriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         VerifyEncodingState();

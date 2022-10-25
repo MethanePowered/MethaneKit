@@ -499,9 +499,9 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
         m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
-        gfx::Resource::SubResource(
+        gfx::IResource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, vertices_data_size)
+            gfx::IResource::SubResource::Index(), gfx::IResource::BytesRange(0U, vertices_data_size)
         )
     }, render_context.GetRenderCommandKit().GetQueue());
 
@@ -517,9 +517,9 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     }
 
     m_index_buffer_ptr->SetData({
-        gfx::Resource::SubResource(
+        gfx::IResource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
-            gfx::Resource::SubResource::Index(), gfx::Resource::BytesRange(0U, indices_data_size)
+            gfx::IResource::SubResource::Index(), gfx::IResource::BytesRange(0U, indices_data_size)
         )
     }, render_context.GetRenderCommandKit().GetQueue());
 
@@ -555,7 +555,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& rende
         }
     }
     m_uniforms_buffer_ptr->SetData(
-        gfx::Resource::SubResources
+        gfx::IResource::SubResources
         {
             { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
         },
@@ -663,9 +663,9 @@ void Text::UpdateConstantsBuffer()
         m_settings.color.AsVector()
     };
     m_const_buffer_ptr->SetData(
-        gfx::Resource::SubResources
+        gfx::IResource::SubResources
         {
-            gfx::Resource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
+            gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
                                        static_cast<Data::Size>(sizeof(constants)))
         },
         GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()

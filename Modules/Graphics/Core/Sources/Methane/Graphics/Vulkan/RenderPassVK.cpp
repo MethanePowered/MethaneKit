@@ -353,7 +353,7 @@ vk::UniqueFramebuffer RenderPassVK::CreateNativeFrameBuffer(const vk::Device& vk
     {
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
                        [](const Texture::View& texture_location)
-                       { return ResourceViewVK(texture_location, Resource::Usage::RenderTarget); });
+                       { return ResourceViewVK(texture_location, IResource::Usage::RenderTarget); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;

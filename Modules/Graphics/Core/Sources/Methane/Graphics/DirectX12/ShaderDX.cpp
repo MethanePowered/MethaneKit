@@ -48,17 +48,17 @@ namespace Methane::Graphics
 static const std::set<std::string, std::less<>> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
 [[nodiscard]]
-static Resource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
+static IResource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
     case D3D_SIT_STRUCTURED:
-    case D3D_SIT_TBUFFER:   return Resource::Type::Buffer;
-    case D3D_SIT_TEXTURE:   return Resource::Type::Texture;
-    case D3D_SIT_SAMPLER:   return Resource::Type::Sampler;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Resource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    case D3D_SIT_TBUFFER:   return IResource::Type::Buffer;
+    case D3D_SIT_TEXTURE:   return IResource::Type::Texture;
+    case D3D_SIT_SAMPLER:   return IResource::Type::Sampler;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 

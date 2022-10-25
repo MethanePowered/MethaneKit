@@ -163,8 +163,8 @@ bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
         return false;
 
     auto& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
-    if (const Ptr<Resource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_vertex_buffer_set.SetState(Resource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
+    if (const Ptr<IResource::Barriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_vertex_buffer_set.SetState(IResource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -181,8 +181,8 @@ bool RenderCommandListDX::SetIndexBuffer(Buffer& index_buffer, bool set_resource
         return false;
 
     auto& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
-    if (Ptr <Resource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_index_buffer.SetState(Resource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+    if (Ptr <IResource::Barriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_index_buffer.SetState(IResource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }

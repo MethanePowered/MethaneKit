@@ -23,7 +23,7 @@ Methane sampler interface: GPU resource for texture sampling.
 
 #pragma once
 
-#include "Resource.h"
+#include "IResource.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -36,7 +36,7 @@ namespace Methane::Graphics
 
 struct IContext;
 
-struct Sampler : virtual Resource // NOSONAR
+struct Sampler : virtual IResource // NOSONAR
 {
     struct Filter
     {

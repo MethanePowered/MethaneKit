@@ -49,7 +49,7 @@ public:
     ProgramArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Resource::Views& resource_views) override;
+    bool SetResourceViews(const IResource::Views& resource_views) override;
 
     const SettingsMT&          GetSettingsMT() const noexcept { return m_settings_mt; }
     const NativeSamplerStates& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
