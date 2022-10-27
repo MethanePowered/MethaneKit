@@ -51,7 +51,7 @@ SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index&
     META_FUNCTION_TASK();
 }
 
-SubResource::Count::Count(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
+SubResourceCount::SubResourceCount(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
     : m_depth(depth)
     , m_array_size(array_size)
     , m_mip_levels_count(mip_levels_count)
@@ -62,7 +62,7 @@ SubResource::Count::Count(Data::Size depth, Data::Size array_size, Data::Size mi
     META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
-void SubResource::Count::operator+=(const Index& other) noexcept
+void SubResourceCount::operator+=(const SubResourceIndex& other) noexcept
 {
     META_FUNCTION_TASK();
     m_depth            = std::max(m_depth,            other.GetDepthSlice() + 1U);
@@ -70,38 +70,38 @@ void SubResource::Count::operator+=(const Index& other) noexcept
     m_mip_levels_count = std::max(m_mip_levels_count, other.GetMipLevel()   + 1U);
 }
 
-bool SubResource::Count::operator==(const Count& other) const noexcept
+bool SubResourceCount::operator==(const SubResourceCount& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_depth, m_array_size, m_mip_levels_count) ==
            std::tie(other.m_depth, other.m_array_size, other.m_mip_levels_count);
 }
 
-bool SubResource::Count::operator<(const Count& other) const noexcept
+bool SubResourceCount::operator<(const SubResourceCount& other) const noexcept
 {
     META_FUNCTION_TASK();
     return GetRawCount() < other.GetRawCount();
 }
 
-bool SubResource::Count::operator>=(const Count& other) const noexcept
+bool SubResourceCount::operator>=(const SubResourceCount& other) const noexcept
 {
     META_FUNCTION_TASK();
     return GetRawCount() >= other.GetRawCount();
 }
 
-SubResource::Count::operator SubResource::Index() const noexcept
+SubResourceCount::operator SubResourceIndex() const noexcept
 {
     META_FUNCTION_TASK();
-    return SubResource::Index(*this);
+    return SubResourceIndex(*this);
 }
 
-SubResource::Count::operator std::string() const noexcept
+SubResourceCount::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("count(d:{}, a:{}, m:{})", m_depth, m_array_size, m_mip_levels_count);
 }
 
-SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
+SubResourceIndex::SubResourceIndex(Data::Index depth_slice, Data::Index array_index, Data::Index mip_level) noexcept
     : m_depth_slice(depth_slice)
     , m_array_index(array_index)
     , m_mip_level(mip_level)
@@ -109,7 +109,7 @@ SubResource::Index::Index(Data::Index depth_slice, Data::Index array_index, Data
     META_FUNCTION_TASK();
 }
 
-SubResource::Index::Index(Data::Index raw_index, const Count& count)
+SubResourceIndex::SubResourceIndex(Data::Index raw_index, const SubResourceCount& count)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(raw_index, count.GetRawCount());
@@ -120,7 +120,7 @@ SubResource::Index::Index(Data::Index raw_index, const Count& count)
     m_mip_level   = raw_index % count.GetMipLevelsCount();
 }
 
-SubResource::Index::Index(const SubResource::Count& count)
+SubResourceIndex::SubResourceIndex(const SubResourceCount& count)
     : m_depth_slice(count.GetDepth())
     , m_array_index(count.GetArraySize())
     , m_mip_level(count.GetMipLevelsCount())
@@ -128,27 +128,27 @@ SubResource::Index::Index(const SubResource::Count& count)
     META_FUNCTION_TASK();
 }
 
-bool SubResource::Index::operator==(const Index& other) const noexcept
+bool SubResourceIndex::operator==(const SubResourceIndex& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_depth_slice, m_array_index, m_mip_level) ==
            std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
-bool SubResource::Index::operator<(const Index& other) const noexcept
+bool SubResourceIndex::operator<(const SubResourceIndex& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(m_depth_slice, m_array_index, m_mip_level) <
            std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
 }
 
-bool SubResource::Index::operator>=(const Index& other) const noexcept
+bool SubResourceIndex::operator>=(const SubResourceIndex& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator<(other);
 }
 
-bool SubResource::Index::operator<(const Count& other) const noexcept
+bool SubResourceIndex::operator<(const SubResourceCount& other) const noexcept
 {
     META_FUNCTION_TASK();
     return m_depth_slice < other.GetDepth() &&
@@ -156,19 +156,19 @@ bool SubResource::Index::operator<(const Count& other) const noexcept
            m_mip_level   < other.GetMipLevelsCount();
 }
 
-bool SubResource::Index::operator>=(const Count& other) const noexcept
+bool SubResourceIndex::operator>=(const SubResourceCount& other) const noexcept
 {
     META_FUNCTION_TASK();
     return !operator<(other);
 }
 
-SubResource::Index::operator std::string() const noexcept
+SubResourceIndex::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-bool ResourceView::Settings::operator<(const Settings& other) const noexcept
+bool ResourceViewSettings::operator<(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     // Do not include 'offset' in the less comparison, because native views are created without offset which is applied dynamically
@@ -176,46 +176,46 @@ bool ResourceView::Settings::operator<(const Settings& other) const noexcept
            std::tie(other.subresource_index, other.subresource_count, /*other.offset,*/ other.size);
 }
 
-bool ResourceView::Settings::operator==(const Settings& other) const noexcept
+bool ResourceViewSettings::operator==(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(subresource_index, subresource_count, offset, size) ==
            std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
-bool ResourceView::Settings::operator!=(const Settings& other) const noexcept
+bool ResourceViewSettings::operator!=(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(subresource_index, subresource_count, offset, size) !=
            std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
 }
 
-ResourceView::Id::Id(ResourceUsage usage, const ResourceView::Settings& settings)
-    : Settings(settings)
+ResourceViewId::ResourceViewId(ResourceUsage usage, const ResourceViewSettings& settings)
+    : ResourceViewSettings(settings)
     , usage(usage)
 {
     META_FUNCTION_TASK();
 }
 
-bool ResourceView::Id::operator<(const Id& other) const noexcept
+bool ResourceViewId::operator<(const ResourceViewId& other) const noexcept
 {
     META_FUNCTION_TASK();
     if (usage != other.usage)
         return usage < other.usage;
 
-    return ResourceView::Settings::operator<(other);
+    return ResourceViewSettings::operator<(other);
 }
 
-bool ResourceView::Id::operator==(const Id& other) const noexcept
+bool ResourceViewId::operator==(const ResourceViewId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return usage == other.usage && ResourceView::Settings::operator==(other);
+    return usage == other.usage && ResourceViewSettings::operator==(other);
 }
 
-bool ResourceView::Id::operator!=(const Id& other) const noexcept
+bool ResourceViewId::operator!=(const ResourceViewId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return usage != other.usage && ResourceView::Settings::operator!=(other);
+    return usage != other.usage && ResourceViewSettings::operator!=(other);
 }
 
 ResourceView::ResourceView(IResource& resource, const Settings& settings)
@@ -226,14 +226,14 @@ ResourceView::ResourceView(IResource& resource, const Settings& settings)
 }
 
 ResourceView::ResourceView(IResource& resource, Data::Size offset, Data::Size size)
-    : ResourceView(resource, SubResource::Index(), resource.GetSubresourceCount(), offset, size)
+    : ResourceView(resource, SubResourceIndex(), resource.GetSubresourceCount(), offset, size)
 {
     META_FUNCTION_TASK();
 }
 
 ResourceView::ResourceView(IResource& resource,
-                           const SubResource::Index& subresource_index,
-                           const SubResource::Count& subresource_count,
+                           const SubResourceIndex& subresource_index,
+                           const SubResourceCount& subresource_count,
                            Data::Size offset,
                            Data::Size size)
     : ResourceView(resource, Settings{
@@ -247,8 +247,8 @@ ResourceView::ResourceView(IResource& resource,
 }
 
 ResourceView::ResourceView(IResource& resource,
-                           const SubResource::Index& subresource_index,
-                           const SubResource::Count& subresource_count,
+                           const SubResourceIndex& subresource_index,
+                           const SubResourceCount& subresource_count,
                            Opt<TextureDimensionType> texture_dimension_type_opt)
     : ResourceView(resource, Settings{
         subresource_index,

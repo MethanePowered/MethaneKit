@@ -61,65 +61,74 @@ enum class ResourceState
     Present,
 };
 
+enum class ResourceBarrierType
+{
+    StateTransition,
+    OwnerTransition,
+};
+
+class ResourceBarrierId
+{
+public:
+    using Type = ResourceBarrierType;
+
+    ResourceBarrierId(Type type, IResource& resource) noexcept;
+
+    [[nodiscard]] bool operator<(const ResourceBarrierId& other) const noexcept;
+    [[nodiscard]] bool operator==(const ResourceBarrierId& other) const noexcept;
+    [[nodiscard]] bool operator!=(const ResourceBarrierId& other) const noexcept;
+
+    [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
+    [[nodiscard]] IResource& GetResource() const noexcept { return m_resource_ref.get(); }
+
+private:
+    Type           m_type;
+    Ref<IResource> m_resource_ref;
+};
+
+class ResourceStateChange
+{
+public:
+    ResourceStateChange(ResourceState before, ResourceState after) noexcept;
+
+    [[nodiscard]] bool operator<(const ResourceStateChange& other) const noexcept;
+    [[nodiscard]] bool operator==(const ResourceStateChange& other) const noexcept;
+    [[nodiscard]] bool operator!=(const ResourceStateChange& other) const noexcept;
+
+    [[nodiscard]] ResourceState GetStateBefore() const noexcept { return m_before; }
+    [[nodiscard]] ResourceState GetStateAfter() const noexcept  { return m_after; }
+
+private:
+    ResourceState m_before;
+    ResourceState m_after;
+};
+
+class ResourceOwnerChange
+{
+public:
+    using QueueFamily = uint32_t;
+
+    ResourceOwnerChange(QueueFamily queue_family_before, QueueFamily queue_family_after) noexcept;
+
+    [[nodiscard]] bool operator<(const ResourceOwnerChange& other) const noexcept;
+    [[nodiscard]] bool operator==(const ResourceOwnerChange& other) const noexcept;
+    [[nodiscard]] bool operator!=(const ResourceOwnerChange& other) const noexcept;
+
+    [[nodiscard]] QueueFamily GetQueueFamilyBefore() const noexcept { return m_queue_family_before; }
+    [[nodiscard]] QueueFamily GetQueueFamilyAfter() const noexcept  { return m_queue_family_after; }
+
+private:
+    QueueFamily m_queue_family_before;
+    QueueFamily m_queue_family_after;
+};
+
 class ResourceBarrier
 {
 public:
-    enum class Type
-    {
-        StateTransition,
-        OwnerTransition,
-    };
-
-    class Id
-    {
-    public:
-        Id(Type type, IResource& resource) noexcept;
-
-        [[nodiscard]] bool operator<(const Id& other) const noexcept;
-        [[nodiscard]] bool operator==(const Id& other) const noexcept;
-        [[nodiscard]] bool operator!=(const Id& other) const noexcept;
-
-        [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
-        [[nodiscard]] IResource& GetResource() const noexcept { return m_resource_ref.get(); }
-
-    private:
-        Type           m_type;
-        Ref<IResource> m_resource_ref;
-    };
-
-    class StateChange
-    {
-    public:
-        StateChange(ResourceState before, ResourceState after) noexcept;
-
-        [[nodiscard]] bool operator<(const StateChange& other) const noexcept;
-        [[nodiscard]] bool operator==(const StateChange& other) const noexcept;
-        [[nodiscard]] bool operator!=(const StateChange& other) const noexcept;
-
-        [[nodiscard]] ResourceState GetStateBefore() const noexcept { return m_before; }
-        [[nodiscard]] ResourceState GetStateAfter() const noexcept  { return m_after; }
-
-    private:
-        ResourceState m_before;
-        ResourceState m_after;
-    };
-
-    class OwnerChange
-    {
-    public:
-        OwnerChange(uint32_t queue_family_before, uint32_t queue_family_after) noexcept;
-
-        [[nodiscard]] bool operator<(const OwnerChange& other) const noexcept;
-        [[nodiscard]] bool operator==(const OwnerChange& other) const noexcept;
-        [[nodiscard]] bool operator!=(const OwnerChange& other) const noexcept;
-
-        [[nodiscard]] uint32_t GetQueueFamilyBefore() const noexcept { return m_queue_family_before; }
-        [[nodiscard]] uint32_t GetQueueFamilyAfter() const noexcept  { return m_queue_family_after; }
-
-    private:
-        uint32_t m_queue_family_before;
-        uint32_t m_queue_family_after;
-    };
+    using Type        = ResourceBarrierType;
+    using Id          = ResourceBarrierId;
+    using StateChange = ResourceStateChange;
+    using OwnerChange = ResourceOwnerChange;
 
     ResourceBarrier(IResource& resource, const StateChange& state_change);
     ResourceBarrier(IResource& resource, const OwnerChange& owner_change);
