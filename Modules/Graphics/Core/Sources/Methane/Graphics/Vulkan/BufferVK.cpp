@@ -35,12 +35,12 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Buffer>& buffer_refs)
+static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     std::vector<vk::Buffer> vk_buffers;
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
-                   [](const Ref<Buffer>& buffer_ref)
+                   [](const Ref<IBuffer>& buffer_ref)
                    {
                        const auto& vertex_buffer = static_cast<const BufferVK&>(buffer_ref.get());
                        return vertex_buffer.GetNativeResource();
@@ -49,59 +49,59 @@ static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Buffer>& buffer_refs)
     return vk_buffers;
 }
 
-static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Buffer::Type buffer_type, Buffer::StorageMode storage_mode)
+static vk::BufferUsageFlags GetVulkanBufferUsageFlags(IBuffer::Type buffer_type, IBuffer::StorageMode storage_mode)
 {
     META_FUNCTION_TASK();
     vk::BufferUsageFlags vk_usage_flags;
     switch(buffer_type)
     {
-    case Buffer::Type::Storage:  vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
-    case Buffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
-    case Buffer::Type::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
-    case Buffer::Type::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
+    case IBuffer::Type::Storage: vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
+    case IBuffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
+    case IBuffer::Type::Index: vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
+    case IBuffer::Type::Vertex: vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
         // Buffer::Type::ReadBack - unsupported
     default: META_UNEXPECTED_ARG_DESCR(buffer_type, "Unsupported buffer type");
     }
 
-    if (storage_mode == Buffer::StorageMode::Private)
+    if (storage_mode == IBuffer::StorageMode::Private)
         vk_usage_flags |= vk::BufferUsageFlagBits::eTransferDst;
 
     return vk_usage_flags;
 }
 
-static IResource::State GetTargetResourceStateByBufferType(Buffer::Type buffer_type)
+static IResource::State GetTargetResourceStateByBufferType(IBuffer::Type buffer_type)
 {
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case Buffer::Type::Storage:     return IResource::State::ShaderResource;
-    case Buffer::Type::Constant:    return IResource::State::ConstantBuffer;
-    case Buffer::Type::Index:       return IResource::State::IndexBuffer;
-    case Buffer::Type::Vertex:      return IResource::State::VertexBuffer;
-    case Buffer::Type::ReadBack:    return IResource::State::StreamOut;
+    case IBuffer::Type::Storage:     return IResource::State::ShaderResource;
+    case IBuffer::Type::Constant:    return IResource::State::ConstantBuffer;
+    case IBuffer::Type::Index:       return IResource::State::IndexBuffer;
+    case IBuffer::Type::Vertex:      return IResource::State::VertexBuffer;
+    case IBuffer::Type::ReadBack:    return IResource::State::StreamOut;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, IResource::State::Undefined, "Unsupported buffer type");
     }
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<BufferVK>(context, size, stride, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
 }
 
-Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
+Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
     return size;
@@ -117,7 +117,7 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings)
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
-    const bool is_private_storage = settings.storage_mode == Buffer::StorageMode::Private;
+    const bool is_private_storage = settings.storage_mode == IBuffer::StorageMode::Private;
     const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
     const vk::MemoryPropertyFlags vk_memory_property_flags = is_private_storage ? vk::MemoryPropertyFlagBits::eDeviceLocal : vk_staging_memory_flags;
 
@@ -146,7 +146,7 @@ void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_c
     ResourceVK::SetData(sub_resources, target_cmd_queue);
 
     const Settings& buffer_settings = GetSettings();
-    const bool is_private_storage = buffer_settings.storage_mode == Buffer::StorageMode::Private;
+    const bool is_private_storage = buffer_settings.storage_mode == IBuffer::StorageMode::Private;
     if (is_private_storage)
     {
         m_vk_copy_regions.clear();
@@ -212,13 +212,13 @@ Ptr<ResourceViewVK::ViewDescriptorVariant> BufferVK::CreateNativeViewDescriptor(
     return std::make_shared<ResourceViewVK::ViewDescriptorVariant>(std::move(buffer_view_desc));
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<BufferSetVK>(buffers_type, buffer_refs);
 }
 
-BufferSetVK::BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+BufferSetVK::BufferSetVK(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
     : BufferSetBase(buffers_type, buffer_refs)
     , m_vk_buffers(GetVulkanBuffers(buffer_refs))
     , m_vk_offsets(m_vk_buffers.size(), 0U)

@@ -156,7 +156,7 @@ void RenderCommandListDX::ResetWithState(IRenderState& render_state, DebugGroup*
     }
 }
 
-bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandListDX::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
@@ -174,7 +174,7 @@ bool RenderCommandListDX::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
     return true;
 }
 
-bool RenderCommandListDX::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandListDX::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))

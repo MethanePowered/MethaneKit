@@ -162,7 +162,7 @@ QueryPoolDX::QueryPoolDX(CommandQueueDX& command_queue, Type type,
                          Data::Size max_query_count, IQuery::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
     : QueryPoolBase(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
-    , m_result_buffer_ptr(Buffer::CreateReadBackBuffer(GetContext(), buffer_size))
+    , m_result_buffer_ptr(IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
     , m_context_dx(dynamic_cast<const IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))

@@ -98,7 +98,7 @@ void ShadowCubeApp::Init()
     const auto mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
 
     // Create constants buffer for frame rendering
-    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
     m_const_buffer_ptr->SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
@@ -227,17 +227,17 @@ void ShadowCubeApp::Init()
     for(ShadowCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), scene_uniforms_data_size, false, true);
+        frame.scene_uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), scene_uniforms_data_size, false, true);
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // ========= Shadow Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.cube.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
         frame.shadow_pass.cube.uniforms_buffer_ptr->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
         frame.shadow_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
@@ -269,11 +269,11 @@ void ShadowCubeApp::Init()
         // ========= Final Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.cube.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
         frame.final_pass.cube.uniforms_buffer_ptr->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.floor.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
         frame.final_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Final-pass resource bindings for cube rendering

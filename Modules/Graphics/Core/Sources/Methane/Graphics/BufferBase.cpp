@@ -56,7 +56,7 @@ uint32_t BufferBase::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
-BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+BufferSetBase::BufferSetBase(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
     : m_buffers_type(buffers_type)
     , m_refs(buffer_refs)
 {
@@ -65,7 +65,7 @@ BufferSetBase::BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buff
 
     m_ptrs.reserve(m_refs.size());
     m_raw_ptrs.reserve(m_refs.size());
-    for(const Ref<Buffer>& buffer_ref : m_refs)
+    for(const Ref<IBuffer>& buffer_ref : m_refs)
     {
         META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
                                    "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
@@ -80,7 +80,7 @@ std::string BufferSetBase::GetNames() const noexcept
     META_FUNCTION_TASK();
     std::stringstream ss;
     bool is_empty = true;
-    for (const Ref<Buffer>& buffer_ref : m_refs)
+    for (const Ref<IBuffer>& buffer_ref : m_refs)
     {
         if (!is_empty)
             ss << ", ";
@@ -90,7 +90,7 @@ std::string BufferSetBase::GetNames() const noexcept
     return ss.str();
 }
 
-Buffer& BufferSetBase::operator[](Data::Index index) const
+IBuffer& BufferSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_refs.size());
@@ -102,7 +102,7 @@ bool BufferSetBase::SetState(IResource::State state)
 {
     META_FUNCTION_TASK();
     bool state_changed = false;
-    for(const Ref<Buffer>& buffer_ref : m_refs)
+    for(const Ref<IBuffer>& buffer_ref : m_refs)
     {
         state_changed |= static_cast<BufferBase&>(buffer_ref.get()).SetState(state, m_setup_transition_barriers);
     }

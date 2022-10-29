@@ -27,7 +27,7 @@ Base implementation of the program bindings interface.
 #include "CommandListBase.h"
 #include "CoreFormatters.hpp"
 
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
@@ -49,7 +49,7 @@ static IResource::State GetBoundResourceTargetState(const IResource& resource, I
     case IResource::Type::Buffer:
         // FIXME: state transition of DX upload heap resources should be reworked properly and made friendly with Vulkan
         // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
-        if (dynamic_cast<const Buffer&>(resource).GetSettings().storage_mode != Buffer::StorageMode::Private)
+        if (dynamic_cast<const IBuffer&>(resource).GetSettings().storage_mode != IBuffer::StorageMode::Private)
             return resource.GetState();
         else if (is_constant_binding)
             return IResource::State::ConstantBuffer;

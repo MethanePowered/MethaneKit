@@ -23,25 +23,25 @@ Buffer factory functions template implementations.
 
 #pragma once
 
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 
 #include "ContextBase.h"
 
 namespace Methane::Graphics
 {
 
-inline Buffer::StorageMode GetBufferStorageMode(bool is_volatile_data) noexcept
+inline IBuffer::StorageMode GetBufferStorageMode(bool is_volatile_data) noexcept
 {
-    return is_volatile_data ? Buffer::StorageMode::Managed
-                            : Buffer::StorageMode::Private;
+    return is_volatile_data ? IBuffer::StorageMode::Managed
+                            : IBuffer::StorageMode::Private;
 }
 
 template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
 CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
-    const Buffer::Settings settings{
-        Buffer::Type::Vertex,
+    const IBuffer::Settings settings{
+        IBuffer::Type::Vertex,
         IResource::Usage::None,
         size,
         stride,
@@ -55,8 +55,8 @@ template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBufferType>>
 CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
-    const Buffer::Settings settings{
-        Buffer::Type::Index,
+    const IBuffer::Settings settings{
+        IBuffer::Type::Index,
         IResource::Usage::None,
         size,
         GetPixelSize(format),
@@ -71,12 +71,12 @@ std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBuff
 CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
     using namespace magic_enum::bitwise_operators;
-    const IResource::Usage usage_mask = IResource::Usage::ShaderRead
+    const IResource::Usage  usage_mask = IResource::Usage::ShaderRead
                                         | (addressable ? IResource::Usage::Addressable : IResource::Usage::None);
-    const Buffer::Settings settings{
-        Buffer::Type::Constant,
+    const IBuffer::Settings settings{
+        IBuffer::Type::Constant,
         usage_mask,
-        Buffer::GetAlignedBufferSize(size),
+        IBuffer::GetAlignedBufferSize(size),
         0U,
         PixelFormat::Unknown,
         GetBufferStorageMode(is_volatile)
@@ -89,13 +89,13 @@ std::enable_if_t<std::is_base_of_v<BufferBase, NativeBufferType>, Ptr<NativeBuff
 CreateReadBackBuffer(const IContext& context, Data::Size size, ExtraConstructorArgTypes... extra_construct_args)
 {
     META_FUNCTION_TASK();
-    const Buffer::Settings settings{
-        Buffer::Type::ReadBack,
+    const IBuffer::Settings settings{
+        IBuffer::Type::ReadBack,
         IResource::Usage::ReadBack,
         size,
         0U,
         PixelFormat::Unknown,
-        Buffer::StorageMode::Managed
+        IBuffer::StorageMode::Managed
     };
     return std::make_shared<NativeBufferType>(dynamic_cast<const ContextBase&>(context), settings, extra_construct_args...);
 }

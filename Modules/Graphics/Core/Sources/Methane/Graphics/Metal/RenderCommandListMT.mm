@@ -128,7 +128,7 @@ void RenderCommandListMT::ResetCommandEncoder()
     }
 }
 
-bool RenderCommandListMT::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandListMT::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))

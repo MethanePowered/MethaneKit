@@ -36,12 +36,12 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics
 {
 
-static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Buffer>& buffer_refs)
+static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
-        [](const Ref<Buffer>& buffer_ref)
+        [](const Ref<IBuffer>& buffer_ref)
         {
            const auto& vertex_buffer = static_cast<const VertexBufferDX&>(buffer_ref.get());
            return vertex_buffer.GetNativeView();
@@ -50,31 +50,31 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
     return vertex_buffer_views;
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, stride);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, format);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
+Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateReadBackBuffer<ReadBackBufferDX>(context, size);
 }
 
-Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
+Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
     // Aligned size must be a multiple 256 bytes
@@ -150,17 +150,17 @@ Opt<IResource::Descriptor> ReadBackBufferDX::InitializeNativeViewDescriptor(cons
     META_FUNCTION_NOT_IMPLEMENTED();
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<BufferSetDX>(buffers_type, buffer_refs);
 }
 
-BufferSetDX::BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+BufferSetDX::BufferSetDX(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
     : BufferSetBase(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
-    if (buffers_type == Buffer::Type::Vertex)
+    if (buffers_type == IBuffer::Type::Vertex)
     {
         m_vertex_buffer_views = Graphics::GetNativeVertexBufferViews(GetRefs());
     }
@@ -169,8 +169,8 @@ BufferSetDX::BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_r
 const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSetDX::GetNativeVertexBufferViews() const
 {
     META_FUNCTION_TASK();
-    const Buffer::Type buffers_type = GetType();
-    META_CHECK_ARG_EQUAL_DESCR(buffers_type, Buffer::Type::Vertex,
+    const IBuffer::Type buffers_type = GetType();
+    META_CHECK_ARG_EQUAL_DESCR(buffers_type, IBuffer::Type::Vertex,
                                "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
     return m_vertex_buffer_views;
 }

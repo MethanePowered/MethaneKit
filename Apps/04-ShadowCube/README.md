@@ -29,9 +29,9 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 `ShadowCubeApp` class is declared in header file [ShadowCubeApp.h](ShadowCubeApp.h) and the application class
 is derived from [UserInterface::App](/Modules/UserInterface/App) base class, same as in [previous tutorial](../02-TexturedCube).
 [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h) header contains declaration of shader uniform structures shared between [HLSL shader code](#shadow-cube-shaders) and C++:
-- `Constants` data structure is stored in the `m_scene_constants` member and is uploaded into the `Graphics::Buffer` 
+- `Constants` data structure is stored in the `m_scene_constants` member and is uploaded into the `Graphics::IBuffer` 
   object `m_const_buffer_ptr`, which has single instance in application since its data is constant for all frames.
-- `SceneUniforms` data structure is stored in the `m_scene_uniforms` member and is uploaded into the `Graphics::Buffer` 
+- `SceneUniforms` data structure is stored in the `m_scene_uniforms` member and is uploaded into the `Graphics::IBuffer` 
   objects in the per-frame `ShadowCubeFrame` objects, each with it's own state of volatile uniform values.
 - `MeshUniforms` data structure contains Model/MVP matrices and shadow MVP+Transform matrix stored in 4 instances:
 uniforms for shadow and final passes stored in `gfx::TexturedMeshBuffers` objects one for cube mesh in `m_cube_buffers_ptr` 
@@ -68,7 +68,7 @@ struct MeshUniforms
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
 
 Supplementary member `m_scene_uniforms_subresources` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
-type `gfx::IResource::SubResources` which is passed to `gfx::Buffer::SetData(...)` method to update the buffer data on GPU.
+type `gfx::IResource::SubResources` which is passed to `gfx::IBuffer::SetData(...)` method to update the buffer data on GPU.
 
 Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
 is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
@@ -153,7 +153,7 @@ private:
     };
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
-    Ptr<gfx::Buffer>            m_const_buffer_ptr;
+    Ptr<gfx::IBuffer>           m_const_buffer_ptr;
     Ptr<gfx::Sampler>           m_texture_sampler_ptr;
     Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
@@ -184,7 +184,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::Buffer>           uniforms_buffer_ptr;
+            Ptr<gfx::IBuffer>          uniforms_buffer_ptr;
             Ptr<gfx::IProgramBindings> program_bindings_ptr;
         };
 
@@ -197,7 +197,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
     PassResources            shadow_pass;
     PassResources            final_pass;
-    Ptr<gfx::Buffer>         scene_uniforms_buffer_ptr;
+    Ptr<gfx::IBuffer>        scene_uniforms_buffer_ptr;
     Ptr<gfx::CommandListSet> execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
@@ -333,7 +333,7 @@ one for shadow pass rendering and another for final pass rendering.
     for(ShadowCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), scene_uniforms_data_size, false, true);
+        frame.scene_uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), scene_uniforms_data_size, false, true);
 
         // ========= Shadow Pass Resources =========
         ...
@@ -377,10 +377,10 @@ rendered depth texture content for the next render pass. Render command list is 
         // ========= Shadow Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.cube.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.floor.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(shadow_state_settings.program_ptr, {
@@ -417,10 +417,10 @@ application class `Methane::Graphics::App`. Render command list is created bound
         // ========= Final Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.cube.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.floor.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(final_state_settings.program_ptr, {

@@ -50,7 +50,7 @@ public:
         META_FUNCTION_TASK();
         using namespace magic_enum::bitwise_operators;
 
-        const bool is_private_storage  = settings.storage_mode == Buffer::StorageMode::Private;
+        const bool is_private_storage  = settings.storage_mode == IBuffer::StorageMode::Private;
         const auto is_read_back_buffer = static_cast<bool>(settings.usage_mask & Usage::ReadBack);
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
@@ -92,7 +92,7 @@ public:
         ResourceDX::SetData(sub_resources, target_cmd_queue);
 
         const CD3DX12_RANGE zero_read_range(0U, 0U);
-        const bool is_private_storage  = GetSettings().storage_mode == Buffer::StorageMode::Private;
+        const bool is_private_storage  = GetSettings().storage_mode == IBuffer::StorageMode::Private;
         ID3D12Resource& d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
         for(const SubResource& sub_resource : sub_resources)
         {
@@ -190,7 +190,7 @@ using ReadBackBufferDX = BufferDX<ReadBackBufferViewDesc>;
 class BufferSetDX final : public BufferSetBase
 {
 public:
-    BufferSetDX(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    BufferSetDX(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
 

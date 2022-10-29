@@ -58,7 +58,7 @@ private:
 class BufferSetVK final : public BufferSetBase
 {
 public:
-    BufferSetVK(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    BufferSetVK(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
 
     const std::vector<vk::Buffer>&     GetNativeBuffers() const noexcept { return m_vk_buffers; }
     const std::vector<vk::DeviceSize>& GetNativeOffsets() const noexcept { return m_vk_offsets; }

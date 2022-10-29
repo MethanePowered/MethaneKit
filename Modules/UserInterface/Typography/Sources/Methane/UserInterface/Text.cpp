@@ -30,7 +30,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/IProgram.h>
@@ -416,7 +416,7 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
     return static_cast<bool>(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::Buffer>& const_buffer_ptr,
+void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
                                                      const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();
@@ -437,14 +437,14 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& st
     m_program_bindings_ptr->SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 }
 
-gfx::BufferSet& Text::FrameResources::GetVertexBufferSet() const
+gfx::IBufferSet& Text::FrameResources::GetVertexBufferSet() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_vertex_buffer_set_ptr, "text vertex buffers are not initialized");
     return *m_vertex_buffer_set_ptr;
 }
 
-gfx::Buffer& Text::FrameResources::GetIndexBuffer() const
+gfx::IBuffer& Text::FrameResources::GetIndexBuffer() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_index_buffer_ptr, "text index buffer are not initialized");
@@ -493,10 +493,10 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     
     if (!m_vertex_buffer_set_ptr || (*m_vertex_buffer_set_ptr)[0].GetDataSize() < vertices_data_size)
     {
-        const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
-        Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
+        const Data::Size  vertex_buffer_size = vertices_data_size * reservation_multiplier;
+        Ptr<gfx::IBuffer> vertex_buffer_ptr  = gfx::IBuffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
-        m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_buffer_set_ptr = gfx::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
         gfx::IResource::SubResource(
@@ -512,7 +512,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     if (!m_index_buffer_ptr || m_index_buffer_ptr->GetDataSize() < indices_data_size)
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
-        m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
+        m_index_buffer_ptr = gfx::IBuffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
         m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
@@ -546,7 +546,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& rende
 
     if (!m_uniforms_buffer_ptr)
     {
-        m_uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, uniforms_data_size);
+        m_uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(render_context, uniforms_data_size);
         m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
@@ -579,7 +579,7 @@ void Text::InitializeFrameResources()
 
     if (!m_const_buffer_ptr)
     {
-        m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
+        m_const_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
         m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 

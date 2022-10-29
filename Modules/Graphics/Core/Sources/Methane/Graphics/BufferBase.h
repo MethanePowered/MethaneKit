@@ -26,7 +26,7 @@ Base implementation of the buffer interface.
 #include "ResourceBase.h"
 #include "ContextBase.h"
 
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 
 #include <magic_enum.hpp>
 
@@ -34,7 +34,7 @@ namespace Methane::Graphics
 {
 
 class BufferBase
-    : public Buffer
+    : public IBuffer
     , public ResourceBase
 {
 public:
@@ -53,29 +53,29 @@ private:
 };
 
 class BufferSetBase
-    : public BufferSet
+    : public IBufferSet
     , public ObjectBase
 {
 public:
-    BufferSetBase(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs);
+    BufferSetBase(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
 
     // Buffers interface
-    Buffer::Type        GetType() const noexcept final  { return m_buffers_type; }
-    Data::Size          GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<Buffer>& GetRefs() const noexcept final  { return m_refs; }
-    std::string         GetNames() const noexcept final;
-    Buffer&             operator[](Data::Index index) const final;
+    IBuffer::Type        GetType() const noexcept final  { return m_buffers_type; }
+    Data::Size           GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<IBuffer>& GetRefs() const noexcept final  { return m_refs; }
+    std::string          GetNames() const noexcept final;
+    IBuffer&             operator[](Data::Index index) const final;
 
     [[nodiscard]] bool  SetState(IResource::State state);
     [[nodiscard]] const Ptr<IResourceBarriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
     [[nodiscard]] const RawPtrs<BufferBase>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:
-    const Buffer::Type      m_buffers_type;
-    Refs<Buffer>            m_refs;
-    Ptrs<Buffer>            m_ptrs;
-    RawPtrs<BufferBase>     m_raw_ptrs;
-    Ptr<IResourceBarriers>  m_setup_transition_barriers;
+    const IBuffer::Type    m_buffers_type;
+    Refs<IBuffer>          m_refs;
+    Ptrs<IBuffer>          m_ptrs;
+    RawPtrs<BufferBase>    m_raw_ptrs;
+    Ptr<IResourceBarriers> m_setup_transition_barriers;
 };
 
 } // namespace Methane::Graphics

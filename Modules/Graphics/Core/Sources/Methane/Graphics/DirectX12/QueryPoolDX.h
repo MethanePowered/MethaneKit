@@ -31,7 +31,7 @@ DirectX 12 GPU query pool implementation.
 namespace Methane::Graphics
 {
 
-struct Buffer;
+struct IBuffer;
 struct IContextDX;
 struct ICommandListDX;
 struct IResourceDX;
@@ -72,10 +72,10 @@ public:
     ID3D12QueryHeap&  GetNativeQueryHeap() noexcept          { return m_native_query_heap; }
 
 protected:
-    Buffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
+    IBuffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
-    Ptr<Buffer>       m_result_buffer_ptr;
+    Ptr<IBuffer>      m_result_buffer_ptr;
     const IContextDX& m_context_dx;
     IResourceDX&      m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;

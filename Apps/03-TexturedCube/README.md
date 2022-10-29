@@ -91,8 +91,8 @@ and a set of command lists submitted for execution on GPU via command queue.
 ```cpp
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
-    Ptr<gfx::IProgramBindings>   program_bindings_ptr;
+    Ptr<gfx::IBuffer>           uniforms_buffer_ptr;
+    Ptr<gfx::IProgramBindings>  program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
 
@@ -145,10 +145,10 @@ private:
     };
     hlslpp::Uniforms        m_shader_uniforms { };
     gfx::Camera             m_camera;
-    Ptr<gfx::IRenderState>   m_render_state_ptr;
-    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>        m_index_buffer_ptr;
-    Ptr<gfx::Buffer>        m_const_buffer_ptr;
+    Ptr<gfx::IRenderState>  m_render_state_ptr;
+    Ptr<gfx::IBufferSet>    m_vertex_buffer_set_ptr;
+    Ptr<gfx::IBuffer>       m_index_buffer_ptr;
+    Ptr<gfx::IBuffer>       m_const_buffer_ptr;
     Ptr<gfx::Texture>       m_cube_texture_ptr;
     Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
@@ -208,12 +208,12 @@ initialized in the base class `Graphics::App::InitContext(...)`.
 
 Vertices and indices data of the cube mesh are generated with `Graphics::CubeMesh<CubeVertex>` template class defined
 using vertex structure with layout description defined above. Vertex and index buffers are created with 
-`Graphics::Buffer::CreateVertexBuffer(...)` and `Graphics::Buffer::CreateIndexBuffer(...)` factory functions and generated data
-is filled to buffers with `Graphics::Buffer::SetData(...)` call, which is taking a collection of sub-resources,
+`Graphics::IBuffer::CreateVertexBuffer(...)` and `Graphics::IBuffer::CreateIndexBuffer(...)` factory functions and generated data
+is filled to buffers with `Graphics::IBuffer::SetData(...)` call, which is taking a collection of sub-resources,
 where every subresource is derived from `Data::Chunk` and describes a continuous memory range 
 as well as `Graphics::IResource::SubResource::Index` which is pointing to related part of resource.
 
-Similarly constants buffer is created with `Graphics::Buffer::CreateConstantBuffer(...)` and filled with data from member
+Similarly constants buffer is created with `Graphics::IBuffer::CreateConstantBuffer(...)` and filled with data from member
 variable `m_shader_constants`.
 
 ```cpp
@@ -227,16 +227,16 @@ void TexturedCubeApp::Init()
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
     const Data::Size vertex_data_size = cube_mesh.GetVertexDataSize();
     const Data::Size vertex_size      = cube_mesh.GetVertexSize();
-    Ptr<gfx::Buffer> vertex_buffer_ptr = gfx::Buffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
+    Ptr<gfx::IBuffer> vertex_buffer_ptr = gfx::IBuffer::CreateVertexBuffer(GetRenderContext(), vertex_data_size, vertex_size);
     vertex_buffer_ptr->SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } },
         render_cmd_queue
     );
-    m_vertex_buffer_set_ptr = gfx::BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+    m_vertex_buffer_set_ptr = gfx::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer_ptr = gfx::Buffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer_ptr = gfx::IBuffer::CreateIndexBuffer(GetRenderContext(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
     m_index_buffer_ptr->SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } },
         render_cmd_queue
@@ -244,7 +244,7 @@ void TexturedCubeApp::Init()
 
     // Create constants buffer for frame rendering
     const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
-    m_const_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
     m_const_buffer_ptr->SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } },
         render_cmd_queue
@@ -337,7 +337,7 @@ void TexturedCubeApp::Init()
 ```
 
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
-- Create uniforms buffer with `Buffer::CreateConstantBuffer(...)` function.
+- Create uniforms buffer with `IBuffer::CreateConstantBuffer(...)` function.
 - Create program arguments to resources bindings with `IProgramBindings::Create(..)` function.
 - Create rendering command list with `RenderCommandList::Create(...)` and 
 create set of command lists with `CommandListSet::Create(...)` for execution in command queue.
@@ -355,7 +355,7 @@ void TexturedCubeApp::Init()
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
+        frame.uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
 
         // Configure program resource bindings
         frame.program_bindings_ptr = gfx::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {

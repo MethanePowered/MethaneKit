@@ -37,7 +37,7 @@ vertex buffer set `vertex_buffer_set_ptr` used for cube drawing.
 ```cpp
 struct HelloCubeFrame final : AppFrame
 {
-    Ptr<BufferSet>         vertex_buffer_set_ptr;
+    Ptr<IBufferSet>        vertex_buffer_set_ptr;
     Ptr<RenderCommandList> render_cmd_list_ptr;
     Ptr<CommandListSet>    execute_cmd_list_set_ptr;
 
@@ -127,7 +127,7 @@ private:
     ...
 
     Ptr<IRenderState> m_render_state_ptr;
-    Ptr<Buffer>      m_index_buffer_ptr;
+    Ptr<IBuffer>      m_index_buffer_ptr;
     
 public:
     ...
@@ -172,14 +172,14 @@ public:
 };
 ```
 
-Constant index buffer is created with `Buffer::CreateIndexBuffer(...)` function which takes index data size in bytes and index format.
-The data of index buffer in set with `Buffer::SetData` call wich takes an array of sub-resources. In case of index buffer we need to
+Constant index buffer is created with `IBuffer::CreateIndexBuffer(...)` function which takes index data size in bytes and index format.
+The data of index buffer in set with `IBuffer::SetData` call wich takes an array of sub-resources. In case of index buffer we need to
 provide only one default sub-resource with data pointer and data size.
 
-Volatile vertex buffers are created with `Buffer::CreateVertexBuffer(...)` one for each frame buffer so that they can be updated independently:
+Volatile vertex buffers are created with `IBuffer::CreateVertexBuffer(...)` one for each frame buffer so that they can be updated independently:
 while one vertex buffer is used for current frame rendering, other vertex buffers can be updated asynchronously. Buffers are created in volatile mode,
 which enables more effective synchonous data updates (aka map-updates). Each vertex buffer is encapsulated in the buffer set with 
-`BufferSet::CreateVertexBuffers(...)` used for command list encoding.
+`IBufferSet::CreateVertexBuffers(...)` used for command list encoding.
 
 Render command lists are created for each frame using `RenderCommandList::Create(...)` function, same as in [HelloTriangle](../01-HelloTriangle)
 tutorial.
@@ -194,15 +194,15 @@ class HelloTriangleApp final : public GraphicsApp
         ...
 
         // Create index buffer for cube mesh
-        m_index_buffer_ptr = Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
+        m_index_buffer_ptr = IBuffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetData({ { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, render_cmd_queue);
 
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
         {
             // Create vertex buffers for each frame
-            Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
-            frame.vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+            Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
+            frame.vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
             // Create command list for rendering
             frame.render_cmd_list_ptr = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
@@ -439,12 +439,12 @@ namespace hlslpp
 }
 ```
 
-Uniform `Buffer` is declared inside the frame structure along with `IProgramBindings` required to bind buffer to graphics pipeline.
+Uniform `IBuffer` is declared inside the frame structure along with `IProgramBindings` required to bind buffer to graphics pipeline.
 
 ```cpp
 struct HelloCubeFrame final : AppFrame
 {
-    Ptr<Buffer>          uniforms_buffer_ptr;
+    Ptr<IBuffer>          uniforms_buffer_ptr;
     Ptr<IProgramBindings> program_bindings_ptr;
     
     ...
@@ -461,11 +461,11 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
 private:
     ...
     
-    hlslpp::Uniforms             m_shader_uniforms { };
+    hlslpp::Uniforms              m_shader_uniforms { };
     const IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
-    Ptr<BufferSet>               m_vertex_buffer_set_ptr;
+    Ptr<IBufferSet> m_vertex_buffer_set_ptr;
 }
 ```
 
@@ -530,12 +530,12 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
         ...
 
         // Create constant vertex buffer
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
+        Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
         vertex_buffer_ptr->SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
             GetRenderContext().GetRenderCommandKit().GetQueue()
         );
-        m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
 
@@ -543,7 +543,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
         for(HelloCubeFrame& frame : GetFrames())
         {
             // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer_ptr = Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
+            frame.uniforms_buffer_ptr = IBuffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
 
             // Configure program resource bindings
             frame.program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {

@@ -31,7 +31,7 @@ Methane graphics core interfaces: all headers under one umbrella.
 #include "RenderPass.h"
 #include "IRenderState.h"
 #include "IResource.h"
-#include "Buffer.h"
+#include "IBuffer.h"
 #include "Texture.h"
 #include "Sampler.h"
 #include "CommandKit.h"

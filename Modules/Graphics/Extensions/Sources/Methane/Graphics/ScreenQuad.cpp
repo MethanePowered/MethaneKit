@@ -27,7 +27,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/Texture.h>
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
@@ -171,10 +171,10 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     }
 
     static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
-    Ptr<Buffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_vertex_buffer_name));
+    Ptr<IBuffer>             vertex_buffer_ptr    = std::dynamic_pointer_cast<IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_vertex_buffer_name));
     if (!vertex_buffer_ptr)
     {
-        vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
+        vertex_buffer_ptr = IBuffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName(s_vertex_buffer_name);
         vertex_buffer_ptr->SetData({
                 {
@@ -186,13 +186,13 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         render_context.GetObjectRegistry().AddGraphicsObject(*vertex_buffer_ptr);
     }
 
-    m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+    m_vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
     static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
-    m_index_buffer_ptr = std::dynamic_pointer_cast<Buffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_index_buffer_name));
+    m_index_buffer_ptr = std::dynamic_pointer_cast<IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_index_buffer_name));
     if (!m_index_buffer_ptr)
     {
-        m_index_buffer_ptr = Buffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
+        m_index_buffer_ptr = IBuffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
         m_index_buffer_ptr->SetName(s_index_buffer_name);
         m_index_buffer_ptr->SetData({
                 {
@@ -204,7 +204,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
         render_context.GetObjectRegistry().AddGraphicsObject(*m_index_buffer_ptr);
     }
 
-    m_const_buffer_ptr = Buffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
+    m_const_buffer_ptr = IBuffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
     m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
     IProgramBindings::ResourceViewsByArgument program_binding_resource_views = {

@@ -145,7 +145,7 @@ void RenderCommandListBase::SetViewState(IViewState& view_state)
     drawing_state.view_state_ptr->Apply(*this);
 }
 
-bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandListBase::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     META_UNUSED(set_resource_barriers);
@@ -154,7 +154,7 @@ bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Buffer::Type::Vertex,
+        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == IBuffer::Type::Vertex,
                                   "can not set buffers of '{}' type where 'Vertex' buffers are required",
                                   magic_enum::enum_name(vertex_buffers.GetType()));
     }
@@ -175,7 +175,7 @@ bool RenderCommandListBase::SetVertexBuffers(BufferSet& vertex_buffers, bool set
     return true;
 }
 
-bool RenderCommandListBase::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandListBase::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     META_UNUSED(set_resource_barriers);
@@ -184,7 +184,7 @@ bool RenderCommandListBase::SetIndexBuffer(Buffer& index_buffer, bool set_resour
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Buffer::Type::Index,
+        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == IBuffer::Type::Index,
                                   "can not set with index buffer of type '{}' where 'Index' buffer is required",
                                   magic_enum::enum_name(index_buffer.GetSettings().type));
     }
@@ -301,7 +301,7 @@ void RenderCommandListBase::ValidateDrawVertexBuffers(uint32_t draw_start_vertex
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
-        const Buffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
+        const IBuffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         META_UNUSED(vertex_count);
         META_CHECK_ARG_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,

@@ -28,7 +28,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/IRenderState.h>
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/Sampler.h>
 #include <Methane/Data/AppResourceProviders.h>
@@ -100,7 +100,7 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Buffer>& uniforms_buffer_ptr, Data::Index frame_index) const
+Ptr<IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(uniforms_buffer_ptr);

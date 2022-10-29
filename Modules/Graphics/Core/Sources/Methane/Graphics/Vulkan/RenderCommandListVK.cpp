@@ -126,7 +126,7 @@ void RenderCommandListVK::ResetWithState(IRenderState& render_state, DebugGroup*
     CommandListVK::SetRenderState(render_state);
 }
 
-bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandListVK::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
@@ -144,7 +144,7 @@ bool RenderCommandListVK::SetVertexBuffers(BufferSet& vertex_buffers, bool set_r
     return true;
 }
 
-bool RenderCommandListVK::SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandListVK::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))

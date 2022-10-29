@@ -25,7 +25,7 @@ Mesh buffers with texture extension structure.
 
 #include "ImageLoader.h"
 
-#include <Methane/Graphics/Buffer.h>
+#include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/Texture.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/CommandQueue.h>
@@ -49,13 +49,13 @@ namespace Methane::Graphics
 
 struct MeshBufferBindings
 {
-    Ptr<Buffer>           uniforms_buffer_ptr;
+    Ptr<IBuffer>          uniforms_buffer_ptr;
     Ptr<IProgramBindings> program_bindings_ptr;
 };
     
 struct InstancedMeshBufferBindings
 {
-    Ptr<Buffer>            uniforms_buffer_ptr;
+    Ptr<IBuffer>           uniforms_buffer_ptr;
     Ptrs<IProgramBindings> program_bindings_per_instance;
 };
 
@@ -74,9 +74,9 @@ public:
         META_FUNCTION_TASK();
         SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
-                                                                   static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-                                                                   static_cast<Data::Size>(mesh_data.GetVertexSize()));
+        Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
+                                                                     static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
+                                                                     static_cast<Data::Size>(mesh_data.GetVertexSize()));
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
         vertex_buffer_ptr->SetData({
             {
@@ -84,9 +84,9 @@ public:
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         }, render_cmd_queue);
-        m_vertex_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
-        m_index_ptr = Buffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
+        m_index_ptr = IBuffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
@@ -107,7 +107,7 @@ public:
 
     [[nodiscard]] const IContext& GetContext() const noexcept { return m_context; }
 
-    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(IBuffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
         Ptr<IResourceBarriers> beginning_resource_barriers_ptr = IResourceBarriers::Create({
@@ -119,10 +119,10 @@ public:
             beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), IResource::State::ConstantBuffer);
         }
 
-        const BufferSet& vertex_buffer_set = GetVertexBuffers();
+        const IBufferSet& vertex_buffer_set = GetVertexBuffers();
         for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
         {
-            Buffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
+            IBuffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
             beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), IResource::State::VertexBuffer);
         }
 
@@ -241,7 +241,7 @@ public:
     [[nodiscard]]
     static constexpr Data::Size GetAlignedUniformSize() noexcept
     {
-        return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
+        return IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
     }
 
     [[nodiscard]]
@@ -251,7 +251,7 @@ public:
         if (m_final_pass_instance_uniforms.empty())
             return 0;
         
-        return Buffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
+        return IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
     }
 
     [[nodiscard]]
@@ -269,28 +269,28 @@ public:
     { return m_final_pass_instance_uniforms_subresources; }
 
     [[nodiscard]]
-    const BufferSet& GetVertexBuffers() const
+    const IBufferSet& GetVertexBuffers() const
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
     [[nodiscard]]
-    BufferSet& GetVertexBuffers()
+    IBufferSet& GetVertexBuffers()
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
     [[nodiscard]]
-    const Buffer& GetIndexBuffer() const
+    const IBuffer& GetIndexBuffer() const
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
     }
 
     [[nodiscard]]
-    Buffer& GetIndexBuffer()
+    IBuffer& GetIndexBuffer()
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
@@ -316,8 +316,8 @@ private:
     const IContext&         m_context;
     const std::string       m_mesh_name;
     const Mesh::Subsets     m_mesh_subsets;
-    Ptr<BufferSet>          m_vertex_ptr;
-    Ptr<Buffer>             m_index_ptr;
+    Ptr<IBufferSet>         m_vertex_ptr;
+    Ptr<IBuffer>            m_index_ptr;
     InstanceUniforms        m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
     IResource::SubResources m_final_pass_instance_uniforms_subresources;
 };
@@ -342,7 +342,7 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(IBuffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
         Ptr<IResourceBarriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);

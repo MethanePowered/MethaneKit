@@ -45,7 +45,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::Buffer>           uniforms_buffer_ptr;
+            Ptr<gfx::IBuffer>          uniforms_buffer_ptr;
             Ptr<gfx::IProgramBindings> program_bindings_ptr;
         };
 
@@ -58,7 +58,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
     PassResources            shadow_pass;
     PassResources            final_pass;
-    Ptr<gfx::Buffer>         scene_uniforms_buffer_ptr;
+    Ptr<gfx::IBuffer>        scene_uniforms_buffer_ptr;
     Ptr<gfx::CommandListSet> execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
@@ -128,7 +128,7 @@ private:
     };
     gfx::Camera                  m_view_camera;
     gfx::Camera                 m_light_camera;
-    Ptr<gfx::Buffer>            m_const_buffer_ptr;
+    Ptr<gfx::IBuffer>           m_const_buffer_ptr;
     Ptr<gfx::Sampler>           m_texture_sampler_ptr;
     Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;

@@ -47,35 +47,35 @@ namespace Methane::Graphics
 #define NativeStorageModeManaged MTLStorageModeShared
 #endif
 
-static MTLResourceOptions GetNativeResourceOptions(Buffer::StorageMode storage_mode)
+static MTLResourceOptions GetNativeResourceOptions(IBuffer::StorageMode storage_mode)
 {
     switch(storage_mode)
     {
-    case Buffer::StorageMode::Managed: return NativeResourceStorageModeManaged;
-    case Buffer::StorageMode::Private: return MTLResourceStorageModePrivate;
+    case IBuffer::StorageMode::Managed: return NativeResourceStorageModeManaged;
+    case IBuffer::StorageMode::Private: return MTLResourceStorageModePrivate;
     default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
 
-Ptr<Buffer> Buffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateVertexBuffer<BufferMT>(context, size, stride, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateIndexBuffer<BufferMT>(context, size, format, is_volatile);
 }
 
-Ptr<Buffer> Buffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Graphics::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile);
 }
 
-Data::Size Buffer::GetAlignedBufferSize(Data::Size size) noexcept
+Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
     return size;
@@ -174,7 +174,7 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-Ptr<BufferSet> BufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+Ptr<IBufferSet> IBufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<BufferSetMT>(buffers_type, buffer_refs);

@@ -40,7 +40,7 @@ namespace gfx = Methane::Graphics;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
+    Ptr<gfx::IBuffer>           uniforms_buffer_ptr;
     Ptr<gfx::IProgramBindings>  program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
@@ -79,9 +79,9 @@ private:
     hlslpp::Uniforms       m_shader_uniforms { };
     gfx::Camera            m_camera;
     Ptr<gfx::IRenderState> m_render_state_ptr;
-    Ptr<gfx::BufferSet>    m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>       m_index_buffer_ptr;
-    Ptr<gfx::Buffer>       m_const_buffer_ptr;
+    Ptr<gfx::IBufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<gfx::IBuffer>      m_index_buffer_ptr;
+    Ptr<gfx::IBuffer>      m_const_buffer_ptr;
     Ptr<gfx::Texture>      m_cube_texture_ptr;
     Ptr<gfx::Sampler>      m_texture_sampler_ptr;
 

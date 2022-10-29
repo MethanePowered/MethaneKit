@@ -79,8 +79,8 @@ public:
     void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
     void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) override;
     void SetViewState(IViewState& view_state) override;
-    bool SetVertexBuffers(BufferSet& vertex_buffers, bool set_resource_barriers) override;
-    bool SetIndexBuffer(Buffer& index_buffer, bool set_resource_barriers) override;
+    bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;
+    bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive_type, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
