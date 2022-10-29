@@ -36,7 +36,7 @@ Base implementation of the Methane graphics application.
 namespace Methane::Graphics
 {
 
-struct Texture;
+struct ITexture;
 struct IViewState;
 struct RenderPass;
 
@@ -91,8 +91,8 @@ protected:
         ResourceRestoreInfo& operator=(ResourceRestoreInfo&& other) noexcept = default;
     };
 
-    Texture::Views GetScreenPassAttachments(Texture& frame_buffer_texture) const;
-    Ptr<RenderPass> CreateScreenRenderPass(Texture& frame_buffer_texture) const;
+    ITexture::Views GetScreenPassAttachments(ITexture& frame_buffer_texture) const;
+    Ptr<RenderPass> CreateScreenRenderPass(ITexture& frame_buffer_texture) const;
     Opt<ResourceRestoreInfo> ReleaseDepthTexture();
     void RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt);
 
@@ -123,23 +123,23 @@ protected:
     FrameSize                       GetFrameSizeInDots() const                    { return m_context_ptr->GetSettings().frame_size / GetContentScalingFactor(); }
     ImageLoader&                    GetImageLoader() noexcept                     { return m_image_loader; }
     Data::AnimationsPool&           GetAnimations() noexcept                      { return m_animations; }
-    const Ptr<Texture>&             GetDepthTexturePtr() const noexcept           { return m_depth_texture_ptr; }
-    Texture&                        GetDepthTexture() const                       { META_CHECK_ARG_NOT_NULL(m_depth_texture_ptr); return *m_depth_texture_ptr; }
+    const Ptr<ITexture>&            GetDepthTexturePtr() const noexcept           { return m_depth_texture_ptr; }
+    ITexture&                       GetDepthTexture() const                       { META_CHECK_ARG_NOT_NULL(m_depth_texture_ptr); return *m_depth_texture_ptr; }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index);
 
 private:
     Graphics::IApp::Settings m_settings;
-    RenderContextSettings m_initial_context_settings;
+    RenderContextSettings    m_initial_context_settings;
     RenderPattern::Settings  m_screen_pass_pattern_settings;
     Timer                    m_title_update_timer;
     ImageLoader              m_image_loader;
     Data::AnimationsPool     m_animations;
     Ptr<IRenderContext>      m_context_ptr;
-    Ptr<Texture>             m_depth_texture_ptr;
-    Ptr<RenderPattern> m_screen_render_pattern_ptr;
-    Ptr<IViewState>    m_view_state_ptr;
-    bool               m_restore_animations_enabled = true;
+    Ptr<ITexture>            m_depth_texture_ptr;
+    Ptr<RenderPattern>       m_screen_render_pattern_ptr;
+    Ptr<IViewState>          m_view_state_ptr;
+    bool                     m_restore_animations_enabled = true;
 };
 
 } // namespace Methane::Graphics

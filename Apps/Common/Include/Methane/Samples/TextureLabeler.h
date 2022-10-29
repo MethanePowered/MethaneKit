@@ -35,7 +35,7 @@ struct RenderPattern;
 struct RenderPass;
 struct RenderCommandList;
 struct CommandListSet;
-struct Texture;
+struct ITexture;
 class  ResourceBarriersBase;
 class  ScreenQuad;
 }
@@ -96,7 +96,7 @@ public:
     };
 
     TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
-                   gfx::Texture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings);
+                   gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings);
 
     void Render();
 
@@ -113,8 +113,8 @@ private:
         Ptr<gfx::ScreenQuad>        bg_quad_ptr;
     };
 
-    gui::Context&               m_gui_context;
-    gfx::Texture&               m_rt_texture;
+    gui::Context &              m_gui_context;
+    gfx::ITexture&              m_rt_texture;
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
     Ptr<gfx::RenderPattern>     m_texture_face_render_pattern_ptr;

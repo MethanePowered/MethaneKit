@@ -25,7 +25,7 @@ Methane sub-resource used for resource data transfers.
 
 #include <Methane/Graphics/ResourceView.h>
 #include <Methane/Graphics/IResource.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -294,7 +294,7 @@ TextureDimensionType ResourceView::GetTextureDimensionType() const
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_resource_ptr);
     META_CHECK_ARG_EQUAL(m_resource_ptr->GetResourceType(), IResource::Type::Texture);
-    return m_settings.texture_dimension_type_opt.value_or(dynamic_cast<Texture&>(*m_resource_ptr).GetSettings().dimension_type);
+    return m_settings.texture_dimension_type_opt.value_or(dynamic_cast<ITexture&>(*m_resource_ptr).GetSettings().dimension_type);
 }
 
 } // namespace Methane::Graphics

@@ -26,7 +26,7 @@ Mesh buffers with texture extension structure.
 #include "ImageLoader.h"
 
 #include <Methane/Graphics/IBuffer.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/RenderCommandList.h>
@@ -346,7 +346,7 @@ public:
     {
         META_FUNCTION_TASK();
         Ptr<IResourceBarriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
-        for (const Ptr<Texture>& texture_ptr : m_subset_textures)
+        for (const Ptr<ITexture>& texture_ptr : m_subset_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);
             beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), IResource::State::ShaderResource);
@@ -355,14 +355,14 @@ public:
     }
 
     [[nodiscard]]
-    const Ptr<Texture>& GetTexturePtr() const
+    const Ptr<ITexture>& GetTexturePtr() const
     {
         META_FUNCTION_TASK();
         return GetSubsetTexturePtr(0);
     }
 
     [[nodiscard]]
-    const Ptr<Texture>& GetSubsetTexturePtr(uint32_t subset_index) const
+    const Ptr<ITexture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
@@ -370,7 +370,7 @@ public:
     }
 
     [[nodiscard]]
-    const Ptr<Texture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
+    const Ptr<ITexture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
         META_FUNCTION_TASK();
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
@@ -378,33 +378,33 @@ public:
     }
 
     [[nodiscard]]
-    Texture& GetTexture() const
+    ITexture& GetTexture() const
     {
         META_FUNCTION_TASK();
-        const Ptr<Texture>& texture_ptr = GetTexturePtr();
+        const Ptr<ITexture>& texture_ptr = GetTexturePtr();
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
     [[nodiscard]]
-    Texture& GetSubsetTexture(uint32_t subset_index) const
+    ITexture& GetSubsetTexture(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
-        const Ptr<Texture>& texture_ptr = GetSubsetTexturePtr(subset_index);
+        const Ptr<ITexture>& texture_ptr = GetSubsetTexturePtr(subset_index);
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
     [[nodiscard]]
-    Texture& GetInstanceTexture(uint32_t instance_index = 0) const
+    ITexture& GetInstanceTexture(uint32_t instance_index = 0) const
     {
         META_FUNCTION_TASK();
-        const Ptr<Texture>& texture_ptr = GetInstanceTexturePtr(instance_index);
+        const Ptr<ITexture>& texture_ptr = GetInstanceTexturePtr(instance_index);
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
-    void SetTexture(const Ptr<Texture>& texture_ptr)
+    void SetTexture(const Ptr<ITexture>& texture_ptr)
     {
         META_FUNCTION_TASK();
 
@@ -416,7 +416,7 @@ public:
         }
     }
     
-    void SetSubsetTexture(const Ptr<Texture>& texture_ptr, uint32_t subset_index)
+    void SetSubsetTexture(const Ptr<ITexture>& texture_ptr, uint32_t subset_index)
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
@@ -425,7 +425,7 @@ public:
     }
 
 protected:
-    using Textures = std::vector<Ptr<Texture>>;
+    using Textures = std::vector<Ptr<ITexture>>;
     
 private:
     Textures m_subset_textures;

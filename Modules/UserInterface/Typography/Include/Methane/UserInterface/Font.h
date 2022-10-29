@@ -36,7 +36,7 @@ Font atlas textures generation and fonts library management classes.
 
 namespace Methane::Graphics
 {
-struct Texture;
+struct ITexture;
 }
 
 namespace Methane::UserInterface
@@ -56,7 +56,7 @@ struct IFontLibraryCallback
 
 struct IFontCallback
 {
-    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) = 0;
+    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr) = 0;
     virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
@@ -196,17 +196,17 @@ public:
     void              AddChars(const std::u32string& utf32_characters);
     const Font::Char& AddChar(Char::Code char_code);
     
-    [[nodiscard]] bool                     HasChar(Char::Code char_code) const;
-    [[nodiscard]] const Char&              GetChar(Char::Code char_code) const;
-    [[nodiscard]] Chars                    GetChars() const;
-    [[nodiscard]] Chars                    GetTextChars(const std::string& text);
-    [[nodiscard]] Chars                    GetTextChars(const std::u32string& text);
-    [[nodiscard]] gfx:: FramePoint         GetKerning(const Char& left_char, const Char& right_char) const;
-    [[nodiscard]] uint32_t                 GetLineHeight() const;
-    [[nodiscard]] const gfx::FrameSize&    GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
-    [[nodiscard]] const gfx::FrameSize&    GetAtlasSize() const noexcept;
-    [[nodiscard]] const Ptr<gfx::Texture>& GetAtlasTexturePtr(gfx::IRenderContext& context);
-    [[nodiscard]] gfx::Texture&            GetAtlasTexture(gfx::IRenderContext& context);
+    [[nodiscard]] bool                      HasChar(Char::Code char_code) const;
+    [[nodiscard]] const Char&               GetChar(Char::Code char_code) const;
+    [[nodiscard]] Chars                     GetChars() const;
+    [[nodiscard]] Chars                     GetTextChars(const std::string& text);
+    [[nodiscard]] Chars                     GetTextChars(const std::u32string& text);
+    [[nodiscard]] gfx:: FramePoint          GetKerning(const Char& left_char, const Char& right_char) const;
+    [[nodiscard]] uint32_t                  GetLineHeight() const;
+    [[nodiscard]] const gfx::FrameSize&     GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
+    [[nodiscard]] const gfx::FrameSize&     GetAtlasSize() const noexcept;
+    [[nodiscard]] const Ptr<gfx::ITexture>& GetAtlasTexturePtr(gfx::IRenderContext& context);
+    [[nodiscard]] gfx::ITexture&            GetAtlasTexture(gfx::IRenderContext& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -223,8 +223,8 @@ protected:
 private:
     struct AtlasTexture
     {
-        Ptr<gfx::Texture> texture_ptr;
-        bool              is_update_required = true;
+        Ptr<gfx::ITexture> texture_ptr;
+        bool               is_update_required = true;
     };
 
     AtlasTexture CreateAtlasTexture(const gfx::IRenderContext& context, bool deferred_data_init);

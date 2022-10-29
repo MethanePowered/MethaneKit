@@ -149,7 +149,7 @@ private:
     Ptr<gfx::IBufferSet>    m_vertex_buffer_set_ptr;
     Ptr<gfx::IBuffer>       m_index_buffer_ptr;
     Ptr<gfx::IBuffer>       m_const_buffer_ptr;
-    Ptr<gfx::Texture>       m_cube_texture_ptr;
+    Ptr<gfx::ITexture>      m_cube_texture_ptr;
     Ptr<gfx::Sampler>       m_texture_sampler_ptr;
 
     const gfx::IResource::SubResources m_shader_uniforms_subresources{

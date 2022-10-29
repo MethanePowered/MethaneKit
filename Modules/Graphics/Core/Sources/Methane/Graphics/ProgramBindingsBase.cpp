@@ -28,7 +28,7 @@ Base implementation of the program bindings interface.
 #include "CoreFormatters.hpp"
 
 #include <Methane/Graphics/IBuffer.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
@@ -56,7 +56,7 @@ static IResource::State GetBoundResourceTargetState(const IResource& resource, I
         break;
 
     case IResource::Type::Texture:
-        if (dynamic_cast<const Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
+        if (dynamic_cast<const ITexture&>(resource).GetSettings().type == ITexture::Type::DepthStencilBuffer)
             return IResource::State::DepthRead;
         break;
 

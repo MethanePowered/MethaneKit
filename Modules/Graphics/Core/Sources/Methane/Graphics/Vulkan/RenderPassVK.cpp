@@ -312,13 +312,13 @@ const IContextVK& RenderPassVK::GetContextVK() const noexcept
 void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)
 {
     META_FUNCTION_TASK();
-    const Texture::Views& attachment_texture_locations = GetSettings().attachments;
+    const ITexture::Views& attachment_texture_locations = GetSettings().attachments;
     if (attachment_texture_locations.empty())
         return;
 
-    for (const Texture::View& texture_location : attachment_texture_locations)
+    for (const ITexture::View& texture_location : attachment_texture_locations)
     {
-        if (texture_location.GetTexture().GetSettings().type == Texture::Type::FrameBuffer)
+        if (texture_location.GetTexture().GetSettings().type == ITexture::Type::FrameBuffer)
             dynamic_cast<FrameBufferTextureVK&>(texture_location.GetTexture()).ResetNativeImage();
     }
 
@@ -352,7 +352,7 @@ vk::UniqueFramebuffer RenderPassVK::CreateNativeFrameBuffer(const vk::Device& vk
     if (m_vk_attachments.empty())
     {
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
-                       [](const Texture::View& texture_location)
+                       [](const ITexture::View& texture_location)
                        { return ResourceViewVK(texture_location, IResource::Usage::RenderTarget); });
     }
 

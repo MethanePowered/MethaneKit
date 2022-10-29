@@ -218,10 +218,10 @@ void ShadowCubeApp::Init()
     // ========= Per-Frame Data =========
 
     using namespace magic_enum::bitwise_operators;
-    const gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
+    const gfx::ITexture::Settings shadow_texture_settings = gfx::ITexture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,
-        gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead
+        gfx::ITexture::Usage::RenderTarget | gfx::ITexture::Usage::ShaderRead
     );
 
     for(ShadowCubeFrame& frame : GetFrames())
@@ -253,7 +253,7 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
 
         // Create depth texture for shadow map rendering
-        frame.shadow_pass.rt_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
+        frame.shadow_pass.rt_texture_ptr = gfx::ITexture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment

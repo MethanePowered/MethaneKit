@@ -29,7 +29,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/CommandKit.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/RenderPass.h>
@@ -372,7 +372,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* 
     cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
 }
 
-void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr)
+void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
     META_UNUSED(old_atlas_texture_ptr);
@@ -458,7 +458,7 @@ gfx::IProgramBindings& Text::FrameResources::GetProgramBindings() const
     return *m_program_bindings_ptr;
 }
 
-bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr)
+bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::ITexture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -583,7 +583,7 @@ void Text::InitializeFrameResources()
         m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 
-    const Ptr<gfx::Texture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
+    const Ptr<gfx::ITexture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(

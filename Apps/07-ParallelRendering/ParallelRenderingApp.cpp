@@ -171,9 +171,9 @@ void ParallelRenderingApp::Init()
 
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
-    m_texture_array_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
-                                          gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
+    m_texture_array_ptr = gfx::ITexture::CreateRenderTarget(GetRenderContext(),
+                                                            gfx::ITexture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+                                                            gfx::ITexture::Usage::RenderTarget | gfx::ITexture::Usage::ShaderRead));
     m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture

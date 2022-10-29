@@ -39,12 +39,12 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture, const Settings& settings)
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
     : SkyBox(render_cmd_queue, render_pattern, cube_map_texture, settings, CubeMesh<Vertex>(Vertex::layout))
 {
 }
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Texture& cube_map_texture,
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture,
                const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
@@ -52,8 +52,8 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, Te
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Texture::DimensionType::Cube);
-    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Texture>(cube_map_texture.GetPtr()));
+    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, ITexture::DimensionType::Cube);
+    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<ITexture>(cube_map_texture.GetPtr()));
 
     IRenderState::Settings state_settings;
     state_settings.program_ptr = IProgram::Create(m_context,

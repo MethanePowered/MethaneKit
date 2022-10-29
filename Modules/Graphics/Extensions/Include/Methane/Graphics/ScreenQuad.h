@@ -41,7 +41,7 @@ struct IRenderState;
 struct IViewState;
 struct IBufferSet;
 struct IBuffer;
-struct Texture;
+struct ITexture;
 struct Sampler;
 struct IProgramBindings;
 
@@ -65,16 +65,16 @@ public:
     };
 
     ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings);
-    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings);
+    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings);
     virtual ~ScreenQuad() = default;
 
     void SetBlendColor(const Color4F& blend_color);
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
     void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
-    void SetTexture(Ptr<Texture> texture_ptr);
+    void SetTexture(Ptr<ITexture> texture_ptr);
 
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
-    [[nodiscard]] const Texture&  GetTexture() const;
+    [[nodiscard]] const ITexture&  GetTexture() const;
 
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
@@ -95,7 +95,7 @@ private:
     Ptr<IBufferSet>          m_vertex_buffer_set_ptr;
     Ptr<IBuffer>             m_index_buffer_ptr;
     Ptr<IBuffer>             m_const_buffer_ptr;
-    Ptr<Texture>             m_texture_ptr;
+    Ptr<ITexture>            m_texture_ptr;
     Ptr<Sampler>             m_texture_sampler_ptr;
     Ptr<IProgramBindings>    m_const_program_bindings_ptr;
 };

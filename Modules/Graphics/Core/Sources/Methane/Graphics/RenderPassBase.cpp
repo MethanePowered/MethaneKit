@@ -377,7 +377,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& 
     }
 }
 
-const Texture::View& RenderPassBase::GetAttachmentTextureView(const Attachment& attachment) const
+const ITexture::View& RenderPassBase::GetAttachmentTextureView(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
@@ -439,7 +439,7 @@ const Ptrs<TextureBase>& RenderPassBase::GetNonFrameBufferAttachmentTextures() c
     for (const Ref<TextureBase>& color_texture_ref : GetColorAttachmentTextures())
     {
         Ptr<TextureBase> color_attachment_ptr = color_texture_ref.get().GetPtr<TextureBase>();
-        if (color_attachment_ptr->GetSettings().type == Texture::Type::FrameBuffer)
+        if (color_attachment_ptr->GetSettings().type == ITexture::Type::FrameBuffer)
             continue;
 
         m_non_frame_buffer_attachment_textures.emplace_back(std::move(color_attachment_ptr));

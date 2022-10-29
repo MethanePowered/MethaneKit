@@ -24,7 +24,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Samples/TextureLabeler.h>
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/RenderCommandList.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
@@ -41,14 +41,14 @@ namespace Methane::Tutorials
 
 static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size depth_index,
                                               const TextureLabeler::CubeSliceDescs& cube_slice_descs,
-                                              const gfx::Texture::Settings& rt_texture_settings,
+                                              const gfx::ITexture::Settings& rt_texture_settings,
                                               const gfx::SubResource::Count& sub_res_count)
 {
     TextureLabeler::SliceDesc slice_desc = cube_slice_descs[depth_index % cube_slice_descs.size()];
-    if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::Cube)
+    if (rt_texture_settings.dimension_type == gfx::ITexture::DimensionType::Cube)
         return slice_desc;
 
-    if (rt_texture_settings.dimension_type == gfx::Texture::DimensionType::CubeArray)
+    if (rt_texture_settings.dimension_type == gfx::ITexture::DimensionType::CubeArray)
     {
         slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
         return slice_desc;
@@ -74,18 +74,18 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
 }
 
 TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
-                               gfx::Texture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings)
+                               gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
         { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", settings.font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {
-    const gfx::Texture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
-    const gfx::SubResource::Count& sub_res_count      = m_rt_texture.GetSubresourceCount();
+    const gfx::ITexture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
+    const gfx::SubResource::Count& sub_res_count       = m_rt_texture.GetSubresourceCount();
 
     using namespace magic_enum::bitwise_operators;
-    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & gfx::Texture::Usage::RenderTarget));
+    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & gfx::ITexture::Usage::RenderTarget));
 
     m_texture_face_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(),
         gfx::RenderPattern::Settings
@@ -138,7 +138,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass_ptr = gfx::RenderPass::Create(*m_texture_face_render_pattern_ptr, {
-                { gfx::Texture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::Texture::DimensionType::Tex2D) },
+                { gfx::ITexture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::ITexture::DimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));

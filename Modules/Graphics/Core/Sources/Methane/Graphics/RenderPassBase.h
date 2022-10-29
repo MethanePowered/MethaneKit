@@ -76,7 +76,7 @@ public:
     virtual void Begin(RenderCommandListBase& render_command_list);
     virtual void End(RenderCommandListBase& render_command_list);
 
-    const Texture::View&     GetAttachmentTextureView(const Attachment& attachment) const;
+    const ITexture::View&    GetAttachmentTextureView(const Attachment& attachment) const;
     const Refs<TextureBase>& GetColorAttachmentTextures() const;
     TextureBase*             GetDepthAttachmentTexture() const;
     TextureBase*             GetStencilAttachmentTexture() const;

@@ -42,7 +42,7 @@ struct IViewState;
 struct IProgramBindings;
 struct IBuffer;
 struct IBufferSet;
-struct Texture;
+struct ITexture;
 struct Sampler;
 }
 
@@ -154,18 +154,18 @@ public:
 
 protected:
     // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::Texture>& old_atlas_texture_ptr, const Ptr<gfx::Texture>& new_atlas_texture_ptr) override;
+    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
 
 private:
     struct CommonResourceRefs
     {
-        gfx::IRenderContext&     render_context;
-        const gfx::IRenderState& render_state;
-        const Ptr<gfx::IBuffer>& const_buffer_ptr;
-        const Ptr<gfx::Texture>& atlas_texture_ptr;
-        const Ptr<gfx::Sampler>& atlas_sampler_ptr;
-        const TextMesh&          text_mesh;
+        gfx::IRenderContext&      render_context;
+        const gfx::IRenderState&  render_state;
+        const Ptr<gfx::IBuffer> & const_buffer_ptr;
+        const Ptr<gfx::ITexture>& atlas_texture_ptr;
+        const Ptr<gfx::Sampler> & atlas_sampler_ptr;
+        const TextMesh&           text_mesh;
     };
 
     class FrameResources
@@ -193,7 +193,7 @@ private:
         [[nodiscard]] gfx::IBuffer&          GetIndexBuffer() const;
         [[nodiscard]] gfx::IProgramBindings& GetProgramBindings() const;
 
-        bool UpdateAtlasTexture(const Ptr<gfx::Texture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
+        bool UpdateAtlasTexture(const Ptr<gfx::ITexture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
         void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
         void InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
@@ -205,7 +205,7 @@ private:
         Ptr<gfx::IBufferSet>       m_vertex_buffer_set_ptr;
         Ptr<gfx::IBuffer>          m_index_buffer_ptr;
         Ptr<gfx::IBuffer>          m_uniforms_buffer_ptr;
-        Ptr<gfx::Texture>          m_atlas_texture_ptr;
+        Ptr<gfx::ITexture>         m_atlas_texture_ptr;
         Ptr<gfx::IProgramBindings> m_program_bindings_ptr;
     };
 

@@ -190,7 +190,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
         MeshResources               cube;
         MeshResources               floor;
-        Ptr<gfx::Texture>           rt_texture_ptr;
+        Ptr<gfx::ITexture>          rt_texture_ptr;
         Ptr<gfx::RenderPass>        render_pass_ptr;
         Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };
@@ -355,10 +355,10 @@ flags to allow both rendering to this texture and sampling from it in a final pa
 
 ```cpp
     using namespace magic_enum::bitwise_operators;
-    const gfx::Texture::Settings shadow_texture_settings = gfx::Texture::Settings::DepthStencilBuffer(
+    const gfx::ITexture::Settings shadow_texture_settings = gfx::ITexture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,
-        gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead
+        gfx::ITexture::Usage::RenderTarget | gfx::ITexture::Usage::ShaderRead
     );
 ```
 
@@ -393,7 +393,7 @@ rendered depth texture content for the next render pass. Render command list is 
         }, frame.index);
 
         // Create depth texture for shadow map rendering
-        frame.shadow_pass.rt_texture_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
+        frame.shadow_pass.rt_texture_ptr = gfx::ITexture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         
         // Create shadow pass configuration with depth attachment
         frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(*m_shadow_pass_pattern_ptr, {

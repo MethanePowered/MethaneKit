@@ -23,7 +23,7 @@ Base implementation of the texture interface.
 
 #pragma once
 
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 
 #include "ResourceBase.h"
 
@@ -31,14 +31,14 @@ namespace Methane::Graphics
 {
 
 class TextureBase
-    : public Texture
+    : public ITexture
     , public ResourceBase
 {
 public:
     TextureBase(const ContextBase& context, const Settings& settings,
                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
-    // Texture interface
+    // ITexture interface
     const Settings& GetSettings() const override { return m_settings; }
     Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 

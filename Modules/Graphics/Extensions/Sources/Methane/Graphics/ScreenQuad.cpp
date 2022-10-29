@@ -26,7 +26,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/CommandList.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IProgram.h>
@@ -81,7 +81,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
 {
 }
 
-ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<Texture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
     , m_render_pattern_ptr(std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr()))
@@ -259,7 +259,7 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
     m_render_state_ptr->Reset(state_settings);
 }
 
-void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
+void ScreenQuad::SetTexture(Ptr<ITexture> texture_ptr)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
@@ -272,7 +272,7 @@ void ScreenQuad::SetTexture(Ptr<Texture> texture_ptr)
     m_const_program_bindings_ptr->Get({ ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_texture_ptr } });
 }
 
-const Texture& ScreenQuad::GetTexture() const
+const ITexture& ScreenQuad::GetTexture() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_texture_ptr);

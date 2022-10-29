@@ -18,7 +18,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IResourceBarriers.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/IBuffer.h
-    ${INCLUDE_DIR}/Texture.h
+    ${INCLUDE_DIR}/ITexture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandKit.h

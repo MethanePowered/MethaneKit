@@ -28,7 +28,7 @@ Base frame class provides frame buffer management with resize handling.
 
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Graphics/AppController.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -41,7 +41,7 @@ namespace Methane::Graphics
 struct AppFrame
 {
     const uint32_t  index = 0;
-    Ptr<Texture>    screen_texture_ptr;
+    Ptr<ITexture>   screen_texture_ptr;
     Ptr<RenderPass> screen_pass_ptr;
 
     explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
@@ -92,7 +92,7 @@ public:
             FrameT frame(frame_index);
 
             // Create color texture for frame buffer
-            frame.screen_texture_ptr = Texture::CreateFrameBuffer(render_context, frame.index);
+            frame.screen_texture_ptr = ITexture::CreateFrameBuffer(render_context, frame.index);
             frame.screen_texture_ptr->SetName(IndexedName("Frame Buffer", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
@@ -127,7 +127,7 @@ public:
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            frame.screen_texture_ptr = Texture::CreateFrameBuffer(GetRenderContext(), frame.index);
+            frame.screen_texture_ptr = ITexture::CreateFrameBuffer(GetRenderContext(), frame.index);
             frame.screen_texture_ptr->RestoreDescriptorViews(frame_restore_info.descriptor_by_view_id);
             frame.screen_texture_ptr->SetName(frame_restore_info.name);
             frame.screen_pass_ptr->Update({

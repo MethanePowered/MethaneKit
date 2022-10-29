@@ -25,7 +25,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Graphics/AppContextController.h>
 #include <Methane/Graphics/IDevice.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
@@ -214,7 +214,7 @@ void AppBase::Init()
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(*m_context_ptr);
+        m_depth_texture_ptr = ITexture::CreateDepthStencilBuffer(*m_context_ptr);
         m_depth_texture_ptr->SetName("Depth Texture");
     }
 
@@ -351,11 +351,11 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Texture::Views AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) const
+ITexture::Views AppBase::GetScreenPassAttachments(ITexture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    Texture::Views attachments{
-        Texture::View(frame_buffer_texture)
+    ITexture::Views attachments{
+        ITexture::View(frame_buffer_texture)
     };
 
     if (m_depth_texture_ptr)
@@ -364,7 +364,7 @@ Texture::Views AppBase::GetScreenPassAttachments(Texture& frame_buffer_texture) 
     return attachments;
 }
 
-Ptr<RenderPass> AppBase::CreateScreenRenderPass(Texture& frame_buffer_texture) const
+Ptr<RenderPass> AppBase::CreateScreenRenderPass(ITexture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
@@ -391,7 +391,7 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
     if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Texture::CreateDepthStencilBuffer(GetRenderContext());
+    m_depth_texture_ptr = ITexture::CreateDepthStencilBuffer(GetRenderContext());
     m_depth_texture_ptr->RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
     m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }

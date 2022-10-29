@@ -126,9 +126,9 @@ void CubeMapArrayApp::Init()
     // Create cube-map render target texture
     using namespace magic_enum::bitwise_operators;
     m_cube_buffers_ptr->SetTexture(
-        gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
-                                         gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead)));
+        gfx::ITexture::CreateRenderTarget(GetRenderContext(),
+                                          gfx::ITexture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
+                                          gfx::ITexture::Usage::RenderTarget | gfx::ITexture::Usage::ShaderRead)));
 
     // Create sampler for image texture
     m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
@@ -140,7 +140,7 @@ void CubeMapArrayApp::Init()
     );
 
     // Load cube-map texture images for Sky-box
-    const Ptr<gfx::Texture> sky_box_texture_ptr = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue,
+    const Ptr<gfx::ITexture> sky_box_texture_ptr = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue,
         gfx::ImageLoader::CubeFaceResources
         {
             "SkyBox/Clouds/PositiveX.jpg",

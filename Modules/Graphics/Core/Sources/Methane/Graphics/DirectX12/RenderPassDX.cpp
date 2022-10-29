@@ -89,7 +89,7 @@ RenderPassDX::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, co
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        const auto& texture = dynamic_cast<Texture&>(texture_location.GetResource());
+        const auto& texture = dynamic_cast<ITexture&>(texture_location.GetResource());
         const DXGI_FORMAT color_format = TypeConverterDX::PixelFormatToDxgi(texture.GetSettings().pixel_format);
         const std::array<float, 4> clear_color_components = color_attachment.clear_color.AsArray();
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
@@ -200,7 +200,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
 {
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                   [](const Texture::View& texture_location)
+                   [](const ITexture::View& texture_location)
                    { return ResourceViewDX(texture_location, IResource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
@@ -231,7 +231,7 @@ bool RenderPassDX::Update(const Settings& settings)
         m_end_transition_barriers_ptr.reset();
 
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                       [](const Texture::View& texture_location)
+                       [](const ITexture::View& texture_location)
                        { return ResourceViewDX(texture_location, IResource::Usage::RenderTarget); });
     }
 

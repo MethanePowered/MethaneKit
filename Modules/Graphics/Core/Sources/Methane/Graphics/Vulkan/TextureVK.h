@@ -36,10 +36,10 @@ class RenderContextVK;
 
 struct ITextureVK
 {
-    [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(Texture::DimensionType dimension_type);
-    [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(Texture::DimensionType dimension_type);
-    [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const Texture::Settings& settings);
-    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Texture::Settings& settings,
+    [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(ITexture::DimensionType dimension_type);
+    [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(ITexture::DimensionType dimension_type);
+    [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const ITexture::Settings& settings);
+    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const ITexture::Settings& settings,
                                                                        vk::ImageUsageFlags initial_usage_flags = {});
 
     [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;

@@ -29,7 +29,7 @@ DirectX 12 specialization of the resource interface.
 #include "DescriptorManagerDX.h"
 
 #include <Methane/Graphics/IContext.h>
-#include <Methane/Graphics/Texture.h>
+#include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -51,7 +51,7 @@ DescriptorHeapDX::Type IResourceDX::GetDescriptorHeapTypeByUsage(const IResource
     case IResource::Usage::ShaderWrite:
     case IResource::Usage::RenderTarget:
         return (resource_type == IResource::Type::Texture &&
-                dynamic_cast<const Texture&>(resource).GetSettings().type == Texture::Type::DepthStencilBuffer)
+                dynamic_cast<const ITexture&>(resource).GetSettings().type == ITexture::Type::DepthStencilBuffer)
                ? DescriptorHeapDX::Type::DepthStencil
                : DescriptorHeapDX::Type::RenderTargets;
 

@@ -165,21 +165,21 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
 #endif
 }
 
-Ptr<Texture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<ITexture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
     const ImageData   image_data   = LoadImage(image_path, 4, false);
     const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    Ptr<ITexture>     texture_ptr  = ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
     return texture_ptr;
 }
 
-Ptr<Texture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<ITexture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -222,7 +222,7 @@ Ptr<Texture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue
     // Load face images to cube texture
     using namespace magic_enum::bitwise_operators;
     const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<Texture> texture_ptr = Texture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    Ptr<ITexture>     texture_ptr  = ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources, target_cmd_queue);
 

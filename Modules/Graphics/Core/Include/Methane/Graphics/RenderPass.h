@@ -23,7 +23,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 
 #pragma once
 
-#include "Texture.h"
+#include "ITexture.h"
 #include "IObject.h"
 
 #include <Methane/Memory.hpp>
@@ -199,8 +199,8 @@ struct RenderPass
 
     struct Settings
     {
-        Texture::Views attachments;
-        FrameSize      frame_size;
+        ITexture::Views attachments;
+        FrameSize       frame_size;
 
         [[nodiscard]] bool operator==(const Settings& other) const;
         [[nodiscard]] bool operator!=(const Settings& other) const;

@@ -51,7 +51,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
         MeshResources               cube;
         MeshResources               floor;
-        Ptr<gfx::Texture>           rt_texture_ptr;
+        Ptr<gfx::ITexture>          rt_texture_ptr;
         Ptr<gfx::RenderPass>        render_pass_ptr;
         Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };

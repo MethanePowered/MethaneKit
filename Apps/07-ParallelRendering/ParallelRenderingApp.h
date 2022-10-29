@@ -104,7 +104,7 @@ private:
     Settings               m_settings;
     gfx::Camera            m_camera;
     Ptr<gfx::IRenderState> m_render_state_ptr;
-    Ptr<gfx::Texture>      m_texture_array_ptr;
+    Ptr<gfx::ITexture>     m_texture_array_ptr;
     Ptr<gfx::Sampler>      m_texture_sampler_ptr;
     Ptr<MeshBuffers>       m_cube_array_buffers_ptr;
     CubeArrayParameters    m_cube_array_parameters;

@@ -37,52 +37,52 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics
 {
 
-static MTLTextureType GetNativeTextureType(Texture::DimensionType dimension_type)
+static MTLTextureType GetNativeTextureType(ITexture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case Texture::DimensionType::Tex1D:             return MTLTextureType1D;
-    case Texture::DimensionType::Tex1DArray:        return MTLTextureType1DArray;
-    case Texture::DimensionType::Tex2D:             return MTLTextureType2D;
-    case Texture::DimensionType::Tex2DArray:        return MTLTextureType2DArray;
-    case Texture::DimensionType::Tex2DMultisample:  return MTLTextureType2DMultisample;
+    case ITexture::DimensionType::Tex1D:             return MTLTextureType1D;
+    case ITexture::DimensionType::Tex1DArray:        return MTLTextureType1DArray;
+    case ITexture::DimensionType::Tex2D:             return MTLTextureType2D;
+    case ITexture::DimensionType::Tex2DArray:        return MTLTextureType2DArray;
+    case ITexture::DimensionType::Tex2DMultisample:  return MTLTextureType2DMultisample;
     // TODO: add support for MTLTextureType2DMultisampleArray
-    case Texture::DimensionType::Cube:              return MTLTextureTypeCube;
-    case Texture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
-    case Texture::DimensionType::Tex3D:             return MTLTextureType3D;
+    case ITexture::DimensionType::Cube:              return MTLTextureTypeCube;
+    case ITexture::DimensionType::CubeArray:         return MTLTextureTypeCubeArray;
+    case ITexture::DimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
     default:                                        META_UNEXPECTED_ARG_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
-static MTLRegion GetTextureRegion(const Dimensions& dimensions, Texture::DimensionType dimension_type)
+static MTLRegion GetTextureRegion(const Dimensions& dimensions, ITexture::DimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case Texture::DimensionType::Tex1D:
-    case Texture::DimensionType::Tex1DArray:
+    case ITexture::DimensionType::Tex1D:
+    case ITexture::DimensionType::Tex1DArray:
              return MTLRegionMake1D(0, dimensions.GetWidth());
-    case Texture::DimensionType::Tex2D:
-    case Texture::DimensionType::Tex2DArray:
-    case Texture::DimensionType::Tex2DMultisample:
-    case Texture::DimensionType::Cube:
-    case Texture::DimensionType::CubeArray:
+    case ITexture::DimensionType::Tex2D:
+    case ITexture::DimensionType::Tex2DArray:
+    case ITexture::DimensionType::Tex2DMultisample:
+    case ITexture::DimensionType::Cube:
+    case ITexture::DimensionType::CubeArray:
              return MTLRegionMake2D(0, 0, dimensions.GetWidth(), dimensions.GetHeight());
-    case Texture::DimensionType::Tex3D:
+    case ITexture::DimensionType::Tex3D:
              return MTLRegionMake3D(0, 0, 0, dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
     default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLRegion{});
     }
 }
 
-Ptr<Texture> Texture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
+Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings);
 }
 
-Ptr<Texture> Texture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
+Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -90,7 +90,7 @@ Ptr<Texture> Texture::CreateFrameBuffer(const IRenderContext& context, FrameBuff
     return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateDepthStencilBuffer(const IRenderContext& context)
+Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -98,14 +98,14 @@ Ptr<Texture> Texture::CreateDepthStencilBuffer(const IRenderContext& context)
     return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
 }
 
-Ptr<Texture> Texture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
@@ -114,7 +114,7 @@ Ptr<Texture> Texture::CreateCube(const IContext& context, uint32_t dimension_siz
 
 TextureMT::TextureMT(const ContextBase& context, const Settings& settings)
     : ResourceMT(context, settings)
-    , m_mtl_texture(settings.type == Texture::Type::FrameBuffer
+    , m_mtl_texture(settings.type == ITexture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetContextMT().GetDeviceMT().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
 {

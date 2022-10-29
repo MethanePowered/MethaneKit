@@ -70,7 +70,7 @@ private:
     void Initialize(ExtraArgs...);
 };
 
-using FrameBufferTextureDX  = TextureDX<Texture::FrameBufferIndex>;
+using FrameBufferTextureDX  = TextureDX<ITexture::FrameBufferIndex>;
 
 using RenderTargetTextureDX = TextureDX<>;
 template<> class TextureDX<> final // NOSONAR - inheritance hierarchy is greater than 5
