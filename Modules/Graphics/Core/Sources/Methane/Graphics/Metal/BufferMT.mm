@@ -106,8 +106,8 @@ void BufferMT::SetData(const SubResources& sub_resources, CommandQueue& target_c
 
     switch(GetSettings().storage_mode)
     {
-    case Buffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
-    case Buffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
+    case IBuffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resources); break;
+    case IBuffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resources); break;
     default: META_UNEXPECTED_ARG(GetSettings().storage_mode);
     }
 }
@@ -115,7 +115,7 @@ void BufferMT::SetData(const SubResources& sub_resources, CommandQueue& target_c
 void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Managed);
+    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Managed);
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, NativeStorageModeManaged);
 
@@ -140,7 +140,7 @@ void BufferMT::SetDataToManagedBuffer(const SubResources& sub_resources)
 void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, Buffer::StorageMode::Private);
+    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Private);
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
@@ -174,21 +174,21 @@ MTLIndexType BufferMT::GetNativeIndexType() const noexcept
     return TypeConverterMT::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-Ptr<IBufferSet> IBufferSet::Create(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<BufferSetMT>(buffers_type, buffer_refs);
 }
 
-BufferSetMT::BufferSetMT(Buffer::Type buffers_type, const Refs<Buffer>& buffer_refs)
+BufferSetMT::BufferSetMT(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
     : BufferSetBase(buffers_type, buffer_refs)
     , m_mtl_buffer_offsets(GetCount(), 0U)
 {
     META_FUNCTION_TASK();
-    const Refs<Buffer>& refs = GetRefs();
+    const Refs<IBuffer>& refs = GetRefs();
     m_mtl_buffers.reserve(refs.size());
     std::transform(refs.begin(), refs.end(), std::back_inserter(m_mtl_buffers),
-        [](const Ref<Buffer>& buffer_ref)
+        [](const Ref<IBuffer>& buffer_ref)
         {
            const BufferMT& metal_buffer = static_cast<const BufferMT&>(buffer_ref.get());
            return metal_buffer.GetNativeBuffer();

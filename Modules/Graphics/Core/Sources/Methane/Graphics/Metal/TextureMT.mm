@@ -155,14 +155,14 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue& target_
         uint32_t slice = 0;
         switch(settings.dimension_type)
         {
-            case Texture::DimensionType::Tex1DArray:
-            case Texture::DimensionType::Tex2DArray:
+            case ITexture::DimensionType::Tex1DArray:
+            case ITexture::DimensionType::Tex2DArray:
                 slice = sub_resource.GetIndex().GetArrayIndex();
                 break;
-            case Texture::DimensionType::Cube:
+            case ITexture::DimensionType::Cube:
                 slice = sub_resource.GetIndex().GetDepthSlice();
                 break;
-            case Texture::DimensionType::CubeArray:
+            case ITexture::DimensionType::CubeArray:
                 slice = sub_resource.GetIndex().GetDepthSlice() + sub_resource.GetIndex().GetArrayIndex() * 6;
                 break;
             default:
@@ -191,7 +191,7 @@ void TextureMT::SetData(const SubResources& sub_resources, CommandQueue& target_
 void TextureMT::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Texture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, ITexture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
     m_mtl_texture = [GetRenderContextMT().GetNativeDrawable() texture];
 }
 
@@ -246,31 +246,31 @@ MTLTextureDescriptor* TextureMT::GetNativeTextureDescriptor()
     MTLTextureDescriptor* mtl_tex_desc = nil;
     switch(settings.dimension_type)
     {
-    case Texture::DimensionType::Tex2D:
+    case ITexture::DimensionType::Tex2D:
         mtl_tex_desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtl_pixel_format
                                                                           width:settings.dimensions.GetWidth()
                                                                          height:settings.dimensions.GetHeight()
                                                                       mipmapped:is_tex_mipmapped];
         break;
 
-    case Texture::DimensionType::Cube:
+    case ITexture::DimensionType::Cube:
         mtl_tex_desc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:mtl_pixel_format
                                                                              size:settings.dimensions.GetWidth()
                                                                         mipmapped:is_tex_mipmapped];
         break;
 
-    case Texture::DimensionType::Tex1D:
-    case Texture::DimensionType::Tex1DArray:
-    case Texture::DimensionType::Tex2DArray:
-    case Texture::DimensionType::Tex2DMultisample:
-    case Texture::DimensionType::CubeArray:
-    case Texture::DimensionType::Tex3D:
+    case ITexture::DimensionType::Tex1D:
+    case ITexture::DimensionType::Tex1DArray:
+    case ITexture::DimensionType::Tex2DArray:
+    case ITexture::DimensionType::Tex2DMultisample:
+    case ITexture::DimensionType::CubeArray:
+    case ITexture::DimensionType::Tex3D:
         mtl_tex_desc                    = [[MTLTextureDescriptor alloc] init];
         mtl_tex_desc.pixelFormat        = mtl_pixel_format;
         mtl_tex_desc.textureType        = GetNativeTextureType(settings.dimension_type);
         mtl_tex_desc.width              = settings.dimensions.GetWidth();
         mtl_tex_desc.height             = settings.dimensions.GetHeight();
-        mtl_tex_desc.depth              = settings.dimension_type == Texture::DimensionType::Tex3D
+        mtl_tex_desc.depth              = settings.dimension_type == ITexture::DimensionType::Tex3D
                                         ? settings.dimensions.GetDepth()
                                         : 1U;
         mtl_tex_desc.arrayLength        = settings.array_length;
