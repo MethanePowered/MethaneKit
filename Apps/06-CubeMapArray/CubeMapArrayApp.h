@@ -74,7 +74,7 @@ private:
     hlslpp::float4x4         m_model_matrix;
     gfx::Camera              m_camera;
     Ptr<gfx::IRenderState>   m_render_state_ptr;
-    Ptr<gfx::Sampler>        m_texture_sampler_ptr;
+    Ptr<gfx::ISampler>       m_texture_sampler_ptr;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
     Ptr<gfx::SkyBox>         m_sky_box_ptr;
 };

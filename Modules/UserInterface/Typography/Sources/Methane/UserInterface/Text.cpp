@@ -35,7 +35,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/ISampler.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Math.hpp>
@@ -157,12 +157,12 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
     });
 
     static const std::string s_sampler_name = "Font Atlas Sampler";
-    m_atlas_sampler_ptr = std::dynamic_pointer_cast<gfx::Sampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
+    m_atlas_sampler_ptr = std::dynamic_pointer_cast<gfx::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
     if (!m_atlas_sampler_ptr)
     {
-        m_atlas_sampler_ptr = gfx::Sampler::Create(GetUIContext().GetRenderContext(), {
-            gfx::Sampler::Filter(gfx::Sampler::Filter::MinMag::Linear),
-            gfx::Sampler::Address(gfx::Sampler::Address::Mode::ClampToZero),
+        m_atlas_sampler_ptr = gfx::ISampler::Create(GetUIContext().GetRenderContext(), {
+            gfx::ISampler::Filter(gfx::ISampler::Filter::MinMag::Linear),
+            gfx::ISampler::Address(gfx::ISampler::Address::Mode::ClampToZero),
         });
         m_atlas_sampler_ptr->SetName(s_sampler_name);
 
@@ -417,7 +417,7 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
 }
 
 void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
-                                                     const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name)
+                                                     const Ptr<gfx::ISampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)

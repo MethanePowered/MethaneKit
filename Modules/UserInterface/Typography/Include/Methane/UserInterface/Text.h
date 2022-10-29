@@ -43,7 +43,7 @@ struct IProgramBindings;
 struct IBuffer;
 struct IBufferSet;
 struct ITexture;
-struct Sampler;
+struct ISampler;
 }
 
 namespace Methane::UserInterface
@@ -164,7 +164,7 @@ private:
         const gfx::IRenderState&  render_state;
         const Ptr<gfx::IBuffer> & const_buffer_ptr;
         const Ptr<gfx::ITexture>& atlas_texture_ptr;
-        const Ptr<gfx::Sampler> & atlas_sampler_ptr;
+        const Ptr<gfx::ISampler>& atlas_sampler_ptr;
         const TextMesh&           text_mesh;
     };
 
@@ -197,7 +197,7 @@ private:
         void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
         void UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
         void InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
-                                       const Ptr<gfx::Sampler>& atlas_sampler_ptr, std::string_view text_name);
+                                       const Ptr<gfx::ISampler>& atlas_sampler_ptr, std::string_view text_name);
 
     private:
         uint32_t                   m_frame_index;
@@ -233,8 +233,8 @@ private:
     UniquePtr<TextMesh>    m_text_mesh_ptr;
     Ptr<gfx::IRenderState> m_render_state_ptr;
     Ptr<gfx::IViewState> m_view_state_ptr;
-    Ptr<gfx::IBuffer>    m_const_buffer_ptr;
-    Ptr<gfx::Sampler>    m_atlas_sampler_ptr;
+    Ptr<gfx::IBuffer>           m_const_buffer_ptr;
+    Ptr<gfx::ISampler>          m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
     bool                        m_is_viewport_dirty = true;
     bool                        m_is_const_buffer_dirty = true;

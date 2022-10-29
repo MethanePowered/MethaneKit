@@ -33,7 +33,7 @@ Methane graphics core interfaces: all headers under one umbrella.
 #include "IResource.h"
 #include "IBuffer.h"
 #include "ITexture.h"
-#include "Sampler.h"
+#include "ISampler.h"
 #include "CommandKit.h"
 #include "CommandQueue.h"
 #include "TransferCommandList.h"

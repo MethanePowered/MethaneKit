@@ -19,7 +19,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/IBuffer.h
     ${INCLUDE_DIR}/ITexture.h
-    ${INCLUDE_DIR}/Sampler.h
+    ${INCLUDE_DIR}/ISampler.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandKit.h
     ${INCLUDE_DIR}/CommandQueue.h

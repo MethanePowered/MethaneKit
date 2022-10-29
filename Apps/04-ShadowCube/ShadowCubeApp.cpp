@@ -106,21 +106,21 @@ void ShadowCubeApp::Init()
     );
 
     // Create sampler for cube and floor textures sampling
-    m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
-        gfx::Sampler::Settings
+    m_texture_sampler_ptr = gfx::ISampler::Create(GetRenderContext(),
+                                                  gfx::ISampler::Settings
         {
-            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
-            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+            gfx::ISampler::Filter  { gfx::ISampler::Filter::MinMag::Linear },
+            gfx::ISampler::Address { gfx::ISampler::Address::Mode::ClampToEdge }
         }
     );
     m_texture_sampler_ptr->SetName("Texture Sampler");
 
     // Create sampler for shadow-map texture
-    m_shadow_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
-        gfx::Sampler::Settings
+    m_shadow_sampler_ptr = gfx::ISampler::Create(GetRenderContext(),
+                                                 gfx::ISampler::Settings
         {
-            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
-            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+            gfx::ISampler::Filter  { gfx::ISampler::Filter::MinMag::Linear },
+            gfx::ISampler::Address { gfx::ISampler::Address::Mode::ClampToEdge }
         }
     );
     m_shadow_sampler_ptr->SetName("Shadow Map Sampler");

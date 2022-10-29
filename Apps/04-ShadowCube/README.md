@@ -74,7 +74,7 @@ Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective vie
 is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
 coordinate systems.
 
-Also there are two `gfx::Sampler` objects: one is used for sampling cube and floor textures, while the other is used for
+Also there are two `gfx::ISampler` objects: one is used for sampling cube and floor textures, while the other is used for
 sampling shadow map texture.
 
 ```cpp
@@ -154,8 +154,8 @@ private:
     gfx::Camera                 m_view_camera;
     gfx::Camera                 m_light_camera;
     Ptr<gfx::IBuffer>           m_const_buffer_ptr;
-    Ptr<gfx::Sampler>           m_texture_sampler_ptr;
-    Ptr<gfx::Sampler>           m_shadow_sampler_ptr;
+    Ptr<gfx::ISampler>          m_texture_sampler_ptr;
+    Ptr<gfx::ISampler>          m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
     Ptr<gfx::RenderPattern>     m_shadow_pass_pattern_ptr;

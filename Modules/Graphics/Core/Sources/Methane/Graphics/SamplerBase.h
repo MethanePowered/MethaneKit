@@ -25,7 +25,7 @@ Base implementation of the sampler interface.
 
 #include "ResourceBase.h"
 
-#include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/ISampler.h>
 
 namespace Methane::Graphics
 {
@@ -33,14 +33,14 @@ namespace Methane::Graphics
 class ContextBase;
 
 class SamplerBase
-    : public Sampler
+    : public ISampler
     , public ResourceBase
 {
 public:
     SamplerBase(const ContextBase& context, const Settings& settings,
                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
-    // Sampler interface
+    // ISampler interface
     const Settings& GetSettings() const override { return m_settings; }
 
     // IResource interface
@@ -48,7 +48,7 @@ public:
     Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 private:
-    Settings     m_settings;
+    Settings m_settings;
 };
 
 } // namespace Methane::Graphics

@@ -28,9 +28,9 @@ Base implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-Sampler::Settings::Settings(const Filter& filter, const Address& address,
-                            const LevelOfDetail& lod, uint32_t max_anisotropy,
-                            BorderColor border_color, Compare compare_function)
+SamplerSettings::SamplerSettings(const SamplerFilter& filter, const SamplerAddress& address,
+                            const SamplerLevelOfDetail& lod, uint32_t max_anisotropy,
+                                 SamplerBorderColor border_color, Compare compare_function)
     : filter(filter)
     , address(address)
     , lod(lod)
@@ -40,7 +40,7 @@ Sampler::Settings::Settings(const Filter& filter, const Address& address,
 {
 }
 
-Sampler::LevelOfDetail::LevelOfDetail(float bias, float min, float max)
+SamplerLevelOfDetail::SamplerLevelOfDetail(float bias, float min, float max)
     : min(min)
     , max(max)
     , bias(bias)

@@ -29,7 +29,7 @@ which make modern graphics programming easy and convenient in a platform and API
   - [IResourceBarriers](Include/Methane/Graphics/IResourceBarriers.h)
 - [IBuffer, IBufferSet](Include/Methane/Graphics/IBuffer.h)
 - [ITexture](Include/Methane/Graphics/ITexture.h)
-- [Sampler](Include/Methane/Graphics/Sampler.h)
+- [ISampler](Include/Methane/Graphics/ISampler.h)
 
 ### Graphics Pipeline
 

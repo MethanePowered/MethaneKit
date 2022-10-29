@@ -31,7 +31,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/ISampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/RenderPass.h>
 #include <Methane/Graphics/CommandKit.h>
@@ -156,12 +156,12 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
         static const std::string s_sampler_name = "Screen-Quad Sampler";
-        m_texture_sampler_ptr = std::dynamic_pointer_cast<Sampler>(render_context.GetObjectRegistry().GetGraphicsObject(s_sampler_name));
+        m_texture_sampler_ptr = std::dynamic_pointer_cast<ISampler>(render_context.GetObjectRegistry().GetGraphicsObject(s_sampler_name));
         if (!m_texture_sampler_ptr)
         {
-            m_texture_sampler_ptr = Sampler::Create(render_context, {
-                Sampler::Filter(Sampler::Filter::MinMag::Linear),
-                Sampler::Address(Sampler::Address::Mode::ClampToZero),
+            m_texture_sampler_ptr = ISampler::Create(render_context, {
+                ISampler::Filter(ISampler::Filter::MinMag::Linear),
+                ISampler::Address(ISampler::Address::Mode::ClampToZero),
             });
             m_texture_sampler_ptr->SetName(s_sampler_name);
             render_context.GetObjectRegistry().AddGraphicsObject(*m_texture_sampler_ptr);

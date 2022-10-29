@@ -33,10 +33,10 @@ DirectX 12 implementation of the sampler interface.
 namespace Methane::Graphics
 {
 
-using FilterMinMag = Sampler::Filter::MinMag;
-using FilterMip = Sampler::Filter::Mip;
+using FilterMinMag = ISampler::Filter::MinMag;
+using FilterMip = ISampler::Filter::Mip;
 
-static D3D12_FILTER ConvertFilterMinNearestMagNearestToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagNearestToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -51,7 +51,7 @@ static D3D12_FILTER ConvertFilterMinNearestMagNearestToDX(const Sampler::Filter&
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearestMagLinearToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagLinearToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -66,7 +66,7 @@ static D3D12_FILTER ConvertFilterMinNearestMagLinearToDX(const Sampler::Filter& 
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearestToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -79,7 +79,7 @@ static D3D12_FILTER ConvertFilterMinNearestToDX(const Sampler::Filter& filter)
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearMagNearestToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearMagNearestToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -94,7 +94,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagNearestToDX(const Sampler::Filter& 
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearMagLinearToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearMagLinearToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -109,7 +109,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagLinearToDX(const Sampler::Filter& f
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -122,7 +122,7 @@ static D3D12_FILTER ConvertFilterMinLinearToDX(const Sampler::Filter& filter)
     }
 }
 
-static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
+static D3D12_FILTER ConvertFilterToDX(const ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
 
@@ -164,10 +164,10 @@ static D3D12_FILTER ConvertFilterToDX(const Sampler::Filter& filter)
     // D3D12_FILTER_MAXIMUM_ANISOTROPIC
 }
 
-static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(Sampler::Address::Mode address_mode)
+static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDX(ISampler::Address::Mode address_mode)
 {
     META_FUNCTION_TASK();
-    using AddressMode = Sampler::Address::Mode;
+    using AddressMode = ISampler::Address::Mode;
     
     switch(address_mode)
     {
@@ -189,11 +189,11 @@ static void SetColor(const Color4F& in_color, FLOAT* p_out_color)
     }
 }
 
-static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT* p_out_color)
+static void ConvertBorderColorToDXColor(ISampler::BorderColor border_color, FLOAT* p_out_color)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(p_out_color);
-    using BorderColor = Sampler::BorderColor;
+    using BorderColor = ISampler::BorderColor;
     
     switch (border_color)
     {
@@ -204,7 +204,7 @@ static void ConvertBorderColorToDXColor(Sampler::BorderColor border_color, FLOAT
     }
 }
 
-Ptr<Sampler> Sampler::Create(const IContext& context, const Sampler::Settings& settings)
+Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings);

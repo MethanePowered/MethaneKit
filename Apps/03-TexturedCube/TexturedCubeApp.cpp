@@ -145,11 +145,11 @@ void TexturedCubeApp::Init()
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
-    m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
-        gfx::Sampler::Settings
+    m_texture_sampler_ptr = gfx::ISampler::Create(GetRenderContext(),
+                                                  gfx::ISampler::Settings
         {
-            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
-            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+            gfx::ISampler::Filter  { gfx::ISampler::Filter::MinMag::Linear },
+            gfx::ISampler::Address { gfx::ISampler::Address::Mode::ClampToEdge }
         }
     );
 

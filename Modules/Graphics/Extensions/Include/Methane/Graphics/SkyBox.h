@@ -46,7 +46,7 @@ namespace Methane::Graphics
 struct CommandQueue;
 struct IRenderContext;
 struct IRenderState;
-struct Sampler;
+struct ISampler;
 class Camera;
 
 class SkyBox
@@ -98,7 +98,7 @@ private:
     const Ptr<CommandQueue> m_render_cmd_queue_ptr;
     IRenderContext&         m_context;
     TexMeshBuffers          m_mesh_buffers;
-    Ptr<Sampler>            m_texture_sampler_ptr;
+    Ptr<ISampler>           m_texture_sampler_ptr;
     Ptr<IRenderState>       m_render_state_ptr;
 };
 

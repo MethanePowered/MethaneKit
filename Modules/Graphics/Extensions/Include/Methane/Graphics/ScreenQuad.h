@@ -42,7 +42,7 @@ struct IViewState;
 struct IBufferSet;
 struct IBuffer;
 struct ITexture;
-struct Sampler;
+struct ISampler;
 struct IProgramBindings;
 
 class ScreenQuad
@@ -96,7 +96,7 @@ private:
     Ptr<IBuffer>             m_index_buffer_ptr;
     Ptr<IBuffer>             m_const_buffer_ptr;
     Ptr<ITexture>            m_texture_ptr;
-    Ptr<Sampler>             m_texture_sampler_ptr;
+    Ptr<ISampler>            m_texture_sampler_ptr;
     Ptr<IProgramBindings>    m_const_program_bindings_ptr;
 };
 

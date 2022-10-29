@@ -30,7 +30,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/Sampler.h>
+#include <Methane/Graphics/ISampler.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -92,10 +92,10 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, IT
     m_render_state_ptr = IRenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Sky-box render state");
 
-    m_texture_sampler_ptr = Sampler::Create(m_context, {
-        Sampler::Filter(Sampler::Filter::MinMag::Linear),
-        Sampler::Address(Sampler::Address::Mode::ClampToZero),
-        Sampler::LevelOfDetail(m_settings.lod_bias)
+    m_texture_sampler_ptr = ISampler::Create(m_context, {
+        ISampler::Filter(ISampler::Filter::MinMag::Linear),
+        ISampler::Address(ISampler::Address::Mode::ClampToZero),
+        ISampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }

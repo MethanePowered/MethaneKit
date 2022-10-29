@@ -150,7 +150,7 @@ private:
     Ptr<gfx::IBuffer>       m_index_buffer_ptr;
     Ptr<gfx::IBuffer>       m_const_buffer_ptr;
     Ptr<gfx::ITexture>      m_cube_texture_ptr;
-    Ptr<gfx::Sampler>       m_texture_sampler_ptr;
+    Ptr<gfx::ISampler>      m_texture_sampler_ptr;
 
     const gfx::IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
@@ -260,7 +260,7 @@ by path in embedded file system `MethaneBubbles.jpg`. Image is added to applicat
 [configured in CMakeLists.txt](#cmake-build-configuration). `Graphics::ImageLoader::Options` is passed to
 image loading function to request mipmaps generation and using SRGB texture format.
 
-Sampler object is created with `Graphics::Sampler::Create(...)` function which defines
+ISampler object is created with `Graphics::ISampler::Create(...)` function which defines
 parameters of texture sampling from shader.
 
 ```cpp
@@ -275,11 +275,11 @@ void TexturedCubeApp::Init()
     m_cube_texture_ptr = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
-    m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
-        gfx::Sampler::Settings
+    m_texture_sampler_ptr = gfx::ISampler::Create(GetRenderContext(),
+        gfx::ISampler::Settings
         {
-            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
-            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+            gfx::ISampler::Filter  { gfx::ISampler::Filter::MinMag::Linear },
+            gfx::ISampler::Address { gfx::ISampler::Address::Mode::ClampToEdge }
         }
     );
 
