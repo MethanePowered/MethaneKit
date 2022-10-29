@@ -24,7 +24,7 @@ Renders text labels to the faces of cube-map texture array
 #pragma once
 
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/ResourceBarriers.h>
+#include <Methane/Graphics/IResourceBarriers.h>
 
 #include <string>
 #include <array>
@@ -36,7 +36,7 @@ struct RenderPass;
 struct RenderCommandList;
 struct CommandListSet;
 struct Texture;
-class  ResourceBarriers;
+class  ResourceBarriersBase;
 class  ScreenQuad;
 }
 
@@ -118,7 +118,7 @@ private:
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
     Ptr<gfx::RenderPattern>     m_texture_face_render_pattern_ptr;
-    Ptr<gfx::ResourceBarriers>  m_ending_resource_barriers_ptr;
+    Ptr<gfx::IResourceBarriers> m_ending_resource_barriers_ptr;
     Ptr<gfx::RenderPattern>     m_ending_render_pattern_ptr;
     Ptr<gfx::RenderPass>        m_ending_render_pass_ptr;
     Ptr<gfx::RenderCommandList> m_ending_render_cmd_list_ptr;

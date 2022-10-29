@@ -265,8 +265,8 @@ private:
     ResourceStorageType     m_vk_resource;
     ViewDescriptorByViewId  m_view_descriptor_by_view_id;
     Opt<uint32_t>            m_owner_queue_family_index_opt;
-    Ptr<IResource::Barriers> m_upload_begin_transition_barriers_ptr;
-    Ptr<IResource::Barriers> m_upload_end_transition_barriers_ptr;
+    Ptr<IResourceBarriers>  m_upload_begin_transition_barriers_ptr;
+    Ptr<IResourceBarriers>  m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

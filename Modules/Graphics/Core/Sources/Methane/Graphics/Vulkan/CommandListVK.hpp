@@ -32,6 +32,7 @@ Vulkan base template implementation of the command list interface.
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/ResourceBarriersBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -167,12 +168,12 @@ public:
         m_is_native_committed = true;
     }
 
-    void SetResourceBarriers(const IResource::Barriers& resource_barriers) final
+    void SetResourceBarriers(const IResourceBarriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         CommandListBaseT::VerifyEncodingState();
 
-        const auto lock_guard = resource_barriers.Lock();
+        const auto lock_guard = static_cast<const ResourceBarriersBase&>(resource_barriers).Lock();
         if (resource_barriers.IsEmpty())
             return;
 

@@ -80,13 +80,13 @@ void ParallelRenderCommandListDX::ResetWithState(IRenderState& render_state, Deb
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
-void ParallelRenderCommandListDX::SetBeginningResourceBarriers(const IResource::Barriers& resource_barriers)
+void ParallelRenderCommandListDX::SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.SetResourceBarriers(resource_barriers);
 }
 
-void ParallelRenderCommandListDX::SetEndingResourceBarriers(const IResource::Barriers& resource_barriers)
+void ParallelRenderCommandListDX::SetEndingResourceBarriers(const IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_ending_command_list.SetResourceBarriers(resource_barriers);

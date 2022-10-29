@@ -58,13 +58,13 @@ public:
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
                                                     const std::optional<BytesRange>& data_range = {}) override;
-    bool SetState(State state, Ptr<Barriers>& out_barriers) final;
+    bool SetState(State state, Ptr<IBarriers>& out_barriers) final;
     bool SetState(State state) final;
     bool SetOwnerQueueFamily(uint32_t family_index) final;
-    bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) final;
+    bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) final;
     void SetData(const SubResources& sub_resources, CommandQueue&) override;
 
-    [[nodiscard]] Ptr<Barriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
+    [[nodiscard]] Ptr<IBarriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
 
 protected:
     [[nodiscard]] const ContextBase&   GetContextBase() const noexcept                  { return m_context; }
@@ -90,7 +90,7 @@ private:
     bool               m_sub_resource_count_constant = false;
     SubResource::Count m_sub_resource_count;
     SubResourceSizes   m_sub_resource_sizes;
-    Ptr<Barriers>      m_setup_transition_barriers_ptr;
+    Ptr<IBarriers>     m_setup_transition_barriers_ptr;
     Opt<uint32_t>      m_owner_queue_family_index_opt;
     bool               m_is_state_change_updates_barriers = true;
     TracyLockable(std::mutex, m_state_mutex)

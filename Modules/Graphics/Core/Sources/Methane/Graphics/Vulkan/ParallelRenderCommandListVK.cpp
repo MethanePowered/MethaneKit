@@ -96,14 +96,14 @@ void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, Deb
     ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
 }
 
-void ParallelRenderCommandListVK::SetBeginningResourceBarriers(const IResource::Barriers& resource_barriers)
+void ParallelRenderCommandListVK::SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_ending_command_list.ResetOnce();
     m_beginning_command_list.SetResourceBarriers(resource_barriers);
 }
 
-void ParallelRenderCommandListVK::SetEndingResourceBarriers(const IResource::Barriers& resource_barriers)
+void ParallelRenderCommandListVK::SetEndingResourceBarriers(const IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_ending_command_list.ResetOnce();

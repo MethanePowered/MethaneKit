@@ -220,8 +220,8 @@ private:
 
     DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
-    Ptr<IResource::Barriers>    m_upload_sync_transition_barriers_ptr;
-    Ptr<IResource::Barriers>    m_upload_begin_transition_barriers_ptr;
+    Ptr<IResourceBarriers>      m_upload_sync_transition_barriers_ptr;
+    Ptr<IResourceBarriers>      m_upload_begin_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

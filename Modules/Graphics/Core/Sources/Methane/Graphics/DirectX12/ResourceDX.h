@@ -65,7 +65,7 @@ struct IResourceDX : virtual IResource // NOSONAR
 {
 public:
     using Barrier     = IResource::Barrier;
-    using Barriers    = IResource::Barriers;
+    using Barriers    = IResourceBarriers;
     using State       = IResource::State;
     using BarriersDX  = ResourceBarriersDX;
     using ViewDX      = ResourceViewDX;

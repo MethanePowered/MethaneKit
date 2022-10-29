@@ -113,7 +113,7 @@ Data::Size ResourceBase::GetSubResourceDataSize(const SubResource::Index& sub_re
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
-bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
+bool ResourceBase::SetState(State state, Ptr<IBarriers>& out_barriers)
 {
     META_FUNCTION_TASK();
     if (!m_is_state_change_updates_barriers)
@@ -135,7 +135,7 @@ bool ResourceBase::SetState(State state, Ptr<Barriers>& out_barriers)
     if (m_state != m_auto_transition_source_state_opt)
     {
         if (!out_barriers)
-            out_barriers = Barriers::Create();
+            out_barriers = IResourceBarriers::Create();
 
         out_barriers->AddStateTransition(*this, m_state, state);
     }
@@ -159,7 +159,7 @@ bool ResourceBase::SetState(State state)
     return true;
 }
 
-bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers)
+bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers)
 {
     META_FUNCTION_TASK();
     if (m_owner_queue_family_index_opt == family_index)
@@ -178,7 +178,7 @@ bool ResourceBase::SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out
     if (m_owner_queue_family_index_opt)
     {
         if (!out_barriers)
-            out_barriers = Barriers::Create();
+            out_barriers = IBarriers::Create();
 
         out_barriers->AddOwnerTransition(*this, *m_owner_queue_family_index_opt, family_index);
     }

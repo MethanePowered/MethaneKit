@@ -88,7 +88,7 @@ struct CommandList
     virtual void  ResetOnce(DebugGroup* p_debug_group = nullptr) = 0;
     virtual void  SetProgramBindings(IProgramBindings& program_bindings,
                                      IProgramBindings::ApplyBehavior apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental) = 0;
-    virtual void  SetResourceBarriers(const IResource::Barriers& resource_barriers) = 0;
+    virtual void  SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
     [[nodiscard]] virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;

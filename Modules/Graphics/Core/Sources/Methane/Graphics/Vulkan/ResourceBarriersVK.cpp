@@ -65,14 +65,14 @@ static void UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarrier& vk_image
     vk_image_memory_barrier.setDstQueueFamilyIndex(owner_change.GetQueueFamilyAfter());
 }
 
-Ptr<ResourceBarriers> ResourceBarriers::Create(const Set& barriers)
+Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ResourceBarriersVK>(barriers);
 }
 
 ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
-    : ResourceBarriers(barriers)
+    : ResourceBarriersBase(barriers)
 {
     META_FUNCTION_TASK();
     for (const ResourceBarrier barrier: barriers)
@@ -81,11 +81,11 @@ ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
     }
 }
 
-ResourceBarriers::AddResult ResourceBarriersVK::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
+ResourceBarriersBase::AddResult ResourceBarriersVK::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
-    const auto      lock_guard = ResourceBarriers::Lock();
-    const AddResult result     = ResourceBarriers::Add(id, barrier);
+    const auto      lock_guard = ResourceBarriersBase::Lock();
+    const AddResult result     = ResourceBarriersBase::Add(id, barrier);
 
     switch (result)
     {
@@ -101,8 +101,8 @@ ResourceBarriers::AddResult ResourceBarriersVK::Add(const ResourceBarrier::Id& i
 bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard = ResourceBarriers::Lock();
-    if (!ResourceBarriers::Remove(id))
+    const auto lock_guard = ResourceBarriersBase::Lock();
+    if (!ResourceBarriersBase::Remove(id))
         return false;
 
     const IResource& resource = id.GetResource();
@@ -357,7 +357,7 @@ void ResourceBarriersVK::UpdateStageMasks()
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_src_stage_mask = {};
     m_vk_default_barrier.vk_dst_stage_mask = {};
-    for(const auto& [barrier_id, barrier] : ResourceBarriers::GetMap())
+    for(const auto& [barrier_id, barrier] : ResourceBarriersBase::GetMap())
     {
         UpdateStageMasks(barrier);
     }

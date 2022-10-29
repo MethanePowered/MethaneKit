@@ -25,7 +25,7 @@ Methane resource interface: base class of all GPU resources.
 
 #include "IObject.h"
 #include "ResourceView.h"
-#include "ResourceBarriers.h"
+#include "IResourceBarriers.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/IEmitter.h>
@@ -89,7 +89,7 @@ struct IResource
     using View               = ResourceView;
     using Views              = ResourceViews;
     using Barrier            = ResourceBarrier;
-    using Barriers           = ResourceBarriers;
+    using IBarriers          = IResourceBarriers;
     using BytesRange         = Methane::Graphics::BytesRange;
     using BytesRangeOpt      = Methane::Graphics::BytesRangeOpt;
     using SubResource        = Methane::Graphics::SubResource;
@@ -100,9 +100,9 @@ struct IResource
 
     // IResource interface
     virtual bool SetState(State state) = 0;
-    virtual bool SetState(State state, Ptr<Barriers>& out_barriers) = 0;
+    virtual bool SetState(State state, Ptr<IBarriers>& out_barriers) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
-    virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<Barriers>& out_barriers) = 0;
+    virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) = 0;
     virtual void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) = 0;
     virtual void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) = 0;
 

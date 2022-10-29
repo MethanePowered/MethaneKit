@@ -101,12 +101,12 @@ public:
         m_is_native_committed = true;
     }
 
-    void SetResourceBarriers(const IResource::Barriers& resource_barriers) final
+    void SetResourceBarriers(const IResourceBarriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         VerifyEncodingState();
         
-        const auto lock_guard = resource_barriers.Lock();
+        const auto lock_guard = static_cast<const ResourceBarriersBase&>(resource_barriers).Lock();
         if (resource_barriers.IsEmpty())
             return;
 

@@ -122,9 +122,9 @@ private:
     IProgram::Arguments             m_arguments;
     ArgumentBindings                m_binding_by_argument;
     ResourceStatesByAccess          m_transition_resource_states_by_access;
-    ResourceRefsByAccess             m_resource_refs_by_access;
-    mutable Ptr<IResource::Barriers> m_resource_state_transition_barriers_ptr;
-    Data::Index                      m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
+    ResourceRefsByAccess            m_resource_refs_by_access;
+    mutable Ptr<IResourceBarriers>  m_resource_state_transition_barriers_ptr;
+    Data::Index                     m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
 } // namespace Methane::Graphics

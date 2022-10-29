@@ -67,7 +67,7 @@ private:
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void UpdateMutableDescriptorSetName();
 
-    mutable Ptr<IResource::Barriers> m_resource_ownership_transition_barriers_ptr;
+    mutable Ptr<IResourceBarriers> m_resource_ownership_transition_barriers_ptr;
     std::vector<vk::DescriptorSet>   m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
     bool                             m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
     std::vector<uint32_t>            m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset

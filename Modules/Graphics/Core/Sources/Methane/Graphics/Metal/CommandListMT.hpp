@@ -119,7 +119,7 @@ public:
 
     // CommandListBase interface
 
-    void SetResourceBarriers(const IResource::Barriers&) override { }
+    void SetResourceBarriers(const IResourceBarriers&) override { }
 
     void Execute(const CommandList::CompletedCallback& completed_callback) override
     {

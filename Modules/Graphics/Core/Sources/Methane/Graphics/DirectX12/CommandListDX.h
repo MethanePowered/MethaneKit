@@ -55,7 +55,7 @@ struct ICommandListDX
     virtual CommandQueueDX&             GetCommandQueueDX() = 0;
     virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
-    virtual void SetResourceBarriers(const IResource::Barriers& resource_barriers) = 0;
+    virtual void SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
 
     virtual ~ICommandListDX() = default;
 };

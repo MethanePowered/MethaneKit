@@ -80,7 +80,7 @@ struct IResourceVK : virtual IResource // NOSONAR
 {
 public:
     using Barrier  = IResource::Barrier;
-    using Barriers = IResource::Barriers;
+    using Barriers = IResourceBarriers;
     using State    = IResource::State;
     using ViewVK   = ResourceViewVK;
     using ViewsVK  = ResourceViewsVK;

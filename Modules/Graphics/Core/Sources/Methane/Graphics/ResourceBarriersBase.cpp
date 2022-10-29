@@ -16,12 +16,13 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ResourceBarriers.cpp
-Methane resource barriers for manual or automatic resource state synchronization on GPU.
+FILE: Methane/Graphics/ResourceBarriersBase.cpp
+Methane resource barriers base implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/ResourceBarriers.h>
+#include "ResourceBarriersBase.h"
+
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Instrumentation.h>
@@ -249,9 +250,9 @@ void ResourceBarrier::ApplyTransition() const
     }
 }
 
-Ptr<ResourceBarriers> ResourceBarriers::CreateTransitions(const Refs<IResource>& resources,
-                                                          const Opt<ResourceStateChange>& state_change,
-                                                          const Opt<ResourceOwnerChange>& owner_change)
+Ptr<IResourceBarriers> IResourceBarriers::CreateTransitions(const Refs<IResource>& resources,
+                                                            const Opt<ResourceStateChange>& state_change,
+                                                            const Opt<ResourceOwnerChange>& owner_change)
 {
     META_FUNCTION_TASK();
     Set resource_barriers;
@@ -263,10 +264,10 @@ Ptr<ResourceBarriers> ResourceBarriers::CreateTransitions(const Refs<IResource>&
         if (state_change.has_value())
             resource_barriers.emplace(resource_ref.get(), *state_change);
     }
-    return ResourceBarriers::Create(resource_barriers);
+    return IResourceBarriers::Create(resource_barriers);
 }
 
-ResourceBarriers::ResourceBarriers(const Set& barriers)
+ResourceBarriersBase::ResourceBarriersBase(const Set& barriers)
 {
     META_FUNCTION_TASK();
     std::transform(barriers.begin(), barriers.end(), std::inserter(m_barriers_map, m_barriers_map.begin()),
@@ -274,7 +275,7 @@ ResourceBarriers::ResourceBarriers(const Set& barriers)
                    { return std::pair<ResourceBarrierId, ResourceBarrier>(barrier.GetId(), barrier); });
 }
 
-ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
+ResourceBarriersBase::Set ResourceBarriersBase::GetSet() const noexcept
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -284,7 +285,7 @@ ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
     return barriers;
 }
 
-const ResourceBarrier* ResourceBarriers::GetBarrier(const ResourceBarrierId& id) const noexcept
+const ResourceBarrier* ResourceBarriersBase::GetBarrier(const ResourceBarrierId& id) const noexcept
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -292,7 +293,7 @@ const ResourceBarrier* ResourceBarriers::GetBarrier(const ResourceBarrierId& id)
     return barrier_it == m_barriers_map.end() ? nullptr : &barrier_it->second;
 }
 
-bool ResourceBarriers::HasStateTransition(IResource& resource, ResourceState before, ResourceState after)
+bool ResourceBarriersBase::HasStateTransition(IResource& resource, ResourceState before, ResourceState after)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -301,7 +302,7 @@ bool ResourceBarriers::HasStateTransition(IResource& resource, ResourceState bef
            barrier_it->second == ResourceBarrier(resource, before, after);
 }
 
-bool ResourceBarriers::HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
+bool ResourceBarriersBase::HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -310,32 +311,32 @@ bool ResourceBarriers::HasOwnerTransition(IResource& resource, uint32_t queue_fa
            barrier_it->second == ResourceBarrier(resource, queue_family_before, queue_family_after);
 }
 
-ResourceBarriers::AddResult ResourceBarriers::AddStateTransition(IResource& resource, ResourceState before, ResourceState after)
+ResourceBarriersBase::AddResult ResourceBarriersBase::AddStateTransition(IResource& resource, ResourceState before, ResourceState after)
 {
     return Add(ResourceBarrierId(ResourceBarrier::Type::StateTransition, resource), ResourceBarrier(resource, before, after));
 }
 
-ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
+ResourceBarriersBase::AddResult ResourceBarriersBase::AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
 {
     return Add(ResourceBarrierId(ResourceBarrier::Type::OwnerTransition, resource), ResourceBarrier(resource, queue_family_before, queue_family_after));
 }
 
-bool ResourceBarriers::Remove(ResourceBarrier::Type type, IResource& resource)
+bool ResourceBarriersBase::Remove(ResourceBarrier::Type type, IResource& resource)
 {
     return Remove(ResourceBarrierId(type, resource));
 }
 
-bool ResourceBarriers::RemoveStateTransition(IResource& resource)
+bool ResourceBarriersBase::RemoveStateTransition(IResource& resource)
 {
     return Remove(ResourceBarrierId(ResourceBarrier::Type::StateTransition, resource));
 }
 
-bool ResourceBarriers::RemoveOwnerTransition(IResource& resource)
+bool ResourceBarriersBase::RemoveOwnerTransition(IResource& resource)
 {
     return Remove(ResourceBarrierId(ResourceBarrier::Type::OwnerTransition, resource));
 }
 
-ResourceBarriers::AddResult ResourceBarriers::Add(const ResourceBarrierId& id, const ResourceBarrier& barrier)
+ResourceBarriersBase::AddResult ResourceBarriersBase::Add(const ResourceBarrierId& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
@@ -351,14 +352,14 @@ ResourceBarriers::AddResult ResourceBarriers::Add(const ResourceBarrierId& id, c
     return AddResult::Updated;
 }
 
-bool ResourceBarriers::Remove(const ResourceBarrierId& id)
+bool ResourceBarriersBase::Remove(const ResourceBarrierId& id)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
     return m_barriers_map.erase(id);
 }
 
-void ResourceBarriers::ApplyTransitions() const
+void ResourceBarriersBase::ApplyTransitions() const
 {
     META_FUNCTION_TASK();
     for(const auto& [barrier_id, barrier] : m_barriers_map)
@@ -367,7 +368,7 @@ void ResourceBarriers::ApplyTransitions() const
     }
 }
 
-ResourceBarriers::operator std::string() const noexcept
+ResourceBarriersBase::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);

@@ -15,7 +15,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IProgramBindings.h
     ${INCLUDE_DIR}/IRenderState.h
     ${INCLUDE_DIR}/IResource.h
-    ${INCLUDE_DIR}/ResourceBarriers.h
+    ${INCLUDE_DIR}/IResourceBarriers.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/Texture.h
@@ -256,7 +256,8 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
     ${SOURCES_DIR}/ResourceView.cpp
-    ${SOURCES_DIR}/ResourceBarriers.cpp
+    ${SOURCES_DIR}/ResourceBarriersBase.h
+    ${SOURCES_DIR}/ResourceBarriersBase.cpp
     ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
     ${SOURCES_DIR}/BufferBase.h

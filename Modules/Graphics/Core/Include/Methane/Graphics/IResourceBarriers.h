@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ResourceBarriers.h
+FILE: Methane/Graphics/IResourceBarriers.h
 Methane resource barriers for manual or automatic resource state synchronization on GPU.
 
 ******************************************************************************/
@@ -25,10 +25,7 @@ Methane resource barriers for manual or automatic resource state synchronization
 
 #include <Methane/Memory.hpp>
 
-#include <Tracy.hpp>
-
 #include <string>
-#include <mutex>
 #include <map>
 #include <set>
 
@@ -166,9 +163,8 @@ private:
     Change m_change;
 };
 
-class ResourceBarriers
+struct IResourceBarriers
 {
-public:
     using Set = std::set<ResourceBarrier>;
     using Map = std::map<ResourceBarrier::Id, ResourceBarrier>;
 
@@ -179,40 +175,32 @@ public:
         Updated
     };
 
-    [[nodiscard]] static Ptr<ResourceBarriers> Create(const Set& barriers = {});
-    [[nodiscard]] static Ptr<ResourceBarriers> CreateTransitions(const Refs<IResource>& resources,
-                                                                 const Opt<ResourceBarrier::StateChange>& state_change,
-                                                                 const Opt<ResourceBarrier::OwnerChange>& owner_change);
+    [[nodiscard]] static Ptr<IResourceBarriers> Create(const Set& barriers = {});
+    [[nodiscard]] static Ptr<IResourceBarriers> CreateTransitions(const Refs<IResource>& resources,
+                                                                  const Opt<ResourceBarrier::StateChange>& state_change,
+                                                                  const Opt<ResourceBarrier::OwnerChange>& owner_change);
 
-    [[nodiscard]] bool  IsEmpty() const noexcept { return m_barriers_map.empty(); }
-    [[nodiscard]] Set   GetSet() const noexcept;
-    [[nodiscard]] const Map& GetMap() const noexcept  { return m_barriers_map; }
-    [[nodiscard]] const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept;
-    [[nodiscard]] bool  HasStateTransition(IResource& resource, ResourceState before, ResourceState after);
-    [[nodiscard]] bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
+    [[nodiscard]] virtual bool  IsEmpty() const noexcept = 0;
+    [[nodiscard]] virtual Set   GetSet() const noexcept = 0;
+    [[nodiscard]] virtual const Map& GetMap() const noexcept = 0;
+    [[nodiscard]] virtual const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept = 0;
+    [[nodiscard]] virtual bool  HasStateTransition(IResource& resource, ResourceState before, ResourceState after) = 0;
+    [[nodiscard]] virtual bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) = 0;
+    [[nodiscard]] virtual explicit operator std::string() const noexcept = 0;
 
-    bool Remove(ResourceBarrier::Type type, IResource& resource);
-    bool RemoveStateTransition(IResource& resource);
-    bool RemoveOwnerTransition(IResource& resource);
+    virtual bool Remove(ResourceBarrier::Type type, IResource& resource) = 0;
+    virtual bool RemoveStateTransition(IResource& resource) = 0;
+    virtual bool RemoveOwnerTransition(IResource& resource) = 0;
 
-    AddResult AddStateTransition(IResource& resource, ResourceState before, ResourceState after);
-    AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after);
+    virtual AddResult AddStateTransition(IResource& resource, ResourceState before, ResourceState after) = 0;
+    virtual AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) = 0;
 
-    virtual AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier);
-    virtual bool      Remove(const ResourceBarrier::Id& id);
-    virtual ~ResourceBarriers() = default;
+    virtual AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) = 0;
+    virtual bool      Remove(const ResourceBarrier::Id& id) = 0;
 
-    void ApplyTransitions() const;
-    auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
+    virtual void ApplyTransitions() const = 0;
 
-    [[nodiscard]] explicit operator std::string() const noexcept;
-
-protected:
-    explicit ResourceBarriers(const Set& barriers);
-
-private:
-    Map m_barriers_map;
-    mutable TracyLockable(std::recursive_mutex, m_barriers_mutex);
+    virtual ~IResourceBarriers() = default;
 };
 
 } // namespace Methane::Graphics

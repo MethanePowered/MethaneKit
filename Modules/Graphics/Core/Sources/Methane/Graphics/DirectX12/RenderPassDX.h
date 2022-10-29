@@ -134,8 +134,8 @@ private:
     mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
 
     // IResource transition barriers
-    Ptr<IResource::Barriers> m_begin_transition_barriers_ptr;
-    Ptr<IResource::Barriers> m_end_transition_barriers_ptr;
+    Ptr<IResourceBarriers> m_begin_transition_barriers_ptr;
+    Ptr<IResourceBarriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics

@@ -116,14 +116,14 @@ static std::function<bool(const D3D12_RESOURCE_BARRIER&)> GetNativeResourceBarri
     }
 }
 
-Ptr<ResourceBarriers> ResourceBarriers::Create(const Set& barriers)
+Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ResourceBarriersDX>(barriers);
 }
 
 ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
-    : ResourceBarriers(barriers)
+    : ResourceBarriersBase(barriers)
 {
     META_FUNCTION_TASK();
     for(const ResourceBarrier barrier : barriers)
@@ -132,11 +132,11 @@ ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
     }
 }
 
-ResourceBarriers::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
+ResourceBarriersBase::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard  = ResourceBarriers::Lock();
-    const AddResult result = ResourceBarriers::Add(id, barrier);
+    const auto lock_guard  = ResourceBarriersBase::Lock();
+    const AddResult result = ResourceBarriersBase::Add(id, barrier);
 
     if (id.GetType() != ResourceBarrier::Type::StateTransition)
         return result;
@@ -154,8 +154,8 @@ ResourceBarriers::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& i
 bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard = ResourceBarriers::Lock();
-    if (!ResourceBarriers::Remove(id))
+    const auto lock_guard = ResourceBarriersBase::Lock();
+    if (!ResourceBarriersBase::Remove(id))
         return false;
 
     if (id.GetType() != ResourceBarrier::Type::StateTransition)

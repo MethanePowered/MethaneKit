@@ -348,7 +348,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& 
 
 void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& color_state,
                                          const std::optional<IResource::State>& depth_state,
-                                         Ptr<IResource::Barriers>& transition_barriers_ptr,
+                                         Ptr<IResourceBarriers>& transition_barriers_ptr,
                                          RenderCommandListBase& render_command_list) const
 {
     META_FUNCTION_TASK();

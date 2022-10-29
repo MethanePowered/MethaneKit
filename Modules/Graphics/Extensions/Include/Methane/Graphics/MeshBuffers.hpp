@@ -107,10 +107,10 @@ public:
 
     [[nodiscard]] const IContext& GetContext() const noexcept { return m_context; }
 
-    Ptr<IResource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<IResource::Barriers> beginning_resource_barriers_ptr = IResource::Barriers::Create({
+        Ptr<IResourceBarriers> beginning_resource_barriers_ptr = IResourceBarriers::Create({
             { GetIndexBuffer(), GetIndexBuffer().GetState(), IResource::State::IndexBuffer },
         });
 
@@ -342,10 +342,10 @@ public:
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    Ptr<IResource::Barriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
+    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(Buffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<IResource::Barriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
+        Ptr<IResourceBarriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
         for (const Ptr<Texture>& texture_ptr : m_subset_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);

@@ -176,7 +176,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         m_ending_render_pass_ptr = gfx::RenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
         m_ending_render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
         m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
-        m_ending_resource_barriers_ptr = gfx::IResource::Barriers::Create({
+        m_ending_resource_barriers_ptr = gfx::IResourceBarriers::Create({
             { m_rt_texture, gfx::IResource::State::RenderTarget, rt_texture_final_state }
         });
         slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);

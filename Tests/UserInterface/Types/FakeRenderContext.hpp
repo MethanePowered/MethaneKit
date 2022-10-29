@@ -122,7 +122,7 @@ public:
     void Reset(CommandList::DebugGroup*) override                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
     void ResetOnce(CommandList::DebugGroup*) override                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetProgramBindings(IProgramBindings&, IProgramBindings::ApplyBehavior) override { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetResourceBarriers(const IResource::Barriers&) override                        { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetResourceBarriers(const IResourceBarriers&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Commit() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
     void WaitUntilCompleted(uint32_t) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                   { throw Data::TimeRange{ }; }
