@@ -42,6 +42,7 @@ public:
     [[nodiscard]] bool       IsEmpty() const noexcept override { return m_barriers_map.empty(); }
     [[nodiscard]] Set        GetSet() const noexcept override;
     [[nodiscard]] const Map& GetMap() const noexcept override { return m_barriers_map; }
+    [[nodiscard]] explicit operator std::string() const noexcept override;
 
     [[nodiscard]] const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept override;
     [[nodiscard]] bool HasStateTransition(IResource& resource, ResourceState before, ResourceState after) override;
@@ -60,8 +61,6 @@ public:
     void ApplyTransitions() const override;
 
     auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
-
-    [[nodiscard]] explicit operator std::string() const noexcept;
 
 private:
     Map m_barriers_map;
