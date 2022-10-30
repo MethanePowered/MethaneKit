@@ -74,7 +74,7 @@ struct IResourceCallback
 };
 
 struct IContext;
-struct CommandQueue;
+struct ICommandQueue;
 
 struct IResource
     : virtual IObject // NOSONAR
@@ -103,7 +103,7 @@ struct IResource
     virtual bool SetState(State state, Ptr<IBarriers>& out_barriers) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index) = 0;
     virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) = 0;
-    virtual void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) = 0;
+    virtual void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) = 0;
     virtual void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) = 0;
 
     [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;

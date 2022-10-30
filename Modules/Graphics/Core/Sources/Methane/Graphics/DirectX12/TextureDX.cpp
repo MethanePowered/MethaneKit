@@ -467,7 +467,7 @@ bool ImageTextureDX::SetName(const std::string& name)
     return true;
 }
 
-void ImageTextureDX::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
+void ImageTextureDX::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);

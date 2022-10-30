@@ -38,7 +38,7 @@ class CommandQueueMT final : public CommandQueueBase
 public:
     CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type);
 
-    // CommandQueue interface
+    // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
     // IObject interface

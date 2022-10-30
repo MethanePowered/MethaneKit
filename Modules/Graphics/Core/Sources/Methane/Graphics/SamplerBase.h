@@ -44,7 +44,7 @@ public:
     const Settings& GetSettings() const override { return m_settings; }
 
     // IResource interface
-    void        SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void        SetData(const SubResources& sub_resources, ICommandQueue&) override;
     Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 private:

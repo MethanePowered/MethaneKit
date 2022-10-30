@@ -233,7 +233,7 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
           command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const CommandQueue& command_queue,
+void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ICommandQueue& command_queue,
                               const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();

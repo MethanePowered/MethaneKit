@@ -68,7 +68,7 @@ private:
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
 
     const RenderContextVK& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
@@ -83,7 +83,7 @@ public:
                           const Opt<DepthStencil>& depth_stencil_opt);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -104,7 +104,7 @@ public:
     RenderTargetTextureVK(const RenderContextVK& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
 
     // ITextureVK interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -123,7 +123,7 @@ public:
     ImageTextureVK(const ContextBase& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
 
     // IObject overide
     bool SetName(const std::string& name) override;
@@ -136,7 +136,7 @@ private:
     // ResourceVK override
     Ptr<ResourceViewVK::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
-    void GenerateMipLevels(CommandQueue& target_cmd_queue, State target_resource_state);
+    void GenerateMipLevels(ICommandQueue& target_cmd_queue, State target_resource_state);
 
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;
     vk::UniqueDeviceMemory           m_vk_unique_staging_memory;

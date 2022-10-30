@@ -30,18 +30,18 @@ Methane Fence interface used for CPU-GPU synchronization.
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 
 struct IFence : virtual IObject // NOSONAR
 {
-    [[nodiscard]] static Ptr<IFence> Create(CommandQueue& command_queue);
+    [[nodiscard]] static Ptr<IFence> Create(ICommandQueue& command_queue);
 
     // IFence interface
     virtual void Signal() = 0;
     virtual void WaitOnCpu() = 0;
-    virtual void WaitOnGpu(CommandQueue& wait_on_command_queue) = 0;
+    virtual void WaitOnGpu(ICommandQueue& wait_on_command_queue) = 0;
     virtual void FlushOnCpu() = 0;
-    virtual void FlushOnGpu(CommandQueue& wait_on_command_queue) = 0;
+    virtual void FlushOnGpu(ICommandQueue& wait_on_command_queue) = 0;
 };
 
 } // namespace Methane::Graphics

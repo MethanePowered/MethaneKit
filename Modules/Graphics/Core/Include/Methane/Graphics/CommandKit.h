@@ -35,7 +35,7 @@ namespace Methane::Graphics
 {
 
 struct IContext;
-struct CommandQueue;
+struct ICommandQueue;
 struct IFence;
 
 struct CommandKit : virtual IObject // NOSONAR
@@ -51,11 +51,11 @@ struct CommandKit : virtual IObject // NOSONAR
 
     // Create CommandKit instance
     [[nodiscard]] static Ptr<CommandKit> Create(const IContext& context, CommandList::Type command_lists_type);
-    [[nodiscard]] static Ptr<CommandKit> Create(CommandQueue& cmd_queue);
+    [[nodiscard]] static Ptr<CommandKit> Create(ICommandQueue& cmd_queue);
 
     // CommandKit interface
-    [[nodiscard]] virtual const IContext&    GetContext() const noexcept = 0;
-    [[nodiscard]] virtual CommandQueue&     GetQueue() const = 0;
+    [[nodiscard]] virtual const IContext&   GetContext() const noexcept = 0;
+    [[nodiscard]] virtual ICommandQueue&    GetQueue() const = 0;
     [[nodiscard]] virtual CommandList::Type GetListType() const noexcept = 0;
     [[nodiscard]] virtual bool              HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;
     [[nodiscard]] virtual bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;

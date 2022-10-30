@@ -260,7 +260,7 @@ tutorial with the only difference of setting vertex and index buffers with `Rend
 and `RenderCommandList::SetIndexBuffers(...)` encoded before `RenderCommandList::DrawIndexed(...)` call. Note that number of vertices
 is not passed explictly for `DrawIndexed`, but is taken from the nu,ber of indies in index buffer.
 
-Execution of GPU rendering is started with `CommandQueue::Execute(...)` method called on the same command queue
+Execution of GPU rendering is started with `ICommandQueue::Execute(...)` method called on the same command queue
 which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
 swap-chain with `RenderContext::Present()` method call.
 
@@ -586,7 +586,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
             return false;
 
         const HelloCubeFrame& frame = GetCurrentFrame();
-        CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+        ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
         // Update uniforms buffer on GPU and apply model-view-projection tranformation in vertex shader on GPU
         frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);

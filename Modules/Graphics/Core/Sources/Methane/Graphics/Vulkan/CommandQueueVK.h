@@ -52,7 +52,7 @@ public:
     CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueVK() override;
 
-    // CommandQueue interface
+    // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
     void Execute(CommandListSet& command_list_set, const CommandList::CompletedCallback& completed_callback = {}) override;
 

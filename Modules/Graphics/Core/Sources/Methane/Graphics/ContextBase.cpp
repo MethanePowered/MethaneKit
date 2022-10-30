@@ -179,7 +179,7 @@ CommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
     return *cmd_kit_ptr;
 }
 
-CommandKit& ContextBase::GetDefaultCommandKit(CommandQueue& cmd_queue) const
+CommandKit& ContextBase::GetDefaultCommandKit(ICommandQueue& cmd_queue) const
 {
     META_FUNCTION_TASK();
     Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
@@ -255,7 +255,7 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
             cmd_list.Commit();
 
         META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
-        CommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
+        ICommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
 
         if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PreUploadSync)
         {

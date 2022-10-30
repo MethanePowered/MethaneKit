@@ -33,7 +33,7 @@ namespace Methane::Graphics
 {
 
 struct IResource;
-struct CommandQueue;
+struct ICommandQueue;
 
 enum class ResourceState
 {

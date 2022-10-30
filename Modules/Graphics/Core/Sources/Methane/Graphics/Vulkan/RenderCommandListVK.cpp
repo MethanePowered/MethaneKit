@@ -73,7 +73,7 @@ static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo
     );
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, IRenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass));
@@ -85,7 +85,7 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list), false);
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue& cmd_queue)
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(cmd_queue));

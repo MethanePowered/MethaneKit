@@ -54,7 +54,7 @@ public:
     // ProgramBindingsBase interface
     void CompleteInitialization() override;
 
-    void Apply(ICommandListVK& command_list, const CommandQueue& command_queue,
+    void Apply(ICommandListVK& command_list, const ICommandQueue& command_queue,
                const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:

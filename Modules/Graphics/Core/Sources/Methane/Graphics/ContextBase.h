@@ -47,7 +47,7 @@ namespace Methane::Graphics
 
 class DeviceBase;
 class CommandQueueBase;
-struct CommandQueue;
+struct ICommandQueue;
 struct CommandList;
 struct CommandListSet;
 struct DescriptorManager;
@@ -75,7 +75,7 @@ public:
     void              Reset(IDevice& device) override;
     void              Reset() override;
     CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
-    CommandKit&       GetDefaultCommandKit(CommandQueue& cmd_queue) const final;
+    CommandKit&       GetDefaultCommandKit(ICommandQueue& cmd_queue) const final;
     const IDevice&    GetDevice() const final;
 
     // ContextBase interface
@@ -102,7 +102,7 @@ protected:
 
 private:
     using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
-    using CommandKitByQueue   = std::map<CommandQueue*, Ptr<CommandKit>>;
+    using CommandKitByQueue   = std::map<ICommandQueue*, Ptr<CommandKit>>;
 
     template<CommandKit::CommandListPurpose cmd_list_purpose>
     void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const;

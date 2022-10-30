@@ -24,7 +24,7 @@ Methane resource barriers base implementation.
 #include "ResourceBarriersBase.h"
 
 #include <Methane/Graphics/IResource.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

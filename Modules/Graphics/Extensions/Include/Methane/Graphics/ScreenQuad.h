@@ -33,7 +33,7 @@ ScreenQuad rendering primitive.
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 struct IRenderContext;
 struct RenderCommandList;
 struct IRenderPattern;
@@ -64,8 +64,8 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings);
-    ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings);
+    ScreenQuad(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings);
+    ScreenQuad(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings);
     virtual ~ScreenQuad() = default;
 
     void SetBlendColor(const Color4F& blend_color);
@@ -87,8 +87,8 @@ private:
 
     [[nodiscard]] static IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
-    Settings                 m_settings;
-    const Ptr<CommandQueue>   m_render_cmd_queue_ptr;
+    Settings                  m_settings;
+    const Ptr<ICommandQueue>  m_render_cmd_queue_ptr;
     const Ptr<IRenderPattern> m_render_pattern_ptr;
     Ptr<IRenderState>         m_render_state_ptr;
     Ptr<IViewState>           m_view_state_ptr;

@@ -112,10 +112,10 @@ QueryPoolBase::QueryPoolBase(CommandQueueBase& command_queue, Type type,
     META_FUNCTION_TASK();
 }
 
-CommandQueue& QueryPoolBase::GetCommandQueue() noexcept
+ICommandQueue& QueryPoolBase::GetCommandQueue() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueue&>(m_command_queue);
+    return static_cast<ICommandQueue&>(m_command_queue);
 }
 
 void QueryPoolBase::ReleaseQuery(const QueryBase& query)

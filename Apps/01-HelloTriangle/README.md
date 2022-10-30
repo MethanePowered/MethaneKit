@@ -87,7 +87,7 @@ object and also contains settings of rasterizer, depth, stencil, blending states
 for simplicity of this tutorial.
 
 Render command lists are created for each frame using `RenderCommandList::Create(...)` factory function which is taking
-`CommandQueue` and `IRenderPass` as its arguments. So the created command list can be used for rendering only to that particular
+`ICommandQueue` and `IRenderPass` as its arguments. So the created command list can be used for rendering only to that particular
 render pass. Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
 resources initialization and prepare for rendering.
 
@@ -151,7 +151,7 @@ Vertex buffers are not used for simplification, so the vertex shader will receiv
 will need to provide vertex coordinates based on that. Finally, `CommandList::Commit` method is called 
 to complete render commands encoding.
 
-Execution of GPU rendering is started with `CommandQueue::Execute(...)` method called on the same command queue
+Execution of GPU rendering is started with `ICommandQueue::Execute(...)` method called on the same command queue
 which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
 swap-chain with `RenderContext::Present()` method call.
 

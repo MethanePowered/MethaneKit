@@ -24,7 +24,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
@@ -165,7 +165,7 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
 #endif
 }
 
-Ptr<ITexture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<ITexture> ImageLoader::LoadImageToTexture2D(ICommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -179,7 +179,7 @@ Ptr<ITexture> ImageLoader::LoadImageToTexture2D(CommandQueue& target_cmd_queue, 
     return texture_ptr;
 }
 
-Ptr<ITexture> ImageLoader::LoadImagesToTextureCube(CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<ITexture> ImageLoader::LoadImagesToTextureCube(ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 

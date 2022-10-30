@@ -163,7 +163,7 @@ protected:
         );
     }
 
-    TransferCommandListDX& PrepareResourceUpload(CommandQueue& target_cmd_queue)
+    TransferCommandListDX& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         auto& upload_cmd_list = dynamic_cast<TransferCommandListDX&>(GetContext().GetUploadCommandKit().GetListForEncoding());

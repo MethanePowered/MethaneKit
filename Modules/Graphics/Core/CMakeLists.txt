@@ -22,7 +22,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ISampler.h
     ${INCLUDE_DIR}/IRenderPass.h
     ${INCLUDE_DIR}/CommandKit.h
-    ${INCLUDE_DIR}/CommandQueue.h
+    ${INCLUDE_DIR}/ICommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h

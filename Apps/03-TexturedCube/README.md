@@ -436,7 +436,7 @@ which is defining named region in commands sequence.
     3. Vertex buffers set is set
     4. Indexed draw call is issued
 3. `UserInterface::App::RenderOverlay(...)` is called to record UI drawing command in render command list.
-4. Render command list is committed and passed to `Graphics::CommandQueue::Execute` call for execution on GPU.
+4. Render command list is committed and passed to `Graphics::ICommandQueue::Execute` call for execution on GPU.
 5. `RenderContext::Present()` is called to schedule frame buffer presenting to screen.
 
 ```cpp

@@ -140,7 +140,7 @@ BufferVK::BufferVK(const ContextBase& context, const Settings& settings)
     GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void BufferVK::SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue)
+void BufferVK::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     ResourceVK::SetData(sub_resources, target_cmd_queue);

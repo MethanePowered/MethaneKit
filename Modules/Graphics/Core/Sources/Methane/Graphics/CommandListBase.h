@@ -28,7 +28,7 @@ Base implementation of the command list interface.
 
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/CommandList.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
@@ -95,7 +95,7 @@ public:
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
-    CommandQueue& GetCommandQueue() final;
+    ICommandQueue& GetCommandQueue() final;
 
     // CommandListBase interface
     virtual void Execute(const CompletedCallback& completed_callback = {});

@@ -43,7 +43,7 @@ namespace hlslpp // NOSONAR
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 struct IRenderContext;
 struct IRenderState;
 struct ISampler;
@@ -73,7 +73,7 @@ public:
         hlslpp::float4x4 mvp_matrix;
     };
 
-    SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings);
+    SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings);
 
     Ptr<IProgramBindings> CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
@@ -89,17 +89,17 @@ private:
         };
     };
 
-    SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
+    SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
            const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
 
-    Settings                m_settings;
-    const Ptr<CommandQueue> m_render_cmd_queue_ptr;
-    IRenderContext&         m_context;
-    TexMeshBuffers          m_mesh_buffers;
-    Ptr<ISampler>           m_texture_sampler_ptr;
-    Ptr<IRenderState>       m_render_state_ptr;
+    Settings                 m_settings;
+    const Ptr<ICommandQueue> m_render_cmd_queue_ptr;
+    IRenderContext&          m_context;
+    TexMeshBuffers           m_mesh_buffers;
+    Ptr<ISampler>            m_texture_sampler_ptr;
+    Ptr<IRenderState>        m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

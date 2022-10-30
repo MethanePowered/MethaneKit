@@ -26,7 +26,7 @@ Metal stub implementation of the TimestampQueryPoolBase factory function
 namespace Methane::Graphics
 {
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_UNUSED(command_queue);
     META_UNUSED(max_timestamps_per_frame);

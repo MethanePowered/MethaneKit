@@ -42,7 +42,7 @@ public:
     TextureMT(const ContextBase& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

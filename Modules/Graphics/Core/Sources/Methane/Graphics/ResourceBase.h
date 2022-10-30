@@ -62,7 +62,7 @@ public:
     bool SetState(State state) final;
     bool SetOwnerQueueFamily(uint32_t family_index) final;
     bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) final;
-    void SetData(const SubResources& sub_resources, CommandQueue&) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
 
     [[nodiscard]] Ptr<IBarriers>& GetSetupTransitionBarriers() noexcept { return m_setup_transition_barriers_ptr; }
 

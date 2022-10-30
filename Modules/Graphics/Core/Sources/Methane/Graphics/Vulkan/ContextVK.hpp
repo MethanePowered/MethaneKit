@@ -38,7 +38,7 @@ Vulkan template implementation of the base context interface.
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 
 template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<ContextBase, ContextBaseT>>>
 class ContextVK : public ContextBaseT

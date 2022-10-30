@@ -83,8 +83,8 @@ public:
     [[nodiscard]] Data::Size      GetPoolSize() const noexcept final           { return m_pool_size; }
     [[nodiscard]] Data::Size      GetQuerySize() const noexcept final          { return m_query_size; }
     [[nodiscard]] IQuery::Count   GetSlotsCountPerQuery() const noexcept final { return m_slots_count_per_query; }
-    [[nodiscard]] const IContext&  GetContext() const noexcept final            { return m_context; }
-    [[nodiscard]] CommandQueue&   GetCommandQueue() noexcept final;
+    [[nodiscard]] const IContext& GetContext() const noexcept final            { return m_context; }
+    [[nodiscard]] ICommandQueue&  GetCommandQueue() noexcept final;
 
 protected:
     QueryPoolBase(CommandQueueBase& command_queue, Type type,

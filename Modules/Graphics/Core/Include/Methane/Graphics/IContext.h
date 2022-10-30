@@ -112,7 +112,7 @@ struct IContext
     virtual void Reset() = 0;
     [[nodiscard]] virtual const IDevice& GetDevice() const = 0;
     [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandList::Type type) const = 0;
-    [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(CommandQueue& cmd_queue) const = 0;
+    [[nodiscard]] virtual CommandKit& GetDefaultCommandKit(ICommandQueue& cmd_queue) const = 0;
     [[nodiscard]] inline  CommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Transfer); }
 };
 

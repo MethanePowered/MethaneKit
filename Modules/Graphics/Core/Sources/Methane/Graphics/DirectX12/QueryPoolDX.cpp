@@ -150,7 +150,7 @@ QueryPoolDX& QueryDX::GetQueryPoolDX() const noexcept
     return static_cast<QueryPoolDX&>(GetQueryPool());
 }
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     return CheckCommandQueueSupportsTimestampQueries(static_cast<CommandQueueDX&>(command_queue))

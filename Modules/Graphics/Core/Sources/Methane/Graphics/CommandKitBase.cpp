@@ -44,7 +44,7 @@ Ptr<CommandKit> CommandKit::Create(const IContext& context, CommandList::Type cm
     return std::make_shared<CommandKitBase>(context, cmd_list_type);
 }
 
-Ptr<CommandKit> CommandKit::Create(CommandQueue& cmd_queue)
+Ptr<CommandKit> CommandKit::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(cmd_queue);
@@ -57,7 +57,7 @@ CommandKitBase::CommandKitBase(const IContext& context, CommandList::Type cmd_li
     META_FUNCTION_TASK();
 }
 
-CommandKitBase::CommandKitBase(CommandQueue& cmd_queue)
+CommandKitBase::CommandKitBase(ICommandQueue& cmd_queue)
     : ObjectBase(cmd_queue.GetName())
     , m_context(cmd_queue.GetContext())
     , m_cmd_list_type(cmd_queue.GetCommandListType())
@@ -92,13 +92,13 @@ bool CommandKitBase::SetName(const std::string& name)
     return true;
 }
 
-CommandQueue& CommandKitBase::GetQueue() const
+ICommandQueue& CommandKitBase::GetQueue() const
 {
     META_FUNCTION_TASK();
     if (m_cmd_queue_ptr)
         return *m_cmd_queue_ptr;
 
-    m_cmd_queue_ptr = CommandQueue::Create(m_context, m_cmd_list_type);
+    m_cmd_queue_ptr = ICommandQueue::Create(m_context, m_cmd_list_type);
     m_cmd_queue_ptr->SetName(fmt::format("{} Command Queue", GetName()));
     return *m_cmd_queue_ptr;
 }

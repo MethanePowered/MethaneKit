@@ -259,8 +259,8 @@ public:
         if (!GraphicsApp::Render())
             return false;
 
-        const HelloCubeFrame& frame = GetCurrentFrame();
-        CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+        const HelloCubeFrame& frame            = GetCurrentFrame();
+        ICommandQueue&        render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Update uniforms buffer on GPU and apply model-view-projection tranformation in vertex shader on GPU

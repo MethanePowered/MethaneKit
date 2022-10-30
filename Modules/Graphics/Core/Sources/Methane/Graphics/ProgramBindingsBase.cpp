@@ -338,7 +338,7 @@ void ProgramBindingsBase::AddTransitionResourceStates(const IProgramBindings::IA
     }
 }
 
-bool ProgramBindingsBase::ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr) const
+bool ProgramBindingsBase::ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const ICommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

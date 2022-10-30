@@ -82,7 +82,7 @@ void CubeMapArrayApp::Init()
 {
     UserInterfaceApp::Init();
 
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create cube mesh
@@ -258,8 +258,8 @@ bool CubeMapArrayApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const CubeMapArrayFrame& frame = GetCurrentFrame();
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    const CubeMapArrayFrame& frame       = GetCurrentFrame();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count

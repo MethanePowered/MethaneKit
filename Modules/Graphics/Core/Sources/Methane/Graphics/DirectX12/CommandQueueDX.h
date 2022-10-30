@@ -48,7 +48,7 @@ public:
     CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueDX() override;
 
-    // CommandQueue interface
+    // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
     // IObject interface

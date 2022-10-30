@@ -74,7 +74,7 @@ void ShadowCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     const gfx::RenderContextSettings& context_settings = GetRenderContext().GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
@@ -388,8 +388,8 @@ bool ShadowCubeApp::Render()
         return false;
 
     // Upload uniform buffers to GPU
-    const ShadowCubeFrame& frame = GetCurrentFrame();
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    const ShadowCubeFrame& frame            = GetCurrentFrame();
+    gfx::ICommandQueue&    render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
     frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
     frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);

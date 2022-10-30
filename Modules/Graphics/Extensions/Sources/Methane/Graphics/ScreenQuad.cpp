@@ -24,7 +24,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/ScreenQuad.h>
 
 #include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/CommandList.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
@@ -76,14 +76,14 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const IShad
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings)
+ScreenQuad::ScreenQuad(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings)
     : ScreenQuad(render_cmd_queue, render_pattern, nullptr, settings)
 {
 }
 
-ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<ICommandQueue>(render_cmd_queue.GetPtr()))
     , m_render_pattern_ptr(std::dynamic_pointer_cast<IRenderPattern>(render_pattern.GetPtr()))
     , m_texture_ptr(texture_ptr)
 {

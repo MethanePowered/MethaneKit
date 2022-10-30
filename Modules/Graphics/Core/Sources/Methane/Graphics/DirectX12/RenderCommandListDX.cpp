@@ -54,7 +54,7 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primiti
     }
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& cmd_queue, IRenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
@@ -66,7 +66,7 @@ Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& para
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(CommandQueue& cmd_queue)
+Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));

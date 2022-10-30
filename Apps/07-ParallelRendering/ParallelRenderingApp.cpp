@@ -123,7 +123,7 @@ void ParallelRenderingApp::Init()
     META_FUNCTION_TASK();
     UserInterfaceApp::Init();
 
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create cube mesh
@@ -385,8 +385,8 @@ bool ParallelRenderingApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const ParallelRenderingFrame& frame = GetCurrentFrame();
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    const ParallelRenderingFrame& frame  = GetCurrentFrame();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.cubes_array.uniforms_buffer_ptr->SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count

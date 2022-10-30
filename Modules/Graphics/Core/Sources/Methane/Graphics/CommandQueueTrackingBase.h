@@ -46,7 +46,7 @@ public:
     CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type);
     ~CommandQueueTrackingBase() override;
 
-    // CommandQueue interface
+    // ICommandQueue interface
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface

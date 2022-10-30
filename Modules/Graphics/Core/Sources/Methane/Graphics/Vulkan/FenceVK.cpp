@@ -41,7 +41,7 @@ static vk::UniqueSemaphore CreateTimelineSemaphore(const vk::Device& vk_device, 
     return vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo().setPNext(&semaphore_type_create_info));
 }
 
-Ptr<IFence> IFence::Create(CommandQueue& command_queue)
+Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<FenceVK>(static_cast<CommandQueueVK&>(command_queue));
@@ -89,7 +89,7 @@ void FenceVK::WaitOnCpu()
     META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
-void FenceVK::WaitOnGpu(CommandQueue& wait_on_command_queue)
+void FenceVK::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);

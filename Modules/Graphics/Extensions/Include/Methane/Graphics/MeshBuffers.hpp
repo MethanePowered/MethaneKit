@@ -28,7 +28,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
@@ -64,7 +64,7 @@ class MeshBuffers
 {
 public:
     template<typename VType>
-    MeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+    MeshBuffers(ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_context(render_cmd_queue.GetContext())
         , m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
@@ -97,7 +97,7 @@ public:
     }
 
     template<typename VType>
-    MeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    MeshBuffers(ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(render_cmd_queue, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         META_FUNCTION_TASK();
@@ -327,7 +327,7 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(render_cmd_queue, mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
@@ -335,7 +335,7 @@ public:
     }
 
     template<typename VType>
-    TexturedMeshBuffers(CommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(render_cmd_queue, uber_mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();

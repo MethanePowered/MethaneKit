@@ -70,7 +70,7 @@ void TexturedCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    gfx::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create vertex buffer for cube mesh
@@ -216,8 +216,8 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const TexturedCubeFrame& frame = GetCurrentFrame();
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    const TexturedCubeFrame& frame            = GetCurrentFrame();
+    gfx::ICommandQueue&      render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);
 
     // Issue commands for cube rendering

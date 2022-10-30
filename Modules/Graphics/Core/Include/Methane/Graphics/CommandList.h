@@ -38,7 +38,7 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 struct CommandList;
 
 struct ICommandListCallback
@@ -92,7 +92,7 @@ struct CommandList
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
     [[nodiscard]] virtual Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const = 0;
-    [[nodiscard]] virtual CommandQueue& GetCommandQueue() = 0;
+    [[nodiscard]] virtual ICommandQueue& GetCommandQueue() = 0;
 };
 
 struct CommandListSet

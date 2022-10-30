@@ -42,9 +42,9 @@ public:
     // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
-    void WaitOnGpu(CommandQueue& wait_on_command_queue) override;
+    void WaitOnGpu(ICommandQueue& wait_on_command_queue) override;
     void FlushOnCpu() override;
-    void FlushOnGpu(CommandQueue& wait_on_command_queue) override;
+    void FlushOnGpu(ICommandQueue& wait_on_command_queue) override;
 
 protected:
     CommandQueueBase& GetCommandQueue() noexcept { return m_command_queue; }

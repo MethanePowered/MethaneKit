@@ -370,7 +370,7 @@ Data::TimeRange CommandListBase::GetGpuTimeRange(bool in_cpu_nanoseconds) const
     return { 0U, 0U };
 }
 
-CommandQueue& CommandListBase::GetCommandQueue()
+ICommandQueue& CommandListBase::GetCommandQueue()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);

@@ -34,7 +34,7 @@ Methane user interface context used by all widgets for rendering.
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 struct IRenderPattern;
 
 } // namespace Methane::Graphics
@@ -53,11 +53,11 @@ namespace pal = Methane::Platform;
 class Context
 {
 public:
-    Context(const pal::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern);
+    Context(const pal::IApp& app, gfx::ICommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern);
 
     const gfx::IRenderContext& GetRenderContext() const noexcept { return m_render_context; }
     gfx::IRenderContext&       GetRenderContext() noexcept       { return m_render_context; }
-    gfx::CommandQueue&         GetRenderCommandQueue() noexcept  { return *m_render_cmd_queue_ptr; }
+    gfx::ICommandQueue&        GetRenderCommandQueue() noexcept  { return *m_render_cmd_queue_ptr; }
 
     const Ptr<gfx::IRenderPattern>& GetRenderPatternPtr() const noexcept { return m_render_pattern_ptr; }
     gfx::IRenderPattern&            GetRenderPattern() const noexcept    { return *m_render_pattern_ptr; }
@@ -156,8 +156,8 @@ public:
     }
 
 private:
-    gfx::IRenderContext&          m_render_context;
-    const Ptr<gfx::CommandQueue>   m_render_cmd_queue_ptr;
+    gfx::IRenderContext&           m_render_context;
+    const Ptr<gfx::ICommandQueue>  m_render_cmd_queue_ptr;
     const Ptr<gfx::IRenderPattern> m_render_pattern_ptr;
     double                         m_dots_to_pixels_factor;
     uint32_t                       m_font_resolution_dpi;

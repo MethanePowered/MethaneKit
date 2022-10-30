@@ -38,15 +38,15 @@ class CommandKitBase final
 {
 public:
     CommandKitBase(const IContext& context, CommandList::Type cmd_list_type);
-    explicit CommandKitBase(CommandQueue& cmd_queue);
+    explicit CommandKitBase(ICommandQueue& cmd_queue);
 
     // IObject overrides
     bool SetName(const std::string& name) override;
 
     // CommandKit interface
-    [[nodiscard]] const IContext&    GetContext() const noexcept override  { return m_context; }
+    [[nodiscard]] const IContext&   GetContext() const noexcept override  { return m_context; }
     [[nodiscard]] CommandList::Type GetListType() const noexcept override { return m_cmd_list_type; }
-    [[nodiscard]] CommandQueue&     GetQueue() const override;
+    [[nodiscard]] ICommandQueue&    GetQueue() const override;
     [[nodiscard]] bool              HasList(CommandListId cmd_list_id) const noexcept override;
     [[nodiscard]] bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id) const noexcept override;
     [[nodiscard]] CommandList&      GetList(CommandListId cmd_list_id) const override;
@@ -65,7 +65,7 @@ private:
 
     const IContext&              m_context;
     CommandList::Type            m_cmd_list_type;
-    mutable Ptr<CommandQueue>    m_cmd_queue_ptr;
+    mutable Ptr<ICommandQueue>   m_cmd_queue_ptr;
     mutable Ptrs<CommandList>    m_cmd_list_ptrs;
     mutable CommandListIndexById m_cmd_list_index_by_id;
     mutable CommandListSetById   m_cmd_list_set_by_id;

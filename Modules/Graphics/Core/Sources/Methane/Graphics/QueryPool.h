@@ -29,7 +29,7 @@ GPU data query pool private interface.
 namespace Methane::Graphics
 {
 
-struct CommandQueue;
+struct ICommandQueue;
 struct CommandList;
 struct IContext;
 struct IQueryPool;
@@ -75,8 +75,8 @@ struct IQueryPool
     [[nodiscard]] virtual Data::Size           GetPoolSize() const noexcept = 0;
     [[nodiscard]] virtual Data::Size           GetQuerySize() const noexcept = 0;
     [[nodiscard]] virtual IQuery::Count        GetSlotsCountPerQuery() const = 0;
-    [[nodiscard]] virtual CommandQueue&        GetCommandQueue() noexcept = 0;
-    [[nodiscard]] virtual const IContext&       GetContext() const noexcept = 0;
+    [[nodiscard]] virtual ICommandQueue&       GetCommandQueue() noexcept = 0;
+    [[nodiscard]] virtual const IContext&      GetContext() const noexcept = 0;
 
     virtual ~IQueryPool() = default;
 };
@@ -100,7 +100,7 @@ struct ITimestampQueryPool
         Timestamp cpu_ts;
     };
 
-    [[nodiscard]] static Ptr<ITimestampQueryPool> Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame);
+    [[nodiscard]] static Ptr<ITimestampQueryPool> Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame);
 
     [[nodiscard]] virtual Ptr<ITimestampQuery>        CreateTimestampQuery(CommandList& command_list) = 0;
                   virtual CalibratedTimestamps        Calibrate() = 0;

@@ -49,7 +49,7 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     };
 
     // Create RenderCommandList instance
-    [[nodiscard]] static Ptr<RenderCommandList> Create(CommandQueue& command_queue, IRenderPass& render_pass);
+    [[nodiscard]] static Ptr<RenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
     [[nodiscard]] static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
     
     // RenderCommandList interface

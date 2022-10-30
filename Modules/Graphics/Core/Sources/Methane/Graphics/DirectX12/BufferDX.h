@@ -86,7 +86,7 @@ public:
     }
 
     // IResource overrides
-    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override
+    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override
     {
         META_FUNCTION_TASK();
         ResourceDX::SetData(sub_resources, target_cmd_queue);

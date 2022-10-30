@@ -73,7 +73,7 @@ public:
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
                                          ProgramArgumentAccessor::Type apply_access_mask = static_cast<ProgramArgumentAccessor::Type>(~0U),
-                                         const CommandQueue* owner_queue_ptr = nullptr) const
+                                         const ICommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
             m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
@@ -114,7 +114,7 @@ private:
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
     using ResourceRefsByAccess = std::array<Refs<IResource>, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
 
-    bool ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const CommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const ICommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<IProgram>             m_program_ptr;

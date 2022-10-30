@@ -30,7 +30,7 @@ Vulkan implementation of the transfer command list interface.
 namespace Methane::Graphics
 {
 
-Ptr<TransferCommandList> TransferCommandList::Create(CommandQueue& command_queue)
+Ptr<TransferCommandList> TransferCommandList::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandListVK>(static_cast<CommandQueueVK&>(command_queue));

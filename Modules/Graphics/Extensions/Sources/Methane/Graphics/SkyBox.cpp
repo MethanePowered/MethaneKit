@@ -24,7 +24,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/SkyBox.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/IRenderState.h>
@@ -39,15 +39,15 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
+SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
     : SkyBox(render_cmd_queue, render_pattern, cube_map_texture, settings, CubeMesh<Vertex>(Vertex::layout))
 {
 }
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
+SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
                const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<ICommandQueue>(render_cmd_queue.GetPtr()))
     , m_context(render_pattern.GetRenderContext())
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {

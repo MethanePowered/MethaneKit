@@ -62,7 +62,7 @@ public:
         Changes              changes             = Changes::None;
     };
 
-    static Ptr<RenderCommandList> CreateForSynchronization(CommandQueue& cmd_queue);
+    static Ptr<RenderCommandList> CreateForSynchronization(ICommandQueue& cmd_queue);
 
     explicit RenderCommandListBase(CommandQueueBase& command_queue);
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);

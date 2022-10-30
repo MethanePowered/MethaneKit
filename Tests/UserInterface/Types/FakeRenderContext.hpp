@@ -29,7 +29,7 @@ Fake render context used for UI types testing
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -66,7 +66,7 @@ public:
 };
 
 class FakeCommandQueue
-    : public CommandQueue
+    : public ICommandQueue
     , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeCommandQueue>
 {
@@ -76,7 +76,7 @@ public:
         , m_type(type)
     { }
 
-    // CommandQueue interface
+    // ICommandQueue interface
     [[nodiscard]] const IContext&   GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
     [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
@@ -110,7 +110,7 @@ class FakeCommandList
     , public std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>
 {
 public:
-    FakeCommandList(CommandQueue& command_queue)
+    FakeCommandList(ICommandQueue& command_queue)
         : m_command_queue(command_queue)
     { }
 
@@ -126,7 +126,7 @@ public:
     void Commit() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
     void WaitUntilCompleted(uint32_t) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                   { throw Data::TimeRange{ }; }
-    [[nodiscard]] CommandQueue& GetCommandQueue() override                               { return m_command_queue; }
+    [[nodiscard]] ICommandQueue& GetCommandQueue() override                               { return m_command_queue; }
 
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
@@ -134,7 +134,7 @@ public:
     [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
 
 private:
-    CommandQueue& m_command_queue;
+    ICommandQueue& m_command_queue;
 };
 
 using FakeTransferCommandList = FakeCommandList<TransferCommandList, CommandList::Type::Transfer>;
@@ -178,7 +178,7 @@ public:
 
     [[nodiscard]] const IDevice& GetDevice() const override                             { return m_fake_device; }
     [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandQueue&) const override        { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] CommandKit& GetDefaultCommandKit(ICommandQueue&) const override       { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // IObject interface
     bool SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }

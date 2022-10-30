@@ -118,7 +118,7 @@ QueryPoolVK& QueryVK::GetQueryPoolVK() const noexcept
     return static_cast<QueryPoolVK&>(GetQueryPool());
 }
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     return std::make_shared<TimestampQueryPoolVK>(dynamic_cast<CommandQueueVK&>(command_queue), max_timestamps_per_frame);

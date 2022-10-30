@@ -58,7 +58,7 @@ public:
     }
 
     // IResource override
-    void SetData(const SubResources&, CommandQueue&) override
+    void SetData(const SubResources&, ICommandQueue&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture data upload is allowed for image textures only");
     }
@@ -114,7 +114,7 @@ public:
     bool SetName(const std::string& name) override;
 
     // IResource overrides
-    void SetData(const SubResources& sub_resources, CommandQueue& target_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
 
     // IResourceDX override
     Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;

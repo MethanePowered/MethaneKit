@@ -26,7 +26,7 @@ Base implementation of the command queue interface.
 #include "ObjectBase.h"
 #include "CommandListBase.h"
 
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/TracyGpu.hpp>
 
 #include <list>
@@ -42,7 +42,7 @@ class DeviceBase;
 
 class CommandQueueBase
     : public ObjectBase
-    , public CommandQueue
+    , public ICommandQueue
 {
     friend class CommandListBase;
 
@@ -52,7 +52,7 @@ public:
     // IObject interface
     bool SetName(const std::string& name) override;
 
-    // CommandQueue overrides
+    // ICommandQueue overrides
     [[nodiscard]] const IContext& GetContext() const noexcept final;
     CommandList::Type GetCommandListType() const noexcept final { return m_command_lists_type; }
     void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;

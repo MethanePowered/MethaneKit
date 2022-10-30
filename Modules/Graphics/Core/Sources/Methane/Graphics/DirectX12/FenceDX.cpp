@@ -34,7 +34,7 @@ DirectX 12 fence implementation.
 namespace Methane::Graphics
 {
 
-Ptr<IFence> IFence::Create(CommandQueue& command_queue)
+Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
@@ -95,7 +95,7 @@ void FenceDX::WaitOnCpu()
     META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
-void FenceDX::WaitOnGpu(CommandQueue& wait_on_command_queue)
+void FenceDX::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     FenceBase::WaitOnGpu(wait_on_command_queue);

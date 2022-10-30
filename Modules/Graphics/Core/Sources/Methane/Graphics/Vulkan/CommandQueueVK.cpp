@@ -94,7 +94,7 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
     return vk_access_flags;
 }
 
-Ptr<CommandQueue> CommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
+Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
 {
     META_FUNCTION_TASK();
     auto command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);

@@ -207,7 +207,7 @@ protected:
         m_vk_resource = std::forward<T>(vk_resource);
     }
 
-    TransferCommandListVK& PrepareResourceUpload(CommandQueue& target_cmd_queue)
+    TransferCommandListVK& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
@@ -233,7 +233,7 @@ protected:
         return upload_cmd_list;
     }
 
-    void CompleteResourceUpload(TransferCommandListVK& upload_cmd_list, State final_resource_state, CommandQueue& target_cmd_queue)
+    void CompleteResourceUpload(TransferCommandListVK& upload_cmd_list, State final_resource_state, ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const bool owner_changed = SetOwnerQueueFamily(target_cmd_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);

@@ -24,7 +24,7 @@ Vulkan implementation of the device interface.
 #pragma once
 
 #include <Methane/Graphics/DeviceBase.h>
-#include <Methane/Graphics/CommandQueue.h>
+#include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Memory.hpp>
 
