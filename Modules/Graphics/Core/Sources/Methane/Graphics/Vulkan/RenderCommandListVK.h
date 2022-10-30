@@ -62,7 +62,7 @@ public:
 
 private:
     // IRenderPassCallback
-    void OnRenderPassUpdated(const RenderPass& render_pass) override;
+    void OnRenderPassUpdated(const IRenderPass& render_pass) override;
 
     void UpdatePrimitiveTopology(Primitive primitive);
 

@@ -73,7 +73,7 @@ public:
     // RenderCommandList interface
     bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
-    RenderPass& GetRenderPass() const final;
+    IRenderPass& GetRenderPass() const final;
     void Reset(DebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
     void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) final;

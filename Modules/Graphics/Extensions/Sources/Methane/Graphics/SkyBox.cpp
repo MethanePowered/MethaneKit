@@ -26,7 +26,7 @@ SkyBox rendering primitive
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IProgram.h>
@@ -39,12 +39,12 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
     : SkyBox(render_cmd_queue, render_pattern, cube_map_texture, settings, CubeMesh<Vertex>(Vertex::layout))
 {
 }
 
-SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture,
+SkyBox::SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
                const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
@@ -83,7 +83,7 @@ SkyBox::SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, IT
 
     using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
-    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr());
+    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<IRenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled        = static_cast<bool>(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = static_cast<bool>(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;

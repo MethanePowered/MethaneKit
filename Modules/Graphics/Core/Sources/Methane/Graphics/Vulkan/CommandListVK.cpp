@@ -30,7 +30,7 @@ Vulkan command lists sequence implementation
 #include "DeviceVK.h"
 
 #include <Methane/Graphics/RenderCommandList.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Instrumentation.h>
 
 #include <sstream>

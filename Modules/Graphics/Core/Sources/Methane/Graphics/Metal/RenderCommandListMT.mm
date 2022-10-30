@@ -58,7 +58,7 @@ static bool GetDeviceSupportOfGpuFamilyApple3(CommandQueueMT& command_queue)
            [mtl_device supportsFamily:MTLGPUFamilyMac2];
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<RenderPassBase&>(render_pass));

@@ -32,7 +32,7 @@ Methane render command list interface.
 namespace Methane::Graphics
 {
 
-struct RenderPass;
+struct IRenderPass;
 struct ParallelRenderCommandList;
 
 struct RenderCommandList : virtual CommandList // NOSONAR
@@ -49,13 +49,13 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     };
 
     // Create RenderCommandList instance
-    [[nodiscard]] static Ptr<RenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
+    [[nodiscard]] static Ptr<RenderCommandList> Create(CommandQueue& command_queue, IRenderPass& render_pass);
     [[nodiscard]] static Ptr<RenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
     
     // RenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
-    [[nodiscard]] virtual RenderPass& GetRenderPass() const = 0;
+    [[nodiscard]] virtual IRenderPass& GetRenderPass() const = 0;
     virtual void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) = 0;

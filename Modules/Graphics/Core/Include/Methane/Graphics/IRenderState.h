@@ -231,7 +231,7 @@ enum class RenderStateGroups : uint32_t
 
 struct IRenderContext;
 struct IProgram;
-struct RenderPattern;
+struct IRenderPattern;
 
 struct RenderSettings
 {
@@ -240,13 +240,13 @@ struct RenderSettings
     // NOTE: members are ordered by the usage frequency,
     //       for convenient setup with initializer lists
     //       (default states may be skipped at initialization)
-    Ptr<IProgram>      program_ptr;
-    Ptr<RenderPattern> render_pattern_ptr;
-    RasterizerSettings rasterizer;
-    DepthSettings      depth;
-    StencilSettings    stencil;
-    BlendingSettings   blending;
-    Color4F            blending_color;
+    Ptr<IProgram>       program_ptr;
+    Ptr<IRenderPattern> render_pattern_ptr;
+    RasterizerSettings  rasterizer;
+    DepthSettings       depth;
+    StencilSettings     stencil;
+    BlendingSettings    blending;
+    Color4F             blending_color;
 
     [[nodiscard]] static Groups Compare(const RenderSettings& left, const RenderSettings& right, Groups compare_groups = Groups::All) noexcept;
     [[nodiscard]] bool operator==(const RenderSettings& other) const noexcept;

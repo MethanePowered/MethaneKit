@@ -73,7 +73,7 @@ static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo
     );
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, RenderPass& render_pass)
+Ptr<RenderCommandList> RenderCommandList::Create(CommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass));
@@ -210,7 +210,7 @@ void RenderCommandListVK::Commit()
     CommandListVK::Commit();
 }
 
-void RenderCommandListVK::OnRenderPassUpdated(const RenderPass& render_pass)
+void RenderCommandListVK::OnRenderPassUpdated(const IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     SetSecondaryRenderBufferInheritInfo(CreateRenderCommandBufferInheritanceInfo(static_cast<const RenderPassVK&>(render_pass)));

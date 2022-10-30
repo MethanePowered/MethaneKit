@@ -95,9 +95,9 @@ public:
             []() {
                 Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::g_default_app_options_color_only_and_anim);
 #ifdef UNIFORMS_BUFFER_ENABLED
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::ShaderResources);
+                settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::ShaderResources);
 #else
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::None);
 #endif
                 return settings;
             }(),

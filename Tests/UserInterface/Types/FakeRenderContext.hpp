@@ -25,7 +25,7 @@ Fake render context used for UI types testing
 
 #include <Methane/Exceptions.hpp>
 #include <Methane/Graphics/IDevice.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/IRenderContext.h>
@@ -194,14 +194,14 @@ private:
 };
 
 class FakeRenderPattern
-    : public RenderPattern
+    : public IRenderPattern
     , public Data::Emitter<IObjectCallback>
     , public std::enable_shared_from_this<FakeRenderPattern>
 {
 public:
     FakeRenderPattern(IRenderContext& render_context) : m_render_context(render_context) { }
 
-    // RenderPattern interface
+    // IRenderPattern interface
     const IRenderContext& GetRenderContext() const noexcept override     { return m_render_context; }
     IRenderContext&       GetRenderContext() noexcept override           { return m_render_context; }
     const Settings&       GetSettings() const noexcept override          { return m_settings; }

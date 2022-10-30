@@ -73,7 +73,7 @@ public:
         hlslpp::float4x4 mvp_matrix;
     };
 
-    SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings);
+    SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings);
 
     Ptr<IProgramBindings> CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
@@ -89,7 +89,7 @@ private:
         };
     };
 
-    SkyBox(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, ITexture& cube_map_texture,
+    SkyBox(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
            const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;

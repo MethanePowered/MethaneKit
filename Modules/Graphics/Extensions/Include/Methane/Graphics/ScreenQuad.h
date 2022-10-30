@@ -36,7 +36,7 @@ namespace Methane::Graphics
 struct CommandQueue;
 struct IRenderContext;
 struct RenderCommandList;
-struct RenderPattern;
+struct IRenderPattern;
 struct IRenderState;
 struct IViewState;
 struct IBufferSet;
@@ -64,8 +64,8 @@ public:
         TextureMode       texture_mode           = TextureMode::RgbaFloat;
     };
 
-    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings);
-    ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings);
+    ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings);
+    ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings);
     virtual ~ScreenQuad() = default;
 
     void SetBlendColor(const Color4F& blend_color);
@@ -79,7 +79,7 @@ public:
     virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
 
 protected:
-    RenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }
+    IRenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }
     const IRenderContext& GetRenderContext() const noexcept;
 
 private:
@@ -88,16 +88,16 @@ private:
     [[nodiscard]] static IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode);
 
     Settings                 m_settings;
-    const Ptr<CommandQueue>  m_render_cmd_queue_ptr;
-    const Ptr<RenderPattern> m_render_pattern_ptr;
-    Ptr<IRenderState>        m_render_state_ptr;
-    Ptr<IViewState>          m_view_state_ptr;
-    Ptr<IBufferSet>          m_vertex_buffer_set_ptr;
-    Ptr<IBuffer>             m_index_buffer_ptr;
-    Ptr<IBuffer>             m_const_buffer_ptr;
-    Ptr<ITexture>            m_texture_ptr;
-    Ptr<ISampler>            m_texture_sampler_ptr;
-    Ptr<IProgramBindings>    m_const_program_bindings_ptr;
+    const Ptr<CommandQueue>   m_render_cmd_queue_ptr;
+    const Ptr<IRenderPattern> m_render_pattern_ptr;
+    Ptr<IRenderState>         m_render_state_ptr;
+    Ptr<IViewState>           m_view_state_ptr;
+    Ptr<IBufferSet>           m_vertex_buffer_set_ptr;
+    Ptr<IBuffer>              m_index_buffer_ptr;
+    Ptr<IBuffer>              m_const_buffer_ptr;
+    Ptr<ITexture>             m_texture_ptr;
+    Ptr<ISampler>             m_texture_sampler_ptr;
+    Ptr<IProgramBindings>     m_const_program_bindings_ptr;
 };
 
 } // namespace Methane::Graphics

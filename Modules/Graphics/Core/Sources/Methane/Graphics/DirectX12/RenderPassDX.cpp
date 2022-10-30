@@ -153,9 +153,9 @@ RenderPassDX::RTClearInfo::RTClearInfo(const ColorAttachment& color_attach, cons
 
 RenderPassDX::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPassDX& render_pass)
     : cpu_handle(depth_attach_opt ? render_pass.GetAttachmentTextureViewDX(*depth_attach_opt).GetNativeCpuDescriptorHandle() : D3D12_CPU_DESCRIPTOR_HANDLE())
-    , depth_cleared(depth_attach_opt && depth_attach_opt->load_action == RenderPass::Attachment::LoadAction::Clear)
+    , depth_cleared(depth_attach_opt && depth_attach_opt->load_action == IRenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach_opt ? depth_attach_opt->clear_value : 1.F)
-    , stencil_cleared(stencil_attach_opt && stencil_attach_opt->load_action == RenderPass::Attachment::LoadAction::Clear)
+    , stencil_cleared(stencil_attach_opt && stencil_attach_opt->load_action == IRenderPass::Attachment::LoadAction::Clear)
     , stencil_value(stencil_attach_opt ? stencil_attach_opt->clear_value : 0)
 {
     META_FUNCTION_TASK();
@@ -170,26 +170,26 @@ RenderPassDX::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_
     }
 }
 
-static DescriptorHeapDX::Type GetDescriptorHeapTypeByAccess(RenderPass::Access access)
+static DescriptorHeapDX::Type GetDescriptorHeapTypeByAccess(IRenderPass::Access access)
 {
     META_FUNCTION_TASK();
     switch (access)
     {
-    case RenderPass::Access::ShaderResources: return DescriptorHeapDX::Type::ShaderResources;
-    case RenderPass::Access::Samplers:        return DescriptorHeapDX::Type::Samplers;
-    case RenderPass::Access::RenderTargets:   return DescriptorHeapDX::Type::RenderTargets;
-    case RenderPass::Access::DepthStencil:    return DescriptorHeapDX::Type::DepthStencil;
-    default:                                  META_UNEXPECTED_ARG_RETURN(access, DescriptorHeapDX::Type::Undefined);
+    case IRenderPass::Access::ShaderResources: return DescriptorHeapDX::Type::ShaderResources;
+    case IRenderPass::Access::Samplers:        return DescriptorHeapDX::Type::Samplers;
+    case IRenderPass::Access::RenderTargets:   return DescriptorHeapDX::Type::RenderTargets;
+    case IRenderPass::Access::DepthStencil:    return DescriptorHeapDX::Type::DepthStencil;
+    default:                                   META_UNEXPECTED_ARG_RETURN(access, DescriptorHeapDX::Type::Undefined);
     }
 }
 
-Ptr<RenderPattern> RenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
 }
 
-Ptr<RenderPass> RenderPass::Create(Pattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> IRenderPass::Create(Pattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPassDX>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);

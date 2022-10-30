@@ -33,7 +33,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/ISampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/CommandKit.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
@@ -76,15 +76,15 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const IShad
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Settings& settings)
+ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Settings& settings)
     : ScreenQuad(render_cmd_queue, render_pattern, nullptr, settings)
 {
 }
 
-ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, IRenderPattern& render_pattern, const Ptr<ITexture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
     , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<CommandQueue>(render_cmd_queue.GetPtr()))
-    , m_render_pattern_ptr(std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr()))
+    , m_render_pattern_ptr(std::dynamic_pointer_cast<IRenderPattern>(render_pattern.GetPtr()))
     , m_texture_ptr(texture_ptr)
 {
     META_FUNCTION_TASK();
@@ -132,7 +132,7 @@ ScreenQuad::ScreenQuad(CommandQueue& render_cmd_queue, RenderPattern& render_pat
             }
         );
         state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
-        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr());
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<IRenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;

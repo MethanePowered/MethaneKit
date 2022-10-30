@@ -51,10 +51,10 @@ vk::SampleCountFlagBits GetVulkanSampleCountFlag(Data::Size samples_count)
     }
 }
 
-static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(RenderPattern::Attachment::LoadAction attachment_load_action)
+static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(IRenderPattern::Attachment::LoadAction attachment_load_action)
 {
     META_FUNCTION_TASK();
-    using LoadAction = RenderPattern::Attachment::LoadAction;
+    using LoadAction = IRenderPattern::Attachment::LoadAction;
     switch(attachment_load_action)
     {
     case LoadAction::DontCare:  return vk::AttachmentLoadOp::eDontCare;
@@ -64,10 +64,10 @@ static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(RenderPattern::Attachment:
     }
 }
 
-static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachment::StoreAction attachment_store_action)
+static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(IRenderPattern::Attachment::StoreAction attachment_store_action)
 {
     META_FUNCTION_TASK();
-    using StoreAction = RenderPattern::Attachment::StoreAction;
+    using StoreAction = IRenderPattern::Attachment::StoreAction;
     switch(attachment_store_action)
     {
     case StoreAction::DontCare:  return vk::AttachmentStoreOp::eDontCare;
@@ -77,31 +77,31 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(RenderPattern::Attachmen
     }
 }
 
-static vk::ImageLayout GetFinalImageLayoutOfAttachment(const RenderPattern::Attachment& attachment, bool is_final_pass)
+static vk::ImageLayout GetFinalImageLayoutOfAttachment(const IRenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    const RenderPattern::Attachment::Type attachment_type = attachment.GetType();
+    const IRenderPattern::Attachment::Type attachment_type = attachment.GetType();
     switch(attachment_type)
     {
-    case RenderPattern::Attachment::Type::Color:   return is_final_pass
+    case IRenderPattern::Attachment::Type::Color:   return is_final_pass
                                                         ? vk::ImageLayout::ePresentSrcKHR
                                                         : vk::ImageLayout::eColorAttachmentOptimal;
-    case RenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case RenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case IRenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     default:
         META_UNEXPECTED_ARG_DESCR_RETURN(attachment_type, vk::ImageLayout::eUndefined,
                                          "attachment type is not supported by render pass");
     }
 }
 
-static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPattern::Attachment& attachment, bool is_final_pass)
+static vk::AttachmentDescription GetVulkanAttachmentDescription(const IRenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    // FIXME: Current solution is unreliable, instead initial attachment State should be set in RenderPattern::Settings
-    const vk::ImageLayout attachment_type_layout = attachment.GetType() == RenderPattern::Attachment::Type::Color
+    // FIXME: Current solution is unreliable, instead initial attachment State should be set in IRenderPattern::Settings
+    const vk::ImageLayout attachment_type_layout = attachment.GetType() == IRenderPattern::Attachment::Type::Color
                                                  ? vk::ImageLayout::eColorAttachmentOptimal
                                                  : vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    const vk::ImageLayout initial_image_layout = attachment.load_action == RenderPattern::Attachment::LoadAction::Load
+    const vk::ImageLayout initial_image_layout = attachment.load_action == IRenderPattern::Attachment::LoadAction::Load
                                                ? attachment_type_layout
                                                : vk::ImageLayout::eUndefined;
     return vk::AttachmentDescription(
@@ -118,7 +118,7 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const RenderPatt
     );
 }
 
-static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const RenderPattern::Settings& settings)
+static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const IRenderPattern::Settings& settings)
 {
     META_FUNCTION_TASK();
 
@@ -127,7 +127,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     std::vector<vk::AttachmentReference> vk_input_attachment_refs;
     vk::AttachmentReference vk_depth_stencil_attachment_ref;
 
-    for(const RenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
+    for(const IRenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
     {
         vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment, settings.is_final_pass));
         vk_color_attachment_refs.emplace_back(color_attachment.attachment_index, vk::ImageLayout::eColorAttachmentOptimal);
@@ -178,7 +178,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     );
 }
 
-Ptr<RenderPattern> RenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPatternVK>(dynamic_cast<RenderContextVK&>(render_context), settings);
@@ -230,7 +230,7 @@ RenderContextVK& RenderPatternVK::GetRenderContextVK() noexcept
     return static_cast<RenderContextVK&>(GetRenderContextBase());
 }
 
-Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPassVK>(dynamic_cast<RenderPatternVK&>(render_pattern), settings);

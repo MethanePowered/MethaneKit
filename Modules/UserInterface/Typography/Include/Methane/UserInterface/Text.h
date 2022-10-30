@@ -37,7 +37,7 @@ namespace Methane::Graphics
 struct IRenderContext;
 struct RenderCommandList;
 struct IRenderState;
-struct RenderPattern;
+struct IRenderPattern;
 struct IViewState;
 struct IProgramBindings;
 struct IBuffer;
@@ -125,9 +125,9 @@ public:
     using SettingsUtf32 = Settings<std::u32string>;
 
 
-    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
     Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 

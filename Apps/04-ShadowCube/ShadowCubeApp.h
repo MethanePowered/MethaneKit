@@ -52,7 +52,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
         MeshResources               cube;
         MeshResources               floor;
         Ptr<gfx::ITexture>          rt_texture_ptr;
-        Ptr<gfx::RenderPass>        render_pass_ptr;
+        Ptr<gfx::IRenderPass>       render_pass_ptr;
         Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };
 
@@ -132,9 +132,9 @@ private:
     Ptr<gfx::ISampler>          m_texture_sampler_ptr;
     Ptr<gfx::ISampler>          m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
-    Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
-    Ptr<gfx::RenderPattern>     m_shadow_pass_pattern_ptr;
-    RenderPassState             m_shadow_pass { false, "Shadow Render Pass" };
+    Ptr<TexturedMeshBuffers> m_floor_buffers_ptr;
+    Ptr<gfx::IRenderPattern> m_shadow_pass_pattern_ptr;
+    RenderPassState          m_shadow_pass { false, "Shadow Render Pass" };
     RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };
 

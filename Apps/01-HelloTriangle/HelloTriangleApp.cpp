@@ -46,7 +46,7 @@ public:
         : GraphicsApp(
             []() {
                 Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::None);
                 return settings;
             }(),
             "Tutorial demonstrating colored triangle rendering with Methane Kit.")

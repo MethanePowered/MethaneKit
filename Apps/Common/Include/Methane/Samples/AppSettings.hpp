@@ -80,11 +80,11 @@ static constexpr AppOptions g_default_app_options_color_only_and_anim = []()
          | AppOptions::Animations;
 }();
 
-static constexpr Graphics::RenderPass::Access g_default_screen_pass_access = []()
+static constexpr Graphics::IRenderPass::Access g_default_screen_pass_access = []()
 {
     using namespace magic_enum::bitwise_operators;
-    return Graphics::RenderPass::Access::ShaderResources
-         | Graphics::RenderPass::Access::Samplers;
+    return Graphics::IRenderPass::Access::ShaderResources
+         | Graphics::IRenderPass::Access::Samplers;
 }();
 
 static constexpr Graphics::IContext::Options g_default_context_options = Graphics::IContext::Options::None;

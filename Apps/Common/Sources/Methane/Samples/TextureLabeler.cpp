@@ -25,7 +25,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/CommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
@@ -87,21 +87,21 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     using namespace magic_enum::bitwise_operators;
     META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & gfx::ITexture::Usage::RenderTarget));
 
-    m_texture_face_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(),
-        gfx::RenderPattern::Settings
+    m_texture_face_render_pattern_ptr = gfx::IRenderPattern::Create(m_gui_context.GetRenderContext(),
+                                                                    gfx::IRenderPattern::Settings
         {
-            gfx::RenderPattern::ColorAttachments
+            gfx::IRenderPattern::ColorAttachments
             {
-                gfx::RenderPattern::ColorAttachment(
+                gfx::IRenderPattern::ColorAttachment(
                     0U, rt_texture_settings.pixel_format, 1U,
-                    gfx::RenderPattern::ColorAttachment::LoadAction::Clear,
-                    gfx::RenderPattern::ColorAttachment::StoreAction::Store,
+                    gfx::IRenderPattern::ColorAttachment::LoadAction::Clear,
+                    gfx::IRenderPattern::ColorAttachment::StoreAction::Store,
                     settings.border_color)
             },
             std::nullopt, // No depth attachment
             std::nullopt, // No stencil attachment
-            gfx::RenderPass::Access::ShaderResources |
-            gfx::RenderPass::Access::Samplers,
+            gfx::IRenderPass::Access::ShaderResources |
+            gfx::IRenderPass::Access::Samplers,
             false // intermediate render pass
         });
 
@@ -137,7 +137,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            slice.render_pass_ptr = gfx::RenderPass::Create(*m_texture_face_render_pattern_ptr, {
+            slice.render_pass_ptr = gfx::IRenderPass::Create(*m_texture_face_render_pattern_ptr, {
                 { gfx::ITexture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::ITexture::DimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
@@ -170,10 +170,10 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     if (rt_texture_final_state != gfx::IResource::State::Undefined &&
         gfx::ISystem::GetNativeApi() != gfx::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
-        m_ending_render_pattern_ptr = gfx::RenderPattern::Create(m_gui_context.GetRenderContext(), {
-            gfx::RenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::RenderPass::Access::ShaderResources, false
+        m_ending_render_pattern_ptr = gfx::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
+            gfx::IRenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::IRenderPass::Access::ShaderResources, false
         });
-        m_ending_render_pass_ptr = gfx::RenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
+        m_ending_render_pass_ptr = gfx::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
         m_ending_render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
         m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
         m_ending_resource_barriers_ptr = gfx::IResourceBarriers::Create({

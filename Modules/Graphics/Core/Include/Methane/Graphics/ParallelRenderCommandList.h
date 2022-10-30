@@ -32,14 +32,14 @@ namespace Methane::Graphics
 {
 
 struct IRenderState;
-struct RenderPass;
+struct IRenderPass;
 
 struct ParallelRenderCommandList : virtual CommandList // NOSONAR
 {
     static constexpr Type type = Type::ParallelRender;
 
     // Create ParallelRenderCommandList instance
-    [[nodiscard]] static Ptr<ParallelRenderCommandList> Create(CommandQueue& command_queue, RenderPass& render_pass);
+    [[nodiscard]] static Ptr<ParallelRenderCommandList> Create(CommandQueue& command_queue, IRenderPass& render_pass);
     
     // ParallelRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;

@@ -26,7 +26,7 @@ Base implementation of the render pass interface.
 #include "ObjectBase.h"
 #include "ResourceBase.h"
 
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 
 namespace Methane::Graphics
 {
@@ -36,13 +36,13 @@ class RenderCommandListBase;
 class TextureBase;
 
 class RenderPatternBase
-    : public RenderPattern
+    : public IRenderPattern
     , public ObjectBase
 {
 public:
     RenderPatternBase(RenderContextBase& render_context, const Settings& settings);
 
-    // RenderPattern overrides
+    // IRenderPattern overrides
     [[nodiscard]] const IRenderContext& GetRenderContext() const noexcept final;
     [[nodiscard]] IRenderContext&       GetRenderContext() noexcept final;
     [[nodiscard]] const Settings&       GetSettings() const noexcept final { return m_settings; }
@@ -58,7 +58,7 @@ private:
 };
 
 class RenderPassBase
-    : public RenderPass
+    : public IRenderPass
     , public ObjectBase
     , public Data::Emitter<IRenderPassCallback>
 {
@@ -66,7 +66,7 @@ public:
     RenderPassBase(RenderPatternBase& pattern, const Settings& settings,
                    bool update_attachment_states = true);
 
-    // RenderPass interface
+    // IRenderPass interface
     const Pattern&  GetPattern() const noexcept final  { return *m_pattern_base_ptr; }
     const Settings& GetSettings() const noexcept final { return m_settings; }
     bool Update(const Settings& settings) override;

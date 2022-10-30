@@ -32,7 +32,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/ISampler.h>
@@ -59,7 +59,7 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
 {
 }
 
-Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
+Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
     : Text(ui_context, render_pattern, font,
         SettingsUtf32
         {
@@ -83,7 +83,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 {
 }
 
-Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
+Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_font_ptr(font.shared_from_this())
@@ -132,7 +132,7 @@ Text::Text(Context& ui_context, gfx::RenderPattern& render_pattern, Font& font, 
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
-        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr());
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<gfx::IRenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;

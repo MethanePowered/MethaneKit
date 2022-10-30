@@ -34,18 +34,18 @@ Base implementation of the render pass interface.
 #include <fmt/format.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::RenderPattern::ColorAttachment>
+struct fmt::formatter<Methane::Graphics::RenderPassColorAttachment>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::RenderPattern::ColorAttachment& ca, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(ca)); }
+    [[nodiscard]] auto format(const Methane::Graphics::RenderPassColorAttachment& ca, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(ca)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
 namespace Methane::Graphics
 {
 
-RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat format,
-                                      Data::Size samples_count, LoadAction load_action, StoreAction store_action)
+RenderPassAttachment::RenderPassAttachment(Data::Index attachment_index, PixelFormat format,
+                                           Data::Size samples_count, LoadAction load_action, StoreAction store_action)
     : attachment_index(attachment_index)
     , format(format)
     , samples_count(samples_count)
@@ -55,21 +55,21 @@ RenderPattern::Attachment::Attachment(Data::Index attachment_index, PixelFormat 
     META_FUNCTION_TASK();
 }
 
-bool RenderPattern::Attachment::operator==(const RenderPattern::Attachment& other) const
+bool RenderPassAttachment::operator==(const RenderPassAttachment& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(attachment_index, format, samples_count, load_action, store_action) ==
            std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
 }
 
-bool RenderPattern::Attachment::operator!=(const RenderPattern::Attachment& other) const
+bool RenderPassAttachment::operator!=(const RenderPassAttachment& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(attachment_index, format, samples_count, load_action, store_action) !=
            std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
 }
 
-RenderPattern::Attachment::operator std::string() const
+RenderPassAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("attachment id {}: format={}, samples={}, load={}, store={}",
@@ -80,87 +80,87 @@ RenderPattern::Attachment::operator std::string() const
                        magic_enum::enum_name(store_action));
 }
 
-RenderPattern::ColorAttachment::ColorAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                                LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
-    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+RenderPassColorAttachment::RenderPassColorAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                                     LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
+    : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_color(clear_color)
 {
     META_FUNCTION_TASK();
 }
 
-bool RenderPattern::ColorAttachment::operator==(const RenderPattern::ColorAttachment& other) const
+bool RenderPassColorAttachment::operator==(const RenderPassColorAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) && clear_color == other.clear_color;
+    return RenderPassAttachment::operator==(other) && clear_color == other.clear_color;
 }
 
-bool RenderPattern::ColorAttachment::operator!=(const RenderPattern::ColorAttachment& other) const
+bool RenderPassColorAttachment::operator!=(const RenderPassColorAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator!=(other) || clear_color != other.clear_color;
+    return RenderPassAttachment::operator!=(other) || clear_color != other.clear_color;
 }
 
-RenderPattern::ColorAttachment::operator std::string() const
+RenderPassColorAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Color {}, clear_color={}",
-                       Attachment::operator std::string(),
+                       RenderPassAttachment::operator std::string(),
                        static_cast<std::string>(clear_color));
 }
 
-RenderPattern::DepthAttachment::DepthAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+RenderPassDepthAttachment::RenderPassDepthAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
                                                 LoadAction load_action, StoreAction store_action, Depth clear_value)
-    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+    : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {
     META_FUNCTION_TASK();
 }
 
-bool RenderPattern::DepthAttachment::operator==(const RenderPattern::DepthAttachment& other) const
+bool RenderPassDepthAttachment::operator==(const RenderPassDepthAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) && clear_value == other.clear_value;
+    return RenderPassAttachment::operator==(other) && clear_value == other.clear_value;
 }
 
-bool RenderPattern::DepthAttachment::operator!=(const RenderPattern::DepthAttachment& other) const
+bool RenderPassDepthAttachment::operator!=(const RenderPassDepthAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator!=(other) || clear_value != other.clear_value;
+    return RenderPassAttachment::operator!=(other) || clear_value != other.clear_value;
 }
 
-RenderPattern::DepthAttachment::operator std::string() const
+RenderPassDepthAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Depth {}, clear_value={}",
-                       Attachment::operator std::string(),
+                       RenderPassAttachment::operator std::string(),
                        clear_value);
 }
 
-RenderPattern::StencilAttachment::StencilAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
-                                                    LoadAction load_action, StoreAction store_action, Stencil clear_value)
-    : Attachment(attachment_index, format, samples_count, load_action, store_action)
+RenderPassStencilAttachment::RenderPassStencilAttachment(Data::Index attachment_index, PixelFormat format, Data::Size samples_count,
+                                                         LoadAction load_action, StoreAction store_action, Stencil clear_value)
+    : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 {
     META_FUNCTION_TASK();
 }
 
-bool RenderPattern::StencilAttachment::operator==(const RenderPattern::StencilAttachment& other) const
+bool RenderPassStencilAttachment::operator==(const RenderPassStencilAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator==(other) && clear_value == other.clear_value;
+    return RenderPassAttachment::operator==(other) && clear_value == other.clear_value;
 }
 
-bool RenderPattern::StencilAttachment::operator!=(const RenderPattern::StencilAttachment& other) const
+bool RenderPassStencilAttachment::operator!=(const RenderPassStencilAttachment& other) const
 {
     META_FUNCTION_TASK();
-    return Attachment::operator!=(other) || clear_value != other.clear_value;
+    return RenderPassAttachment::operator!=(other) || clear_value != other.clear_value;
 }
 
-RenderPattern::StencilAttachment::operator std::string() const
+RenderPassStencilAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Stencil {}, clear_value={}",
-                       Attachment::operator std::string(),
+                       RenderPassAttachment::operator std::string(),
                        clear_value);
 }
 
@@ -212,21 +212,21 @@ AttachmentFormats RenderPatternBase::GetAttachmentFormats() const noexcept
     return attachment_formats;
 }
 
-bool RenderPattern::Settings::operator==(const Settings& other) const
+bool RenderPatternSettings::operator==(const RenderPatternSettings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) ==
            std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
 }
 
-bool RenderPattern::Settings::operator!=(const Settings& other) const
+bool RenderPatternSettings::operator!=(const RenderPatternSettings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) !=
            std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
 }
 
-RenderPattern::Settings::operator std::string() const
+RenderPatternSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     std::string color_attachments_str = "  - No color attachments";
@@ -241,14 +241,14 @@ RenderPattern::Settings::operator std::string() const
                        (is_final_pass ? "final" : "intermediate"));
 }
 
-bool RenderPass::Settings::operator==(const Settings& other) const
+bool RenderPassSettings::operator==(const RenderPassSettings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(attachments, frame_size) ==
            std::tie(other.attachments, other.frame_size);
 }
 
-bool RenderPass::Settings::operator!=(const Settings& other) const
+bool RenderPassSettings::operator!=(const RenderPassSettings& other) const
 {
     META_FUNCTION_TASK();
     return std::tie(attachments, frame_size) !=
@@ -264,7 +264,7 @@ RenderPassBase::RenderPassBase(RenderPatternBase& render_pattern, const Settings
     InitAttachmentStates();
 }
 
-bool RenderPassBase::Update(const RenderPass::Settings& settings)
+bool RenderPassBase::Update(const RenderPassSettings& settings)
 {
     META_FUNCTION_TASK();
     if (m_settings == settings)
@@ -377,7 +377,7 @@ void RenderPassBase::SetAttachmentStates(const std::optional<IResource::State>& 
     }
 }
 
-const ITexture::View& RenderPassBase::GetAttachmentTextureView(const Attachment& attachment) const
+const ITexture::View& RenderPassBase::GetAttachmentTextureView(const RenderPassAttachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
@@ -406,7 +406,7 @@ TextureBase* RenderPassBase::GetDepthAttachmentTexture() const
     if (m_p_depth_attachment_texture)
         return m_p_depth_attachment_texture;
 
-    const Opt<DepthAttachment>& depth_attachment_opt = GetPatternBase().GetSettings().depth_attachment;
+    const Opt<RenderPassDepthAttachment>& depth_attachment_opt = GetPatternBase().GetSettings().depth_attachment;
     if (!depth_attachment_opt)
         return nullptr;
 

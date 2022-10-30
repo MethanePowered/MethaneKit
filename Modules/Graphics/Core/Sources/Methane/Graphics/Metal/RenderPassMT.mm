@@ -32,31 +32,31 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics
 {
 
-static MTLStoreAction GetMTLStoreAction(RenderPass::Attachment::StoreAction store_action)
+static MTLStoreAction GetMTLStoreAction(IRenderPass::Attachment::StoreAction store_action)
 {
     META_FUNCTION_TASK();
     switch(store_action)
     {
-        case RenderPass::Attachment::StoreAction::DontCare:   return MTLStoreActionDontCare;
-        case RenderPass::Attachment::StoreAction::Store:      return MTLStoreActionStore;
-        case RenderPass::Attachment::StoreAction::Resolve:    return MTLStoreActionMultisampleResolve;
-        default:                                              META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
+        case IRenderPass::Attachment::StoreAction::DontCare: return MTLStoreActionDontCare;
+        case IRenderPass::Attachment::StoreAction::Store:    return MTLStoreActionStore;
+        case IRenderPass::Attachment::StoreAction::Resolve:  return MTLStoreActionMultisampleResolve;
+        default:                                             META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
     }
 }
 
-static MTLLoadAction GetMTLLoadAction(RenderPass::Attachment::LoadAction load_action)
+static MTLLoadAction GetMTLLoadAction(IRenderPass::Attachment::LoadAction load_action)
 {
     META_FUNCTION_TASK();
     switch(load_action)
     {
-        case RenderPass::Attachment::LoadAction::DontCare:    return MTLLoadActionDontCare;
-        case RenderPass::Attachment::LoadAction::Load:        return MTLLoadActionLoad;
-        case RenderPass::Attachment::LoadAction::Clear:       return MTLLoadActionClear;
-        default:                                              META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
+        case IRenderPass::Attachment::LoadAction::DontCare: return MTLLoadActionDontCare;
+        case IRenderPass::Attachment::LoadAction::Load:     return MTLLoadActionLoad;
+        case IRenderPass::Attachment::LoadAction::Clear:    return MTLLoadActionClear;
+        default:                                            META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
 }
 
-static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass, const RenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
+static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass, const IRenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
 {
     META_FUNCTION_TASK();
     const ITexture::View& texture_location = render_pass.GetAttachmentTextureView(attachment);
@@ -85,13 +85,13 @@ static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass
     }
 }
 
-Ptr<RenderPattern> RenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
 }
 
-Ptr<RenderPass> RenderPass::Create(RenderPattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderPassMT>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);

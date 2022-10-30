@@ -63,7 +63,7 @@ class RenderPassVK final
 public:
     RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings);
 
-    // RenderPass interface
+    // IRenderPass interface
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 
@@ -87,7 +87,7 @@ private:
 
     const ResourceViewVK&   GetAttachmentTextureViewVK(const Attachment& attachment) const;
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
-    vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
+    vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::IRenderPass& vk_render_pass, const Settings& settings);
 
     ResourceViewsVK         m_vk_attachments;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;

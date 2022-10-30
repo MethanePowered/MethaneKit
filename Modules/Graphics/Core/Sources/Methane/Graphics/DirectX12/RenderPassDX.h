@@ -46,7 +46,7 @@ class RenderPassDX final
 public:
     RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings);
 
-    // RenderPass interface
+    // IRenderPass interface
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 

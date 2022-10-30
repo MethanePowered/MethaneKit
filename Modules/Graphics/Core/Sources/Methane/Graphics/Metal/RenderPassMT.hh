@@ -37,7 +37,7 @@ class RenderPassMT final : public RenderPassBase
 public:
     RenderPassMT(RenderPatternBase& render_pattern, const Settings& settings);
 
-    // RenderPass interface
+    // IRenderPass interface
     bool Update(const Settings& settings) override;
     
     void Reset();

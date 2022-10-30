@@ -158,7 +158,7 @@ private:
     Ptr<gfx::ISampler>          m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers>    m_floor_buffers_ptr;
-    Ptr<gfx::RenderPattern>     m_shadow_pass_pattern_ptr;
+    Ptr<gfx::IRenderPattern>     m_shadow_pass_pattern_ptr;
     RenderPassState             m_shadow_pass { false, "Shadow Render Pass" };
     RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };
@@ -191,7 +191,7 @@ struct ShadowCubeFrame final : gfx::AppFrame
         MeshResources               cube;
         MeshResources               floor;
         Ptr<gfx::ITexture>          rt_texture_ptr;
-        Ptr<gfx::RenderPass>        render_pass_ptr;
+        Ptr<gfx::IRenderPass>        render_pass_ptr;
         Ptr<gfx::RenderCommandList> cmd_list_ptr;
     };
 
@@ -262,8 +262,8 @@ description here.
     m_final_pass.view_state_ptr = GetViewStatePtr();
 ```
 
-`RenderPattern` class is used to define specific color/depth/stencil attachments configuration including their formats, load and store actions,
-without relation to specific resources used for attachments (this relation is set with `RenderPass` objects).
+`IRenderPattern` class is used to define specific color/depth/stencil attachments configuration including their formats, load and store actions,
+without relation to specific resources used for attachments (this relation is set with `IRenderPass` objects).
 **Shadow pass** pattern uses only depth attachment which is cleared on load and stored for further use in final screen render pass.
 The pattern also defines render pass access to shader resources and is marked with intermediate pass flag.
 
@@ -272,17 +272,17 @@ The pattern also defines render pass access to shader resources and is marked wi
     // ========= Shadow Pass Render & View States =========
 
     // Create shadow-pass render pattern
-    m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
+    m_shadow_pass_pattern_ptr = gfx::IRenderPattern::Create(GetRenderContext(), {
         { // No color attachments
         },
-        gfx::RenderPattern::DepthAttachment(
+        gfx::IRenderPattern::DepthAttachment(
             0U, context_settings.depth_stencil_format, 1U,
-            gfx::RenderPass::Attachment::LoadAction::Clear,
-            gfx::RenderPass::Attachment::StoreAction::Store,
+            gfx::IRenderPass::Attachment::LoadAction::Clear,
+            gfx::IRenderPass::Attachment::StoreAction::Store,
             context_settings.clear_depth_stencil->first
         ),
-        gfx::RenderPass::StencilAttachment(),
-        gfx::RenderPass::Access::ShaderResources,
+        gfx::IRenderPass::StencilAttachment(),
+        gfx::IRenderPass::Access::ShaderResources,
         false // intermediate render pass
     });
 ```
@@ -396,7 +396,7 @@ rendered depth texture content for the next render pass. Render command list is 
         frame.shadow_pass.rt_texture_ptr = gfx::ITexture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
         
         // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(*m_shadow_pass_pattern_ptr, {
+        frame.shadow_pass.render_pass_ptr = gfx::IRenderPass::Create(*m_shadow_pass_pattern_ptr, {
             { *frame.shadow_pass.rt_texture_ptr },
             context_settings.frame_size
         });
@@ -448,7 +448,7 @@ application class `Methane::Graphics::App`. Render command list is created bound
 ```
 
 When render context is going to be released, all related resources must be released too. This is done in 
-`ShadowCubeApp::OnContextReleased` callback method with a helper method `ShadowCubeApp::RenderPass::Release()` 
+`ShadowCubeApp::OnContextReleased` callback method with a helper method `ShadowCubeApp::IRenderPass::Release()` 
 releasing render pass pipeline states:
 
 ```cpp
@@ -467,7 +467,7 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
     UserInterfaceApp::OnContextReleased(context);
 }
 
-void ShadowCubeApp::RenderPass::Release()
+void ShadowCubeApp::IRenderPass::Release()
 {
     render_state_ptr.reset();
     view_state_ptr.reset();
@@ -599,7 +599,7 @@ Scene rendering commands encoding is done similarly for both shadow and render p
    5. Command list is committed making it ready for execution.
 
 ```cpp
-void ShadowCubeApp::RenderScene(const RenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
+void ShadowCubeApp::RenderScene(const IRenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
     gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 

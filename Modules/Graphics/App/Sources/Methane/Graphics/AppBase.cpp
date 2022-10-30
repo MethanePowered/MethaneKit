@@ -27,7 +27,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IRenderState.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/Provider.h>
 #include <Methane/Instrumentation.h>
@@ -41,7 +41,7 @@ namespace Methane::Graphics
 
 static constexpr double g_title_update_interval_sec = 1.0;
 
-IApp::Settings& IApp::Settings::SetScreenPassAccess(RenderPass::Access new_screen_pass_access) noexcept
+IApp::Settings& IApp::Settings::SetScreenPassAccess(IRenderPass::Access new_screen_pass_access) noexcept
 {
     META_FUNCTION_TASK();
     screen_pass_access = new_screen_pass_access;
@@ -166,13 +166,13 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     // Final frame color attachment
     Data::Index attachment_index = 0U;
     m_screen_pass_pattern_settings.color_attachments = {
-        RenderPass::ColorAttachment(
+        IRenderPass::ColorAttachment(
             attachment_index++,
             m_initial_context_settings.color_format, 1U,
             m_initial_context_settings.clear_color.has_value()
-            ? RenderPass::Attachment::LoadAction::Clear
-            : RenderPass::Attachment::LoadAction::DontCare,
-            RenderPass::Attachment::StoreAction::Store,
+            ? IRenderPass::Attachment::LoadAction::Clear
+            : IRenderPass::Attachment::LoadAction::DontCare,
+            IRenderPass::Attachment::StoreAction::Store,
             m_initial_context_settings.clear_color.value_or(Color4F())
         )
     };
@@ -181,13 +181,13 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
         static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
-        m_screen_pass_pattern_settings.depth_attachment = RenderPass::DepthAttachment(
+        m_screen_pass_pattern_settings.depth_attachment = IRenderPass::DepthAttachment(
             attachment_index++,
             m_initial_context_settings.depth_stencil_format, 1U,
             m_initial_context_settings.clear_depth_stencil.has_value()
-            ? RenderPass::Attachment::LoadAction::Clear
-            : RenderPass::Attachment::LoadAction::DontCare,
-            RenderPass::Attachment::StoreAction::DontCare,
+            ? IRenderPass::Attachment::LoadAction::Clear
+            : IRenderPass::Attachment::LoadAction::DontCare,
+            IRenderPass::Attachment::StoreAction::DontCare,
             m_initial_context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
         );
     }
@@ -219,7 +219,7 @@ void AppBase::Init()
     }
 
     // Create screen render pass pattern
-    m_screen_render_pattern_ptr = RenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
+    m_screen_render_pattern_ptr = IRenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
     m_screen_render_pattern_ptr->SetName("Final Render Pass");
 
     m_view_state_ptr = IViewState::Create({
@@ -364,11 +364,11 @@ ITexture::Views AppBase::GetScreenPassAttachments(ITexture& frame_buffer_texture
     return attachments;
 }
 
-Ptr<RenderPass> AppBase::CreateScreenRenderPass(ITexture& frame_buffer_texture) const
+Ptr<IRenderPass> AppBase::CreateScreenRenderPass(ITexture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    return RenderPass::Create(GetScreenRenderPattern(), {
+    return IRenderPass::Create(GetScreenRenderPattern(), {
         GetScreenPassAttachments(frame_buffer_texture),
         m_context_ptr->GetSettings().frame_size
     });

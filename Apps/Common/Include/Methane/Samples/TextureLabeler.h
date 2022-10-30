@@ -31,8 +31,8 @@ Renders text labels to the faces of cube-map texture array
 
 namespace Methane::Graphics
 {
-struct RenderPattern;
-struct RenderPass;
+struct IRenderPattern;
+struct IRenderPass;
 struct RenderCommandList;
 struct CommandListSet;
 struct ITexture;
@@ -107,7 +107,7 @@ private:
             : SliceDesc(slice_desc)
         {}
 
-        Ptr<gfx::RenderPass>        render_pass_ptr;
+        Ptr<gfx::IRenderPass>       render_pass_ptr;
         Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
         Ptr<gui::Text>              label_text_ptr;
         Ptr<gfx::ScreenQuad>        bg_quad_ptr;
@@ -117,10 +117,10 @@ private:
     gfx::ITexture&              m_rt_texture;
     gui::Font&                  m_font;
     std::vector<Slice>          m_slices;
-    Ptr<gfx::RenderPattern>     m_texture_face_render_pattern_ptr;
+    Ptr<gfx::IRenderPattern>    m_texture_face_render_pattern_ptr;
     Ptr<gfx::IResourceBarriers> m_ending_resource_barriers_ptr;
-    Ptr<gfx::RenderPattern>     m_ending_render_pattern_ptr;
-    Ptr<gfx::RenderPass>        m_ending_render_pass_ptr;
+    Ptr<gfx::IRenderPattern>    m_ending_render_pattern_ptr;
+    Ptr<gfx::IRenderPass>       m_ending_render_pass_ptr;
     Ptr<gfx::RenderCommandList> m_ending_render_cmd_list_ptr;
     Ptr<gfx::CommandListSet>    m_render_cmd_list_set_ptr;
 };

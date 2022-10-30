@@ -29,7 +29,7 @@ Base frame class provides frame buffer management with resize handling.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Graphics/AppController.h>
 #include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/RenderPass.h>
+#include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -41,8 +41,8 @@ namespace Methane::Graphics
 struct AppFrame
 {
     const uint32_t  index = 0;
-    Ptr<ITexture>   screen_texture_ptr;
-    Ptr<RenderPass> screen_pass_ptr;
+    Ptr<ITexture>    screen_texture_ptr;
+    Ptr<IRenderPass> screen_pass_ptr;
 
     explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
     virtual ~AppFrame() = default;

@@ -136,7 +136,7 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);

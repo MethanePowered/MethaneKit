@@ -38,7 +38,7 @@ DirectX 12 implementation of the parallel render command list interface.
 namespace Methane::Graphics
 {
 
-Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& cmd_queue, RenderPass& render_pass)
+Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(CommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));

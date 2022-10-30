@@ -55,7 +55,7 @@ public:
         : GraphicsApp(
             []() {
                 Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::None);
                 return settings;
             }())
     { }
@@ -81,13 +81,13 @@ and is accessed via shader data provider singleton available with `Data::ShaderP
 Program also defines input buffer layout using argument semantic names from HLSL shaders. Methane graphics abstraction 
 uses shader reflection to automatically identify argument types and offset sizes to build underlying DirectX, Metal or Vulkan
 layout description. Render target color formats are also required for program creation, these formats are taken from 
-`RenderPattern` object provided by the base class `Graphics::App` and describing general configuration of color/depth/stencil
-attachments used for final drawing to window on screen. `IRenderState::Settings` requires a pointer to `RenderPattern`
+`IRenderPattern` object provided by the base class `Graphics::App` and describing general configuration of color/depth/stencil
+attachments used for final drawing to window on screen. `IRenderState::Settings` requires a pointer to `IRenderPattern`
 object and also contains settings of rasterizer, depth, stencil, blending states which are left with default values 
 for simplicity of this tutorial.
 
 Render command lists are created for each frame using `RenderCommandList::Create(...)` factory function which is taking
-`CommandQueue` and `RenderPass` as its arguments. So the created command list can be used for rendering only to that particular
+`CommandQueue` and `IRenderPass` as its arguments. So the created command list can be used for rendering only to that particular
 render pass. Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
 resources initialization and prepare for rendering.
 

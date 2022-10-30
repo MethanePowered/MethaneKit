@@ -172,16 +172,16 @@ void ShadowCubeApp::Init()
     // ========= Shadow Pass Render & View States =========
 
     // Create shadow-pass render pattern
-    m_shadow_pass_pattern_ptr = gfx::RenderPattern::Create(GetRenderContext(), {
+    m_shadow_pass_pattern_ptr = gfx::IRenderPattern::Create(GetRenderContext(), {
         { }, // No color attachments
-        gfx::RenderPattern::DepthAttachment(
+        gfx::IRenderPattern::DepthAttachment(
             0U, context_settings.depth_stencil_format, 1U,
-            gfx::RenderPass::Attachment::LoadAction::Clear,
-            gfx::RenderPass::Attachment::StoreAction::Store,
+            gfx::IRenderPass::Attachment::LoadAction::Clear,
+            gfx::IRenderPass::Attachment::StoreAction::Store,
             context_settings.clear_depth_stencil->first
         ),
         std::nullopt, // No stencil attachment
-        gfx::RenderPass::Access::ShaderResources,
+        gfx::IRenderPass::Access::ShaderResources,
         false // intermediate render pass
     });
 
@@ -257,7 +257,7 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment
-        frame.shadow_pass.render_pass_ptr = gfx::RenderPass::Create(*m_shadow_pass_pattern_ptr, {
+        frame.shadow_pass.render_pass_ptr = gfx::IRenderPass::Create(*m_shadow_pass_pattern_ptr, {
             { *frame.shadow_pass.rt_texture_ptr },
             shadow_texture_settings.dimensions.AsRectSize()
         });

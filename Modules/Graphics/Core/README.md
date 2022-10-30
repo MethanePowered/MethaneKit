@@ -37,7 +37,7 @@ which make modern graphics programming easy and convenient in a platform and API
 - [IProgram](Include/Methane/Graphics/IProgram.h)
 - [IProgramBindings](Include/Methane/Graphics/IProgramBindings.h)
 - [IRenderState](Include/Methane/Graphics/IRenderState.h)
-- [RenderPattern, RenderPass](Include/Methane/Graphics/RenderPass.h)
+- [IRenderPattern, IRenderPass](Include/Methane/Graphics/IRenderPass.h)
 
 ### Other
 - [IObject, IObjectRegistry](Include/Methane/Graphics/IObject.h)
