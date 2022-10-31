@@ -26,7 +26,7 @@ ScreenQuad rendering primitive.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Graphics/IShader.h>
 #include <Methane/Memory.hpp>
 
@@ -76,7 +76,7 @@ public:
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
     [[nodiscard]] const ITexture&  GetTexture() const;
 
-    virtual void Draw(RenderCommandList& cmd_list, CommandList::DebugGroup* p_debug_group = nullptr) const;
+    virtual void Draw(RenderCommandList& cmd_list, ICommandListDebugGroup* p_debug_group = nullptr) const;
 
 protected:
     IRenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }

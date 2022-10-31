@@ -107,7 +107,7 @@ public:
     TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryPool interface
-    Ptr<ITimestampQuery> CreateTimestampQuery(CommandList& command_list) override;
+    Ptr<ITimestampQuery> CreateTimestampQuery(ICommandList& command_list) override;
     CalibratedTimestamps Calibrate() override;
 };
 

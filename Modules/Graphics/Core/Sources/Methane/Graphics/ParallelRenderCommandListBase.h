@@ -49,19 +49,19 @@ public:
     // ParallelRenderCommandList interface
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void SetViewState(IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Refs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
 
     // CommandListBase interface
     void SetResourceBarriers(const IResourceBarriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
-    void Execute(const CommandList::CompletedCallback& completed_callback) override;
+    void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void Complete() override;
 
-    // CommandList interface
-    void PushDebugGroup(DebugGroup&) override   { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
+    // ICommandList interface
+    void PushDebugGroup(IDebugGroup&) override   { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void PopDebugGroup() override               { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
@@ -77,7 +77,7 @@ protected:
 
 private:
     template<typename ResetCommandListFn>
-    void ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn);
+    void ResetImpl(IDebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn);
 
     const Ptr<RenderPassBase>   m_render_pass_ptr;
     Ptrs<RenderCommandListBase> m_parallel_command_lists;

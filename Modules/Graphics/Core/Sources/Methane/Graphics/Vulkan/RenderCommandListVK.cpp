@@ -111,14 +111,14 @@ RenderCommandListVK::RenderCommandListVK(ParallelRenderCommandListVK& parallel_r
     static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetPassVK()).Connect(*this);
 }
 
-void RenderCommandListVK::Reset(DebugGroup* p_debug_group)
+void RenderCommandListVK::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListVK::ResetCommandState();
     CommandListVK::Reset(p_debug_group);
 }
 
-void RenderCommandListVK::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListVK::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListVK::ResetCommandState();

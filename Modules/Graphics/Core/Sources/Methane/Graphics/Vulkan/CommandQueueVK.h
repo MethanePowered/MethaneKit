@@ -49,12 +49,12 @@ public:
         std::vector<uint64_t>               wait_values;
     };
 
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type);
     ~CommandQueueVK() override;
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
-    void Execute(CommandListSet& command_list_set, const CommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(CommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;
@@ -82,10 +82,10 @@ protected:
     void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set) override;
 
 private:
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device);
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device);
+    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
                    const QueueFamilyReservationVK& family_reservation);
-    CommandQueueVK(const ContextBase& context, CommandList::Type command_lists_type, const DeviceVK& device,
+    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
                    const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();

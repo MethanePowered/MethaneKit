@@ -56,7 +56,7 @@ ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_q
     GetPassDX().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandListDX::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListDX::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
@@ -114,7 +114,7 @@ void ParallelRenderCommandListDX::Commit()
     m_beginning_command_list.Commit();
 }
 
-void ParallelRenderCommandListDX::Execute(const CommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandListDX::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Execute();

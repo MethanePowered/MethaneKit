@@ -25,7 +25,7 @@ and synchronization within a stored command queue.
 #pragma once
 
 #include "IObject.h"
-#include "CommandList.h"
+#include "ICommandList.h"
 
 #include <limits>
 #include <vector>
@@ -50,19 +50,19 @@ enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initi
 struct ICommandKit : virtual IObject // NOSONAR
 {
     // Create ICommandKit instance
-    [[nodiscard]] static Ptr<ICommandKit> Create(const IContext& context, CommandList::Type command_lists_type);
+    [[nodiscard]] static Ptr<ICommandKit> Create(const IContext& context, CommandListType command_lists_type);
     [[nodiscard]] static Ptr<ICommandKit> Create(ICommandQueue& cmd_queue);
 
     // ICommandKit interface
-    [[nodiscard]] virtual const IContext&   GetContext() const noexcept = 0;
-    [[nodiscard]] virtual ICommandQueue&    GetQueue() const = 0;
-    [[nodiscard]] virtual CommandList::Type GetListType() const noexcept = 0;
-    [[nodiscard]] virtual bool              HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;
-    [[nodiscard]] virtual bool              HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
-    [[nodiscard]] virtual CommandList&      GetList(CommandListId cmd_list_id = 0U) const = 0;
-    [[nodiscard]] virtual CommandList&      GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
-    [[nodiscard]] virtual CommandListSet&   GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
-    [[nodiscard]] virtual IFence&           GetFence(CommandListId fence_id = 0U) const = 0;
+    [[nodiscard]] virtual const IContext& GetContext() const noexcept = 0;
+    [[nodiscard]] virtual ICommandQueue&  GetQueue() const = 0;
+    [[nodiscard]] virtual CommandListType GetListType() const noexcept = 0;
+    [[nodiscard]] virtual bool            HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;
+    [[nodiscard]] virtual bool            HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
+    [[nodiscard]] virtual ICommandList&   GetList(CommandListId cmd_list_id = 0U) const = 0;
+    [[nodiscard]] virtual ICommandList&   GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
+    [[nodiscard]] virtual CommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
+    [[nodiscard]] virtual IFence&         GetFence(CommandListId fence_id = 0U) const = 0;
 };
 
 } // namespace Methane::Graphics

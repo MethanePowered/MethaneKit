@@ -28,7 +28,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ProgramBindingsBase.h>
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics

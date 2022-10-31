@@ -50,8 +50,8 @@ public:
         META_FUNCTION_TASK();
     }
 
-    // CommandList interface
-    void PushDebugGroup(CommandList::DebugGroup& debug_group) override
+    // ICommandList interface
+    void PushDebugGroup(ICommandListDebugGroup& debug_group) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
@@ -121,7 +121,7 @@ public:
 
     void SetResourceBarriers(const IResourceBarriers&) override { }
 
-    void Execute(const CommandList::CompletedCallback& completed_callback) override
+    void Execute(const ICommandList::CompletedCallback& completed_callback) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);

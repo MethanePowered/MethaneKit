@@ -38,7 +38,7 @@ namespace Methane::Graphics
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
-Ptr<ICommandKit> ICommandKit::Create(const IContext& context, CommandList::Type cmd_list_type)
+Ptr<ICommandKit> ICommandKit::Create(const IContext& context, CommandListType cmd_list_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(context, cmd_list_type);
@@ -50,7 +50,7 @@ Ptr<ICommandKit> ICommandKit::Create(ICommandQueue& cmd_queue)
     return std::make_shared<CommandKitBase>(cmd_queue);
 }
 
-CommandKitBase::CommandKitBase(const IContext& context, CommandList::Type cmd_list_type)
+CommandKitBase::CommandKitBase(const IContext& context, CommandListType cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
 {
@@ -77,7 +77,7 @@ bool CommandKitBase::SetName(const std::string& name)
 
     for(size_t cmd_list_index = 0; cmd_list_index < m_cmd_list_ptrs.size(); ++cmd_list_index)
     {
-        const Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
+        const Ptr<ICommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
         if (cmd_list_ptr)
             cmd_list_ptr->SetName(fmt::format("{} Command List {}", GetName(), cmd_list_index));
     }
@@ -110,14 +110,14 @@ bool CommandKitBase::HasList(CommandListId cmd_list_id) const noexcept
     return cmd_list_index < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_index];
 }
 
-bool CommandKitBase::HasListWithState(CommandList::State cmd_list_state, CommandListId cmd_list_id) const noexcept
+bool CommandKitBase::HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id) const noexcept
 {
     META_FUNCTION_TASK();
     const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
     return cmd_list_index < m_cmd_list_ptrs.size() && m_cmd_list_ptrs[cmd_list_index] && m_cmd_list_ptrs[cmd_list_index]->GetState() == cmd_list_state;
 }
 
-CommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
+ICommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
 {
     META_FUNCTION_TASK();
     const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
@@ -125,14 +125,14 @@ CommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
     if (cmd_list_index >= m_cmd_list_ptrs.size())
         m_cmd_list_ptrs.resize(cmd_list_index + 1);
 
-    Ptr<CommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
+    Ptr<ICommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
     if (cmd_list_ptr)
         return *cmd_list_ptr;
 
     switch (m_cmd_list_type)
     {
-    case CommandList::Type::Transfer: cmd_list_ptr = TransferCommandList::Create(GetQueue()); break;
-    case CommandList::Type::Render:   cmd_list_ptr = RenderCommandListBase::CreateForSynchronization(GetQueue()); break;
+    case CommandListType::Transfer: cmd_list_ptr = TransferCommandList::Create(GetQueue()); break;
+    case CommandListType::Render: cmd_list_ptr = RenderCommandListBase::CreateForSynchronization(GetQueue()); break;
     default:                          META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
@@ -140,17 +140,17 @@ CommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
     return *cmd_list_ptr;
 }
 
-CommandList& CommandKitBase::GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
+ICommandList& CommandKitBase::GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
 {
     META_FUNCTION_TASK();
-    CommandList& cmd_list = GetList(cmd_list_id);
+    ICommandList& cmd_list = GetList(cmd_list_id);
 
     // FIXME: loop with wait timeout iterations is used to workaround sporadic deadlock on command list wait for completion
     //        reproduced at high rate of resource updates (in typography tutorial)
-    while(cmd_list.GetState() == CommandList::State::Executing)
+    while(cmd_list.GetState() == CommandListState::Executing)
         cmd_list.WaitUntilCompleted(16);
 
-    if (cmd_list.GetState() == CommandList::State::Pending)
+    if (cmd_list.GetState() == CommandListState::Pending)
     {
         if (debug_group_name.empty())
         {
@@ -176,7 +176,7 @@ CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd
     if (cmd_list_set_ptr && cmd_list_set_ptr->GetCount() == cmd_list_ids.size())
         return *cmd_list_set_ptr;
 
-    Refs<CommandList> command_list_refs;
+    Refs<ICommandList> command_list_refs;
     for(CommandListId cmd_list_id : cmd_list_ids)
     {
         command_list_refs.emplace_back(GetList(cmd_list_id));

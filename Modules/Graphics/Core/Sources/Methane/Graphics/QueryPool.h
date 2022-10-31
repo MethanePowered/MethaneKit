@@ -30,7 +30,7 @@ namespace Methane::Graphics
 {
 
 struct ICommandQueue;
-struct CommandList;
+struct ICommandList;
 struct IContext;
 struct IQueryPool;
 struct ITimestampQuery;
@@ -57,7 +57,7 @@ struct IQuery
     [[nodiscard]] virtual const Range& GetDataRange() const noexcept = 0;
     [[nodiscard]] virtual State        GetState() const noexcept = 0;
     [[nodiscard]] virtual IQueryPool&  GetQueryPool() const noexcept = 0;
-    [[nodiscard]] virtual CommandList& GetCommandList() const noexcept = 0;
+    [[nodiscard]] virtual ICommandList& GetCommandList() const noexcept = 0;
 
     virtual ~IQuery() = default;
 };
@@ -69,7 +69,7 @@ struct IQueryPool
         Timestamp,
     };
 
-    [[nodiscard]] virtual Ptr<ITimestampQuery> CreateTimestampQuery(CommandList& command_list) = 0;
+    [[nodiscard]] virtual Ptr<ITimestampQuery> CreateTimestampQuery(ICommandList& command_list) = 0;
     [[nodiscard]] virtual Ptr<IQueryPool>      GetPtr() = 0;
     [[nodiscard]] virtual Type                 GetType() const noexcept = 0;
     [[nodiscard]] virtual Data::Size           GetPoolSize() const noexcept = 0;
@@ -102,7 +102,7 @@ struct ITimestampQueryPool
 
     [[nodiscard]] static Ptr<ITimestampQueryPool> Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame);
 
-    [[nodiscard]] virtual Ptr<ITimestampQuery>        CreateTimestampQuery(CommandList& command_list) = 0;
+    [[nodiscard]] virtual Ptr<ITimestampQuery>        CreateTimestampQuery(ICommandList& command_list) = 0;
                   virtual CalibratedTimestamps        Calibrate() = 0;
     [[nodiscard]] virtual Frequency                   GetGpuFrequency() const noexcept = 0;
     [[nodiscard]] virtual const CalibratedTimestamps& GetCalibratedTimestamps() const noexcept = 0;

@@ -41,13 +41,13 @@ public:
     ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers) override;
     void SetEndingResourceBarriers(const IResourceBarriers& resource_barriers) override;
     void SetParallelCommandListsCount(uint32_t count) override;
 
-    // CommandList interface
+    // ICommandList interface
     void Commit() override;
 
     // CommandListBase interface

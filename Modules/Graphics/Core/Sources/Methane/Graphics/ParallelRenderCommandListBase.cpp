@@ -58,7 +58,7 @@ void ParallelRenderCommandListBase::SetValidationEnabled(bool is_validation_enab
     }
 }
 
-void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetImpl(p_debug_group, [this, p_debug_group](const Data::Index command_list_index)
@@ -70,7 +70,7 @@ void ParallelRenderCommandListBase::Reset(DebugGroup* p_debug_group)
     });
 }
 
-void ParallelRenderCommandListBase::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListBase::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
@@ -83,7 +83,7 @@ void ParallelRenderCommandListBase::ResetWithState(IRenderState& render_state, D
 }
 
 template<typename ResetCommandListFn>
-void ParallelRenderCommandListBase::ResetImpl(DebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
+void ParallelRenderCommandListBase::ResetImpl(IDebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
 {
     CommandListBase::Reset();
 
@@ -159,7 +159,7 @@ void ParallelRenderCommandListBase::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
-void ParallelRenderCommandListBase::Execute(const CommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandListBase::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandListBase>& render_command_list_ptr : m_parallel_command_lists)

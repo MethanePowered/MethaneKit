@@ -41,7 +41,7 @@ DirectX 12 implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
+Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
     auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
@@ -52,20 +52,20 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandList::T
     return command_queue_ptr;
 }
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandList::Type command_list_type, IContext::Options options)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandListType command_list_type, IContext::Options options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
     switch(command_list_type)
     {
-    case CommandList::Type::Transfer:
+    case CommandListType::Transfer:
         return static_cast<bool>(options & IContext::Options::TransferWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 
-    case CommandList::Type::Render:
-    case CommandList::Type::ParallelRender:
+    case CommandListType::Render:
+    case CommandListType::ParallelRender:
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     default:
@@ -88,7 +88,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
     return cp_command_queue;
 }
 
-CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandListType command_lists_type)
     : CommandQueueTrackingBase(context, command_lists_type)
     , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {

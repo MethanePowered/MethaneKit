@@ -92,7 +92,7 @@ private:
         Ptr<Text>   text_ptr;
 
         void Update(const FrameSize& frame_size) const;
-        void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const;
+        void Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const;
         void Reset(bool forget_text_string);
     };
 

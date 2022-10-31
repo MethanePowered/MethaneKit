@@ -149,7 +149,7 @@ void RenderContextMT::Present()
     META_FUNCTION_TASK();
     ContextMT<RenderContextBase>::Present();
 
-    id<MTLCommandBuffer> mtl_cmd_buffer = [GetDefaultCommandQueueMT(CommandList::Type::Render).GetNativeCommandQueue() commandBuffer];
+    id<MTLCommandBuffer> mtl_cmd_buffer = [GetDefaultCommandQueueMT(CommandListType::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {

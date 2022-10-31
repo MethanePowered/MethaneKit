@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/CommandList.h
+FILE: Methane/Graphics/ICommandList.h
 Methane command list interface: this is uncreatable common command list interface,
 to create instance refer to RenderCommandList, etc. for specific derived interface.
 
@@ -38,54 +38,60 @@ to create instance refer to RenderCommandList, etc. for specific derived interfa
 namespace Methane::Graphics
 {
 
-struct ICommandQueue;
-struct CommandList;
+enum class CommandListType
+{
+    Transfer,
+    Render,
+    ParallelRender,
+};
+
+enum class CommandListState
+{
+    Pending,
+    Encoding,
+    Committed,
+    Executing,
+};
+
+struct ICommandListDebugGroup : virtual IObject // NOSONAR
+{
+    [[nodiscard]] static Ptr<ICommandListDebugGroup> Create(const std::string& name);
+
+    virtual ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
+    [[nodiscard]] virtual ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
+    [[nodiscard]] virtual bool HasSubGroups() const noexcept = 0;
+};
+
+struct ICommandList;
 
 struct ICommandListCallback
 {
-    virtual void OnCommandListStateChanged(CommandList&)        { /* does nothing by default */ };
-    virtual void OnCommandListExecutionCompleted(CommandList&)  { /* does nothing by default */ };
+    virtual void OnCommandListStateChanged(ICommandList&)        { /* does nothing by default */ };
+    virtual void OnCommandListExecutionCompleted(ICommandList&)  { /* does nothing by default */ };
     
     virtual ~ICommandListCallback() = default;
 };
 
-struct CommandList
+struct ICommandQueue;
+
+struct ICommandList
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<ICommandListCallback> // NOSONAR
 {
-    enum class Type
-    {
-        Transfer,
-        Render,
-        ParallelRender,
-    };
+    using Type        = CommandListType;
+    using State       = CommandListState;
+    using IDebugGroup = ICommandListDebugGroup;
+    using ICallback   = ICommandListCallback;
 
-    enum class State
-    {
-        Pending,
-        Encoding,
-        Committed,
-        Executing,
-    };
+    using CompletedCallback = std::function<void(ICommandList& command_list)>;
 
-    struct DebugGroup : virtual IObject // NOSONAR
-    {
-        [[nodiscard]] static Ptr<DebugGroup> Create(const std::string& name);
-
-        virtual DebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
-        [[nodiscard]] virtual DebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
-        [[nodiscard]] virtual bool        HasSubGroups() const noexcept = 0;
-    };
-
-    using CompletedCallback = std::function<void(CommandList& command_list)>;
-
-    // CommandList interface
+    // ICommandList interface
     [[nodiscard]] virtual Type  GetType() const noexcept = 0;
     [[nodiscard]] virtual State GetState() const noexcept = 0;
-    virtual void  PushDebugGroup(DebugGroup& debug_group) = 0;
+    virtual void  PushDebugGroup(IDebugGroup& debug_group) = 0;
     virtual void  PopDebugGroup() = 0;
-    virtual void  Reset(DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void  ResetOnce(DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void  Reset(IDebugGroup* p_debug_group = nullptr) = 0;
+    virtual void  ResetOnce(IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void  SetProgramBindings(IProgramBindings& program_bindings,
                                      IProgramBindings::ApplyBehavior apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental) = 0;
     virtual void  SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
@@ -97,11 +103,11 @@ struct CommandList
 
 struct CommandListSet
 {
-    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
+    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
 
     [[nodiscard]] virtual Data::Size               GetCount() const noexcept = 0;
-    [[nodiscard]] virtual const Refs<CommandList>& GetRefs() const noexcept = 0;
-    [[nodiscard]] virtual CommandList&             operator[](Data::Index index) const = 0;
+    [[nodiscard]] virtual const Refs<ICommandList>& GetRefs() const noexcept = 0;
+    [[nodiscard]] virtual ICommandList&             operator[](Data::Index index) const = 0;
     [[nodiscard]] virtual const Opt<Data::Index>&  GetFrameIndex() const noexcept = 0;
 
     virtual ~CommandListSet() = default;
@@ -112,15 +118,15 @@ struct CommandListSet
 #ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
 
 #define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
-    Methane::Graphics::CommandList::DebugGroup::Create(group_name)
+    Methane::Graphics::ICommandListDebugGroup::Create(group_name)
 
-#define META_DEBUG_GROUP_PUSH(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
     { \
         const auto s_local_debug_group = META_DEBUG_GROUP_CREATE(group_name); \
         (cmd_list).PushDebugGroup(*s_local_debug_group); \
     }
 
-#define META_DEBUG_GROUP_POP(/*CommandList& */cmd_list) \
+#define META_DEBUG_GROUP_POP(/*ICommandList& */cmd_list) \
     (cmd_list).PopDebugGroup()
 
 #else
@@ -128,14 +134,14 @@ struct CommandListSet
 #define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
     nullptr
 
-#define META_DEBUG_GROUP_PUSH(/*CommandList& */cmd_list, /*const std::string& */group_name) \
+#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
     META_UNUSED(cmd_list); META_UNUSED(group_name)
 
-#define META_DEBUG_GROUP_POP(/*CommandList& */cmd_list) \
+#define META_DEBUG_GROUP_POP(/*ICommandList& */cmd_list) \
     META_UNUSED(cmd_list)
 
 #endif
 
 #define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string& */group_name) \
     META_UNUSED(group_name); \
-    static const Methane::Ptr<Methane::Graphics::CommandList::DebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)
+    static const Methane::Ptr<Methane::Graphics::ICommandListDebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

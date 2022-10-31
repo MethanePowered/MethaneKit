@@ -475,7 +475,7 @@ bool ImageTextureVK::SetName(const std::string& name)
 void ImageTextureVK::GenerateMipLevels(ICommandQueue& target_cmd_queue, State target_resource_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), CommandList::Type::Render,
+    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), CommandListType::Render,
                                "texture target command queue is not suitable for mip-maps generation");
 
     const ITexture::Settings& texture_settings = GetSettings();
@@ -485,8 +485,8 @@ void ImageTextureVK::GenerateMipLevels(ICommandQueue& target_cmd_queue, State ta
                               "texture pixel format does not support linear blitting");
 
     constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
-    const CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
-    const vk::CommandBuffer& vk_cmd_buffer = dynamic_cast<const RenderCommandListVK&>(target_cmd_list).GetNativeCommandBufferDefault();
+    const ICommandList     & target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+    const vk::CommandBuffer& vk_cmd_buffer   = dynamic_cast<const RenderCommandListVK&>(target_cmd_list).GetNativeCommandBufferDefault();
 
     const SubResource::Count& subresource_count = GetSubresourceCount();
     const uint32_t mip_levels_count = subresource_count.GetMipLevelsCount();

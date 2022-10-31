@@ -27,7 +27,7 @@ Base implementation of the command list interface.
 #include "QueryPool.h"
 
 #include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
@@ -48,7 +48,7 @@ class ProgramBindingsBase;
 
 class CommandListBase // NOSONAR - custom destructor is used for logging, class has more than 35 methods
     : public ObjectBase
-    , public virtual CommandList // NOSONAR
+    , public virtual ICommandList // NOSONAR
     , public Data::Emitter<ICommandListCallback>
 {
     friend class CommandQueueBase;
@@ -63,7 +63,7 @@ public:
     };
 
     class DebugGroupBase
-        : public DebugGroup
+        : public IDebugGroup
         , public ObjectBase
     {
     public:
@@ -72,25 +72,25 @@ public:
         // IObject overrides
         bool SetName(const std::string&) override;
 
-        // DebugGroup interface
-        DebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
-        DebugGroup* GetSubGroup(Data::Index id) const noexcept final;
+        // IDebugGroup interface
+        IDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
+        IDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
         bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 
     private:
-        Ptrs<DebugGroup> m_sub_groups;
+        Ptrs<IDebugGroup> m_sub_groups;
     };
 
     CommandListBase(CommandQueueBase& command_queue, Type type);
     ~CommandListBase() override;
 
-    // CommandList interface
+    // ICommandList interface
     Type  GetType() const noexcept override                         { return m_type; }
     State GetState() const noexcept override                        { return m_state; }
-    void  PushDebugGroup(DebugGroup& debug_group) override;
+    void  PushDebugGroup(IDebugGroup& debug_group) override;
     void  PopDebugGroup() override;
-    void  Reset(DebugGroup* p_debug_group = nullptr) override;
-    void  ResetOnce(DebugGroup* p_debug_group = nullptr) final;
+    void  Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void  ResetOnce(IDebugGroup* p_debug_group = nullptr) final;
     void  SetProgramBindings(IProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
@@ -102,7 +102,7 @@ public:
     virtual void Complete(); // Called from command queue thread, which is tracking GPU execution
 
     DebugGroupBase* GetTopOpenDebugGroup() const;
-    void PushOpenDebugGroup(DebugGroup& debug_group);
+    void PushOpenDebugGroup(IDebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
     CommandQueueBase&          GetCommandQueueBase();
@@ -174,16 +174,16 @@ class CommandListSetBase
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
-    explicit CommandListSetBase(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSetBase(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // CommandListSet overrides
     Data::Size               GetCount() const noexcept final        { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<CommandList>& GetRefs() const noexcept final         { return m_refs; }
-    CommandList&             operator[](Data::Index index) const final;
+    const Refs<ICommandList>& GetRefs() const noexcept final         { return m_refs; }
+    ICommandList&             operator[](Data::Index index) const final;
     const Opt<Data::Index>&  GetFrameIndex() const noexcept final   { return m_frame_index_opt; }
 
     // CommandListSetBase interface
-    virtual void Execute(const CommandList::CompletedCallback& completed_callback);
+    virtual void Execute(const ICommandList::CompletedCallback& completed_callback);
     virtual void WaitUntilCompleted() = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
@@ -201,7 +201,7 @@ protected:
     void OnObjectNameChanged(IObject&, const std::string&) override;
 
 private:
-    Refs<CommandList>     m_refs;
+    Refs<ICommandList>    m_refs;
     Refs<CommandListBase> m_base_refs;
     Ptrs<CommandListBase> m_base_ptrs;
     Opt<Data::Index>      m_frame_index_opt;

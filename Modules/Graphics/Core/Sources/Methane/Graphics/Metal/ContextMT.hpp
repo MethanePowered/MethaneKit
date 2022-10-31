@@ -60,7 +60,7 @@ public:
         return static_cast<const DeviceMT&>(ContextBase::GetDeviceBase());
     }
 
-    CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) final
+    CommandQueueMT& GetDefaultCommandQueueMT(CommandListType type) final
     {
         META_FUNCTION_TASK();
         return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandKit(type).GetQueue());

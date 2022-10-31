@@ -43,11 +43,11 @@ class CommandQueueTrackingBase // NOSONAR - destructor is required
     : public CommandQueueBase
 {
 public:
-    CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueTrackingBase(const ContextBase& context, CommandListType command_lists_type);
     ~CommandQueueTrackingBase() override;
 
     // ICommandQueue interface
-    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

@@ -29,7 +29,7 @@ Base implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueBase::CommandQueueBase(const ContextBase& context, CommandListType command_lists_type)
     : m_context(context)
     , m_device_ptr(context.GetDeviceBasePtr())
     , m_command_lists_type(command_lists_type)
@@ -56,7 +56,7 @@ const IContext& CommandQueueBase::GetContext() const noexcept
     return dynamic_cast<const IContext&>(m_context);
 }
 
-void CommandQueueBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
+void CommandQueueBase::Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     META_LOG("Command queue '{}' is executing", GetName());

@@ -23,7 +23,7 @@ set(HEADERS
     ${INCLUDE_DIR}/IRenderPass.h
     ${INCLUDE_DIR}/ICommandKit.h
     ${INCLUDE_DIR}/ICommandQueue.h
-    ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h

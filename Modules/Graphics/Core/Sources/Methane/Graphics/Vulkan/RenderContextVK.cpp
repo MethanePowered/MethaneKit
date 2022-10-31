@@ -109,12 +109,12 @@ void RenderContextVK::WaitForGpu(WaitFor wait_for)
     ContextVK<RenderContextBase>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
-    CommandList::Type cl_type = CommandList::Type::Render;
+    CommandListType cl_type = CommandListType::Render;
     switch (wait_for)
     {
     case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
     case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
-    case WaitFor::ResourcesUploaded: cl_type = CommandList::Type::Transfer; break;
+    case WaitFor::ResourcesUploaded: cl_type = CommandListType::Transfer; break;
     default: META_UNEXPECTED_ARG(wait_for);
     }
 
@@ -288,7 +288,7 @@ void RenderContextVK::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
 
-    if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandList::Type::Render).GetFamilyIndex();
+    if (const uint32_t present_queue_family_index = GetDeviceVK().GetQueueFamilyReservation(CommandListType::Render).GetFamilyIndex();
         !GetDeviceVK().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
         throw IContext::IncompatibleException("Device does not support presentation to the window surface.");

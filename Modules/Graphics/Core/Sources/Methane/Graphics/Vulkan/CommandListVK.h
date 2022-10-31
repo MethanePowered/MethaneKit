@@ -68,10 +68,10 @@ class CommandListSetVK final
     : public CommandListSetBase
 {
 public:
-    explicit CommandListSetVK(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSetVK(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // CommandListSetBase interface
-    void Execute(const CommandList::CompletedCallback& completed_callback) override;
+    void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }

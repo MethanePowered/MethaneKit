@@ -71,16 +71,16 @@ class FakeCommandQueue
     , public std::enable_shared_from_this<FakeCommandQueue>
 {
 public:
-    FakeCommandQueue(const IContext& context, CommandList::Type type)
+    FakeCommandQueue(const IContext& context, CommandListType type)
         : m_context(context)
         , m_type(type)
     { }
 
     // ICommandQueue interface
     [[nodiscard]] const IContext&   GetContext() const noexcept override          { return m_context; }
-    [[nodiscard]] CommandList::Type GetCommandListType() const noexcept override  { return m_type; }
+    [[nodiscard]] CommandListType   GetCommandListType() const noexcept override  { return m_type; }
     [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
-    void Execute(CommandListSet&, const CommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Execute(CommandListSet&, const ICommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
@@ -89,38 +89,38 @@ public:
 
 private:
     const IContext&   m_context;
-    CommandList::Type m_type;
+    CommandListType   m_type;
 };
 
 class FakeCommandListSet
     : public CommandListSet
 {
 public:
-    [[nodiscard]] Data::Size               GetCount() const noexcept override       { return 0; }
-    [[nodiscard]] const Refs<CommandList>& GetRefs() const noexcept override        { return m_command_list_refs; }
-    [[nodiscard]] CommandList&             operator[](Data::Index) const override   { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Data::Size                GetCount() const noexcept override       { return 0; }
+    [[nodiscard]] const Refs<ICommandList>& GetRefs() const noexcept override        { return m_command_list_refs; }
+    [[nodiscard]] ICommandList&             operator[](Data::Index) const override   { META_FUNCTION_NOT_IMPLEMENTED(); }
 
 private:
-    Refs<CommandList> m_command_list_refs;
+    Refs<ICommandList> m_command_list_refs;
 };
 
-template<typename CommandListType, CommandList::Type command_list_type>
+template<typename CommandListT, CommandListType command_list_type>
 class FakeCommandList
-    : public CommandListType
-    , public std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>
+    : public CommandListT
+    , public std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>
 {
 public:
     FakeCommandList(ICommandQueue& command_queue)
         : m_command_queue(command_queue)
     { }
 
-    // CommandList interface
-    [[nodiscard]] CommandList::Type  GetType() const noexcept override                   { return command_list_type; }
-    [[nodiscard]] CommandList::State GetState() const noexcept override                  { return CommandList::State::Pending; }
+    // ICommandList interface
+    [[nodiscard]] CommandListType  GetType() const noexcept override                     { return command_list_type; }
+    [[nodiscard]] CommandListState GetState() const noexcept override                    { return CommandListState::Pending; }
     void PopDebugGroup() override                                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void PushDebugGroup(CommandList::DebugGroup&) override                               { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(CommandList::DebugGroup*) override                                        { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void ResetOnce(CommandList::DebugGroup*) override                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void PushDebugGroup(ICommandListDebugGroup&) override                                { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(ICommandListDebugGroup*) override                                         { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void ResetOnce(ICommandListDebugGroup*) override                                     { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetProgramBindings(IProgramBindings&, IProgramBindings::ApplyBehavior) override { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetResourceBarriers(const IResourceBarriers&) override                          { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Commit() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
@@ -131,13 +131,13 @@ public:
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
     [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListType, command_list_type>>::shared_from_this(); }
+    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>::shared_from_this(); }
 
 private:
     ICommandQueue& m_command_queue;
 };
 
-using FakeTransferCommandList = FakeCommandList<TransferCommandList, CommandList::Type::Transfer>;
+using FakeTransferCommandList = FakeCommandList<TransferCommandList, CommandListType::Transfer>;
 
 class FakeRenderContext
     : public IRenderContext
@@ -177,7 +177,7 @@ public:
     void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     [[nodiscard]] const IDevice& GetDevice() const override                             { return m_fake_device; }
-    [[nodiscard]] ICommandKit& GetDefaultCommandKit(CommandList::Type) const override   { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] ICommandKit& GetDefaultCommandKit(CommandListType) const override     { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
     [[nodiscard]] ICommandKit& GetDefaultCommandKit(ICommandQueue&) const override      { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // IObject interface

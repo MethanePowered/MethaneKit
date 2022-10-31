@@ -51,7 +51,7 @@ static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(Nat
     }
 };
 
-CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueTrackingBase::CommandQueueTrackingBase(const ContextBase& context, CommandListType command_lists_type)
     : CommandQueueBase(context, command_lists_type)
     , m_execution_waiting_thread(&CommandQueueTrackingBase::WaitForExecution, this)
 {
@@ -83,7 +83,7 @@ void CommandQueueTrackingBase::InitializeTimestampQueryPool()
     );
 }
 
-void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback)
+void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     CommandQueueBase::Execute(command_lists, completed_callback);

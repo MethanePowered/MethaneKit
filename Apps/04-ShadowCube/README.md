@@ -131,10 +131,10 @@ private:
         RenderPassState(bool is_final_pass, const std::string& command_group_name);
         void Release();
 
-        const bool                              is_final_pass;
-        const Ptr<gfx::CommandList::DebugGroup> debug_group_ptr;
-        Ptr<gfx::IRenderState>                   render_state_ptr;
-        Ptr<gfx::IViewState>                    view_state_ptr;
+        const bool                             is_final_pass;
+        const Ptr<gfx::ICommandListDebugGroup> debug_group_ptr;
+        Ptr<gfx::IRenderState>                 render_state_ptr;
+        Ptr<gfx::IViewState>                   view_state_ptr;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);

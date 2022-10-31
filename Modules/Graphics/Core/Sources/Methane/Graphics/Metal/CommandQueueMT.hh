@@ -36,7 +36,7 @@ class RenderContextMT;
 class CommandQueueMT final : public CommandQueueBase
 {
 public:
-    CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueMT(const ContextBase& context, CommandListType command_lists_type);
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }

@@ -91,14 +91,14 @@ RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListMT& parallel_r
     META_FUNCTION_TASK();
 }
 
-void RenderCommandListMT::Reset(DebugGroup* p_debug_group)
+void RenderCommandListMT::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
     RenderCommandListBase::Reset(p_debug_group);
 }
 
-void RenderCommandListMT::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListMT::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();

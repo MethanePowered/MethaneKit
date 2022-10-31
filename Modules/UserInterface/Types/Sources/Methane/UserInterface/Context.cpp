@@ -39,7 +39,7 @@ Context::Context(const pal::IApp& app, gfx::ICommandQueue& render_cmd_queue, gfx
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), gfx::CommandList::Type::Render);
+    META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), gfx::CommandListType::Render);
 }
 
 UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept

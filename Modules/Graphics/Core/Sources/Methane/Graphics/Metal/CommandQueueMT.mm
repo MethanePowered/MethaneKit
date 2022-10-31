@@ -34,13 +34,13 @@ Metal implementation of the command queue interface.
 namespace Methane::Graphics
 {
 
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandList::Type command_lists_type)
+Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandQueueMT>(dynamic_cast<const ContextBase&>(context), command_lists_type);
 }
 
-CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandList::Type command_lists_type)
+CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandListType command_lists_type)
     : CommandQueueBase(context, command_lists_type)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {

@@ -42,8 +42,8 @@ class TransferCommandListMT final
 public:
     TransferCommandListMT(CommandQueueBase& command_queue);
 
-    // CommandList interface
-    void Reset(CommandList::DebugGroup* p_debug_group = nullptr) override;
+    // ICommandList interface
+    void Reset(ICommandListDebugGroup* p_debug_group = nullptr) override;
 };
 
 } // namespace Methane::Graphics

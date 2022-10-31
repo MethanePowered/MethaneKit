@@ -354,7 +354,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
 }
 
-void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group)
+void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())

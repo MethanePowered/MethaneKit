@@ -91,10 +91,10 @@ IQueryPool& QueryBase::GetQueryPool() const noexcept
     return static_cast<IQueryPool&>(*m_query_pool_ptr);
 }
 
-CommandList& QueryBase::GetCommandList() const noexcept
+ICommandList& QueryBase::GetCommandList() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandList&>(m_command_list);
+    return static_cast<ICommandList&>(m_command_list);
 }
 
 QueryPoolBase::QueryPoolBase(CommandQueueBase& command_queue, Type type,

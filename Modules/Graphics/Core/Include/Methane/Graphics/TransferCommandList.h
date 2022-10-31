@@ -23,14 +23,15 @@ Methane data transfer command list interface.
 
 #pragma once
 
-#include "CommandList.h"
+#include "ICommandList.h"
 
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics
 {
 
-struct TransferCommandList : virtual CommandList // NOSONAR
+struct TransferCommandList
+    : virtual ICommandList // NOSONAR
 {
     static constexpr Type type = Type::Transfer;
 

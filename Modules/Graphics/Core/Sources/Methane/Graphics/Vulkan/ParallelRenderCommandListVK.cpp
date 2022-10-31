@@ -45,7 +45,7 @@ ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueVK& command
     , m_vk_ending_inheritance_info(render_pass.GetPatternVK().GetNativeRenderPass(), 0U, render_pass.GetNativeFrameBuffer())
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
                             vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, &m_vk_ending_inheritance_info),
-                            static_cast<CommandQueueVK&>(command_queue), CommandList::Type::Render)
+                            static_cast<CommandQueueVK&>(command_queue), CommandListType::Render)
 {
     META_FUNCTION_TASK();
 }
@@ -61,7 +61,7 @@ bool ParallelRenderCommandListVK::SetName(const std::string& name)
     return true;
 }
 
-void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Reset(p_debug_group);
@@ -78,7 +78,7 @@ void ParallelRenderCommandListVK::Reset(DebugGroup* p_debug_group)
     ParallelRenderCommandListBase::Reset(p_debug_group);
 }
 
-void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
@@ -146,7 +146,7 @@ void ParallelRenderCommandListVK::Commit()
 
     render_pass.End(m_beginning_command_list);
 
-    if (m_ending_command_list.GetState() == CommandList::State::Encoding)
+    if (m_ending_command_list.GetState() == CommandListState::Encoding)
     {
         m_ending_command_list.Commit();
         const vk::CommandBuffer& vk_ending_secondary_cmd_buffer = m_ending_command_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
@@ -161,7 +161,7 @@ void ParallelRenderCommandListVK::Execute(const CompletedCallback& completed_cal
     META_FUNCTION_TASK();
     m_beginning_command_list.Execute();
     ParallelRenderCommandListBase::Execute(completed_callback);
-    if (m_ending_command_list.GetState() == CommandList::State::Committed)
+    if (m_ending_command_list.GetState() == CommandListState::Committed)
         m_ending_command_list.Execute();
 }
 
@@ -170,7 +170,7 @@ void ParallelRenderCommandListVK::Complete()
     META_FUNCTION_TASK();
     m_beginning_command_list.Complete();
     ParallelRenderCommandListBase::Complete();
-    if (m_ending_command_list.GetState() == CommandList::State::Executing)
+    if (m_ending_command_list.GetState() == CommandListState::Executing)
         m_ending_command_list.Complete();
 }
 

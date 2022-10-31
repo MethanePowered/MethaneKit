@@ -65,7 +65,7 @@ IRenderPass& RenderCommandListBase::GetRenderPass() const
     return *m_render_pass_ptr;
 }
 
-void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
+void RenderCommandListBase::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandListBase::Reset(p_debug_group);
@@ -76,14 +76,14 @@ void RenderCommandListBase::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandListBase::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     RenderCommandListBase::Reset(p_debug_group);
     SetRenderState(render_state);
 }
 
-void RenderCommandListBase::ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListBase::ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))

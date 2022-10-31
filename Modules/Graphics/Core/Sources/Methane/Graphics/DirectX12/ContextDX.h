@@ -23,7 +23,7 @@ DirectX 12 context accessor interface for template class ContextDX<ContextBaseT>
 
 #pragma once
 
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 
 #include <directx/d3d12.h>
 
@@ -37,7 +37,7 @@ class DescriptorManagerDX;
 struct IContextDX
 {
     virtual const DeviceDX& GetDeviceDX() const noexcept = 0;
-    virtual CommandQueueDX& GetDefaultCommandQueueDX(CommandList::Type type) = 0;
+    virtual CommandQueueDX& GetDefaultCommandQueueDX(CommandListType type) = 0;
     virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const = 0;
     virtual DescriptorManagerDX& GetDescriptorManagerDX() const noexcept = 0;
 

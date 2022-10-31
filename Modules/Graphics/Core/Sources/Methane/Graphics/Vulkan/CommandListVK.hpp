@@ -75,7 +75,7 @@ public:
         CommandListBaseT::InitializeTimestampQueries();
         CommandListBaseT::BeginGpuZone();
 
-        CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
+        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
     }
 
     CommandListVK(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ParallelRenderCommandListVK& parallel_render_command_list, bool is_beginning_cmd_list)
@@ -105,7 +105,7 @@ public:
             InitializeSecondaryCommandBuffers(0U);
         }
 
-        CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
+        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
     }
 
     template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
@@ -128,12 +128,12 @@ public:
             CommandListBaseT::BeginGpuZone();
         }
 
-        CommandListBaseT::SetCommandListState(CommandList::State::Encoding);
+        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
     }
 
-    // CommandList interface
+    // ICommandList interface
 
-    void PushDebugGroup(CommandList::DebugGroup& debug_group) final
+    void PushDebugGroup(ICommandListDebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
         CommandListBase::PushDebugGroup(debug_group);
@@ -195,9 +195,9 @@ public:
         );
     }
 
-    // CommandList interface
+    // ICommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) override
+    void Reset(ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = CommandListBase::LockStateMutex();

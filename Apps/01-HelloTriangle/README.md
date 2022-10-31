@@ -144,11 +144,11 @@ rendering is executed first with `GraphicsApp::Render()` and rendering is contin
 it waits for previous iteration of rendering cycle completion and availability of all frame resources.
 Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
-To begin encoding, command list has to be reset with render state using `CommandList::Reset(...)` method.
+To begin encoding, command list has to be reset with render state using `ICommandList::Reset(...)` method.
 Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState(...)`.
 Drawing of 3 vertices is submitted as `Triangle` primitive using `RenderCommandList::Draw` call.
 Vertex buffers are not used for simplification, so the vertex shader will receive only `vertex_id` and 
-will need to provide vertex coordinates based on that. Finally, `CommandList::Commit` method is called 
+will need to provide vertex coordinates based on that. Finally, `ICommandList::Commit` method is called 
 to complete render commands encoding.
 
 Execution of GPU rendering is started with `ICommandQueue::Execute(...)` method called on the same command queue

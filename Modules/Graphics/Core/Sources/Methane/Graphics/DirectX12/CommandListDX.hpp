@@ -69,12 +69,12 @@ public:
         InitializeTimestampQueries();
         BeginGpuZoneDX();
 
-        SetCommandListState(CommandList::State::Encoding);
+        SetCommandListState(CommandListState::Encoding);
     }
 
-    // CommandList interface
+    // ICommandList interface
 
-    void PushDebugGroup(CommandList::DebugGroup& debug_group) final
+    void PushDebugGroup(ICommandListDebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
         CommandListBaseT::PushDebugGroup(debug_group);
@@ -118,9 +118,9 @@ public:
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(d3d12_resource_barriers.size()), d3d12_resource_barriers.data());
     }
 
-    // CommandList interface
+    // ICommandList interface
 
-    void Reset(CommandList::DebugGroup* p_debug_group) override
+    void Reset(ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = CommandListBase::LockStateMutex();

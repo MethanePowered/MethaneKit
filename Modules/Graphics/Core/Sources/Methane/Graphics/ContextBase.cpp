@@ -34,7 +34,7 @@ Base implementation of the context interface.
 namespace Methane::Graphics
 {
 
-static const std::array<std::string, magic_enum::enum_count<CommandList::Type>()> g_default_command_kit_names = { {
+static const std::array<std::string, magic_enum::enum_count<CommandListType>()> g_default_command_kit_names = { {
     "Upload",
     "Render",
     "Parallel Render"
@@ -165,7 +165,7 @@ void ContextBase::Initialize(DeviceBase& device, bool is_callback_emitted)
     }
 }
 
-ICommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
+ICommandKit& ContextBase::GetDefaultCommandKit(CommandListType type) const
 {
     META_FUNCTION_TASK();
     Ptr<ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
@@ -245,13 +245,13 @@ void ContextBase::ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) con
         if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList(cmd_list_id))
             continue;
 
-        CommandList& cmd_list = cmd_kit_ptr->GetList(cmd_list_id);
-        const CommandList::State cmd_list_state = cmd_list.GetState();
-        if (cmd_list_state == CommandList::State::Pending ||
-            cmd_list_state == CommandList::State::Executing)
+        ICommandList& cmd_list = cmd_kit_ptr->GetList(cmd_list_id);
+        const CommandListState cmd_list_state = cmd_list.GetState();
+        if (cmd_list_state == CommandListState::Pending ||
+            cmd_list_state == CommandListState::Executing)
             continue;
 
-        if (cmd_list_state == CommandList::State::Encoding)
+        if (cmd_list_state == CommandListState::Encoding)
             cmd_list.Commit();
 
         META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
@@ -283,17 +283,17 @@ bool ContextBase::UploadResources()
     if (!upload_cmd_kit.HasList())
         return false;
 
-    CommandList& upload_cmd_list = upload_cmd_kit.GetList();
-    const CommandList::State upload_cmd_state = upload_cmd_list.GetState();
-    if (upload_cmd_state == CommandList::State::Pending)
+    ICommandList& upload_cmd_list = upload_cmd_kit.GetList();
+    const CommandListState upload_cmd_state = upload_cmd_list.GetState();
+    if (upload_cmd_state == CommandListState::Pending)
         return false;
 
-    if (upload_cmd_state == CommandList::State::Executing)
+    if (upload_cmd_state == CommandListState::Executing)
         return true;
 
     META_LOG("Context '{}' UPLOAD resources", GetName());
 
-    if (upload_cmd_state == CommandList::State::Encoding)
+    if (upload_cmd_state == CommandListState::Encoding)
         upload_cmd_list.Commit();
 
     // Execute pre-upload synchronization command lists for all queues except the upload command queue

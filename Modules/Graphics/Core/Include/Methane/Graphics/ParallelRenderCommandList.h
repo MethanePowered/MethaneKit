@@ -34,7 +34,7 @@ namespace Methane::Graphics
 struct IRenderState;
 struct IRenderPass;
 
-struct ParallelRenderCommandList : virtual CommandList // NOSONAR
+struct ParallelRenderCommandList : virtual ICommandList // NOSONAR
 {
     static constexpr Type type = Type::ParallelRender;
 
@@ -44,14 +44,14 @@ struct ParallelRenderCommandList : virtual CommandList // NOSONAR
     // ParallelRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
-    virtual void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetViewState(IViewState& view_state) = 0;
     virtual void SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void SetEndingResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;
     [[nodiscard]] virtual const Refs<RenderCommandList>& GetParallelCommandLists() const = 0;
     
-    using CommandList::Reset;
+    using ICommandList::Reset;
 };
 
 } // namespace Methane::Graphics

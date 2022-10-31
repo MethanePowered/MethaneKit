@@ -26,7 +26,7 @@ Methane text rendering primitive.
 #include "Font.h"
 
 #include <Methane/UserInterface/Item.h>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 
@@ -150,7 +150,7 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr);
+    void Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr);
 
 protected:
     // IFontCallback interface

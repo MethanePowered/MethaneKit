@@ -129,7 +129,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
     };
     slice_text_settings.SetStateName(fmt::format("Texture '{}' Face Label Text", rt_texture_name));
 
-    Refs<gfx::CommandList> slice_render_cmd_list_refs;
+    Refs<gfx::ICommandList> slice_render_cmd_list_refs;
     for(Data::Size array_index = 0U; array_index < sub_res_count.GetArraySize(); ++array_index)
     {
         for(Data::Size depth_index = 0U; depth_index < sub_res_count.GetDepth(); ++depth_index)

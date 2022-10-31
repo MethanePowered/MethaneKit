@@ -85,8 +85,8 @@ public:
     // IObject interface
     bool SetName(const std::string& name) override;
 
-    [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandList::Type cmd_queue_type) const noexcept;
-    [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandList::Type cmd_queue_type) const;
+    [[nodiscard]] const QueueFamilyReservationVK* GetQueueFamilyReservationPtr(CommandListType cmd_queue_type) const noexcept;
+    [[nodiscard]] const QueueFamilyReservationVK& GetQueueFamilyReservation(CommandListType cmd_queue_type) const;
     [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
     [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
@@ -95,9 +95,9 @@ public:
     const vk::QueueFamilyProperties& GetNativeQueueFamilyProperties(uint32_t queue_family_index) const;
 
 private:
-    using QueueFamilyReservationByType = std::map<CommandList::Type, Ptr<QueueFamilyReservationVK>>;
+    using QueueFamilyReservationByType = std::map<CommandListType, Ptr<QueueFamilyReservationVK>>;
 
-    void ReserveQueueFamily(CommandList::Type cmd_queue_type, uint32_t queues_count,
+    void ReserveQueueFamily(CommandListType cmd_queue_type, uint32_t queues_count,
                             std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 

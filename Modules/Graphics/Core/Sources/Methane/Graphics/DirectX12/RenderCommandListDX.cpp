@@ -97,7 +97,7 @@ void RenderCommandListDX::ResetNative(const Ptr<RenderStateDX>& render_state_ptr
         return;
 
     SetNativeCommitted(false);
-    SetCommandListState(CommandList::State::Encoding);
+    SetCommandListState(CommandListState::Encoding);
 
     ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
@@ -134,7 +134,7 @@ void RenderCommandListDX::ResetRenderPass()
     }
 }
 
-void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
+void RenderCommandListDX::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative();
@@ -145,7 +145,7 @@ void RenderCommandListDX::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandListDX::ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group)
+void RenderCommandListDX::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative(static_cast<RenderStateBase&>(render_state).GetPtr<RenderStateDX>());

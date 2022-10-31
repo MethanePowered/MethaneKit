@@ -35,12 +35,12 @@ Ptr<TransferCommandList> TransferCommandList::Create(ICommandQueue& command_queu
 }
 
 TransferCommandListMT::TransferCommandListMT(CommandQueueBase& command_queue)
-    : CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>(true, command_queue, CommandList::Type::Transfer)
+    : CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>(true, command_queue, CommandListType::Transfer)
 {
     META_FUNCTION_TASK();
 }
 
-void TransferCommandListMT::Reset(CommandList::DebugGroup* p_debug_group)
+void TransferCommandListMT::Reset(ICommandListDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())

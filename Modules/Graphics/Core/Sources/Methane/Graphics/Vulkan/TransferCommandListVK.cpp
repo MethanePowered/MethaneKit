@@ -37,7 +37,7 @@ Ptr<TransferCommandList> TransferCommandList::Create(ICommandQueue& command_queu
 }
 
 TransferCommandListVK::TransferCommandListVK(CommandQueueVK& command_queue)
-    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandList::Type::Transfer)
+    : CommandListVK(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandListType::Transfer)
 {
     META_FUNCTION_TASK();
 }

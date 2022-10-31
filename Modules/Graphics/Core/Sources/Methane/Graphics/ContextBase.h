@@ -48,7 +48,7 @@ namespace Methane::Graphics
 class DeviceBase;
 class CommandQueueBase;
 struct ICommandQueue;
-struct CommandList;
+struct ICommandList;
 struct CommandListSet;
 struct DescriptorManager;
 
@@ -74,7 +74,7 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(IDevice& device) override;
     void              Reset() override;
-    ICommandKit&      GetDefaultCommandKit(CommandList::Type type) const final;
+    ICommandKit&      GetDefaultCommandKit(CommandListType type) const final;
     ICommandKit&      GetDefaultCommandKit(ICommandQueue& cmd_queue) const final;
     const IDevice&    GetDevice() const final;
 
@@ -101,7 +101,7 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandKitPtrByType = std::array<Ptr<ICommandKit>, magic_enum::enum_count<CommandList::Type>()>;
+    using CommandKitPtrByType = std::array<Ptr<ICommandKit>, magic_enum::enum_count<CommandListType>()>;
     using CommandKitByQueue   = std::map<ICommandQueue*, Ptr<ICommandKit>>;
 
     template<CommandListPurpose cmd_list_purpose>

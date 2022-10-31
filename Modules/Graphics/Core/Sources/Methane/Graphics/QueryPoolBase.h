@@ -55,7 +55,7 @@ public:
     [[nodiscard]] const Range& GetDataRange() const noexcept final   { return m_data_range; }
     [[nodiscard]] State        GetState() const noexcept final       { return m_state; }
     [[nodiscard]] IQueryPool&  GetQueryPool() const noexcept final;
-    [[nodiscard]] CommandList& GetCommandList() const noexcept final;
+    [[nodiscard]] ICommandList& GetCommandList() const noexcept final;
 
 private:
     Ptr<QueryPoolBase> m_query_pool_ptr;

@@ -79,7 +79,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
     ContextDX<RenderContextBase>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
-    CommandList::Type cl_type = CommandList::Type::Render;
+    CommandListType cl_type = CommandListType::Render;
     switch (wait_for)
     {
     case WaitFor::RenderComplete:
@@ -91,7 +91,7 @@ void RenderContextDX::WaitForGpu(WaitFor wait_for)
         break;
 
     case WaitFor::ResourcesUploaded:
-        cl_type = CommandList::Type::Transfer;
+        cl_type = CommandListType::Transfer;
         break;
 
     default: META_UNEXPECTED_ARG(wait_for);
@@ -156,7 +156,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool is_callback_emitted)
     }
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
-    ID3D12CommandQueue& dx_command_queue = GetDefaultCommandQueueDX(CommandList::Type::Render).GetNativeCommandQueue();
+    ID3D12CommandQueue& dx_command_queue = GetDefaultCommandQueueDX(CommandListType::Render).GetNativeCommandQueue();
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
 
     META_CHECK_ARG_NOT_NULL(cp_swap_chain);

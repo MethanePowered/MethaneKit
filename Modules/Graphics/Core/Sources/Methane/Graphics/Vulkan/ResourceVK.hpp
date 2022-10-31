@@ -226,7 +226,7 @@ protected:
         if (owner_changed && m_upload_begin_transition_barriers_ptr)
         {
             constexpr auto pre_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PreUploadSync);
-            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
+            ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
 
@@ -248,7 +248,7 @@ protected:
         if (owner_changed && upload_end_barriers_non_empty)
         {
             constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
-            CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+            ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }
     }

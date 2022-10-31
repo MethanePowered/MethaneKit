@@ -24,7 +24,7 @@ Methane command queue interface: queues are used to execute command lists.
 #pragma once
 
 #include "IObject.h"
-#include "CommandList.h"
+#include "ICommandList.h"
 #include "IContext.h"
 
 #include <Methane/Memory.hpp>
@@ -36,13 +36,13 @@ struct ICommandQueue
     : virtual IObject // NOSONAR
 {
     // Create ICommandQueue instance
-    [[nodiscard]] static Ptr<ICommandQueue> Create(const IContext& context, CommandList::Type command_lists_type);
+    [[nodiscard]] static Ptr<ICommandQueue> Create(const IContext& context, CommandListType command_lists_type);
 
     // ICommandQueue interface
     [[nodiscard]] virtual const IContext&   GetContext() const noexcept = 0;
-    [[nodiscard]] virtual CommandList::Type GetCommandListType() const noexcept = 0;
+    [[nodiscard]] virtual CommandListType   GetCommandListType() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFamilyIndex() const noexcept = 0;
-    virtual void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) = 0;
+    virtual void Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) = 0;
 };
 
 } // namespace Methane::Graphics

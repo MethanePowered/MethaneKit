@@ -47,15 +47,15 @@ class CommandQueueBase
     friend class CommandListBase;
 
 public:
-    CommandQueueBase(const ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueBase(const ContextBase& context, CommandListType command_lists_type);
 
     // IObject interface
     bool SetName(const std::string& name) override;
 
     // ICommandQueue overrides
     [[nodiscard]] const IContext& GetContext() const noexcept final;
-    CommandList::Type GetCommandListType() const noexcept final { return m_command_lists_type; }
-    void Execute(CommandListSet& command_lists, const CommandList::CompletedCallback& completed_callback = {}) override;
+    CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
+    void Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // CommandQueueBase interface
     virtual ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }
@@ -72,7 +72,7 @@ protected:
 private:
     const ContextBase&           m_context;
     const Ptr<DeviceBase>        m_device_ptr;
-    const CommandList::Type      m_command_lists_type;
+    const CommandListType        m_command_lists_type;
     UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;
 };
 

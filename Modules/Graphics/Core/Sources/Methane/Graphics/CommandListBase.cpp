@@ -56,7 +56,7 @@ bool CommandListBase::DebugGroupBase::SetName(const std::string&)
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
-CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
+ICommandListDebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())
@@ -64,12 +64,12 @@ CommandList::DebugGroup& CommandListBase::DebugGroupBase::AddSubGroup(Data::Inde
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<DebugGroup> sub_group_ptr = DebugGroup::Create(name);
+    Ptr<IDebugGroup> sub_group_ptr = IDebugGroup::Create(name);
     m_sub_groups[id] = sub_group_ptr;
     return *sub_group_ptr;
 }
 
-CommandList::DebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Index id) const noexcept
+ICommandListDebugGroup* CommandListBase::DebugGroupBase::GetSubGroup(Data::Index id) const noexcept
 {
     META_FUNCTION_TASK();
     return id < m_sub_groups.size() ? m_sub_groups[id].get() : nullptr;
@@ -92,7 +92,7 @@ CommandListBase::~CommandListBase()
     META_LOG("{} Command list '{}' was destroyed", magic_enum::enum_name(m_type), GetName());
 }
 
-void CommandListBase::PushDebugGroup(DebugGroup& debug_group)
+void CommandListBase::PushDebugGroup(IDebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
     VerifyEncodingState();
@@ -121,7 +121,7 @@ void CommandListBase::PopDebugGroup()
     m_open_debug_groups.pop();
 }
 
-void CommandListBase::Reset(DebugGroup* p_debug_group)
+void CommandListBase::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
@@ -147,7 +147,7 @@ void CommandListBase::Reset(DebugGroup* p_debug_group)
     }
 }
 
-void CommandListBase::ResetOnce(DebugGroup* p_debug_group)
+void CommandListBase::ResetOnce(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_state == State::Encoding)
@@ -275,7 +275,7 @@ CommandListBase::DebugGroupBase* CommandListBase::GetTopOpenDebugGroup() const
     return m_open_debug_groups.empty() ? nullptr : m_open_debug_groups.top().get();
 }
 
-void CommandListBase::PushOpenDebugGroup(DebugGroup& debug_group)
+void CommandListBase::PushOpenDebugGroup(IDebugGroup& debug_group)
 {
     META_FUNCTION_TASK();
     m_open_debug_groups.emplace(static_cast<DebugGroupBase&>(debug_group).GetPtr<DebugGroupBase>());
@@ -402,7 +402,7 @@ const CommandQueueBase& CommandListBase::GetCommandQueueBase() const
     return *m_command_queue_ptr;
 }
 
-CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSetBase::CommandListSetBase(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : m_refs(command_list_refs)
     , m_frame_index_opt(frame_index_opt)
 {
@@ -412,7 +412,7 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
 
-    for(const Ref<CommandList>& command_list_ref : m_refs)
+    for(const Ref<ICommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandListBase&>(command_list_ref.get());
         META_CHECK_ARG_NAME_DESCR("command_list_refs",
@@ -426,7 +426,7 @@ CommandListSetBase::CommandListSetBase(const Refs<CommandList>& command_list_ref
     }
 }
 
-CommandList& CommandListSetBase::operator[](Data::Index index) const
+ICommandList& CommandListSetBase::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_refs.size());
@@ -434,7 +434,7 @@ CommandList& CommandListSetBase::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-void CommandListSetBase::Execute(const CommandList::CompletedCallback& completed_callback)
+void CommandListSetBase::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_command_lists_mutex);

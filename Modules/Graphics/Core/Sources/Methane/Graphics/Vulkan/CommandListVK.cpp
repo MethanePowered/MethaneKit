@@ -39,13 +39,13 @@ Vulkan command lists sequence implementation
 namespace Methane::Graphics
 {
 
-static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<CommandList>& command_list_refs)
+static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<ICommandList>& command_list_refs)
 {
     META_FUNCTION_TASK();
     vk::PipelineStageFlags wait_stages {};
-    for(const Ref<CommandList>& command_list_ref : command_list_refs)
+    for(const Ref<ICommandList>& command_list_ref : command_list_refs)
     {
-        if (command_list_ref.get().GetType() != CommandList::Type::Render)
+        if (command_list_ref.get().GetType() != CommandListType::Render)
             continue;
 
         const auto& render_command_list = dynamic_cast<const RenderCommandListVK&>(command_list_ref.get());
@@ -64,7 +64,7 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Comma
     return wait_stages;
 }
 
-Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ICommandListVK::DebugGroupVK>(name);
@@ -77,13 +77,13 @@ ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandListSetVK>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSetVK::CommandListSetVK(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : CommandListSetBase(command_list_refs, frame_index_opt)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
@@ -97,7 +97,7 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, O
     for (const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
     {
         const CommandListBase& command_list = command_list_ref.get();
-        const auto& vulkan_command_list = command_list.GetType() == CommandList::Type::ParallelRender
+        const auto& vulkan_command_list = command_list.GetType() == CommandListType::ParallelRender
                                         ? static_cast<const ParallelRenderCommandListVK&>(command_list).GetPrimaryCommandListVK()
                                         : dynamic_cast<const ICommandListVK&>(command_list_ref.get());
         m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
@@ -106,7 +106,7 @@ CommandListSetVK::CommandListSetVK(const Refs<CommandList>& command_list_refs, O
     UpdateNativeDebugName();
 }
 
-void CommandListSetVK::Execute(const CommandList::CompletedCallback& completed_callback)
+void CommandListSetVK::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     CommandListSetBase::Execute(completed_callback);

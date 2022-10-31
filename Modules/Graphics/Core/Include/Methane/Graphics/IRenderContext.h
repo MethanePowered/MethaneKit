@@ -88,7 +88,7 @@ struct IRenderContext : virtual IContext // NOSONAR
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
     virtual bool SetFullScreen(bool is_full_screen) = 0;
 
-    [[nodiscard]] inline ICommandKit& GetRenderCommandKit() const { return GetDefaultCommandKit(CommandList::Type::Render); }
+    [[nodiscard]] inline ICommandKit& GetRenderCommandKit() const { return GetDefaultCommandKit(CommandListType::Render); }
 };
 
 } // namespace Methane::Graphics

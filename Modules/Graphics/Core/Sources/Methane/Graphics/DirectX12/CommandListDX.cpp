@@ -32,7 +32,7 @@ DirectX 12 command lists collection implementation
 namespace Methane::Graphics
 {
 
-Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ICommandListDX::DebugGroupDX>(name);
@@ -45,13 +45,13 @@ ICommandListDX::DebugGroupDX::DebugGroupDX(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandListSetDX>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSetDX::CommandListSetDX(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : CommandListSetBase(command_list_refs, frame_index_opt)
     , m_execution_completed_fence(GetCommandQueueBase())
 {
@@ -66,7 +66,7 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs, O
     for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
     {
         const CommandListBase& command_list = command_list_ref.get();
-        if (command_list.GetType() == CommandList::Type::ParallelRender)
+        if (command_list.GetType() == CommandListType::ParallelRender)
         {
             const CommandListSetDX::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
             m_native_command_lists.insert(m_native_command_lists.end(), parallel_native_cmd_lists.begin(), parallel_native_cmd_lists.end());
@@ -81,7 +81,7 @@ CommandListSetDX::CommandListSetDX(const Refs<CommandList>& command_list_refs, O
     m_execution_completed_fence.SetName(fence_name_ss.str());
 }
 
-void CommandListSetDX::Execute(const CommandList::CompletedCallback& completed_callback)
+void CommandListSetDX::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     CommandListSetBase::Execute(completed_callback);

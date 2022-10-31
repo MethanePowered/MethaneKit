@@ -187,7 +187,7 @@ TimestampQueryPoolDX::TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32
     Calibrate();
 }
 
-Ptr<ITimestampQuery> TimestampQueryPoolDX::CreateTimestampQuery(CommandList& command_list)
+Ptr<ITimestampQuery> TimestampQueryPoolDX::CreateTimestampQuery(ICommandList& command_list)
 {
     META_FUNCTION_TASK();
     return QueryPoolBase::CreateQuery<TimestampQueryDX>(dynamic_cast<CommandListBase&>(command_list));

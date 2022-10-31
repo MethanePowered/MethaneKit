@@ -26,7 +26,7 @@ Base implementation of the Methane user interface application.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -241,7 +241,7 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const
+void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)

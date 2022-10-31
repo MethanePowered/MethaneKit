@@ -23,7 +23,7 @@ Methane render command list interface.
 
 #pragma once
 
-#include "CommandList.h"
+#include "ICommandList.h"
 #include "IBuffer.h"
 #include "IRenderState.h"
 
@@ -35,7 +35,8 @@ namespace Methane::Graphics
 struct IRenderPass;
 struct ParallelRenderCommandList;
 
-struct RenderCommandList : virtual CommandList // NOSONAR
+struct RenderCommandList
+    : virtual ICommandList // NOSONAR
 {
     static constexpr Type type = Type::Render;
 
@@ -56,8 +57,8 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
     [[nodiscard]] virtual IRenderPass& GetRenderPass() const = 0;
-    virtual void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
-    virtual void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) = 0;
     virtual void SetViewState(IViewState& view_state) = 0;
     virtual bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers = true) = 0;
@@ -67,7 +68,7 @@ struct RenderCommandList : virtual CommandList // NOSONAR
     virtual void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0,
                       uint32_t instance_count = 1, uint32_t start_instance = 0) = 0;
     
-    using CommandList::Reset;
+    using ICommandList::Reset;
 };
 
 } // namespace Methane::Graphics

@@ -41,12 +41,12 @@ public:
     RenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
     explicit RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
 
-    // CommandList interface
+    // ICommandList interface
     void Commit() override;
 
     // RenderCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

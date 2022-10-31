@@ -44,7 +44,7 @@ private:
 class CommandListSetMT final : public CommandListSetBase
 {
 public:
-    explicit CommandListSetMT(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSetMT(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     virtual void WaitUntilCompleted()
     {

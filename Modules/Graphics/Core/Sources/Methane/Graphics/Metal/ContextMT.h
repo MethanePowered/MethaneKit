@@ -23,7 +23,7 @@ Metal context accessor interface for template class ContextMT<ContextBaseT>
 
 #pragma once
 
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/ICommandList.h>
 #include <Methane/Memory.hpp>
 
 #include <string>
@@ -38,7 +38,7 @@ class ProgramLibraryMT;
 struct IContextMT
 {
     virtual const DeviceMT& GetDeviceMT() const noexcept = 0;
-    virtual CommandQueueMT& GetDefaultCommandQueueMT(CommandList::Type type) = 0;
+    virtual CommandQueueMT& GetDefaultCommandQueueMT(CommandListType type) = 0;
     virtual const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name = "") const = 0;
 
     virtual ~IContextMT() = default;

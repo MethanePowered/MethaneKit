@@ -29,7 +29,7 @@ Metal command lists sequence implementation
 namespace Methane::Graphics
 {
 
-Ptr<CommandList::DebugGroup> CommandList::DebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandListDebugGroupMT>(name);
@@ -42,13 +42,13 @@ CommandListDebugGroupMT::CommandListDebugGroupMT(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-Ptr<CommandListSet> CommandListSet::Create(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+Ptr<CommandListSet> CommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandListSetMT>(command_list_refs, frame_index_opt);
 }
 
-CommandListSetMT::CommandListSetMT(const Refs<CommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSetMT::CommandListSetMT(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : CommandListSetBase(command_list_refs, frame_index_opt)
 {
     META_FUNCTION_TASK();

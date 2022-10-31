@@ -45,7 +45,7 @@ class CommandQueueDX final // NOSONAR - destructor is needed
     : public CommandQueueTrackingBase
 {
 public:
-    CommandQueueDX(const ContextBase& context, CommandList::Type command_lists_type);
+    CommandQueueDX(const ContextBase& context, CommandListType command_lists_type);
     ~CommandQueueDX() override;
 
     // ICommandQueue interface

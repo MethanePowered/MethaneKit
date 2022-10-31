@@ -74,9 +74,9 @@ public:
     bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
     IRenderPass& GetRenderPass() const final;
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithStateOnce(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) final;
+    void Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
     void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) override;
     void SetViewState(IViewState& view_state) override;
     bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;

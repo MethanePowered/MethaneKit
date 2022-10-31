@@ -43,8 +43,8 @@ public:
     ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
 
     // ParallelRenderCommandList interface
-    void Reset(DebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, DebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void SetBeginningResourceBarriers(const IResourceBarriers&) override { }
     void SetEndingResourceBarriers(const IResourceBarriers&) override { }
 

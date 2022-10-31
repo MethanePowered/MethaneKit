@@ -69,7 +69,7 @@ public:
         return static_cast<const DeviceVK&>(ContextBaseT::GetDeviceBase());
     }
 
-    CommandQueueVK& GetDefaultCommandQueueVK(CommandList::Type type) final
+    CommandQueueVK& GetDefaultCommandQueueVK(CommandListType type) final
     {
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueueVK&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());

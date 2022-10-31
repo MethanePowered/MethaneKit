@@ -15,7 +15,7 @@ which make modern graphics programming easy and convenient in a platform and API
 ### Graphics Commands Execution
 
 - [ICommandQueue](Include/Methane/Graphics/ICommandQueue.h)
-- [CommandList, CommandListSet](Include/Methane/Graphics/CommandList.h)
+- [ICommandList, CommandListSet](Include/Methane/Graphics/ICommandList.h)
 - [RenderCommandList](Include/Methane/Graphics/RenderCommandList.h)
 - [ParallelRenderCommandList](Include/Methane/Graphics/ParallelRenderCommandList.h)
 - [TransferCommandList](Include/Methane/Graphics/TransferCommandList.h) (work in progress)

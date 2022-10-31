@@ -178,7 +178,7 @@ TimestampQueryPoolVK::TimestampQueryPoolVK(CommandQueueVK& command_queue, uint32
     Calibrate();
 }
 
-Ptr<ITimestampQuery> TimestampQueryPoolVK::CreateTimestampQuery(CommandList& command_list)
+Ptr<ITimestampQuery> TimestampQueryPoolVK::CreateTimestampQuery(ICommandList& command_list)
 {
     META_FUNCTION_TASK();
     return QueryPoolBase::CreateQuery<TimestampQueryVK>(dynamic_cast<CommandListBase&>(command_list));
