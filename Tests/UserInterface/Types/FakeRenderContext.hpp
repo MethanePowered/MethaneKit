@@ -177,8 +177,8 @@ public:
     void Reset() override                                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     [[nodiscard]] const IDevice& GetDevice() const override                             { return m_fake_device; }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(CommandList::Type) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
-    [[nodiscard]] CommandKit& GetDefaultCommandKit(ICommandQueue&) const override       { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] ICommandKit& GetDefaultCommandKit(CommandList::Type) const override   { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
+    [[nodiscard]] ICommandKit& GetDefaultCommandKit(ICommandQueue&) const override      { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // IObject interface
     bool SetName(const std::string&) override                                           { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }

@@ -27,7 +27,7 @@ Base implementation of the context interface.
 
 #include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/IContext.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -74,8 +74,8 @@ public:
     void              WaitForGpu(WaitFor wait_for) override;
     void              Reset(IDevice& device) override;
     void              Reset() override;
-    CommandKit&       GetDefaultCommandKit(CommandList::Type type) const final;
-    CommandKit&       GetDefaultCommandKit(ICommandQueue& cmd_queue) const final;
+    ICommandKit&      GetDefaultCommandKit(CommandList::Type type) const final;
+    ICommandKit&      GetDefaultCommandKit(ICommandQueue& cmd_queue) const final;
     const IDevice&    GetDevice() const final;
 
     // ContextBase interface
@@ -101,11 +101,11 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandKitPtrByType = std::array<Ptr<CommandKit>, magic_enum::enum_count<CommandList::Type>()>;
-    using CommandKitByQueue   = std::map<ICommandQueue*, Ptr<CommandKit>>;
+    using CommandKitPtrByType = std::array<Ptr<ICommandKit>, magic_enum::enum_count<CommandList::Type>()>;
+    using CommandKitByQueue   = std::map<ICommandQueue*, Ptr<ICommandKit>>;
 
-    template<CommandKit::CommandListPurpose cmd_list_purpose>
-    void ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const;
+    template<CommandListPurpose cmd_list_purpose>
+    void ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) const;
 
     const Type                   m_type;
     Ptr<DeviceBase>              m_device_ptr;

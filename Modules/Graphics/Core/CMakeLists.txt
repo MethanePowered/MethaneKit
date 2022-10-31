@@ -21,7 +21,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ITexture.h
     ${INCLUDE_DIR}/ISampler.h
     ${INCLUDE_DIR}/IRenderPass.h
-    ${INCLUDE_DIR}/CommandKit.h
+    ${INCLUDE_DIR}/ICommandKit.h
     ${INCLUDE_DIR}/ICommandQueue.h
     ${INCLUDE_DIR}/CommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h

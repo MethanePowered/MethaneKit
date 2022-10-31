@@ -28,7 +28,7 @@ Methane text rendering primitive.
 
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/RenderCommandList.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/IRenderState.h>

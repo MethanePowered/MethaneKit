@@ -29,7 +29,7 @@ Vulkan template implementation of the base context interface.
 #include "DescriptorManagerVK.h"
 
 #include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <string>

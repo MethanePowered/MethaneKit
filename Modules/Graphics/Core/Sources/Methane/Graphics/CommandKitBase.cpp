@@ -26,7 +26,7 @@ Methane command kit implementation.
 #include "CommandQueueBase.h"
 
 #include <Methane/Graphics/IFence.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/TransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -38,13 +38,13 @@ namespace Methane::Graphics
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
-Ptr<CommandKit> CommandKit::Create(const IContext& context, CommandList::Type cmd_list_type)
+Ptr<ICommandKit> ICommandKit::Create(const IContext& context, CommandList::Type cmd_list_type)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(context, cmd_list_type);
 }
 
-Ptr<CommandKit> CommandKit::Create(ICommandQueue& cmd_queue)
+Ptr<ICommandKit> ICommandKit::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<CommandKitBase>(cmd_queue);

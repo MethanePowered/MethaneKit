@@ -34,7 +34,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/ISampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>

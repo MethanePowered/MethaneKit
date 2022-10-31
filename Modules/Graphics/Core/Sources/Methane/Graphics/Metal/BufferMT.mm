@@ -28,7 +28,7 @@ Metal implementation of the buffer interface.
 #include "TransferCommandListMT.hh"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/BufferFactory.hpp>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>

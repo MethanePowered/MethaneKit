@@ -26,7 +26,7 @@ Base implementation of the context interface.
 #include "CommandQueueBase.h"
 #include "DescriptorManager.h"
 
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -141,7 +141,7 @@ void ContextBase::Release()
     m_device_ptr.reset();
 
     m_default_command_kit_ptr_by_queue.clear();
-    for (Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    for (Ptr<ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
         cmd_kit_ptr.reset();
 
     Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextReleased, std::ref(*this));
@@ -165,28 +165,28 @@ void ContextBase::Initialize(DeviceBase& device, bool is_callback_emitted)
     }
 }
 
-CommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
+ICommandKit& ContextBase::GetDefaultCommandKit(CommandList::Type type) const
 {
     META_FUNCTION_TASK();
-    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
+    Ptr<ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
     if (cmd_kit_ptr)
         return *cmd_kit_ptr;
 
-    cmd_kit_ptr = CommandKit::Create(*this, type);
+    cmd_kit_ptr = ICommandKit::Create(*this, type);
     cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
 
     m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;
     return *cmd_kit_ptr;
 }
 
-CommandKit& ContextBase::GetDefaultCommandKit(ICommandQueue& cmd_queue) const
+ICommandKit& ContextBase::GetDefaultCommandKit(ICommandQueue& cmd_queue) const
 {
     META_FUNCTION_TASK();
-    Ptr<CommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
+    Ptr<ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
     if (cmd_kit_ptr)
         return *cmd_kit_ptr;
 
-    cmd_kit_ptr = CommandKit::Create(cmd_queue);
+    cmd_kit_ptr = ICommandKit::Create(cmd_queue);
     return *cmd_kit_ptr;
 }
 
@@ -225,7 +225,7 @@ bool ContextBase::SetName(const std::string& name)
         return false;
 
     GetDeviceBase().SetName(fmt::format("{} Device", name));
-    for(const Ptr<CommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    for(const Ptr<ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)
             cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
@@ -233,12 +233,12 @@ bool ContextBase::SetName(const std::string& name)
     return true;
 }
 
-template<CommandKit::CommandListPurpose cmd_list_purpose>
-void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) const
+template<CommandListPurpose cmd_list_purpose>
+void ContextBase::ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) const
 {
     META_FUNCTION_TASK();
-    constexpr auto cmd_list_id = static_cast<CommandKit::CommandListId>(cmd_list_purpose);
-    const std::vector<CommandKit::CommandListId> cmd_list_ids = { cmd_list_id };
+    constexpr auto cmd_list_id = static_cast<CommandListId>(cmd_list_purpose);
+    const std::vector<CommandListId> cmd_list_ids = { cmd_list_id };
 
     for (const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
@@ -257,7 +257,7 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
         META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
         ICommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
 
-        if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PreUploadSync)
+        if constexpr (cmd_list_purpose == CommandListPurpose::PreUploadSync)
         {
             // Execute pre-upload synchronization on other queue and wait for sync completion on upload queue
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
@@ -265,7 +265,7 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
             cmd_kit_fence.Signal();
             cmd_kit_fence.WaitOnGpu(upload_cmd_kit.GetQueue());
         }
-        if constexpr (cmd_list_purpose == CommandKit::CommandListPurpose::PostUploadSync)
+        if constexpr (cmd_list_purpose == CommandListPurpose::PostUploadSync)
         {
             // Wait for upload execution on other queue and execute post-upload synchronization commands on that queue
             IFence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
@@ -279,7 +279,7 @@ void ContextBase::ExecuteSyncCommandLists(const CommandKit& upload_cmd_kit) cons
 bool ContextBase::UploadResources()
 {
     META_FUNCTION_TASK();
-    const CommandKit& upload_cmd_kit = GetUploadCommandKit();
+    const ICommandKit& upload_cmd_kit = GetUploadCommandKit();
     if (!upload_cmd_kit.HasList())
         return false;
 
@@ -298,14 +298,14 @@ bool ContextBase::UploadResources()
 
     // Execute pre-upload synchronization command lists for all queues except the upload command queue
     // and set upload command queue fence to wait for pre-upload synchronization completion in other command queues
-    ExecuteSyncCommandLists<CommandKit::CommandListPurpose::PreUploadSync>(upload_cmd_kit);
+    ExecuteSyncCommandLists<CommandListPurpose::PreUploadSync>(upload_cmd_kit);
 
     // Execute resource upload command lists
     upload_cmd_kit.GetQueue().Execute(upload_cmd_kit.GetListSet());
 
     // Execute post-upload synchronization command lists for all queues except the upload command queue
     // and set post-upload command queue fences to wait for upload command command queue completion
-    ExecuteSyncCommandLists<CommandKit::CommandListPurpose::PostUploadSync>(upload_cmd_kit);
+    ExecuteSyncCommandLists<CommandListPurpose::PostUploadSync>(upload_cmd_kit);
 
     return true;
 }

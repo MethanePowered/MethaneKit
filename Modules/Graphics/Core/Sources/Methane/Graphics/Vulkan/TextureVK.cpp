@@ -442,7 +442,7 @@ void ImageTextureVK::SetData(const SubResources& sub_resources, ICommandQueue& t
     }
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
-    TransferCommandListVK  & upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    TransferCommandListVK&   upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     const vk::CommandBuffer& vk_cmd_buffer   = upload_cmd_list.GetNativeCommandBufferDefault();
     vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                     vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
@@ -484,7 +484,7 @@ void ImageTextureVK::GenerateMipLevels(ICommandQueue& target_cmd_queue, State ta
     META_CHECK_ARG_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
                               "texture pixel format does not support linear blitting");
 
-    constexpr auto post_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync);
+    constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
     const CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
     const vk::CommandBuffer& vk_cmd_buffer = dynamic_cast<const RenderCommandListVK&>(target_cmd_list).GetNativeCommandBufferDefault();
 

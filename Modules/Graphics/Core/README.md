@@ -20,7 +20,7 @@ which make modern graphics programming easy and convenient in a platform and API
 - [ParallelRenderCommandList](Include/Methane/Graphics/ParallelRenderCommandList.h)
 - [TransferCommandList](Include/Methane/Graphics/TransferCommandList.h) (work in progress)
 - [IFence](Include/Methane/Graphics/IFence.h)
-- [CommandKit](Include/Methane/Graphics/CommandKit.h)
+- [ICommandKit](Include/Methane/Graphics/ICommandKit.h)
 
 ### Graphics Resources
 

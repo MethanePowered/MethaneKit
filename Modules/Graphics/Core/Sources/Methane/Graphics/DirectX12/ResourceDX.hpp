@@ -30,7 +30,7 @@ DirectX 12 implementation of the resource interface.
 #include "DeviceDX.h"
 
 #include <Methane/Graphics/TextureBase.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -176,7 +176,7 @@ protected:
             SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
         {
             CommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
-                static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PreUploadSync));
+                static_cast<CommandListId>(CommandListPurpose::PreUploadSync));
             sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
         }
 

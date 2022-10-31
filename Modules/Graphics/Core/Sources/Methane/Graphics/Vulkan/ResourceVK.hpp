@@ -31,7 +31,7 @@ Vulkan implementation of the resource interface.
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/ResourceBase.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
@@ -210,8 +210,8 @@ protected:
     TransferCommandListVK& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
-        const CommandKit& upload_cmd_kit = ResourceBase::GetContext().GetUploadCommandKit();
-        auto& upload_cmd_list = dynamic_cast<TransferCommandListVK&>(upload_cmd_kit.GetListForEncoding());
+        const ICommandKit& upload_cmd_kit  = ResourceBase::GetContext().GetUploadCommandKit();
+        auto&              upload_cmd_list = dynamic_cast<TransferCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
@@ -225,7 +225,7 @@ protected:
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
         if (owner_changed && m_upload_begin_transition_barriers_ptr)
         {
-            constexpr auto pre_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PreUploadSync);
+            constexpr auto pre_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PreUploadSync);
             CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
@@ -247,7 +247,7 @@ protected:
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
         if (owner_changed && upload_end_barriers_non_empty)
         {
-            constexpr auto post_upload_cmd_list_id = static_cast<CommandKit::CommandListId>(CommandKit::CommandListPurpose::PostUploadSync);
+            constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
             CommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }

@@ -25,7 +25,7 @@ Methane command kit implementation.
 
 #include "ObjectBase.h"
 
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/ICommandKit.h>
 
 #include <map>
 
@@ -33,7 +33,7 @@ namespace Methane::Graphics
 {
 
 class CommandKitBase final
-    : public CommandKit
+    : public ICommandKit
     , public ObjectBase
 {
 public:
@@ -43,7 +43,7 @@ public:
     // IObject overrides
     bool SetName(const std::string& name) override;
 
-    // CommandKit interface
+    // ICommandKit interface
     [[nodiscard]] const IContext&   GetContext() const noexcept override  { return m_context; }
     [[nodiscard]] CommandList::Type GetListType() const noexcept override { return m_cmd_list_type; }
     [[nodiscard]] ICommandQueue&    GetQueue() const override;

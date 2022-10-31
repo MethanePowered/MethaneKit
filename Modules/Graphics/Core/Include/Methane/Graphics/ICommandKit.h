@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/CommandKit.h
+FILE: Methane/Graphics/ICommandKit.h
 Methane command kit interface: provides unified toolkit for commands execution
 and synchronization within a stored command queue.
 
@@ -38,22 +38,22 @@ struct IContext;
 struct ICommandQueue;
 struct IFence;
 
-struct CommandKit : virtual IObject // NOSONAR
+using CommandListId = uint32_t;
+
+enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initialized
 {
-    using CommandListId = uint32_t;
+    Default        = 0U,
+    PreUploadSync  = std::numeric_limits<CommandListId>::max() - 2,
+    PostUploadSync
+};
 
-    enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initialized
-    {
-        Default        = 0U,
-        PreUploadSync  = std::numeric_limits<CommandListId>::max() - 2,
-        PostUploadSync
-    };
+struct ICommandKit : virtual IObject // NOSONAR
+{
+    // Create ICommandKit instance
+    [[nodiscard]] static Ptr<ICommandKit> Create(const IContext& context, CommandList::Type command_lists_type);
+    [[nodiscard]] static Ptr<ICommandKit> Create(ICommandQueue& cmd_queue);
 
-    // Create CommandKit instance
-    [[nodiscard]] static Ptr<CommandKit> Create(const IContext& context, CommandList::Type command_lists_type);
-    [[nodiscard]] static Ptr<CommandKit> Create(ICommandQueue& cmd_queue);
-
-    // CommandKit interface
+    // ICommandKit interface
     [[nodiscard]] virtual const IContext&   GetContext() const noexcept = 0;
     [[nodiscard]] virtual ICommandQueue&    GetQueue() const = 0;
     [[nodiscard]] virtual CommandList::Type GetListType() const noexcept = 0;
