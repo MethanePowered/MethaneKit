@@ -49,7 +49,7 @@ class DeviceBase;
 class CommandQueueBase;
 struct ICommandQueue;
 struct ICommandList;
-struct CommandListSet;
+struct ICommandListSet;
 struct DescriptorManager;
 
 class ContextBase

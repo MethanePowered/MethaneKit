@@ -43,7 +43,7 @@ struct ParallelRenderingFrame final : Graphics::AppFrame
     gfx::InstancedMeshBufferBindings    cubes_array;
     Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
     Ptr<gfx::RenderCommandList>         serial_render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
+    Ptr<gfx::ICommandListSet>           execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };

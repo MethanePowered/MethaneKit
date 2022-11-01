@@ -52,7 +52,7 @@ struct HelloCubeFrame final : AppFrame
     Ptr<IBufferSet> vertex_buffer_set_ptr;
 #endif
     Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<CommandListSet>    execute_cmd_list_set_ptr;
+    Ptr<ICommandListSet>   execute_cmd_list_set_ptr;
 
     using AppFrame::AppFrame;
 };
@@ -215,7 +215,7 @@ public:
             // Create command list for rendering
             frame.render_cmd_list_ptr = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
-            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+            frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();

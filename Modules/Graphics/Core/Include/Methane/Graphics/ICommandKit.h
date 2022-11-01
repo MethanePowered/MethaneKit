@@ -54,15 +54,15 @@ struct ICommandKit : virtual IObject // NOSONAR
     [[nodiscard]] static Ptr<ICommandKit> Create(ICommandQueue& cmd_queue);
 
     // ICommandKit interface
-    [[nodiscard]] virtual const IContext& GetContext() const noexcept = 0;
-    [[nodiscard]] virtual ICommandQueue&  GetQueue() const = 0;
-    [[nodiscard]] virtual CommandListType GetListType() const noexcept = 0;
-    [[nodiscard]] virtual bool            HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;
-    [[nodiscard]] virtual bool            HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
-    [[nodiscard]] virtual ICommandList&   GetList(CommandListId cmd_list_id = 0U) const = 0;
-    [[nodiscard]] virtual ICommandList&   GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
-    [[nodiscard]] virtual CommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
-    [[nodiscard]] virtual IFence&         GetFence(CommandListId fence_id = 0U) const = 0;
+    [[nodiscard]] virtual const IContext&  GetContext() const noexcept = 0;
+    [[nodiscard]] virtual ICommandQueue&   GetQueue() const = 0;
+    [[nodiscard]] virtual CommandListType  GetListType() const noexcept = 0;
+    [[nodiscard]] virtual bool             HasList(CommandListId cmd_list_id = 0U) const noexcept = 0;
+    [[nodiscard]] virtual bool             HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
+    [[nodiscard]] virtual ICommandList&    GetList(CommandListId cmd_list_id = 0U) const = 0;
+    [[nodiscard]] virtual ICommandList&    GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
+    [[nodiscard]] virtual ICommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
+    [[nodiscard]] virtual IFence&          GetFence(CommandListId fence_id = 0U) const = 0;
 };
 
 } // namespace Methane::Graphics

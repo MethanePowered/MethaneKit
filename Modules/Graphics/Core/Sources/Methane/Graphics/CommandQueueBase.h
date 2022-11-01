@@ -55,7 +55,7 @@ public:
     // ICommandQueue overrides
     [[nodiscard]] const IContext& GetContext() const noexcept final;
     CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
-    void Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // CommandQueueBase interface
     virtual ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }

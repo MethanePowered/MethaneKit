@@ -166,13 +166,13 @@ ICommandList& CommandKitBase::GetListForEncoding(CommandListId cmd_list_id, std:
     return cmd_list;
 }
 
-CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+ICommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(cmd_list_ids);
     const CommandListSetId cmd_list_set_id = GetCommandListSetId(cmd_list_ids, frame_index_opt);
 
-    Ptr<CommandListSet>& cmd_list_set_ptr = m_cmd_list_set_by_id[cmd_list_set_id];
+    Ptr<ICommandListSet>& cmd_list_set_ptr = m_cmd_list_set_by_id[cmd_list_set_id];
     if (cmd_list_set_ptr && cmd_list_set_ptr->GetCount() == cmd_list_ids.size())
         return *cmd_list_set_ptr;
 
@@ -182,7 +182,7 @@ CommandListSet& CommandKitBase::GetListSet(const std::vector<CommandListId>& cmd
         command_list_refs.emplace_back(GetList(cmd_list_id));
     }
 
-    cmd_list_set_ptr = CommandListSet::Create(command_list_refs, frame_index_opt);
+    cmd_list_set_ptr = ICommandListSet::Create(command_list_refs, frame_index_opt);
     return *cmd_list_set_ptr;
 }
 

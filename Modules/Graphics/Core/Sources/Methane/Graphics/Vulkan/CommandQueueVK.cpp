@@ -145,7 +145,7 @@ CommandQueueVK::~CommandQueueVK()
     GetDeviceVK().GetQueueFamilyReservation(CommandQueueBase::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
-void CommandQueueVK::Execute(CommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback)
+void CommandQueueVK::Execute(ICommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
@@ -218,7 +218,7 @@ void CommandQueueVK::ResetWaitForFrameExecution(Data::Index frame_index)
     wait_info.stages.clear();
 }
 
-void CommandQueueVK::AddWaitForFrameExecution(const CommandListSet& command_list_set)
+void CommandQueueVK::AddWaitForFrameExecution(const ICommandListSet& command_list_set)
 {
     META_FUNCTION_TASK();
     if (GetCommandListType() != CommandListType::Render)

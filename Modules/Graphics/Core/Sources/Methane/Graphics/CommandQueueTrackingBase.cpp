@@ -83,7 +83,7 @@ void CommandQueueTrackingBase::InitializeTimestampQueryPool()
     );
 }
 
-void CommandQueueTrackingBase::Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
+void CommandQueueTrackingBase::Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     CommandQueueBase::Execute(command_lists, completed_callback);

@@ -304,7 +304,7 @@ void ShadowCubeApp::Init()
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Rendering command lists sequence
-        frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({
+        frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({
             *frame.shadow_pass.cmd_list_ptr,
             *frame.final_pass.cmd_list_ptr
         }, frame.index);

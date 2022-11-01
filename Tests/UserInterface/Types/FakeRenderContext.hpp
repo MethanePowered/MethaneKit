@@ -80,7 +80,7 @@ public:
     [[nodiscard]] const IContext&   GetContext() const noexcept override          { return m_context; }
     [[nodiscard]] CommandListType   GetCommandListType() const noexcept override  { return m_type; }
     [[nodiscard]] uint32_t          GetFamilyIndex() const noexcept override      { return 0U; }
-    void Execute(CommandListSet&, const ICommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Execute(ICommandListSet&, const ICommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // IObject interface
     bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
@@ -93,7 +93,7 @@ private:
 };
 
 class FakeCommandListSet
-    : public CommandListSet
+    : public ICommandListSet
 {
 public:
     [[nodiscard]] Data::Size                GetCount() const noexcept override       { return 0; }

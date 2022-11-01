@@ -47,7 +47,7 @@ public:
     ~CommandQueueTrackingBase() override;
 
     // ICommandQueue interface
-    void Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

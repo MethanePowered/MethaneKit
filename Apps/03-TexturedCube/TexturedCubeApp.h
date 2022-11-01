@@ -43,7 +43,7 @@ struct TexturedCubeFrame final : Graphics::AppFrame
     Ptr<gfx::IBuffer>           uniforms_buffer_ptr;
     Ptr<gfx::IProgramBindings>  program_bindings_ptr;
     Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
+    Ptr<gfx::ICommandListSet>   execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };

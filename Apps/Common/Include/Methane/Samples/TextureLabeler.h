@@ -34,7 +34,7 @@ namespace Methane::Graphics
 struct IRenderPattern;
 struct IRenderPass;
 struct RenderCommandList;
-struct CommandListSet;
+struct ICommandListSet;
 struct ITexture;
 class  ResourceBarriersBase;
 class  ScreenQuad;
@@ -122,7 +122,7 @@ private:
     Ptr<gfx::IRenderPattern>    m_ending_render_pattern_ptr;
     Ptr<gfx::IRenderPass>       m_ending_render_pass_ptr;
     Ptr<gfx::RenderCommandList> m_ending_render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>    m_render_cmd_list_set_ptr;
+    Ptr<gfx::ICommandListSet>   m_render_cmd_list_set_ptr;
 };
 
 } // namespace Methane::Tutorials

@@ -54,7 +54,7 @@ public:
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
-    void Execute(CommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(ICommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;
@@ -89,7 +89,7 @@ private:
                    const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
-    void AddWaitForFrameExecution(const CommandListSet& command_list_set);
+    void AddWaitForFrameExecution(const ICommandListSet& command_list_set);
 
     using FrameWaitInfos = std::vector<WaitInfo>;
 

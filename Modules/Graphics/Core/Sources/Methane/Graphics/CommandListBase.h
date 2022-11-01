@@ -169,16 +169,16 @@ private:
 };
 
 class CommandListSetBase
-    : public CommandListSet
+    : public ICommandListSet
     , protected Data::Receiver<IObjectCallback>
     , public std::enable_shared_from_this<CommandListSetBase>
 {
 public:
     explicit CommandListSetBase(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
-    // CommandListSet overrides
+    // ICommandListSet overrides
     Data::Size               GetCount() const noexcept final        { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<ICommandList>& GetRefs() const noexcept final         { return m_refs; }
+    const Refs<ICommandList>& GetRefs() const noexcept final        { return m_refs; }
     ICommandList&             operator[](Data::Index index) const final;
     const Opt<Data::Index>&  GetFrameIndex() const noexcept final   { return m_frame_index_opt; }
 

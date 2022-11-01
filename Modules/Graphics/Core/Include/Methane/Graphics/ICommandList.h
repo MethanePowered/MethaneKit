@@ -101,16 +101,16 @@ struct ICommandList
     [[nodiscard]] virtual ICommandQueue& GetCommandQueue() = 0;
 };
 
-struct CommandListSet
+struct ICommandListSet
 {
-    [[nodiscard]] static Ptr<CommandListSet> Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
+    [[nodiscard]] static Ptr<ICommandListSet> Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
 
-    [[nodiscard]] virtual Data::Size               GetCount() const noexcept = 0;
+    [[nodiscard]] virtual Data::Size                GetCount() const noexcept = 0;
     [[nodiscard]] virtual const Refs<ICommandList>& GetRefs() const noexcept = 0;
     [[nodiscard]] virtual ICommandList&             operator[](Data::Index index) const = 0;
-    [[nodiscard]] virtual const Opt<Data::Index>&  GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual const Opt<Data::Index>&   GetFrameIndex() const noexcept = 0;
 
-    virtual ~CommandListSet() = default;
+    virtual ~ICommandListSet() = default;
 };
 
 } // namespace Methane::Graphics

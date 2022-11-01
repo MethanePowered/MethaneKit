@@ -56,7 +56,7 @@ const IContext& CommandQueueBase::GetContext() const noexcept
     return dynamic_cast<const IContext&>(m_context);
 }
 
-void CommandQueueBase::Execute(CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
+void CommandQueueBase::Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     META_LOG("Command queue '{}' is executing", GetName());

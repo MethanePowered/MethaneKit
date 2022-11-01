@@ -182,7 +182,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
         slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);
     }
 
-    m_render_cmd_list_set_ptr = gfx::CommandListSet::Create(slice_render_cmd_list_refs);
+    m_render_cmd_list_set_ptr = gfx::ICommandListSet::Create(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()
