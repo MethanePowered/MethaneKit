@@ -41,7 +41,7 @@ static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(IContext::Option
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }
 
-Ptr<TransferCommandList> TransferCommandList::Create(ICommandQueue& cmd_queue)
+Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));

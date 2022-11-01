@@ -25,7 +25,7 @@ Metal implementation of the transfer command list interface.
 
 #include "CommandListMT.hpp"
 
-#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/ITransferCommandList.h>
 #include <Methane/Graphics/CommandListBase.h>
 
 #import <Metal/Metal.h>
@@ -37,7 +37,7 @@ class CommandQueueMT;
 
 class TransferCommandListMT final
     : public CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>
-    , public TransferCommandList
+    , public ITransferCommandList
 {
 public:
     TransferCommandListMT(CommandQueueBase& command_queue);

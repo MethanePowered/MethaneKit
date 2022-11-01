@@ -25,14 +25,14 @@ DirectX 12 implementation of the transfer command list interface.
 
 #include "CommandListDX.hpp"
 
-#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/ITransferCommandList.h>
 
 namespace Methane::Graphics
 {
 
 class TransferCommandListDX final
     : public CommandListDX<CommandListBase>
-    , public TransferCommandList
+    , public ITransferCommandList
 {
 public:
     explicit TransferCommandListDX(CommandQueueBase& cmd_buffer);

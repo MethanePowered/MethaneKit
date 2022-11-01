@@ -26,7 +26,7 @@ Fake render context used for UI types testing
 #include <Methane/Exceptions.hpp>
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/ITransferCommandList.h>
 #include <Methane/Graphics/RenderCommandList.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/ICommandQueue.h>
@@ -137,7 +137,7 @@ private:
     ICommandQueue& m_command_queue;
 };
 
-using FakeTransferCommandList = FakeCommandList<TransferCommandList, CommandListType::Transfer>;
+using FakeTransferCommandList = FakeCommandList<ITransferCommandList, CommandListType::Transfer>;
 
 class FakeRenderContext
     : public IRenderContext

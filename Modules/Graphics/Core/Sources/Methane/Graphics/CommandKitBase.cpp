@@ -27,7 +27,7 @@ Methane command kit implementation.
 
 #include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/TransferCommandList.h>
+#include <Methane/Graphics/ITransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -131,7 +131,7 @@ ICommandList& CommandKitBase::GetList(CommandListId cmd_list_id = 0U) const
 
     switch (m_cmd_list_type)
     {
-    case CommandListType::Transfer: cmd_list_ptr = TransferCommandList::Create(GetQueue()); break;
+    case CommandListType::Transfer: cmd_list_ptr = ITransferCommandList::Create(GetQueue()); break;
     case CommandListType::Render: cmd_list_ptr = RenderCommandListBase::CreateForSynchronization(GetQueue()); break;
     default:                          META_UNEXPECTED_ARG(m_cmd_list_type);
     }

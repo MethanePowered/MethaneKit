@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/TransferCommandList.h
+FILE: Methane/Graphics/ITransferCommandList.h
 Methane data transfer command list interface.
 
 ******************************************************************************/
@@ -30,13 +30,13 @@ Methane data transfer command list interface.
 namespace Methane::Graphics
 {
 
-struct TransferCommandList
+struct ITransferCommandList
     : virtual ICommandList // NOSONAR
 {
     static constexpr Type type = Type::Transfer;
 
-    // Create TransferCommandList instance
-    [[nodiscard]] static Ptr<TransferCommandList> Create(ICommandQueue& command_queue);
+    // Create ITransferCommandList instance
+    [[nodiscard]] static Ptr<ITransferCommandList> Create(ICommandQueue& command_queue);
 
     // No public functions here for now, transfer command lists are used internally only
     // Later it will include memory copy operations and mip-map generation for textures on GPU
