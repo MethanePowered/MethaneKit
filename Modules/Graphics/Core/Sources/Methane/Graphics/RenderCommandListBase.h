@@ -28,7 +28,7 @@ Base implementation of the render command list interface.
 #include "RenderPassBase.h"
 #include "RenderStateBase.h"
 
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 
 #include <optional>
 
@@ -39,11 +39,11 @@ struct IRenderState;
 class ParallelRenderCommandListBase;
 
 class RenderCommandListBase
-    : public RenderCommandList
+    : public IRenderCommandList
     , public CommandListBase
 {
 public:
-    struct DrawingState final
+    struct DrawingState
     {
         enum class Changes : uint32_t
         {
@@ -62,7 +62,7 @@ public:
         Changes              changes             = Changes::None;
     };
 
-    static Ptr<RenderCommandList> CreateForSynchronization(ICommandQueue& cmd_queue);
+    static Ptr<IRenderCommandList> CreateForSynchronization(ICommandQueue& cmd_queue);
 
     explicit RenderCommandListBase(CommandQueueBase& command_queue);
     RenderCommandListBase(CommandQueueBase& command_queue, RenderPassBase& render_pass);
@@ -70,14 +70,14 @@ public:
     
     using CommandListBase::Reset;
 
-    // RenderCommandList interface
+    // IRenderCommandList interface
     bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
     IRenderPass& GetRenderPass() const final;
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
-    void SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups = IRenderState::Groups::All) override;
+    void SetRenderState(IRenderState& render_state, RenderStateGroups state_groups = RenderStateGroups::All) override;
     void SetViewState(IViewState& view_state) override;
     bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers) override;

@@ -49,11 +49,11 @@ struct ShadowCubeFrame final : gfx::AppFrame
             Ptr<gfx::IProgramBindings> program_bindings_ptr;
         };
 
-        MeshResources               cube;
-        MeshResources               floor;
-        Ptr<gfx::ITexture>          rt_texture_ptr;
-        Ptr<gfx::IRenderPass>       render_pass_ptr;
-        Ptr<gfx::RenderCommandList> cmd_list_ptr;
+        MeshResources                cube;
+        MeshResources                floor;
+        Ptr<gfx::ITexture>           rt_texture_ptr;
+        Ptr<gfx::IRenderPass>        render_pass_ptr;
+        Ptr<gfx::IRenderCommandList> cmd_list_ptr;
     };
 
     PassResources             shadow_pass;

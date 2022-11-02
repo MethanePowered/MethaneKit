@@ -35,7 +35,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -279,7 +279,7 @@ const ITexture& ScreenQuad::GetTexture() const
     return *m_texture_ptr;
 }
 
-void ScreenQuad::Draw(RenderCommandList& cmd_list, ICommandListDebugGroup* p_debug_group) const
+void ScreenQuad::Draw(IRenderCommandList& cmd_list, ICommandListDebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     cmd_list.ResetWithStateOnce(*m_render_state_ptr, p_debug_group);
@@ -287,7 +287,7 @@ void ScreenQuad::Draw(RenderCommandList& cmd_list, ICommandListDebugGroup* p_deb
     cmd_list.SetProgramBindings(*m_const_program_bindings_ptr);
     cmd_list.SetVertexBuffers(*m_vertex_buffer_set_ptr);
     cmd_list.SetIndexBuffer(*m_index_buffer_ptr);
-    cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle);
+    cmd_list.DrawIndexed(RenderPrimitive::Triangle);
 }
 
 const IRenderContext& ScreenQuad::GetRenderContext() const noexcept

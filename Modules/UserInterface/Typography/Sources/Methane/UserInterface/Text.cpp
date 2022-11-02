@@ -27,7 +27,7 @@ Methane text rendering primitive.
 #include <Methane/UserInterface/Context.h>
 
 #include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 #include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IBuffer.h>
@@ -354,7 +354,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
 }
 
-void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group)
+void Text::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())
@@ -369,7 +369,7 @@ void Text::Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
     cmd_list.SetIndexBuffer(frame_resources.GetIndexBuffer());
-    cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+    cmd_list.DrawIndexed(gfx::RenderPrimitive::Triangle);
 }
 
 void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr)

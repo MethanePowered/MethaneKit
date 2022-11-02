@@ -263,7 +263,7 @@ void ShadowCubeApp::Init()
         });
         
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // ========= Final Pass Resources =========
@@ -300,7 +300,7 @@ void ShadowCubeApp::Init()
         frame.final_pass.render_pass_ptr = frame.screen_pass_ptr;
         
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
+        frame.final_pass.cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Rendering command lists sequence
@@ -409,7 +409,7 @@ bool ShadowCubeApp::Render()
 
 void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
-    gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
+    gfx::IRenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
     // Reset command list with initial rendering state
     cmd_list.ResetWithState(*render_pass.render_state_ptr, render_pass.debug_group_ptr.get());

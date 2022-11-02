@@ -216,7 +216,7 @@ bool AppBase::UpdateUI() const
     return true;
 }
 
-void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list) const
+void AppBase::RenderOverlay(gfx::IRenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
@@ -241,7 +241,7 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const
+void AppBase::TextItem::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)

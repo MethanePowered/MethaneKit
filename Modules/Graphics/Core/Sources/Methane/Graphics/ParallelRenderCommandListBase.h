@@ -53,7 +53,7 @@ public:
     void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void SetViewState(IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const Refs<RenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
+    const Refs<IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
 
     // CommandListBase interface
     void SetResourceBarriers(const IResourceBarriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
@@ -81,7 +81,7 @@ private:
 
     const Ptr<RenderPassBase>   m_render_pass_ptr;
     Ptrs<RenderCommandListBase> m_parallel_command_lists;
-    Refs<RenderCommandList>     m_parallel_command_lists_refs;
+    Refs<IRenderCommandList>    m_parallel_command_lists_refs;
     bool                        m_is_validation_enabled = true;
 };
 

@@ -25,7 +25,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ICommandQueue.h
     ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/ITransferCommandList.h
-    ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/IRenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
 

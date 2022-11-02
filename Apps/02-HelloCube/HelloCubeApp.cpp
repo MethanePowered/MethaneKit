@@ -51,8 +51,8 @@ struct HelloCubeFrame final : AppFrame
 #else
     Ptr<IBufferSet> vertex_buffer_set_ptr;
 #endif
-    Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<ICommandListSet>   execute_cmd_list_set_ptr;
+    Ptr<IRenderCommandList> render_cmd_list_ptr;
+    Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
 
     using AppFrame::AppFrame;
 };
@@ -213,7 +213,7 @@ public:
 #endif
 
             // Create command list for rendering
-            frame.render_cmd_list_ptr = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.render_cmd_list_ptr = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
             frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
@@ -284,7 +284,7 @@ public:
         frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
 #endif
         frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-        frame.render_cmd_list_ptr->DrawIndexed(RenderCommandList::Primitive::Triangle);
+        frame.render_cmd_list_ptr->DrawIndexed(RenderPrimitive::Triangle);
         frame.render_cmd_list_ptr->Commit();
 
         // Execute command list on render queue and present frame to screen

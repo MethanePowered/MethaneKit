@@ -42,7 +42,7 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    Ptr<RenderCommandList> render_cmd_list_ptr;
+    Ptr<IRenderCommandList> render_cmd_list_ptr;
     Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
     using AppFrame::AppFrame;
 };
@@ -86,7 +86,7 @@ attachments used for final drawing to window on screen. `IRenderState::Settings`
 object and also contains settings of rasterizer, depth, stencil, blending states which are left with default values 
 for simplicity of this tutorial.
 
-Render command lists are created for each frame using `RenderCommandList::Create(...)` factory function which is taking
+Render command lists are created for each frame using `IRenderCommandList::Create(...)` factory function which is taking
 `ICommandQueue` and `IRenderPass` as its arguments. So the created command list can be used for rendering only to that particular
 render pass. Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
 resources initialization and prepare for rendering.
@@ -126,7 +126,7 @@ public:
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.render_cmd_list_ptr      = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
 
@@ -145,8 +145,8 @@ it waits for previous iteration of rendering cycle completion and availability o
 Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
 To begin encoding, command list has to be reset with render state using `ICommandList::Reset(...)` method.
-Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState(...)`.
-Drawing of 3 vertices is submitted as `Triangle` primitive using `RenderCommandList::Draw` call.
+Default view state is set with full frame viewport and scissor rect using `IRenderCommandList::SetViewState(...)`.
+Drawing of 3 vertices is submitted as `Triangle` primitive using `IRenderCommandList::Draw` call.
 Vertex buffers are not used for simplification, so the vertex shader will receive only `vertex_id` and 
 will need to provide vertex coordinates based on that. Finally, `ICommandList::Commit` method is called 
 to complete render commands encoding.
@@ -168,7 +168,7 @@ class HelloTriangleApp final : public GraphicsApp
         const HelloTriangleFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
+        frame.render_cmd_list_ptr->Draw(RenderPrimitive::Triangle, 3);
         frame.render_cmd_list_ptr->Commit();
 
         GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);

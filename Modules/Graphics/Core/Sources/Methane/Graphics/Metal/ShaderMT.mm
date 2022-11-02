@@ -131,7 +131,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const ProgramArgument
         std::string argument_name = Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_arg.name);
         if (argument_name.find("vertexBuffer.") == 0)
         {
-            // Skip input vertex buffers, since they are set with a separate RenderCommandList call, not through resource bindings
+            // Skip input vertex buffers, since they are set with a separate IRenderCommandList call, not through resource bindings
             continue;
         }
         

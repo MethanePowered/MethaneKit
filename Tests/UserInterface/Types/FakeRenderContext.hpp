@@ -27,7 +27,7 @@ Fake render context used for UI types testing
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/ITransferCommandList.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/FpsCounter.h>

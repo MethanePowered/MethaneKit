@@ -118,11 +118,11 @@ void ParallelRenderCommandListVK::SetParallelCommandListsCount(uint32_t count)
     m_vk_parallel_sync_cmd_buffers.clear();
     m_vk_parallel_pass_cmd_buffers.clear();
 
-    const Refs<RenderCommandList>& parallel_cmd_list_refs = GetParallelCommandLists();
+    const Refs<IRenderCommandList>& parallel_cmd_list_refs = GetParallelCommandLists();
     m_vk_parallel_sync_cmd_buffers.reserve(parallel_cmd_list_refs.size());
     m_vk_parallel_pass_cmd_buffers.reserve(parallel_cmd_list_refs.size());
 
-    for(const Ref<RenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
+    for(const Ref<IRenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
     {
         const auto& parallel_cmd_list_vk = static_cast<const RenderCommandListVK&>(parallel_cmd_list_ref.get());
         m_vk_parallel_sync_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary));

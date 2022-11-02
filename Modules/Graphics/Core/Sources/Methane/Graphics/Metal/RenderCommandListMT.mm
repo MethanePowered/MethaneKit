@@ -36,16 +36,16 @@ Metal implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-static MTLPrimitiveType PrimitiveTypeToMetal(RenderCommandList::Primitive primitive) noexcept
+static MTLPrimitiveType PrimitiveTypeToMetal(RenderPrimitive primitive) noexcept
 {
     META_FUNCTION_TASK();
     switch (primitive)
     {
-        case RenderCommandList::Primitive::Point:          return MTLPrimitiveTypePoint;
-        case RenderCommandList::Primitive::Line:           return MTLPrimitiveTypeLine;
-        case RenderCommandList::Primitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
-        case RenderCommandList::Primitive::Triangle:       return MTLPrimitiveTypeTriangle;
-        case RenderCommandList::Primitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
+        case RenderPrimitive::Point:          return MTLPrimitiveTypePoint;
+        case RenderPrimitive::Line:           return MTLPrimitiveTypeLine;
+        case RenderPrimitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
+        case RenderPrimitive::Triangle:       return MTLPrimitiveTypeTriangle;
+        case RenderPrimitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
     }
     return MTLPrimitiveTypeTriangleStrip;
 }
@@ -58,19 +58,19 @@ static bool GetDeviceSupportOfGpuFamilyApple3(CommandQueueMT& command_queue)
            [mtl_device supportsFamily:MTLGPUFamilyMac2];
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(dynamic_cast<ParallelRenderCommandListMT&>(parallel_render_command_list));
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue&)
+Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue&)
 {
     META_FUNCTION_TASK();
     return nullptr;

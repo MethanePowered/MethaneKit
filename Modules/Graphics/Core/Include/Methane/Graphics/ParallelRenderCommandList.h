@@ -24,7 +24,7 @@ for multi-threaded rendering in the single render pass.
 
 #pragma once
 
-#include "RenderCommandList.h"
+#include "IRenderCommandList.h"
 
 #include <Methane/Memory.hpp>
 
@@ -49,7 +49,7 @@ struct ParallelRenderCommandList : virtual ICommandList // NOSONAR
     virtual void SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void SetEndingResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void SetParallelCommandListsCount(uint32_t count) = 0;
-    [[nodiscard]] virtual const Refs<RenderCommandList>& GetParallelCommandLists() const = 0;
+    [[nodiscard]] virtual const Refs<IRenderCommandList>& GetParallelCommandLists() const = 0;
     
     using ICommandList::Reset;
 };

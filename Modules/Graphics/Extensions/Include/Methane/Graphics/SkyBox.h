@@ -77,7 +77,7 @@ public:
 
     Ptr<IProgramBindings> CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
-    void Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state);
+    void Draw(IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state);
 
 private:
     struct Vertex

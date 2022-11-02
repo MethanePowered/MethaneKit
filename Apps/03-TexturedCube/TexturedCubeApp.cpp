@@ -171,7 +171,7 @@ void TexturedCubeApp::Init()
         frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
         
         // Create command list for rendering
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
@@ -227,7 +227,7 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
     frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderPrimitive::Triangle);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

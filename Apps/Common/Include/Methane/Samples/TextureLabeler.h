@@ -33,7 +33,7 @@ namespace Methane::Graphics
 {
 struct IRenderPattern;
 struct IRenderPass;
-struct RenderCommandList;
+struct IRenderCommandList;
 struct ICommandListSet;
 struct ITexture;
 class  ResourceBarriersBase;
@@ -107,22 +107,22 @@ private:
             : SliceDesc(slice_desc)
         {}
 
-        Ptr<gfx::IRenderPass>       render_pass_ptr;
-        Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-        Ptr<gui::Text>              label_text_ptr;
-        Ptr<gfx::ScreenQuad>        bg_quad_ptr;
+        Ptr<gfx::IRenderPass>        render_pass_ptr;
+        Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
+        Ptr<gui::Text>               label_text_ptr;
+        Ptr<gfx::ScreenQuad>         bg_quad_ptr;
     };
 
-    gui::Context &              m_gui_context;
-    gfx::ITexture&              m_rt_texture;
-    gui::Font&                  m_font;
-    std::vector<Slice>          m_slices;
-    Ptr<gfx::IRenderPattern>    m_texture_face_render_pattern_ptr;
-    Ptr<gfx::IResourceBarriers> m_ending_resource_barriers_ptr;
-    Ptr<gfx::IRenderPattern>    m_ending_render_pattern_ptr;
-    Ptr<gfx::IRenderPass>       m_ending_render_pass_ptr;
-    Ptr<gfx::RenderCommandList> m_ending_render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>   m_render_cmd_list_set_ptr;
+    gui::Context &               m_gui_context;
+    gfx::ITexture&               m_rt_texture;
+    gui::Font&                   m_font;
+    std::vector<Slice>           m_slices;
+    Ptr<gfx::IRenderPattern>     m_texture_face_render_pattern_ptr;
+    Ptr<gfx::IResourceBarriers>  m_ending_resource_barriers_ptr;
+    Ptr<gfx::IRenderPattern>     m_ending_render_pattern_ptr;
+    Ptr<gfx::IRenderPass>        m_ending_render_pass_ptr;
+    Ptr<gfx::IRenderCommandList> m_ending_render_cmd_list_ptr;
+    Ptr<gfx::ICommandListSet>    m_render_cmd_list_set_ptr;
 };
 
 } // namespace Methane::Tutorials

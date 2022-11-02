@@ -138,11 +138,11 @@ ParallelRenderCommandListDX::D3D12CommandLists ParallelRenderCommandListDX::GetN
 {
     META_FUNCTION_TASK();
     D3D12CommandLists dx_command_lists;
-    const Refs<RenderCommandList>& parallel_command_lists = GetParallelCommandLists();
+    const Refs<IRenderCommandList>& parallel_command_lists = GetParallelCommandLists();
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
     dx_command_lists.push_back(&m_beginning_command_list.GetNativeCommandList());
 
-    for (const Ref<RenderCommandList>& command_list_ref : parallel_command_lists)
+    for (const Ref<IRenderCommandList>& command_list_ref : parallel_command_lists)
     {
         dx_command_lists.push_back(&static_cast<const RenderCommandListDX&>(command_list_ref.get()).GetNativeCommandList());
     }

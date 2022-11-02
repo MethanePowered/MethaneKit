@@ -30,8 +30,8 @@ using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<ICommandListSet>   execute_cmd_list_set_ptr;
+    Ptr<IRenderCommandList> render_cmd_list_ptr;
+    Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
     using AppFrame::AppFrame;
 };
 
@@ -84,7 +84,7 @@ public:
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.render_cmd_list_ptr = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.render_cmd_list_ptr->SetName(IndexedName("Render Triangle", frame.index));
             frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
@@ -100,7 +100,7 @@ public:
         const HelloTriangleFrame& frame = GetCurrentFrame();
         frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
+        frame.render_cmd_list_ptr->Draw(RenderPrimitive::Triangle, 3);
         frame.render_cmd_list_ptr->Commit();
 
         GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);

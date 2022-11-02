@@ -188,11 +188,11 @@ struct ShadowCubeFrame final : gfx::AppFrame
             Ptr<gfx::IProgramBindings> program_bindings_ptr;
         };
 
-        MeshResources               cube;
-        MeshResources               floor;
-        Ptr<gfx::ITexture>          rt_texture_ptr;
+        MeshResources                cube;
+        MeshResources                floor;
+        Ptr<gfx::ITexture>           rt_texture_ptr;
         Ptr<gfx::IRenderPass>        render_pass_ptr;
-        Ptr<gfx::RenderCommandList> cmd_list_ptr;
+        Ptr<gfx::IRenderCommandList> cmd_list_ptr;
     };
 
     PassResources             shadow_pass;
@@ -402,7 +402,7 @@ rendered depth texture content for the next render pass. Render command list is 
         });
         
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
 ```
 
 The same resources are created for the final render pass: uniform buffers for cube and floor meshes.
@@ -444,7 +444,7 @@ application class `Methane::Graphics::App`. Render command list is created bound
         frame.final_pass.render_pass_ptr = frame.screen_pass_ptr;
         
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
+        frame.final_pass.cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
 ```
 
 When render context is going to be released, all related resources must be released too. This is done in 
@@ -601,7 +601,7 @@ Scene rendering commands encoding is done similarly for both shadow and render p
 ```cpp
 void ShadowCubeApp::RenderScene(const IRenderPass &render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const
 {
-    gfx::RenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
+    gfx::IRenderCommandList& cmd_list = *render_pass_resources.cmd_list_ptr;
 
     // Reset command list with initial rendering state
     cmd_list.ResetWithState(*render_pass.render_state_ptr, render_pass.debug_group_ptr.get());

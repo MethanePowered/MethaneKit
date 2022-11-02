@@ -127,7 +127,7 @@ void SkyBox::Update()
     });
 }
 
-void SkyBox::Draw(RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state)
+void SkyBox::Draw(IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);

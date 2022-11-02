@@ -44,7 +44,7 @@ public:
     RenderCommandListMT(CommandQueueMT& command_queue, RenderPassBase& render_pass);
     explicit RenderCommandListMT(ParallelRenderCommandListMT& parallel_render_command_list);
 
-    // RenderCommandList interface
+    // IRenderCommandList interface
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;

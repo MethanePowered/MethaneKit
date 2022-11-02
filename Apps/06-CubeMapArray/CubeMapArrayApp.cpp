@@ -189,7 +189,7 @@ void CubeMapArrayApp::Init()
         frame.sky_box.program_bindings_ptr->SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }

@@ -36,7 +36,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 
 namespace Methane::Graphics
 {
-struct RenderCommandList;
+struct IRenderCommandList;
 }
 
 namespace Methane::UserInterface
@@ -82,7 +82,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr) const override;
+    void Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr) const override;
 
 private:
     enum class TextBlock : size_t

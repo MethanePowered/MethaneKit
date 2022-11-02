@@ -93,8 +93,8 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 {
     Ptr<gfx::IBuffer>           uniforms_buffer_ptr;
     Ptr<gfx::IProgramBindings>  program_bindings_ptr;
-    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>   execute_cmd_list_set_ptr;
+    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
+    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -339,7 +339,7 @@ void TexturedCubeApp::Init()
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
 - Create uniforms buffer with `IBuffer::CreateConstantBuffer(...)` function.
 - Create program arguments to resources bindings with `IProgramBindings::Create(..)` function.
-- Create rendering command list with `RenderCommandList::Create(...)` and 
+- Create rendering command list with `IRenderCommandList::Create(...)` and 
 create set of command lists with `ICommandListSet::Create(...)` for execution in command queue.
 
 Finally at the end of `Init()` function `App::CompleteInitialization()` is called to complete graphics
@@ -366,7 +366,7 @@ void TexturedCubeApp::Init()
         }, frame.index);
         
         // Create command list for rendering
-        frame.render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.render_cmd_list_ptr });
     }e.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
@@ -429,7 +429,7 @@ bool TexturedCubeApp::Update()
 `TexturedCubeApp::Render()` method is called after all. Initial base method `UserInterfaceApp::Render()` call waits for 
 previously current frame buffer presenting is completed. When frame buffer is free, new frame rendering can be started:
 1. Uniforms buffer is filled with new shader uniforms data updated in calls above.
-2. Render command list encoding starts with `RenderCommandList::Reset(...)` call taking render state object and optional debug group,
+2. Render command list encoding starts with `IRenderCommandList::Reset(...)` call taking render state object and optional debug group,
 which is defining named region in commands sequence.
     1. View state is set with viewports and scissor rects
     2. Program bindings are set
@@ -456,7 +456,7 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
     frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderPrimitive::Triangle);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

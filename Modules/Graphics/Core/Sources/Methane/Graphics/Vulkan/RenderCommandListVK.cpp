@@ -37,17 +37,17 @@ Vulkan implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-vk::PrimitiveTopology GetVulkanPrimitiveTopology(RenderCommandList::Primitive primitive_type)
+vk::PrimitiveTopology GetVulkanPrimitiveTopology(RenderPrimitive primitive_type)
 {
     META_FUNCTION_TASK();
     switch(primitive_type)
     {
-    case RenderCommandList::Primitive::Point:           return vk::PrimitiveTopology::ePointList;
-    case RenderCommandList::Primitive::Line:            return vk::PrimitiveTopology::eLineList;
-    case RenderCommandList::Primitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
-    case RenderCommandList::Primitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
-    case RenderCommandList::Primitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
-    default: META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
+    case RenderPrimitive::Point:           return vk::PrimitiveTopology::ePointList;
+    case RenderPrimitive::Line:            return vk::PrimitiveTopology::eLineList;
+    case RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
+    case RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
+    case RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
+    default:                               META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
     }
 }
 
@@ -73,19 +73,19 @@ static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo
     );
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass));
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list), false);
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
+Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(cmd_queue));

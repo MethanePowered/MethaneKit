@@ -229,7 +229,7 @@ void ParallelRenderingApp::Init()
         else
         {
             // Create serial command list for rendering to the screen pass
-            frame.serial_render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.serial_render_cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.serial_render_cmd_list_ptr->SetName(IndexedName("Serial Cubes Rendering", frame.index));
             frame.serial_render_cmd_list_ptr->SetValidationEnabled(false);
             frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.serial_render_cmd_list_ptr }, frame.index);
@@ -397,7 +397,7 @@ bool ParallelRenderingApp::Render()
         frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
-        const Refs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
+        const Refs<gfx::IRenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
         const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
 
         // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
@@ -443,7 +443,7 @@ bool ParallelRenderingApp::Render()
     return true;
 }
 
-void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_list, const Ptrs<gfx::IProgramBindings>& program_bindings_per_instance,
+void ParallelRenderingApp::RenderCubesRange(gfx::IRenderCommandList& render_cmd_list, const Ptrs<gfx::IProgramBindings>& program_bindings_per_instance,
                                             uint32_t begin_instance_index, const uint32_t end_instance_index) const
 {
     META_FUNCTION_TASK();
@@ -464,7 +464,7 @@ void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_l
             bindings_apply_behavior |= gfx::IProgramBindings::ApplyBehavior::RetainResources;
 
         render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
-        render_cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+        render_cmd_list.DrawIndexed(gfx::RenderPrimitive::Triangle);
     }
 }
 

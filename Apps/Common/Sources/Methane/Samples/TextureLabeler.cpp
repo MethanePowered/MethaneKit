@@ -23,7 +23,7 @@ Renders text labels to the faces of cube-map texture array
 
 #include <Methane/Samples/TextureLabeler.h>
 #include <Methane/Graphics/IDevice.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/ICommandQueue.h>
@@ -143,7 +143,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             });
             slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
 
-            slice.render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
+            slice.render_cmd_list_ptr = gfx::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
             slice.render_cmd_list_ptr->SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
             slice_render_cmd_list_refs.emplace_back(*slice.render_cmd_list_ptr);
 
@@ -174,7 +174,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& 
             gfx::IRenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::IRenderPass::Access::ShaderResources, false
         });
         m_ending_render_pass_ptr = gfx::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
-        m_ending_render_cmd_list_ptr = gfx::RenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
+        m_ending_render_cmd_list_ptr = gfx::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
         m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
         m_ending_resource_barriers_ptr = gfx::IResourceBarriers::Create({
             { m_rt_texture, gfx::IResource::State::RenderTarget, rt_texture_final_state }

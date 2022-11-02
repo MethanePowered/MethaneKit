@@ -35,7 +35,7 @@ namespace Methane::Graphics
 
 struct ICommandQueue;
 struct IRenderContext;
-struct RenderCommandList;
+struct IRenderCommandList;
 struct IRenderPattern;
 struct IRenderState;
 struct IViewState;
@@ -76,7 +76,7 @@ public:
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
     [[nodiscard]] const ITexture&  GetTexture() const;
 
-    virtual void Draw(RenderCommandList& cmd_list, ICommandListDebugGroup* p_debug_group = nullptr) const;
+    virtual void Draw(IRenderCommandList& cmd_list, ICommandListDebugGroup* p_debug_group = nullptr) const;
 
 protected:
     IRenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }

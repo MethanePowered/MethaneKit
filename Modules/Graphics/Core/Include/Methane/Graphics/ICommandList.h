@@ -18,7 +18,7 @@ limitations under the License.
 
 FILE: Methane/Graphics/ICommandList.h
 Methane command list interface: this is uncreatable common command list interface,
-to create instance refer to RenderCommandList, etc. for specific derived interface.
+to create instance refer to IRenderCommandList, etc. for specific derived interface.
 
 ******************************************************************************/
 

@@ -40,10 +40,10 @@ namespace gfx = Methane::Graphics;
 
 struct CubeMapArrayFrame final : Graphics::AppFrame
 {
-    gfx::MeshBufferBindings     cube;
-    gfx::MeshBufferBindings     sky_box;
-    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>   execute_cmd_list_set_ptr;
+    gfx::MeshBufferBindings      cube;
+    gfx::MeshBufferBindings      sky_box;
+    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
+    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };

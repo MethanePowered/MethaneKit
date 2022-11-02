@@ -38,8 +38,8 @@ vertex buffer set `vertex_buffer_set_ptr` used for cube drawing.
 struct HelloCubeFrame final : AppFrame
 {
     Ptr<IBufferSet>        vertex_buffer_set_ptr;
-    Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<ICommandListSet>   execute_cmd_list_set_ptr;
+    Ptr<IRenderCommandList> render_cmd_list_ptr;
+    Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
 
     using AppFrame::AppFrame;
 };
@@ -181,7 +181,7 @@ while one vertex buffer is used for current frame rendering, other vertex buffer
 which enables more effective synchonous data updates (aka map-updates). Each vertex buffer is encapsulated in the buffer set with 
 `IBufferSet::CreateVertexBuffers(...)` used for command list encoding.
 
-Render command lists are created for each frame using `RenderCommandList::Create(...)` function, same as in [HelloTriangle](../01-HelloTriangle)
+Render command lists are created for each frame using `IRenderCommandList::Create(...)` function, same as in [HelloTriangle](../01-HelloTriangle)
 tutorial.
 
 ```cpp
@@ -205,7 +205,7 @@ class HelloTriangleApp final : public GraphicsApp
             frame.vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
             // Create command list for rendering
-            frame.render_cmd_list_ptr = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+            frame.render_cmd_list_ptr = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
             frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
         }
 
@@ -256,8 +256,8 @@ are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands
 
 We start with updating volatile vertex buffers with projected vertex data, which was updated in the previous
 method call `HelloCubeApp::Update()`. Cube rendering is done similar to the triangle rendering in previous
-tutorial with the only difference of setting vertex and index buffers with `RenderCommandList::SetVertexBuffers(...)`
-and `RenderCommandList::SetIndexBuffers(...)` encoded before `RenderCommandList::DrawIndexed(...)` call. Note that number of vertices
+tutorial with the only difference of setting vertex and index buffers with `IRenderCommandList::SetVertexBuffers(...)`
+and `IRenderCommandList::SetIndexBuffers(...)` encoded before `IRenderCommandList::DrawIndexed(...)` call. Note that number of vertices
 is not passed explictly for `DrawIndexed`, but is taken from the nu,ber of indies in index buffer.
 
 Execution of GPU rendering is started with `ICommandQueue::Execute(...)` method called on the same command queue
@@ -288,7 +288,7 @@ class HelloCubeApp final : public GraphicsApp
         frame.render_cmd_list_ptr->SetViewState(GetViewState());
         frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-        frame.render_cmd_list_ptr->DrawIndexed(RenderCommandList::Primitive::Triangle);
+        frame.render_cmd_list_ptr->DrawIndexed(RenderPrimitive::Triangle);
         frame.render_cmd_list_ptr->Commit();
 
         // Execute command list on render queue and present frame to screen
@@ -601,7 +601,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
         
         frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
         frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-        frame.render_cmd_list_ptr->DrawIndexed(RenderCommandList::Primitive::Triangle);
+        frame.render_cmd_list_ptr->DrawIndexed(RenderPrimitive::Triangle);
         frame.render_cmd_list_ptr->Commit();
 
         // Execute command list on render queue and present frame to screen

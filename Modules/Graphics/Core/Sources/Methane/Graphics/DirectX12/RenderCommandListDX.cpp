@@ -40,33 +40,33 @@ DirectX 12 implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderCommandList::Primitive primitive)
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderPrimitive primitive)
 {
     META_FUNCTION_TASK();
     switch (primitive)
     {
-    case RenderCommandList::Primitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-    case RenderCommandList::Primitive::Line:           return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-    case RenderCommandList::Primitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-    case RenderCommandList::Primitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    case RenderCommandList::Primitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                                           META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+    case RenderPrimitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+    case RenderPrimitive::Line:           return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+    case RenderPrimitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+    case RenderPrimitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    case RenderPrimitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+    default:                              META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-Ptr<RenderCommandList> RenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
 }
 
-Ptr<RenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
+Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));

@@ -42,7 +42,7 @@ struct ParallelRenderingFrame final : Graphics::AppFrame
 {
     gfx::InstancedMeshBufferBindings    cubes_array;
     Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
-    Ptr<gfx::RenderCommandList>         serial_render_cmd_list_ptr;
+    Ptr<gfx::IRenderCommandList>        serial_render_cmd_list_ptr;
     Ptr<gfx::ICommandListSet>           execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
@@ -98,7 +98,7 @@ private:
 
     CubeArrayParameters InitializeCubeArrayParameters() const;
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderCubesRange(gfx::RenderCommandList& remder_cmd_list, const Ptrs<gfx::IProgramBindings>& program_bindings_per_instance,
+    void RenderCubesRange(gfx::IRenderCommandList& remder_cmd_list, const Ptrs<gfx::IProgramBindings>& program_bindings_per_instance,
                           uint32_t begin_instance_index, const uint32_t end_instance_index) const;
 
     Settings               m_settings;

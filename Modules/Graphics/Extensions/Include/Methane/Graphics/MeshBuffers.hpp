@@ -29,7 +29,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/ITexture.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/ICommandQueue.h>
-#include <Methane/Graphics/RenderCommandList.h>
+#include <Methane/Graphics/IRenderCommandList.h>
 #include <Methane/Graphics/ParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
@@ -129,7 +129,7 @@ public:
         return beginning_resource_barriers_ptr;
     }
 
-    void Draw(RenderCommandList& cmd_list, IProgramBindings& program_bindings,
+    void Draw(IRenderCommandList& cmd_list, IProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         META_FUNCTION_TASK();
@@ -139,13 +139,13 @@ public:
         cmd_list.SetProgramBindings(program_bindings);
         cmd_list.SetVertexBuffers(GetVertexBuffers());
         cmd_list.SetIndexBuffer(GetIndexBuffer());
-        cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle,
+        cmd_list.DrawIndexed(RenderPrimitive::Triangle,
                              mesh_subset.indices.count, mesh_subset.indices.offset,
                              mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                              instance_count, start_instance);
     }
 
-    void Draw(RenderCommandList& cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
+    void Draw(IRenderCommandList& cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
               IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
@@ -153,7 +153,7 @@ public:
              bindings_apply_behavior, first_instance_index, retain_bindings_once, set_resource_barriers);
     }
 
-    void Draw(RenderCommandList& cmd_list,
+    void Draw(IRenderCommandList& cmd_list,
               const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_begin,
               const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_end,
               IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
@@ -184,7 +184,7 @@ public:
                 apply_behavior &= ~IProgramBindings::ApplyBehavior::RetainResources;
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
-            cmd_list.DrawIndexed(RenderCommandList::Primitive::Triangle,
+            cmd_list.DrawIndexed(RenderPrimitive::Triangle,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
@@ -196,7 +196,7 @@ public:
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
-        const Refs<RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const Refs<IRenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
@@ -204,7 +204,7 @@ public:
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
-                RenderCommandList& render_cmd_list  = render_cmd_lists[cmd_list_index].get();
+                IRenderCommandList& render_cmd_list = render_cmd_lists[cmd_list_index].get();
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));

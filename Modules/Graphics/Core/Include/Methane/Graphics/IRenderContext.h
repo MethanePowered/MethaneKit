@@ -39,7 +39,7 @@ namespace Methane::Graphics
 {
 
 class FpsCounter;
-struct RenderCommandList;
+struct IRenderCommandList;
 
 struct RenderContextSettings
 {

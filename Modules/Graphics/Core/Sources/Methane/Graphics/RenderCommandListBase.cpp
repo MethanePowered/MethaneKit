@@ -94,7 +94,7 @@ void RenderCommandListBase::ResetWithStateOnce(IRenderState& render_state, IDebu
     ResetWithState(render_state, p_debug_group);
 }
 
-void RenderCommandListBase::SetRenderState(IRenderState& render_state, IRenderState::Groups state_groups)
+void RenderCommandListBase::SetRenderState(IRenderState& render_state, RenderStateGroups state_groups)
 {
     META_FUNCTION_TASK();
     META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));

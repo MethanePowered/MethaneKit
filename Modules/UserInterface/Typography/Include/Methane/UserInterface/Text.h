@@ -35,7 +35,7 @@ Methane text rendering primitive.
 namespace Methane::Graphics
 {
 struct IRenderContext;
-struct RenderCommandList;
+struct IRenderCommandList;
 struct IRenderState;
 struct IRenderPattern;
 struct IViewState;
@@ -150,7 +150,7 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr);
+    void Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr);
 
 protected:
     // IFontCallback interface
