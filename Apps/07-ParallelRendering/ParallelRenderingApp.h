@@ -40,10 +40,10 @@ namespace gfx = Methane::Graphics;
 
 struct ParallelRenderingFrame final : Graphics::AppFrame
 {
-    gfx::InstancedMeshBufferBindings    cubes_array;
-    Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
-    Ptr<gfx::IRenderCommandList>        serial_render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>           execute_cmd_list_set_ptr;
+    gfx::InstancedMeshBufferBindings     cubes_array;
+    Ptr<gfx::IParallelRenderCommandList> parallel_render_cmd_list_ptr;
+    Ptr<gfx::IRenderCommandList>         serial_render_cmd_list_ptr;
+    Ptr<gfx::ICommandListSet>            execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };

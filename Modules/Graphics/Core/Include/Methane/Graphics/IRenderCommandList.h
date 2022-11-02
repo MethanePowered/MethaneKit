@@ -33,7 +33,7 @@ namespace Methane::Graphics
 {
 
 struct IRenderPass;
-struct ParallelRenderCommandList;
+struct IParallelRenderCommandList;
 
 enum class RenderPrimitive
 {
@@ -53,7 +53,7 @@ struct IRenderCommandList
 
     // Create IRenderCommandList instance
     [[nodiscard]] static Ptr<IRenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
-    [[nodiscard]] static Ptr<IRenderCommandList> Create(ParallelRenderCommandList& parallel_command_list);
+    [[nodiscard]] static Ptr<IRenderCommandList> Create(IParallelRenderCommandList& parallel_command_list);
     
     // IRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;

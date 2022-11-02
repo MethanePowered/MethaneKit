@@ -64,7 +64,7 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue,
     return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<RenderPassBase&>(render_pass));
 }
 
-Ptr<IRenderCommandList> IRenderCommandList::Create(ParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListMT>(dynamic_cast<ParallelRenderCommandListMT&>(parallel_render_command_list));

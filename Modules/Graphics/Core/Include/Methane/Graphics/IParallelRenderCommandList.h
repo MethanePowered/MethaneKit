@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/ParallelRenderCommandList.h
+FILE: Methane/Graphics/IParallelRenderCommandList.h
 Methane parallel render command list interface
 for multi-threaded rendering in the single render pass.
 
@@ -34,14 +34,15 @@ namespace Methane::Graphics
 struct IRenderState;
 struct IRenderPass;
 
-struct ParallelRenderCommandList : virtual ICommandList // NOSONAR
+struct IParallelRenderCommandList
+    : virtual ICommandList // NOSONAR
 {
     static constexpr Type type = Type::ParallelRender;
 
-    // Create ParallelRenderCommandList instance
-    [[nodiscard]] static Ptr<ParallelRenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
+    // Create IParallelRenderCommandList instance
+    [[nodiscard]] static Ptr<IParallelRenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
     
-    // ParallelRenderCommandList interface
+    // IParallelRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
     virtual void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;

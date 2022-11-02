@@ -40,7 +40,7 @@ class ParallelRenderCommandListVK final : public ParallelRenderCommandListBase
 public:
     ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass);
 
-    // ParallelRenderCommandList interface
+    // IParallelRenderCommandList interface
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers) override;

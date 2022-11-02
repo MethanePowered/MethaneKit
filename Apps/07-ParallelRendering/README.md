@@ -4,7 +4,7 @@
 |--------------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
 | ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on iOS](Screenshots/ParallelRenderingIOSMetal.jpg) | 
 
-This tutorial demonstrates multithreaded rendering with `ParallelRenderCommandList` using Methane Kit:
+This tutorial demonstrates multithreaded rendering with `IParallelRenderCommandList` using Methane Kit:
   - [ParallelRenderingApp.h](ParallelRenderingApp.h)
   - [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
   - [ParallelRenderingAppController.h](ParallelRenderingAppController.h)
@@ -23,7 +23,7 @@ Tutorial demonstrates the following techniques:
     cube instance draws with byte offset in buffer memory.
   - Binding faces of the texture 2D array to the cube instances to display rendering thread number as text on cube faces.
   - Using [TaskFlow](https://github.com/taskflow/taskflow) library for task-based parallelism and parallel for loops.
-  - Randomly distributing cubes between render threads and rendering them in parallel using `ParallelRenderCommandList` all to the screen render pass.
+  - Randomly distributing cubes between render threads and rendering them in parallel using `IParallelRenderCommandList` all to the screen render pass.
   - Use Methane instrumentation to profile application execution on CPU and GPU 
     using [Tracy](https://github.com/wolfpld/tracy) or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
 

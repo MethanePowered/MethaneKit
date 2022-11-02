@@ -26,7 +26,7 @@ Base implementation of the parallel render command list interface.
 #include "CommandListBase.h"
 #include "RenderPassBase.h"
 
-#include <Methane/Graphics/ParallelRenderCommandList.h>
+#include <Methane/Graphics/IParallelRenderCommandList.h>
 
 #include <optional>
 #include <string>
@@ -38,7 +38,7 @@ namespace Methane::Graphics
 struct IRenderState;
 
 class ParallelRenderCommandListBase
-    : public ParallelRenderCommandList
+    : public IParallelRenderCommandList
     , public CommandListBase
 {
 public:
@@ -46,7 +46,7 @@ public:
     
     using CommandListBase::Reset;
 
-    // ParallelRenderCommandList interface
+    // IParallelRenderCommandList interface
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
     void Reset(IDebugGroup* p_debug_group = nullptr) override;

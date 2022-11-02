@@ -33,7 +33,7 @@ Vulkan implementation of the render command list interface.
 namespace Methane::Graphics
 {
 
-Ptr<ParallelRenderCommandList> ParallelRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
+Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ParallelRenderCommandListVK>(static_cast<CommandQueueVK&>(command_queue), static_cast<RenderPassVK&>(render_pass));

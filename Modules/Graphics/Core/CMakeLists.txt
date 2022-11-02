@@ -26,7 +26,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/ITransferCommandList.h
     ${INCLUDE_DIR}/IRenderCommandList.h
-    ${INCLUDE_DIR}/ParallelRenderCommandList.h
+    ${INCLUDE_DIR}/IParallelRenderCommandList.h
 )
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)

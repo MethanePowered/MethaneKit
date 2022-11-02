@@ -30,7 +30,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Graphics/IRenderCommandList.h>
-#include <Methane/Graphics/ParallelRenderCommandList.h>
+#include <Methane/Graphics/IParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
@@ -191,7 +191,7 @@ public:
         }
     }
 
-    void DrawParallel(const ParallelRenderCommandList& parallel_cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
+    void DrawParallel(const IParallelRenderCommandList& parallel_cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
                       IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {

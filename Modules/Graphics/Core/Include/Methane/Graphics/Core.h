@@ -38,4 +38,4 @@ Methane graphics core interfaces: all headers under one umbrella.
 #include "ICommandQueue.h"
 #include "ITransferCommandList.h"
 #include "IRenderCommandList.h"
-#include "ParallelRenderCommandList.h"
+#include "IParallelRenderCommandList.h"
