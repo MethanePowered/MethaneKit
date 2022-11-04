@@ -23,11 +23,11 @@ Metal implementation of the render command list interface.
 
 #pragma once
 
-#include "../../../Sources/Methane/Graphics/CommandListMT.hpp"
+#include <Methane/Graphics/CommandListMT.hpp>
 
-#include "../../../../Base/Include/Methane/Graphics/RenderCommandListBase.h"
+#include <Methane/Graphics/RenderCommandListBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

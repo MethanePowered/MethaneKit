@@ -25,10 +25,10 @@ Metal implementation of the texture interface.
 
 #include "ResourceMT.hh"
 
-#include "../../../../Base/Include/Methane/Graphics/TextureBase.h"
-#include "../../../../../Types/Include/Methane/Graphics/Types.h"
+#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/Types.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

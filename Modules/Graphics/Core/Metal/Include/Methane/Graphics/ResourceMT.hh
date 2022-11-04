@@ -24,8 +24,8 @@ Metal implementation of the resource interface.
 
 #include "DeviceMT.hh"
 
-#include "../../../../Base/Include/Methane/Graphics/ResourceBase.h"
-#include "../../../../Base/Include/Methane/Graphics/RenderContextBase.h"
+#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>

@@ -23,9 +23,9 @@ Metal implementation of the program interface.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/ProgramBase.h"
+#include <Methane/Graphics/ProgramBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

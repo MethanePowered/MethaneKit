@@ -25,9 +25,9 @@ Metal implementation of the buffer interface.
 
 #include "ResourceMT.hh"
 
-#include "../../../../Base/Include/Methane/Graphics/BufferBase.h"
+#include <Methane/Graphics/BufferBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

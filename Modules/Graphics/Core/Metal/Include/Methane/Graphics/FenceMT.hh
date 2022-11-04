@@ -23,13 +23,13 @@ Metal fence implementation.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/FenceBase.h"
-#include "../../../../../../Common/Instrumentation/Include/Methane/Instrumentation.h"
+#include <Methane/Graphics/FenceBase.h>
+#include <Methane/Instrumentation.h>
 
-#include "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/usr/include/c++/v1/mutex"
-#include "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/usr/include/c++/v1/condition_variable"
+#include <mutex>
+#include <condition_variable>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

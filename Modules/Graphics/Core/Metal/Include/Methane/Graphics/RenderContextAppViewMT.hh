@@ -25,16 +25,16 @@ Metal application view creation by render context settings (shared logic with Vu
 
 #include "TypesMT.hh"
 
-#include "../../../../Interface/Include/Methane/Graphics/IRenderContext.h"
-#include "../../../../../../Common/Instrumentation/Include/Methane/Instrumentation.h"
+#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Instrumentation.h>
 
 #ifdef APPLE_MACOS
-#import "../../../../../../Platform/AppView/Include/Methane/Platform/MacOS/AppViewMT.hh"
+#import <Methane/Platform/MacOS/AppViewMT.hh>
 #else
 #import <Methane/Platform/iOS/AppViewMT.hh>
 #endif
 
-#import "../../../../../../Platform/Utils/Include/Methane/Platform/Apple/Types.hh"
+#import <Methane/Platform/Apple/Types.hh>
 
 namespace Methane::Graphics
 {

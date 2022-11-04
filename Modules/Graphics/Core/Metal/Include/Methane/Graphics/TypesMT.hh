@@ -23,17 +23,18 @@ Methane graphics types converters to Metal native types.
 
 #pragma once
 
-#include "../../../../../Types/Include/Methane/Graphics/Types.h"
-#include "../../../../../Types/Include/Methane/Graphics/Color.hpp"
-#include "../../../../../Types/Include/Methane/Graphics/Rect.hpp"
+#include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Color.hpp>
+#include <Methane/Graphics/Rect.hpp>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
-#include "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/usr/include/c++/v1/vector"
+#include <vector>
 
 #ifdef APPLE_MACOS
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h"
+#import <Foundation/Foundation.h>
+
 using NativeRect = NSRect;
 #define MakeNativeRect NSMakeRect
 

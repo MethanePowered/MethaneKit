@@ -23,9 +23,9 @@ Metal command lists sequence implementation.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/CommandListBase.h"
+#include <Methane/Graphics/CommandListBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSString.h"
+#import <Foundation/NSString.h>
 
 namespace Methane::Graphics
 {

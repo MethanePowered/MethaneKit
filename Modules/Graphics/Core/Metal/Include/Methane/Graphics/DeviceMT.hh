@@ -23,9 +23,9 @@ Metal implementation of the device interface.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/DeviceBase.h"
+#include <Methane/Graphics/DeviceBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

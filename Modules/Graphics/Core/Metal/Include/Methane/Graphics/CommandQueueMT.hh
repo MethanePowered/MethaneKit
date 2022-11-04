@@ -23,9 +23,9 @@ Metal implementation of the command queue interface.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/CommandQueueBase.h"
+#include <Methane/Graphics/CommandQueueBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

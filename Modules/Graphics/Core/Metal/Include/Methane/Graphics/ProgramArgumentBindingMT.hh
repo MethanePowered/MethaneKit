@@ -23,9 +23,9 @@ Metal implementation of the program argument binding interface.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/ProgramArgumentBindingBase.h"
+#include <Methane/Graphics/ProgramArgumentBindingBase.h>
 
-#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+#import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {

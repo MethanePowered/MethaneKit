@@ -23,7 +23,7 @@ Dummy Metal resource manager.
 
 #pragma once
 
-#include "../../../../Base/Include/Methane/Graphics/DescriptorManager.h"
+#include <Methane/Graphics/DescriptorManager.h>
 
 namespace Methane::Graphics
 {
