@@ -23,10 +23,10 @@ Base implementation of the render command list interface.
 
 #pragma once
 
-#include "CommandListBase.h"
-#include "BufferBase.h"
-#include "RenderPassBase.h"
-#include "RenderStateBase.h"
+#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Graphics/RenderStateBase.h>
 
 #include <Methane/Graphics/IRenderCommandList.h>
 

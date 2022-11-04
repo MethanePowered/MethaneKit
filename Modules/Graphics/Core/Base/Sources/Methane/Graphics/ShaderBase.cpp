@@ -21,30 +21,14 @@ Base implementation of the shader interface.
 
 ******************************************************************************/
 
-#include "ShaderBase.h"
-#include "ProgramBase.h"
+#include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Graphics/ProgramBase.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
-
-std::string IShader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
-{
-    META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool is_first_defintion = true;
-    for(const MacroDefinition& macro_definition : macro_definitions)
-    {
-        if (!is_first_defintion)
-            ss << splitter;
-
-        ss << macro_definition.name << "=" << macro_definition.value;
-        is_first_defintion = false;
-    }
-    return ss.str();
-}
 
 ShaderBase::ShaderBase(Type type, const ContextBase& context, const Settings& settings)
     : m_type(type)

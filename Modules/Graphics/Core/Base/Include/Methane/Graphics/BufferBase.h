@@ -23,8 +23,8 @@ Base implementation of the buffer interface.
 
 #pragma once
 
-#include "ResourceBase.h"
-#include "ContextBase.h"
+#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/ContextBase.h>
 
 #include <Methane/Graphics/IBuffer.h>
 

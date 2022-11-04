@@ -21,8 +21,8 @@ DirectX 12 fence wrapper.
 
 ******************************************************************************/
 
-#include "FenceBase.h"
-#include "CommandQueueBase.h"
+#include <Methane/Graphics/FenceBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
 
 #include <Methane/Exceptions.hpp>
 #include <Methane/Instrumentation.h>

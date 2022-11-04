@@ -21,7 +21,7 @@ Base implementation of the named object interface.
 
 ******************************************************************************/
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -30,12 +30,6 @@ Base implementation of the named object interface.
 
 namespace Methane::Graphics
 {
-
-NameConflictException::NameConflictException(const std::string& name)
-    : std::invalid_argument(fmt::format("Can not add graphics object with name {} to the registry because another object with the same name is already registered.", name))
-{
-    META_FUNCTION_TASK();
-}
 
 void ObjectRegistryBase::AddGraphicsObject(IObject& object)
 {

@@ -23,8 +23,8 @@ Base implementation of the render pass interface.
 
 #pragma once
 
-#include "ObjectBase.h"
-#include "ResourceBase.h"
+#include <Methane/Graphics/ObjectBase.h>
+#include <Methane/Graphics/ResourceBase.h>
 
 #include <Methane/Graphics/IRenderPass.h>
 

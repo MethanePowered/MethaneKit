@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,29 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/SamplerBase.cpp
-Base implementation of the sampler interface.
+FILE: Methane/Graphics/IObject.cpp
+Methane object interface: represents any named object.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/IObject.h>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings,
-                         State initial_state, Opt<State> auto_transition_source_state_opt)
-    : ResourceBase(context, Type::Sampler, Usage::ShaderRead, initial_state, auto_transition_source_state_opt)
-    , m_settings(settings)
+NameConflictException::NameConflictException(const std::string& name)
+    : std::invalid_argument(fmt::format("Can not add graphics object with name {} to the registry because another object with the same name is already registered.", name))
 {
     META_FUNCTION_TASK();
-}
-
-void SamplerBase::SetData(const SubResources&, ICommandQueue&)
-{
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
 }
 
 } // namespace Methane::Graphics

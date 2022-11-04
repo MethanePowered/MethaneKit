@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Buffer.h
+FILE: Methane/Graphics/IBuffer.h
 Methane buffer interface: GPU memory buffer resource.
 
 ******************************************************************************/
@@ -69,7 +69,7 @@ struct IBuffer
     [[nodiscard]] static Ptr<IBuffer> CreateReadBackBuffer(const IContext& context, Data::Size size);
 
     // Auxiliary functions
-    [[nodiscard]] static Data::Size  GetAlignedBufferSize(Data::Size size) noexcept;
+    [[nodiscard]] static Data::Size GetAlignedBufferSize(Data::Size size) noexcept;
 
     // IBuffer interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;

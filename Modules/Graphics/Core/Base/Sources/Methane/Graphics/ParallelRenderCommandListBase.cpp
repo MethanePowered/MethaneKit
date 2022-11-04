@@ -21,14 +21,14 @@ Base implementation of the parallel render command list interface.
 
 ******************************************************************************/
 
-#include "ParallelRenderCommandListBase.h"
-#include "RenderCommandListBase.h"
-#include "RenderPassBase.h"
-#include "RenderStateBase.h"
-#include "BufferBase.h"
-#include "ProgramBase.h"
-#include "CommandQueueBase.h"
-#include "ContextBase.h"
+#include <Methane/Graphics/ParallelRenderCommandListBase.h>
+#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Graphics/RenderStateBase.h>
+#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/ContextBase.h>
 
 #include <Methane/Instrumentation.h>
 

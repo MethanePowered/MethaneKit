@@ -16,42 +16,39 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/TextureBase.h
-Base implementation of the texture interface.
+FILE: Methane/Graphics/SamplerBase.h
+Base implementation of the sampler interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/ITexture.h>
+#include <Methane/Graphics/ResourceBase.h>
 
-#include "ResourceBase.h"
+#include <Methane/Graphics/ISampler.h>
 
 namespace Methane::Graphics
 {
 
-class TextureBase
-    : public ITexture
+class ContextBase;
+
+class SamplerBase
+    : public ISampler
     , public ResourceBase
 {
 public:
-    TextureBase(const ContextBase& context, const Settings& settings,
+    SamplerBase(const ContextBase& context, const Settings& settings,
                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
-    // ITexture interface
+    // ISampler interface
     const Settings& GetSettings() const override { return m_settings; }
-    Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
-    static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
-
-protected:
-    // ResourceBase overrides
-    Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const override;
-
-    static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
+    // IResource interface
+    void        SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 private:
-    const Settings m_settings;
+    Settings m_settings;
 };
 
 } // namespace Methane::Graphics

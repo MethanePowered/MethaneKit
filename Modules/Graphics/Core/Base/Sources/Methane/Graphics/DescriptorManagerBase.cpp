@@ -21,9 +21,9 @@ Base descriptor manager implementation.
 
 ******************************************************************************/
 
-#include "DescriptorManagerBase.h"
-#include "ContextBase.h"
-#include "ProgramBindingsBase.h"
+#include <Methane/Graphics/DescriptorManagerBase.h>
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <Methane/Instrumentation.h>
 

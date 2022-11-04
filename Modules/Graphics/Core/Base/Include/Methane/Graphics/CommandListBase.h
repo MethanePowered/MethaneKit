@@ -23,9 +23,9 @@ Base implementation of the command list interface.
 
 #pragma once
 
-#include "ObjectBase.h"
-#include "QueryPool.h"
+#include <Methane/Graphics/ObjectBase.h>
 
+#include <Methane/Graphics/IQueryPool.h>
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Graphics/ICommandList.h>
 #include <Methane/Graphics/ICommandQueue.h>

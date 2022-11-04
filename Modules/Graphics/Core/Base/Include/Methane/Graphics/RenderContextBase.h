@@ -23,8 +23,8 @@ Base implementation of the render context interface.
 
 #pragma once
 
-#include "ContextBase.h"
-#include "FenceBase.h"
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/FenceBase.h>
 
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>

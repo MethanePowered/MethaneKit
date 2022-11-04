@@ -23,7 +23,7 @@ Methane command kit implementation.
 
 #pragma once
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 #include <Methane/Graphics/ICommandKit.h>
 

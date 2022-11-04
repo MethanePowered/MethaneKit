@@ -23,8 +23,8 @@ Base implementation of the shader interface.
 
 #pragma once
 
-#include "CommandListBase.h"
-#include "ProgramBindingsBase.h"
+#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <Methane/Graphics/IShader.h>
 

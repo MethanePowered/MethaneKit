@@ -5,28 +5,31 @@ include(MethaneModules)
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
-    ${INCLUDE_DIR}/IObject.h
-    ${INCLUDE_DIR}/IDevice.h
-    ${INCLUDE_DIR}/IContext.h
-    ${INCLUDE_DIR}/IRenderContext.h
-    ${INCLUDE_DIR}/IFence.h
-    ${INCLUDE_DIR}/IShader.h
-    ${INCLUDE_DIR}/IProgram.h
-    ${INCLUDE_DIR}/IProgramBindings.h
-    ${INCLUDE_DIR}/IRenderState.h
-    ${INCLUDE_DIR}/IResource.h
-    ${INCLUDE_DIR}/IResourceBarriers.h
-    ${INCLUDE_DIR}/ResourceView.h
-    ${INCLUDE_DIR}/IBuffer.h
-    ${INCLUDE_DIR}/ITexture.h
-    ${INCLUDE_DIR}/ISampler.h
-    ${INCLUDE_DIR}/IRenderPass.h
-    ${INCLUDE_DIR}/ICommandKit.h
-    ${INCLUDE_DIR}/ICommandQueue.h
-    ${INCLUDE_DIR}/ICommandList.h
-    ${INCLUDE_DIR}/ITransferCommandList.h
-    ${INCLUDE_DIR}/IRenderCommandList.h
-    ${INCLUDE_DIR}/IParallelRenderCommandList.h
+    ${INCLUDE_DIR}/ObjectBase.h
+    ${INCLUDE_DIR}/DeviceBase.h
+    ${INCLUDE_DIR}/ContextBase.h
+    ${INCLUDE_DIR}/RenderContextBase.h
+    ${INCLUDE_DIR}/FenceBase.h
+    ${INCLUDE_DIR}/ShaderBase.h
+    ${INCLUDE_DIR}/ProgramBase.h
+    ${INCLUDE_DIR}/ProgramArgumentBindingBase.h
+    ${INCLUDE_DIR}/ProgramBindingsBase.h
+    ${INCLUDE_DIR}/RenderPassBase.h
+    ${INCLUDE_DIR}/RenderStateBase.h
+    ${INCLUDE_DIR}/ResourceBarriersBase.h
+    ${INCLUDE_DIR}/ResourceBase.h
+    ${INCLUDE_DIR}/BufferBase.h
+    ${INCLUDE_DIR}/TextureBase.h
+    ${INCLUDE_DIR}/SamplerBase.h
+    ${INCLUDE_DIR}/CommandKitBase.h
+    ${INCLUDE_DIR}/CommandQueueBase.h
+    ${INCLUDE_DIR}/CommandQueueTrackingBase.h
+    ${INCLUDE_DIR}/CommandListBase.h
+    ${INCLUDE_DIR}/RenderCommandListBase.h
+    ${INCLUDE_DIR}/ParallelRenderCommandListBase.h
+    ${INCLUDE_DIR}/DescriptorManager.h
+    ${INCLUDE_DIR}/DescriptorManagerBase.h
+    ${INCLUDE_DIR}/QueryPoolBase.h
 )
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
@@ -233,65 +236,33 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 endif()
 
 set(SOURCES ${GRAPHICS_API_SOURCES}
-
-    # Base implementation
-    ${SOURCES_DIR}/ObjectBase.h
     ${SOURCES_DIR}/ObjectBase.cpp
-    ${SOURCES_DIR}/DeviceBase.h
     ${SOURCES_DIR}/DeviceBase.cpp
-    ${SOURCES_DIR}/ContextBase.h
     ${SOURCES_DIR}/ContextBase.cpp
-    ${SOURCES_DIR}/RenderContextBase.h
     ${SOURCES_DIR}/RenderContextBase.cpp
-    ${SOURCES_DIR}/FenceBase.h
     ${SOURCES_DIR}/FenceBase.cpp
-    ${SOURCES_DIR}/ShaderBase.h
     ${SOURCES_DIR}/ShaderBase.cpp
-    ${SOURCES_DIR}/ProgramBase.h
     ${SOURCES_DIR}/ProgramBase.cpp
-    ${SOURCES_DIR}/ProgramArgumentBindingBase.h
     ${SOURCES_DIR}/ProgramArgumentBindingBase.cpp
-    ${SOURCES_DIR}/ProgramBindingsBase.h
     ${SOURCES_DIR}/ProgramBindingsBase.cpp
-    ${SOURCES_DIR}/RenderStateBase.h
     ${SOURCES_DIR}/RenderStateBase.cpp
-    ${SOURCES_DIR}/ResourceView.cpp
-    ${SOURCES_DIR}/ResourceBarriersBase.h
     ${SOURCES_DIR}/ResourceBarriersBase.cpp
-    ${SOURCES_DIR}/ResourceBase.h
     ${SOURCES_DIR}/ResourceBase.cpp
-    ${SOURCES_DIR}/BufferBase.h
     ${SOURCES_DIR}/BufferBase.cpp
-    ${SOURCES_DIR}/TextureBase.h
     ${SOURCES_DIR}/TextureBase.cpp
-    ${SOURCES_DIR}/SamplerBase.h
     ${SOURCES_DIR}/SamplerBase.cpp
-    ${SOURCES_DIR}/RenderPassBase.h
     ${SOURCES_DIR}/RenderPassBase.cpp
-    ${SOURCES_DIR}/CommandKitBase.h
     ${SOURCES_DIR}/CommandKitBase.cpp
-    ${SOURCES_DIR}/CommandQueueBase.h
     ${SOURCES_DIR}/CommandQueueBase.cpp
-    ${SOURCES_DIR}/CommandQueueTrackingBase.h
     ${SOURCES_DIR}/CommandQueueTrackingBase.cpp
-    ${SOURCES_DIR}/CommandListBase.h
     ${SOURCES_DIR}/CommandListBase.cpp
-    ${SOURCES_DIR}/RenderCommandListBase.h
     ${SOURCES_DIR}/RenderCommandListBase.cpp
-    ${SOURCES_DIR}/ParallelRenderCommandListBase.h
     ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
-    ${SOURCES_DIR}/DescriptorManager.h
-    ${SOURCES_DIR}/DescriptorManagerBase.h
     ${SOURCES_DIR}/DescriptorManagerBase.cpp
-    ${SOURCES_DIR}/QueryPool.h
-    ${SOURCES_DIR}/QueryPoolBase.h
     ${SOURCES_DIR}/QueryPoolBase.cpp
 
     # Native alias headers
     ${SOURCES_DIR}/Native/ContextNT.h
-
-    # Other sources
-    ${SOURCES_DIR}/CoreFormatters.hpp
 )
 
 add_library(${TARGET} STATIC
@@ -301,12 +272,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethanePrimitives
-        MethaneDataProvider
-        MethaneDataRangeSet
-        MethaneDataEvents
-        MethaneGraphicsTypes
-        MethanePlatformAppView
+        MethaneGraphicsCoreInterface
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
@@ -346,8 +312,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-        FOLDER Modules/Graphics
-        PUBLIC_HEADER "${HEADERS}"
+        FOLDER Modules/Graphics/Core
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 6
 )

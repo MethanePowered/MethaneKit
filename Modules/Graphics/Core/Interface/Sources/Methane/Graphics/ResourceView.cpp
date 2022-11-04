@@ -21,8 +21,6 @@ Methane sub-resource used for resource data transfers.
 
 ******************************************************************************/
 
-#include "CoreFormatters.hpp"
-
 #include <Methane/Graphics/ResourceView.h>
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Graphics/ITexture.h>
@@ -284,8 +282,8 @@ ResourceView::operator std::string() const
     return fmt::format("{} '{}' subresources from {} count {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
                        m_resource_ptr->GetName(),
-                       m_settings.subresource_index,
-                       m_settings.subresource_count,
+                       static_cast<std::string>(m_settings.subresource_index),
+                       static_cast<std::string>(m_settings.subresource_count),
                        m_settings.offset);
 }
 

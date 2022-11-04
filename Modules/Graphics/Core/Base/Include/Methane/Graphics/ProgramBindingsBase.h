@@ -23,8 +23,8 @@ Base implementation of the program bindings interface.
 
 #pragma once
 
-#include "ObjectBase.h"
-#include "ProgramArgumentBindingBase.h"
+#include <Methane/Graphics/ObjectBase.h>
+#include <Methane/Graphics/ProgramArgumentBindingBase.h>
 
 #include <Methane/Graphics/IProgramBindings.h>
 #include <Methane/Graphics/IResource.h>

@@ -23,7 +23,7 @@ GPU data query pool base implementation.
 
 #pragma once
 
-#include "QueryPool.h"
+#include <Methane/Graphics/IQueryPool.h>
 
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Types.h>

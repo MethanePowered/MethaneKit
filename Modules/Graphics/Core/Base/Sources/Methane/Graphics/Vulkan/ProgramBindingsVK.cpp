@@ -30,7 +30,6 @@ Vulkan implementation of the program interface.
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/CoreFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -111,7 +110,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
         const ProgramArgumentAccessor::Type access_type = argument_binding_settings.argument.GetAccessorType();
         const ProgramVK::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
-        META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", program_argument);
+        META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
         const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
         const vk::DescriptorSet& descriptor_set = destrictor_set_selector(access_type);

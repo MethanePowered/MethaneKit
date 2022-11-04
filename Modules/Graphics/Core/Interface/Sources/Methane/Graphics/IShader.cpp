@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,29 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/SamplerBase.cpp
-Base implementation of the sampler interface.
+FILE: Methane/Graphics/IShader.cpp
+Methane shader interface: defines programmable stage of the graphics pipeline.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/IShader.h>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings,
-                         State initial_state, Opt<State> auto_transition_source_state_opt)
-    : ResourceBase(context, Type::Sampler, Usage::ShaderRead, initial_state, auto_transition_source_state_opt)
-    , m_settings(settings)
+std::string IShader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
 {
     META_FUNCTION_TASK();
-}
+    std::stringstream ss;
+    bool is_first_defintion = true;
+    for(const MacroDefinition& macro_definition : macro_definitions)
+    {
+        if (!is_first_defintion)
+            ss << splitter;
 
-void SamplerBase::SetData(const SubResources&, ICommandQueue&)
-{
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
+        ss << macro_definition.name << "=" << macro_definition.value;
+        is_first_defintion = false;
+    }
+    return ss.str();
 }
 
 } // namespace Methane::Graphics

@@ -21,8 +21,8 @@ Base implementation of the render context interface.
 
 ******************************************************************************/
 
-#include "RenderContextBase.h"
-#include "DeviceBase.h"
+#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/DeviceBase.h>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Graphics/ICommandKit.h>
@@ -31,76 +31,6 @@ Base implementation of the render context interface.
 
 namespace Methane::Graphics
 {
-
-RenderContextSettings& RenderContextSettings::SetFrameSize(FrameSize&& new_frame_size) noexcept
-{
-    META_FUNCTION_TASK();
-    frame_size = std::move(new_frame_size);
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetColorFormat(PixelFormat new_color_format) noexcept
-{
-    META_FUNCTION_TASK();
-    color_format = new_color_format;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetDepthStencilFormat(PixelFormat new_ds_format) noexcept
-{
-    META_FUNCTION_TASK();
-    depth_stencil_format = new_ds_format;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetClearColor(Opt<Color4F>&& new_clear_color) noexcept
-{
-    META_FUNCTION_TASK();
-    clear_color = std::move(new_clear_color);
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept
-{
-    META_FUNCTION_TASK();
-    clear_depth_stencil = std::move(new_clear_ds);
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetFrameBuffersCount(uint32_t new_fb_count) noexcept
-{
-    META_FUNCTION_TASK();
-    frame_buffers_count = new_fb_count;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetVSyncEnabled(bool new_vsync_enabled) noexcept
-{
-    META_FUNCTION_TASK();
-    vsync_enabled = new_vsync_enabled;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetFullscreen(bool new_full_screen) noexcept
-{
-    META_FUNCTION_TASK();
-    is_full_screen = new_full_screen;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetOptionsMask(ContextOptions new_options_mask) noexcept
-{
-    META_FUNCTION_TASK();
-    options_mask = new_options_mask;
-    return *this;
-}
-
-RenderContextSettings& RenderContextSettings::SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept
-{
-    META_FUNCTION_TASK();
-    unsync_max_fps = new_unsync_max_fps;
-    return *this;
-}
 
 RenderContextBase::RenderContextBase(DeviceBase& device, UniquePtr<DescriptorManager>&& descriptor_manager_ptr,
                                      tf::Executor& parallel_executor, const Settings& settings)

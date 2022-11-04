@@ -21,8 +21,8 @@ GPU data query pool base implementation.
 
 ******************************************************************************/
 
-#include "QueryPoolBase.h"
-#include "CommandQueueBase.h"
+#include <Methane/Graphics/QueryPoolBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Graphics/IRenderContext.h>

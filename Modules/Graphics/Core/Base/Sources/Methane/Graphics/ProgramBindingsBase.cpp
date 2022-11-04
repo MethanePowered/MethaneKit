@@ -21,11 +21,10 @@ Base implementation of the program bindings interface.
 
 ******************************************************************************/
 
-#include "ProgramBindingsBase.h"
-#include "ProgramBase.h"
-#include "ResourceBase.h"
-#include "CommandListBase.h"
-#include "CoreFormatters.hpp"
+#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/CommandListBase.h>
 
 #include <Methane/Graphics/IBuffer.h>
 #include <Methane/Graphics/ITexture.h>
@@ -69,14 +68,6 @@ static IResource::State GetBoundResourceTargetState(const IResource& resource, I
 ProgramBindingsBase::ResourceAndState::ResourceAndState(Ptr<ResourceBase> resource_ptr, IResource::State state)
     : resource_ptr(std::move(resource_ptr))
     , state(state)
-{
-    META_FUNCTION_TASK();
-}
-
-ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments)
-    : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
-    , m_program(program)
-    , m_unbound_arguments(unbound_arguments)
 {
     META_FUNCTION_TASK();
 }

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,39 +16,37 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/SamplerBase.h
-Base implementation of the sampler interface.
+FILE: Methane/Graphics/ISampler.cpp
+Methane sampler interface: GPU resource for texture sampling.
 
 ******************************************************************************/
 
-#pragma once
-
-#include "ResourceBase.h"
-
 #include <Methane/Graphics/ISampler.h>
+
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-class ContextBase;
-
-class SamplerBase
-    : public ISampler
-    , public ResourceBase
+SamplerSettings::SamplerSettings(const SamplerFilter& filter, const SamplerAddress& address,
+                                 const SamplerLevelOfDetail& lod, uint32_t max_anisotropy,
+                                 SamplerBorderColor border_color, Compare compare_function)
+    : filter(filter)
+    , address(address)
+    , lod(lod)
+    , max_anisotropy(max_anisotropy)
+    , border_color(border_color)
+    , compare_function(compare_function)
 {
-public:
-    SamplerBase(const ContextBase& context, const Settings& settings,
-                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
+    META_FUNCTION_TASK();
+}
 
-    // ISampler interface
-    const Settings& GetSettings() const override { return m_settings; }
-
-    // IResource interface
-    void        SetData(const SubResources& sub_resources, ICommandQueue&) override;
-    Data::Size  GetDataSize(Data::MemoryState) const noexcept override { return 0; }
-
-private:
-    Settings m_settings;
-};
+SamplerLevelOfDetail::SamplerLevelOfDetail(float bias, float min, float max)
+    : min(min)
+    , max(max)
+    , bias(bias)
+{
+    META_FUNCTION_TASK();
+}
 
 } // namespace Methane::Graphics

@@ -21,35 +21,46 @@ Base implementation of the resource interface.
 
 ******************************************************************************/
 
-#include "ResourceBase.h"
-#include "TextureBase.h"
-#include "ContextBase.h"
-#include "CoreFormatters.hpp"
+#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/ContextBase.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 #include <utility>
 #include <algorithm>
 
+template<>
+struct fmt::formatter<Methane::Graphics::SubResource::Index>
+{
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+
+    template<typename FormatContext>
+    auto format(const Methane::Graphics::SubResource::Index& index, FormatContext& ctx)
+    {
+        return format_to(ctx.out(), "{}", static_cast<std::string>(index));
+    }
+};
+
+template<>
+struct fmt::formatter<Methane::Graphics::SubResource::Count>
+{
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+
+    template<typename FormatContext>
+    auto format(const Methane::Graphics::SubResource::Count& count, FormatContext& ctx)
+    {
+        return format_to(ctx.out(), "{}", static_cast<std::string>(count));
+    }
+};
+
 namespace Methane::Graphics
 {
-
-ResourceDescriptor::ResourceDescriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
-    : heap(in_heap)
-    , index(in_index)
-{
-    META_FUNCTION_TASK();
-}
-
-ResourceAllocationError::ResourceAllocationError(const IResource& resource, std::string_view error_message)
-    : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
-    , m_resource(resource)
-{
-    META_FUNCTION_TASK();
-}
 
 ResourceBase::ResourceBase(const ContextBase& context, Type type, Usage usage_mask,
                            State initial_state, Opt<State> auto_transition_source_state_opt)

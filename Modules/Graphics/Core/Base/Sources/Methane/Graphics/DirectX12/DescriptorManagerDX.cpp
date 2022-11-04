@@ -22,8 +22,8 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 ******************************************************************************/
 
 #include "DescriptorManagerDX.h"
-#include "../ContextBase.h"
 
+#include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

@@ -25,7 +25,7 @@ Buffer factory functions template implementations.
 
 #include <Methane/Graphics/IBuffer.h>
 
-#include "ContextBase.h"
+#include <Methane/Graphics/ContextBase.h>
 
 namespace Methane::Graphics
 {

@@ -21,10 +21,10 @@ Base implementation of the context interface.
 
 ******************************************************************************/
 
-#include "ContextBase.h"
-#include "DeviceBase.h"
-#include "CommandQueueBase.h"
-#include "DescriptorManager.h"
+#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/DeviceBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/DescriptorManager.h>
 
 #include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Instrumentation.h>

@@ -26,8 +26,8 @@ Base implementation of the program interface.
 #include <Methane/Graphics/IProgram.h>
 #include <Methane/Instrumentation.h>
 
-#include "ShaderBase.h"
-#include "ProgramBindingsBase.h"
+#include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <magic_enum.hpp>
 #include <memory>

@@ -21,8 +21,8 @@ Base implementation of the buffer interface.
 
 ******************************************************************************/
 
-#include "BufferBase.h"
-#include "ContextBase.h"
+#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/ContextBase.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>

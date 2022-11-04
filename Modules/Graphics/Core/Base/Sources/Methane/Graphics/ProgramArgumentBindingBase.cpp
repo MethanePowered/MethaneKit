@@ -21,8 +21,8 @@ Base implementation of the program argument binding interface.
 
 ******************************************************************************/
 
-#include "ProgramArgumentBindingBase.h"
-#include "ProgramBindingsBase.h"
+#include <Methane/Graphics/ProgramArgumentBindingBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -45,13 +45,6 @@ struct fmt::formatter<Methane::Graphics::ProgramArgumentAccessor>
 
 namespace Methane::Graphics
 {
-
-ProgramArgumentConstantModificationException::ProgramArgumentConstantModificationException(const IProgram::Argument& argument)
-    : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
-                                   argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
-{
-    META_FUNCTION_TASK();
-}
 
 ProgramArgumentBindingBase::ProgramArgumentBindingBase(const ContextBase& context, const Settings& settings)
     : m_context(context)

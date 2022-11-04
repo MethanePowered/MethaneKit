@@ -23,8 +23,8 @@ Base implementation of the command queue interface.
 
 #pragma once
 
-#include "ObjectBase.h"
-#include "CommandListBase.h"
+#include <Methane/Graphics/ObjectBase.h>
+#include <Methane/Graphics/CommandListBase.h>
 
 #include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/TracyGpu.hpp>

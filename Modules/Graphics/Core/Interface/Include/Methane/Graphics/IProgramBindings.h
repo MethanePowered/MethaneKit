@@ -68,7 +68,7 @@ struct IProgramArgumentBinding
     using Settings = ProgramArgumentBindingSettings;
 
     // IProgramArgumentBinding interface
-    [[nodiscard]] virtual const Settings&            GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const Settings&         GetSettings() const noexcept = 0;
     [[nodiscard]] virtual const IResource::Views& GetResourceViews() const noexcept = 0;
     virtual bool SetResourceViews(const IResource::Views& resource_views) = 0;
     [[nodiscard]] virtual explicit operator std::string() const = 0;

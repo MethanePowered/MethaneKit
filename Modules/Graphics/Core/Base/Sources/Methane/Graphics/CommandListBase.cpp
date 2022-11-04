@@ -21,10 +21,10 @@ Base implementation of the command list interface.
 
 ******************************************************************************/
 
-#include "DeviceBase.h"
-#include "CommandQueueBase.h"
-#include "ProgramBindingsBase.h"
-#include "ResourceBase.h"
+#include <Methane/Graphics/DeviceBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/ResourceBase.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

@@ -23,7 +23,7 @@ Base implementation of the device interface.
 
 #pragma once
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 #include <Methane/Graphics/IDevice.h>
 #include <Methane/Data/Emitter.hpp>

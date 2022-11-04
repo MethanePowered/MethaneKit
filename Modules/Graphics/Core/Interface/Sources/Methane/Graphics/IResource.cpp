@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,29 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/SamplerBase.cpp
-Base implementation of the sampler interface.
+FILE: Methane/Graphics/IResource.cpp
+Methane resource interface: base class of all GPU resources.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/IResource.h>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-SamplerBase::SamplerBase(const ContextBase& context, const Settings& settings,
-                         State initial_state, Opt<State> auto_transition_source_state_opt)
-    : ResourceBase(context, Type::Sampler, Usage::ShaderRead, initial_state, auto_transition_source_state_opt)
-    , m_settings(settings)
+ResourceDescriptor::ResourceDescriptor(DescriptorHeapDX& in_heap, Data::Index in_index)
+    : heap(in_heap)
+    , index(in_index)
 {
     META_FUNCTION_TASK();
 }
 
-void SamplerBase::SetData(const SubResources&, ICommandQueue&)
+ResourceAllocationError::ResourceAllocationError(const IResource& resource, std::string_view error_message)
+    : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
+    , m_resource(resource)
 {
-    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
+    META_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics

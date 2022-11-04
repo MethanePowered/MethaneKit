@@ -21,7 +21,7 @@ Base implementation of the device interface.
 
 ******************************************************************************/
 
-#include "DeviceBase.h"
+#include <Methane/Graphics/DeviceBase.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -30,34 +30,6 @@ Base implementation of the device interface.
 
 namespace Methane::Graphics
 {
-
-DeviceCaps& DeviceCaps::SetFeatures(DeviceFeatures new_features) noexcept
-{
-    META_FUNCTION_TASK();
-    features = new_features;
-    return *this;
-}
-
-DeviceCaps& DeviceCaps::SetPresentToWindow(bool new_present_to_window) noexcept
-{
-    META_FUNCTION_TASK();
-    present_to_window = new_present_to_window;
-    return *this;
-}
-
-DeviceCaps& DeviceCaps::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
-{
-    META_FUNCTION_TASK();
-    render_queues_count = new_render_queues_count;
-    return *this;
-}
-
-DeviceCaps& DeviceCaps::SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept
-{
-    META_FUNCTION_TASK();
-    transfer_queues_count = new_transfer_queues_count;
-    return *this;
-}
 
 DeviceBase::DeviceBase(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities)
     : m_system_ptr(static_cast<SystemBase&>(ISystem::Get()).GetBasePtr()) // NOSONAR

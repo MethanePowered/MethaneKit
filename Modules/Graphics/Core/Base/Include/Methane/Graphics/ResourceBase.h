@@ -26,7 +26,7 @@ Base implementation of the resource interface.
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 #include <set>
 #include <map>

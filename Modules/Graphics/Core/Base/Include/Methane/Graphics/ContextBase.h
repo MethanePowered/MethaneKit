@@ -23,7 +23,7 @@ Base implementation of the context interface.
 
 #pragma once
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 #include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/IContext.h>

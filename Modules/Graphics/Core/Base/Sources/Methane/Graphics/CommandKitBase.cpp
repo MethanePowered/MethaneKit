@@ -21,9 +21,9 @@ Methane command kit implementation.
 
 ******************************************************************************/
 
-#include "CommandKitBase.h"
-#include "RenderCommandListBase.h"
-#include "CommandQueueBase.h"
+#include <Methane/Graphics/CommandKitBase.h>
+#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/CommandQueueBase.h>
 
 #include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/ICommandKit.h>

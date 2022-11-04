@@ -23,8 +23,8 @@ Base implementation of the parallel render command list interface.
 
 #pragma once
 
-#include "CommandListBase.h"
-#include "RenderPassBase.h"
+#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/RenderPassBase.h>
 
 #include <Methane/Graphics/IParallelRenderCommandList.h>
 

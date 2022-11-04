@@ -25,7 +25,7 @@ Base implementation of the render state interface.
 
 #include <Methane/Graphics/IRenderState.h>
 
-#include "ObjectBase.h"
+#include <Methane/Graphics/ObjectBase.h>
 
 namespace Methane::Graphics
 {

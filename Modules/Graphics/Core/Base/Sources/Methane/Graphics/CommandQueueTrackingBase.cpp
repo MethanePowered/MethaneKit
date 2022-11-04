@@ -21,11 +21,12 @@ Base implementation of the command queue with execution tracking.
 
 ******************************************************************************/
 
-#include "CommandQueueTrackingBase.h"
-#include "QueryPool.h"
-
+#include <Methane/Graphics/CommandQueueTrackingBase.h>
 #include <Methane/Graphics/ContextBase.h>
+
+#include <Methane/Graphics/IQueryPool.h>
 #include <Methane/Graphics/IDevice.h>
+
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
