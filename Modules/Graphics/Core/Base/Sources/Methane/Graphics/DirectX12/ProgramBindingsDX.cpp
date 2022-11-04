@@ -109,14 +109,14 @@ ProgramBindingsDX::~ProgramBindingsDX()
 void ProgramBindingsDX::Initialize()
 {
     META_FUNCTION_TASK();
-    const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
-    DescriptorManagerDX& descriptor_manager = context.GetDescriptorManagerDX();
+    const auto& program = static_cast<ProgramDX&>(GetProgram());
+    DescriptorManagerDX& descriptor_manager = program.GetContextDX().GetDescriptorManagerDX();
 
     descriptor_manager.AddProgramBindings(*this);
 
     if (descriptor_manager.IsDeferredHeapAllocation())
     {
-        context.RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
+        program.GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
     }
     else
     {
@@ -220,8 +220,8 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
     }
 
     // Reserve descriptor ranges in heaps for resource bindings state
-    const DescriptorManagerDX& descriptor_manager = program.GetContext().GetDescriptorManagerDX();
     auto& mutable_program = static_cast<ProgramDX&>(GetProgram());
+    const DescriptorManagerDX& descriptor_manager = mutable_program.GetContextDX().GetDescriptorManagerDX();
     for (const auto& [heap_type, descriptors_count] : descriptors_count_by_heap_type)
     {
         std::optional<DescriptorHeapDX::Reservation>& descriptor_heap_reservation_opt = m_descriptor_heap_reservations_by_type[magic_enum::enum_integer(heap_type)];

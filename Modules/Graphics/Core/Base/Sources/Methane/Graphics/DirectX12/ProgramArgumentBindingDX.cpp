@@ -39,8 +39,10 @@ Ptr<ProgramArgumentBindingBase> ProgramArgumentBindingBase::CreateCopy(const Pro
 ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ContextBase& context, const SettingsDX& settings)
     : ProgramArgumentBindingBase(context, settings)
     , m_settings_dx(settings)
+    , m_cp_native_device(dynamic_cast<const IContextDX&>(context).GetDeviceDX().GetNativeDevice())
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_cp_native_device);
     META_CHECK_ARG_NAME("m_p_descriptor_heap_reservation", !m_p_descriptor_heap_reservation);
 }
 
@@ -51,8 +53,10 @@ ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ProgramArgumentBindingD
     , m_descriptor_range(other.m_descriptor_range)
     , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
     , m_resource_views_dx(other.m_resource_views_dx)
+    , m_cp_native_device(other.m_cp_native_device)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_cp_native_device);
     if (m_p_descriptor_heap_reservation)
     {
         META_CHECK_ARG_TRUE( m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
@@ -91,8 +95,6 @@ bool ProgramArgumentBindingDX::SetResourceViews(const IResource::Views& resource
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = static_cast<const IContextDX&>(GetContext()).GetDeviceDX().GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(cp_native_device);
 
     uint32_t resource_index = 0;
     m_resource_views_dx.clear();
@@ -110,7 +112,7 @@ bool ProgramArgumentBindingDX::SetResourceViews(const IResource::Views& resource
                                    magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
-        cp_native_device->CopyDescriptorsSimple(
+        m_cp_native_device->CopyDescriptorsSimple(
             1,
             p_dx_descriptor_heap->GetNativeCpuDescriptorHandle(descriptor_index),
             dx_resource_view.GetNativeCpuDescriptorHandle(),

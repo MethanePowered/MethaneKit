@@ -55,6 +55,7 @@ public:
     template<typename SettingsType>
     ResourceDX(const ContextBase& context, const SettingsType& settings)
         : ResourceBaseType(context, settings, State::Common, State::Common)
+        , m_dx_context(dynamic_cast<const IContextDX&>(context))
     {
         META_FUNCTION_TASK();
     }
@@ -120,7 +121,7 @@ public:
     D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
 
 protected:
-    const IContextDX& GetContextDX() const noexcept { return static_cast<const IContextDX&>(GetContextBase()); }
+    const IContextDX& GetContextDX() const noexcept { return m_dx_context; }
 
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                                         D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
@@ -218,6 +219,7 @@ private:
         return IResource::Descriptor(heap, heap.AddResource(dynamic_cast<ResourceBase&>(*this)));
     }
 
+    const IContextDX&           m_dx_context;
     DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<IResourceBarriers>      m_upload_sync_transition_barriers_ptr;

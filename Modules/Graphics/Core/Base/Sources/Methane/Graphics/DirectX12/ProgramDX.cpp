@@ -127,6 +127,7 @@ Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings
 
 ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
+    , m_dx_context(dynamic_cast<const IContextDX&>(context))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
@@ -261,12 +262,6 @@ DescriptorHeapDX::Range ProgramDX::ReserveDescriptorRange(DescriptorHeapDX& heap
     META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
     m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
     return descriptor_range;
-}
-
-const IContextDX& ProgramDX::GetContextDX() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(GetContext());
 }
 
 ShaderDX& ProgramDX::GetVertexShaderDX() const

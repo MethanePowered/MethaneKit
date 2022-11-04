@@ -46,7 +46,9 @@ namespace Methane::Graphics
 namespace wrl = Microsoft::WRL;
 
 template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<ContextBase, ContextBaseT>>>
-class ContextDX : public ContextBaseT
+class ContextDX
+    : public ContextBaseT
+    , public IContextDX
 {
 public:
     ContextDX(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
@@ -92,10 +94,9 @@ public:
     }
 
     // IContextDX interface
-
-    const DeviceDX&      GetDeviceDX() const noexcept final                     { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
+    const DeviceDX&      GetDeviceDX() const noexcept final                   { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
     CommandQueueDX&      GetDefaultCommandQueueDX(CommandListType type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
-    DescriptorManagerDX& GetDescriptorManagerDX() const noexcept final          { return static_cast<DescriptorManagerDX&>(ContextBase::GetDescriptorManager()); }
+    DescriptorManagerDX& GetDescriptorManagerDX() const noexcept final        { return static_cast<DescriptorManagerDX&>(ContextBase::GetDescriptorManager()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {

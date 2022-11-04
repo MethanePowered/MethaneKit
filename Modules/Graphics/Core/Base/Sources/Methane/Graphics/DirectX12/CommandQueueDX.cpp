@@ -90,7 +90,8 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
 
 CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandListType command_lists_type)
     : CommandQueueTrackingBase(context, command_lists_type)
-    , m_cp_command_queue(CreateNativeCommandQueue(GetContextDX().GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
+    , m_dx_context(dynamic_cast<const IContextDX&>(context))
+    , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
@@ -136,12 +137,6 @@ void CommandQueueDX::CompleteExecution(const Opt<Data::Index>& frame_index)
     }
 }
 #endif
-
-const IContextDX& CommandQueueDX::GetContextDX() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(GetContextBase());
-}
 
 ID3D12CommandQueue& CommandQueueDX::GetNativeCommandQueue()
 {

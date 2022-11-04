@@ -23,6 +23,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 #include "DescriptorHeapDX.h"
 #include "DeviceDX.h"
+#include "ContextDX.h"
 
 #include <Methane/Graphics/ResourceBase.h>
 #include <Methane/Graphics/ContextBase.h>
@@ -43,7 +44,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapTypeDX type)
     case DescriptorHeapDX::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     case DescriptorHeapDX::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     case DescriptorHeapDX::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    default:                                    META_UNEXPECTED_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
+    default:                                      META_UNEXPECTED_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     }
 }
 
@@ -63,6 +64,7 @@ DescriptorHeapReservationDX::DescriptorHeapReservationDX(const Ref<DescriptorHea
 
 DescriptorHeapDX::DescriptorHeapDX(const ContextBase& context, const Settings& settings)
     : m_context(context)
+    , m_dx_context(dynamic_cast<const IContextDX&>(context))
     , m_settings(settings)
     , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
@@ -222,7 +224,7 @@ void DescriptorHeapDX::Allocate()
 const IContextDX& DescriptorHeapDX::GetContextDX() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(m_context);
+    return m_dx_context;
 }
 
 } // namespace Methane::Graphics

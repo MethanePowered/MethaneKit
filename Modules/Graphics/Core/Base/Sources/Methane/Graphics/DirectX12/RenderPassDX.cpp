@@ -22,6 +22,7 @@ DirectX 12 implementation of the render pass interface.
 ******************************************************************************/
 
 #include "RenderPassDX.h"
+#include "RenderContextDX.h"
 #include "DescriptorHeapDX.h"
 #include "RenderCommandListDX.h"
 #include "ResourceDX.hpp"
@@ -197,6 +198,7 @@ Ptr<IRenderPass> IRenderPass::Create(Pattern& render_pattern, const Settings& se
 
 RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings, false)
+    , m_dx_context(static_cast<const RenderContextDX&>(render_pattern.GetRenderContextBase()))
 {
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
@@ -342,9 +344,7 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-
     const Pattern::Settings& settings = GetPatternBase().GetSettings();
-    const RenderContextBase& context = GetPatternBase().GetRenderContextBase();
 
     static constexpr auto s_access_values = magic_enum::enum_values<Access>();
     for (Access access : s_access_values)
@@ -353,7 +353,7 @@ void RenderPassDX::ForEachAccessibleDescriptorHeap(FuncType do_action) const
             continue;
 
         const DescriptorHeapDX::Type heap_type = GetDescriptorHeapTypeByAccess(access);
-        do_action(context.GetDescriptorManagerDX().GetDefaultShaderVisibleDescriptorHeap(heap_type));
+        do_action(m_dx_context.GetDescriptorManagerDX().GetDefaultShaderVisibleDescriptorHeap(heap_type));
     }
 }
 

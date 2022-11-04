@@ -58,7 +58,7 @@ public:
     const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
-    const IContextDX& GetContextDX() const noexcept;
+    const IContextDX& GetContextDX() const noexcept { return m_dx_context; }
 
 private:
     void InitRootSignature();
@@ -72,6 +72,7 @@ private:
 
     using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeapDX::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
+    const IContextDX&                             m_dx_context;
     wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
 

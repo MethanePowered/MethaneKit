@@ -38,6 +38,7 @@ namespace Methane::Graphics
 {
 
 class RenderCommandListDX;
+class RenderContextDX;
 
 class RenderPassDX final
     : public RenderPassBase
@@ -117,6 +118,7 @@ private:
     void OnDescriptorHeapAllocated(DescriptorHeapDX& descriptor_heap) override;
 
     // D3D12 Render-Pass description
+    const RenderContextDX&                              m_dx_context;
     ResourceViewsDX                                     m_dx_attachments;
     std::optional<bool>                                 m_is_native_render_pass_available;
     std::vector<D3D12_RENDER_PASS_RENDER_TARGET_DESC>   m_render_target_descs;

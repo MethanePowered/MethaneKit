@@ -134,6 +134,7 @@ private:
     using RangeSet     = Data::RangeSet<Data::Index>;
 
     const ContextBase&                m_context;
+    const IContextDX&                 m_dx_context;
     Settings                          m_settings;
     Data::Size                        m_deferred_size;
     Data::Size                        m_allocated_size = 0;

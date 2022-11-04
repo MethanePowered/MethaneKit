@@ -92,6 +92,7 @@ private:
     DescriptorRange                    m_descriptor_range;
     const DescriptorHeapReservationDX* m_p_descriptor_heap_reservation = nullptr;
     ResourceViewsDX                    m_resource_views_dx;
+    const wrl::ComPtr<ID3D12Device>    m_cp_native_device;
 };
 
 } // namespace Methane::Graphics

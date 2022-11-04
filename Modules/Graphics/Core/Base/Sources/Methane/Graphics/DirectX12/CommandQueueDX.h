@@ -59,11 +59,12 @@ public:
     void CompleteExecution(const Opt<Data::Index>& frame_index = { }) override;
 #endif
 
-    const IContextDX&   GetContextDX() const noexcept;
+    const IContextDX&   GetContextDX() const noexcept      { return m_dx_context; }
     ID3D12CommandQueue& GetNativeCommandQueue();
     const TracyD3D12Ctx& GetTracyD3D12Ctx() const noexcept { return m_tracy_context; }
 
 private:
+    const IContextDX&               m_dx_context;
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
     TracyD3D12Ctx                   m_tracy_context;
 };

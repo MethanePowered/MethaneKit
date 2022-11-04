@@ -24,6 +24,7 @@ DirectX 12 fence implementation.
 #include "FenceDX.h"
 #include "CommandQueueDX.h"
 #include "DeviceDX.h"
+#include "ContextDX.h"
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>

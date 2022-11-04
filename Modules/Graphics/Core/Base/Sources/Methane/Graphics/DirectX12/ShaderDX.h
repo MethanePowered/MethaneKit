@@ -55,8 +55,6 @@ public:
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const ProgramDX& program) const;
 
 private:
-    const IContextDX& GetContextDX() const noexcept;
-
     UniquePtr<Data::Chunk>              m_byte_code_chunk_ptr;
     wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
     wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;

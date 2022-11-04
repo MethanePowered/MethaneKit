@@ -274,10 +274,4 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
     return dx_input_layout;
 }
 
-const IContextDX& ShaderDX::GetContextDX() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextDX&>(GetContext());
-}
-
 } // namespace Methane::Graphics
