@@ -21,7 +21,7 @@ Metal stub implementation of the TimestampQueryPoolBase factory function
 
 ******************************************************************************/
 
-#include <Methane/Graphics/QueryPool.h>
+#include <Methane/Graphics/IQueryPool.h>
 
 namespace Methane::Graphics
 {
