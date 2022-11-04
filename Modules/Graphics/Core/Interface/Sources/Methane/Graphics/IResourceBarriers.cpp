@@ -21,8 +21,6 @@ Methane resource barriers for manual or automatic resource state synchronization
 
 ******************************************************************************/
 
-#pragma once
-
 #include <Methane/Graphics/IResourceBarriers.h>
 #include <Methane/Graphics/IResource.h>
 

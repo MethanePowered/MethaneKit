@@ -21,8 +21,6 @@ DirectX 12 implementation of the program argument binding interface.
 
 ******************************************************************************/
 
-#pragma once
-
 #include "ProgramArgumentBindingDX.h"
 #include "DeviceDX.h"
 
