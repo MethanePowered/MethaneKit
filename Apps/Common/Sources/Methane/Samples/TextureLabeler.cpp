@@ -73,7 +73,7 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
                                gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)

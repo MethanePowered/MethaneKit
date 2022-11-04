@@ -27,7 +27,7 @@ Vulkan implementation of the shader interface.
 #include "DeviceVK.h"
 #include "ProgramBindingsVK.h"
 
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>
 

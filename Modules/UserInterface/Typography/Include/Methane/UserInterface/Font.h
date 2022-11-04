@@ -25,7 +25,7 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/Rect.hpp>
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <magic_enum.hpp>
@@ -108,8 +108,8 @@ public:
         [[nodiscard]] Refs<Font> GetFonts() const;
         [[nodiscard]] bool  HasFont(const std::string& font_name) const;
         [[nodiscard]] Font& GetFont(const std::string& font_name) const;
-        [[nodiscard]] Font& GetFont(const Data::Provider& data_provider, const Settings& font_settings);
-        Font& AddFont(const Data::Provider& data_provider, const Settings& font_settings);
+        [[nodiscard]] Font& GetFont(const Data::IProvider& data_provider, const Settings& font_settings);
+        Font& AddFont(const Data::IProvider& data_provider, const Settings& font_settings);
         void  RemoveFont(const std::string& font_name);
         void  Clear();
 
@@ -210,7 +210,7 @@ public:
 
 protected:
     // Font can be created only via Font::Library::Add
-    Font(const Data::Provider& data_provider, const Settings& settings);
+    Font(const Data::IProvider& data_provider, const Settings& settings);
 
     Refs<Char> GetMutableChars();
     bool PackCharsToAtlas(float pixels_reserve_multiplier);

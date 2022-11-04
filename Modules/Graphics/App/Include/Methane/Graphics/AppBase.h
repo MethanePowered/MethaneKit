@@ -25,7 +25,7 @@ Base implementation of the Methane graphics application.
 
 #include "App.h"
 
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Platform/App.h>
@@ -56,7 +56,7 @@ class AppBase // NOSONAR
     , protected Data::Receiver<IContextCallback> //NOSONAR
 {
 public:
-    AppBase(const AppSettings& settings, Data::Provider& textures_provider);
+    AppBase(const AppSettings& settings, Data::IProvider& textures_provider);
     ~AppBase() override;
 
     AppBase(const AppBase&) = delete;

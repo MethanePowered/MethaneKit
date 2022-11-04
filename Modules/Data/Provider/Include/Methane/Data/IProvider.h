@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Provider.h
+FILE: Methane/Data/IProvider.h
 Data provider interface used for loading application resources and resource files
 
 ******************************************************************************/
@@ -31,13 +31,13 @@ Data provider interface used for loading application resources and resource file
 namespace Methane::Data
 {
 
-struct Provider
+struct IProvider
 {
     virtual bool  HasData(const std::string& path) const noexcept = 0;
     virtual Chunk GetData(const std::string& path) const = 0;
     virtual std::vector<std::string> GetFiles(const std::string& directory) const = 0;
 
-    virtual ~Provider() = default;
+    virtual ~IProvider() = default;
 };
 
 } // namespace Methane::Data

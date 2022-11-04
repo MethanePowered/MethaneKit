@@ -300,7 +300,7 @@ Font& Font::Library::GetFont(const std::string& font_name) const
     return *font_by_name_it->second;
 }
 
-Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings& font_settings)
+Font& Font::Library::GetFont(const Data::IProvider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
     const auto font_by_name_it = m_font_by_name.find(font_settings.description.name);
@@ -311,7 +311,7 @@ Font& Font::Library::GetFont(const Data::Provider& data_provider, const Settings
     return *font_by_name_it->second;
 }
 
-Font& Font::Library::AddFont(const Data::Provider& data_provider, const Settings& font_settings)
+Font& Font::Library::AddFont(const Data::IProvider& data_provider, const Settings& font_settings)
 {
     META_FUNCTION_TASK();
     auto [ name_and_font_it, font_added ] = m_font_by_name.try_emplace(font_settings.description.name, new Font(data_provider, font_settings)); // NOSONAR
@@ -400,7 +400,7 @@ std::u32string Font::GetAlphabetFromText(const std::u32string& utf32_text)
     return alphabet;
 }
 
-Font::Font(const Data::Provider& data_provider, const Settings& settings)
+Font::Font(const Data::IProvider& data_provider, const Settings& settings)
     : m_settings(settings)
     , m_face_ptr(std::make_unique<Face>(data_provider.GetData(m_settings.description.path)))
 {

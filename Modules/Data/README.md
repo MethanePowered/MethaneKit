@@ -6,5 +6,5 @@ Code of these modules is located in `Methane::Data` namespace:
 - [RangeSet](RangeSet) - scalar range type `Range` and std::set adaptation `RangeSet`
 - [Events](Events) - observer pattern implementation with `Emitter` and `Receiver` base template classes
 - [Primitives](Primitives) - primitive data algorithms
-- [Provider](Provider) - data provider interface `Provider` and its implementations, including `FileProvider` and `ResourceProvider`
+- [IProvider](IProvider) - data provider interface `IProvider` and its implementations, including `FileProvider` and `ResourceProvider`
 - [Animation](Animation) - animation classes

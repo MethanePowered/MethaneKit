@@ -23,7 +23,7 @@ Singleton data provider of files on disk.
 
 #pragma once
 
-#include "Provider.h"
+#include "IProvider.h"
 
 #include <Methane/Platform/Utils.h>
 #include <Methane/Checks.hpp>
@@ -37,10 +37,10 @@ Singleton data provider of files on disk.
 namespace Methane::Data
 {
 
-class FileProvider : public Provider
+class FileProvider : public IProvider
 {
 public:
-    [[nodiscard]] static Provider& Get()
+    [[nodiscard]] static IProvider& Get()
     {
         META_FUNCTION_TASK();
         static FileProvider s_instance;

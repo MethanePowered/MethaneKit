@@ -26,7 +26,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/ITexture.h>
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 
 #include <magic_enum.hpp>
 #include <string>
@@ -77,14 +77,14 @@ public:
 
     using CubeFaceResources = std::array<std::string, magic_enum::enum_count<CubeFace>()>;
 
-    explicit ImageLoader(Data::Provider& data_provider);
+    explicit ImageLoader(Data::IProvider& data_provider);
 
     [[nodiscard]] ImageData    LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
     [[nodiscard]] Ptr<ITexture> LoadImageToTexture2D(ICommandQueue& target_cmd_queue, const std::string& image_path, Options options = Options::None, const std::string& texture_name = "") const;
     [[nodiscard]] Ptr<ITexture> LoadImagesToTextureCube(ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options = Options::None, const std::string& texture_name = "") const;
 
 private:
-    Data::Provider& m_data_provider;
+    Data::IProvider& m_data_provider;
 };
 
 } // namespace Methane::Graphics

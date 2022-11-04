@@ -59,7 +59,7 @@ protected:
 
 private:
     Data::FrameSize InitWindow();
-    void SetWindowIcon(const Data::Provider& icon_provider);
+    void SetWindowIcon(const Data::IProvider& icon_provider);
     void ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position = nullptr);
     void HandleEvent(const xcb_generic_event_t& event);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);

@@ -49,7 +49,7 @@ class Text;
 
 namespace Methane::Data
 {
-struct Provider;
+struct IProvider;
 }
 
 namespace Methane::Tutorials
@@ -95,7 +95,7 @@ public:
         }};
     };
 
-    TextureLabeler(gui::Context& gui_context, const Data::Provider& font_provider,
+    TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
                    gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings);
 
     void Render();

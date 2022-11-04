@@ -32,7 +32,7 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 
 namespace Methane::Data
 {
-struct Provider;
+struct IProvider;
 }
 
 namespace Methane::Graphics
@@ -72,11 +72,11 @@ struct ShaderEntryFunction
 
 struct ShaderSettings
 {
-    Data::Provider&        data_provider;
+    Data::IProvider&        data_provider;
     ShaderEntryFunction    entry_function;
     ShaderMacroDefinitions compile_definitions;
 
-    // Optional parameters (by default shaders are precompiled to application resources and loaded through Data::Provider)
+    // Optional parameters (by default shaders are precompiled to application resources and loaded through Data::IProvider)
     std::string source_file_path;
     std::string source_compile_target;
 };

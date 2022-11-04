@@ -67,7 +67,7 @@ public:
         Settings& SetTextureMode(TextureMode new_texture_mode) noexcept;
     };
 
-    Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings);
+    Badge(Context& ui_context, Data::IProvider& data_provider, const std::string& image_path, const Settings& settings);
     Badge(Context& ui_context, const Ptr<gfx::ITexture>& texture_ptr, const Settings& settings);
 
     void FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size = {}, Opt<UnitSize> margins = {});

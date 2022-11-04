@@ -74,7 +74,7 @@ public:
         Settings& SetUpdateIntervalSec(double new_update_interval_sec) noexcept;
     };
 
-    HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings);
+    HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_data_provider, const Settings& settings);
 
     const Settings& GetHudSettings() const { return m_settings; }
 

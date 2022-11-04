@@ -29,7 +29,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/IRenderState.h>
 #include <Methane/Graphics/IRenderPass.h>
 #include <Methane/Graphics/FpsCounter.h>
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -102,7 +102,7 @@ AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const IResource& resource)
     , name(resource.GetName())
 { }
 
-AppBase::AppBase(const AppSettings& settings, Data::Provider& textures_provider)
+AppBase::AppBase(const AppSettings& settings, Data::IProvider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)
     , m_initial_context_settings(settings.render_context)

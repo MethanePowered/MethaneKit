@@ -141,7 +141,7 @@ IApp::Settings& IApp::Settings::SetFullScreen(bool new_full_screen) noexcept
     return *this;
 }
 
-IApp::Settings& IApp::Settings::SetIconProvider(Data::Provider* new_icon_provider) noexcept
+IApp::Settings& IApp::Settings::SetIconProvider(Data::IProvider* new_icon_provider) noexcept
 {
     META_FUNCTION_TASK();
     icon_provider = new_icon_provider;

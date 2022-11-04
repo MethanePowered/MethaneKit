@@ -140,7 +140,7 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double 
     return *this;
 }
 
-HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
+HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_data_provider, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(settings)
     , m_major_font_ptr(

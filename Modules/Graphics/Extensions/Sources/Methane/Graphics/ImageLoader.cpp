@@ -86,7 +86,7 @@ ImageLoader::ImageData::~ImageData()
 #endif
 }
 
-ImageLoader::ImageLoader(Data::Provider& data_provider)
+ImageLoader::ImageLoader(Data::IProvider& data_provider)
     : m_data_provider(data_provider)
 {
     META_FUNCTION_TASK();

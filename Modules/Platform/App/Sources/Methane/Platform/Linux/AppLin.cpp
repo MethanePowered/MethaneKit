@@ -26,7 +26,7 @@ Linux application implementation.
 
 #include <Methane/Platform/Linux/AppLin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -332,7 +332,7 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
         }
 }
 
-void AppLin::SetWindowIcon(const Data::Provider& icon_provider)
+void AppLin::SetWindowIcon(const Data::IProvider& icon_provider)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_env.window);

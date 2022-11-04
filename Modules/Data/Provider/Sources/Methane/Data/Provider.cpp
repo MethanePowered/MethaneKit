@@ -16,11 +16,11 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/Provider.cpp
+FILE: Methane/Data/IProvider.cpp
 
 ******************************************************************************/
 
-namespace Methane::Data::Provider
+namespace Methane::Data::IProvider
 {
 
 void Dummy()
@@ -29,4 +29,4 @@ void Dummy()
     // the table of contents is empty (no object file members in the library define global symbols)
 }
 
-} // namespace Methane::Data::Provider
+} // namespace Methane::Data::IProvider

@@ -28,7 +28,7 @@ Platform application interface.
 
 namespace Methane::Data
 {
-    struct Provider;
+    struct IProvider;
 }
 
 namespace Methane::Platform
@@ -45,13 +45,13 @@ public:
         Data::FloatSize size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
         Data::FrameSize min_size { 640U, 480U };
         bool            is_full_screen = false;
-        Data::Provider* icon_provider = nullptr;
+        Data::IProvider* icon_provider = nullptr;
 
         Settings& SetName(std::string&& new_name) noexcept;
         Settings& SetSize(Data::FloatSize&& new_size) noexcept;
         Settings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
         Settings& SetFullScreen(bool new_full_screen) noexcept;
-        Settings& SetIconProvider(Data::Provider* new_icon_provider) noexcept;
+        Settings& SetIconProvider(Data::IProvider* new_icon_provider) noexcept;
     };
 
     struct RunArgs
