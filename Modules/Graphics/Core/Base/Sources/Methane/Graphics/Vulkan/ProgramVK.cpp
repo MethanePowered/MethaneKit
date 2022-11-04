@@ -47,6 +47,7 @@ Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings
 
 ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
     : ProgramBase(context, settings)
+    , m_vk_context(dynamic_cast<const IContextVK&>(context))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
@@ -65,12 +66,6 @@ bool ProgramVK::SetName(const std::string& name)
     UpdateFrameConstantDescriptorSetNames();
 
     return true;
-}
-
-const IContextVK& ProgramVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetContext());
 }
 
 ShaderVK& ProgramVK::GetShaderVK(ShaderType shader_type) const

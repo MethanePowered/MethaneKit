@@ -23,6 +23,7 @@ Vulkan fence implementation.
 
 #include "FenceVK.h"
 #include "CommandQueueVK.h"
+#include "ContextVK.h"
 #include "DeviceVK.h"
 #include "UtilsVK.hpp"
 

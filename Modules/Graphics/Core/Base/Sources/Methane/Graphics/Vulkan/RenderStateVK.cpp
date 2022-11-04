@@ -280,6 +280,7 @@ Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRen
 
 RenderStateVK::RenderStateVK(const RenderContextBase& context, const Settings& settings)
     : RenderStateBase(context, settings)
+    , m_vk_context(dynamic_cast<const IContextVK&>(GetRenderContext()))
 {
     META_FUNCTION_TASK();
     Reset(settings);
@@ -418,7 +419,7 @@ void RenderStateVK::Reset(const Settings& settings)
         render_pattern.GetNativeRenderPass()
     );
 
-    auto pipe = GetContextVK().GetDeviceVK().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
+    auto pipe = m_vk_context.GetDeviceVK().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
     META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
     m_vk_unique_pipeline = std::move(pipe.value);
 }
@@ -436,14 +437,8 @@ bool RenderStateVK::SetName(const std::string& name)
     if (!RenderStateBase::SetName(name))
         return false;
 
-    SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
+    SetVulkanObjectName(m_vk_context.GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
     return true;
-}
-
-const IContextVK& RenderStateVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetRenderContext());
 }
 
 } // namespace Methane::Graphics

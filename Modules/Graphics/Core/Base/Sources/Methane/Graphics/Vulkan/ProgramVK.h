@@ -60,7 +60,7 @@ public:
     bool SetName(const std::string& name) override;
 
     ShaderVK& GetShaderVK(ShaderType shader_type) const;
-    const IContextVK& GetContextVK() const noexcept;
+    const IContextVK& GetContextVK() const noexcept { return m_vk_context; }
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
@@ -80,6 +80,7 @@ private:
     void UpdateConstantDescriptorSetName();
     void UpdateFrameConstantDescriptorSetNames() const;
 
+    const IContextVK&                          m_vk_context;
     DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
     std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
     std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;

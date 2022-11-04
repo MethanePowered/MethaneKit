@@ -72,8 +72,7 @@ public:
     const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
 
 private:
-    const IContextVK& GetContextVK() const noexcept;
-
+    const IContextVK&  m_vk_context;
     vk::UniquePipeline m_vk_unique_pipeline;
 };
 

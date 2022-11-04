@@ -210,8 +210,7 @@ void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument
 void ProgramBindingsVK::Initialize()
 {
     META_FUNCTION_TASK();
-    const ContextBase& context = static_cast<ProgramBase&>(GetProgram()).GetContext();
-    context.GetDescriptorManagerVK().AddProgramBindings(*this);
+    static_cast<ProgramVK&>(GetProgram()).GetContextVK().GetDescriptorManagerVK().AddProgramBindings(*this);
 }
 
 void ProgramBindingsVK::CompleteInitialization()

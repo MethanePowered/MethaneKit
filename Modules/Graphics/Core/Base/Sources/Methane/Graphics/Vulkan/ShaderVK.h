@@ -68,8 +68,7 @@ public:
 private:
     void InitializeVertexInputDescriptions(const ProgramVK& program);
 
-    const IContextVK& GetContextVK() const noexcept;
-
+    const IContextVK&                                m_vk_context;
     Data::MutableChunk                               m_byte_code_chunk;
     mutable vk::UniqueShaderModule                   m_vk_unique_module;
     mutable UniquePtr<spirv_cross::Compiler>         m_spirv_compiler_ptr;

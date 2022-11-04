@@ -238,6 +238,7 @@ Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Setti
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : RenderPassBase(render_pattern, settings)
+    , m_vk_context(dynamic_cast<const IContextVK&>(render_pattern.GetRenderContextBase()))
     , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {
@@ -301,12 +302,6 @@ void RenderPassVK::Reset()
     m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
 
     Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
-}
-
-const IContextVK& RenderPassVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetPatternBase().GetRenderContextBase());
 }
 
 void RenderPassVK::OnRenderContextVKSwapchainChanged(RenderContextVK&)

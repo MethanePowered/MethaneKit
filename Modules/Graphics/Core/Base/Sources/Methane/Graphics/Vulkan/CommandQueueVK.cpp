@@ -106,7 +106,7 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListTyp
 }
 
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type)
-    : CommandQueueVK(context, command_lists_type, static_cast<const IContextVK&>(context).GetDeviceVK())
+    : CommandQueueVK(context, command_lists_type, dynamic_cast<const IContextVK&>(context).GetDeviceVK())
 {
     META_FUNCTION_TASK();
 }
@@ -129,6 +129,7 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType comma
 CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
                                const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties)
     : CommandQueueTrackingBase(context, command_lists_type)
+    , m_vk_context(dynamic_cast<const IContextVK&>(context))
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
@@ -251,12 +252,6 @@ bool CommandQueueVK::SetName(const std::string& name)
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();
     SetVulkanObjectName(vk_device, m_vk_queue, name);
     return true;
-}
-
-const IContextVK& CommandQueueVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetContextBase());
 }
 
 DeviceVK& CommandQueueVK::GetDeviceVK() const noexcept

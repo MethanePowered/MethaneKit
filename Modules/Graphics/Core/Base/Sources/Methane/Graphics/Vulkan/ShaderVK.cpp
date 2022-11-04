@@ -206,6 +206,7 @@ Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, co
 
 ShaderVK::ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings)
     : ShaderBase(shader_type, context, settings)
+    , m_vk_context(dynamic_cast<const IContextVK&>(context))
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
 {
     META_FUNCTION_TASK();
@@ -255,7 +256,7 @@ const vk::ShaderModule& ShaderVK::GetNativeModule() const
     META_FUNCTION_TASK();
     if (!m_vk_unique_module)
     {
-        m_vk_unique_module = GetContextVK().GetDeviceVK().GetNativeDevice().createShaderModuleUnique(
+        m_vk_unique_module = m_vk_context.GetDeviceVK().GetNativeDevice().createShaderModuleUnique(
             vk::ShaderModuleCreateInfo(
                 vk::ShaderModuleCreateFlags{},
                 m_byte_code_chunk.GetDataSize(),
@@ -384,12 +385,6 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     META_LOG("{}", log_ss.str());
 
     m_vertex_input_initialized = true;
-}
-
-const IContextVK& ShaderVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetContext());
 }
 
 vk::ShaderStageFlagBits ShaderVK::ConvertTypeToStageFlagBits(ShaderType shader_type)

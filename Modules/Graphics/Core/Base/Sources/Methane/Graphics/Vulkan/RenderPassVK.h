@@ -76,7 +76,7 @@ public:
     
     void Reset();
 
-    const IContextVK& GetContextVK() const noexcept;
+    const IContextVK& GetContextVK() const noexcept { return m_vk_context; }
     RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
@@ -89,6 +89,7 @@ private:
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
     vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 
+    const IContextVK&       m_vk_context;
     ResourceViewsVK         m_vk_attachments;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;

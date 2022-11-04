@@ -75,8 +75,8 @@ public:
 private:
     vk::DescriptorPool CreateDescriptorPool();
     vk::DescriptorPool AcquireDescriptorPool();
-    const IContextVK& GetContextVK() const noexcept;
 
+    const IContextVK&                     m_vk_context;
     uint32_t                              m_pool_sets_count;
     PoolSizeRatioByDescType               m_pool_size_ratio_by_desc_type;
     std::vector<vk::UniqueDescriptorPool> m_vk_descriptor_pools;

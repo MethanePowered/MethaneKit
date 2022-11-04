@@ -36,6 +36,7 @@ namespace Methane::Graphics
 
 DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_sets_count, const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type)
     : DescriptorManagerBase(context, false)
+    , m_vk_context(dynamic_cast<const IContextVK&>(context))
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
 {
@@ -48,7 +49,7 @@ void DescriptorManagerVK::Release()
     DescriptorManagerBase::Release();
 
     std::scoped_lock lock_guard(m_descriptor_pool_mutex);
-    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    const vk::Device& vk_device = m_vk_context.GetDeviceVK().GetNativeDevice();
     for(vk::DescriptorPool& vk_pool : m_vk_used_pools)
     {
         vk_device.resetDescriptorPool(vk_pool);
@@ -71,7 +72,7 @@ vk::DescriptorSet DescriptorManagerVK::AllocDescriptorSet(vk::DescriptorSetLayou
     if (!m_vk_current_pool)
         m_vk_current_pool = AcquireDescriptorPool();
 
-    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    const vk::Device& vk_device = m_vk_context.GetDeviceVK().GetNativeDevice();
 
     try
     {
@@ -106,7 +107,7 @@ vk::DescriptorPool DescriptorManagerVK::CreateDescriptorPool()
     {
         pool_sizes.emplace_back(desc_type, static_cast<uint32_t>(static_cast<float>(m_pool_sets_count) * size_ratio));
     }
-    const vk::Device& vk_device = GetContextVK().GetDeviceVK().GetNativeDevice();
+    const vk::Device& vk_device = m_vk_context.GetDeviceVK().GetNativeDevice();
     m_vk_descriptor_pools.emplace_back(vk_device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo({}, m_pool_sets_count, pool_sizes)));
     return m_vk_descriptor_pools.back().get();
 }
@@ -124,12 +125,6 @@ vk::DescriptorPool DescriptorManagerVK::AcquireDescriptorPool()
     vk::DescriptorPool free_pool = m_vk_free_pools.back();
     m_vk_free_pools.pop_back();
     return free_pool;
-}
-
-const IContextVK& DescriptorManagerVK::GetContextVK() const noexcept
-{
-    META_FUNCTION_TASK();
-    return static_cast<const IContextVK&>(GetContext());
 }
 
 } // namespace Methane::Graphics

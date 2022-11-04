@@ -59,7 +59,7 @@ public:
     // IObject interface
     bool SetName(const std::string& name) override;
 
-    const IContextVK& GetContextVK() const noexcept;
+    const IContextVK& GetContextVK() const noexcept { return m_vk_context; }
     DeviceVK& GetDeviceVK() const noexcept;
 
     void WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags, const uint64_t* timeline_wait_value_ptr = nullptr);
@@ -93,6 +93,7 @@ private:
 
     using FrameWaitInfos = std::vector<WaitInfo>;
 
+    const IContextVK&      m_vk_context;
     const uint32_t         m_queue_family_index;
     const uint32_t         m_queue_index;
     vk::Queue              m_vk_queue;
