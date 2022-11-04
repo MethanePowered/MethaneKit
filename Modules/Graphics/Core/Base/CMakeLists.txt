@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsCore)
+set(TARGET MethaneGraphicsCoreBase)
 
 include(MethaneModules)
 
@@ -94,63 +94,6 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
         d3d12
         dxgi
         dxguid
-    )
-
-elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
-
-    set(GRAPHICS_API_SOURCES
-        ${SOURCES_GRAPHICS_DIR}/TypesMT.hh
-        ${SOURCES_GRAPHICS_DIR}/TypesMT.mm
-        ${SOURCES_GRAPHICS_DIR}/DeviceMT.hh
-        ${SOURCES_GRAPHICS_DIR}/DeviceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/FenceMT.hh
-        ${SOURCES_GRAPHICS_DIR}/FenceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.h
-        ${SOURCES_GRAPHICS_DIR}/ContextMT.hpp
-        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.hh
-        ${SOURCES_GRAPHICS_DIR}/RenderContextMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderContextAppViewMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ShaderMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ShaderMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ProgramMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ProgramLibraryMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.hh
-        ${SOURCES_GRAPHICS_DIR}/RenderStateMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ResourceMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ResourceMT.mm
-        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerMT.h
-        ${SOURCES_GRAPHICS_DIR}/QueryPoolMT.mm
-        ${SOURCES_GRAPHICS_DIR}/BufferMT.hh
-        ${SOURCES_GRAPHICS_DIR}/BufferMT.mm
-        ${SOURCES_GRAPHICS_DIR}/TextureMT.hh
-        ${SOURCES_GRAPHICS_DIR}/TextureMT.mm
-        ${SOURCES_GRAPHICS_DIR}/SamplerMT.hh
-        ${SOURCES_GRAPHICS_DIR}/SamplerMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.hh
-        ${SOURCES_GRAPHICS_DIR}/RenderPassMT.mm
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.hh
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueMT.mm
-        ${SOURCES_GRAPHICS_DIR}/CommandListMT.hh
-        ${SOURCES_GRAPHICS_DIR}/CommandListMT.mm
-        ${SOURCES_GRAPHICS_DIR}/CommandListMT.hpp
-        ${SOURCES_GRAPHICS_DIR}/TransferCommandListMT.hh
-        ${SOURCES_GRAPHICS_DIR}/TransferCommandListMT.mm
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.hh
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListMT.mm
-        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.hh
-        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListMT.mm
-    )
-
-    set(PLATFORM_SOURCES_OBJC ${GRAPHICS_API_SOURCES})
-
-    set(PLATFORM_LIBRARIES
-        "-framework Metal"
     )
 
 elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
@@ -260,9 +203,6 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ParallelRenderCommandListBase.cpp
     ${SOURCES_DIR}/DescriptorManagerBase.cpp
     ${SOURCES_DIR}/QueryPoolBase.cpp
-
-    # Native alias headers
-    ${SOURCES_DIR}/Native/ContextNT.h
 )
 
 add_library(${TARGET} STATIC
@@ -289,10 +229,10 @@ target_link_libraries(${TARGET}
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}
-    PRIVATE
-        Sources
     PUBLIC
         Include
+    PRIVATE
+        Sources
 )
 
 target_compile_definitions(${TARGET}
@@ -300,7 +240,6 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN VK_NO_PROTOTYPES>
         $<$<AND:$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>,$<BOOL:${WIN32}>>:VK_USE_PLATFORM_WIN32_KHR>
@@ -320,22 +259,3 @@ set_target_properties(${TARGET}
 if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
     set_target_properties(${TARGET} PROPERTIES PREREQUISITE_MODULES "DirectXCompiler")
 endif()
-
-if (APPLE)
-    set_source_files_properties(
-        ${PLATFORM_SOURCES_OBJC}
-        PROPERTIES
-            COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
-            SKIP_PRECOMPILE_HEADERS ON
-            SKIP_UNITY_BUILD_INCLUSION ON
-    )
-endif()
-
-install(TARGETS ${TARGET}
-    PUBLIC_HEADER
-        DESTINATION ${INCLUDE_DIR}
-        COMPONENT Development
-    ARCHIVE
-        DESTINATION Lib
-        COMPONENT Development
-)

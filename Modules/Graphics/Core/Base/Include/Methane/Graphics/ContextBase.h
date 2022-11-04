@@ -28,7 +28,6 @@ Base implementation of the context interface.
 #include <Methane/Graphics/IFence.h>
 #include <Methane/Graphics/IContext.h>
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/Native/ContextNT.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <array>
@@ -55,7 +54,6 @@ struct DescriptorManager;
 class ContextBase
     : public ObjectBase
     , public virtual IContext // NOSONAR
-    , public IContextNT
     , public Data::Emitter<IContextCallback>
 {
 public:

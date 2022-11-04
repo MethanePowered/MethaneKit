@@ -1,0 +1,54 @@
+/******************************************************************************
+
+Copyright 2019-2020 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License"),
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: Methane/Graphics/Metal/ProgramMT.hh
+Metal implementation of the program interface.
+
+******************************************************************************/
+
+#pragma once
+
+#include "../../../../Base/Include/Methane/Graphics/ProgramBase.h"
+
+#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+
+namespace Methane::Graphics
+{
+
+struct IContextMT;
+class ShaderMT;
+
+class ProgramMT final : public ProgramBase
+{
+public:
+    ProgramMT(const ContextBase& context, const Settings& settings);
+
+    ShaderMT& GetShaderMT(ShaderType shader_type) noexcept;
+    
+    id<MTLFunction> GetNativeShaderFunction(ShaderType shader_type) noexcept;
+    MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
+
+private:
+    const IContextMT& GetContextMT() const noexcept;
+    void SetNativeShaderArguments(ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
+    
+    MTLVertexDescriptor*         m_mtl_vertex_desc = nil;
+    id<MTLRenderPipelineState>   m_mtl_dummy_pipeline_state_for_reflection;
+};
+
+} // namespace Methane::Graphics

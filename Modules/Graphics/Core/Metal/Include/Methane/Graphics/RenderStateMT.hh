@@ -1,0 +1,92 @@
+/******************************************************************************
+
+Copyright 2019-2020 Evgeny Gorodetskiy
+
+Licensed under the Apache License, Version 2.0 (the "License"),
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*******************************************************************************
+
+FILE: Methane/Graphics/Metal/RenderStateMT.hh
+Metal implementation of the render state interface.
+
+******************************************************************************/
+
+#pragma once
+
+#include "../../../../Base/Include/Methane/Graphics/RenderStateBase.h"
+
+#import "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.h"
+
+#include "../../../../../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.0.sdk/usr/include/c++/v1/vector"
+
+namespace Methane::Graphics
+{
+
+class RenderContextMT;
+
+class ViewStateMT final : public ViewStateBase
+{
+public:
+    explicit ViewStateMT(const Settings& settings);
+
+    // IViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
+    // ViewStateBase interface
+    void Apply(RenderCommandListBase& command_list) override;
+
+private:
+    std::vector<MTLViewport>    m_mtl_viewports;
+    std::vector<MTLScissorRect> m_mtl_scissor_rects;
+};
+
+class RenderStateMT final : public RenderStateBase
+{
+public:
+    RenderStateMT(const RenderContextBase& context, const Settings& settings);
+
+    // IRenderState interface
+    void Reset(const Settings& settings) override;
+
+    // RenderStateBase interface
+    void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
+
+    // IObject interface
+    bool SetName(const std::string& name) override;
+    
+    void InitializeNativeStates();
+    void InitializeNativePipelineState();
+    void InitializeNativeDepthStencilState();
+    
+    id<MTLRenderPipelineState> GetNativePipelineState();
+    id<MTLDepthStencilState>   GetNativeDepthStencilState();
+    MTLCullMode                GetNativeCullMode() const noexcept         { return m_mtl_cull_mode; }
+    MTLWinding                 GetNativeFrontFaceWinding() const noexcept { return m_mtl_front_face_winding; }
+
+private:
+    const RenderContextMT& GetRenderContextMT() const;
+    
+    void ResetNativeState();
+    
+    MTLRenderPipelineDescriptor* m_mtl_pipeline_state_desc = nil;
+    MTLDepthStencilDescriptor*   m_mtl_depth_stencil_state_desc = nil;
+    id<MTLRenderPipelineState>   m_mtl_pipeline_state = nil;
+    id<MTLDepthStencilState>     m_mtl_depth_state = nil;
+    MTLTriangleFillMode          m_mtl_fill_mode = MTLTriangleFillModeFill;
+    MTLCullMode                  m_mtl_cull_mode = MTLCullModeBack;
+    MTLWinding                   m_mtl_front_face_winding = MTLWindingClockwise;
+};
+
+} // namespace Methane::Graphics
