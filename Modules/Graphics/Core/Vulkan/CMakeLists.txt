@@ -1,0 +1,144 @@
+set(TARGET MethaneGraphicsCoreVulkan)
+
+include(MethaneModules)
+
+get_module_dirs("Methane/Graphics")
+
+list(APPEND HEADERS
+    ${INCLUDE_DIR}/PlatformVK.h
+    ${INCLUDE_DIR}/TypesVK.h
+    ${INCLUDE_DIR}/DeviceVK.h
+    ${INCLUDE_DIR}/FenceVK.h
+    ${INCLUDE_DIR}/ContextVK.h
+    ${INCLUDE_DIR}/ShaderVK.h
+    ${INCLUDE_DIR}/ProgramVK.h
+    ${INCLUDE_DIR}/ProgramArgumentBindingVK.h
+    ${INCLUDE_DIR}/ProgramBindingsVK.h
+    ${INCLUDE_DIR}/RenderContextVK.h
+    ${INCLUDE_DIR}/RenderStateVK.h
+    ${INCLUDE_DIR}/ResourceVK.h
+    ${INCLUDE_DIR}/ResourceBarriersVK.h
+    ${INCLUDE_DIR}/DescriptorManagerVK.h
+    ${INCLUDE_DIR}/QueryPoolVK.h
+    ${INCLUDE_DIR}/BufferVK.h
+    ${INCLUDE_DIR}/TextureVK.h
+    ${INCLUDE_DIR}/SamplerVK.h
+    ${INCLUDE_DIR}/RenderPassVK.h
+    ${INCLUDE_DIR}/CommandQueueVK.h
+    ${INCLUDE_DIR}/CommandListVK.h
+    ${INCLUDE_DIR}/TransferCommandListVK.h
+    ${INCLUDE_DIR}/RenderCommandListVK.h
+    ${INCLUDE_DIR}/ParallelRenderCommandListVK.h
+)
+
+list(APPEND SOURCES
+    ${SOURCES_DIR}/PlatformVK.cpp
+    ${SOURCES_DIR}/${PLATFORM_DIR}/PlatformExtVK.${CPP_EXT}
+    ${SOURCES_DIR}/UtilsVK.hpp
+    ${SOURCES_DIR}/TypesVK.cpp
+    ${SOURCES_DIR}/DeviceVK.cpp
+    ${SOURCES_DIR}/FenceVK.cpp
+    ${SOURCES_DIR}/ContextVK.hpp
+    ${SOURCES_DIR}/ShaderVK.cpp
+    ${SOURCES_DIR}/ProgramVK.cpp
+    ${SOURCES_DIR}/ProgramArgumentBindingVK.cpp
+    ${SOURCES_DIR}/ProgramBindingsVK.cpp
+    ${SOURCES_DIR}/RenderContextVK.cpp
+    ${SOURCES_DIR}/RenderStateVK.cpp
+    ${SOURCES_DIR}/ResourceVK.cpp
+    ${SOURCES_DIR}/ResourceVK.hpp
+    ${SOURCES_DIR}/ResourceBarriersVK.cpp
+    ${SOURCES_DIR}/DescriptorManagerVK.cpp
+    ${SOURCES_DIR}/QueryPoolVK.cpp
+    ${SOURCES_DIR}/BufferVK.cpp
+    ${SOURCES_DIR}/TextureVK.cpp
+    ${SOURCES_DIR}/SamplerVK.cpp
+    ${SOURCES_DIR}/RenderPassVK.cpp
+    ${SOURCES_DIR}/CommandQueueVK.cpp
+    ${SOURCES_DIR}/CommandListVK.cpp
+    ${SOURCES_DIR}/CommandListVK.hpp
+    ${SOURCES_DIR}/TransferCommandListVK.cpp
+    ${SOURCES_DIR}/RenderCommandListVK.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandListVK.cpp
+)
+
+if (APPLE)
+    set(METAL_LIB_DIR ../Metal)
+    list(APPEND VULKAN_TO_METAL_SOURCES
+        ${METAL_LIB_DIR}/${INCLUDE_DIR}/RenderContextAppViewMT.hh
+        ${METAL_LIB_DIR}/${INCLUDE_DIR}/Metal/TypesMT.hh
+        ${METAL_LIB_DIR}/${SOURCES_DIR}/Metal/TypesMT.mm
+        ${SOURCES_DIR}/RenderContextVK.mm
+    )
+    list(APPEND SOURCES ${VULKAN_TO_METAL_SOURCES})
+    set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
+        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.mm
+    )
+endif()
+
+add_library(${TARGET} STATIC
+    ${HEADERS}
+    ${SOURCES}
+)
+
+target_link_libraries(${TARGET}
+    PUBLIC
+        MethaneGraphicsCoreBase
+    PRIVATE
+        MethaneBuildOptions
+        MethaneDataPrimitives
+        MethaneGraphicsPrimitives
+        MethanePlatformUtils
+        MethaneInstrumentation
+        MethanePrecompiledExtraHeaders
+        TaskFlow
+        nowide
+        magic_enum
+        # Vulkan Libs
+        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
+        $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
+        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with MoltenVK framework on MacOS
+        spirv-cross-core
+        spirv-cross-hlsl
+)
+
+target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+
+target_include_directories(${TARGET}
+    PRIVATE
+        Sources
+        $<$<BOOL:${APPLE}>:${METAL_LIB_DIR}/${INCLUDE_DIR}>
+    PUBLIC
+        Include
+)
+
+target_compile_definitions(${TARGET}
+    PUBLIC
+        $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
+    PRIVATE
+        METHANE_GFX_VULKAN
+        VK_NO_PROTOTYPES
+        $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
+        $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
+        $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>
+        $<$<BOOL:${LINUX}>:VK_USE_PLATFORM_XCB_KHR>
+)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
+
+set_target_properties(${TARGET}
+    PROPERTIES
+        FOLDER Modules/Graphics/Core
+        UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
+        UNITY_BUILD_BATCH_SIZE 4
+)
+
+if (APPLE)
+    set_source_files_properties(
+        ${PLATFORM_SOURCES_OBJC}
+        PROPERTIES
+            COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
+            SKIP_PRECOMPILE_HEADERS ON
+            SKIP_UNITY_BUILD_INCLUSION ON
+    )
+endif()

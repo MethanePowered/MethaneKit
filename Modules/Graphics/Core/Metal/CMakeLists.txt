@@ -110,3 +110,13 @@ set_source_files_properties(
         SKIP_PRECOMPILE_HEADERS ON
         SKIP_UNITY_BUILD_INCLUSION ON
 )
+
+if (APPLE)
+    set_source_files_properties(
+        ${PLATFORM_SOURCES_OBJC}
+        PROPERTIES
+            COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
+            SKIP_PRECOMPILE_HEADERS ON
+            SKIP_UNITY_BUILD_INCLUSION ON
+    )
+endif()

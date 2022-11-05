@@ -113,7 +113,6 @@ set_target_properties(${TARGET}
         UNITY_BUILD_BATCH_SIZE 4
 )
 
-set_source_files_properties(
-    ${SOURCES}
-    PROPERTIES
-)
+if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+    set_target_properties(${TARGET} PROPERTIES PREREQUISITE_MODULES "DirectXCompiler")
+endif()
