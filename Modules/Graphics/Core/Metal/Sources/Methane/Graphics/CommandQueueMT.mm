@@ -29,7 +29,7 @@ Metal implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <QuartzCore/Base::CA.h>
+#include <QuartzCore/CABase.h>
 
 namespace Methane::Graphics
 {

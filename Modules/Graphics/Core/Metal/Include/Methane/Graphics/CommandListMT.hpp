@@ -26,10 +26,10 @@ Metal base template implementation of the command list interface.
 #include "CommandQueueMT.hh"
 #include "CommandListMT.hh"
 
-#include "Methane/Graphics/Base::CommandList.h"
-#include "Methane/Platform/Apple/Types.hh"
-#include "Methane/Instrumentation.h"
-#include "Methane/Checks.hpp"
+#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Platform/Apple/Types.hh>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #import <Metal/Metal.h>
 

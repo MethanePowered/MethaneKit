@@ -28,10 +28,10 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 #include "DescriptorManagerMT.h"
 
-#include "Methane/Graphics/Base::Context.h"
-#include "Methane/Graphics/ICommandKit.h"
-#include "Methane/Platform/Apple/Types.hh"
-#include "Methane/Instrumentation.h"
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Platform/Apple/Types.hh>
+#include <Methane/Instrumentation.h>
 
 #import <Metal/Metal.h>
 

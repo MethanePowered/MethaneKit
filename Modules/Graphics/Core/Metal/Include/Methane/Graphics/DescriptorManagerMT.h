@@ -23,12 +23,12 @@ Dummy Metal resource manager.
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorManager.h>
+#include <Methane/Graphics/IDescriptorManager.h>
 
 namespace Methane::Graphics
 {
 
-struct DescriptorManagerMT final : DescriptorManager
+struct DescriptorManagerMT final : IDescriptorManager
 {
     void AddProgramBindings(IProgramBindings&) override {}
     void CompleteInitialization() override {}
