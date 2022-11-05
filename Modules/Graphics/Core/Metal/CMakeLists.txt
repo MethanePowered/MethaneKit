@@ -9,6 +9,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/DeviceMT.hh
     ${INCLUDE_DIR}/FenceMT.hh
     ${INCLUDE_DIR}/ContextMT.h
+    ${INCLUDE_DIR}/ContextMT.hpp
     ${INCLUDE_DIR}/RenderContextMT.hh
     ${INCLUDE_DIR}/RenderContextAppViewMT.hh
     ${INCLUDE_DIR}/ShaderMT.hh
@@ -25,6 +26,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderPassMT.hh
     ${INCLUDE_DIR}/CommandQueueMT.hh
     ${INCLUDE_DIR}/CommandListMT.hh
+    ${INCLUDE_DIR}/CommandListMT.hpp
     ${INCLUDE_DIR}/TransferCommandListMT.hh
     ${INCLUDE_DIR}/RenderCommandListMT.hh
     ${INCLUDE_DIR}/ParallelRenderCommandListMT.hh
@@ -34,7 +36,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/TypesMT.mm
     ${SOURCES_DIR}/DeviceMT.mm
     ${SOURCES_DIR}/FenceMT.mm
-    ${SOURCES_DIR}/ContextMT.hpp
     ${SOURCES_DIR}/RenderContextMT.mm
     ${SOURCES_DIR}/ShaderMT.mm
     ${SOURCES_DIR}/ProgramMT.mm
@@ -49,7 +50,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/SamplerMT.mm
     ${SOURCES_DIR}/RenderPassMT.mm
     ${SOURCES_DIR}/CommandQueueMT.mm
-    ${SOURCES_DIR}/CommandListMT.hpp
     ${SOURCES_DIR}/CommandListMT.mm
     ${SOURCES_DIR}/TransferCommandListMT.mm
     ${SOURCES_DIR}/RenderCommandListMT.mm
@@ -110,13 +110,3 @@ set_source_files_properties(
         SKIP_PRECOMPILE_HEADERS ON
         SKIP_UNITY_BUILD_INCLUSION ON
 )
-
-if (APPLE)
-    set_source_files_properties(
-        ${PLATFORM_SOURCES_OBJC}
-        PROPERTIES
-            COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
-            SKIP_PRECOMPILE_HEADERS ON
-            SKIP_UNITY_BUILD_INCLUSION ON
-    )
-endif()

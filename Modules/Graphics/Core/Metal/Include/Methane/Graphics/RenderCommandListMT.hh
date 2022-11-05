@@ -23,7 +23,7 @@ Metal implementation of the render command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListMT.hpp>
+#include "CommandListMT.hpp"
 
 #include <Methane/Graphics/RenderCommandListBase.h>
 

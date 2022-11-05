@@ -23,13 +23,13 @@ Metal base template implementation of the command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueMT.hh>
-#include <Methane/Graphics/CommandListMT.hh>
+#include "CommandQueueMT.hh"
+#include "CommandListMT.hh"
 
-#include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Platform/Apple/Types.hh>
-#include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
+#include "Methane/Graphics/CommandListBase.h"
+#include "Methane/Platform/Apple/Types.hh"
+#include "Methane/Instrumentation.h"
+#include "Methane/Checks.hpp"
 
 #import <Metal/Metal.h>
 

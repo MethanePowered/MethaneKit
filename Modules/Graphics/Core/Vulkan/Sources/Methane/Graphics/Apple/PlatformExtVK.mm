@@ -24,7 +24,7 @@ Vulkan platform dependent functions for MacOS.
 #include <Methane/Graphics/PlatformVK.h>
 
 #include <Methane/Platform/MacOS/AppViewMT.hh>
-#include <Methane/Graphics/Metal/RenderContextAppViewMT.hh>
+#include <Methane/Graphics/RenderContextAppViewMT.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

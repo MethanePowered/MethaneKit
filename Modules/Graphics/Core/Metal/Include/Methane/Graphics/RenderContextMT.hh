@@ -23,7 +23,7 @@ Metal implementation of the render context interface.
 
 #pragma once
 
-#include <Methane/Graphics/ContextMT.hpp>
+#include "ContextMT.hpp"
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/TracyGpu.hpp>

@@ -23,7 +23,7 @@ Metal implementation of the parallel render command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListMT.hpp>
+#include "CommandListMT.hpp"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
 

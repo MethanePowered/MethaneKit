@@ -63,15 +63,18 @@ list(APPEND SOURCES
 )
 
 if (APPLE)
-    set(METAL_LIB_DIR ../Metal)
-    list(APPEND VULKAN_TO_METAL_SOURCES
-        ${METAL_LIB_DIR}/${INCLUDE_DIR}/RenderContextAppViewMT.hh
-        ${METAL_LIB_DIR}/${INCLUDE_DIR}/Metal/TypesMT.hh
-        ${METAL_LIB_DIR}/${SOURCES_DIR}/Metal/TypesMT.mm
+    set(METAL_SOURCE_DIR ../Metal)
+    list(APPEND METAL_SOURCES
+        ${METAL_SOURCE_DIR}/${INCLUDE_DIR}/RenderContextAppViewMT.hh
+        ${METAL_SOURCE_DIR}/${INCLUDE_DIR}/TypesMT.hh
+        ${METAL_SOURCE_DIR}/${SOURCES_DIR}/TypesMT.mm
+    )
+    list(APPEND SOURCES
         ${SOURCES_DIR}/RenderContextVK.mm
     )
-    list(APPEND SOURCES ${VULKAN_TO_METAL_SOURCES})
-    set(PLATFORM_SOURCES_OBJC ${VULKAN_TO_METAL_SOURCES}
+    set(PLATFORM_SOURCES_OBJC
+        ${METAL_SOURCES}
+        ${SOURCES_DIR}/RenderContextVK.mm
         ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.mm
     )
 endif()
@@ -79,6 +82,7 @@ endif()
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
+    ${METAL_SOURCES}
 )
 
 target_link_libraries(${TARGET}
@@ -102,12 +106,10 @@ target_link_libraries(${TARGET}
         spirv-cross-hlsl
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 target_include_directories(${TARGET}
     PRIVATE
         Sources
-        $<$<BOOL:${APPLE}>:${METAL_LIB_DIR}/${INCLUDE_DIR}>
+        $<$<BOOL:${APPLE}>:${CMAKE_CURRENT_SOURCE_DIR}/${METAL_SOURCE_DIR}/Include>
     PUBLIC
         Include
 )
@@ -134,6 +136,7 @@ set_target_properties(${TARGET}
 )
 
 if (APPLE)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/${METAL_SOURCE_DIR} FILES ${METAL_SOURCES})
     set_source_files_properties(
         ${PLATFORM_SOURCES_OBJC}
         PROPERTIES
@@ -141,4 +144,8 @@ if (APPLE)
             SKIP_PRECOMPILE_HEADERS ON
             SKIP_UNITY_BUILD_INCLUSION ON
     )
+else()
+    # Precompiled headers are disable on Apple because of weird CMake error:
+    # Unable to resolve full path of PCH-header
+    target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 endif()

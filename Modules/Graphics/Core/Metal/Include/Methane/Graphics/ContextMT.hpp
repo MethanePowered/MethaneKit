@@ -23,15 +23,15 @@ Metal template implementation of the base context interface.
 
 #pragma once
 
-#include <Methane/Graphics/ContextMT.h>
-#include <Methane/Graphics/DeviceMT.hh>
-#include <Methane/Graphics/ProgramLibraryMT.hh>
-#include <Methane/Graphics/DescriptorManagerMT.h>
+#include "ContextMT.h"
+#include "DeviceMT.hh"
+#include "ProgramLibraryMT.hh"
+#include "DescriptorManagerMT.h"
 
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Platform/Apple/Types.hh>
-#include <Methane/Instrumentation.h>
+#include "Methane/Graphics/ContextBase.h"
+#include "Methane/Graphics/ICommandKit.h"
+#include "Methane/Platform/Apple/Types.hh"
+#include "Methane/Instrumentation.h"
 
 #import <Metal/Metal.h>
 
