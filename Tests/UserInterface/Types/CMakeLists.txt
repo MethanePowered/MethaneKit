@@ -12,11 +12,11 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_link_libraries(${TARGET}
     PRIVATE
+        MethaneBuildOptions
         MethaneUserInterfaceTypes
         MethanePlatformApp
         MethaneGraphicsPrimitives
-        MethaneGraphicsCore
-        MethaneBuildOptions
+        MethaneGraphicsCoreInterface
         MethanePrecompiledExtraHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
